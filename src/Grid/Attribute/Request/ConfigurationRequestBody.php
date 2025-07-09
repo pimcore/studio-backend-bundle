@@ -17,8 +17,8 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\SaveConfigurationColumn as AssetSaveConfigurationColumn;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Property\SaveConfigurationColumn as DataObjectSaveConfigurationColumn;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\SaveConfigurationColumn as AssetSaveConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Property\SaveConfigurationColumn as ObjectSaveConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\ListOfInteger;
@@ -36,8 +36,8 @@ final class ConfigurationRequestBody extends RequestBody
         string $type
     ) {
         $column = match ($type) {
-            'data_object' => new DataObjectSaveConfigurationColumn(),
-            'asset' => new AssetSaveConfigurationColumn(),
+            'data_object' => new ObjectSaveConfiguration(),
+            'asset' => new AssetSaveConfiguration(),
             default => throw new InvalidArgumentException('Invalid type provided for ConfigurationRequestBody'),
         };
 
