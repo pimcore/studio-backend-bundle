@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpda
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingType;
 use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
