@@ -35,9 +35,9 @@ final class ConfigurationRequestBody extends RequestBody
     public function __construct(
         string $type
     ) {
-        match ($type) {
-            'data_object' => $column = new DataObjectSaveConfigurationColumn(),
-            'asset' => $column = new AssetSaveConfigurationColumn(),
+        $column = match ($type) {
+            'data_object' => new DataObjectSaveConfigurationColumn(),
+            'asset' => new AssetSaveConfigurationColumn(),
             default => throw new InvalidArgumentException('Invalid type provided for ConfigurationRequestBody'),
         };
 
