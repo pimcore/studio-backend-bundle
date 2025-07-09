@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -75,7 +76,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
      * @throws NotFoundException
      */
     public function saveDataObjectGridConfiguration(
-        ConfigurationParameter $configuration,
+        DataObjectConfigurationParameter $configuration,
         string $classId
     ): Configuration {
         if (!$this->classDefinitionResolver->getById($classId)) {
@@ -104,7 +105,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     }
 
     private function setDefaultGridConfigurationData(
-        GridConfiguration $gridConfiguration,
+        GridConfiguration|DataObjectConfigurationParameter $gridConfiguration,
         ConfigurationParameter $configuration
     ): GridConfiguration {
         $gridConfiguration->setPageSize($configuration->getPageSize());

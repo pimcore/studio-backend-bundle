@@ -18,7 +18,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
@@ -61,7 +61,9 @@ final class SaveConfigurationController extends AbstractApiController
         summary: 'data_object_save_grid_configuration_summary',
         tags: [Tags::DataObjectsGrid->value]
     )]
-    #[ConfigurationRequestBody]
+    #[ConfigurationRequestBody(
+        type: 'data_object'
+    )]
     #[StringParameter(
         name: 'classId',
         example: 'EV',
@@ -79,7 +81,6 @@ final class SaveConfigurationController extends AbstractApiController
         #[MapRequestPayload] ConfigurationParameter $saveConfigurationParameter,
         string $classId
     ): Response {
-
         $configuration = $this->gridSaveConfigurationService->saveDataObjectGridConfiguration(
             $saveConfigurationParameter,
             $classId

@@ -60,7 +60,9 @@ final class SaveConfigurationController extends AbstractApiController
         summary: 'asset_save_grid_configuration_description',
         tags: [Tags::AssetGrid->value]
     )]
-    #[ConfigurationRequestBody]
+    #[ConfigurationRequestBody(
+        type: 'asset'
+    )]
     #[SuccessResponse(
         description: 'asset_save_grid_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)

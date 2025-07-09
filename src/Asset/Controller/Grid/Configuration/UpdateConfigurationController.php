@@ -61,7 +61,9 @@ final class UpdateConfigurationController extends AbstractApiController
         summary: 'asset_update_grid_configuration_summary',
         tags: [Tags::AssetGrid->value]
     )]
-    #[ConfigurationRequestBody]
+    #[ConfigurationRequestBody(
+        type: 'asset'
+    )]
     #[IdParameter(
         type: 'configurationId',
         name: 'configurationId'

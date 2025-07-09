@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 /**
  * @internal
  */
-final readonly class ConfigurationParameter implements ConfigurationParameterInterface
+readonly class ConfigurationParameter implements ConfigurationParameterInterface
 {
     use ColumnsAsArrayTrait;
 
@@ -33,7 +33,7 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
         #[NotBlank]
         private string $name,
         #[NotBlank]
-        private array $columns,
+        protected array $columns,
         private ?string $description,
         private array $sharedUsers = [],
         private array $sharedRoles = [],

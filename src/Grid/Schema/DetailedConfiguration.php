@@ -16,9 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema as AssetColumnSchema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column as DataObjectColumn;
 
 /**
  * Contains all data to configure a grid column
@@ -59,7 +60,12 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly array $sharedUsers,
         #[Property(description: 'sharedRoles', type: 'object', example: [42, 1337])]
         private readonly array $sharedRoles,
-        #[Property(description: 'columns', type: 'array', items: new Items(ref: ColumnSchema::class))]
+        #[Property(description: 'columns', type: 'array', items: new Items(
+            anyOf: [
+                new Schema(ref: AssetColumnSchema::class),
+                new Schema(ref:  DataObjectColumn::class),
+            ]
+        ))]
         private readonly array $columns,
         #[Property(description: 'filter', type: 'array', items: new Items(ref: Filter::class))]
         private readonly array $filter,
@@ -118,7 +124,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     }
 
     /**
-     * @return ColumnSchema[]
+     * @return DataObjectColumn[]|AssetColumnSchema[]
      */
     public function getColumns(): array
     {

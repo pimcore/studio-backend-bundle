@@ -17,7 +17,9 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\SaveConfigurationColumn;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\SaveConfigurationColumn as AssetSaveConfigurationColumn;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Property\SaveConfigurationColumn as DataObjectSaveConfigurationColumn;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\ListOfInteger;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleBoolean;
@@ -30,8 +32,16 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ConfigurationRequestBody extends RequestBody
 {
-    public function __construct()
+    public function __construct(
+        string $type
+    )
     {
+        match ($type) {
+            'data_object' => $column = new DataObjectSaveConfigurationColumn(),
+            'asset' => $column = new AssetSaveConfigurationColumn(),
+            default => throw new InvalidArgumentException('Invalid type provided for ConfigurationRequestBody'),
+        };
+
         parent::__construct(
             required: true,
             content: new JsonContent(
@@ -46,7 +56,7 @@ final class ConfigurationRequestBody extends RequestBody
                     new SingleBoolean('saveFilter'),
                     new ListOfInteger('sharedUsers'),
                     new ListOfInteger('sharedRoles'),
-                    new SaveConfigurationColumn(),
+                    $column,
                     new Property(
                         'filter',
                         ref: Filter::class,

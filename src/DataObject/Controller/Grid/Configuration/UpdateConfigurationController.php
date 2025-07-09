@@ -61,7 +61,9 @@ final class UpdateConfigurationController extends AbstractApiController
         summary: 'data_object_update_grid_configuration_summary',
         tags: [Tags::DataObjectsGrid->value]
     )]
-    #[ConfigurationRequestBody]
+    #[ConfigurationRequestBody(
+        type: 'data_object'
+    )]
     #[IdParameter(
         type: 'configurationId',
         name: 'configurationId'

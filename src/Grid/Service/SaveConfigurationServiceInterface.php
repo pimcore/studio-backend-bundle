@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 
 /**
@@ -28,7 +29,7 @@ interface SaveConfigurationServiceInterface
     public function saveAssetGridConfiguration(ConfigurationParameter $configuration): Configuration;
 
     public function saveDataObjectGridConfiguration(
-        ConfigurationParameter $configuration,
+        DataObjectConfigurationParameter $configuration,
         string $classId
     ): Configuration;
 }
