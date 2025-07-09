@@ -64,7 +64,8 @@ final readonly class CsvService implements CsvServiceInterface
                 '',
                 $collectionSettings
             ),
-            new JobStep(JobSteps::CSV_CREATION->value,
+            new JobStep(
+                JobSteps::CSV_CREATION->value,
                 CsvCreationMessage::class,
                 '',
                 $creationSettings
