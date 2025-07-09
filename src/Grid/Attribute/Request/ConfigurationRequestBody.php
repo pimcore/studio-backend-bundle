@@ -34,8 +34,7 @@ final class ConfigurationRequestBody extends RequestBody
 {
     public function __construct(
         string $type
-    )
-    {
+    ) {
         match ($type) {
             'data_object' => $column = new DataObjectSaveConfigurationColumn(),
             'asset' => $column = new AssetSaveConfigurationColumn(),

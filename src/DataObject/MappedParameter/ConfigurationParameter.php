@@ -7,13 +7,13 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter;
 
+use Override;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter as GridConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 
@@ -25,7 +25,7 @@ final readonly class ConfigurationParameter extends GridConfigurationParameter
     /**
      * @return Column[]
      */
-    #[\Override]
+    #[Override]
     public function getColumns(): array
     {
         return $this->columns;
