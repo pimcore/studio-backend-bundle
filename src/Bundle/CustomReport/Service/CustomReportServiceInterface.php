@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -38,7 +40,7 @@ interface CustomReportServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getChartData(ExportParameter $chartDataParameter): CustomReportChartData;
+    public function getChartData(ChartDataParameter $parameters): Collection;
 
     /**
      * @throws NotFoundException

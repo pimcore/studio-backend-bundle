@@ -1039,6 +1039,21 @@ custom_reports_report_summary: Get detailed configuration for a specific report 
 custom_reports_report_success_response: Report data as JSON
 custom_reports_report_name_parameter: Name of the report
 custom_reports_chart: Chart data
+custom_reports_chart_description: |
+  Get paginated chart data for a specific report by name. <br> Parameters are: 
+  <ul>
+    <li><strong>name (required)</strong>: Name of existing custom report</li>
+    <li><strong>filters</strong>: Array of filters to filter the data</li>
+      <ul>
+        <li><strong>columnFilters</strong>: Allow filtering based on the columns and their values</li>
+        <li><strong>drillDownFilters</strong>: Filter based on pre-defined drill down filters</li>
+      </ul>
+    <li><strong>sortBy</strong>: Column name to sort the data by</li>
+    <li><strong>sortOrder</strong>: Sort order (ASC/DESC)</li>
+    <li><strong>page</strong>: Offset, can be used in combination with pageSize</li>
+    <li><strong>pageSize</strong>: Limit returned data</li>
+    <li><strong>fields</strong>: Array of fields to be included in the data. If not provided, all fields will be included</li>
+  </ul>
 custom_reports_chart_summary: Get chart data for a specific report
 custom_reports_chart_name_parameter: Name of the report
 custom_reports_chart_success_response: Chart data as JSON. The actual data depends on the selected adapter in the report configuration.
@@ -1049,15 +1064,21 @@ custom_report_export_csv: CSV export
 custom_report_export_csv_summary: Export report data as CSV
 custom_report_export_csv_created_response: Successfully created <strong>jobRun</strong> for csv export
 custom_report_export_csv_description: |
-  Creating the CSV file for custom reports. <br> Parameters are: <ul>
-    <li><strong>name</strong>: Name of custom report</li>    
-    <li><strong>sortOrder</strong>: Sort order (ASC/DESC)</li>
+  Creating the CSV export file for custom reports. <br> Parameters are: 
+  <ul>
+    <li><strong>name (required)</strong>: Name of custom report</li>
+    <li><strong>filters</strong>: Array of filters to filter the data</li>
+      <ul>
+        <li><strong>columnFilters</strong>: Allow filtering based on the columns and their values</li>
+        <li><strong>drillDownFilters</strong>: Filter based on pre-defined drill down filters</li>
+      </ul>
     <li><strong>sortBy</strong>: Column name to sort the data by</li>
-    <li><strong>filter</strong>: Filter to filter the data</li>
-    <li><strong>reportLimit</strong>: Limit returned data</li>
-    <li><strong>reportOffset</strong>: Offset, can be used in combination with reportLimit</li>
-    <li><strong>includeHeaders</strong>: Include headers</li>
-    </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong>. <br> 
+    <li><strong>sortOrder</strong>: Sort order (ASC/DESC)</li>
+    <li><strong>page</strong>: Offset, can be used in combination with pageSize</li>
+    <li><strong>pageSize</strong>: Limit returned data</li>
+    <li><strong>includeHeaders</strong>: Include headers in the export</li>
+    <li><strong>delimiter</strong>: Delimiter can be set to anything, but the default is a <strong>semicolon</strong>/li>
+  </ul>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
 data_object_format_path_description: |
   Format the path of the data given by the <strong>{targets}</strong> option.

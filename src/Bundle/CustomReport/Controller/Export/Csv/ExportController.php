@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Export\Csv;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Attribute\Request\CsvExportRequestBody;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Attribute\Request\ChartDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -53,7 +55,20 @@ final class ExportController extends AbstractApiController
         summary: 'custom_report_export_csv_summary',
         tags: [Tags::BundleCustomReports->value]
     )]
-    #[CsvExportRequestBody]
+    #[ChartDataRequestBody(
+        additionalProperties: [
+            new Property(
+                property: 'includeHeaders',
+                type: 'bool',
+                example: false
+            ),
+            new Property(
+                property: StepConfig::SETTINGS_DELIMITER->value,
+                type: 'string',
+                example: ';'
+            ),
+        ]
+    )]
     #[CreatedResponse(
         description: 'custom_report_export_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
@@ -65,10 +80,9 @@ final class ExportController extends AbstractApiController
     public function exportCsv(
         #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
+
         return $this->jsonResponse(
-            $this->csvService->generateCsvFile(
-                $exportParameter
-            )
+            $this->csvService->generateCsvFile($exportParameter)
         );
     }
 }

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
@@ -31,16 +32,16 @@ final readonly class AdapterService implements AdapterServiceInterface
     ) {
     }
 
-    public function getData(Config $report, ExportParameter $chartDataParameter): array
+    public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
         return $this->getAdapter($report)->getData(
-            $chartDataParameter->getFilters(),
+            $chartDataParameter->getFilters()->getColumnFilters(),
             $chartDataParameter->getSortBy(),
             $chartDataParameter->getSortOrder(),
-            $chartDataParameter->getReportOffset(),
-            $chartDataParameter->getReportLimit(),
+            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
+            $chartDataParameter->getPageSize(),
             $chartDataParameter->getFields(),
-            $chartDataParameter->getDrillDownFilters()
+            $chartDataParameter->getFilters()->getDrillDownFilters()
         );
     }
 

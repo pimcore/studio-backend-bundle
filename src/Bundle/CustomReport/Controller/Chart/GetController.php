@@ -15,7 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Char
 
 use Exception;
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Attribute\Request\ChartDataRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
@@ -27,13 +32,17 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IntPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortOrderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CustomReportPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -43,6 +52,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     private const string ROUTE = '/bundle/custom-reports/chart';
 
     public function __construct(
@@ -56,49 +67,41 @@ final class GetController extends AbstractApiController
      * @throws NotFoundException|DatabaseException
      * @throws Exception
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_chart', methods: ['GET'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_chart', methods: ['POST'])]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
-    #[Get(
+    #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'custom_reports_chart',
+        description: 'custom_reports_chart_description',
         summary: 'custom_reports_chart_summary',
         tags: [Tags::BundleCustomReports->value]
     )]
-    #[TextFieldParameter(
-        name: 'name',
-        description: 'custom_reports_chart_name_parameter',
-        required: true,
-        example: 'Quality_Attributes',
-    )]
-    #[SortOrderParameter]
-    #[StringParameter(
-        name: 'sortBy',
-        example: '',
-        description: 'custom_reports_chart_sort_by_parameter',
-        required: false
-    )]
-    #[FilterParameter('chart data', example: '')]
-    #[IntParameter(
-        name: 'reportOffset',
-        description: 'custom_reports_chart_report_offset_parameter',
-        required: false,
-        example: 0
-    )]
-    #[IntParameter(
-        name: 'reportLimit',
-        description: 'custom_reports_chart_report_limit_parameter',
-        required: false,
-        example: 10
+    #[ChartDataRequestBody(
+        [
+            new Property(
+                property: 'fields',
+                description: 'Fields to be included in the chart data.' .
+                ' If not provided, all fields will be included.',
+                type: 'array',
+                items: new Items(type: 'string', example: 'field1')
+            )
+        ]
     )]
     #[SuccessResponse(
         description: 'custom_reports_chart_success_response',
-        content: new JsonContent(ref: CustomReportChartData::class)
+        content: new CollectionJson(new GenericCollection(CustomReportChartData::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getChartData(#[MapQueryString] ExportParameter $chartDataParameter): JsonResponse
+    public function getChartData(#[MapRequestPayload] ChartDataParameter $parameters): JsonResponse
     {
-        return $this->jsonResponse($this->customReportService->getChartData($chartDataParameter));
+        $collection = $this->customReportService->getChartData($parameters);
+
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $collection->getItems(),
+            $collection->getTotalItems()
+        );
     }
 }

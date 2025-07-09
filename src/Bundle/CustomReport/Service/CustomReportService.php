@@ -21,15 +21,18 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\ReportEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\TreeConfigNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\TreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use TypeError;
 use function is_string;
+use function Sabre\Xml\Serializer\enum;
 
 /**
  * @internal
@@ -89,18 +92,25 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $this->customReportRepository->loadByName($reportName);
     }
 
-    public function getChartData(ExportParameter $chartDataParameter): CustomReportChartData
+    public function getChartData(ChartDataParameter $parameters): Collection
     {
-        $reportConfig = $this->getCustomReportByName($chartDataParameter->getName());
-        $data = $this->adapterService->getData($reportConfig, $chartDataParameter);
-        $chartData = $this->customReportHydrator->extractChartData($data);
+        $reportConfig = $this->getCustomReportByName($parameters->getName());
+        $data = $this->adapterService->getData($reportConfig, $parameters);
+        $dataEntries = $data['data'] ?? [];
+        $hydratedData = [];
+        foreach ($dataEntries as $entry) {
+            $chartData = $this->customReportHydrator->extractChartData($entry);
 
-        $this->eventDispatcher->dispatch(
-            new ChartDataEvent($chartData),
-            ChartDataEvent::EVENT_NAME
-        );
+            $this->eventDispatcher->dispatch(
+                new ChartDataEvent($chartData),
+                ChartDataEvent::EVENT_NAME
+            );
 
-        return $chartData;
+            $hydratedData[] = $chartData;
+        }
+
+
+        return new Collection($data['total'] ?? 0, $hydratedData);
     }
 
     public function getCustomReportDetails(string $reportName): CustomReportDetails
@@ -132,11 +142,21 @@ final readonly class CustomReportService implements CustomReportServiceInterface
     public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array
     {
         $csvData = [];
+
+        if (empty($reportData['data'])) {
+            return $csvData;
+        }
+
+        $data = $reportData['data'];
         if ($includeHeaders) {
             $csvData[] = $exportFields;
         }
 
-        foreach ($reportData['data'] ?? [] as $row) {
+        $sortedData = array_map(static function ($row) use ($exportFields) {
+            return array_merge(array_flip($exportFields), $row);
+        }, $data);
+
+        foreach ($sortedData as $row) {
             $csvData[] = array_values($row);
         }
 

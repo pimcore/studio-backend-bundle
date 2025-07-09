@@ -13,99 +13,58 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use function in_array;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 
 /**
  * @internal
  */
-final readonly class ExportParameter
+final readonly class ExportParameter extends ChartDataParameter
 {
     public function __construct(
-        private string $name,
-        private ?array $filters = null,
-        private ?array $drillDownFilters = null,
-        private ?string $sortOrder = null,
-        private ?string $sortBy = null,
-        private ?int $reportOffset = null,
-        private ?int $reportLimit = null,
-        private ?array $fields = null,
+        string $name,
+        FiltersParameter $filters = new FiltersParameter(),
+        ?string $sortBy = null,
+        ?string $sortOrder = null,
+        int $page = 1,
+        int $pageSize = 50,
         private bool $includeHeaders = false,
-        private ?string $defaultDelimiter = null
+        private ?string $delimiter = null
     ) {
-        $this->validate();
-    }
-
-    public function getSortOrder(): ?string
-    {
-        return $this->sortOrder;
+        parent::__construct(
+            name: $name,
+            filters: $filters,
+            sortBy: $sortBy,
+            sortOrder: $sortOrder,
+            page: $page,
+            pageSize: $pageSize
+        );
     }
 
     public static function fromArray(array $data): self
     {
         return new self(
             name: $data['name'],
-            filters: $data['filters'] ?? null,
-            drillDownFilters: $data['drillDownFilters'] ?? null,
-            sortOrder: $data['sortOrder'] ?? null,
+            filters: new FiltersParameter(
+                $data['filters']['columnFilters'],
+                $data['filters']['drillDownFilters']
+            ),
             sortBy: $data['sortBy'] ?? null,
-            reportOffset: $data['reportOffset'] ?? null,
-            reportLimit: $data['reportLimit'] ?? null,
-            fields: $data['fields'] ?? null,
+            sortOrder: $data['sortOrder'] ?? null,
+            page: $data['page'] ?? 1,
+            pageSize: $data['pageSize'] ?? 50,
             includeHeaders: $data['includeHeaders'] ?? false,
-            defaultDelimiter: $data['defaultDelimiter'] ?? null
+            delimiter: $data[StepConfig::SETTINGS_DELIMITER->value] ?? null
         );
     }
 
-    public function getSortBy(): ?string
-    {
-        return $this->sortBy;
-    }
-
-    public function getReportLimit(): ?int
-    {
-        return $this->reportLimit;
-    }
-
-    public function getReportOffset(): ?int
-    {
-        return $this->reportOffset;
-    }
-
-    private function validate(): void
-    {
-        if ($this->getSortOrder()  && !in_array($this->getSortOrder(), ['ASC', 'DESC'])) {
-            throw new InvalidArgumentException('Invalid sort order');
-        }
-    }
-
-    public function getFilters(): ?array
-    {
-        return $this->filters;
-    }
-
-    public function getDrillDownFilters(): ?array
-    {
-        return $this->drillDownFilters;
-    }
-
-    public function getFields(): ?array
-    {
-        return $this->fields;
-    }
 
     public function getIncludeHeaders(): bool
     {
         return $this->includeHeaders;
     }
 
-    public function getDefaultDelimiter(): ?string
+    public function getDelimiter(): ?string
     {
-        return $this->defaultDelimiter;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
+        return $this->delimiter;
     }
 }
