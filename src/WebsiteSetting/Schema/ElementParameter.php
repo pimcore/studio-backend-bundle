@@ -19,16 +19,16 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'WebsiteSettingsObjectData',
     title: 'Website Settings Object Data',
-    required: ['id', 'path'],
+    required: ['id', 'fullPath'],
     type: 'object'
 )]
 final readonly class ElementParameter
 {
     public function __construct(
-        #[Property(description: 'id', type: 'int', example: 1020)]
+        #[Property(description: 'element id', type: 'int', example: 1020)]
         private int $id,
-        #[Property(description: 'path', type: 'string', example: '/path/to/object')]
-        private string $path,
+        #[Property(description: 'element fullPath', type: 'string', example: '/path/to/object')]
+        private string $fullPath,
     ) {
 
     }
@@ -38,8 +38,8 @@ final readonly class ElementParameter
         return $this->id;
     }
 
-    public function getPath(): string
+    public function getFullPath(): string
     {
-        return $this->path;
+        return $this->fullPath;
     }
 }
