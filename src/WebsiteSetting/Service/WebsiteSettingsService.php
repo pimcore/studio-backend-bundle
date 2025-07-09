@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -27,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpda
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingType;
 use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -36,6 +40,7 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
+        private ToolResolverInterface $toolResolver,
         private WebsiteSettingsHydratorInterface $hydrator,
         private WebsiteSettingsRepositoryInterface $websiteSettingsRepository
     ) {
@@ -57,6 +62,7 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
     public function updateWebsiteSetting(int $id, WebsiteSettingsUpdate $parameters): WebsiteSetting
     {
         $setting = $this->websiteSettingsRepository->getById($id);
+        $this->validateLanguage($parameters->getLanguage());
         $setting = $this->websiteSettingsRepository->update($setting, $parameters);
 
         return $this->getHydratedSetting($setting);
@@ -119,5 +125,20 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
         );
 
         return $entry;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateLanguage(string $language): void
+    {
+        if (empty($language)) {
+            return;
+        }
+
+        $validLanguages = $this->toolResolver->getValidLanguages();
+        if (!in_array($language, $validLanguages, true)) {
+            throw new InvalidArgumentException(sprintf('Invalid language (%s) provided.', $language));
+        }
     }
 }

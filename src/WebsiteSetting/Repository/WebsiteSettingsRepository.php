@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\ElementParameter;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpdate;
 use Pimcore\Model\WebsiteSetting;
 use Pimcore\Model\WebsiteSetting\Listing;
@@ -68,7 +69,7 @@ final readonly class WebsiteSettingsRepository implements WebsiteSettingsReposit
         $setting->setName($parameters->getName());
         $setting->setLanguage($parameters->getLanguage());
         $setting->setSiteId($parameters->getSiteId());
-        $this->updateData($setting, $parameters->getData());
+        $this->updateData($setting, $parameters);
 
         try {
             $setting->save();
@@ -100,12 +101,15 @@ final readonly class WebsiteSettingsRepository implements WebsiteSettingsReposit
         return $setting;
     }
 
-    private function updateData(WebsiteSetting $setting, null|string|bool $parameterData): void
+    private function updateData(WebsiteSetting $setting, WebsiteSettingsUpdate $parameters): void
     {
-        $data = $parameterData;
-        if (in_array($setting->getType(), ElementTypes::ALLOWED_TYPES, true)) {
+        $data = $parameters->getData();
+        if (
+            $data instanceof ElementParameter &&
+            in_array($setting->getType(), ElementTypes::ALLOWED_TYPES, true)
+        ) {
             try {
-                $data = $this->getElementByPath($this->serviceResolver, $setting->getType(), $parameterData);
+                $data = $this->getElementByPath($this->serviceResolver, $setting->getType(), $data->getFullPath());
             } catch (NotFoundException) {
                 $data = null;
             }

@@ -34,13 +34,14 @@ final readonly class WebsiteSettingsUpdate
         private string $language,
         #[Property(
             description: 'Data',
-            example: true,
+            example: '{"id": 136,"fullPath": "/de"}',
             anyOf: [
                 new Schema(type: 'string'),
                 new Schema(type: 'boolean'),
+                new Schema(ref: ElementParameter::class, type: 'object'),
             ]
         )]
-        private null|string|bool $data = null,
+        private null|string|bool|ElementParameter $data = null,
         #[Property(description: 'Site ID', type: 'integer', example: 1)]
         private ?int $siteId = null,
     ) {
@@ -56,7 +57,7 @@ final readonly class WebsiteSettingsUpdate
         return $this->language;
     }
 
-    public function getData(): null|string|bool
+    public function getData(): null|string|bool|ElementParameter
     {
         return $this->data;
     }
