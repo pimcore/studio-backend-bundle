@@ -14,22 +14,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\TranslationRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Response\DomainList;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -69,7 +62,7 @@ final class DomainsController extends AbstractApiController
         $this->translatorService->getAvailableDomains();
 
         return $this->jsonResponse(['domains' =>
-            $this->translatorService->getAvailableDomains()
+            $this->translatorService->getAvailableDomains(),
         ]);
     }
 }

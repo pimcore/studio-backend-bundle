@@ -20,9 +20,9 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
-use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
+use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Translation\Translator;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -123,7 +123,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
         return $translation->getDao()->getAvailableDomains();
     }
-
 
     private function getTranslatorBag(): TranslatorBagInterface
     {
