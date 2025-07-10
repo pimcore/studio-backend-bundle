@@ -140,4 +140,15 @@ final readonly class Column
 
         return  $transformers;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'key' => $this->getKey(),
+            'locale' => $this->getLocale(),
+            'type' => $this->getType(),
+            'group' => $this->getGroup(),
+            'config' => $this->getConfig(),
+        ];
+    }
 }

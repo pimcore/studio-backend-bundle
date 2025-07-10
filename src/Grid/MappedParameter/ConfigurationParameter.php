@@ -15,13 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ColumnsAsArrayTrait;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @internal
  */
-final readonly class ConfigurationParameter implements ConfigurationParameterInterface
+readonly class ConfigurationParameter implements ConfigurationParameterInterface
 {
     use ColumnsAsArrayTrait;
 
@@ -33,7 +34,7 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
         #[NotBlank]
         private string $name,
         #[NotBlank]
-        private array $columns,
+        protected array $columns,
         private ?string $description,
         private array $sharedUsers = [],
         private array $sharedRoles = [],
@@ -85,7 +86,7 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
     }
 
     /**
-     * @return ColumnSchema[]
+     * @return ColumnSchema[]|Column[]
      */
     public function getColumns(): array
     {
