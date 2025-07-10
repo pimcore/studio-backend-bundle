@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
+use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Translation\Translator;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -114,6 +115,13 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     public function translateApiDocs(string $message, string $locale = 'en'): string
     {
         return $this->translator->trans($message, [], self::API_DOCS_DOMAIN, $locale);
+    }
+
+    public function getAvailableDomains(): array
+    {
+        $translation = new TranslationModel();
+
+        return $translation->getDao()->getAvailableDomains();
     }
 
     private function getTranslatorBag(): TranslatorBagInterface

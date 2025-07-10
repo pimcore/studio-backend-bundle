@@ -47,4 +47,11 @@ interface TranslatorServiceInterface
     public function translate(string $message, array $params = []): string;
 
     public function translateApiDocs(string $message, string $locale = 'en'): string;
+
+    /**
+     * Returns a list of all available domains for translations.
+     *
+     * @return string[] List of domain names
+     */
+    public function getAvailableDomains(): array;
 }
