@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
+use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Translation\Translator;
@@ -115,6 +116,14 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     {
         return $this->translator->trans($message, [], self::API_DOCS_DOMAIN, $locale);
     }
+
+    public function getAvailableDomains(): array
+    {
+        $translation = new TranslationModel();
+
+        return $translation->getDao()->getAvailableDomains();
+    }
+
 
     private function getTranslatorBag(): TranslatorBagInterface
     {
