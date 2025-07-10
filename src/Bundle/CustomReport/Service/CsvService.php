@@ -43,13 +43,18 @@ final readonly class CsvService implements CsvServiceInterface
             StepConfig::CUSTOM_REPORT_CONFIG->value => $exportParameter,
         ];
 
-        return $this->generateCsvFileJob(
-            $collectionSettings,
-        );
+        $creationSettings = [
+            StepConfig::CONFIG_CONFIGURATION->value => [
+                StepConfig::SETTINGS_DELIMITER->value => $exportParameter->getDelimiter(),
+            ],
+        ];
+
+        return $this->generateCsvFileJob($collectionSettings, $creationSettings);
     }
 
     private function generateCsvFileJob(
-        array $collectionSettings
+        array $collectionSettings,
+        array $creationSettings
     ): int {
 
         $jobSteps = [
@@ -63,7 +68,7 @@ final readonly class CsvService implements CsvServiceInterface
                 JobSteps::CSV_CREATION->value,
                 CsvCreationMessage::class,
                 '',
-                []
+                $creationSettings
             ),
         ];
 

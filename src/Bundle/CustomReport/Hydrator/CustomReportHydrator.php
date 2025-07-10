@@ -80,9 +80,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
 
     public function extractChartData(array $chartData): CustomReportChartData
     {
-        return new CustomReportChartData(
-            $chartData['data'] ?? []
-        );
+        return new CustomReportChartData($chartData);
     }
 
     public function hydrateDrillDownOption(array $drillDownData): CustomReportDrillDownOption
