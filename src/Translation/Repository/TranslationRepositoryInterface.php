@@ -16,21 +16,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\TranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use Pimcore\Model\Translation;
+use Pimcore\Model\Translation\Listing;
 
 /**
  * @internal
  */
 interface TranslationRepositoryInterface
 {
-    /**
-     * @throws InvalidLocaleException
-     *
-     * @return array<Translation>
-     */
-    public function getAllTranslations(string $locale): array;
-
     public function createTranslations(array $translationData): void;
+
+    public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing;
 
     /**
      * @param array<TranslationData> $translationData
@@ -40,6 +35,12 @@ interface TranslationRepositoryInterface
     public function updateTranslations(array $translationData, string $locale): void;
 
     public function deleteTranslation(string $key): void;
+
+    public function joinLanguageColumns(
+        Listing $listing,
+        array $languages,
+        string $domain
+    ): Listing;
 
     /**
      * @return array<int, string>

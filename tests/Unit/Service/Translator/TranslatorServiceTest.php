@@ -15,12 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Translation\Translator;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
 final class TranslatorServiceTest extends Unit
@@ -33,7 +38,7 @@ final class TranslatorServiceTest extends Unit
         $translatorService = $this->mockTranslatorService();
         $locale = 'en';
 
-        $translations = $translatorService->getAllTranslations($locale, true);
+        $translations = $translatorService->getAllTranslationsByLocale($locale, true);
 
         $this->assertEquals($locale, $translations->getLocale());
         $this->assertEmpty($translations->getKeys());
@@ -44,7 +49,7 @@ final class TranslatorServiceTest extends Unit
         $translatorService = $this->mockTranslatorService(false);
         $locale = 'en';
 
-        $translations = $translatorService->getAllTranslations($locale, true);
+        $translations = $translatorService->getAllTranslationsByLocale($locale, true);
 
         $this->assertEquals($locale, $translations->getLocale());
         $this->assertCount(count(PublicTranslations::PUBLIC_KEYS), $translations->getKeys());
@@ -77,7 +82,21 @@ final class TranslatorServiceTest extends Unit
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'isLoggedIn' => $loggedIn,
         ]);
+        $adminResolver = $this->makeEmpty(AdminResolverInterface::class);
+        $listingFilter = $this->makeEmpty(ListingFilterInterface::class);
+        $filterMapper = $this->makeEmpty(FilterMapperServiceInterface::class);
+        $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
+        $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
 
-        return new TranslatorService($translator, $repository, $securityService);
+        return new TranslatorService(
+            $translator,
+            $repository,
+            $securityService,
+            $adminResolver,
+            $listingFilter,
+            $filterMapper,
+            $translationsHydrator,
+            $eventDispatcher
+        );
     }
 }

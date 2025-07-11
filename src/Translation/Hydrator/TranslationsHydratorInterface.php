@@ -11,19 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator;
+
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
+use Pimcore\Model\Translation;
 
 /**
  * @internal
  */
-enum FilterType: string
+interface TranslationsHydratorInterface
 {
-    case DATE = 'date';
-    case EQUALS = 'equals';
-    case LIKE = 'like';
-    case TRANSLATION_LIKE = 'translationLike';
-    case PAGE = 'page';
-    case PAGE_SIZE = 'page.size';
-    case PROPERTY_NAME = 'property.name';
-    case PROPERTY_ELEMENT_TYPE = 'property.element.type';
+    public function hydrate(Translation $translation): Translations;
 }

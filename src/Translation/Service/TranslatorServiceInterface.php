@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
@@ -33,9 +35,11 @@ interface TranslatorServiceInterface
     public function updateTranslations(UpdateTranslation $translation): void;
 
     /**
+     * Get all translations for a specific locale.
+     *
      * @throws InvalidLocaleException
      */
-    public function getAllTranslations(string $locale, bool $useFallback): Translation;
+    public function getAllTranslationsByLocale(string $locale, bool $useFallback): Translation;
 
     /**
      * @throws InvalidLocaleException
@@ -54,4 +58,10 @@ interface TranslatorServiceInterface
      * @return string[] List of domain names
      */
     public function getAvailableDomains(): array;
+
+    /**
+     * Returns a list of all available translations including all languages.
+     * Used for grid listing including filters and pagination.
+     */
+    public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection;
 }

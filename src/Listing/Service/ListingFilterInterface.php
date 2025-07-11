@@ -16,10 +16,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
 
+/**
+ * @template T
+ */
 interface ListingFilterInterface extends FilterServiceInterface
 {
     public const SERVICE_TYPE = 'listing_filter';
 
+    /**
+     * @param T $listing
+     *
+     * @return T
+     */
     public function applyFilters(
         FilterParameter $parameters,
         mixed $listing

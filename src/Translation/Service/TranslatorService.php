@@ -15,8 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use InvalidArgumentException;
 use Locale;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Event\TranslationsEvent;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
@@ -24,8 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Translation\Translator;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function in_array;
 
 /**
  * @internal
@@ -40,6 +49,11 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private TranslatorInterface $translator,
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService,
+        private AdminResolverInterface $adminResolver,
+        private ListingFilterInterface $listingFilter,
+        private FilterMapperServiceInterface $filterMapper,
+        private TranslationsHydratorInterface $translationsHydrator,
+        private EventDispatcherInterface $eventDispatcher
     ) {
         $this->translatorBag = $this->getTranslatorBag();
     }
@@ -60,7 +74,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     /**
      * @throws InvalidLocaleException
      */
-    public function getAllTranslations(string $locale, bool $useFallback): Translation
+    public function getAllTranslationsByLocale(string $locale, bool $useFallback): Translation
     {
         try {
             if ($this->translatorBag instanceof Translator) {
@@ -122,6 +136,52 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         $translation = new TranslationModel();
 
         return $translation->getDao()->getAvailableDomains();
+    }
+
+    public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection
+    {
+        $validLanguages = $this->adminResolver->getLanguages();
+
+        $list = $this->translationRepository->getTranslationList($domain);
+
+        $sortFilter = $parameter->getFilters()->getSortFilter();
+        $joins = [];
+        if (in_array($sortFilter->getKey(), $validLanguages, true)) {
+            $joins[] = $sortFilter->getKey();
+        }
+
+        foreach ($parameter->getFilters()->getColumnFilters() as $columnFilter) {
+            if (!in_array($columnFilter['key'], $validLanguages, true)) {
+                continue;
+            }
+            $joins[] = $columnFilter['key'];
+        }
+
+        $this->translationRepository->joinLanguageColumns($list, $joins, $domain);
+        $list->setLanguages($validLanguages);
+        $list = $this->listingFilter->applyFilters(
+            $this->filterMapper->getFilterParameters($parameter),
+            $list
+        );
+
+        $translations = [];
+        foreach ($list->getTranslations() as $translation) {
+            $translation = $this->translationsHydrator->hydrate(
+                $translation
+            );
+
+            $this->eventDispatcher->dispatch(
+                new TranslationsEvent($translation),
+                TranslationsEvent::EVENT_NAME
+            );
+
+            $translations[] = $translation;
+        }
+
+        return new Collection(
+            $list->count(),
+            $translations
+        );
     }
 
     private function getTranslatorBag(): TranslatorBagInterface
