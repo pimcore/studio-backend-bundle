@@ -88,8 +88,6 @@ final class TranslatorServiceTest extends Unit
         $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
 
-
-
         return new TranslatorService(
             $translator,
             $repository,
