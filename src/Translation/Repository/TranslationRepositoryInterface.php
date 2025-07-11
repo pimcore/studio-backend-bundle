@@ -25,6 +25,8 @@ interface TranslationRepositoryInterface
 {
     public function createTranslations(array $translationData): void;
 
+    public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing;
+
     /**
      * @param array<TranslationData> $translationData
      *
