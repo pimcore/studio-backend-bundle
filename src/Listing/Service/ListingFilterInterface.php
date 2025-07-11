@@ -20,6 +20,12 @@ interface ListingFilterInterface extends FilterServiceInterface
 {
     public const SERVICE_TYPE = 'listing_filter';
 
+    /**
+     * @template T
+     * @param T $listing
+     *
+     * @return T
+     */
     public function applyFilters(
         FilterParameter $parameters,
         mixed $listing

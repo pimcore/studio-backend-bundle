@@ -21,6 +21,8 @@ enum FilterType: string
     case DATE = 'date';
     case EQUALS = 'equals';
     case LIKE = 'like';
+    case TRANSLATION_LIKE = 'translationLike';
+
     case PAGE = 'page';
     case PAGE_SIZE = 'page.size';
     case PROPERTY_NAME = 'property.name';

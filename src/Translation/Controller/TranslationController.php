@@ -69,7 +69,7 @@ final class TranslationController extends AbstractApiController
     ): JsonResponse {
 
         if (empty($translation->getKeys())) {
-            return $this->jsonResponse($this->translatorService->getAllTranslations(
+            return $this->jsonResponse($this->translatorService->getAllTranslationsByLocale(
                 $translation->getLocale(),
                 $translation->useFallback()
             ));

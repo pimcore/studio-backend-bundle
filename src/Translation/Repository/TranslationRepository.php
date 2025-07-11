@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -29,23 +31,10 @@ use function in_array;
 final readonly class TranslationRepository implements TranslationRepositoryInterface
 {
     public function __construct(
+        private Connection $db,
         private AdminResolverInterface $adminResolver,
-    ) {
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAllTranslations(string $locale): array
+    )
     {
-        $validLanguages = $this->adminResolver->getLanguages();
-        $this->validateLocale($locale, $validLanguages);
-
-        $list = $this->getTranslationList();
-        $list->setLanguages($validLanguages);
-        $list->load();
-
-        return $list->getTranslations();
     }
 
     public function createTranslations(array $translationData): void
@@ -94,6 +83,49 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $translation->delete();
     }
 
+    private function getTableNameByDomain(string $domain): string
+    {
+        $translation = new Translation();
+        $translation->setDomain($domain);
+        return $translation->getDao()->getDatabaseTableName();
+    }
+
+    /**
+     * This joins the language by key to their own columns in the listing.
+     * This is useful for listing translations in the grid with filters and pagination.
+     */
+    public function joinLanguageColumns(Listing $listing, array $languages, string $domain): Listing
+    {
+        $db = $this->db;
+        $tableName = $this->getTableNameByDomain($domain);
+        $listing->onCreateQueryBuilder(
+            function (DoctrineQueryBuilder $select) use ($languages, $tableName, $db) {
+
+                $alreadyJoined = [];
+                foreach ($languages as $join) {
+                    if (in_array($join, $alreadyJoined)) {
+                        continue;
+                    }
+
+                    $select->addSelect($join . '.text AS ' . $join);
+                    $select->leftJoin(
+                        $tableName,
+                        $tableName,
+                        $join,
+                        '('
+                        . $join . '.key = ' . $tableName . '.key'
+                        . ' and ' . $join . '.language = ' . $db->quote($join)
+                        . ')'
+                    );
+                    $alreadyJoined[] = $join;
+                }
+            }
+        );
+
+        return $listing;
+    }
+
+
     private function createTranslationEntry(string $key, string $type, array $languages): void
     {
         $t = new Translation();
@@ -106,7 +138,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $t->save();
     }
 
-    private function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing
+    public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing
     {
         $list = new Translation\Listing();
         $list->setDomain($domain);

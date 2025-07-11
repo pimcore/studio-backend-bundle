@@ -23,6 +23,7 @@ final readonly class ListingFilter implements ListingFilterInterface
     ) {
     }
 
+
     public function applyFilters(
         FilterParameter $parameters,
         mixed $listing

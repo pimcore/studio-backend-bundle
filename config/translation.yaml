@@ -12,6 +12,13 @@ services:
     tags: [ 'controller.service_arguments' ]
 
   #
+  # Filters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Translation\ListingFilter\TranslationLikeFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
+
+  #
   # Services
   #
 
@@ -24,3 +31,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepository
+
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydrator

@@ -33,7 +33,7 @@ final class TranslatorServiceTest extends Unit
         $translatorService = $this->mockTranslatorService();
         $locale = 'en';
 
-        $translations = $translatorService->getAllTranslations($locale, true);
+        $translations = $translatorService->getAllTranslationsByLocale($locale, true);
 
         $this->assertEquals($locale, $translations->getLocale());
         $this->assertEmpty($translations->getKeys());
@@ -44,7 +44,7 @@ final class TranslatorServiceTest extends Unit
         $translatorService = $this->mockTranslatorService(false);
         $locale = 'en';
 
-        $translations = $translatorService->getAllTranslations($locale, true);
+        $translations = $translatorService->getAllTranslationsByLocale($locale, true);
 
         $this->assertEquals($locale, $translations->getLocale());
         $this->assertCount(count(PublicTranslations::PUBLIC_KEYS), $translations->getKeys());
