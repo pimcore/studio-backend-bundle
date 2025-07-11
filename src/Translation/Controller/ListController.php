@@ -62,7 +62,7 @@ final class ListController extends AbstractApiController
     )]
     #[CollectionRequestBody(
         columnFiltersExample: '[' .
-        '{"key":"de", "type":"like", "filterValue": "%text%"}'
+        '{"key":"de", "type":"translationLike", "filterValue": "%car%"}'
         . ']',
         sortFilterExample: '{"key":"de", "direction":"ASC"}'
     )]
