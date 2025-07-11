@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -32,8 +31,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 )]
 final class Translations implements AdditionalAttributesInterface
 {
-
     use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'Key of the translation', type: 'string', example: 'car')]
         private readonly string $key,

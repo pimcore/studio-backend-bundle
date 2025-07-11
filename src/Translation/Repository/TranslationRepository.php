@@ -33,8 +33,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     public function __construct(
         private Connection $db,
         private AdminResolverInterface $adminResolver,
-    )
-    {
+    ) {
     }
 
     public function createTranslations(array $translationData): void
@@ -87,6 +86,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     {
         $translation = new Translation();
         $translation->setDomain($domain);
+
         return $translation->getDao()->getDatabaseTableName();
     }
 
@@ -124,7 +124,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
         return $listing;
     }
-
 
     private function createTranslationEntry(string $key, string $type, array $languages): void
     {

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
-use Doctrine\DBAL\Connection;
 use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
@@ -35,7 +34,7 @@ use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
+use function in_array;
 
 /**
  * @internal
@@ -151,7 +150,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $joins[] = $sortFilter->getKey();
         }
 
-
         foreach ($parameter->getFilters()->getColumnFilters() as $columnFilter) {
             if (!in_array($columnFilter['key'], $validLanguages, true)) {
                 continue;
@@ -185,7 +183,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $translations
         );
     }
-
 
     private function getTranslatorBag(): TranslatorBagInterface
     {

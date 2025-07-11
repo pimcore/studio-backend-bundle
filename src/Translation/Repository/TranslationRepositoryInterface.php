@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\TranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
 
 /**

@@ -22,6 +22,7 @@ interface ListingFilterInterface extends FilterServiceInterface
 
     /**
      * @template T
+     *
      * @param T $listing
      *
      * @return T
