@@ -31,3 +31,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Repository\WebsiteSettingsRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Repository\WebsiteSettingsRepository
+
+
+  #
+  # Denormalizers
+  #
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Request\WebsiteSettingsUpdateDenormalizer:
+    tags: [ 'serializer.normalizer' ]
