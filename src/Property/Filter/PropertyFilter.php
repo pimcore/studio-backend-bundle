@@ -37,11 +37,7 @@ final readonly class PropertyFilter implements FilterInterface
         mixed $parameters,
         mixed $listing
     ): mixed {
-        if (!$listing instanceof PropertyListing) {
-            return $listing;
-        }
-
-        if (!$parameters instanceof FilterParameter) {
+        if (!$listing instanceof PropertyListing || !$parameters instanceof FilterParameter) {
             return $listing;
         }
 
@@ -51,30 +47,7 @@ final readonly class PropertyFilter implements FilterInterface
         /** @var ?ColumnFilter $type */
         $type = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_ELEMENT_TYPE->value);
 
-        $translator = $this->translator;
-
-        $listing->setFilter(static function (Predefined $predefined) use ($type, $filter, $translator) {
-
-            if (
-                $type &&
-                $type->getFilterValue() &&
-                !str_contains($predefined->getCtype(), $type->getFilterValue())) {
-                return false;
-            }
-
-            if ($filter && $filter->getFilterValue()) {
-                foreach ($predefined->getObjectVars() as $key => $value) {
-                    if ($value && in_array($key, self::SUPPORTED_FILTER_KEYS, true)) {
-                        $value = $key === 'name' ? $translator->trans($value, [], 'admin') : $value;
-                        if (stripos($value, $filter->getFilterValue()) !== false) {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        });
+        $listing->setFilter(fn(Predefined $predefined) => $this->shouldInclude($predefined, $filter, $type));
 
         return $listing;
     }
@@ -82,5 +55,29 @@ final readonly class PropertyFilter implements FilterInterface
     public function supports(mixed $listing): bool
     {
         return in_array(get_class($listing), self::SUPPORTED_LISTINGS, true);
+    }
+
+    private function shouldInclude(Predefined $predefined, ?ColumnFilter $filter, ?ColumnFilter $type): bool
+    {
+        $typeValue = $type?->getFilterValue();
+        if ($typeValue && !str_contains($predefined->getCtype(), $typeValue)) {
+            return false;
+        }
+
+        $filterValue = $filter?->getFilterValue();
+        if (!$filterValue) {
+            return true;
+        }
+
+        foreach ($predefined->getObjectVars() as $key => $value) {
+            if ($value && in_array($key, self::SUPPORTED_FILTER_KEYS, true)) {
+                $translated = $key === 'name' ? $this->translator->trans($value, [], 'admin') : $value;
+                if (stripos($translated, $filterValue) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
