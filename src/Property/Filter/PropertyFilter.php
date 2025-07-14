@@ -47,7 +47,7 @@ final readonly class PropertyFilter implements FilterInterface
         /** @var ?ColumnFilter $type */
         $type = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_ELEMENT_TYPE->value);
 
-        $listing->setFilter(fn(Predefined $predefined) => $this->shouldInclude($predefined, $filter, $type));
+        $listing->setFilter(fn (Predefined $predefined) => $this->shouldInclude($predefined, $filter, $type));
 
         return $listing;
     }
