@@ -25,7 +25,9 @@ use function in_array;
 
 final readonly class PropertyFilter implements FilterInterface
 {
-    private const SUPPORTED_LISTINGS = [PropertyListing::class];
+    private const array SUPPORTED_LISTINGS = [PropertyListing::class];
+
+    private const array SUPPORTED_FILTER_KEYS = ['name', 'description', 'key', 'type', 'data', 'config'];
 
     public function __construct(private TranslatorInterface $translator)
     {
@@ -43,15 +45,15 @@ final readonly class PropertyFilter implements FilterInterface
             return $listing;
         }
 
-        /** @var ?ColumnFilter $name */
-        $name = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_NAME->value);
+        /** @var ?ColumnFilter $filter */
+        $filter = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_FILTER->value);
 
         /** @var ?ColumnFilter $type */
         $type = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_ELEMENT_TYPE->value);
 
         $translator = $this->translator;
 
-        $listing->setFilter(static function (Predefined $predefined) use ($type, $name, $translator) {
+        $listing->setFilter(static function (Predefined $predefined) use ($type, $filter, $translator) {
 
             if (
                 $type &&
@@ -60,15 +62,18 @@ final readonly class PropertyFilter implements FilterInterface
                 return false;
             }
 
-            if (
-                $name &&
-                $name->getFilterValue() &&
-                stripos($translator->trans($predefined->getName(), [], 'admin'), $name->getFilterValue()) === false
-            ) {
-                return false;
+            if ($filter && $filter->getFilterValue()) {
+                foreach ($predefined->getObjectVars() as $key => $value) {
+                    if ($value && in_array($key, self::SUPPORTED_FILTER_KEYS, true)) {
+                        $value = $key === 'name' ? $translator->trans($value, [], 'admin') : $value;
+                        if (stripos($value, $filter->getFilterValue()) !== false) {
+                            return true;
+                        }
+                    }
+                }
             }
 
-            return true;
+            return false;
         });
 
         return $listing;
