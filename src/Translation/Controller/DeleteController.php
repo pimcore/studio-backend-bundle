@@ -73,8 +73,7 @@ final class DeleteController extends AbstractApiController
     public function deleteTranslation(
         string $key,
         #[MapQueryParameter] string $domain = TranslatorServiceInterface::DOMAIN
-    ): Response
-    {
+    ): Response {
         $this->translatorService->deleteTranslationByKey($key, $domain);
 
         return new Response();
