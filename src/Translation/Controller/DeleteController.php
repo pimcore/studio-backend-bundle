@@ -17,6 +17,7 @@ use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter as QueryStringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -55,6 +57,12 @@ final class DeleteController extends AbstractApiController
         tags: [Tags::Translation->name]
     )]
     #[StringParameter('key', 'some_key', description: 'Delete translations by matching key')]
+    #[QueryStringParameter(
+        name: 'domain',
+        example: 'studio',
+        description: 'Domain of the translation, defaults to "studio"',
+        required: false
+    )]
     #[SuccessResponse(
         description: 'translation_delete_by_key_success_description',
     )]
@@ -62,9 +70,12 @@ final class DeleteController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function deleteTranslation(string $key): Response
+    public function deleteTranslation(
+        string $key,
+        #[MapQueryParameter] string $domain = TranslatorServiceInterface::DOMAIN
+    ): Response
     {
-        $this->translatorService->deleteTranslationByKey($key);
+        $this->translatorService->deleteTranslationByKey($key, $domain);
 
         return new Response();
     }

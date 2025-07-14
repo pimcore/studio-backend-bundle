@@ -69,7 +69,7 @@ final class ListController extends AbstractApiController
     #[TextFieldParameter(
         name: 'domain',
         description: 'Domain to filter translations by',
-        example: 'de'
+        example: 'studio'
     )]
     #[SuccessResponse(
         description: 'translation_get_list_success_response',

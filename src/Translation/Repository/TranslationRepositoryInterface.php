@@ -34,7 +34,7 @@ interface TranslationRepositoryInterface
      */
     public function updateTranslations(array $translationData, string $locale): void;
 
-    public function deleteTranslation(string $key): void;
+    public function deleteTranslation(string $key, string $domain): void;
 
     public function joinLanguageColumns(
         Listing $listing,

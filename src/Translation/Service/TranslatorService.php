@@ -116,9 +116,9 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         return new Translation($locale, $translations);
     }
 
-    public function deleteTranslationByKey(string $key): void
+    public function deleteTranslationByKey(string $key, string $domain): void
     {
-        $this->translationRepository->deleteTranslation($key);
+        $this->translationRepository->deleteTranslation($key, $domain);
     }
 
     public function translate(string $message, array $params = []): string
