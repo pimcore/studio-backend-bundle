@@ -35,7 +35,7 @@ final class PropertiesParametersMapper implements FilterMapperInterface
         if ($parameters->getFilter() !== null) {
             $columnFilters[] = [
                 'key' => 'properties',
-                'type' => FilterType::PROPERTY_NAME->value,
+                'type' => FilterType::PROPERTY_FILTER->value,
                 'filterValue' => $parameters->getFilter(),
             ];
         }

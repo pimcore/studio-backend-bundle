@@ -25,7 +25,9 @@ use function in_array;
 
 final readonly class PropertyFilter implements FilterInterface
 {
-    private const SUPPORTED_LISTINGS = [PropertyListing::class];
+    private const array SUPPORTED_LISTINGS = [PropertyListing::class];
+
+    private const array SUPPORTED_FILTER_KEYS = ['name', 'description', 'key', 'type', 'data', 'config'];
 
     public function __construct(private TranslatorInterface $translator)
     {
@@ -35,41 +37,17 @@ final readonly class PropertyFilter implements FilterInterface
         mixed $parameters,
         mixed $listing
     ): mixed {
-        if (!$listing instanceof PropertyListing) {
+        if (!$listing instanceof PropertyListing || !$parameters instanceof FilterParameter) {
             return $listing;
         }
 
-        if (!$parameters instanceof FilterParameter) {
-            return $listing;
-        }
-
-        /** @var ?ColumnFilter $name */
-        $name = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_NAME->value);
+        /** @var ?ColumnFilter $filter */
+        $filter = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_FILTER->value);
 
         /** @var ?ColumnFilter $type */
         $type = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_ELEMENT_TYPE->value);
 
-        $translator = $this->translator;
-
-        $listing->setFilter(static function (Predefined $predefined) use ($type, $name, $translator) {
-
-            if (
-                $type &&
-                $type->getFilterValue() &&
-                !str_contains($predefined->getCtype(), $type->getFilterValue())) {
-                return false;
-            }
-
-            if (
-                $name &&
-                $name->getFilterValue() &&
-                stripos($translator->trans($predefined->getName(), [], 'admin'), $name->getFilterValue()) === false
-            ) {
-                return false;
-            }
-
-            return true;
-        });
+        $listing->setFilter(fn (Predefined $predefined) => $this->shouldInclude($predefined, $filter, $type));
 
         return $listing;
     }
@@ -77,5 +55,29 @@ final readonly class PropertyFilter implements FilterInterface
     public function supports(mixed $listing): bool
     {
         return in_array(get_class($listing), self::SUPPORTED_LISTINGS, true);
+    }
+
+    private function shouldInclude(Predefined $predefined, ?ColumnFilter $filter, ?ColumnFilter $type): bool
+    {
+        $typeValue = $type?->getFilterValue();
+        if ($typeValue && !str_contains($predefined->getCtype(), $typeValue)) {
+            return false;
+        }
+
+        $filterValue = $filter?->getFilterValue();
+        if (!$filterValue) {
+            return true;
+        }
+
+        foreach ($predefined->getObjectVars() as $key => $value) {
+            if ($value && in_array($key, self::SUPPORTED_FILTER_KEYS, true)) {
+                $translated = $key === 'name' ? $this->translator->trans($value, [], 'admin') : $value;
+                if (stripos($translated, $filterValue) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

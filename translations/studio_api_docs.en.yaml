@@ -683,7 +683,7 @@ property_get_collection_description: |
   Listing all the predefined properties that are currently stored in the system. <br>
   To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
   You can also created element type specific listings for this, to show in the context of the element. <br>
-  The <strong>filter</strong> query parameter is applied on the name of the property. <br>
+  The <strong>filter</strong> query parameter is applied on the string properties. <br>
   Keep in mind that the name is language specific.
 property_get_collection_for_element_by_type_and_id_description: |
   List all the saved properties of the element. <br>
