@@ -14,10 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Request;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpdate;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\ElementParameter;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpdate;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use function is_array;
+use function is_bool;
+use function is_string;
 
 final readonly class WebsiteSettingsUpdateDenormalizer implements DenormalizerInterface, NormalizerInterface
 {
