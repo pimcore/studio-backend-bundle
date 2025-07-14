@@ -24,13 +24,28 @@ use function is_string;
 
 final readonly class WebsiteSettingsUpdateDenormalizer implements DenormalizerInterface, NormalizerInterface
 {
-    public function supportsDenormalization($data, $type, $format = null): bool
-    {
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = []
+    ): bool {
         return $type === WebsiteSettingsUpdate::class;
     }
 
-    public function denormalize($data, $type, $format = null, array $context = []): WebsiteSettingsUpdate
+    public static function getSupportedTypes(?string $format): array
     {
+        return [
+            WebsiteSettingsUpdate::class => true,
+        ];
+    }
+
+    public function denormalize(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = []
+    ): WebsiteSettingsUpdate {
         $rawData = $data['data'] ?? null;
 
         if (is_array($rawData)) {
