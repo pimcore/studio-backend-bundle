@@ -22,6 +22,9 @@ use function is_array;
 use function is_bool;
 use function is_string;
 
+/**
+ * @internal
+ */
 final readonly class WebsiteSettingsUpdateDenormalizer implements DenormalizerInterface, NormalizerInterface
 {
     public function supportsDenormalization(
