@@ -33,7 +33,7 @@ final readonly class WebsiteSettingsUpdateDenormalizer implements DenormalizerIn
         return $type === WebsiteSettingsUpdate::class;
     }
 
-    public static function getSupportedTypes(?string $format): array
+    public function getSupportedTypes(?string $format): array
     {
         return [
             WebsiteSettingsUpdate::class => true,
@@ -65,7 +65,7 @@ final readonly class WebsiteSettingsUpdateDenormalizer implements DenormalizerIn
         );
     }
 
-    public function supportsNormalization(mixed $data, ?string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return false;
     }
