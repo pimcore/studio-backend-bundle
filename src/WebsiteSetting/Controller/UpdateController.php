@@ -74,7 +74,6 @@ final class UpdateController extends AbstractApiController
         int $id,
         #[MapRequestPayload] WebsiteSettingsUpdate $parameters
     ): JsonResponse {
-
         return $this->jsonResponse($this->websiteSettingsService->updateWebsiteSetting($id, $parameters));
     }
 }
