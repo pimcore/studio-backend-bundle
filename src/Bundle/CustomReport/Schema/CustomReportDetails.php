@@ -114,18 +114,13 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         private readonly ?string $pieColumn = null,
         #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
         private readonly ?string $pieLabelColumn = null,
-        #[Property(
-            description: 'X axis column names',
-            type: 'array',
-            items: new Items(type: 'string'),
-            example: '["attributesAvailable", "count(*)"]'
-        )]
+        #[Property(description: 'X axis column names', type: 'string', example: 'attributesAvailable')]
         private readonly ?string $xAxis = null,
         #[Property(
             description: 'Y axis column information',
             type: 'array',
             items: new Items(type: 'string'),
-            example: '["attributesAvailable"]'
+            example: '["attributesAvailable", "count(*)"]'
         )]
         private readonly ?array $yAxis = null,
     ) {
