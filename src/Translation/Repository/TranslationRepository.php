@@ -42,11 +42,16 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
         /** @var CreateTranslationData $translation */
         foreach ($translationData as $translation) {
-            if ($this->getTranslationByKey($translation->getKey()) !== null) {
+            if ($this->getTranslationByKey($translation->getKey(), $translation->getDomain()) !== null) {
                 continue;
             }
 
-            $this->createTranslationEntry($translation->getKey(), $translation->getType(), $languages);
+            $this->createTranslationEntry(
+                $translation->getKey(),
+                $translation->getType(),
+                $languages,
+                $translation->getDomain()
+            );
         }
     }
 
@@ -60,7 +65,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
         /** @var TranslationData $translation */
         foreach ($translationData as $translation) {
-            $entry = $this->getTranslationByKey($translation->getKey());
+            $entry = $this->getTranslationByKey($translation->getKey(), $translation->getDomain());
             if ($entry === null) {
                 throw new NotFoundException('translation', $translation->getKey(), 'key');
             }
@@ -72,9 +77,9 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         }
     }
 
-    public function deleteTranslation(string $key): void
+    public function deleteTranslation(string $key, string $domain): void
     {
-        $translation = $this->getTranslationByKey($key);
+        $translation = $this->getTranslationByKey($key, $domain);
         if ($translation === null) {
             throw new NotFoundException('translation', $key, 'key');
         }
@@ -125,10 +130,10 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $listing;
     }
 
-    private function createTranslationEntry(string $key, string $type, array $languages): void
+    private function createTranslationEntry(string $key, string $type, array $languages, string $domain): void
     {
         $t = new Translation();
-        $t->setDomain(TranslatorServiceInterface::DOMAIN);
+        $t->setDomain($domain);
         $t->setKey($key);
         $t->setType($type);
         $t->setCreationDate(time());
@@ -171,9 +176,9 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $keys;
     }
 
-    private function getTranslationByKey(string $key): ?Translation
+    private function getTranslationByKey(string $key, string $domain): ?Translation
     {
-        $list = $this->getTranslationList();
+        $list = $this->getTranslationList($domain);
         $list->setLimit(1);
         $list->addConditionParam('`key` = ?', $key);
 

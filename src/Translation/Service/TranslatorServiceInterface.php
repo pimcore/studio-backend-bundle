@@ -46,7 +46,7 @@ interface TranslatorServiceInterface
      */
     public function getTranslationsForKeys(string $locale, array $keys): Translation;
 
-    public function deleteTranslationByKey(string $key): void;
+    public function deleteTranslationByKey(string $key, string $domain): void;
 
     public function translate(string $message, array $params = []): string;
 

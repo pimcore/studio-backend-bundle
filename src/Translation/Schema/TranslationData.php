@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 
 /**
  * @internal
@@ -35,6 +36,8 @@ final readonly class TranslationData
         private string $translation,
         #[Property(description: 'Type', type: 'string', example: 'simple')]
         private string $type = 'simple',
+        #[Property(description: 'Domain', type: 'domain', example: 'studio')]
+        private string $domain = TranslatorServiceInterface::DOMAIN
     ) {
     }
 
@@ -51,5 +54,10 @@ final readonly class TranslationData
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function getDomain(): string
+    {
+        return $this->domain;
     }
 }
