@@ -33,7 +33,6 @@ final class ContextPermissionService implements ContextPermissionsServiceInterfa
         'maintenance' => true,
         'notesEvents' => true,
         'recycle_bin' => true,
-        'redirects' => true,
         'systemTools_hidden' => false,
         'systemTools_requirements' => true,
         'translations' => true,

@@ -42,6 +42,12 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepository
 
   #
+  # Event Subscribers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\EventSubscriber\StudioContextPermissionsSubscriber: ~
+
+  #
   # Filters
   #
 
