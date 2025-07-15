@@ -189,6 +189,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $translations[] = $translation;
         }
 
+        dd($list->getQueryBuilder()->getSQL());
+
         return new Collection(
             $list->count(),
             $translations
