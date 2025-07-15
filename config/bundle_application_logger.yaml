@@ -31,3 +31,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Repository\LogRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Repository\LogRepository
+
+  #
+  # Event Subscribers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\EventSubscriber\StudioContextPermissionsSubscriber: ~
