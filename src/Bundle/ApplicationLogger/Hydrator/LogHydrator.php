@@ -30,8 +30,7 @@ final readonly class LogHydrator implements LogHydratorInterface
         private ElementDataServiceInterface $elementDataService,
         private ElementServiceInterface $elementService,
         private SecurityServiceInterface $securityService,
-    )
-    {
+    ) {
     }
 
     public function hydrate(array $log): LogEntry
