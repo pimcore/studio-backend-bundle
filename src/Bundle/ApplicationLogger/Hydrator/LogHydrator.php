@@ -14,13 +14,26 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Hydrator;
 
 use Carbon\Carbon;
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Schema\LogEntry;
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
 /**
  * @internal
  */
 final readonly class LogHydrator implements LogHydratorInterface
 {
+    public function __construct(
+        private ElementDataServiceInterface $elementDataService,
+        private ElementServiceInterface $elementService,
+        private SecurityServiceInterface $securityService,
+    )
+    {
+    }
+
     public function hydrate(array $log): LogEntry
     {
         $fileObject = null;
@@ -37,10 +50,24 @@ final readonly class LogHydrator implements LogHydratorInterface
             pid: $log['pid'],
             message: $log['message'],
             fileObject: $fileObject,
-            relatedObjectId: $log['relatedobject'],
-            relatedObjectType: $log['relatedobjecttype'],
+            relatedElementData: $this->getElementData($log),
             component: $log['component'],
             source: $log['source']
         );
+    }
+
+    private function getElementData(array $log): ?RelatedElementData
+    {
+        try {
+            $element = $this->elementService->getAllowedElementById(
+                $log['relatedobjecttype'],
+                $log['relatedobject'],
+                $this->securityService->getCurrentUser()
+            );
+        } catch (Exception) {
+            return null;
+        }
+
+        return $this->elementDataService->getRelatedElementData($element);
     }
 }

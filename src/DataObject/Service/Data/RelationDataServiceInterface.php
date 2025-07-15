@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\RelatedElementData;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
@@ -30,7 +30,7 @@ interface RelationDataServiceInterface
     /**
      * @param ElementInterface[] $relations
      *
-     * @return RelationData[]
+     * @return RelatedElementData[]
      */
     public function getRelationElementsData(array $relations): array;
 

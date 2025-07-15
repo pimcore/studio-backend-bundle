@@ -15,19 +15,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
-use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use function is_array;
 
@@ -36,10 +35,10 @@ use function is_array;
  */
 final readonly class RelationDataService implements RelationDataServiceInterface
 {
-    use ElementProviderTrait;
     use ValidateObjectDataTrait;
 
     public function __construct(
+        private ElementDataServiceInterface $elementDataService,
         private PatchServiceInterface $patchService
     ) {
     }
@@ -47,14 +46,14 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     /**
      * @param ElementInterface[] $relations
      *
-     * @return RelationData[]
+     * @return RelatedElementData[]
      */
     public function getRelationElementsData(array $relations): array
     {
         $data = [];
 
         foreach ($relations as $relation) {
-            $data[] = $this->getRelationElementData($relation);
+            $data[] = $this->elementDataService->getRelatedElementData($relation);
         }
 
         return $data;
@@ -64,7 +63,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     {
 
         return [
-            'element' => $this->getRelationElementData($relation->getElement()),
+            'element' => $this->elementDataService->getRelatedElementData($relation->getElement()),
             'fieldName' => $relation->getFieldname(),
             'columns' => $relation->getColumns(),
             'data' => $relation->getData(),
@@ -102,35 +101,6 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         );
     }
 
-    private function getRelationElementData(ElementInterface $relation): RelationData
-    {
-        return new RelationData(
-            $relation->getId(),
-            $this->getElementType($relation, true),
-            $this->getSubType($relation),
-            $relation->getRealFullPath(),
-            $this->getPublished($relation)
-        );
-    }
-
-    private function getSubType(ElementInterface $element): string
-    {
-        if ($element instanceof Concrete) {
-            return $element->getClassName();
-        }
-
-        return $element->getType();
-    }
-
-    private function getPublished(ElementInterface $element): ?bool
-    {
-        if ($element instanceof Concrete || $element instanceof Document) {
-            return $element->getPublished();
-        }
-
-        return null;
-    }
-
     private function isPatchAction(?string $action = null): bool
     {
         return !($action === null || $action === PatcherActions::REPLACE->value);
@@ -156,7 +126,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         return $existingData;
     }
 
-    private function getExistingElementData(RelationData $relationData): array
+    private function getExistingElementData(RelatedElementData $relationData): array
     {
         return [
             FieldKeys::ID_KEY->value => $relationData->getId(),

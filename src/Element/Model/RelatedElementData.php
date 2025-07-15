@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Model;
 
 /**
  * @internal
  */
-final readonly class RelationData
+final readonly class RelatedElementData
 {
     public function __construct(
         private int $id,

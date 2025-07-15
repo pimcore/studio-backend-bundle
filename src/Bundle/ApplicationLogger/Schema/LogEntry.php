@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -44,10 +45,8 @@ final class LogEntry implements AdditionalAttributesInterface
         private readonly ?string $message = null,
         #[Property(description: 'File object path', type: 'string', example: 'path/to/file.txt')]
         private readonly ?string $fileObject = null,
-        #[Property(description: 'ID of related object', type: 'integer', example: 1)]
-        private readonly ?int $relatedObjectId = null,
-        #[Property(description: 'Type of related object', type: 'string', example: 'asset')]
-        private readonly ?string $relatedObjectType = null,
+        #[Property(ref: RelatedElementData::class, description: 'Data of related element', type: 'object')]
+        private readonly ?RelatedElementData $relatedElementData = null,
         #[Property(description: 'Component', type: 'string', example: 'SomeComponent::Class')]
         private readonly ?string $component = null,
         #[Property(description: 'Source', type: 'string', example: 'Pimcore\Bundle')]
@@ -86,14 +85,9 @@ final class LogEntry implements AdditionalAttributesInterface
         return $this->fileObject;
     }
 
-    public function getRelatedObjectId(): ?int
+    public function getRelatedElementData(): ?RelatedElementData
     {
-        return $this->relatedObjectId;
-    }
-
-    public function getRelatedObjectType(): ?string
-    {
-        return $this->relatedObjectType;
+        return $this->relatedElementData;
     }
 
     public function getComponent(): ?string
