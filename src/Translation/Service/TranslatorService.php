@@ -151,13 +151,23 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         }
 
         foreach ($parameter->getFilters()->getColumnFilters() as $columnFilter) {
-            if (!in_array($columnFilter['key'], $validLanguages, true)) {
+            if (
+                !array_key_exists('key', $columnFilter) ||
+                !in_array($columnFilter['key'], $validLanguages, true)
+            ) {
                 continue;
             }
             $joins[] = $columnFilter['key'];
         }
 
         $this->translationRepository->joinLanguageColumns($list, $joins, $domain);
+
+        $searchFilter = $parameter->getFilters()->getSimpleColumnFilterByType('search');
+
+        if ($searchFilter) {
+            $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
+        }
+
         $list->setLanguages($validLanguages);
         $list = $this->listingFilter->applyFilters(
             $this->filterMapper->getFilterParameters($parameter),

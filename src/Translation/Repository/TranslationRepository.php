@@ -130,6 +130,18 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $listing;
     }
 
+    public function addSearchCondition(Listing $listing, string $searchTerm): Listing
+    {
+        $tableName = $this->getTableNameByDomain($listing->getDomain());
+        $listing->addConditionParam(
+            '(lower(' . $tableName . '.key) LIKE :filterTerm OR lower(' . $tableName . '.text) LIKE :filterTerm)',
+            ['filterTerm' => '%' . mb_strtolower($searchTerm) . '%']
+        );
+
+        return  $listing;
+    }
+
+
     private function createTranslationEntry(string $key, string $type, array $languages, string $domain): void
     {
         $t = new Translation();
