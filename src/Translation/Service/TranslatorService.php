@@ -17,6 +17,7 @@ use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -34,6 +35,7 @@ use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_key_exists;
 use function in_array;
 
 /**
@@ -151,13 +153,23 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         }
 
         foreach ($parameter->getFilters()->getColumnFilters() as $columnFilter) {
-            if (!in_array($columnFilter['key'], $validLanguages, true)) {
+            if (
+                !array_key_exists('key', $columnFilter) ||
+                !in_array($columnFilter['key'], $validLanguages, true)
+            ) {
                 continue;
             }
             $joins[] = $columnFilter['key'];
         }
 
         $this->translationRepository->joinLanguageColumns($list, $joins, $domain);
+
+        $searchFilter = $parameter->getFilters()->getSimpleColumnFilterByType(FilterType::SEARCH->value);
+
+        if ($searchFilter) {
+            $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
+        }
+
         $list->setLanguages($validLanguages);
         $list = $this->listingFilter->applyFilters(
             $this->filterMapper->getFilterParameters($parameter),

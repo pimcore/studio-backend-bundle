@@ -26,4 +26,5 @@ enum FilterType: string
     case PAGE_SIZE = 'page.size';
     case PROPERTY_FILTER = 'property.filter';
     case PROPERTY_ELEMENT_TYPE = 'property.element.type';
+    case SEARCH = 'search';
 }

@@ -42,6 +42,8 @@ interface TranslationRepositoryInterface
         string $domain
     ): Listing;
 
+    public function addSearchCondition(Listing $listing, string $searchTerm): Listing;
+
     /**
      * @return array<int, string>
      */
