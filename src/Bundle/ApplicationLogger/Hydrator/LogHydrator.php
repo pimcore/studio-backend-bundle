@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Hydrator;
 use Carbon\Carbon;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Schema\LogEntry;
-use Pimcore\Bundle\StudioBackendBundle\Element\Model\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -58,6 +58,10 @@ final readonly class LogHydrator implements LogHydratorInterface
 
     private function getElementData(array $log): ?RelatedElementData
     {
+        if (empty($log['relatedobject']) || empty($log['relatedobjecttype'])) {
+            return null;
+        }
+
         try {
             $element = $this->elementService->getAllowedElementById(
                 $log['relatedobjecttype'],

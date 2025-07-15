@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Model\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Model\Element\ElementInterface;
 
 interface ElementDataServiceInterface

@@ -11,18 +11,32 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Model;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Schema;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
+#[Schema(
+    schema: 'RelatedElementData',
+    title: 'RelatedElementData',
+    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished'],
+    type: 'object'
+)]
 final readonly class RelatedElementData
 {
     public function __construct(
+        #[Property(description: 'ID', type: 'integer', example: 83)]
         private int $id,
+        #[Property(description: 'Type of the element', type: 'string', example: 'object')]
         private string $type,
+        #[Property(description: 'Subtype of the element', type: 'string', example: 'Product')]
         private string $subtype,
+        #[Property(description: 'Full path of the element', type: 'string', example: '/path/to/element')]
         private string $fullPath,
+        #[Property(description: 'Is the element published', type: 'boolean', example: true)]
         private ?bool $isPublished = null,
     ) {
     }
