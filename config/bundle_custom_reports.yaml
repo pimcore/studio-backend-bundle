@@ -53,6 +53,12 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCollectionHandler: ~
 
+  #
+  # Event Subscribers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\EventSubscriber\StudioContextPermissionsSubscriber: ~
+
 #
 # Execution Engine
 #
