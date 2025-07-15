@@ -34,6 +34,7 @@ use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_key_exists;
 use function in_array;
 
 /**

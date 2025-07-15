@@ -141,7 +141,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return  $listing;
     }
 
-
     private function createTranslationEntry(string $key, string $type, array $languages, string $domain): void
     {
         $t = new Translation();
