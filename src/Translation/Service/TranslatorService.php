@@ -17,6 +17,7 @@ use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -163,7 +164,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
         $this->translationRepository->joinLanguageColumns($list, $joins, $domain);
 
-        $searchFilter = $parameter->getFilters()->getSimpleColumnFilterByType('search');
+        $searchFilter = $parameter->getFilters()->getSimpleColumnFilterByType(FilterType::SEARCH->value);
 
         if ($searchFilter) {
             $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
