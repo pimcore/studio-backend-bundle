@@ -29,7 +29,7 @@ final readonly class CustomReportColumnConfiguration
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'attributesAvailable')]
         private string $name,
-        #[Property(description: 'Display name of column', type: 'bool', example: true)]
+        #[Property(description: 'Display column', type: 'bool', example: true)]
         private bool $display,
         #[Property(description: 'Whether the column should be included in exports', type: 'bool', example: true)]
         private bool $export,
@@ -39,6 +39,10 @@ final readonly class CustomReportColumnConfiguration
         private string $label,
         #[Property(description: 'Id', type: 'string', example: '401-3')]
         private string $id,
+        #[Property(description: 'Display type of the column', type: 'string', example: 'text')]
+        private ?string $displayType = null,
+        #[Property(description: 'Type of the filter', type: 'string', example: 'numeric')]
+        private ?string $filterType = null,
         #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter')]
         private ?string $filterDrilldown = null,
     ) {
@@ -53,6 +57,11 @@ final readonly class CustomReportColumnConfiguration
     public function getDisplay(): bool
     {
         return $this->display;
+    }
+
+    public function getDisplayType(): ?string
+    {
+        return $this->displayType;
     }
 
     public function getExport(): bool
@@ -73,6 +82,11 @@ final readonly class CustomReportColumnConfiguration
     public function getId(): string
     {
         return $this->id;
+    }
+
+    public function getFilterType(): ?string
+    {
+        return $this->filterType;
     }
 
     public function getFilterDrilldown(): ?string
