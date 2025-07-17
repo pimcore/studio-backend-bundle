@@ -102,6 +102,8 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
                 $column['order'] ?? '',
                 $column['label'] ?? '',
                 $column['id'] ?? '',
+                $column['displayType'] ?? null,
+                $column['filter'] ?? null,
                 $column['filter_drilldown'] ?? null
             );
         }
