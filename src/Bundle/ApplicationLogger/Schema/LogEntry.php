@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'Bundle Application Logger Log Entry',
     required: [
         'id', 'priority', 'date', 'pid', 'message',
-        'fileObject', 'relatedObjectId', 'relatedObjectType', 'component', 'source',
+        'fileObject', 'relatedElementData', 'component', 'source',
     ],
     type: 'object'
 )]
