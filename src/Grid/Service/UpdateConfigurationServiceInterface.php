@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -31,7 +32,7 @@ interface UpdateConfigurationServiceInterface
     /**
      * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
-    public function updateDataObjectGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void;
+    public function updateDataObjectGridConfigurationById(DataObjectConfiguration $configurationParams, int $id): void;
 
     /**
      * @throws NotFoundException
