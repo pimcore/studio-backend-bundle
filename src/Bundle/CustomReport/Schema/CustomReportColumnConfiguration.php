@@ -37,8 +37,12 @@ final readonly class CustomReportColumnConfiguration
         private bool $order,
         #[Property(description: 'Label/display name of column', type: 'string', example: 'Attributes')]
         private string $label,
+        #[Property(description: 'Action of the column', type: 'string', example: 'openObject')]
+        private string $action,
         #[Property(description: 'Id', type: 'string', example: '401-3')]
         private string $id,
+        #[Property(description: 'Width of the column', type: 'integer', example: 200)]
+        private ?int $width = null,
         #[Property(description: 'Display type of the column', type: 'string', example: 'text')]
         private ?string $displayType = null,
         #[Property(description: 'Type of the filter', type: 'string', example: 'numeric')]
@@ -79,9 +83,19 @@ final readonly class CustomReportColumnConfiguration
         return $this->label;
     }
 
+    public function getAction(): string
+    {
+        return $this->action;
+    }
+
     public function getId(): string
     {
         return $this->id;
+    }
+
+    public function getWidth(): ?int
+    {
+        return $this->width;
     }
 
     public function getFilterType(): ?string
