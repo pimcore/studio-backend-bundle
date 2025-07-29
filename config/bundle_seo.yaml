@@ -15,6 +15,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\FilterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\FilterService
+
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsService
 

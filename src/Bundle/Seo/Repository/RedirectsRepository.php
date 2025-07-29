@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository;
 
 use Pimcore\Bundle\SeoBundle\Model\Redirect;
 use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 
@@ -25,7 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 final readonly class RedirectsRepository implements RedirectsRepositoryInterface
 {
     public function __construct(
-        private ListingFilterInterface $listingFilter
+        private FilterServiceInterface $filterService,
+        private ListingFilterInterface $listingFilter,
     ) {
 
     }
@@ -34,6 +37,7 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
     {
         $listing = new Listing();
         if ($parameters !== null) {
+            $this->applySearchCondition($listing, $parameters);
             $this->listingFilter->applyFilters($parameters, $listing);
         }
 
@@ -51,5 +55,30 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
         }
 
         return $redirect;
+    }
+
+    private function applySearchCondition(Listing $listing, FilterParameter $parameters): void
+    {
+        $searchFilter = $parameters->getSimpleColumnFilterByType(FilterType::SEARCH->value);
+        if (!$searchFilter) {
+            return;
+        }
+
+        $this->addSearchCondition($listing, $searchFilter->getFilterValue());
+    }
+
+    private function addSearchCondition(Listing $listing, mixed $searchTerm): void
+    {
+        if (is_numeric($searchTerm)) {
+            $listing->setCondition('id = ?', [$searchTerm]);
+
+            return;
+        }
+
+        if (!preg_match('@^https?://@', $searchTerm)) {
+            return;
+        }
+
+        $this->filterService->searchByRequest($listing, $searchTerm);
     }
 }
