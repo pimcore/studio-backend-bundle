@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
+use function is_int;
 
 /**
  * @internal
@@ -104,7 +105,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
                 $column['label'] ?? '',
                 $column['columnAction'] ?? '',
                 $column['id'] ?? '',
-                    is_int($width) ? $width : null,
+                is_int($width) ? $width : null,
                 $column['displayType'] ?? null,
                 $column['filter'] ?? null,
                 $column['filter_drilldown'] ?? null
