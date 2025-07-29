@@ -13,15 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Filter;
 
-use Exception;
 use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing as RedirectListing;
-use Pimcore\Bundle\SeoBundle\Redirect\RedirectHandler;
-use Pimcore\Bundle\StaticResolverBundle\Models\Site\SiteResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @internal
