@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
  */
 interface ListingFilterInterface extends FilterServiceInterface
 {
-    public const SERVICE_TYPE = 'listing_filter';
+    public const string SERVICE_TYPE = 'listing_filter';
 
     /**
      * @param T $listing
