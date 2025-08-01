@@ -30,16 +30,19 @@ final readonly class EqualsFilter implements FilterInterface
             return $listing;
         }
 
-        $equalsColumn = $parameters->getFirstColumnFilterByType(FilterType::EQUALS->value);
+        $equalsColumns = iterator_to_array($parameters->getColumnFilterByType(FilterType::EQUALS->value));
 
-        if ($equalsColumn === null) {
+        if (empty($equalsColumns)) {
             return $listing;
         }
 
-        $listing->addConditionParam(
-            $equalsColumn->getKey() . ' = :' . $equalsColumn->getKey(),
-            [$equalsColumn->getKey() => $equalsColumn->getFilterValue()]
-        );
+        foreach ($equalsColumns as $equalsColumn) {
+            $columnName = $equalsColumn->getKey();
+            $listing->addConditionParam(
+                '`' . $columnName . '` = :' . $columnName,
+                [$columnName => $equalsColumn->getFilterValue()]
+            );
+        }
 
         return $listing;
     }

@@ -89,6 +89,5 @@ final class CollectionParametersMapper implements FilterMapperInterface
             'type' => FilterType::PAGE_SIZE->value,
             'filterValue' => $pageSize,
         ];
-
     }
 }

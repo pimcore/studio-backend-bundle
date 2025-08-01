@@ -17,9 +17,8 @@ enum JobSteps: string
     case ELEMENT_PATCHING = 'studio_ee_job_step_element_patching';
     case ELEMENT_FOLDER_PATCHING = 'studio_ee_job_step_folder_patching';
     case ELEMENT_REWRITE_REFERENCE = 'studio_ee_job_step_element_rewrite_reference';
-    case ELEMENT_OBJECT_DELETION = 'studio_ee_job_step_element_deletion';
     case ELEMENT_RECYCLING = 'studio_ee_job_step_element_recycling';
-    case ELEMENT_DELETION = 'studio_ee_job_step_asset_deletion';
+    case ELEMENT_DELETION = 'studio_ee_job_step_element_deletion';
     case ELEMENT_BATCH_TAG_ASSIGN = 'studio_ee_job_step_batch_tag_assign';
     case ELEMENT_BATCH_TAG_REPLACE = 'studio_ee_job_step_batch_tag_replace';
 }
