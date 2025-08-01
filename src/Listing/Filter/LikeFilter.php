@@ -30,16 +30,19 @@ final readonly class LikeFilter implements FilterInterface
             return $listing;
         }
 
-        $equalsColumn = $parameters->getFirstColumnFilterByType(FilterType::LIKE->value);
+        $likeColumns = iterator_to_array($parameters->getColumnFilterByType(FilterType::LIKE->value));
 
-        if ($equalsColumn === null) {
+        if (empty($likeColumns)) {
             return $listing;
         }
 
-        $listing->addConditionParam(
-            $equalsColumn->getKey() . ' LIKE :' . $equalsColumn->getKey(),
-            [$equalsColumn->getKey() => "%{$equalsColumn->getFilterValue()}%"]
-        );
+        foreach ($likeColumns as $likeColumn) {
+            $columnName = $likeColumn->getKey();
+            $listing->addConditionParam(
+                '`' . $columnName . '` = :' . $columnName,
+                [$columnName => $likeColumn->getFilterValue()]
+            );
+        }
 
         return $listing;
     }
