@@ -107,8 +107,8 @@ final readonly class IconService implements IconServiceInterface
             DocumentTypes::EMAIL->value => 'email',
             DocumentTypes::HARDLINK->value => 'hardlink',
             ElementTypes::TYPE_FOLDER => 'folder',
-            DocumentTypes::LINK->value => 'link',
-            DocumentTypes::PAGE->value => 'page',
+            DocumentTypes::LINK->value => 'document-link',
+            DocumentTypes::PAGE->value => 'document',
             DocumentTypes::SNIPPET->value => 'snippet',
             default => self::DEFAULT_ICON
         };
