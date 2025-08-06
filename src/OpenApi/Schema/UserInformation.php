@@ -33,7 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'id', 'username', 'email', 'firstname', 'lastname', 'permissions', 'isAdmin', 'classes', 'docTypes',
         'language', 'dateTimeLocale', 'welcomeScreen', 'memorizeTabs', 'hasImage', 'contentLanguages',
         'keyBindings', 'activePerspective', 'perspectives', 'allowedLanguagesForEditingWebsiteTranslations',
-        'allowedLanguagesForViewingWebsiteTranslations'
+        'allowedLanguagesForViewingWebsiteTranslations',
     ],
     type: 'object'
 )]
