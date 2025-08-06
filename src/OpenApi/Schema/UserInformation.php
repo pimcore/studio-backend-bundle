@@ -87,6 +87,18 @@ final class UserInformation implements AdditionalAttributesInterface
             example: ['de', 'en']
         )]
         private readonly array $contentLanguages,
+        #[Property(
+            description: 'List of valid website Languages to edit.',
+            type: 'object',
+            example: ['key' => 'de', 'display' => 'Deutsch']
+        )]
+        private readonly array $allowedLanguagesForEditingWebsiteTranslations,
+        #[Property(
+            description: 'List of valid website Languages to view.',
+            type: 'object',
+            example: ['key' => 'de', 'display' => 'Deutsch']
+        )]
+        private readonly array $allowedLanguagesForViewingWebsiteTranslations,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
         private readonly array $keyBindings,
         #[Property(
@@ -212,5 +224,15 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getPerspectives(): array
     {
         return $this->perspectives;
+    }
+
+    public function getAllowedLanguagesForEditingWebsiteTranslations(): array
+    {
+        return $this->allowedLanguagesForEditingWebsiteTranslations;
+    }
+
+    public function getAllowedLanguagesForViewingWebsiteTranslations(): array
+    {
+        return $this->allowedLanguagesForViewingWebsiteTranslations;
     }
 }
