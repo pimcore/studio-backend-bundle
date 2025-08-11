@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use TypeError;
 use function is_string;
@@ -39,6 +40,8 @@ use function sprintf;
  */
 final readonly class CustomReportService implements CustomReportServiceInterface
 {
+    use ValidateConfigurationTrait;
+
     private const string VALUE_KEY = 'value';
 
     public function __construct(
