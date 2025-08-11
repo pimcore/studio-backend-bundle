@@ -50,8 +50,8 @@ final readonly class AdapterService implements AdapterServiceInterface
     public function getAdapter(Config $report): CustomReportAdapterInterface
     {
         $configuration = $report->getDataSourceConfig();
-        if (!$configuration instanceof stdClass) {
-            throw new NotFoundException('Datasource', $report->getName(), 'name');
+        if ($configuration === null) {
+            $configuration = new stdClass();
         }
 
         $type = $configuration->type ?? 'sql';

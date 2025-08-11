@@ -1029,6 +1029,12 @@ custom_reports_config_add_summary: Add a new custom reports configuration
 custom_reports_config_add_success_response: Successfully added custom report configuration
 custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
 custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
+custom_reports_config_update_description: |
+  Update an existing custom reports configuration with the provided name and parameters. <br>
+  The <strong>{name}</strong> must be a name of an existing custom report. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+custom_reports_config_update_summary: Update an existing custom reports configuration
+custom_reports_config_update_success_response: Successfully updated custom report configuration
 custom_reports_get_tree_success_response: Get all reports for the current user to display in configuration tree.
 custom_reports_get_tree_description: Get all reports for the current user to display in tree.
 custom_reports_get_tree_summary: All reports for the current user to display in tree.
