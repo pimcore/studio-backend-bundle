@@ -87,7 +87,7 @@ final readonly class CustomReportUpdate
                     'orderby' => '',
                     'orderbydir' => null,
                     'type' => 'sql',
-                ]
+                ],
             ]
         )]
         private array $dataSourceConfig = [],
