@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\Drill
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -103,6 +104,17 @@ final readonly class CustomReportService implements CustomReportServiceInterface
             );
         }
         $config = $this->customReportRepository->create($configName);
+
+        return $this->customReportHydrator->extractReportDetails($config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails
+    {
+        $customReport = $this->getCustomReportByName($name);
+        $config = $this->customReportRepository->update($customReport, $parameters);
 
         return $this->customReportHydrator->extractReportDetails($config);
     }
