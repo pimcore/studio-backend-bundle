@@ -96,6 +96,7 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
     {
         try {
             $this->loadByName($name);
+
             return true;
         } catch (NotFoundException) {
             return false;
