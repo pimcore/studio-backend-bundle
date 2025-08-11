@@ -18,6 +18,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\CustomReportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\User;
 
@@ -70,5 +71,34 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
         }
 
         return $report;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create(string $name): Config
+    {
+        $config = new Config();
+        if (!$config->isWriteable()) {
+            throw new NotWriteableException(
+                'create',
+                'Cannot create new custom report configuration: repository is not writeable.',
+            );
+        }
+
+        $config->setName($name);
+        $config->save();
+
+        return $config;
+    }
+
+    public function exists(string $name): bool
+    {
+        try {
+            $this->loadByName($name);
+            return true;
+        } catch (NotFoundException) {
+            return false;
+        }
     }
 }

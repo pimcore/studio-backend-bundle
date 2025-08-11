@@ -56,11 +56,11 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
         return new CustomReportDetails(
             $report->getName(),
             $report->getSql(),
-            $report->getDataSourceConfig(),
             $this->getCustomReportColumnConfiguration(
                 $report->getColumnConfiguration()
             ),
             $report->getNiceName(),
+            $report->getGroup(),
             $report->getGroupIconClass(),
             $report->getIconClass(),
             $report->getMenuShortcut(),
@@ -72,6 +72,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $report->getSharedRoleNames(),
             $report->getShareGlobally(),
             $report->isWriteable(),
+            $report->getDataSourceConfig(),
             $report->getPieColumn(),
             $report->getPieLabelColumn(),
             $report->getXAxis(),

@@ -60,12 +60,6 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         #[Property(description: 'Sql', type: 'string', example: '')]
         private readonly string $sql,
         #[Property(
-            description: 'Configuration for data source. Content of array depends on selected adapter/data source',
-            type: 'object',
-            example: []
-        )]
-        private readonly stdClass $dataSourceConfig,
-        #[Property(
             description: 'Configuration for columns to be displayed in report',
             type: 'array',
             items: new Items(CustomReportColumnConfiguration::class)
@@ -74,6 +68,8 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         private readonly array $columnConfigurations,
         #[Property(description: 'Label/nice name of report', type: 'string', example: 'Attributes')]
         private readonly string $niceName,
+        #[Property(description: 'Group of the report', type: 'string', example: 'My Reports')]
+        private readonly string $group,
         #[Property(description: 'Group icon class', type: 'string', example: 'pimcore_group_icon_attributes')]
         private readonly string $groupIconClass,
         #[Property(description: 'Icon class', type: 'string', example: 'pimcore_icon_attributes')]
@@ -110,6 +106,12 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         private readonly bool $sharedGlobally,
         #[Property(description: 'Whether the report is writeable', type: 'bool', example: true)]
         private readonly bool $writeable,
+        #[Property(
+            description: 'Configuration for data source. Content of array depends on selected adapter/data source',
+            type: 'object',
+            example: []
+        )]
+        private readonly ?stdClass $dataSourceConfig = null,
         #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)')]
         private readonly ?string $pieColumn = null,
         #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
@@ -137,7 +139,7 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         return $this->sql;
     }
 
-    public function getDataSourceConfig(): stdClass
+    public function getDataSourceConfig(): ?stdClass
     {
         return $this->dataSourceConfig;
     }
@@ -155,6 +157,11 @@ final class CustomReportDetails implements AdditionalAttributesInterface
     public function getNiceName(): string
     {
         return $this->niceName;
+    }
+
+    public function getGroup(): string
+    {
+        return $this->group;
     }
 
     public function getGroupIconClass(): string

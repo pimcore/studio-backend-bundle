@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\User;
 
 /**
@@ -30,4 +31,11 @@ interface CustomReportRepositoryInterface
      * @throws NotFoundException
      */
     public function loadByName(string $name): Config;
+
+    public function exists(string $name): bool;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function create(string $name): Config;
 }
