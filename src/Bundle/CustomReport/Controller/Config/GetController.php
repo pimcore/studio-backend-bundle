@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Config;
 
 use Exception;
 use OpenApi\Attributes\Get;

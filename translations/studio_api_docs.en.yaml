@@ -1023,6 +1023,10 @@ data_object_get_select_options_description: |
   Get all dynamic select options for data objects for given field
 data_object_get_select_options_summary: Get all dynamic select options for data objects
 data_object_get_select_options_success_response: List of dynamic select options
+custom_reports_config_add_description: |
+  Add a new custom reports configuration with the provided name.
+custom_reports_config_add_summary: Add a new custom reports configuration
+custom_reports_config_add_success_response: Successfully added custom report configuration
 custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
 custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
 custom_reports_get_tree_success_response: Get all reports for the current user to display in configuration tree.
@@ -1215,7 +1219,7 @@ website_settings_list_types_summary: List all website setting types
 website_settings_list_types_success_response: List of all available website setting types
 website_settings_update_description: |
   Update a website setting with the given <strong>{id}</strong>.
-  The <strong>{id}</strong> must be an ID of an existing DocType. <br>
+  The <strong>{id}</strong> must be an ID of an existing website setting. <br>
   Please note that <strong>all fields<strong> have to be provided.
 website_settings_update_summary: Update a website setting
 website_settings_update_success_response: Successfully updated website setting

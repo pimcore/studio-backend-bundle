@@ -24,18 +24,24 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReport
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use TypeError;
 use function is_string;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class CustomReportService implements CustomReportServiceInterface
 {
+    use ValidateConfigurationTrait;
+
     private const string VALUE_KEY = 'value';
 
     public function __construct(
@@ -82,6 +88,23 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         }
 
         return $treeConfigData;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createCustomReport(CustomReportAdd $parameters): CustomReportDetails
+    {
+        $configName = $this->getValidConfigName(['name' => $parameters->getName()]);
+
+        if ($this->customReportRepository->exists($configName)) {
+            throw new InvalidArgumentException(
+                sprintf('Custom report with name "%s" already exists.', $configName)
+            );
+        }
+        $config = $this->customReportRepository->create($configName);
+
+        return $this->customReportHydrator->extractReportDetails($config);
     }
 
     public function getCustomReportByName(string $reportName): Config
