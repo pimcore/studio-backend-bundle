@@ -128,7 +128,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function buildDataObjectAdapterColumnConfiguration(
         ColumnFieldDefinition $definition,

@@ -34,7 +34,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAvailableControllers(): array
     {
@@ -56,7 +56,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAvailableTemplates(): array
     {

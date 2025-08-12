@@ -42,7 +42,7 @@ final readonly class CollectionService implements CollectionServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getCollections(ListClassificationStoreParameter $parameter): Collection
     {
@@ -78,7 +78,7 @@ final readonly class CollectionService implements CollectionServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getLayoutDefinition(int $collectionId, LayoutParameter $layoutParameter): CollectionLayout
     {

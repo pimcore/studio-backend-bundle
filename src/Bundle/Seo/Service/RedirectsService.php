@@ -51,7 +51,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addRedirect(RedirectAddParameters $parameters): Redirect
     {
@@ -72,7 +72,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function updateRedirect(int $id, RedirectUpdateParameters $parameters): Redirect
     {

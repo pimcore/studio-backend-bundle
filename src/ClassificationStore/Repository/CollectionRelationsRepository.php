@@ -30,7 +30,7 @@ final class CollectionRelationsRepository implements CollectionRelationsReposito
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getCollectionIdsWith(array $groupIds): array
     {
@@ -58,7 +58,7 @@ final class CollectionRelationsRepository implements CollectionRelationsReposito
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getFromCollection(int $collectionId): array
     {

@@ -43,5 +43,15 @@ interface CustomReportRepositoryInterface
      */
     public function update(Config $config, CustomReportUpdate $parameters): Config;
 
+    /**
+     * @throws NotWriteableException
+     */
+    public function clone(Config $existingConfig, string $newName): Config;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function delete(Config $config): void;
+
     public function exists(string $name): bool;
 }

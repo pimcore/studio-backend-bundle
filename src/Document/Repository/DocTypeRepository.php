@@ -36,7 +36,7 @@ final readonly class DocTypeRepository implements DocTypeRepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function listDocTypes(?string $type = null): array
     {
@@ -55,7 +55,7 @@ final readonly class DocTypeRepository implements DocTypeRepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getById(string $id): DocType
     {
@@ -72,7 +72,7 @@ final readonly class DocTypeRepository implements DocTypeRepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addDocType(): DocType
     {

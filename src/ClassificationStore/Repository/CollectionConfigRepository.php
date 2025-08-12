@@ -29,7 +29,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPaginatedCollectionsByStore(
         int $storeId,

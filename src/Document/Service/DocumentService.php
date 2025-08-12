@@ -60,7 +60,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addDocument(int $parentId, DocumentAddParameters $parameters): int
     {
@@ -75,7 +75,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDocuments(ElementParameters $parameters): Collection
     {
@@ -101,7 +101,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDocument(int $id, bool $getDetailData = true): DocumentDetail
     {
@@ -117,7 +117,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
@@ -129,7 +129,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDocumentElement(
         UserInterface $user,
