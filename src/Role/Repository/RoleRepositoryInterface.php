@@ -32,7 +32,6 @@ interface RoleRepositoryInterface
      */
     public function getRoles(): array;
 
-
     /**
      * @return Role[]
      *
