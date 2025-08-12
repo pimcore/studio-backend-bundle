@@ -53,7 +53,14 @@ interface UserRepositoryInterface
      *
      * @throws DatabaseException
      */
-    public function getUsers(): array;
+    public function getUsersWithPermission(string $permission, bool $includeCurrentUser): array;
+
+    /**
+     * @return UserInterface[]
+     *
+     * @throws DatabaseException
+     */
+    public function getUsers(bool $includeCurrentUser = true): array;
 
     /**
      * @return UserInterface[]

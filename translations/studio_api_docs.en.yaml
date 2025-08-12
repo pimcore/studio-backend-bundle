@@ -713,6 +713,11 @@ role_get_collection_summary: Get all available roles.
 role_get_collection_description: Get all available roles with basic information
 role_get_tree_success_response: Collection of roles including folders for the given parent id.
 role_get_tree_summary: Get collection of roles for tree view.
+role_list_with_permission_description: |
+  Get all roles with the given permission <strong>{permission}</strong>. <br>
+  The <strong>{permission}</strong> must be an existing user permission.
+role_list_with_permission_success_response: List of roles with the given permission
+role_list_with_permission_summary: Get all roles with a specific permission
 role_update_by_id_response: Updated data.
 role_update_by_id_summary: Update role by id.
 schedule_create_for_element_by_type_and_id_description: |
@@ -870,6 +875,11 @@ user_get_current_information_success_response: Current user information's.
 user_get_current_information_summary: Retrieve information's about the current logged in user.
 user_get_tree_success_response: Collection of users including folders for the given parent id.
 user_get_tree_summary: Get collection of users for tree view.
+user_list_with_permission_description: |
+  Get all users with the given permission <strong>{permission}</strong>. <br>
+  The <strong>{permission}</strong> must be an existing user permission.
+user_list_with_permission_success_response: List of users with the given permission
+user_list_with_permission_summary: Get all users with a specific permission
 user_reset_password_summary: Sending username to reset password.
 user_update_active_perspective_summary: Update the active perspective for the current user.
 user_update_active_perspective_success_response: Updated active perspective for the current user.

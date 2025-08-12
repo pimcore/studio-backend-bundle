@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserWithPermissionParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 
@@ -57,6 +58,11 @@ interface UserServiceInterface
      * @throws DatabaseException
      */
     public function getUsers(): Collection;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function getUsersWithPermission(UserWithPermissionParameter $parameter): Collection;
 
     /**
      * @throws DatabaseException

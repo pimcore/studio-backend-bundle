@@ -33,6 +33,13 @@ interface RoleRepositoryInterface
     public function getRoles(): array;
 
     /**
+     * @return Role[]
+     *
+     * @throws DatabaseException
+     */
+    public function getRolesWithPermission(string $permission): array;
+
+    /**
      * @throws NotFoundException
      */
     public function getRoleById(int $roleId): Role;

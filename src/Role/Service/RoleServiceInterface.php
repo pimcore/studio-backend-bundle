@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\RolePermissionParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
@@ -31,6 +32,11 @@ interface RoleServiceInterface
      * @throws DatabaseException
      */
     public function getRoles(): Collection;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function getRolesWithPermission(RolePermissionParameter $parameter): Collection;
 
     /**
      * @throws DatabaseException

@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
 use Pimcore\Model\User\UserRoleInterface;
+use function in_array;
 use function sprintf;
 
 /**
@@ -48,6 +49,24 @@ final class RoleRepository implements RoleRepositoryInterface
         } catch (Exception $e) {
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }
+    }
+
+    /**
+     * @return Role[]
+     *
+     * @throws DatabaseException
+     */
+    public function getRolesWithPermission(string $permission): array
+    {
+        $roles = $this->getRoles();
+        $rolesWithPermission = [];
+        foreach ($roles as $role) {
+            if (in_array($permission, $role->getPermissions(), true)) {
+                $rolesWithPermission[] = $role;
+            }
+        }
+
+        return $rolesWithPermission;
     }
 
     /**

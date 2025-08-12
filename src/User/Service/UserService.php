@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\SimpleUserHydratorInterface
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserWithPermissionParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
@@ -157,27 +158,16 @@ final readonly class UserService implements UserServiceInterface
     }
 
     /**
-     * @return array<string, bool|string>
+     * @throws DatabaseException
      */
-    private function userChecks(?UserInterface $user): array
+    public function getUsersWithPermission(UserWithPermissionParameter $parameter): Collection
     {
-        if (!$user) {
-            return ['success' => false, 'error' => 'user_unknown'];
-        }
+        $users = $this->userRepository->getUsersWithPermission(
+            $parameter->getPermission(),
+            $parameter->isIncludeCurrentUser()
+        );
 
-        if (!$user->getEmail() || !filter_var($user->getEmail(), FILTER_VALIDATE_EMAIL)) {
-            return ['success' => false, 'error' => 'user_no_email_address'];
-        }
-
-        if (!$user->isActive()) {
-            return ['success' => false, 'error' => 'user_inactive'];
-        }
-
-        if (!$user->getPassword()) {
-            return ['success' => false, 'error' => 'user_no_password'];
-        }
-
-        return ['success' => true, 'error' => ''];
+        return $this->getSimpleUserCollection($users);
     }
 
     /**
@@ -187,7 +177,7 @@ final readonly class UserService implements UserServiceInterface
     {
         $folderId = 0;
 
-        // Check if parent folder exists
+        // Check if the parent folder exists
         if ($createParameter->getParentId() !== 0) {
             $folderId = $this->userFolderRepository->getUserFolderById($createParameter->getParentId())->getId();
         }
@@ -241,6 +231,30 @@ final readonly class UserService implements UserServiceInterface
         } catch (NotFoundException) {
             return null;
         }
+    }
+
+    /**
+     * @return array<string, bool|string>
+     */
+    private function userChecks(?UserInterface $user): array
+    {
+        if (!$user) {
+            return ['success' => false, 'error' => 'user_unknown'];
+        }
+
+        if (!$user->getEmail() || !filter_var($user->getEmail(), FILTER_VALIDATE_EMAIL)) {
+            return ['success' => false, 'error' => 'user_no_email_address'];
+        }
+
+        if (!$user->isActive()) {
+            return ['success' => false, 'error' => 'user_inactive'];
+        }
+
+        if (!$user->getPassword()) {
+            return ['success' => false, 'error' => 'user_no_password'];
+        }
+
+        return ['success' => true, 'error' => ''];
     }
 
     /**
