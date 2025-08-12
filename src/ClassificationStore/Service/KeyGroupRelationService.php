@@ -42,7 +42,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getKeyGroupRelations(ListClassificationStoreParameter $parameter): Collection
     {
@@ -80,7 +80,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,

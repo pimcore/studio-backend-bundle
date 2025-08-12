@@ -31,7 +31,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,

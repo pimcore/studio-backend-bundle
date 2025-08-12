@@ -50,7 +50,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addDocType(DocTypeAddParameters $parameters): DocTypeSchema
     {
@@ -69,7 +69,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function updateDocType(string $id, DocTypeUpdateParameters $parameters): DocTypeSchema
     {
@@ -93,7 +93,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function listDocTypes(?string $type): array
     {
@@ -114,7 +114,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function deleteDocType(string $id): void
     {
@@ -128,7 +128,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function listDocTypeTypes(): array
     {

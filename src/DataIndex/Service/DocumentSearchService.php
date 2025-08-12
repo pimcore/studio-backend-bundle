@@ -39,7 +39,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult
     {
@@ -47,7 +47,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDocumentById(int $id, ?UserInterface $user): DocumentDetail
     {
@@ -71,7 +71,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getSearchTerm(string $searchTerm, ?UserInterface $user): int
     {
@@ -87,7 +87,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface
     {

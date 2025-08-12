@@ -17,6 +17,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -43,6 +44,16 @@ interface CustomReportServiceInterface
      * @throws NotFoundException|NotWriteableException
      */
     public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails;
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails;
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function deleteCustomReport(string $name): void;
 
     /**
      * @throws NotFoundException

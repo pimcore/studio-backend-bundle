@@ -51,7 +51,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult
     {
@@ -77,7 +77,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDocumentById(int $id, ?UserInterface $user = null): DocumentDetail
     {
@@ -110,7 +110,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function findInTree(QueryInterface $dataObjectQuery): ?ElementSearchResultItemInterface
     {

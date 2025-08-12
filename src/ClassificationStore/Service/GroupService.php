@@ -47,7 +47,7 @@ final readonly class GroupService implements GroupServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getGroups(ListClassificationStoreParameter $parameter): Collection
     {
@@ -81,7 +81,7 @@ final readonly class GroupService implements GroupServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAllowedGroupIds(ListClassificationStoreParameter $parameter): array
     {
@@ -106,7 +106,7 @@ final readonly class GroupService implements GroupServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getLayoutDefinition(int $groupId, LayoutParameter $layoutParameter): GroupLayout
     {

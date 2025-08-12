@@ -20,21 +20,21 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'BundleCustomReportAdd',
-    title: 'Bundle Custom Report Add',
-    required: ['name'],
+    schema: 'BundleCustomReportClone',
+    title: 'Bundle Custom Report Clone',
+    required: ['newName'],
     type: 'object'
 )]
-final readonly class CustomReportAdd
+final readonly class CustomReportClone
 {
     public function __construct(
-        #[Property(description: 'Name of the new custom report', type: 'string', example: 'myReport')]
-        private string $name,
+        #[Property(description: 'New name the cloned custom report', type: 'string', example: 'myNewReport')]
+        private string $newName,
     ) {
     }
 
-    public function getName(): string
+    public function getNewName(): string
     {
-        return $this->name;
+        return $this->newName;
     }
 }

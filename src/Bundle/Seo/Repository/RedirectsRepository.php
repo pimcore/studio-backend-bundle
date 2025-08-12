@@ -45,7 +45,7 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getById(int $id): Redirect
     {

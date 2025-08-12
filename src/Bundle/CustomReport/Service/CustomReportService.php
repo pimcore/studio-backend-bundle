@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\Chart
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -117,6 +118,33 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         $config = $this->customReportRepository->update($customReport, $parameters);
 
         return $this->customReportHydrator->extractReportDetails($config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails
+    {
+        $newName = $this->getValidConfigName(['name' => $parameters->getNewName()]);
+        if ($this->customReportRepository->exists($newName)) {
+            throw new InvalidArgumentException(
+                sprintf('Custom report with name "%s" already exists.', $newName)
+            );
+        }
+
+        $reportToClone = $this->getCustomReportByName($reportName);
+        $config = $this->customReportRepository->clone($reportToClone, $newName);
+
+        return $this->customReportHydrator->extractReportDetails($config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteCustomReport(string $name): void
+    {
+        $customReport = $this->getCustomReportByName($name);
+        $this->customReportRepository->delete($customReport);
     }
 
     public function getCustomReportByName(string $reportName): Config

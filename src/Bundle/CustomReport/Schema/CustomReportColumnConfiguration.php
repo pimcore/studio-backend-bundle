@@ -22,6 +22,10 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'BundleCustomReportsColumnConfiguration',
     title: 'Bundle Custom Reports Column Configuration',
+    required: [
+        'name', 'display', 'export', 'order', 'label', 'action',
+        'id', 'width', 'displayType', 'filterType', 'filterDrilldown',
+    ],
     type: 'object',
 )]
 final readonly class CustomReportColumnConfiguration

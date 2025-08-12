@@ -31,7 +31,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPaginatedGroupsByStore(
         int $storeId,
@@ -80,7 +80,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getById(int $id): GroupConfig
     {

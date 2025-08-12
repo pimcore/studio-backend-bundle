@@ -35,7 +35,7 @@ trait ValidateConfigurationTrait
     {
         if (!isset($configData['name'])) {
             throw new InvalidArgumentException(
-                'Missing widget name',
+                'Missing configuration name',
                 errorKey: HttpResponseErrorKeys::CONFIG_NAME_INVALID->value
             );
         }
@@ -49,7 +49,7 @@ trait ValidateConfigurationTrait
     ): void {
         if (strlen($configurationName) < 3 ||
             strlen($configurationName) > 80 ||
-            !preg_match('/^\p{L}[\p{L}\p{N}\s]+$/u', $configurationName)
+            !preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_-]{2,79}$/', $configurationName)
         ) {
             throw new InvalidArgumentException(
                 'Invalid configuration name',

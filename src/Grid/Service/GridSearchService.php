@@ -28,7 +28,7 @@ final readonly class GridSearchService implements GridSearchServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAssetSearchGrid(SearchGridParameter $gridParameter): Collection
     {
@@ -44,7 +44,7 @@ final readonly class GridSearchService implements GridSearchServiceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDataObjectSearchGrid(SearchGridParameter $searchParameter, ?string $classId): Collection
     {

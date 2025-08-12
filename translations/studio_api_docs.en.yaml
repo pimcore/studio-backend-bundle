@@ -1037,6 +1037,12 @@ custom_reports_config_add_description: |
   Add a new custom reports configuration with the provided name.
 custom_reports_config_add_summary: Add a new custom reports configuration
 custom_reports_config_add_success_response: Successfully added custom report configuration
+custom_reports_config_clone_description: |
+  Clone an existing custom reports configuration with the provided new name by existing report name <strong>{reportName}</strong>. <br>
+  The <strong>{reportName}</strong> must be a name of an existing custom report. <br>
+  The <strong>{name}</strong> of the new report must be a unique valid name.
+custom_reports_config_clone_summary: Clone an existing custom reports configuration
+custom_reports_config_clone_success_response: Successfully cloned custom report configuration
 custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
 custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
 custom_reports_config_update_description: |
@@ -1045,6 +1051,12 @@ custom_reports_config_update_description: |
   Please note that <strong>all fields<strong> have to be provided.
 custom_reports_config_update_summary: Update an existing custom reports configuration
 custom_reports_config_update_success_response: Successfully updated custom report configuration
+custom_reports_config_delete_description: |
+  Delete a custom reports configuration with the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing custom report.
+custom_reports_config_delete_summary: Delete a custom reports configuration
+custom_reports_config_delete_success_response: Successfully deleted custom report configuration
+custom_reports_config_delete_name_parameter: Name of the custom report to delete
 custom_reports_get_tree_success_response: Get all reports for the current user to display in configuration tree.
 custom_reports_get_tree_description: Get all reports for the current user to display in tree.
 custom_reports_get_tree_summary: All reports for the current user to display in tree.
