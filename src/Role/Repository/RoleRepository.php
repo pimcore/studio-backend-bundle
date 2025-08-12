@@ -51,6 +51,24 @@ final class RoleRepository implements RoleRepositoryInterface
     }
 
     /**
+     * @return Role[]
+     *
+     * @throws DatabaseException
+     */
+    public function getRolesWithPermission(string $permission): array
+    {
+        $roles = $this->getRoles();
+        $rolesWithPermission = [];
+        foreach ($roles as $role) {
+            if (in_array($permission, $role->getPermissions(), true)) {
+                $rolesWithPermission[] = $role;
+            }
+        }
+
+        return $rolesWithPermission;
+    }
+
+    /**
      * @throws NotFoundException
      */
     public function getRoleById(int $roleId): Role

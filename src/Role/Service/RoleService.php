@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\SimpleRoleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\RolePermissionParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
@@ -31,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
+use Pimcore\Model\User\Role;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 use function sprintf;
@@ -56,23 +58,18 @@ final readonly class RoleService implements RoleServiceInterface
     public function getRoles(): Collection
     {
         $roles = $this->roleRepository->getRoles();
-        $items = [];
 
-        foreach ($roles as $role) {
-            $item = new SimpleRole(
-                $role->getId(),
-                $role->getName(),
-            );
+        return $this->getSimpleRoleCollection($roles);
+    }
 
-            $this->eventDispatcher->dispatch(
-                new SimpleRoleEvent($item),
-                SimpleRoleEvent::EVENT_NAME
-            );
+    /**
+     * @throws DatabaseException
+     */
+    public function getRolesWithPermission(RolePermissionParameter $parameter): Collection
+    {
+        $roles = $this->roleRepository->getRolesWithPermission($parameter->getPermission());
 
-            $items[] = $item;
-        }
-
-        return new Collection(count($items), $items);
+        return $this->getSimpleRoleCollection($roles);
     }
 
     /**
@@ -186,5 +183,29 @@ final readonly class RoleService implements RoleServiceInterface
         $role = $this->updateService->updatePerspectives($updateRoleParameter->getPerspectives(), $role);
 
         $this->roleRepository->updateRole($role);
+    }
+
+    /**
+     * @param Role[] $roles
+     */
+    private function getSimpleRoleCollection(array $roles): Collection
+    {
+        $items = [];
+
+        foreach ($roles as $role) {
+            $item = new SimpleRole(
+                $role->getId(),
+                $role->getName(),
+            );
+
+            $this->eventDispatcher->dispatch(
+                new SimpleRoleEvent($item),
+                SimpleRoleEvent::EVENT_NAME
+            );
+
+            $items[] = $item;
+        }
+
+        return new Collection(count($items), $items);
     }
 }

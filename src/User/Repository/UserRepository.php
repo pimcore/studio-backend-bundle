@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
@@ -28,7 +29,8 @@ use function sprintf;
 final readonly class UserRepository implements UserRepositoryInterface
 {
     public function __construct(
-        private UserResolverInterface $userResolver
+        private SecurityServiceInterface $securityService,
+        private UserResolverInterface $userResolver,
     ) {
     }
 
@@ -121,11 +123,35 @@ final readonly class UserRepository implements UserRepositoryInterface
      *
      * @throws DatabaseException
      */
-    public function getUsers(): array
+    public function getUsersWithPermission(string $permission, bool $includeCurrentUser): array
+    {
+        $users = $this->getUsers($includeCurrentUser);
+        $usersWithPermission = [];
+        foreach ($users as $user) {
+            if ($user->isAllowed($permission)) {
+                $usersWithPermission[] = $user;
+            }
+        }
+
+        return $usersWithPermission;
+    }
+
+    /**
+     * @return UserInterface[]
+     *
+     * @throws DatabaseException
+     */
+    public function getUsers(bool $includeCurrentUser = true): array
     {
         try {
             $userListing = new UserListing();
-            $userListing->setCondition('`type` = ?', ['user']);
+            $userListing->setCondition('`type` = :type', ['type' => 'user']);
+            if (!$includeCurrentUser) {
+                $userListing->addConditionParam(
+                    'id != :currentUser',
+                    ['currentUser' => $this->securityService->getCurrentUser()->getId()]
+                );
+            }
             $userListing->load();
 
             return $userListing->getUsers();
