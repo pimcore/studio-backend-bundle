@@ -75,8 +75,7 @@ final readonly class AdapterService implements AdapterServiceInterface
     private function createAdapterFromConfig(
         stdClass $configuration,
         ?Config $report = null
-    ): CustomReportAdapterInterface
-    {
+    ): CustomReportAdapterInterface {
         $type = $configuration->type ?? 'sql';
         if (!$this->adapters->has($type)) {
             throw new NotFoundException('Adapter', $type, 'type');
@@ -94,7 +93,7 @@ final readonly class AdapterService implements AdapterServiceInterface
     private function getClassFromArray(array $dataSourceConfig): stdClass
     {
         try {
-             return json_decode(
+            return json_decode(
                 json_encode($dataSourceConfig, JSON_THROW_ON_ERROR),
                 false,
                 512,

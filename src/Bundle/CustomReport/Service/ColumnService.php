@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\ColumnHydrat
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDataSourceConfig;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -41,6 +42,7 @@ final readonly class ColumnService implements ColumnServiceInterface
         $report = $this->customReportService->getCustomReportByName($name);
         $columns = $this->adapterService->getAdapterColumns($dataSourceConfig->getConfiguration());
         $hydrated = [];
+
         try {
             $orderedColumns = $this->orderColumnsByConfiguration($columns, $report->getColumnConfiguration());
             foreach ($orderedColumns as $column) {
@@ -79,7 +81,8 @@ final readonly class ColumnService implements ColumnServiceInterface
 
     private function mapColumnsByName(array $columns): array
     {
-        $columnNames = array_map(static fn($column) => $column->getName(), $columns);
+        $columnNames = array_map(static fn ($column) => $column->getName(), $columns);
+
         return array_combine($columnNames, $columns);
     }
 }

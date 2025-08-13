@@ -25,11 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTr
  */
 final readonly class CustomReportHydrator implements CustomReportHydratorInterface
 {
-
     public function __construct(
         private ColumnHydratorInterface $columnHydrator,
-    )
-    {
+    ) {
     }
 
     public function extractTreeData(Config $report): CustomReportTreeNode

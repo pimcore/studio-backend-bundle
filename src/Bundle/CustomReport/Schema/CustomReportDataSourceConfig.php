@@ -25,8 +25,8 @@ use OpenApi\Attributes\Schema;
     required: ['configuration'],
     type: 'object',
 )]
-final readonly class CustomReportDataSourceConfig {
-
+final readonly class CustomReportDataSourceConfig
+{
     public function __construct(
         #[Property(
             description: 'Configuration for data source. Content of array depends on selected adapter/data source',
