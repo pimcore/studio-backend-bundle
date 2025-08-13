@@ -15,18 +15,23 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportChartData;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
-use function is_int;
 
 /**
  * @internal
  */
 final readonly class CustomReportHydrator implements CustomReportHydratorInterface
 {
+
+    public function __construct(
+        private ColumnHydratorInterface $columnHydrator,
+    )
+    {
+    }
+
     public function extractTreeData(Config $report): CustomReportTreeNode
     {
         return new CustomReportTreeNode(
@@ -56,7 +61,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
         return new CustomReportDetails(
             $report->getName(),
             $report->getSql(),
-            $this->getCustomReportColumnConfiguration(
+            $this->columnHydrator->getCustomReportColumnConfiguration(
                 $report->getColumnConfiguration()
             ),
             $report->getNiceName(),
@@ -91,28 +96,5 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $drillDownData['name'] ?? '',
             $drillDownData['value'] ?? ''
         );
-    }
-
-    private function getCustomReportColumnConfiguration(array $columns): array
-    {
-        $columnConfig = [];
-        foreach ($columns as $column) {
-            $width = $column['width'] ?? null;
-            $columnConfig[] = new CustomReportColumnConfiguration(
-                $column['name'] ?? '',
-                $column['display'] ?? '',
-                $column['export'] ?? '',
-                $column['order'] ?? '',
-                $column['label'] ?? '',
-                $column['columnAction'] ?? '',
-                $column['id'] ?? '',
-                is_int($width) ? $width : null,
-                $column['displayType'] ?? null,
-                $column['filter'] ?? null,
-                $column['filter_drilldown'] ?? null
-            );
-        }
-
-        return $columnConfig;
     }
 }

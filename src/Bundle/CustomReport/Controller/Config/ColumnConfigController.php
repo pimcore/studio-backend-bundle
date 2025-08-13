@@ -13,16 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Config;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Put;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use OpenApi\Attributes\Post;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportColumnInformation;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDataSourceConfig;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\ColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -37,48 +37,51 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateController extends AbstractApiController
+final class ColumnConfigController extends AbstractApiController
 {
-    private const string ROUTE = '/bundle/custom-reports/config/{name}';
+    private const string ROUTE = '/bundle/custom-reports/column-config/{name}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService
+        private readonly ColumnServiceInterface $columnService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws DatabaseException|NotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_config_update', methods: ['PUT'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_column_config', methods: ['POST'])]
     #[IsGranted(CustomReportPermissions::REPORTS_CONFIG->value)]
-    #[Put(
+    #[Post(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'custom_reports_config_update',
-        description: 'custom_reports_config_update_description',
-        summary: 'custom_reports_config_update_summary',
+        operationId: 'custom_reports_column_config_list',
+        description: 'custom_reports_column_config_list_description',
+        summary: 'custom_reports_column_config_list_summary',
         tags: [Tags::BundleCustomReports->value]
     )]
-    #[StringParameter(
+    #[NameParameter(
         name: 'name',
-        example: 'Quality_Attributes',
-        description: 'custom_reports_report_name_parameter'
+        description: 'custom_reports_report_name_parameter',
+        example: 'Quality_Attributes'
     )]
-    #[ReferenceRequestBody(CustomReportUpdate::class)]
+    #[ReferenceRequestBody(
+        referenceClass: CustomReportDataSourceConfig::class
+    )]
     #[SuccessResponse(
-        description: 'custom_reports_config_update_success_response',
-        content: new JsonContent(ref: CustomReportDetails::class)
+        description: 'custom_reports_column_config_list_success_response',
+        content: new ItemsJson(CustomReportColumnInformation::class),
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function updateCustomReport(
+    public function getColumnConfig(
         string $name,
-        #[MapRequestPayload] CustomReportUpdate $parameters
+        #[MapRequestPayload] CustomReportDataSourceConfig $parameters
     ): JsonResponse {
-        return $this->jsonResponse($this->customReportService->updateCustomReport($name, $parameters));
+
+        return $this->jsonResponse(['items' => $this->columnService->getColumnConfig($name, $parameters)]);
     }
 }

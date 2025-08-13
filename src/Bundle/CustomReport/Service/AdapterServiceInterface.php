@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config\ColumnInformation;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
@@ -32,4 +34,11 @@ interface AdapterServiceInterface
      * @throws NotFoundException
      */
     public function getAdapter(Config $report): CustomReportAdapterInterface;
+
+    /**
+     * @throws InvalidArgumentException|NotFoundException
+     *
+     * @return ColumnInformation[]
+     */
+    public function getAdapterColumns(array $dataSourceConfig): array;
 }

@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
+use JsonException;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -45,7 +47,7 @@ final readonly class AdapterService implements AdapterServiceInterface
     }
 
     /**
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function getAdapter(Config $report): CustomReportAdapterInterface
     {
@@ -54,6 +56,27 @@ final readonly class AdapterService implements AdapterServiceInterface
             $configuration = new stdClass();
         }
 
+        return $this->createAdapterFromConfig($configuration, $report);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAdapterColumns(array $dataSourceConfig): array
+    {
+        $configuration = $this->getClassFromArray($dataSourceConfig);
+
+        return $this->createAdapterFromConfig($configuration)->getColumnsWithMetadata($configuration);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function createAdapterFromConfig(
+        stdClass $configuration,
+        ?Config $report = null
+    ): CustomReportAdapterInterface
+    {
         $type = $configuration->type ?? 'sql';
         if (!$this->adapters->has($type)) {
             throw new NotFoundException('Adapter', $type, 'type');
@@ -63,5 +86,22 @@ final readonly class AdapterService implements AdapterServiceInterface
         $factory = $this->adapters->get($type);
 
         return $factory->create($configuration, $report);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getClassFromArray(array $dataSourceConfig): stdClass
+    {
+        try {
+             return json_decode(
+                json_encode($dataSourceConfig, JSON_THROW_ON_ERROR),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException('Invalid JSON configuration provided', $e);
+        }
     }
 }

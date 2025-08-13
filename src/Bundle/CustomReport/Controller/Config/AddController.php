@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class AddController extends AbstractApiController
 {
-    private const string ROUTE = '/custom-reports/config/add';
+    private const string ROUTE = '/bundle/custom-reports/config/add';
 
     public function __construct(
         SerializerInterface $serializer,

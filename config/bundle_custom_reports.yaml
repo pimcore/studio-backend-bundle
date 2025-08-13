@@ -26,6 +26,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\ColumnHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\ColumnHydrator
+
   #
   # Services
   #
@@ -35,6 +38,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportService
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\ColumnServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\ColumnService
 
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterService
