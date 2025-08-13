@@ -75,7 +75,8 @@ final readonly class RenderletService implements RenderletServiceInterface
             );
         } catch (Exception $e) {
             throw new EnvironmentException(
-                sprintf('An error occurred while rendering the renderlet: %s',
+                sprintf(
+                    'An error occurred while rendering the renderlet: %s',
                     $e->getMessage()
                 )
             );
