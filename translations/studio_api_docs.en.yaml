@@ -367,6 +367,10 @@ document_page_stream_preview_description: |
   Stream page document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing page
 document_page_stream_preview_success_response: Page preview stream
 document_page_stream_preview_summary: Stream page document preview by ID
+document_renderlet_render_description: |
+  Render a specific renderlet based on the provided parameters.
+document_renderlet_render_success_response: Rendered renderlet
+document_renderlet_render_summary: Render a specific renderlet
 document_replace_content_description: |
   Replace the content of the document with the given <strong>{targetId}</strong> with the content of the document matching the <strong>{sourceId}</strong>. <br> The <strong>{targetId}</strong> and <strong>{sourceId}</strong> must be an ID of existing document
 document_replace_content_success_response: Successfully replaced contents of the document
