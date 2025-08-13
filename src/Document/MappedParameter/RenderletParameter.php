@@ -17,6 +17,7 @@ use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
+use function in_array;
 
 /**
  * @internal
