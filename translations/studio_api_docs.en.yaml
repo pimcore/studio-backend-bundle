@@ -1033,6 +1033,11 @@ data_object_get_select_options_description: |
   Get all dynamic select options for data objects for given field
 data_object_get_select_options_summary: Get all dynamic select options for data objects
 data_object_get_select_options_success_response: List of dynamic select options
+custom_reports_column_config_list_description: |
+  Get all available column configurations for custom report by <strong>{name}</strong> and <strong>{configuration}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing custom report and <strong>{configuration}</strong> must be a valid data source configuration of that report.
+custom_reports_column_config_list_summary: Get all available column configurations for custom report
+custom_reports_column_config_list_success_response: List of column configurations for the custom report
 custom_reports_config_add_description: |
   Add a new custom reports configuration with the provided name.
 custom_reports_config_add_summary: Add a new custom reports configuration

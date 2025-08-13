@@ -34,7 +34,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteController extends AbstractApiController
 {
-    private const string ROUTE = '/custom-reports/config/{name}';
+    private const string ROUTE = '/bundle/custom-reports/config/{name}';
 
     public function __construct(
         SerializerInterface $serializer,
