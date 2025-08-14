@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
 use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\AssetType;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\FileUpload;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UploadAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -36,6 +38,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -76,15 +79,8 @@ final class AddController extends AbstractApiController
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[MultipartFormDataRequestBody(
-        [
-            new Property(
-                property: 'file',
-                description: 'File to upload',
-                type: 'string',
-                format: 'binary'
-            ),
-        ],
-        ['file']
+        properties: [new FileUpload(), new AssetType()],
+        required: ['file']
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
@@ -95,9 +91,9 @@ final class AddController extends AbstractApiController
     public function addAsset(
         int $parentId,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
-        Request $request
+        Request $request,
+        #[MapRequestPayload] ?UploadAssetParameter $parameter = null,
     ): JsonResponse {
-
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
             throw new EnvironmentException('Invalid file found in the request');
@@ -109,7 +105,9 @@ final class AddController extends AbstractApiController
                     $parentId,
                     $file->getClientOriginalName(),
                     $file->getRealPath(),
-                    $this->securityService->getCurrentUser()
+                    $this->securityService->getCurrentUser(),
+                    false,
+                    $parameter?->getAssetType()
                 ),
             ]
         );

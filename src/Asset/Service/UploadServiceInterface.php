@@ -51,7 +51,8 @@ interface UploadServiceInterface
         string $fileName,
         string $filePath,
         UserInterface $user,
-        bool $useFlysystem = false
+        bool $useFlysystem = false,
+        ?string $assetType = null
     ): int;
 
     /**
