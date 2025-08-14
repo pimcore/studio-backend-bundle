@@ -64,10 +64,10 @@ final class CollectionController extends AbstractApiController
     )]
     #[CollectionRequestBody(
         columnFiltersExample: '[' .
-        '{"type":"search", "filterValue": "search term"},' .
-        '{"key":"source", "type":"url", "filterValue": "https://www.some-example"},' .
-        '{"key":"source", "type":"like", "filterValue": "en/news"},' .
-        '{"key":"target", "type":"equals", "filterValue": "en/news/new"}'
+            '{"type":"search", "filterValue": "https://www.some-site/old-url"},' .
+            '{"key":"source", "type":"url", "filterValue": "https://www.some-example"},' .
+            '{"key":"source", "type":"like", "filterValue": "en/news"},' .
+            '{"key":"target", "type":"equals", "filterValue": "en/news/new"}'
         . ']',
         sortFilterExample: '{"key":"priority", "direction":"ASC"}'
     )]
