@@ -39,8 +39,8 @@ final readonly class LikeFilter implements FilterInterface
         foreach ($likeColumns as $likeColumn) {
             $columnName = $likeColumn->getKey();
             $listing->addConditionParam(
-                '`' . $columnName . '` = :' . $columnName,
-                [$columnName => $likeColumn->getFilterValue()]
+                '`' . $columnName . '` LIKE :' . $columnName,
+                [$columnName => "%{$likeColumn->getFilterValue()}%"]
             );
         }
 
