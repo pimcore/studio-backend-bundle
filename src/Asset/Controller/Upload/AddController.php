@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
 use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\AllowOverwrite;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\AssetType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\FileUpload;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UploadAssetParameter;
