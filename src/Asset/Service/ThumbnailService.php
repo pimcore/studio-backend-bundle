@@ -145,8 +145,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     public function getDocumentThumbnailConfig(
         Document $document,
         DocumentImageDownloadConfigParameter $parameters
-    ): ImageThumbnailConfig
-    {
+    ): ImageThumbnailConfig {
         $thumbnailConfig = $this->getImageThumbnailConfig($document->getId(), $parameters);
         if ($parameters->getMimeType() === MimeTypes::SOURCE->value) {
             $thumbnailConfig->setFormat(MimeTypes::JPEG->value);
