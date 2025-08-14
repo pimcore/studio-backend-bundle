@@ -101,10 +101,7 @@ final readonly class DownloadService implements DownloadServiceInterface
             );
         }
 
-        return $this->getStreamedResponse(
-            $thumbnail,
-            HttpResponseHeaders::ATTACHMENT_TYPE->value
-        );
+        return $this->getStreamedResponse($thumbnail, $attachmentType);
     }
 
     /**
