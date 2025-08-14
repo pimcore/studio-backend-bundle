@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeExcep
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -50,7 +51,8 @@ interface DownloadServiceInterface
      */
     public function downloadDocumentImageThumbnail(
         Asset $document,
-        DocumentImageDownloadConfigParameter $parameters
+        DocumentImageDownloadConfigParameter $parameters,
+        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
     ): StreamedResponse;
 
     /**
