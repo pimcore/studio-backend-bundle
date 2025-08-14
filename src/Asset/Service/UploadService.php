@@ -89,10 +89,15 @@ final readonly class UploadService implements UploadServiceInterface
         string $fileName,
         string $filePath,
         UserInterface $user,
-        bool $useFlysystem = false
+        bool $useFlysystem = false,
+        ?string $assetType = null
     ): int {
         $parent = $this->validateParent($user, $parentId);
         $fileName = $this->getValidFileName($fileName);
+        if ($assetType !== null && $assetType !== '') {
+            $this->validateMimeType($filePath, $fileName, $assetType);
+        }
+
         $uniqueName = $this->assetService->getUniqueAssetName($parent->getRealFullPath(), $fileName);
         $userId = $user->getId();
         $assetParams = [
@@ -180,7 +185,7 @@ final readonly class UploadService implements UploadServiceInterface
 
         $sourcePath = $this->getValidSourcePath($file->getRealPath());
         $fileName = $this->getValidFileName($file->getClientOriginalName());
-        $this->validateMimeType($file, $fileName, $asset->getType());
+        $this->validateMimeType($file->getRealPath(), $fileName, $asset->getType());
 
         try {
             $newFileName = $this->getUpdatedFileName($asset->getFilename(), $fileName, $asset->getParent());
@@ -349,18 +354,18 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     private function validateMimeType(
-        UploadedFile $file,
+        string $filePath,
         string $fileName,
         string $assetType
     ): void {
         $mimeTypes = new MimeTypeHelper();
-        $mimeType = $mimeTypes->guessMimeType($file->getRealPath());
+        $mimeType = $mimeTypes->guessMimeType($filePath);
         $newType = $this->assetResolver->getTypeFromMimeMapping($mimeType, $fileName);
 
         if ($newType !== $assetType) {
             throw new EnvironmentException(
                 sprintf(
-                    'Inconsistent asset binary types: original asset (%s) - new asset (%s)',
+                    'Inconsistent asset binary types: required asset (%s) - new asset (%s)',
                     $assetType,
                     $newType
                 )
