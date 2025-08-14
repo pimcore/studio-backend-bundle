@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolverInterface as SystemConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface as ImageConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Video\Thumbnail\ConfigResolverInterface as VideoConfigResolver;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
@@ -84,7 +85,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         Image $image,
         ImageDownloadConfigParameter $parameters
     ): ThumbnailInterface {
-        $thumbnailConfig = $this->getImageThumbnailConfig($image, $parameters);
+        $thumbnailConfig = $this->getImageThumbnailConfig($image->getId(), $parameters);
         $thumbnail = $image->getThumbnail($thumbnailConfig);
         $dpi = $parameters->getDpi();
         if ($dpi && $thumbnailConfig->getFormat() === MimeTypes::JPEG->value) {
@@ -141,6 +142,19 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         return $asset->getImageThumbnail($thumbnailConfig);
     }
 
+    public function getDocumentThumbnailConfig(
+        Document $document,
+        DocumentImageDownloadConfigParameter $parameters
+    ): ImageThumbnailConfig
+    {
+        $thumbnailConfig = $this->getImageThumbnailConfig($document->getId(), $parameters);
+        if ($parameters->getMimeType() === MimeTypes::SOURCE->value) {
+            $thumbnailConfig->setFormat(MimeTypes::JPEG->value);
+        }
+
+        return $thumbnailConfig;
+    }
+
     /**
      * @throws InvalidThumbnailException
      */
@@ -194,11 +208,11 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     }
 
     private function getImageThumbnailConfig(
-        Image $image,
+        int $assetId,
         ImageDownloadConfigParameter $parameters
     ): ImageThumbnailConfig {
         $thumbnailConfig = new ImageThumbnailConfig();
-        $thumbnailConfig->setName('pimcore-download-' . $image->getId() . '-' . md5(serialize($parameters)));
+        $thumbnailConfig->setName('pimcore-download-' . $assetId . '-' . md5(serialize($parameters)));
         $thumbnailConfig = $this->setThumbnailConfigResizeParameters($parameters, $thumbnailConfig);
         $thumbnailConfig->setFormat($parameters->getMimeType());
         $quality = $parameters->getQuality();

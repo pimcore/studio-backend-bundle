@@ -34,6 +34,16 @@ asset_custom_settings_get_by_id_summary: Get custom settings of an asset by ID
 asset_delete_zip_description: |
   Delete the ZIP file with given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_delete_zip_summary: Delete asset ZIP file based on jobRunId
+asset_document_download_custom_description: |
+  Download the custom document image based on the provided <strong>{id}</strong> and configuration parameters. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset document
+asset_document_download_custom_success_response: Custom document image binary file
+asset_document_download_custom_summary: Download custom document image by ID and configuration
+asset_document_stream_custom_description: |
+  Stream the custom document image based on the provided <strong>{id}</strong> and configuration parameters. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset document
+asset_document_stream_custom_success_response: Custom document image stream
+asset_document_stream_custom_summary: Stream custom document image by ID and configuration
 asset_document_stream_preview_description: |
   Stream asset document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset document
 asset_document_stream_preview_success_response: Asset PDF preview stream

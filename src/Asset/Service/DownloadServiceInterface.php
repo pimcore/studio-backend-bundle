@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
@@ -43,6 +44,14 @@ interface DownloadServiceInterface
         Asset $image,
         ImageDownloadConfigParameter $parameters
     ): BinaryFileResponse;
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|ThumbnailResizingFailedException
+     */
+    public function downloadDocumentImageThumbnail(
+        Asset $document,
+        DocumentImageDownloadConfigParameter $parameters
+    ): StreamedResponse;
 
     /**
      * @throws InvalidElementTypeException|InvalidAssetFormatTypeException|ThumbnailResizingFailedException
