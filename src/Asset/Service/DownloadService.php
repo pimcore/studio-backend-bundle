@@ -13,12 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
@@ -105,7 +103,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws InvalidElementTypeException
+     * {@inheritdoc}
      */
     public function downloadImageByThumbnail(
         ElementInterface $image,
@@ -115,20 +113,8 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidElementTypeException($image->getType());
         }
 
-        try {
-            $thumbnail = $image->getThumbnail($thumbnailName);
-        } catch (Exception) {
-            throw new InvalidThumbnailException($thumbnailName);
-        }
-
-        $thumbnailConfig = $thumbnail->getConfig();
-        $autoFormatConfigs = $thumbnailConfig->getAutoFormatThumbnailConfigs();
-        if ($autoFormatConfigs && $thumbnailConfig->getFormat() === strtoupper(FormatTypes::SOURCE)) {
-            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
-        }
-
         return $this->thumbnailService->getBinaryResponseFromThumbnail(
-            $thumbnail,
+            $this->thumbnailService->getImageThumbnailByName($image, $thumbnailName),
             $image,
             false
         );

@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -46,6 +47,11 @@ interface BinaryServiceInterface
     public function streamImage(
         Asset $image
     ): StreamedResponse;
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function streamImageByThumbnail(ElementInterface $image, string $thumbnailName): StreamedResponse;
 
     /**
      * @throws InvalidElementTypeException|InvalidThumbnailException
