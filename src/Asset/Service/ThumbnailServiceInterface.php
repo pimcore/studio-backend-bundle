@@ -33,6 +33,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 interface ThumbnailServiceInterface
 {
     /**
+     * @throws InvalidThumbnailException
+     */
+    public function getImageThumbnailByName(Image $image, string $thumbnailName): ThumbnailInterface;
+
+    /**
      * @throws ThumbnailResizingFailedException
      */
     public function getThumbnailFromConfiguration(

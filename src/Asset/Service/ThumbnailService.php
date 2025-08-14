@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamCon
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
@@ -51,6 +52,29 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         private VideoConfigResolver $videoConfigResolver,
     ) {
 
+    }
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getImageThumbnailByName(Image $image, string $thumbnailName): ThumbnailInterface
+    {
+        try {
+            $thumbnail = $image->getThumbnail($thumbnailName);
+        } catch (Exception) {
+            throw new InvalidThumbnailException($thumbnailName);
+        }
+
+        $thumbnailConfig = $thumbnail->getConfig();
+        $autoFormatConfigs = $thumbnailConfig->getAutoFormatThumbnailConfigs();
+        if ($autoFormatConfigs && $thumbnailConfig->getFormat() === strtoupper(FormatTypes::SOURCE)) {
+            $config = current($autoFormatConfigs);
+            if ($config !== false) {
+                $thumbnail = $image->getThumbnail($config);
+            }
+        }
+
+        return $thumbnail;
     }
 
     /**
