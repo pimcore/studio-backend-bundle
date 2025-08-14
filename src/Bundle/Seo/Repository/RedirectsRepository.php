@@ -64,6 +64,10 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
             return;
         }
 
+        if ($searchFilter->getFilterValue() === '' || $searchFilter->getFilterValue() === null) {
+            return;
+        }
+
         $this->addSearchCondition($listing, $searchFilter->getFilterValue());
     }
 
@@ -76,6 +80,8 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
         }
 
         if (!preg_match('@^https?://@', $searchTerm)) {
+            $listing->setCondition('1 = 2');
+
             return;
         }
 
