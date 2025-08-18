@@ -14,19 +14,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Document;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PageConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\ThumbnailNameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\PageConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
@@ -36,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -47,10 +43,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CustomStreamController extends AbstractApiController
+final class ThumbnailDownloadController extends AbstractApiController
 {
-    private const string ROUTE = '/assets/{id}/document/stream/custom';
-
+    private const string ROUTE = '/assets/{id}/document/download/thumbnail/{thumbnailName}';
+    
     public function __construct(
         private readonly AssetServiceInterface $assetService,
         private readonly DownloadServiceInterface $downloadService,
@@ -61,54 +57,47 @@ final class CustomStreamController extends AbstractApiController
     }
 
     /**
-     * @throws ElementStreamResourceNotFoundException
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws ThumbnailResizingFailedException
+     * @throws SearchException
      * @throws UserNotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_stream_document_image_custom', methods: ['GET'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_download_document_thumbnail', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'asset_document_stream_custom',
-        description: 'asset_document_stream_custom_description',
-        summary: 'asset_document_stream_custom_summary',
+        operationId: 'asset_document_download_by_thumbnail',
+        description: 'asset_document_download_by_thumbnail_description',
+        summary: 'asset_document_download_by_thumbnail_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'document')]
-    #[MimeTypeParameter]
     #[PageConfigParameter]
-    #[ResizeModeParameter(false)]
-    #[ImageConfigParameter('width', 140)]
-    #[ImageConfigParameter('height', 140)]
-    #[ImageConfigParameter('quality', 80)]
-    #[ImageConfigParameter('dpi', 300)]
+    #[ThumbnailNameParameter]
     #[SuccessResponse(
-        description: 'asset_document_stream_custom_success_response',
-        content: [new MediaType('image/jpeg'), new MediaType('image/png')],
-        headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
+        description: 'asset_document_download_by_thumbnail_success_response',
+        content: new MediaType(),
+        headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::FORBIDDEN,
-        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function streamCustomDocumentImage(
+    public function downloadDocumentImageByThumbnail(
         int $id,
-        #[MapQueryString] DocumentImageDownloadConfigParameter $parameters
-    ): StreamedResponse {
-        $asset = $this->assetService->getAssetElement(
-            $this->securityService->getCurrentUser(),
-            $id
-        );
+        string $thumbnailName,
+        #[MapQueryString] ?PageConfigurationParameter $parameter,
+    ): StreamedResponse
+    {
+        $asset = $this->assetService->getAssetElement($this->securityService->getCurrentUser(), $id);
 
-        return $this->downloadService->getCustomDocumentThumbnail(
+        return $this->downloadService->getDocumentThumbnailByName(
             $asset,
-            $parameters,
-            HttpResponseHeaders::INLINE_TYPE->value
+            $thumbnailName,
+            $parameter ? $parameter->getPage() : 1,
         );
     }
 }

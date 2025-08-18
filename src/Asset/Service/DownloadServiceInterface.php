@@ -49,9 +49,19 @@ interface DownloadServiceInterface
     /**
      * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|ThumbnailResizingFailedException
      */
-    public function downloadDocumentImageThumbnail(
+    public function getCustomDocumentThumbnail(
         Asset $document,
         DocumentImageDownloadConfigParameter $parameters,
+        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+    ): StreamedResponse;
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function getDocumentThumbnailByName(
+        Asset $document,
+        string $thumbnailName,
+        int $page,
         string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
     ): StreamedResponse;
 

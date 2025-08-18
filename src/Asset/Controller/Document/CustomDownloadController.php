@@ -97,13 +97,13 @@ final class CustomDownloadController extends AbstractApiController
     ])]
     public function downloadCustomDocumentImage(
         int $id,
-        #[MapQueryString] DocumentImageDownloadConfigParameter $parameters
+        #[MapQueryString] DocumentImageDownloadConfigParameter $parameters,
     ): StreamedResponse {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id
         );
 
-        return $this->downloadService->downloadDocumentImageThumbnail($asset, $parameters);
+        return $this->downloadService->getCustomDocumentThumbnail($asset, $parameters);
     }
 }

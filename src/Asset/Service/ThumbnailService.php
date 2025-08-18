@@ -142,6 +142,25 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         return $asset->getImageThumbnail($thumbnailConfig);
     }
 
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getImageThumbnailConfigByName(
+        string $thumbnailName
+    ): ImageThumbnailConfig {
+        try {
+            $config = $this->imageConfigResolver->getByName($thumbnailName);
+        } catch (Exception) {
+            throw new InvalidThumbnailException($thumbnailName);
+        }
+
+        if (!$config instanceof ImageThumbnailConfig) {
+            $config = $this->imageConfigResolver->getPreviewConfig();
+        }
+
+        return $config;
+    }
+
     public function getDocumentThumbnailConfig(
         Document $document,
         DocumentImageDownloadConfigParameter $parameters

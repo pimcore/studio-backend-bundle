@@ -64,6 +64,13 @@ interface ThumbnailServiceInterface
     public function getAssetImagePreviewThumbnail(Video|Document $asset): DocumentThumbnail|VideoImageThumbnail;
 
     /**
+     * @throws InvalidThumbnailException
+     */
+    public function getImageThumbnailConfigByName(
+        string $thumbnailName
+    ): ImageThumbnailConfig;
+
+    /**
      * @throws ThumbnailResizingFailedException
      */
     public function getDocumentThumbnailConfig(

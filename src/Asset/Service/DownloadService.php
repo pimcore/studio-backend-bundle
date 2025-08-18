@@ -28,6 +28,7 @@ use Pimcore\Messenger\AssetPreviewImageMessage;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Image;
+use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -79,7 +80,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function downloadDocumentImageThumbnail(
+    public function getCustomDocumentThumbnail(
         Asset $document,
         DocumentImageDownloadConfigParameter $parameters,
         string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
@@ -89,19 +90,32 @@ final readonly class DownloadService implements DownloadServiceInterface
         }
 
         $thumbnailConfig = $this->thumbnailService->getDocumentThumbnailConfig($document, $parameters);
-        $thumbnail = $document->getImageThumbnail($thumbnailConfig, $parameters->getPage() ?? 1);
-        if (!$thumbnail->exists()) {
-            $this->messageBus->dispatch(
-                new AssetPreviewImageMessage($document->getId())
-            );
 
-            throw new ElementStreamResourceNotFoundException(
-                $document->getId(),
-                'image thumbnail for document'
-            );
+        return $this->getStreamedDocumentThumbnail(
+            $document,
+            $thumbnailConfig,
+            $parameters->getPage() ?? 1,
+            $attachmentType
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDocumentThumbnailByName(
+        Asset $document,
+        string $thumbnailName,
+        int $page,
+        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+    ): StreamedResponse {
+        if (!$document instanceof Document) {
+            throw new InvalidElementTypeException($document->getType());
         }
 
-        return $this->getStreamedResponse($thumbnail, $attachmentType);
+        $thumbnailConfig = $this->thumbnailService->getImageThumbnailConfigByName($thumbnailName);
+
+        return $this->getStreamedDocumentThumbnail($document, $thumbnailConfig, $page, $attachmentType
+        );
     }
 
     /**
@@ -170,5 +184,30 @@ final readonly class DownloadService implements DownloadServiceInterface
         );
 
         return $response;
+    }
+
+    /**
+     * @throws ElementStreamResourceNotFoundException
+     */
+    private function getStreamedDocumentThumbnail(
+        Document $document,
+        Config $thumbnailConfig,
+        int $page,
+        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+    ): StreamedResponse
+    {
+        $thumbnail = $document->getImageThumbnail($thumbnailConfig, $page);
+        if (!$thumbnail->exists()) {
+            $this->messageBus->dispatch(
+                new AssetPreviewImageMessage($document->getId())
+            );
+
+            throw new ElementStreamResourceNotFoundException(
+                $document->getId(),
+                'image thumbnail for document'
+            );
+        }
+
+        return $this->getStreamedResponse($thumbnail, $attachmentType);
     }
 }
