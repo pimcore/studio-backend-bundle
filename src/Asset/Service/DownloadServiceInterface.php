@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -43,6 +45,25 @@ interface DownloadServiceInterface
         Asset $image,
         ImageDownloadConfigParameter $parameters
     ): BinaryFileResponse;
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|ThumbnailResizingFailedException
+     */
+    public function getCustomDocumentThumbnail(
+        Asset $document,
+        DocumentImageDownloadConfigParameter $parameters,
+        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+    ): StreamedResponse;
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function getDocumentThumbnailByName(
+        Asset $document,
+        string $thumbnailName,
+        int $page,
+        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+    ): StreamedResponse;
 
     /**
      * @throws InvalidElementTypeException|InvalidAssetFormatTypeException|ThumbnailResizingFailedException

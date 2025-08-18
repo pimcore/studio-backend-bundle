@@ -21,7 +21,7 @@ use function in_array;
 /**
  * @internal
  */
-final readonly class ImageDownloadConfigParameter
+readonly class ImageDownloadConfigParameter
 {
     private const array ALLOWED_RESIZE_MIME_TYPES = [
         MimeTypes::JPEG->value,
