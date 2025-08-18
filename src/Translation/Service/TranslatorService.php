@@ -15,11 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use InvalidArgumentException;
 use Locale;
-use Pimcore\Bundle\StaticResolverBundle\Contract\Lib\CacheResolverContractInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as StudioNotFoundException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as StudioNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
@@ -253,9 +252,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             throw new StudioNotFoundException('Translation Domain', $domain);
         }
 
-
         $this->cacheResolver->clearTags(['translator', 'translate']);
     }
-
-
 }
