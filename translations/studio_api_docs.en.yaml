@@ -1280,3 +1280,6 @@ translation_get_domains_success_response: List of available translation domains
 translation_get_list_description: Get all translations for the given domain
 translation_get_list_summary: Get all translations for the given domain
 translation_get_list_success_response: List of translations for the given domain including all languages
+translation_cleanup_by_domain_description: Cleanup translations for the given domain
+translation_cleanup_by_domain_summary: Cleanup translations for the given domain
+translation_cleanup_by_domain_success_description: Translation cleaned up successfully
