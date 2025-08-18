@@ -15,8 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use InvalidArgumentException;
 use Locale;
+use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as StudioNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
@@ -30,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
+use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -55,7 +58,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private ListingFilterInterface $listingFilter,
         private FilterMapperServiceInterface $filterMapper,
         private TranslationsHydratorInterface $translationsHydrator,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private CacheResolverInterface $cacheResolver
     ) {
         $this->translatorBag = $this->getTranslatorBag();
     }
@@ -237,5 +241,17 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         }
 
         return $fallbackLanguages;
+    }
+
+    public function cleanup(string $domain): void
+    {
+        try {
+            $list = $this->translationRepository->getTranslationList($domain);
+            $list->cleanup();
+        } catch (NotFoundException) {
+            throw new StudioNotFoundException('Translation Domain', $domain);
+        }
+
+        $this->cacheResolver->clearTags(['translator', 'translate']);
     }
 }
