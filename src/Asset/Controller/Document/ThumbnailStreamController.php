@@ -47,7 +47,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ThumbnailStreamController extends AbstractApiController
 {
     private const string ROUTE = '/assets/{id}/document/stream/thumbnail/{thumbnailName}';
-    
+
     public function __construct(
         private readonly AssetServiceInterface $assetService,
         private readonly DownloadServiceInterface $downloadService,
@@ -91,8 +91,7 @@ final class ThumbnailStreamController extends AbstractApiController
         int $id,
         string $thumbnailName,
         #[MapQueryString] ?PageConfigurationParameter $parameter,
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         $asset = $this->assetService->getAssetElement($this->securityService->getCurrentUser(), $id);
 
         return $this->downloadService->getDocumentThumbnailByName(

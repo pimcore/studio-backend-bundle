@@ -194,8 +194,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         Config $thumbnailConfig,
         int $page,
         string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         $thumbnail = $document->getImageThumbnail($thumbnailConfig, $page);
         if (!$thumbnail->exists()) {
             $this->messageBus->dispatch(
