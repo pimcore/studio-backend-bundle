@@ -90,14 +90,16 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly array $contentLanguages,
         #[Property(
             description: 'List of valid website Languages to edit.',
-            type: 'object',
-            example: ['language' => 'de', 'display' => 'Deutsch']
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['de', 'en']
         )]
         private readonly array $allowedLanguagesForEditingWebsiteTranslations,
         #[Property(
             description: 'List of valid website Languages to view.',
-            type: 'object',
-            example: ['language' => 'de', 'display' => 'Deutsch']
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['de', 'en'],
         )]
         private readonly array $allowedLanguagesForViewingWebsiteTranslations,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]

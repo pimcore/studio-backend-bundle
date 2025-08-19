@@ -1304,3 +1304,6 @@ translation_get_list_success_response: List of translations for the given domain
 translation_cleanup_by_domain_description: Cleanup translations for the given domain
 translation_cleanup_by_domain_summary: Cleanup translations for the given domain
 translation_cleanup_by_domain_success_description: Translation cleaned up successfully
+translation_get_available_locales_description: Get all available locales in the system
+translation_get_available_locales_summary: Get all available locales in the system
+translation_get_available_locales_success_response: List of available locales in the system

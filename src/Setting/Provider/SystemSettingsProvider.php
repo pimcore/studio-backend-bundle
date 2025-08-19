@@ -42,33 +42,11 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'requiredLanguages' => $this->systemSettings['general']['required_languages'] ??
                 $this->systemSettings['general']['valid_languages'],
             'validLanguages' => $this->systemSettings['general']['valid_languages'],
-            'availableAdminLanguages' => $this->getAvailableAdminLanguages(),
+            'availableAdminLanguages' => $this->adminResolver->getLanguages(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
             'upload_max_filesize' => $this->getUploadMaxFilesize(),
         ];
-    }
-
-    private function getAvailableAdminLanguages(): array
-    {
-        $availableLanguages = $this->adminResolver->getLanguages();
-
-        try {
-            $locales = $this->toolResolver->getSupportedLocales();
-        } catch (Exception) {
-            $locales = [];
-        }
-
-        $languages = array_map(
-            static fn ($lang) => ['language' => $lang, 'display' => $locales[$lang]],
-            array_filter($availableLanguages, static fn ($lang) => isset($locales[$lang]))
-        );
-
-        usort($languages, static function ($a, $b) {
-            return strcmp($a['display'], $b['display']);
-        });
-
-        return $languages;
     }
 
     private function getUploadMaxFilesize(): int

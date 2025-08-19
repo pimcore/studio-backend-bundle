@@ -55,10 +55,13 @@ interface TranslatorServiceInterface
 
     /**
      * Returns a list of all available domains for translations.
-     *
-     * @return string[] List of domain names
      */
     public function getAvailableDomains(): array;
+
+    /**
+     * Returns a list of all available locals for translations.
+     */
+    public function getAvailableLocales(): array;
 
     /**
      * Returns a list of all available translations including all languages.
