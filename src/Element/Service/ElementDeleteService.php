@@ -41,6 +41,7 @@ use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
+use function in_array;
 use function sprintf;
 
 /**
@@ -243,8 +244,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         ElementInterface $parentElement,
         UserInterface $user,
         string $elementType
-    ): void
-    {
+    ): void {
         $childrenIds = $this->getChildrenIds($parentElement, 'desc');
         $useRecycleBin = count($childrenIds) <= $this->recycleBinThreshold;
 

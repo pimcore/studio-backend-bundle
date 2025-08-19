@@ -86,7 +86,7 @@ final class BatchDeleteHandler extends AbstractHandler
                 ));
             }
         }
-        
+
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 

@@ -44,7 +44,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class BatchDeleteController extends AbstractApiController
 {
     private const string ROUTE = '/data-objects/batch-delete';
-    
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ElementDeleteServiceInterface $elementDeleteService,
@@ -91,7 +91,7 @@ final class BatchDeleteController extends AbstractApiController
                     $parameter,
                     ElementTypes::TYPE_DATA_OBJECT,
                     $this->securityService->getCurrentUser()
-                )
+                ),
             ],
             HttpResponseCodes::CREATED->value
         );
