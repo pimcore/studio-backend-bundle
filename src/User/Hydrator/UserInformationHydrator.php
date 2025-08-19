@@ -30,7 +30,6 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPerspectiveServiceInterface $userPerspectiveService,
-        private ToolResolverInterface $toolResolver
     ) {
     }
 

@@ -29,7 +29,6 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
     public function __construct(
         SystemSettingsConfig $systemSettingsConfig,
-        private ToolResolverInterface $toolResolver,
         private AdminResolverInterface $adminResolver
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
