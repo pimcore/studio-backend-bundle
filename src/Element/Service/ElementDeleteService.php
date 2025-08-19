@@ -29,8 +29,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\IdsParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
@@ -47,8 +48,6 @@ use function sprintf;
  */
 final readonly class ElementDeleteService implements ElementDeleteServiceInterface
 {
-    use ElementProviderTrait;
-
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
@@ -95,6 +94,45 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function batchDeleteElements(IdsParameter $elementIds, string $elementType, UserInterface $user): ?int
+    {
+        if (!in_array($elementType, [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DATA_OBJECT], true)) {
+            throw new InvalidElementTypeException($elementType);
+        }
+
+        $elements = [];
+        foreach ($elementIds->getIds() as $elementId) {
+            $elements[] = $this->elementService->getAllowedElementById($elementType, $elementId, $user);
+        }
+
+        if (empty($elements)) {
+            return null;
+        }
+
+        return $this->deleteService->batchDeleteElements(
+            $elements,
+            $user,
+            $elementType
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function processBatchDelete(ElementInterface $parentElement, UserInterface $user, string $elementType): void
+    {
+        if (!$this->elementService->hasElementChildren($parentElement)) {
+            $this->deleteElementWithRecycleBin($parentElement, $user);
+
+            return;
+        }
+
+        $this->deleteElementWithChildren($parentElement, $user, $elementType);
+    }
+
+    /**
      * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException
      */
     public function deleteParentElement(
@@ -134,11 +172,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         }
 
         if ($element->isLocked()) {
-            throw new ForbiddenException(
-                sprintf(
-                    'Element %s is locked',
-                    $element->getId()
-                )
+            throw new ForbiddenException(sprintf('Element %s is locked', $element->getId())
             );
         }
 
@@ -197,6 +231,57 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         $canUseRecycleBin = $this->useRecycleBinForElement($element, $user);
 
         return new DeleteInfo($hasDependencies, $canUseRecycleBin);
+    }
+
+    private function deleteElementWithRecycleBin(ElementInterface $element, UserInterface $user): void
+    {
+        $this->addElementToRecycleBin($element, $user);
+        $this->deleteParentElement($element, $user);
+    }
+
+    private function deleteElementWithChildren(
+        ElementInterface $parentElement,
+        UserInterface $user,
+        string $elementType
+    ): void
+    {
+        $childrenIds = $this->getChildrenIds($parentElement, 'desc');
+        $useRecycleBin = count($childrenIds) <= $this->recycleBinThreshold;
+
+        $this->deleteChildElements($childrenIds, $elementType, $user, $useRecycleBin);
+        $this->deleteParentElementConditionally($parentElement, $user, $useRecycleBin);
+    }
+
+    private function deleteChildElements(
+        array $childrenIds,
+        string $elementType,
+        UserInterface $user,
+        bool $useRecycleBin
+    ): void {
+        foreach ($childrenIds as $childrenId) {
+            try {
+                $element = $this->elementService->getElementById($elementType, $childrenId);
+            } catch (NotFoundException) {
+                continue;
+            }
+
+            if ($useRecycleBin) {
+                $this->addElementToRecycleBin($element, $user);
+            }
+
+            $this->deleteElement($element, $user);
+        }
+    }
+
+    private function deleteParentElementConditionally(
+        ElementInterface $parentElement,
+        UserInterface $user,
+        bool $useRecycleBin
+    ): void {
+        if ($useRecycleBin) {
+            $this->addElementToRecycleBin($parentElement, $user);
+        }
+        $this->deleteParentElement($parentElement, $user);
     }
 
     /**

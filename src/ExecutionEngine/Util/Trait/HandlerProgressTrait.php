@@ -24,17 +24,17 @@ use function count;
  */
 trait HandlerProgressTrait
 {
-    private const FREQUENCY = 10;
+    private const int FREQUENCY = 10;
 
-    private const SEND_THRESHOLD = 99;
+    private const int SEND_THRESHOLD = 99;
 
-    private const PROCESSED_ELEMENTS = 'processedElements';
+    private const string PROCESSED_ELEMENTS = 'processedElements';
 
-    private const ELEMENTS_PER_STEP = 'elementsPerStep';
+    private const string ELEMENTS_PER_STEP = 'elementsPerStep';
 
-    private const CURRENT_STEP = 'currentStep';
+    private const string CURRENT_STEP = 'currentStep';
 
-    private const TOTAL_STEPS = 'totalSteps';
+    private const string TOTAL_STEPS = 'totalSteps';
 
     private function updateProgress(
         PublishServiceInterface $publishService,
@@ -43,6 +43,7 @@ trait HandlerProgressTrait
         int $stepElements = 1
     ): void {
         $currentStep = $this->getCurrentStep($jobRun);
+        $totalSteps = $this->getTotalSteps($jobRun);
         $totalEvents = $this->getElementsPerStep($jobRun, $stepElements);
 
         $processedElements = $jobRun->getContext()[self::PROCESSED_ELEMENTS] ?? 0;
@@ -62,7 +63,7 @@ trait HandlerProgressTrait
                 $progress,
                 // $currentStep + 1 because the current step is 0-based
                 $currentStep + 1,
-                $this->getTotalSteps($jobRun),
+                $totalSteps,
                 $jobStepName,
                 $jobRun->getJob()?->getName() ?? '',
                 $jobRun->getId(),

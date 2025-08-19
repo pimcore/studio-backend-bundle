@@ -25,6 +25,7 @@ enum Config: string
     case ELEMENT_PERMISSION_MISSING_MESSAGE = 'studio_ee_element_permission_missing';
     case ELEMENT_HAS_CHILDREN_MESSAGE = 'studio_ee_element_has_existing_children';
     case ELEMENT_DELETE_FAILED_MESSAGE = 'studio_ee_element_delete_failed';
+    case ELEMENT_BATCH_DELETE_FAILED_MESSAGE = 'studio_ee_element_batch_delete_failed';
     case ZIP_FILE_COPY_FAILED_MESSAGE = 'studio_ee_zip_file_copy_failed';
     case ZIP_FILE_UPLOAD_FAILED_MESSAGE = 'studio_ee_zip_file_upload_failed';
     case ZIP_CLEANUP_FAILED_MESSAGE = 'studio_ee_zip_cleanup_failed';

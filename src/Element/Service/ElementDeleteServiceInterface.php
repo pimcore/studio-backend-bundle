@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\IdsParameter;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
@@ -36,6 +37,16 @@ interface ElementDeleteServiceInterface
         ElementParameters $elementParameters,
         UserInterface $user
     ): ?int;
+
+    /**
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException
+     */
+    public function batchDeleteElements(IdsParameter $elementIds, string $elementType, UserInterface $user): ?int;
+
+    /**
+     * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException
+     */
+    public function processBatchDelete(ElementInterface $parentElement, UserInterface $user, string $elementType): void;
 
     /**
      * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException

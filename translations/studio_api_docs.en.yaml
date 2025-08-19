@@ -7,6 +7,11 @@ asset_add_description: |
   The <strong>{parentId}</strong> must be an ID of existing folder.
 asset_add_success_response: ID of successfully uploaded new asset
 asset_add_summary: Add a new asset
+asset_batch_delete_description: |
+  Batch delete assets based on the given <strong>{ids}</strong>. <br> The <strong>{ids}</strong> must be a list of IDs of existing assets. <br>
+  Deletion is done asynchronously and the jobRun ID is returned in the response
+asset_batch_delete_created_response: Successfully created <strong>jobRun</strong> for batch delete
+asset_batch_delete_summary: Batch delete assets by IDs
 asset_clone_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
   for copying child assets
 asset_clone_description: |
@@ -270,6 +275,11 @@ data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
 data_object_add_summary: Successfully added a new data object
+data_object_batch_delete_description: |
+  Batch delete data objects based on the given <strong>{ids}</strong>. <br> The <strong>{ids}</strong> must be a list of IDs of existing data objects. <br>
+  Deletion is done asynchronously and the jobRun ID is returned in the response
+data_object_batch_delete_created_response: Successfully created <strong>jobRun</strong> for batch delete
+data_object_batch_delete_summary: Batch delete data objects by IDs
 data_object_clone_created_response: Successfully copied parent data object and created
   <strong>jobRun</strong> for copying child objects
 data_object_clone_description: |

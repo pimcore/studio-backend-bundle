@@ -24,11 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPe
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -38,7 +35,6 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -59,7 +55,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function getElementIdByPath(
         string $elementType,
@@ -71,7 +67,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAllowedElementIdByPath(
         string $elementType,
@@ -83,7 +79,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAllowedElementById(
         string $elementType,
@@ -97,7 +93,15 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
+     */
+    public function getElementById(string $elementType, int $elementId): ElementInterface
+    {
+        return $this->getElement($this->serviceResolver, $elementType, $elementId);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getAllowedElementByPath(
         string $elementType,
@@ -126,7 +130,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ApiNotFoundException|ForbiddenException|UserNotFoundException
+     * {@inheritdoc}
      */
     public function getElementSubtype(ElementParameters $parameters): Subtype
     {
@@ -140,7 +144,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws InvalidElementTypeException
+     * {@inheritdoc}
      */
     public function getElementContextPermissions(
         string $elementType
@@ -161,26 +165,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ApiNotFoundException
-     */
-    private function getSubtypeFromElement(ElementInterface $element): string
-    {
-        $subtype = match (true) {
-            $element instanceof Asset, $element instanceof Document => $element->getType(),
-            $element instanceof DataObject\Concrete => $element->getClassName(),
-            $element instanceof DataObject\Folder => ElementTypes::TYPE_FOLDER,
-            default => null,
-        };
-
-        if ($subtype === null) {
-            throw new ApiNotFoundException('Subtype for Element', $element->getId());
-        }
-
-        return $subtype;
-    }
-
-    /**
-     * @throws InvalidElementTypeException|NotFoundException|SearchException
+     * {@inheritdoc}
      */
     public function resolveBySearchTerm(string $elementType, SearchTermParameter $searchTerm, UserInterface $user): int
     {
@@ -192,5 +177,24 @@ final readonly class ElementService implements ElementServiceInterface
         $modifiedSearchTerm = $event->getSearchTerm();
 
         return $this->elementSearchService->getElementBySearchTerm($elementType, $modifiedSearchTerm, $user);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getSubtypeFromElement(ElementInterface $element): string
+    {
+        $subtype = match (true) {
+            $element instanceof Asset, $element instanceof Document => $element->getType(),
+            $element instanceof DataObject\Concrete => $element->getClassName(),
+            $element instanceof DataObject\Folder => ElementTypes::TYPE_FOLDER,
+            default => null,
+        };
+
+        if ($subtype === null) {
+            throw new NotFoundException('Subtype for Element', $element->getId());
+        }
+
+        return $subtype;
     }
 }

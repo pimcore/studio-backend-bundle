@@ -21,12 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContex
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\UserInterface;
 
 interface ElementServiceInterface
@@ -59,6 +58,11 @@ interface ElementServiceInterface
     ): ElementInterface;
 
     /**
+     * @throws NotFoundException
+     */
+    public function getElementById(string $elementType, int $elementId): ElementInterface;
+
+    /**
      * @throws ForbiddenException|NotFoundException
      */
     public function getAllowedElementByPath(
@@ -74,7 +78,7 @@ interface ElementServiceInterface
     ): bool;
 
     /**
-     * @throws ApiNotFoundException|ForbiddenException|UserNotFoundException
+     * @throws NotFoundException|ForbiddenException|UserNotFoundException
      */
     public function getElementSubtype(ElementParameters $parameters): Subtype;
 

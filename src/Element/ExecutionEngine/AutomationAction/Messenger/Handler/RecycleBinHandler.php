@@ -65,10 +65,7 @@ final class RecycleBinHandler extends AbstractHandler
         $user = $validatedParameters->getUser();
         $subject = $validatedParameters->getSubject();
         $element = $this->getElementById(
-            new ElementDescriptor(
-                $subject->getType(),
-                $subject->getId()
-            ),
+            new ElementDescriptor($subject->getType(), $subject->getId()),
             $user,
             $this->elementService
         );

@@ -156,6 +156,36 @@ class AbstractHandler extends AbstractAutomationActionHandler
         throw new EnvironmentException('How did I get here?');
     }
 
+    /**
+     * @throws Exception
+     */
+    protected function tryElementById(
+        string $elementType,
+        int $elementId,
+        ElementServiceInterface $elementService
+    ): ?ElementInterface {
+        try {
+            return $elementService->getAllowedElementById(
+                $elementType,
+                $elementId,
+                $user
+            );
+        } catch (AccessDeniedException) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
+                [
+                    'userId' => $user->getId(),
+                    'permission' => ElementPermissions::VIEW_PERMISSION,
+                    'type' => ucfirst($jobElement->getType()),
+                    'id' => $jobElement->getId(),
+                ],
+            ));
+        } catch (NotFoundException) {
+        }
+
+        return null;
+    }
+
     protected function updateContextArrayValues(JobRun $jobRun, string $key, array $value): void
     {
         $context = $jobRun->getContext();

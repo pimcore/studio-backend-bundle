@@ -11,18 +11,13 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-enum Events: string
+final class BatchDeleteMessage extends AbstractExecutionEngineMessage
 {
-    use EnumToValueArrayTrait;
-
-    case ZIP_DOWNLOAD_READY = 'zip-download-ready';
-    case ZIP_UPLOAD_FINISHED = 'zip-upload-finished';
-    case ASSET_UPLOAD_FINISHED = 'asset-upload-finished';
 }
