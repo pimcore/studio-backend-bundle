@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\DocumentDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
@@ -50,10 +51,8 @@ use function sprintf;
 final readonly class ElementDeleteService implements ElementDeleteServiceInterface
 {
     public function __construct(
-        private AssetSearchServiceInterface $assetSearchService,
-        private DataObjectSearchServiceInterface $dataObjectSearchService,
         private DeleteServiceInterface $deleteService,
-        private DocumentSearchServiceInterface $documentSearchService,
+        private ElementSearchServiceInterface $elementSearchService,
         private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
@@ -62,11 +61,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
-     * @throws ElementDeletionFailedException
-     * @throws EnvironmentException
-     * @throws ForbiddenException
-     * @throws InvalidElementTypeException
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function deleteElements(
         ElementParameters $elementParameters,
@@ -83,7 +78,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
 
             return null;
         }
-        $childrenIds = $this->getChildrenIds($element, 'desc');
+        $childrenIds = $this->elementSearchService->getElementChildrenIds($element, 'desc');
 
         return $this->deleteService->deleteElementsWithExecutionEngine(
             $element,
@@ -134,7 +129,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
-     * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException
+     * {@inheritdoc}
      */
     public function deleteParentElement(
         ElementInterface $element,
@@ -154,7 +149,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
-     * @throws ElementDeletionFailedException|EnvironmentException
+     * {@inheritdoc}
      */
     public function deleteElement(
         ElementInterface $element,
@@ -195,25 +190,6 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         }
     }
 
-    /**
-     * @throws InvalidElementTypeException
-     */
-    public function useRecycleBinForElement(
-        ElementInterface $element,
-        UserInterface $user
-    ): bool {
-        $path = $element->getRealFullPath();
-
-        $childrenCount = match (true) {
-            $element instanceof Asset => $this->assetSearchService->countChildren($path),
-            $element instanceof DataObject => $this->dataObjectSearchService->countChildren($path),
-            $element instanceof Document => $this->documentSearchService->countChildren($path),
-            default => throw new InvalidElementTypeException($element->getType())
-        };
-
-        return $childrenCount <= $this->recycleBinThreshold;
-    }
-
     public function addElementToRecycleBin(
         ElementInterface $element,
         UserInterface $user
@@ -228,10 +204,11 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         ElementInterface $element,
         UserInterface $user
     ): DeleteInfo {
-        $hasDependencies = $this->elementService->hasElementDependencies($element);
-        $canUseRecycleBin = $this->useRecycleBinForElement($element, $user);
 
-        return new DeleteInfo($hasDependencies, $canUseRecycleBin);
+        return new DeleteInfo(
+            $this->elementService->hasElementDependencies($element),
+            $this->elementSearchService->countElementChildren($element) <= $this->recycleBinThreshold
+        );
     }
 
     private function deleteElementWithRecycleBin(ElementInterface $element, UserInterface $user): void
@@ -245,7 +222,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         UserInterface $user,
         string $elementType
     ): void {
-        $childrenIds = $this->getChildrenIds($parentElement, 'desc');
+        $childrenIds = $this->elementSearchService->getElementChildrenIds($parentElement, 'desc');
         $useRecycleBin = count($childrenIds) <= $this->recycleBinThreshold;
 
         $this->deleteChildElements($childrenIds, $elementType, $user, $useRecycleBin);
@@ -282,21 +259,6 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
             $this->addElementToRecycleBin($parentElement, $user);
         }
         $this->deleteParentElement($parentElement, $user);
-    }
-
-    /**
-     * @throws InvalidElementTypeException
-     */
-    private function getChildrenIds(ElementInterface $element, string $sortDirection): array
-    {
-        $path = $element->getRealFullPath();
-
-        return match (true) {
-            $element instanceof Asset => $this->assetSearchService->getChildrenIds($path, $sortDirection),
-            $element instanceof DataObject => $this->dataObjectSearchService->getChildrenIds($path, $sortDirection),
-            $element instanceof Document => $this->documentSearchService->getChildrenIds($path, $sortDirection),
-            default => throw new InvalidElementTypeException($element->getType())
-        };
     }
 
     /**

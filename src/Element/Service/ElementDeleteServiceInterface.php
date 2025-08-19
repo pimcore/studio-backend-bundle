@@ -64,19 +64,14 @@ interface ElementDeleteServiceInterface
         UserInterface $user
     ): void;
 
-    /**
-     * @throws InvalidElementTypeException
-     */
-    public function useRecycleBinForElement(
-        ElementInterface $element,
-        UserInterface $user
-    ): bool;
-
     public function addElementToRecycleBin(
         ElementInterface $element,
         UserInterface $user
     ): void;
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     public function getElementDeleteInfo(
         ElementInterface $element,
         UserInterface $user

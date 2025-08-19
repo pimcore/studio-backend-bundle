@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -50,7 +51,7 @@ final class DeleteInfoController extends AbstractApiController
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException
      */
     #[Route(
         '/elements/{elementType}/delete-info/{id}',

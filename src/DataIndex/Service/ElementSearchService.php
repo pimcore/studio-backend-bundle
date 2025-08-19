@@ -20,6 +20,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -45,6 +49,39 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
         };
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function countElementChildren(ElementInterface $element): int
+    {
+        $path = $element->getRealFullPath();
+
+        return match (true) {
+            $element instanceof Asset => $this->assetSearchService->countChildren($path),
+            $element instanceof DataObject => $this->dataObjectSearchService->countChildren($path),
+            $element instanceof Document => $this->documentSearchService->countChildren($path),
+            default => throw new InvalidElementTypeException($element->getType())
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getElementChildrenIds(ElementInterface $element, string $sortDirection): array
+    {
+        $path = $element->getRealFullPath();
+
+        return match (true) {
+            $element instanceof Asset => $this->assetSearchService->getChildrenIds($path, $sortDirection),
+            $element instanceof DataObject => $this->dataObjectSearchService->getChildrenIds($path, $sortDirection),
+            $element instanceof Document => $this->documentSearchService->getChildrenIds($path, $sortDirection),
+            default => throw new InvalidElementTypeException($element->getType())
+        };
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getChildrenIds(string $type, string $parentPath, ?string $sortDirection = null): array
     {
         return match ($type) {
