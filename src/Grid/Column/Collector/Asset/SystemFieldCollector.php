@@ -53,7 +53,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
             $column = new ColumnConfiguration(
                 key: $columnKey,
-                group: $this->getTypeName(),
+                group: [$this->getTypeName()],
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: false,
                 exportable: $availableColumnDefinitions[$type]->isExportable(),

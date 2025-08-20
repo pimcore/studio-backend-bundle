@@ -61,7 +61,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
         foreach ($defaultMetadata as $metadata) {
             $columns[] = new ColumnConfiguration(
                 key: $metadata,
-                group: 'default_metadata',
+                group: ['default_metadata'],
                 sortable: true,
                 editable: true,
                 exportable: true,
