@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParser;
-use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
@@ -103,7 +101,7 @@ final class ObjectBrickCollector implements
                 $baseLayoutName = $this->getBaseLayoutName($fieldName, $classDefinition->getLayoutDefinitions());
 
                 if (!$baseLayoutName) {
-                    throw new InvalidArgumentException("Base layout name not found for field " . $fieldName);
+                    throw new InvalidArgumentException('Base layout name not found for field ' . $fieldName);
                 }
 
                 $this->buildColumnConfigurations($objectBrick, $fieldName, $baseLayoutName);
@@ -233,7 +231,6 @@ final class ObjectBrickCollector implements
                 return $baseLayoutName;
             }
         }
-
 
         return null;
     }
