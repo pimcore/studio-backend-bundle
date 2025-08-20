@@ -30,13 +30,6 @@ final class UserPasswordVoter extends Voter
 {
     use RequestTrait;
 
-    private const TYPE_TO_PERMISSION = [
-        ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
-        ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
-        ElementTypes::TYPE_DATA_OBJECT => UserPermissions::DATA_OBJECTS->value,
-        ElementTypes::TYPE_OBJECT => UserPermissions::DATA_OBJECTS->value,
-    ];
-
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly SecurityServiceInterface $securityService
@@ -49,7 +42,7 @@ final class UserPasswordVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === UserPermissions::ELEMENT_TYPE_PERMISSION->value;
+        return $attribute === UserPermissions::USER_PASSWORD->value;
     }
 
     /**
@@ -57,19 +50,21 @@ final class UserPasswordVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        $elementType = $this->getElementTypeFromRequest();
+        $userId = $this->getUserIdFromRequest();
 
-        if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
-            return false;
+        $currentUser = $this->securityService->getCurrentUser();
+        if ($userId === $currentUser->getId()) {
+            // Allow user to update their own password
+            return true;
         }
 
-        return $this->securityService->getCurrentUser()->isAllowed(self::TYPE_TO_PERMISSION[$elementType]);
+        return $this->securityService->getCurrentUser()->isAllowed(UserPermissions::USER_MANAGEMENT->value);
     }
 
-    private function getElementTypeFromRequest(): string
+    private function getUserIdFromRequest(): int
     {
         $request = $this->getCurrentRequest($this->requestStack);
 
-        return $request->attributes->getString('elementType');
+        return $request->attributes->getInt('id');
     }
 }

@@ -30,47 +30,45 @@ final class ElementTypePermissionVoter extends Voter
     use RequestTrait;
 
     private const TYPE_TO_PERMISSION = [
-        ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
-        ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
-        ElementTypes::TYPE_DATA_OBJECT => UserPermissions::DATA_OBJECTS->value,
-        ElementTypes::TYPE_OBJECT => UserPermissions::DATA_OBJECTS->value,
-    ];
+    ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
+    ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
+    ElementTypes::TYPE_DATA_OBJECT => UserPermissions::DATA_OBJECTS->value,
+    ElementTypes::TYPE_OBJECT => UserPermissions::DATA_OBJECTS->value,
+];
 
     public function __construct(
-        private readonly RequestStack $requestStack,
-        private readonly SecurityServiceInterface $securityService
+    private readonly RequestStack $requestStack,
+    private readonly SecurityServiceInterface $securityService
 
-    ) {
-    }
+) {
+}
 
     /**
      * {@inheritdoc}
      */
     protected function supports(string $attribute, mixed $subject): bool
-    {
-        return $attribute === UserPermissions::USER_PASSWORD->value;
-    }
+{
+    return $attribute === UserPermissions::ELEMENT_TYPE_PERMISSION->value;
+}
 
     /**
      * @throws AccessDeniedException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
-    {
-        $userId = $this->getUserIdFromRequest();
+{
+    $elementType = $this->getElementTypeFromRequest();
 
-        $currentUser = $this->securityService->getCurrentUser();
-        if ($userId === $currentUser->getId()) {
-            // Allow user to update their own password
-            return true;
-        }
-
-        return $this->securityService->getCurrentUser()->isAllowed(UserPermissions::USER_MANAGEMENT->value);
+    if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
+        return false;
     }
 
-    private function getUserIdFromRequest(): int
-    {
-        $request = $this->getCurrentRequest($this->requestStack);
+    return $this->securityService->getCurrentUser()->isAllowed(self::TYPE_TO_PERMISSION[$elementType]);
+}
 
-        return $request->attributes->getInt('id');
-    }
+    private function getElementTypeFromRequest(): string
+{
+    $request = $this->getCurrentRequest($this->requestStack);
+
+    return $request->attributes->getString('elementType');
+}
 }
