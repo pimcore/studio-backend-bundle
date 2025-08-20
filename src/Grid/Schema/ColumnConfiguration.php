@@ -34,7 +34,7 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
         private readonly string $key,
-        #[Property(description: 'Group', type: 'object', example: ['system', 'id'])]
+        #[Property(description: 'Define the group structure', type: 'object', example: ['system', 'id'])]
         private readonly array $group,
         #[Property(description: 'Sortable', type: 'boolean', example: true)]
         private readonly bool $sortable,
