@@ -95,7 +95,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
 
             $columns[] = new ColumnConfiguration(
                 key: $item->getName(),
-                group: 'predefined_metadata',
+                group: ['predefined_metadata'],
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: true,
                 exportable: $availableColumnDefinitions[$type]->isExportable(),
