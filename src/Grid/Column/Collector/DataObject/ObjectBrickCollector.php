@@ -112,7 +112,11 @@ final class ObjectBrickCollector implements
         return $this->configurations;
     }
 
-    private function buildColumnConfigurations(ObjectBrickDefinition $objectBrick, string $fieldname, string $baseLayoutName): void
+    private function buildColumnConfigurations(
+        ObjectBrickDefinition $objectBrick,
+        string $fieldname,
+        string $baseLayoutName
+    ): void
     {
         $dataFields = $this->getDataFields($objectBrick->getLayoutDefinitions());
 
