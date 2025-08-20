@@ -116,8 +116,7 @@ final class ObjectBrickCollector implements
         ObjectBrickDefinition $objectBrick,
         string $fieldname,
         string $baseLayoutName
-    ): void
-    {
+    ): void {
         $dataFields = $this->getDataFields($objectBrick->getLayoutDefinitions());
 
         foreach ($dataFields as $dataField) {
