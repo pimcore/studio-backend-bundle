@@ -22,7 +22,7 @@ final readonly class ColumnFieldDefinition
 {
     public function __construct(
         private Data $fieldDefinition,
-        private string $group,
+        private array $group,
         private bool $localizedField,
     ) {
     }
@@ -32,7 +32,7 @@ final readonly class ColumnFieldDefinition
         return $this->fieldDefinition;
     }
 
-    public function getGroup(): string
+    public function getGroup(): array
     {
         return $this->group;
     }
