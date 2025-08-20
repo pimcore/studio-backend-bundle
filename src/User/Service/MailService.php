@@ -71,7 +71,7 @@ final readonly class MailService implements MailServiceInterface
         $event = new LostPasswordEvent($user, $loginUrl);
         $this->eventDispatcher->dispatch($event, LostPasswordEvent::EVENT_NAME);
 
-        // only send mail if it wasn't prevented in event
+        // only send mail if it wasn't prevented in the event
         if ($event->getSendMail()) {
             try {
                 $mail = $this->toolResolver->getMail([$user->getEmail()], 'Pimcore lost password service');

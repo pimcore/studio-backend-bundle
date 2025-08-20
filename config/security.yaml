@@ -28,6 +28,11 @@ services:
     tags:
       - { name: security.voter }
 
+  Pimcore\Bundle\StudioBackendBundle\Security\Voter\UserPasswordVoter:
+    arguments: [ '@request_stack' ]
+    tags:
+      - { name: security.voter }
+
   Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService
 

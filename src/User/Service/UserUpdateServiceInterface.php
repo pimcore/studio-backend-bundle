@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -40,7 +41,7 @@ interface UserUpdateServiceInterface
     public function updateUserProfile(User $user, UpdateUserProfile $params): void;
 
     /**
-     * @throws NotFoundException|DatabaseException|ForbiddenException
+     * @throws NotFoundException|DatabaseException|ForbiddenException|InvalidArgumentException
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void;
 
