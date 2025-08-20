@@ -52,7 +52,7 @@ final class UpdatePasswordController extends AbstractApiController
      * @throws NotFoundException|DatabaseException|ForbiddenException
      */
     #[Route('/user/{id}/password', name: 'pimcore_studio_api_user_password_update', methods: ['PUT'])]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
+    #[IsGranted(UserPermissions::USER_PASSWORD->value)]
     #[Put(
         path: self::PREFIX . '/user/{id}/password',
         operationId: 'user_update_password_by_id',

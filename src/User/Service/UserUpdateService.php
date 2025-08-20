@@ -16,13 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
@@ -31,6 +27,9 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CacheKeys;
 use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
+use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use function sprintf;
 use function strlen;
 
@@ -46,11 +45,12 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         private UserRepositoryInterface $userRepository,
         private UpdateServiceInterface $updateService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
+        private ValidatorInterface $validator,
     ) {
     }
 
     /**
-     * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
+     * {@inheritdoc}
      */
     public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): void
     {
@@ -100,7 +100,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     }
 
     /**
-     * @throws DatabaseException|ParseException
+     * {@inheritdoc}
      */
     public function updateUserProfile(User $user, UpdateUserProfile $params): void
     {
@@ -120,7 +120,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     }
 
     /**
-     * @throws NotFoundException|DatabaseException|ForbiddenException
+     * {@inheritdoc}
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void
     {
@@ -142,6 +142,10 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
             throw new InvalidArgumentException('Passwords have to be at least 10 characters long');
         }
 
+        if ($updateParameter->getOldPassword() !== null) {
+            $this->validateOldPassword($updateParameter, $user);
+        }
+
         $passwordHash = $this->authenticationResolver->getPasswordHash(
             $user->getName(),
             $updateParameter->getPassword()
@@ -152,12 +156,28 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException|NotWriteableException|UserNotFoundException
+     * {@inheritdoc}
      */
     public function updateActivePerspective(string $perspectiveId): void
     {
         $user = $this->securityService->getCurrentUser();
         $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateOldPassword(UpdatePasswordParameter $parameter, UserInterface $user): void
+    {
+        $errors = $this->validator->validate($parameter->getOldPassword(), [new UserPassword()]);
+        if (count($errors) > 0) {
+            throw new InvalidArgumentException('Old password is incorrect');
+        }
+
+        /** @var User $user */
+        if ($this->authenticationResolver->verifyPassword($user, $parameter->getPassword())) {
+            throw new InvalidArgumentException('New password cannot be the same as the old password');
+        }
     }
 
     /**

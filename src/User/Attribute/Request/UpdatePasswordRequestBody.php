@@ -30,6 +30,7 @@ final class UpdatePasswordRequestBody extends RequestBody
                 properties: [
                     new SingleString('password'),
                     new SingleString('passwordConfirmation'),
+                    new SingleString('oldPassword'),
                 ],
                 type: 'object'
             ),

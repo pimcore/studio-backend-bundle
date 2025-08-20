@@ -18,11 +18,14 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 final class LostPasswordEvent extends Event
 {
-    public const EVENT_NAME = 'pimcore.admin.login.lostpassword';
+    public const string EVENT_NAME = 'pimcore.studio.login.lostpassword';
 
     protected bool $sendMail = true;
 
-    public function __construct(private User $user, private string $loginUrl)
+    public function __construct(
+        private readonly User $user,
+        private readonly string $loginUrl
+    )
     {
     }
 

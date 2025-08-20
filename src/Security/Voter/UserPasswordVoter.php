@@ -26,7 +26,7 @@ use function array_key_exists;
 /**
  * @internal
  */
-final class ElementTypePermissionVoter extends Voter
+final class UserPasswordVoter extends Voter
 {
     use RequestTrait;
 
@@ -49,7 +49,7 @@ final class ElementTypePermissionVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === UserPermissions::USER_PASSWORD->value;
+        return $attribute === UserPermissions::ELEMENT_TYPE_PERMISSION->value;
     }
 
     /**
@@ -57,21 +57,19 @@ final class ElementTypePermissionVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        $userId = $this->getUserIdFromRequest();
+        $elementType = $this->getElementTypeFromRequest();
 
-        $currentUser = $this->securityService->getCurrentUser();
-        if ($userId === $currentUser->getId()) {
-            // Allow user to update their own password
-            return true;
+        if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
+            return false;
         }
 
-        return $this->securityService->getCurrentUser()->isAllowed(UserPermissions::USER_MANAGEMENT->value);
+        return $this->securityService->getCurrentUser()->isAllowed(self::TYPE_TO_PERMISSION[$elementType]);
     }
 
-    private function getUserIdFromRequest(): int
+    private function getElementTypeFromRequest(): string
     {
         $request = $this->getCurrentRequest($this->requestStack);
 
-        return $request->attributes->getInt('id');
+        return $request->attributes->getString('elementType');
     }
 }
