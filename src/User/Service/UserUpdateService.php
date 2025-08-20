@@ -30,6 +30,7 @@ use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use function count;
 use function sprintf;
 use function strlen;
 

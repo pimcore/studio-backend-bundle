@@ -25,8 +25,7 @@ final class LostPasswordEvent extends Event
     public function __construct(
         private readonly User $user,
         private readonly string $loginUrl
-    )
-    {
+    ) {
     }
 
     public function getUser(): User

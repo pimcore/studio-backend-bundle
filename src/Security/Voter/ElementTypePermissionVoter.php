@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use function array_key_exists;
 
 /**
  * @internal
