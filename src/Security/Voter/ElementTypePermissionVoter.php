@@ -30,12 +30,12 @@ final class ElementTypePermissionVoter extends Voter
 {
     use RequestTrait;
 
-    private const TYPE_TO_PERMISSION = [
-    ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
-    ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
-    ElementTypes::TYPE_DATA_OBJECT => UserPermissions::DATA_OBJECTS->value,
-    ElementTypes::TYPE_OBJECT => UserPermissions::DATA_OBJECTS->value,
-];
+    private const array TYPE_TO_PERMISSION = [
+        ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
+        ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
+        ElementTypes::TYPE_DATA_OBJECT => UserPermissions::DATA_OBJECTS->value,
+        ElementTypes::TYPE_OBJECT => UserPermissions::DATA_OBJECTS->value,
+    ];
 
     public function __construct(
         private readonly RequestStack $requestStack,
