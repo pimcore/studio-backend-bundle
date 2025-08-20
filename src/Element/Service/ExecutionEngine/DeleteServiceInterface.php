@@ -21,7 +21,9 @@ use Pimcore\Model\UserInterface;
  */
 interface DeleteServiceInterface
 {
-    public const ELEMENT_TO_DELETE = 'element_to_delete';
+    public const string ELEMENT_TO_DELETE = 'element_to_delete';
+
+    public const string ELEMENT_TYPE_TO_DELETE = 'element_type_to_delete';
 
     public function deleteElementsWithExecutionEngine(
         ElementInterface $element,
@@ -29,5 +31,11 @@ interface DeleteServiceInterface
         string $elementType,
         array $childrenIds,
         bool $useRecycleBin
+    ): int;
+
+    public function batchDeleteElements(
+        array $elements,
+        UserInterface $user,
+        string $elementType,
     ): int;
 }

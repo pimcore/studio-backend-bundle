@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -28,6 +29,19 @@ interface ElementSearchServiceInterface
 {
     public function getElementById(string $type, int $id, ?UserInterface $user = null): mixed;
 
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function countElementChildren(ElementInterface $element): int;
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function getElementChildrenIds(ElementInterface $element, string $sortDirection): array;
+
+    /**
+     * @throws InvalidElementTypeException
+     */
     public function getChildrenIds(string $type, string $parentPath, ?string $sortDirection = null): array;
 
     /**

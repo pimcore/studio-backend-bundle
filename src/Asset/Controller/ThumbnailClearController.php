@@ -50,6 +50,7 @@ final class ThumbnailClearController extends AbstractApiController
     #[Route(
         path: '/assets/{id}/thumbnail/clear',
         name: 'pimcore_studio_api_clear_thumbnail',
+        requirements: ['id' => '\d+'],
         methods: ['DELETE']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]

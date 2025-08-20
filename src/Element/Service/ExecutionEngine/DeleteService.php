@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\BatchDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RecycleBinMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
@@ -94,6 +95,38 @@ final readonly class DeleteService implements DeleteServiceInterface
         return $jobRun->getId();
     }
 
+    public function batchDeleteElements(
+        array $elements,
+        UserInterface $user,
+        string $elementType,
+    ): int {
+        $jobSteps = array_map(
+            static fn (ElementInterface $element) => new JobStep(
+                JobSteps::ELEMENT_DELETION->value,
+                BatchDeleteMessage::class,
+                '',
+                [
+                    self::ELEMENT_TO_DELETE => $element->getId(),
+                    self::ELEMENT_TYPE_TO_DELETE => $elementType,
+                ]
+            ),
+            $elements
+        );
+
+        $job = new Job(
+            name: $this->getBatchJobName($elementType),
+            steps: $jobSteps
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
+    }
+
     /**
      * @throws InvalidElementTypeException
      */
@@ -103,6 +136,18 @@ final readonly class DeleteService implements DeleteServiceInterface
             ElementTypes::TYPE_ASSET => Jobs::DELETE_ASSETS->value,
             ElementTypes::TYPE_DOCUMENT => Jobs::DELETE_DOCUMENTS->value,
             ElementTypes::TYPE_OBJECT => Jobs::DELETE_DATA_OBJECTS->value,
+            default => throw new InvalidElementTypeException($type),
+        };
+    }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    private function getBatchJobName(string $type): string
+    {
+        return match ($type) {
+            ElementTypes::TYPE_ASSET => Jobs::BATCH_DELETE_ASSETS->value,
+            ElementTypes::TYPE_DATA_OBJECT => Jobs::BATCH_DELETE_DATA_OBJECTS->value,
             default => throw new InvalidElementTypeException($type),
         };
     }

@@ -49,6 +49,7 @@ services:
   # Handler
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\BatchDeleteHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\ElementDeleteHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RecycleBinHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RewriteRefHandler: ~
@@ -62,6 +63,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\PatchSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\RewriteReferencesSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\DeletionSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\BatchDeletionSubscriber: ~
 
   #
   # Mercure SSE
