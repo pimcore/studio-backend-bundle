@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use function array_key_exists;
 
 /**
  * @internal
@@ -37,38 +38,38 @@ final class ElementTypePermissionVoter extends Voter
 ];
 
     public function __construct(
-    private readonly RequestStack $requestStack,
-    private readonly SecurityServiceInterface $securityService
+        private readonly RequestStack $requestStack,
+        private readonly SecurityServiceInterface $securityService
 
-) {
-}
+    ) {
+    }
 
     /**
      * {@inheritdoc}
      */
     protected function supports(string $attribute, mixed $subject): bool
-{
-    return $attribute === UserPermissions::ELEMENT_TYPE_PERMISSION->value;
-}
+    {
+        return $attribute === UserPermissions::ELEMENT_TYPE_PERMISSION->value;
+    }
 
     /**
      * @throws AccessDeniedException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
-{
-    $elementType = $this->getElementTypeFromRequest();
+    {
+        $elementType = $this->getElementTypeFromRequest();
 
-    if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
-        return false;
+        if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
+            return false;
+        }
+
+        return $this->securityService->getCurrentUser()->isAllowed(self::TYPE_TO_PERMISSION[$elementType]);
     }
 
-    return $this->securityService->getCurrentUser()->isAllowed(self::TYPE_TO_PERMISSION[$elementType]);
-}
-
     private function getElementTypeFromRequest(): string
-{
-    $request = $this->getCurrentRequest($this->requestStack);
+    {
+        $request = $this->getCurrentRequest($this->requestStack);
 
-    return $request->attributes->getString('elementType');
-}
+        return $request->attributes->getString('elementType');
+    }
 }
