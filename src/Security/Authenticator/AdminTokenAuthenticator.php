@@ -54,7 +54,7 @@ class AdminTokenAuthenticator extends AbstractAuthenticator
         );
 
         if ($pimcoreUser === null) {
-            throw new AccessDeniedException('Failed to authenticate with username and token');
+            throw new AccessDeniedException('Failed to authenticate with the given token');
         }
 
         $pimcoreUser->setTwoFactorAuthentication('required', false);
