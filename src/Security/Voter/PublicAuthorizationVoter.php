@@ -61,6 +61,10 @@ final class PublicAuthorizationVoter extends Voter
         $request = $this->getCurrentRequest($this->requestStack);
         $subjectName = $this->getSubjectName($subject);
 
+        if ($this->securityService->isSessionWritable()) {
+            session_write_close();
+        }
+
         return $this->voteOnRequest($request, $subjectName);
     }
 

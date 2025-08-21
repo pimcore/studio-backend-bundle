@@ -51,12 +51,17 @@ final class UserPasswordVoter extends Voter
         $userId = $this->getUserIdFromRequest();
 
         $currentUser = $this->securityService->getCurrentUser();
+
+        if ($this->securityService->isSessionWritable()) {
+            session_write_close();
+        }
+
         if ($userId === $currentUser->getId()) {
             // Allow user to update their own password
             return true;
         }
 
-        return $this->securityService->getCurrentUser()->isAllowed(UserPermissions::USER_MANAGEMENT->value);
+        return $currentUser->isAllowed(UserPermissions::USER_MANAGEMENT->value);
     }
 
     private function getUserIdFromRequest(): int

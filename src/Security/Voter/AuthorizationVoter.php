@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -23,7 +24,13 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class AuthorizationVoter extends Voter
 {
-    private const SUPPORTED_ATTRIBUTE = 'STUDIO_API';
+    public function __construct(
+        private readonly SecurityServiceInterface $securityService
+
+    ) {
+    }
+    
+    private const string SUPPORTED_ATTRIBUTE = 'STUDIO_API';
 
     /**
      * {@inheritdoc}
@@ -38,10 +45,10 @@ final class AuthorizationVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if ($attribute !== self::SUPPORTED_ATTRIBUTE) {
-            return false;
+        if ($this->securityService->isSessionWritable()) {
+            session_write_close();
         }
 
-        return true;
+        return $attribute === self::SUPPORTED_ATTRIBUTE;
     }
 }

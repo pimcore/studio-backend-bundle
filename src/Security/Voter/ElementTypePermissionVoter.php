@@ -59,6 +59,10 @@ final class ElementTypePermissionVoter extends Voter
     {
         $elementType = $this->getElementTypeFromRequest();
 
+        if ($this->securityService->isSessionWritable()) {
+            session_write_close();
+        }
+
         if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
             return false;
         }
