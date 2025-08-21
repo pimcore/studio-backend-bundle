@@ -29,7 +29,7 @@ final class AuthorizationVoter extends Voter
 
     ) {
     }
-    
+
     private const string SUPPORTED_ATTRIBUTE = 'STUDIO_API';
 
     /**
