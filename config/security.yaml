@@ -33,6 +33,9 @@ services:
     tags:
       - { name: security.voter }
 
+  #Authenticators
+  Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\AdminTokenAuthenticator: ~
+
   Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService
 

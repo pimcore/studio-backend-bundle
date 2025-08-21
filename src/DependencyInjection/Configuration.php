@@ -84,6 +84,7 @@ class Configuration implements ConfigurationInterface
         $this->addWidgetTypesNode($rootNode);
         $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
+        $this->addDefaultFromEmail($rootNode);
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
@@ -589,5 +590,15 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+    private function addDefaultFromEmail(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+                ->scalarNode('studio_from_default_email')
+                    ->defaultValue('studio-admin@pimcore.com')
+                    ->cannotBeEmpty()
+                ->end()
+            ->end();
     }
 }

@@ -109,4 +109,9 @@ final readonly class SecurityService implements SecurityServiceInterface
             $permission
         );
     }
+
+    public function isSessionWritable(): bool
+    {
+        return session_status() === PHP_SESSION_ACTIVE;
+    }
 }
