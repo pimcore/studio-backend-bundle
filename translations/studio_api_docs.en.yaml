@@ -593,6 +593,10 @@ export_xlsx_folder_summary: Creating XLSX file for elements based on folder
 login_description: Logs in a user with the provided credentials and returns the user information.
 login_success_response: Login successful.
 login_summary: Session-based login with user credentials.
+login_token_description: |
+  Logs in a user based on the provided token and returns the user information.
+login_token_success_response: Login successful.
+login_token_summary: Session-based login with user token.
 logout_description: Logout and invalidate current session for active user.
 logout_success_response: Logout successful.
 logout_summary: Logout and invalidate current session for active user.
