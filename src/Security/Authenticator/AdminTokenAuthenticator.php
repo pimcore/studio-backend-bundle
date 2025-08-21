@@ -83,7 +83,8 @@ class AdminTokenAuthenticator extends AbstractAuthenticator
         $securityUser = $token->getUser();
         if (!$securityUser instanceof UserInterface) {
             throw new AccessDeniedException(
-                sprintf('Invalid user object. User has to be instance of %s',
+                sprintf(
+                    'Invalid user object. User has to be instance of %s',
                     UserInterface::class
                 )
             );
