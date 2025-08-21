@@ -74,19 +74,17 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
     private function addSearchCondition(Listing $listing, mixed $searchTerm): void
     {
         if (is_numeric($searchTerm)) {
-            $listing->addConditionParam('id = :id', ['id' => $searchTerm]);
+            $listing->setCondition('id = ?', [$searchTerm]);
 
             return;
         }
 
-        if (preg_match('@^https?://@', $searchTerm)) {
-            $this->filterService->searchByRequest($listing, $searchTerm);
+        if (!preg_match('@^https?://@', $searchTerm)) {
+            $listing->setCondition('1 = 2');
 
             return;
         }
 
-        $param = ['searchTerm' => "%{$searchTerm}%"];
-        $listing->addConditionParam('`source` LIKE :searchTerm', $param);
-        $listing->addConditionParam('`target` LIKE :searchTerm', $param, 'OR');
+        $this->filterService->searchByRequest($listing, $searchTerm);
     }
 }
