@@ -72,7 +72,7 @@ class AdminTokenAuthenticator extends AbstractAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        throw new AccessDeniedException('Failed to authenticate with username and token');
+        throw new AccessDeniedException('Failed to authenticate with the given token');
     }
 
     /**
