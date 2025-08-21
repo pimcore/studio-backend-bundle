@@ -31,8 +31,8 @@ use function sprintf;
  */
 final readonly class MailService implements MailServiceInterface
 {
-    private const string RESET_MAIL_TEXT = "Login to pimcore and change your password using the following link. " .
-    "This temporary login link will expire in 24 hours: \r\n\r\n%s";
+    private const string RESET_MAIL_TEXT = 'Login to pimcore and change your password using the following link. ' .
+        "This temporary login link will expire in 24 hours: \r\n\r\n%s";
 
     private string $domain;
 
