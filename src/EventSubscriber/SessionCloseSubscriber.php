@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
@@ -29,8 +29,7 @@ final readonly class SessionCloseSubscriber implements EventSubscriberInterface
     use StudioBackendPathTrait;
 
     public function __construct(
-        private string $urlPrefix,
-        private RequestStack $requestStack,
+        private string $urlPrefix
     ) {
     }
 
@@ -49,7 +48,7 @@ final readonly class SessionCloseSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->closeSessionWrite();
+        $this->closeSessionWrite($request->getSession());
     }
 
     public function onKernelRequest(RequestEvent $event): void
@@ -59,12 +58,11 @@ final readonly class SessionCloseSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->closeSessionWrite();
+        $this->closeSessionWrite($request->getSession());
     }
 
-    private function closeSessionWrite(): void
+    private function closeSessionWrite(SessionInterface $session): void
     {
-        $session = $this->requestStack->getSession();
         if ($session->isStarted()) {
             $session->save();
         }
