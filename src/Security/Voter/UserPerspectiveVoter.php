@@ -59,10 +59,6 @@ final class UserPerspectiveVoter extends Voter
 
         $this->userPerspectiveService->validatePerspectiveAccess($user, $this->getPerspectiveFromRequest());
 
-        if ($this->securityService->isSessionWritable()) {
-            session_write_close();
-        }
-
         return true;
     }
 

@@ -45,10 +45,6 @@ final class AuthorizationVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if ($this->securityService->isSessionWritable()) {
-            session_write_close();
-        }
-
         return $attribute === self::SUPPORTED_ATTRIBUTE;
     }
 }

@@ -90,10 +90,6 @@ class AdminTokenAuthenticator extends AbstractAuthenticator
             );
         }
 
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_write_close();
-        }
-
         return null;
     }
 

@@ -52,10 +52,6 @@ final class UserPasswordVoter extends Voter
 
         $currentUser = $this->securityService->getCurrentUser();
 
-        if ($this->securityService->isSessionWritable()) {
-            session_write_close();
-        }
-
         if ($userId === $currentUser->getId()) {
             // Allow user to update their own password
             return true;

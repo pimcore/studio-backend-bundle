@@ -58,10 +58,6 @@ final class UserPermissionVoter extends Voter
             throw new ForbiddenException(sprintf('User does not have permission: %s', $attribute));
         }
 
-        if ($this->securityService->isSessionWritable()) {
-            session_write_close();
-        }
-
         return true;
     }
 
