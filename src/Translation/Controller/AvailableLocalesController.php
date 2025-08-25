@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Response\DomainList;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Response\LocalList;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -30,9 +30,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DomainsController extends AbstractApiController
+final class AvailableLocalesController extends AbstractApiController
 {
-    private const string ROUTE = '/translations/domains';
+    private const string ROUTE = '/translations/available-locales';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -41,24 +41,24 @@ final class DomainsController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_domains', methods: ['GET'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_available_locales', methods: ['GET'])]
     #[IsGranted(UserPermissions::TRANSLATIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'translation_get_domains',
-        description: 'translation_get_domains_description',
-        summary: 'translation_get_domains_summary',
+        operationId: 'translation_get_available_locales',
+        description: 'translation_get_available_locales_description',
+        summary: 'translation_get_available_locales_summary',
         tags: [Tags::Translation->name]
     )]
     #[SuccessResponse(
-        description: 'translation_get_domains_success_response',
-        content: new DomainList()
+        description: 'translation_get_available_locales_success_response',
+        content: new LocalList()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getDomains(
+    public function getAvailableLocales(
     ): JsonResponse {
-        return $this->jsonResponse($this->translatorService->getAvailableDomains());
+        return $this->jsonResponse($this->translatorService->getAvailableLocales());
     }
 }

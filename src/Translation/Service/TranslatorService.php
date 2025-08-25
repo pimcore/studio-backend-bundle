@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
+use Exception;
 use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as StudioNotFoundException;
@@ -59,7 +61,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private FilterMapperServiceInterface $filterMapper,
         private TranslationsHydratorInterface $translationsHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private CacheResolverInterface $cacheResolver
+        private CacheResolverInterface $cacheResolver,
+        private ToolResolverInterface $toolResolver,
     ) {
         $this->translatorBag = $this->getTranslatorBag();
     }
@@ -141,7 +144,38 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     {
         $translation = new TranslationModel();
 
-        return $translation->getDao()->getAvailableDomains();
+        $domains = $translation->getDao()->getAvailableDomains();
+
+        $availableDomains = [];
+
+        foreach ($domains as $domain) {
+            $availableDomains[] = [
+                'domain' => $domain,
+                'isFrontendDomain' => $domain === 'studio' || $domain === 'admin',
+
+            ];
+        }
+
+        return $availableDomains;
+    }
+
+    public function getAvailableLocales(): array
+    {
+        try {
+            $locales = $this->toolResolver->getSupportedLocales();
+        } catch (Exception) {
+            $locales = [];
+        }
+
+        $availableLocales = [];
+        foreach ($locales as $locale => $name) {
+            $availableLocales[] = [
+                'locale' => $locale,
+                'displayName' => $name,
+            ];
+        }
+
+        return $availableLocales;
     }
 
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection

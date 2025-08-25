@@ -20,28 +20,28 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final class DomainList extends JsonContent
+final class LocalList extends JsonContent
 {
     public function __construct()
     {
         parent::__construct(
             type: 'array',
             items: new Items(
-                required: ['domain', 'isFrontendDomain'],
+                required: ['local', 'displayName'],
                 properties: [
                     new Property(
-                        'domain',
-                        title: 'Domain',
-                        description: 'The domain name.',
+                        'local',
+                        title: 'local',
+                        description: 'Locale code.',
                         type: 'string',
-                        example: 'admin'
+                        example: 'de_de'
                     ),
                     new Property(
-                        'isFrontendDomain',
-                        title: 'Is Frontend Domain',
-                        description: 'If the domain is a frontend or admin domain.',
-                        type: 'boolean',
-                        example: false
+                        'displayName',
+                        title: 'Display Name',
+                        description: 'The display name of the locale.',
+                        type: 'string',
+                        example: 'Deutsch (Deutschland)'
                     ),
                 ],
                 type: 'object'
