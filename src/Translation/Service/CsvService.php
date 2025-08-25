@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
-
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -26,6 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use function in_array;
+use function is_string;
+use function sprintf;
 
 /**
  * @internal
@@ -69,19 +71,19 @@ final readonly class CsvService implements CsvServiceInterface
         $list->setOffset(0);
         $list->setLimit(null);
         $translationObjects = $list->getTranslations();
-        
+
         if (empty($translationObjects)) {
             $translationObjects[] = $this->translationRepository->createDummyTranslation($domain, $allowedLanguages);
         }
-        
+
         foreach ($translationObjects as $translationObject) {
             $row = $translationObject->getTranslations();
             $row = $this->elementServiceResolver->escapeCsvRecord($row);
             $translations[] = array_merge(
                 [
                     'key' => $translationObject->getKey(),
-                    'creationDate' => $translationObject->getCreationDate(), 
-                    'modificationDate' => $translationObject->getModificationDate()
+                    'creationDate' => $translationObject->getCreationDate(),
+                    'modificationDate' => $translationObject->getModificationDate(),
                 ],
                 $row
             );
@@ -151,23 +153,24 @@ final readonly class CsvService implements CsvServiceInterface
 
         $value = $this->removeLineBreaks($value);
         $value = str_replace('"', '&quot;', $value);
+
         return '"' . $value . '"';
     }
-    
+
     private function getAllowedLanguages(UserInterface $user, string $domain): array
     {
         $allowedLanguages = $user->getAllowedLanguagesForViewingWebsiteTranslations();
         if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
             $allowedLanguages = $this->adminResolver->getLanguages();
         }
-        
+
         return $allowedLanguages;
     }
 
     private function removeLineBreaks(string $text): string
     {
         $text = str_replace(["\r\n", "\n", "\r", "\t"], ' ', $text);
-        
+
         return preg_replace(pattern: '# +#', replacement: ' ', subject: $text);
     }
 

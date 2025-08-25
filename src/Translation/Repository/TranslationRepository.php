@@ -100,6 +100,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
         return $translation;
     }
+
     /**
      * This joins the language by key to their own columns in the listing.
      * This is useful for listing translations in the grid with filters and pagination.

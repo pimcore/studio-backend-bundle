@@ -144,6 +144,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
         return $translation->getDao()->getAvailableDomains();
     }
+
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection
     {
         $translations = [];
