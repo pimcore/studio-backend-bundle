@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 /**
  * @internal
  */
-class ResolverTypeGuesser implements ResolverTypeGuesserInterface
+final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
 {
     /**
      * Summary of columnConfigurationCache
