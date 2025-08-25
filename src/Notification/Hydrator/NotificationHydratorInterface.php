@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationMinimal;
 use Pimcore\Model\Notification as NotificationModel;
 
 /**
@@ -23,6 +24,8 @@ use Pimcore\Model\Notification as NotificationModel;
 interface NotificationHydratorInterface
 {
     public function hydrate(NotificationModel $notification): NotificationListItem;
+
+    public function hydrateMinimal(NotificationModel $notification): NotificationMinimal;
 
     public function hydrateDetail(NotificationModel $notification): Notification;
 }

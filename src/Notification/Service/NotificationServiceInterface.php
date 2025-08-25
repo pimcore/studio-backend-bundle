@@ -18,8 +18,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\UnreadCount;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\Notification as NotificationModel;
 
 /**
  * @internal
@@ -60,4 +62,6 @@ interface NotificationServiceInterface
      * @throws UserNotFoundException
      */
     public function getUnreadNotificationsCount(): UnreadCount;
+
+    public function hydrateListItem(NotificationModel $notification): NotificationListItem;
 }
