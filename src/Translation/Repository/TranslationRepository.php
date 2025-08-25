@@ -87,14 +87,19 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $translation->delete();
     }
 
-    private function getTableNameByDomain(string $domain): string
+    public function createDummyTranslation(string $domain, array $allowedLanguages): Translation
     {
         $translation = new Translation();
-        $translation->setDomain($domain);
+        if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
+            $translation->setDomain($domain);
+        }
 
-        return $translation->getDao()->getDatabaseTableName();
+        foreach ($allowedLanguages as $language) {
+            $translation->addTranslation($language, '');
+        }
+
+        return $translation;
     }
-
     /**
      * This joins the language by key to their own columns in the listing.
      * This is useful for listing translations in the grid with filters and pagination.
@@ -108,7 +113,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
                 $alreadyJoined = [];
                 foreach ($languages as $join) {
-                    if (in_array($join, $alreadyJoined)) {
+                    if (in_array($join, $alreadyJoined, true)) {
                         continue;
                     }
 
@@ -136,40 +141,11 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $key = $tableName . '.key';
         $text = $tableName . '.text';
         $listing->addConditionParam(
-            '(' .$key. ' LIKE :filterTerm OR '. $text .' LIKE :filterTerm)',
+            '(lower(' . $key . ') LIKE :filterTerm OR lower('. $text .') LIKE :filterTerm)',
             ['filterTerm' => '%' . mb_strtolower($searchTerm) . '%']
         );
 
         return $listing;
-    }
-
-    private function createTranslationEntry(string $key, string $type, array $languages, string $domain): void
-    {
-        $t = new Translation();
-        $t->setDomain($domain);
-        $t->setKey($key);
-        $t->setType($type);
-        $t->setCreationDate(time());
-        $t->setModificationDate(time());
-        $this->setNewValues($t, $languages);
-        $t->save();
-    }
-
-    public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing
-    {
-        $list = new Translation\Listing();
-        $list->setDomain($domain);
-        $list->setOrder('asc');
-        $list->setOrderKey('translations_' . $domain . '.key', false);
-
-        return $list;
-    }
-
-    private function setNewValues(Translation $translation, array $languages): void
-    {
-        foreach ($languages as $language) {
-            $translation->addTranslation($language, '');
-        }
     }
 
     public function getTranslationKeysWithTextFilter(
@@ -187,6 +163,43 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         }
 
         return $keys;
+    }
+
+    public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing
+    {
+        $list = new Translation\Listing();
+        $list->setDomain($domain);
+        $list->setOrder('asc');
+        $list->setOrderKey('translations_' . $domain . '.key', false);
+
+        return $list;
+    }
+
+    private function getTableNameByDomain(string $domain): string
+    {
+        $translation = new Translation();
+        $translation->setDomain($domain);
+
+        return $translation->getDao()->getDatabaseTableName();
+    }
+
+    private function createTranslationEntry(string $key, string $type, array $languages, string $domain): void
+    {
+        $t = new Translation();
+        $t->setDomain($domain);
+        $t->setKey($key);
+        $t->setType($type);
+        $t->setCreationDate(time());
+        $t->setModificationDate(time());
+        $this->setNewValues($t, $languages);
+        $t->save();
+    }
+
+    private function setNewValues(Translation $translation, array $languages): void
+    {
+        foreach ($languages as $language) {
+            $translation->addTranslation($language, '');
+        }
     }
 
     private function getTranslationByKey(string $key, string $domain): ?Translation

@@ -1312,7 +1312,24 @@ data_object_get_available_grid_columns_success_for_relation_response: List of av
 translation_get_domains_description: Get all available translation domains
 translation_get_domains_summary: Get all available translation domains
 translation_get_domains_success_response: List of available translation domains
-translation_get_list_description: Get all translations for the given domain
+translation_export_list_description: |
+  Export translations for the given domain. <br> 
+  You can specify different filters in your request body. Example filters are: <br>
+    <ul>
+    <li><strong>translationLike</strong>: Filter by value</li>
+    <li><strong>search</strong>: Filter by search term</li>
+    </ul>
+translation_export_list_summary: Export translations for the given domain
+translation_export_list_success_response: CSV export file for the given domain
+translation_get_list_description: |
+  Get all paginated translations for the given domain. <br>
+  You can specify different filters in your request body. Example filters are: <br>
+    <ul>
+    <li><strong>page</strong>: Used for offset calculation in pagination. To be used, needs to be defined together with the pageSize</li>
+    <li><strong>pageSize</strong>: Used for limiting the result numbers per page. To be used, needs to be defined together with the page</li>
+    <li><strong>translationLike</strong>: Filter by value</li>
+    <li><strong>search</strong>: Filter by search term</li>
+    </ul>
 translation_get_list_summary: Get all translations for the given domain
 translation_get_list_success_response: List of translations for the given domain including all languages
 translation_cleanup_by_domain_description: Cleanup translations for the given domain
