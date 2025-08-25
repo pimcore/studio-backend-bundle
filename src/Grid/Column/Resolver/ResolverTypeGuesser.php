@@ -17,6 +17,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
+/**
+ * @internal
+ */
 class ResolverTypeGuesser implements ResolverTypeGuesserInterface
 {
     /**
