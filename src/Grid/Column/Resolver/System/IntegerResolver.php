@@ -38,7 +38,8 @@ final class IntegerResolver implements ColumnResolverInterface, CoreElementColum
     {
         return $this->getColumnData(
             $column,
-            $this->getValue($column, $element)
+            $this->getValue($column, $element),
+            $this->getType()
         );
     }
 

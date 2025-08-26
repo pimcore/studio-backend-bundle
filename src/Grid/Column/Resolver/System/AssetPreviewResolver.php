@@ -50,7 +50,8 @@ final class AssetPreviewResolver implements ColumnResolverInterface, StudioEleme
             [
                 'thumbnail' => $thumbnail,
                 'icon' => $element->getIcon(),
-            ]
+            ],
+            $this->getType()
         );
     }
 
