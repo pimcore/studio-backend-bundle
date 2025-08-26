@@ -52,7 +52,7 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
