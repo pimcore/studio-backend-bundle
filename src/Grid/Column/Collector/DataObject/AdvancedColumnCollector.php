@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
@@ -30,9 +31,11 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
+use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use function array_key_exists;
@@ -54,6 +57,8 @@ final class AdvancedColumnCollector implements
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly TransformerLoaderInterface $transformerLoader,
+        private readonly DefinitionResolverInterface $objectBrickdefinitionResolver,
+        private readonly ObjectBrickServiceInterface $objectBrickService,
     ) {
     }
 
@@ -155,6 +160,15 @@ final class AdvancedColumnCollector implements
     {
         $simpleFields = [];
         foreach ($groupedDefinitions as $definition) {
+            if ($definition instanceof Objectbricks) {
+                $simpleFields = [
+                    ...$this->buildObjectBricksFields($definition),
+                    ...$simpleFields
+                ];
+
+                continue;
+            }
+
             if (!$definition instanceof ManyToOneRelation) {
                 $simpleFields[] = new SimpleField(
                     name: $definition->getTitle(),
@@ -172,6 +186,36 @@ final class AdvancedColumnCollector implements
     public function getTransformers(): array
     {
         return $this->transformerLoader->loadTransformers();
+    }
+
+    /**
+     * @return SimpleField[]
+     */
+    private function buildObjectBricksFields(Objectbricks $brick): array
+    {
+        $allowedBricks = $brick->getAllowedTypes();
+
+        $fields = [];
+        foreach ($allowedBricks as $brickType) {
+            $objectBrickDefinition = $this->objectBrickdefinitionResolver->getByKey($brickType);
+            if ($objectBrickDefinition === null) {
+                continue;
+            }
+
+            $objectBrickItems = $this->objectBrickService->getDataFields(
+                $objectBrickDefinition->getLayoutDefinitions()
+            );
+
+
+            foreach ($objectBrickItems as $objectBrickItem) {
+                $fields[] = new SimpleField(
+                    name: $objectBrickItem->getTitle(),
+                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getName()
+                );
+            }
+        }
+
+        return $fields;
     }
 
     /**

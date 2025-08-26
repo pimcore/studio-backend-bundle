@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
+use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -56,6 +57,7 @@ final class ObjectBrickCollector implements
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly ObjectBrickServiceInterface $objectBrickService,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -106,7 +108,7 @@ final class ObjectBrickCollector implements
 
     private function buildColumnConfigurations(ObjectBrickDefinition $objectBrick, string $fieldname): void
     {
-        $dataFields = $this->getDataFields($objectBrick->getLayoutDefinitions());
+        $dataFields = $this->objectBrickService->getDataFields($objectBrick->getLayoutDefinitions());
 
         foreach ($dataFields as $dataField) {
             $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
@@ -128,25 +130,6 @@ final class ObjectBrickCollector implements
                 continue;
             }
         }
-    }
-
-    /**
-     * @return Data[]
-     */
-    public function getDataFields(Layout $layout): array
-    {
-        $dataFields = [];
-        foreach ($layout->getChildren() as $child) {
-            if ($child instanceof Layout) {
-                $dataFields = [...$dataFields, ...$this->getDataFields($child)];
-            }
-
-            if ($child instanceof ClassDefinition\Data) {
-                $dataFields = [...$dataFields, $child];
-            }
-        }
-
-        return $dataFields;
     }
 
     private function usesClass(ObjectBrickDefinition $objectBrick, ClassDefinition $classDefinition): bool

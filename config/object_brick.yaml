@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickService
