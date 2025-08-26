@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
+use Pimcore\Model\Translation\Listing;
 
 /**
  * @internal
@@ -68,6 +69,8 @@ interface TranslatorServiceInterface
      * Used for grid listing including filters and pagination.
      */
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection;
+
+    public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing;
 
     /**
      *

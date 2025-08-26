@@ -22,6 +22,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Translation\Service\CsvServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\CsvService
+
   Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService
 
