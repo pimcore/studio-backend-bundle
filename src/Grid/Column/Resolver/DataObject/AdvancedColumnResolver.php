@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -137,19 +135,19 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
     ): void {
         $resolverType = $this->resolverTypeGuesser->guessType($fieldConfig->getField(), $element->getClassId());
 
-       $resolver = $this->gridService->getColumnResolvers()[$resolverType];
+        $resolver = $this->gridService->getColumnResolvers()[$resolverType];
 
-       if ($resolver instanceof CoreElementColumnResolverInterface) {
-           $subColumn = new Column(
-               key: $fieldConfig->getField(),
-               locale: $column->getLocale(),
-               type: $resolverType,
-               group: $column->getGroup(),
-               config: $column->getConfig()
-           );
+        if ($resolver instanceof CoreElementColumnResolverInterface) {
+            $subColumn = new Column(
+                key: $fieldConfig->getField(),
+                locale: $column->getLocale(),
+                type: $resolverType,
+                group: $column->getGroup(),
+                config: $column->getConfig()
+            );
 
-           $data = $resolver->resolveForCoreElement($subColumn, $element);
-       }
+            $data = $resolver->resolveForCoreElement($subColumn, $element);
+        }
 
         $this->values[] = new AdvancedValue(
             type: $data->getFieldType(),
