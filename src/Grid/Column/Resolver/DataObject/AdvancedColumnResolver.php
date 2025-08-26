@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTe
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Transformer;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
@@ -60,6 +62,8 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
         private readonly TransformerLoaderInterface $transformerLoader,
+        private readonly GridServiceInterface $gridService,
+        private readonly ResolverTypeGuesserInterface $resolverTypeGuesser
     ) {
     }
 
@@ -120,6 +124,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         return new ColumnData(
             key: $column->getKey(),
             locale: $column->getLocale(),
+            fieldType: 'advanced',
             value: $this->values
         );
     }
@@ -132,20 +137,25 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         Column $column,
         Concrete $element
     ): void {
-        $classDefinition = $this->classDefinitionResolver->getById($element->getClassId());
-        $fieldDefinition = $this->getFieldDefinition($fieldConfig->getField(), $classDefinition);
-        $value = $this->dataService->getNormalizedValue(
-            $this->getLocalizedValueFromKey($fieldConfig->getField(), $column->getLocale(), $element),
-            $fieldDefinition
-        );
+        $resolverType = $this->resolverTypeGuesser->guessType($fieldConfig->getField(), $element->getClassId());
 
-        if (!$value) {
-            return;
-        }
+       $resolver = $this->gridService->getColumnResolvers()[$resolverType];
+
+       if ($resolver instanceof CoreElementColumnResolverInterface) {
+           $subColumn = new Column(
+               key: $fieldConfig->getField(),
+               locale: $column->getLocale(),
+               type: $resolverType,
+               group: $column->getGroup(),
+               config: $column->getConfig()
+           );
+
+           $data = $resolver->resolveForCoreElement($subColumn, $element);
+       }
 
         $this->values[] = new AdvancedValue(
-            type: $fieldDefinition->getFieldType(),
-            value: $value
+            type: $data->getFieldType(),
+            value: $data->getValue()
         );
     }
 

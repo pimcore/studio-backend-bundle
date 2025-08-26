@@ -43,7 +43,7 @@ final class DocumentResolver implements ColumnResolverInterface, StudioElementCo
         $document = $this->getLocalizedValue($column, $element);
 
         if (!isset($document['document'])) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -52,7 +52,7 @@ final class DocumentResolver implements ColumnResolverInterface, StudioElementCo
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
@@ -63,7 +63,8 @@ final class DocumentResolver implements ColumnResolverInterface, StudioElementCo
                 'subtype' => $relatedDocument->getType(),
                 'type' => 'document',
                 'isPublished' => $relatedDocument->isPublished(),
-            ]
+            ],
+            $this->getType()
         );
     }
 

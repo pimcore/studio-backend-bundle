@@ -63,7 +63,8 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
                 'type' => 'object',
                 'fullPath' => $relatedObject->getFullPath(),
                 'isPublished' => $relatedObject->isPublished(),
-            ]
+            ],
+            $this->getType()
         );
     }
 

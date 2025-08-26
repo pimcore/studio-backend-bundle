@@ -98,6 +98,7 @@ final class AdapterResolver implements
         return $this->getColumnData(
             $column,
             $value,
+            $fieldDefinition->getFieldType(),
             $inheritanceData
         );
     }

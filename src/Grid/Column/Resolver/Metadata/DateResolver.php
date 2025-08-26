@@ -39,7 +39,7 @@ final class DateResolver implements ColumnResolverInterface, StudioElementColumn
         $value = $this->getLocalizedValue($column, $element);
 
         if (!$value) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -48,7 +48,7 @@ final class DateResolver implements ColumnResolverInterface, StudioElementColumn
             throw new InvalidArgumentException('Invalid date format');
         }
 
-        return $this->getColumnData($column, $datetime->getTimestamp());
+        return $this->getColumnData($column, $datetime->getTimestamp(), $this->getType());
     }
 
     public function getType(): string

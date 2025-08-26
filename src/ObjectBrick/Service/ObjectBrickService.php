@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 
@@ -21,6 +23,13 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout;
  */
 final class ObjectBrickService implements ObjectBrickServiceInterface
 {
+
+    public function __construct(
+        private readonly DefinitionResolverInterface $objectBrickdefinitionResolver,
+    )
+    {
+    }
+
     public function getDataFields(Layout $layout): array
     {
         $dataFields = [];
@@ -36,4 +45,21 @@ final class ObjectBrickService implements ObjectBrickServiceInterface
 
         return $dataFields;
     }
+
+    public function findObjectBrickField(string $name, string $field): Data
+    {
+        $objectBrickDefinition = $this->objectBrickdefinitionResolver->getByKey($name);
+
+        $fieldDefinition = $this->getDataFields($objectBrickDefinition->getLayoutDefinitions());
+
+        foreach ($fieldDefinition as $dataField) {
+            if ($dataField->getName() === $field) {
+                return $dataField;
+            }
+        }
+
+        throw new NotFoundException('Object brick', $field, 'field');
+    }
+
+
 }
