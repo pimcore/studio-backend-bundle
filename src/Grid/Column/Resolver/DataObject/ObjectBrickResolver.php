@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ObjectBrickKey;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
-use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickService;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -79,7 +78,6 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
             $objectBrickKey->getBrickName(),
             $objectBrickKey->getAttribute(),
         )->getFieldType();
-
 
         if ($value === []) {
             return $this->getColumnData(

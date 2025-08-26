@@ -139,19 +139,19 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
     ): void {
         $resolverType = $this->resolverTypeGuesser->guessType($fieldConfig->getField(), $element->getClassId());
 
-       $resolver = $this->gridService->getColumnResolvers()[$resolverType];
+        $resolver = $this->gridService->getColumnResolvers()[$resolverType];
 
-       if ($resolver instanceof CoreElementColumnResolverInterface) {
-           $subColumn = new Column(
-               key: $fieldConfig->getField(),
-               locale: $column->getLocale(),
-               type: $resolverType,
-               group: $column->getGroup(),
-               config: $column->getConfig()
-           );
+        if ($resolver instanceof CoreElementColumnResolverInterface) {
+            $subColumn = new Column(
+                key: $fieldConfig->getField(),
+                locale: $column->getLocale(),
+                type: $resolverType,
+                group: $column->getGroup(),
+                config: $column->getConfig()
+            );
 
-           $data = $resolver->resolveForCoreElement($subColumn, $element);
-       }
+            $data = $resolver->resolveForCoreElement($subColumn, $element);
+        }
 
         $this->values[] = new AdvancedValue(
             type: $data->getFieldType(),

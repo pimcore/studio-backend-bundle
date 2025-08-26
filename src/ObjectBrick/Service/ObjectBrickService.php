@@ -23,11 +23,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout;
  */
 final class ObjectBrickService implements ObjectBrickServiceInterface
 {
-
     public function __construct(
         private readonly DefinitionResolverInterface $objectBrickdefinitionResolver,
-    )
-    {
+    ) {
     }
 
     public function getDataFields(Layout $layout): array
@@ -60,6 +58,4 @@ final class ObjectBrickService implements ObjectBrickServiceInterface
 
         throw new NotFoundException('Object brick', $field, 'field');
     }
-
-
 }

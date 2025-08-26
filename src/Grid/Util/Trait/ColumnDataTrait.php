@@ -24,8 +24,7 @@ trait ColumnDataTrait
         mixed $value,
         string $fieldType,
         ?InheritanceData $inheritanceData = null
-    ): ColumnData
-    {
+    ): ColumnData {
         return new ColumnData($column->getKey(), $column->getLocale(), $value, $fieldType, $inheritanceData);
     }
 }
