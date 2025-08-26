@@ -163,7 +163,7 @@ final class AdvancedColumnCollector implements
             if ($definition instanceof Objectbricks) {
                 $simpleFields = [
                     ...$this->buildObjectBricksFields($definition),
-                    ...$simpleFields
+                    ...$simpleFields,
                 ];
 
                 continue;
@@ -205,7 +205,6 @@ final class AdvancedColumnCollector implements
             $objectBrickItems = $this->objectBrickService->getDataFields(
                 $objectBrickDefinition->getLayoutDefinitions()
             );
-
 
             foreach ($objectBrickItems as $objectBrickItem) {
                 $fields[] = new SimpleField(
