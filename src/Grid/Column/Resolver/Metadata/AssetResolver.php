@@ -52,7 +52,7 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
