@@ -43,7 +43,7 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
         $object = $this->getLocalizedValue($column, $element);
 
         if (!isset($object['object'])) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -52,7 +52,7 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
@@ -63,7 +63,8 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
                 'type' => 'object',
                 'fullPath' => $relatedObject->getFullPath(),
                 'isPublished' => $relatedObject->isPublished(),
-            ]
+            ],
+            $this->getType()
         );
     }
 

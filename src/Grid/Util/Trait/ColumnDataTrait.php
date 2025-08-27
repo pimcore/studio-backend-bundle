@@ -19,8 +19,12 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 
 trait ColumnDataTrait
 {
-    private function getColumnData(Column $column, mixed $value, ?InheritanceData $inheritanceData = null): ColumnData
-    {
-        return new ColumnData($column->getKey(), $column->getLocale(), $value, $inheritanceData);
+    private function getColumnData(
+        Column $column,
+        mixed $value,
+        string $fieldType,
+        ?InheritanceData $inheritanceData = null
+    ): ColumnData {
+        return new ColumnData($column->getKey(), $column->getLocale(), $value, $fieldType, $inheritanceData);
     }
 }

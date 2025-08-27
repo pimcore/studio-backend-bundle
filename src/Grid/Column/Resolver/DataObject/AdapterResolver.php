@@ -68,7 +68,7 @@ final class AdapterResolver implements
         $fieldDefinition = $this->getFieldDefinition($column->getKey(), $classDefinition);
         $value = $this->dataService->getExportFieldValue($element, $fieldDefinition, $column->getKey());
 
-        return $this->getColumnData($column, $value);
+        return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
     }
 
     /**
@@ -98,6 +98,7 @@ final class AdapterResolver implements
         return $this->getColumnData(
             $column,
             $value,
+            $fieldDefinition->getFieldType(),
             $inheritanceData
         );
     }

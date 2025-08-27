@@ -34,6 +34,8 @@ final class ColumnData implements AdditionalAttributesInterface
         private readonly ?string $locale,
         #[Property(description: 'Value', type: 'mixed', example: 73)]
         private readonly mixed $value,
+        #[Property(description: 'Field Type of the column', type: 'string', example: 'input')]
+        private readonly mixed $fieldType,
         #[Property(
             description: 'inheritance',
             type: 'object',
@@ -52,6 +54,11 @@ final class ColumnData implements AdditionalAttributesInterface
     public function getLocale(): ?string
     {
         return $this->locale;
+    }
+
+    public function getFieldType(): mixed
+    {
+        return $this->fieldType;
     }
 
     public function getValue(): mixed

@@ -44,7 +44,8 @@ final class IdResolver implements
     {
         return $this->getColumnData(
             $column,
-            $this->getValue($column, $element)
+            $this->getValue($column, $element),
+            $this->getType()
         );
     }
 
@@ -52,7 +53,8 @@ final class IdResolver implements
     {
         return $this->getColumnData(
             $column,
-            $this->getValue($column, $element)
+            $this->getValue($column, $element),
+            $this->getType()
         );
     }
 

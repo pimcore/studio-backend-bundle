@@ -35,7 +35,8 @@ final class TextareaResolver implements ColumnResolverInterface, StudioElementCo
     {
         return $this->getColumnData(
             $column,
-            $this->getLocalizedValue($column, $element)
+            $this->getLocalizedValue($column, $element),
+            $this->getType()
         );
     }
 

@@ -25,4 +25,6 @@ interface ObjectBrickServiceInterface
      * @return Data[]
      */
     public function getDataFields(Layout $layout): array;
+
+    public function findObjectBrickField(string $name, string $field): Data;
 }

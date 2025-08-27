@@ -35,7 +35,8 @@ final class InputResolver implements ColumnResolverInterface, StudioElementColum
     {
         return $this->getColumnData(
             $column,
-            $this->getLocalizedValue($column, $element)
+            $this->getLocalizedValue($column, $element),
+            $this->getType()
         );
     }
 

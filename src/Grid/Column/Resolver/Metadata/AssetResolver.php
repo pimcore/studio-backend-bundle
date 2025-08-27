@@ -43,7 +43,7 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
         $asset = $this->getLocalizedValue($column, $element);
 
         if (!isset($asset['asset'])) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -52,7 +52,7 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
@@ -62,7 +62,8 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
                 'subtype' => $relatedAsset->getType(),
                 'type' => 'asset',
                 'fullPath' => $relatedAsset->getFullPath(),
-            ]
+            ],
+            $this->getType()
         );
     }
 

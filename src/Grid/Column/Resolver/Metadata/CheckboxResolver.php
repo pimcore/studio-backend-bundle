@@ -36,10 +36,10 @@ final class CheckboxResolver implements ColumnResolverInterface, StudioElementCo
         $value = $this->getLocalizedValue($column, $element);
 
         if (!$value) {
-            return $this->getColumnData($column, false);
+            return $this->getColumnData($column, false, $this->getType());
         }
 
-        return $this->getColumnData($column, $value);
+        return $this->getColumnData($column, $value, $this->getType());
     }
 
     public function getType(): string
