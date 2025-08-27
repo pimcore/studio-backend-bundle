@@ -24,7 +24,8 @@ use OpenApi\Attributes\RequestBody;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class CsvSampleRequestBody extends RequestBody
 {
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(
             required: true,
             content: new JsonContent(

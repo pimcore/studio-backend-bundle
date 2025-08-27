@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\CsvSettingsPa
 use Pimcore\Model\Translation;
 use stdClass;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use function sprintf;
 
 /**
  * @internal
@@ -44,6 +45,7 @@ final readonly class ImportService implements ImportServiceInterface
         $this->languageService->validateAdminPermission($user, $domain);
 
         $allowedLanguages = $this->languageService->getTranslationAllowedLanguages($user, $domain);
+
         try {
             $delta = Translation::importTranslationsFromFile(
                 $file->getPathname(),
@@ -65,6 +67,7 @@ final readonly class ImportService implements ImportServiceInterface
 
         return $result;
     }
+
     private function groupDeltaItems(array $delta): array
     {
         $grouped = [];
@@ -85,5 +88,4 @@ final readonly class ImportService implements ImportServiceInterface
 
         return $dialect;
     }
-
 }

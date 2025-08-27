@@ -64,7 +64,7 @@ final class CsvSettingsController extends AbstractApiController
     ])]
     public function determineCsvSettings(#[MapRequestPayload] CsvSampleParameter $parameter): JsonResponse
     {
-        
+
         return $this->jsonResponse($this->csvService->determineCsvDialect($parameter->getSample()));
     }
 }

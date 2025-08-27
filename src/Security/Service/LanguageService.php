@@ -72,7 +72,6 @@ final readonly class LanguageService implements LanguageServiceInterface
             throw new ForbiddenException('User does not have permission: admin_translations');
         }
     }
-    
 
     public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array
     {

@@ -75,7 +75,7 @@ final class ImportController extends AbstractApiController
     #[MultipartFormDataRequestBody(
         properties: [
             new FileUpload(description: 'CSV import file to upload'),
-            new CsvSettingsProperty()
+            new CsvSettingsProperty(),
         ],
         required: ['file', 'csvSettings']
     )]
@@ -98,7 +98,7 @@ final class ImportController extends AbstractApiController
         if (!$file instanceof UploadedFile) {
             throw new EnvironmentException('Invalid file found in the request');
         }
-        
+
         // Manually extract csvSettings from multipart form data
         $csvSettings = $request->request->getString('csvSettings');
 

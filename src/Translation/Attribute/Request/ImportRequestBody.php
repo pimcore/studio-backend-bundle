@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Property\CsvSettingsProperty;
 
 /**
@@ -25,13 +24,14 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Property\CsvSetting
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ImportRequestBody extends RequestBody
 {
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct(
             required: true,
             content: new JsonContent(
                 required: ['csvSettings'],
                 properties: [
-                    new CsvSettingsProperty()
+                    new CsvSettingsProperty(),
                 ],
                 type: 'object',
             ),
