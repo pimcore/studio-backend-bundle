@@ -137,17 +137,19 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
 
         $resolver = $this->gridService->getColumnResolvers()[$resolverType];
 
-        if ($resolver instanceof CoreElementColumnResolverInterface) {
-            $subColumn = new Column(
-                key: $fieldConfig->getField(),
-                locale: $column->getLocale(),
-                type: $resolverType,
-                group: $column->getGroup(),
-                config: $column->getConfig()
-            );
-
-            $data = $resolver->resolveForCoreElement($subColumn, $element);
+        if (!$resolver instanceof CoreElementColumnResolverInterface) {
+            return;
         }
+
+        $subColumn = new Column(
+            key: $fieldConfig->getField(),
+            locale: $column->getLocale(),
+            type: $resolverType,
+            group: $column->getGroup(),
+            config: $column->getConfig()
+        );
+
+        $data = $resolver->resolveForCoreElement($subColumn, $element);
 
         $this->values[] = new AdvancedValue(
             type: $data->getFieldType(),
