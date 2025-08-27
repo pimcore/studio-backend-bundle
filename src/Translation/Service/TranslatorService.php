@@ -153,7 +153,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $availableDomains[] = [
                 'domain' => $domain,
                 'isFrontendDomain' => $domain !== 'studio' && $domain !== 'admin',
-
             ];
         }
 
