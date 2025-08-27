@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\TranslationData;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
@@ -58,23 +59,24 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     /**
      * {@inheritdoc}
      */
-    public function updateTranslations(array $translationData, string $locale): void
+    public function updateTranslations(string $domain, UpdateTranslation $updateData): void
     {
         $languages = $this->adminResolver->getLanguages();
-        $this->validateLocale($locale, $languages);
-
-        /** @var TranslationData $translation */
-        foreach ($translationData as $translation) {
-            $entry = $this->getTranslationByKey($translation->getKey(), $translation->getDomain());
-            if ($entry === null) {
-                throw new NotFoundException('translation', $translation->getKey(), 'key');
-            }
-
-            $entry->addTranslation($locale, $translation->getTranslation());
-            $entry->setType($translation->getType());
-            $entry->setModificationDate(time());
-            $entry->save();
+        $translation = $this->getTranslationByKey($updateData->getKey(), $domain);
+        if ($translation === null) {
+            throw new NotFoundException('translation', $updateData->getKey(), 'key');
         }
+        if ($updateData->getType() !== null) {
+            $translation->setType($updateData->getType());
+        }
+        $translation->setModificationDate(time());
+
+        foreach ($updateData->getTranslationData() as $data) {
+            $this->validateLocale($data->getLocale(), $languages);
+            $translation->addTranslation($data->getLocale(), $data->getTranslation());
+        }
+
+        $translation->save();
     }
 
     public function deleteTranslation(string $key, string $domain): void

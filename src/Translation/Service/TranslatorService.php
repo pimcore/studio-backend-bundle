@@ -29,10 +29,10 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Event\TranslationsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\Translation as TranslationModel;
@@ -76,9 +76,11 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function updateTranslations(UpdateTranslation $translation): void
+    public function updateTranslations(string $domain, UpdateParameter $parameter): void
     {
-        $this->translationRepository->updateTranslations($translation->getTranslationData(), $translation->getLocale());
+        foreach ($parameter->getData() as $updateData) {
+            $this->translationRepository->updateTranslations($domain, $updateData);
+        }
     }
 
     /**

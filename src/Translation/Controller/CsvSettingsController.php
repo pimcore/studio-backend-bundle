@@ -13,17 +13,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 
-use OpenApi\Attributes\Delete;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\CsvSampleRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\CsvSampleParameter;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CsvSettings;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -31,42 +34,37 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CleanupController extends AbstractApiController
+final class CsvSettingsController extends AbstractApiController
 {
-    private const string ROUTE = '/translations/{domain}/cleanup';
+    private const string ROUTE = '/translations/csv-settings';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly TranslatorServiceInterface $translatorService
+        private readonly CsvServiceInterface $csvService
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotFoundException
-     */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_cleanup_translation_by_domain', methods: ['DELETE'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_csv_settings', methods: ['POST'])]
     #[IsGranted(UserPermissions::TRANSLATIONS->value)]
-    #[Delete(
+    #[Post(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'translation_cleanup_by_domain',
-        description: 'translation_cleanup_by_domain_description',
-        summary: 'translation_cleanup_by_domain_summary',
+        operationId: 'translation_determine_csv_settings_for_import',
+        description: 'translation_determine_csv_settings_for_import_description',
+        summary: 'translation_determine_csv_settings_for_import_summary',
         tags: [Tags::Translation->name]
     )]
-    #[StringParameter(name: 'domain', example: 'admin', description: 'Domain of the translation, to be cleaned up')]
+    #[CsvSampleRequestBody]
     #[SuccessResponse(
-        description: 'translation_cleanup_by_domain_success_description',
+        description: 'translation_determine_csv_settings_for_import_success_response',
+        content: new JsonContent(ref: CsvSettings::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function cleanupTranslation(
-        string $domain
-    ): Response {
-        $this->translatorService->cleanup($domain);
-
-        return new Response();
+    public function determineCsvSettings(#[MapRequestPayload] CsvSampleParameter $parameter): JsonResponse
+    {
+        
+        return $this->jsonResponse($this->csvService->determineCsvDialect($parameter->getSample()));
     }
 }

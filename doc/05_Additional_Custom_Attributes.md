@@ -142,6 +142,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.simple_user`
 - `pre_response.tag`
 - `pre_response.translations`
+- `pre_response.translations.import.csv-settings`
 - `pre_response.user`
 - `pre_response.user_detailed_role`
 - `pre_response.user_information`

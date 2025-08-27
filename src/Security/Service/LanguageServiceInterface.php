@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
 
@@ -26,4 +27,11 @@ interface LanguageServiceInterface
         UserInterface $user,
         string $permission
     ): array;
+
+    /**
+     * @throws ForbiddenException
+     */
+    public function validateAdminPermission(UserInterface $user, string $domain): void;
+
+    public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array;
 }
