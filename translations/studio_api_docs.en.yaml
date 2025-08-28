@@ -399,6 +399,20 @@ document_get_tree_description: |
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 document_get_tree_success_response: Paginated documents with total count as header param as JSON
 document_get_tree_summary: Get all document data for the tree
+document_page_snippet_area_block_render_description: |
+  Generate the editmode HTML and editable definitions based on the document <strong>{id}</strong> and data provided. <br>
+  The <strong>{id}</strong> must be an ID of existing page snippet document. <br> 
+  Following fields are required in the request body:
+    <ul>
+        <li><strong>name</strong>: Name of the areablock</li>
+        <li><strong>realName</strong>: Real name of the areaBlock</li>
+        <li><strong>index</strong>: Index of the areablock within the document</li>
+        <li><strong>blockStateStack</strong>: State stack of the areaBlock</li>
+        <li><strong>areaBlockConfig</strong>: areaBlock config</li>
+        <li><strong>areaBlockData</strong>: Data of the areaBlock</li>
+    </ul>
+document_page_snippet_area_block_render_success_response: Rendered HTML and editable definitions
+document_page_snippet_area_block_render_summary: Render area brick for editmode
 document_page_stream_preview_description: |
   Stream page document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing page
 document_page_stream_preview_success_response: Page preview stream
