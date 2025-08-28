@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
+use function array_key_exists;
 use function count;
 
 /**
