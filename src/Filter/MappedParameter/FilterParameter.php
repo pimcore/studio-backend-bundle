@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
+use function array_key_exists;
 use function count;
 
 /**
@@ -101,7 +102,7 @@ final class FilterParameter implements
         $columns  = array_filter($this->columnFilters, static fn ($columnFilter) => $columnFilter['type'] === $type);
 
         foreach ($columns as $column) {
-            if (!isset($column['key'], $column['type'], $column['filterValue'])) {
+            if (!isset($column['key'], $column['type']) || !array_key_exists('filterValue', $column)) {
                 throw new InvalidArgumentException('Invalid column filter');
             }
 
