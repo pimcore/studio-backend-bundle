@@ -105,7 +105,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
         RenderAreaBlockParameter $parameter
     ): RenderAreaBlockData {
         $document = $this->getPageSnippet($documentId);
-        $this->blockStateStack->loadArray($parameter->getBlockStateStack());
+        $this->blockStateStack->loadArray($this->decodeValues('block stack', $parameter->getBlockStateStack()));
 
         $document->setEditables([]);
         $this->documentResolver->setDocument($request, $document);
@@ -145,7 +145,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
      */
     private function getHtmlCode(PageSnippet $document, RenderAreaBlockParameter $parameter): string
     {
-        $areaBlockConfig = $parameter->getAreaBlockConfig();
+        $areaBlockConfig = $this->decodeValues('block config', $parameter->getAreaBlockConfig());
         $realName = $parameter->getRealName();
 
         try {
@@ -171,7 +171,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
 
         $block->setRealName($realName);
         $block->setEditmode(true);
-        $block->setDataFromEditmode($parameter->getAreaBlockData());
+        $block->setDataFromEditmode($this->decodeValues('block data', $parameter->getAreaBlockData()));
 
         try {
             return trim($block->renderIndex($parameter->getIndex(), true));
@@ -186,5 +186,18 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
                 $e
             );
         }
+    }
+
+    private function decodeValues(string $name, string $value): array
+    {
+        try {
+            return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException(
+                sprintf('Cannot decode value for %s: %s', $name,  $e->getMessage()),
+                $e
+            );
+        }
+
     }
 }

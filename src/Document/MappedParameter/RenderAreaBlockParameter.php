@@ -26,9 +26,9 @@ final readonly class RenderAreaBlockParameter
         #[NotBlank(message: 'RealName is required')]
         private string $realName,
         private int $index,
-        private array $blockStateStack = [],
-        private array $areaBlockConfig = [],
-        private array $areaBlockData = [],
+        private string $blockStateStack = '',
+        private string $areaBlockConfig = '',
+        private string $areaBlockData = '',
     ) {
     }
 
@@ -47,17 +47,17 @@ final readonly class RenderAreaBlockParameter
         return $this->index;
     }
 
-    public function getBlockStateStack(): array
+    public function getBlockStateStack(): string
     {
         return $this->blockStateStack;
     }
 
-    public function getAreaBlockConfig(): array
+    public function getAreaBlockConfig(): string
     {
         return $this->areaBlockConfig;
     }
 
-    public function getAreaBlockData(): array
+    public function getAreaBlockData(): string
     {
         return $this->areaBlockData;
     }
