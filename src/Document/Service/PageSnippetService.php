@@ -194,7 +194,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
             return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
         } catch (Exception $e) {
             throw new InvalidArgumentException(
-                sprintf('Cannot decode value for %s: %s', $name,  $e->getMessage()),
+                sprintf('Cannot decode value for %s: %s', $name, $e->getMessage()),
                 $e
             );
         }
