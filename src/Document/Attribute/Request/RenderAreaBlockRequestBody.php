@@ -17,6 +17,7 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 
 /**
@@ -35,9 +36,9 @@ final class RenderAreaBlockRequestBody extends RequestBody
                     new UpdateStringProperty('name'),
                     new UpdateStringProperty('realName'),
                     new UpdateIntegerProperty('index', 0),
-                    new UpdateStringProperty('blockStateStack'),
-                    new UpdateStringProperty('areaBlockConfig'),
-                    new UpdateStringProperty('areaBlockData'),
+                    new UpdateObjectProperty('blockStateStack', '[{"blocks": [], "indexes": []}]'),
+                    new UpdateObjectProperty('areaBlockConfig', '[]'),
+                    new UpdateObjectProperty('areaBlockData', '[]'),
                 ],
                 type: 'object',
             ),
