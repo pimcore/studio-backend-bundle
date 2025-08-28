@@ -101,7 +101,7 @@ final class FilterParameter implements
         $columns  = array_filter($this->columnFilters, static fn ($columnFilter) => $columnFilter['type'] === $type);
 
         foreach ($columns as $column) {
-            if (!isset($column['key'], $column['type'], $column['filterValue'])) {
+            if (!isset($column['key'], $column['type']) || !array_key_exists('filterValue', $column)) {
                 throw new InvalidArgumentException('Invalid column filter');
             }
 

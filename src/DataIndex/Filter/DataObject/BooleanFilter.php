@@ -37,8 +37,8 @@ final class BooleanFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_BOOLEAN->value) as $column) {
-            if (!is_bool($column->getFilterValue())) {
-                throw new InvalidArgumentException('Filter value for this filter must be a bool');
+            if (!is_bool($column->getFilterValue() || !is_null($column->getFilterValue()))) {
+                throw new InvalidArgumentException('Filter value for this filter must be a bool or null');
             }
 
             $query->booleanFilter($column->getKey(), $column->getFilterValue());

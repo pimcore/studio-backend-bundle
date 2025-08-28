@@ -21,7 +21,7 @@
     "league/csv": "^9.22",
     "nesbot/carbon": "^3.8.4",
     "pimcore/static-resolver-bundle": "^3.x-dev",
-    "pimcore/generic-data-index-bundle": "^2.1",
+    "pimcore/generic-data-index-bundle": "^2.x-dev",
     "pimcore/pimcore": "^12.0",
     "zircote/swagger-php": "^4.8 || ^5.0",
     "ext-zip": "*",

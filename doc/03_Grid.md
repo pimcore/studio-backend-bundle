@@ -47,7 +47,7 @@ Available filters are:
 |    system.ids     |  array of integer  |                             |     false      |
 |  system.integer   |      integer       |                             |      true      |
 |  system.fulltext  |       string       |                             |     false      |
-|  system.boolean   |      boolean       |                             |      true      |
+|  system.boolean   |  boolean or null   |                             |      true      |
 
 
 
