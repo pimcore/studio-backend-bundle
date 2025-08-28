@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Controller;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 

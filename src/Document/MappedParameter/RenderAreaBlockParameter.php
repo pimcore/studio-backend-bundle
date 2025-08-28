@@ -31,7 +31,7 @@ final readonly class RenderAreaBlockParameter
         private array $areaBlockData = [],
     ) {
     }
-    
+
     public function getName(): string
     {
         return $this->name;
@@ -41,7 +41,7 @@ final readonly class RenderAreaBlockParameter
     {
         return $this->realName;
     }
-    
+
     public function getIndex(): int
     {
         return $this->index;

@@ -15,15 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Attribute\Property\UpdateElementProperties;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 
 /**
  * @internal

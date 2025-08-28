@@ -36,6 +36,7 @@ use Pimcore\Templating\Renderer\EditableRenderer;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Twig\Environment;
+use function sprintf;
 
 /**
  * @internal
