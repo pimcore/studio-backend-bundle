@@ -105,6 +105,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.document.get_translation;parent`
 - `pre_response.document.list_available_controllers`
 - `pre_response.document.list_available_templates`
+- `pre_response.document.page-snippet.render-area-block-editmode`
 - `pre_response.document.sites_list_available`
 - `pre_response.document_version`
 - `pre_response.email.blocklist.entry`
