@@ -17,7 +17,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
@@ -26,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
