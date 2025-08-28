@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -29,11 +30,12 @@ interface TranslatorServiceInterface
 {
     public const string DOMAIN = 'studio';
 
-    public function createTranslations(CreateTranslation $translation): void;
+    /**
+     * @throws ElementExistsException
+     */
+    public function createTranslations(CreateTranslation $parameter): void;
 
     /**
-     *
-     *
      * @throws InvalidLocaleException|NotFoundException
      */
     public function updateTranslations(string $domain, UpdateParameter $parameter): void;

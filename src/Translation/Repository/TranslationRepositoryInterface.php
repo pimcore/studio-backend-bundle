@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
@@ -25,7 +26,10 @@ use Pimcore\Model\Translation\Listing;
  */
 interface TranslationRepositoryInterface
 {
-    public function createTranslations(array $translationData): void;
+    /**
+     * @throws ElementExistsException
+     */
+    public function createTranslations(bool $throwError, array $translationData): void;
 
     public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing;
 

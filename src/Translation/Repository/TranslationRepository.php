@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
@@ -36,13 +38,22 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     ) {
     }
 
-    public function createTranslations(array $translationData): void
+    /**
+     * {@inheritdoc}
+     */
+    public function createTranslations(bool $throwError, array $translationData): void
     {
         $languages = $this->adminResolver->getLanguages();
 
         /** @var CreateTranslationData $translation */
         foreach ($translationData as $translation) {
             if ($this->getTranslationByKey($translation->getKey(), $translation->getDomain()) !== null) {
+                if ($throwError) {
+                    throw new ElementExistsException(
+                        sprintf('Translation with the key (%s) already exists.', $translation->getKey())
+                    );
+                }
+
                 continue;
             }
 
