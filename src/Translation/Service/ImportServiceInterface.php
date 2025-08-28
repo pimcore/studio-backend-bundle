@@ -15,19 +15,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CsvSettings;
-use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\CsvSettingsParameter;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\DeltaItem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * @internal
  */
-interface CsvServiceInterface
+interface ImportServiceInterface
 {
     /**
-     * @throws ForbiddenException|EnvironmentException
+     * @throws ForbiddenException|EnvironmentException|UserNotFoundException
+     *
+     * @return DeltaItem[]
      */
-    public function export(string $domain, CollectionFilterParameter $parameter): Response;
-
-    public function determineCsvDialect(string $sample): CsvSettings;
+    public function import(UploadedFile $file, string $domain, CsvSettingsParameter $parameter): array;
 }

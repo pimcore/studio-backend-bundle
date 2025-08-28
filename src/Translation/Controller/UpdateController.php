@@ -16,11 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\TranslationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\TranslationUpdateBody;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -35,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UpdateController extends AbstractApiController
 {
-    private const string ROUTE = '/translations';
+    private const string ROUTE = '/translations/{domain}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -45,7 +47,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidLocaleException
+     * @throws InvalidLocaleException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_update', methods: ['PUT'])]
     #[IsGranted(UserPermissions::TRANSLATIONS->value)]
@@ -56,7 +58,8 @@ final class UpdateController extends AbstractApiController
         summary: 'translation_update_summary',
         tags: [Tags::Translation->name]
     )]
-    #[TranslationRequestBody(UpdateTranslation::class)]
+    #[TranslationUpdateBody]
+    #[StringParameter(name: 'domain', example: 'studio', description: 'Domain of the translation, to be updated')]
     #[SuccessResponse(
         description: 'translation_update_success_response'
     )]
@@ -65,9 +68,10 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function updateTranslations(
-        #[MapRequestPayload] UpdateTranslation $translation
+        string $domain,
+        #[MapRequestPayload] UpdateParameter $parameter
     ): Response {
-        $this->translatorService->updateTranslations($translation);
+        $this->translatorService->updateTranslations($domain, $parameter);
 
         return new Response();
     }

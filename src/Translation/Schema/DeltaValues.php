@@ -20,19 +20,21 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'TranslationData',
-    title: 'Translation Data',
-    description: 'Translation Data Scheme for API',
-    required: ['locale', 'translation'],
+    schema: 'TranslationDeltaValues',
+    title: 'Translation delta values',
+    description: 'Translation delta values',
+    required: ['locale', 'currentTranslation', 'importTranslation'],
     type: 'object'
 )]
-final readonly class TranslationData
+final readonly class DeltaValues
 {
     public function __construct(
         #[Property(description: 'Locale', type: 'string', example: 'en')]
         private string $locale,
-        #[Property(description: 'Translation', type: 'string', example: 'some_translated_string')]
-        private string $translation,
+        #[Property(description: 'Current translation', type: 'string', example: 'some translation')]
+        private string $currentTranslation,
+        #[Property(description: 'Imported translation', type: 'string', example: 'some translation updated')]
+        private string $importTranslation,
     ) {
     }
 
@@ -41,8 +43,13 @@ final readonly class TranslationData
         return $this->locale;
     }
 
-    public function getTranslation(): string
+    public function getCurrentTranslation(): string
     {
-        return $this->translation;
+        return $this->currentTranslation;
+    }
+
+    public function getImportTranslation(): string
+    {
+        return $this->importTranslation;
     }
 }

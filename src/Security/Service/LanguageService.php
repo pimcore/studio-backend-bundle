@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
@@ -28,6 +31,7 @@ use function sprintf;
 final readonly class LanguageService implements LanguageServiceInterface
 {
     public function __construct(
+        private AdminResolverInterface $adminResolver,
         private SecurityServiceInterface $securityService,
         private ToolResolverInterface $toolResolver,
     ) {
@@ -53,6 +57,30 @@ final readonly class LanguageService implements LanguageServiceInterface
         }
 
         return $languagePermissions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateAdminPermission(UserInterface $user, string $domain): void
+    {
+        if ($user->isAdmin()) {
+            return;
+        }
+
+        if ($domain === 'admin' && !$user->isAllowed('admin_translations')) {
+            throw new ForbiddenException('User does not have permission: admin_translations');
+        }
+    }
+
+    public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array
+    {
+        $allowedLanguages = $user->getAllowedLanguagesForViewingWebsiteTranslations();
+        if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
+            $allowedLanguages = $this->adminResolver->getLanguages();
+        }
+
+        return $allowedLanguages;
     }
 
     private function isDefaultLanguagePermission(array $permissions): bool

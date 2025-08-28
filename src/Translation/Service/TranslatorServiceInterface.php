@@ -17,9 +17,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Model\Translation\Listing;
 
 /**
@@ -32,9 +32,11 @@ interface TranslatorServiceInterface
     public function createTranslations(CreateTranslation $translation): void;
 
     /**
-     * @throws InvalidLocaleException
+     *
+     *
+     * @throws InvalidLocaleException|NotFoundException
      */
-    public function updateTranslations(UpdateTranslation $translation): void;
+    public function updateTranslations(string $domain, UpdateParameter $parameter): void;
 
     /**
      * Get all translations for a specific locale.

@@ -14,15 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Event\CsvSettingsEvent;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\CsvSettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CsvSettings;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
-use Pimcore\Model\UserInterface;
+use Pimcore\Tool\Text\Csv;
+use stdClass;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use function in_array;
@@ -35,7 +39,9 @@ use function sprintf;
 final readonly class CsvService implements CsvServiceInterface
 {
     public function __construct(
-        private AdminResolverInterface $adminResolver,
+        private CsvSettingsHydratorInterface $csvSettingsHydrator,
+        private EventDispatcherInterface $eventDispatcher,
+        private LanguageServiceInterface $languageService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $elementServiceResolver,
         private TranslationRepositoryInterface $translationRepository,
@@ -49,16 +55,19 @@ final readonly class CsvService implements CsvServiceInterface
     public function export(string $domain, CollectionFilterParameter $parameter): Response
     {
         $user = $this->securityService->getCurrentUser();
-        if ($domain === 'admin' && !$user->isAllowed('admin_translations')) {
-            throw new ForbiddenException('User does not have permission: admin_translations');
-        }
+        $this->languageService->validateAdminPermission($user, $domain);
 
-        $allowedLanguages = $this->getAllowedLanguages($user, $domain);
+        $allowedLanguages = $this->languageService->getTranslationAllowedLanguages($user, $domain);
         $translations = $this->prepareTranslationData($domain, $parameter, $allowedLanguages);
         $columns = $this->prepareColumns($translations, $allowedLanguages);
         $csvContent = $this->buildCsvContent($translations, $columns);
 
         return $this->generateCsvResponse($csvContent, $domain);
+    }
+
+    public function determineCsvDialect(string $sample): CsvSettings
+    {
+        return $this->hydrateCsvSettings($this->getDialectClass($sample));
     }
 
     private function prepareTranslationData(
@@ -157,16 +166,6 @@ final readonly class CsvService implements CsvServiceInterface
         return '"' . $value . '"';
     }
 
-    private function getAllowedLanguages(UserInterface $user, string $domain): array
-    {
-        $allowedLanguages = $user->getAllowedLanguagesForViewingWebsiteTranslations();
-        if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
-            $allowedLanguages = $this->adminResolver->getLanguages();
-        }
-
-        return $allowedLanguages;
-    }
-
     private function removeLineBreaks(string $text): string
     {
         $text = str_replace(["\r\n", "\n", "\r", "\t"], ' ', $text);
@@ -195,5 +194,41 @@ final readonly class CsvService implements CsvServiceInterface
         } catch (Exception $e) {
             throw new EnvironmentException($e->getMessage());
         }
+    }
+
+    private function hydrateCsvSettings(stdClass $dialect): CsvSettings
+    {
+        $hydrated = $this->csvSettingsHydrator->hydrate($dialect);
+        $this->eventDispatcher->dispatch(new CsvSettingsEvent($hydrated), CsvSettingsEvent::EVENT_NAME);
+
+        return $hydrated;
+    }
+
+    private function getDialectClass(string $sample): stdClass
+    {
+        try {
+            $sniffer = new Csv();
+            $dialect = $sniffer->detect($sample);
+        } catch (Exception) {
+            $dialect = new stdClass();
+            $dialect->delimiter = ';';
+            $dialect->quotechar = '"';
+            $dialect->escapechar = '\\';
+            $dialect->lineterminator = '';
+        }
+
+        // ensure we have a valid delimiter
+        if (!in_array($dialect->delimiter, [';', ',', "\t", '|', ':'])) {
+            $dialect->delimiter = ';';
+        }
+
+        if (
+            $dialect->lineterminator !== '' &&
+            empty(preg_match('/[a-f0-9]{2}/i', $dialect->lineterminator))
+        ) {
+            $dialect->lineterminator = bin2hex($dialect->lineterminator);
+        }
+
+        return $dialect;
     }
 }

@@ -21,21 +21,23 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'UpdateTranslation',
-    title: 'Translation Update',
-    description: 'Translation Update Scheme for API',
-    required: ['key', 'type', 'translationData'],
+    schema: 'DeltaItem',
+    title: 'Delta Item',
+    description: 'Translation delta item after merge',
+    required: ['key', 'deltaValues'],
     type: 'object'
 )]
-final readonly class UpdateTranslation
+final readonly class DeltaItem
 {
     public function __construct(
         #[Property(description: 'Key of the translation', type: 'string', example: 'car')]
         private string $key,
-        #[Property(description: 'Type of the translation', type: 'string', example: 'simple')]
-        private ?string $type = null,
-        #[Property(description: 'Translation Data', type: 'array', items: new Items(ref: TranslationData::class))]
-        private array $translationData = []
+        #[Property(
+            description: 'List of translation deltas for the given key',
+            type: 'array',
+            items: new Items(ref: DeltaValues::class)
+        )]
+        private array $deltaValues = [],
     ) {
     }
 
@@ -44,16 +46,11 @@ final readonly class UpdateTranslation
         return $this->key;
     }
 
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
     /**
-     * @return array<TranslationData>
+     * @return DeltaValues[]
      */
-    public function getTranslationData(): array
+    public function getDeltaValues(): array
     {
-        return $this->translationData;
+        return $this->deltaValues;
     }
 }

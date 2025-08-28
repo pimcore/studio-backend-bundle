@@ -892,12 +892,50 @@ translation_create_description: |
   Add new translation entries for given translation key
 translation_create_success_response: Successfully created translations
 translation_create_summary: Create translations
-translation_get_collection_description: Get translations for given keys and locale
-translation_get_collection_success_response: Key value pairs for given keys and locale
-translation_get_collection_summary: Get translations
+translation_export_list_description: |
+  Export translations for the given domain. <br> 
+  You can specify different filters in your request body. Example filters are: <br>
+    <ul>
+    <li><strong>translationLike</strong>: Filter by value</li>
+    <li><strong>search</strong>: Filter by search term</li>
+    </ul>
+translation_export_list_summary: Export translations for the given domain
+translation_export_list_success_response: CSV export file for the given domain
+translation_cleanup_by_domain_description: Cleanup translations for the given domain
+translation_cleanup_by_domain_summary: Cleanup translations for the given domain
+translation_cleanup_by_domain_success_description: Translation cleaned up successfully
 translation_delete_by_key_description: Delete translations for given translation key
 translation_delete_by_key_success_response: Successfully deleted translations
 translation_delete_by_key_summary: Delete translations
+translation_determine_csv_settings_for_import_description: |
+  Determine CSV dialect settings for import from a sample string.
+translation_determine_csv_settings_for_import_summary: Determine CSV dialect settings for import
+translation_determine_csv_settings_for_import_success_response: Detected CSV dialect settings
+translation_get_available_locales_description: Get all available locales in the system
+translation_get_available_locales_summary: Get all available locales in the system
+translation_get_available_locales_success_response: List of available locales in the system
+translation_get_collection_description: Get translations for given keys and locale
+translation_get_collection_success_response: Key value pairs for given keys and locale
+translation_get_collection_summary: Get translations
+translation_get_domains_description: Get all available translation domains
+translation_get_domains_summary: Get all available translation domains
+translation_get_domains_success_response: List of available translation domains
+translation_get_list_description: |
+  Get all paginated translations for the given domain. <br>
+  You can specify different filters in your request body. Example filters are: <br>
+    <ul>
+    <li><strong>page</strong>: Used for offset calculation in pagination. To be used, needs to be defined together with the pageSize</li>
+    <li><strong>pageSize</strong>: Used for limiting the result numbers per page. To be used, needs to be defined together with the page</li>
+    <li><strong>translationLike</strong>: Filter by value</li>
+    <li><strong>search</strong>: Filter by search term</li>
+    </ul>
+translation_get_list_summary: Get all translations for the given domain
+translation_get_list_success_response: List of translations for the given domain including all languages
+translation_import_csv_description: |
+  Import translations from a CSV file for the given domain. <br>
+  See the full description of request fields with the schema <strong>CsvSettings</strong>
+translation_import_csv_success_response: Translation delta based on imported data
+translation_import_csv_summary: Import translations from a CSV file
 translation_update_description: |
   Update translations for given translation data and locale.The <strong>{key}</strong> must be an existing translation key. <br> 
   See the full description of updatable translation data fields with the schema <strong>TranslationData</strong>
@@ -1309,32 +1347,3 @@ notification_get_unread_count_success_response: Count of unread notifications fo
 data_object_get_available_grid_columns_for_relation_description: Get all available grid columns for data objects Many to many relation field (defined in the visible columns)
 data_object_get_available_grid_columns_for_relation_summary: Get all available grid columns for data objects Many to many relation field
 data_object_get_available_grid_columns_success_for_relation_response: List of available grid columns for data objects Many to many relation field
-translation_get_domains_description: Get all available translation domains
-translation_get_domains_summary: Get all available translation domains
-translation_get_domains_success_response: List of available translation domains
-translation_export_list_description: |
-  Export translations for the given domain. <br> 
-  You can specify different filters in your request body. Example filters are: <br>
-    <ul>
-    <li><strong>translationLike</strong>: Filter by value</li>
-    <li><strong>search</strong>: Filter by search term</li>
-    </ul>
-translation_export_list_summary: Export translations for the given domain
-translation_export_list_success_response: CSV export file for the given domain
-translation_get_list_description: |
-  Get all paginated translations for the given domain. <br>
-  You can specify different filters in your request body. Example filters are: <br>
-    <ul>
-    <li><strong>page</strong>: Used for offset calculation in pagination. To be used, needs to be defined together with the pageSize</li>
-    <li><strong>pageSize</strong>: Used for limiting the result numbers per page. To be used, needs to be defined together with the page</li>
-    <li><strong>translationLike</strong>: Filter by value</li>
-    <li><strong>search</strong>: Filter by search term</li>
-    </ul>
-translation_get_list_summary: Get all translations for the given domain
-translation_get_list_success_response: List of translations for the given domain including all languages
-translation_cleanup_by_domain_description: Cleanup translations for the given domain
-translation_cleanup_by_domain_summary: Cleanup translations for the given domain
-translation_cleanup_by_domain_success_description: Translation cleaned up successfully
-translation_get_available_locales_description: Get all available locales in the system
-translation_get_available_locales_summary: Get all available locales in the system
-translation_get_available_locales_success_response: List of available locales in the system

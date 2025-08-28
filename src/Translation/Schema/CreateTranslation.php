@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'CreateTranslation',
     title: 'Translation Create',
-    description: 'Translation Crete Scheme for API',
+    description: 'Translation Create Scheme for API',
     required: ['translationData'],
     type: 'object'
 )]

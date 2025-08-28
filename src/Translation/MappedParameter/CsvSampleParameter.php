@@ -11,22 +11,20 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property;
-
-use OpenApi\Attributes\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter;
 
 /**
  * @internal
  */
-final class FileUpload extends Property
+final readonly class CsvSampleParameter
 {
-    public function __construct(string $name = 'file', string $description = 'File to upload')
+    public function __construct(
+        private string $sample = '',
+    ) {
+    }
+
+    public function getSample(): string
     {
-        parent::__construct(
-            property: $name,
-            description: $description,
-            type: 'string',
-            format: 'binary'
-        );
+        return $this->sample;
     }
 }

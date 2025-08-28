@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\ExportRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
@@ -54,7 +55,7 @@ final class ExportController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException
+     * @throws ForbiddenException|EnvironmentException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_export', methods: ['POST'])]
     #[IsGranted(UserPermissions::TRANSLATIONS->value)]
@@ -83,6 +84,7 @@ final class ExportController extends AbstractApiController
         headers: [new ContentDisposition(fileName: 'studio_translations.csv')]
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
