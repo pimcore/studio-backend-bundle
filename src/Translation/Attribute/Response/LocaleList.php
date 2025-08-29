@@ -20,7 +20,7 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final class LocalList extends JsonContent
+final class LocaleList extends JsonContent
 {
     public function __construct()
     {
@@ -30,8 +30,8 @@ final class LocalList extends JsonContent
                 required: ['local', 'displayName'],
                 properties: [
                     new Property(
-                        'local',
-                        title: 'local',
+                        'locale',
+                        title: 'locale',
                         description: 'Locale code.',
                         type: 'string',
                         example: 'de_de'

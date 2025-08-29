@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Response\LocalList;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Response\LocaleList;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -52,7 +52,7 @@ final class AvailableLocalesController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'translation_get_available_locales_success_response',
-        content: new LocalList()
+        content: new LocaleList()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
