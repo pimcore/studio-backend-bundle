@@ -61,13 +61,14 @@ final class CreateController extends AbstractApiController
         description: 'translation_create_success_response'
     )]
     #[DefaultResponses([
+        HttpResponseCodes::CONFLICT,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function createTranslations(
-        #[MapRequestPayload] CreateTranslation $translation
+        #[MapRequestPayload] CreateTranslation $parameter
     ): Response {
-        $this->translatorService->createTranslations($translation);
+        $this->translatorService->createTranslations($parameter);
 
         return new Response();
     }
