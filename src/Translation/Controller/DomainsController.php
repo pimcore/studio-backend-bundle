@@ -59,10 +59,6 @@ final class DomainsController extends AbstractApiController
     ])]
     public function getDomains(
     ): JsonResponse {
-        $this->translatorService->getAvailableDomains();
-
-        return $this->jsonResponse(['domains' =>
-            $this->translatorService->getAvailableDomains(),
-        ]);
+        return $this->jsonResponse($this->translatorService->getAvailableDomains());
     }
 }

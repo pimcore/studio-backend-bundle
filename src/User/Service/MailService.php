@@ -31,8 +31,8 @@ use function sprintf;
  */
 final readonly class MailService implements MailServiceInterface
 {
-    private const RESET_MAIL_TEXT = "Login to pimcore and change your password using the following link.
-                               This temporary login link will expire in 24 hours: \r\n\r\n %s";
+    private const string RESET_MAIL_TEXT = 'Login to pimcore and change your password using the following link. ' .
+        "This temporary login link will expire in 24 hours: \r\n\r\n%s";
 
     private string $domain;
 
@@ -41,6 +41,7 @@ final readonly class MailService implements MailServiceInterface
         private RouterInterface $router,
         private EventDispatcherInterface $eventDispatcher,
         private ToolResolverInterface $toolResolver,
+        private string $fromEmail,
     ) {
         $settings = $this->systemSettingsProvider->getSettings();
         $this->domain = $settings['main_domain'];
@@ -49,7 +50,7 @@ final readonly class MailService implements MailServiceInterface
     /**
      * @throws DomainConfigurationException|SendMailException
      */
-    public function sendResetPasswordMail(UserInterface $user, string $token): void
+    public function sendResetPasswordMail(UserInterface $user, string $token, ?string $loginUrl = null): void
     {
         if (!$this->domain) {
             throw new DomainConfigurationException();
@@ -58,24 +59,27 @@ final readonly class MailService implements MailServiceInterface
         $context = $this->router->getContext();
         $context->setHost($this->domain);
 
-        $loginUrl = $this->router->generate(
-            'pimcore_admin_login',
-            [
-                'token' => $token,
-                'reset' => 'true',
-            ],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        if ($loginUrl === null) {
+            $loginUrl = $this->router->generate(
+                'pimcore_admin_login',
+                [
+                    'token' => $token,
+                    'reset' => 'true',
+                ],
+                UrlGeneratorInterface::ABSOLUTE_URL
+            );
+        }
 
         /** @var User $user */
         $event = new LostPasswordEvent($user, $loginUrl);
         $this->eventDispatcher->dispatch($event, LostPasswordEvent::EVENT_NAME);
 
-        // only send mail if it wasn't prevented in event
+        // only send mail if it wasn't prevented in the event
         if ($event->getSendMail()) {
             try {
                 $mail = $this->toolResolver->getMail([$user->getEmail()], 'Pimcore lost password service');
                 $mail->setIgnoreDebugMode(true);
+                $mail->addFrom($this->fromEmail);
                 $mail->text(sprintf(self::RESET_MAIL_TEXT, $loginUrl));
                 $mail->send();
             } catch (Exception $exception) {

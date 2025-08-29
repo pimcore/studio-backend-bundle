@@ -77,7 +77,8 @@ final readonly class CustomReportUpdate
         private bool $sharedGlobally,
         #[Property(
             description: 'Configuration for data source. Content of array depends on selected adapter/data source',
-            type: 'object',
+            type: 'array',
+            items: new Items(type: 'object'),
             example: [
                 [
                     'sql' => 'carClass',

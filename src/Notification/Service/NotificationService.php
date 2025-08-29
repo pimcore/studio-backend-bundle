@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\UnreadCount;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -85,13 +86,7 @@ final readonly class NotificationService implements NotificationServiceInterface
             $parameters
         );
         foreach ($listing as $listEntry) {
-            $entry = $this->notificationHydrator->hydrate($listEntry);
-            $this->eventDispatcher->dispatch(
-                new NotificationListEvent($entry),
-                NotificationListEvent::EVENT_NAME
-            );
-
-            $list[] = $entry;
+            $list[] = $this->hydrateListItem($listEntry);
         }
 
         return new Collection(
@@ -137,6 +132,17 @@ final readonly class NotificationService implements NotificationServiceInterface
         );
 
         return new UnreadCount($count);
+    }
+
+    public function hydrateListItem(NotificationModel $notification): NotificationListItem
+    {
+        $entry = $this->notificationHydrator->hydrate($notification);
+        $this->eventDispatcher->dispatch(
+            new NotificationListEvent($entry),
+            NotificationListEvent::EVENT_NAME
+        );
+
+        return $entry;
     }
 
     /**

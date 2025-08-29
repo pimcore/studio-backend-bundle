@@ -56,4 +56,6 @@ interface SecurityServiceInterface
         UserInterface $user,
         string $permission
     ): array;
+
+    public function isSessionWritable(): bool;
 }

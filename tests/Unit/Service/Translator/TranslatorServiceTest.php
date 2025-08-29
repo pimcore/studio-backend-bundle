@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
@@ -89,6 +90,7 @@ final class TranslatorServiceTest extends Unit
         $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
         $cacheResolver = $this->makeEmpty(CacheResolverInterface::class);
+        $toolResolver = $this->makeEmpty(ToolResolverInterface::class);
 
         return new TranslatorService(
             $translator,
@@ -99,7 +101,8 @@ final class TranslatorServiceTest extends Unit
             $filterMapper,
             $translationsHydrator,
             $eventDispatcher,
-            $cacheResolver
+            $cacheResolver,
+            $toolResolver
         );
     }
 }

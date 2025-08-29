@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 
 /**
  * @internal
@@ -24,40 +23,26 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
     schema: 'TranslationData',
     title: 'Translation Data',
     description: 'Translation Data Scheme for API',
-    required: ['key', 'translation', 'type'],
+    required: ['locale', 'translation'],
     type: 'object'
 )]
 final readonly class TranslationData
 {
     public function __construct(
-        #[Property(description: 'Key', type: 'string', example: 'my_translation_key')]
-        private string $key,
+        #[Property(description: 'Locale', type: 'string', example: 'en')]
+        private string $locale,
         #[Property(description: 'Translation', type: 'string', example: 'some_translated_string')]
         private string $translation,
-        #[Property(description: 'Type', type: 'string', example: 'simple')]
-        private string $type = 'simple',
-        #[Property(description: 'Domain', type: 'domain', example: 'studio')]
-        private string $domain = TranslatorServiceInterface::DOMAIN
     ) {
     }
 
-    public function getKey(): string
+    public function getLocale(): string
     {
-        return $this->key;
+        return $this->locale;
     }
 
     public function getTranslation(): string
     {
         return $this->translation;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function getDomain(): string
-    {
-        return $this->domain;
     }
 }

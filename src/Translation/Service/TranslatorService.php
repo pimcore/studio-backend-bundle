@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
+use Exception;
 use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as StudioNotFoundException;
@@ -27,13 +29,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Event\TranslationsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\Translation as TranslationModel;
+use Pimcore\Model\Translation\Listing;
 use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
@@ -59,22 +62,31 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private FilterMapperServiceInterface $filterMapper,
         private TranslationsHydratorInterface $translationsHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private CacheResolverInterface $cacheResolver
+        private CacheResolverInterface $cacheResolver,
+        private ToolResolverInterface $toolResolver,
     ) {
         $this->translatorBag = $this->getTranslatorBag();
-    }
-
-    public function createTranslations(CreateTranslation $translation): void
-    {
-        $this->translationRepository->createTranslations($translation->getTranslationData());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function updateTranslations(UpdateTranslation $translation): void
+    public function createTranslations(CreateTranslation $parameter): void
     {
-        $this->translationRepository->updateTranslations($translation->getTranslationData(), $translation->getLocale());
+        $this->translationRepository->createTranslations(
+            $parameter->isErrorOnDuplicate(),
+            $parameter->getTranslationData()
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateTranslations(string $domain, UpdateParameter $parameter): void
+    {
+        foreach ($parameter->getData() as $updateData) {
+            $this->translationRepository->updateTranslations($domain, $updateData);
+        }
     }
 
     /**
@@ -141,46 +153,43 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     {
         $translation = new TranslationModel();
 
-        return $translation->getDao()->getAvailableDomains();
+        $domains = $translation->getDao()->getAvailableDomains();
+
+        $availableDomains = [];
+
+        foreach ($domains as $domain) {
+            $availableDomains[] = [
+                'domain' => $domain,
+                'isFrontendDomain' => $domain !== 'studio' && $domain !== 'admin',
+            ];
+        }
+
+        return $availableDomains;
+    }
+
+    public function getAvailableLocales(): array
+    {
+        try {
+            $locales = $this->toolResolver->getSupportedLocales();
+        } catch (Exception) {
+            $locales = [];
+        }
+
+        $availableLocales = [];
+        foreach ($locales as $locale => $name) {
+            $availableLocales[] = [
+                'locale' => $locale,
+                'displayName' => $name,
+            ];
+        }
+
+        return $availableLocales;
     }
 
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection
     {
-        $validLanguages = $this->adminResolver->getLanguages();
-
-        $list = $this->translationRepository->getTranslationList($domain);
-
-        $sortFilter = $parameter->getFilters()->getSortFilter();
-        $joins = [];
-        if (in_array($sortFilter->getKey(), $validLanguages, true)) {
-            $joins[] = $sortFilter->getKey();
-        }
-
-        foreach ($parameter->getFilters()->getColumnFilters() as $columnFilter) {
-            if (
-                !array_key_exists('key', $columnFilter) ||
-                !in_array($columnFilter['key'], $validLanguages, true)
-            ) {
-                continue;
-            }
-            $joins[] = $columnFilter['key'];
-        }
-
-        $this->translationRepository->joinLanguageColumns($list, $joins, $domain);
-
-        $searchFilter = $parameter->getFilters()->getSimpleColumnFilterByType(FilterType::SEARCH->value);
-
-        if ($searchFilter) {
-            $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
-        }
-
-        $list->setLanguages($validLanguages);
-        $list = $this->listingFilter->applyFilters(
-            $this->filterMapper->getFilterParameters($parameter),
-            $list
-        );
-
         $translations = [];
+        $list = $this->getTranslationList($domain, $parameter);
         foreach ($list->getTranslations() as $translation) {
             $translation = $this->translationsHydrator->hydrate(
                 $translation
@@ -197,6 +206,48 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         return new Collection(
             $list->count(),
             $translations
+        );
+    }
+
+    public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing
+    {
+        $validLanguages = $this->adminResolver->getLanguages();
+
+        $list = $this->translationRepository->getTranslationList($domain);
+        $filters = $parameter->getFilters();
+        if (null === $filters) {
+            return $list;
+        }
+
+        $sortFilter = $filters->getSortFilter();
+        $joins = [];
+        if (in_array($sortFilter->getKey(), $validLanguages, true)) {
+            $joins[] = $sortFilter->getKey();
+        }
+
+        foreach ($filters->getColumnFilters() as $columnFilter) {
+            if (
+                !array_key_exists('key', $columnFilter) ||
+                !in_array($columnFilter['key'], $validLanguages, true)
+            ) {
+                continue;
+            }
+            $joins[] = $columnFilter['key'];
+        }
+
+        $this->translationRepository->joinLanguageColumns($list, $joins, $domain);
+
+        $searchFilter = $filters->getSimpleColumnFilterByType(FilterType::SEARCH->value);
+
+        if ($searchFilter) {
+            $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
+        }
+
+        $list->setLanguages($validLanguages);
+
+        return $this->listingFilter->applyFilters(
+            $this->filterMapper->getFilterParameters($parameter),
+            $list
         );
     }
 
@@ -236,7 +287,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $fallbackLanguages[] = Locale::getPrimaryLanguage($local);
         }
 
-        if ($local != 'en') {
+        if ($local !== 'en') {
             $fallbackLanguages[] = 'en';
         }
 

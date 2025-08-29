@@ -30,7 +30,7 @@ final class ElementTypePermissionVoter extends Voter
 {
     use RequestTrait;
 
-    private const TYPE_TO_PERMISSION = [
+    private const array TYPE_TO_PERMISSION = [
         ElementTypes::TYPE_ASSET => UserPermissions::ASSETS->value,
         ElementTypes::TYPE_DOCUMENT => UserPermissions::DOCUMENTS->value,
         ElementTypes::TYPE_DATA_OBJECT => UserPermissions::DATA_OBJECTS->value,

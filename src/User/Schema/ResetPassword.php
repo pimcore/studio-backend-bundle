@@ -21,20 +21,27 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'ResetPassword',
-    description: 'Username',
-    required: ['username'],
+    description: 'Reset password parameters',
+    required: ['username', 'resetPasswordUrl'],
     type: 'object'
 )]
 final readonly class ResetPassword
 {
     public function __construct(
         #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
-        private string $username
+        private string $username,
+        #[Property(description: 'Reset password URL', type: 'string', example: 'https://example.com/reset-password')]
+        private string $resetPasswordUrl
     ) {
     }
 
     public function getUsername(): string
     {
         return $this->username;
+    }
+
+    public function getResetPasswordUrl(): string
+    {
+        return $this->resetPasswordUrl;
     }
 }

@@ -12,3 +12,5 @@ pimcore_studio_backend:
       path: pimcore_studio_api_logout
     json_login:
       check_path: pimcore_studio_api_login
+    custom_authenticators:
+      - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\AdminTokenAuthenticator

@@ -20,5 +20,5 @@ use Pimcore\Model\UserInterface;
  */
 interface MailServiceInterface
 {
-    public function sendResetPasswordMail(UserInterface $user, string $token): void;
+    public function sendResetPasswordMail(UserInterface $user, string $token, ?string $loginUrl = null): void;
 }

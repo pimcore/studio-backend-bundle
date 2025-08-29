@@ -56,7 +56,8 @@ final class StringResolver implements
 
         return $this->getColumnData(
             $column,
-            $value
+            $value,
+            $this->getType()
         );
     }
 

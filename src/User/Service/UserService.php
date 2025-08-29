@@ -76,7 +76,6 @@ final readonly class UserService implements UserServiceInterface
         $user = $this->userResolver->getByName($resetPassword->getUsername());
 
         $userChecks = $this->userChecks($user);
-
         if (!$user || !$userChecks['success']) {
             $this->pimcoreLogger->error('Reset password failed', ['error' => $userChecks['error']]);
 
@@ -84,9 +83,13 @@ final readonly class UserService implements UserServiceInterface
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
+        $loginUrl = null;
+        if ($resetPassword->getResetPasswordUrl() !== null) {
+            $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
+        }
 
         try {
-            $this->mailService->sendResetPasswordMail($user, $token);
+            $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);
         } catch (DomainConfigurationException|SendMailException $exception) {
             $this->pimcoreLogger->error('Error sending password recovery email', ['error' => $exception->getMessage()]);
 

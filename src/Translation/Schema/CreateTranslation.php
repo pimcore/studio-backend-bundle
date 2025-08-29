@@ -23,16 +23,23 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'CreateTranslation',
     title: 'Translation Create',
-    description: 'Translation Crete Scheme for API',
+    description: 'Translation Create Scheme for API',
     required: ['translationData'],
     type: 'object'
 )]
 final readonly class CreateTranslation
 {
     public function __construct(
+        #[Property(description: 'Throw an error on duplicate key', type: 'boolean', example: false)]
+        private bool $errorOnDuplicate = false,
         #[Property(description: 'Translation Data', type: 'array', items: new Items(ref: CreateTranslationData::class))]
         private array $translationData = []
     ) {
+    }
+
+    public function isErrorOnDuplicate(): bool
+    {
+        return $this->errorOnDuplicate;
     }
 
     /**

@@ -35,7 +35,8 @@ final class SelectResolver implements ColumnResolverInterface, StudioElementColu
     {
         return $this->getColumnData(
             $column,
-            $this->getLocalizedValue($column, $element)
+            $this->getLocalizedValue($column, $element),
+            $this->getType()
         );
     }
 

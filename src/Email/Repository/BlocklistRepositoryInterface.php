@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -24,7 +25,7 @@ use Pimcore\Model\Tool\Email\Blocklist\Listing;
 interface BlocklistRepositoryInterface
 {
     /**
-     * @throws EnvironmentException
+     * @throws ElementExistsException|EnvironmentException
      */
     public function addEntry(string $email): void;
 

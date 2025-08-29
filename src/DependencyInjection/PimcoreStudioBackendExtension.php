@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigR
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -140,6 +141,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(KeyBindingServiceInterface::class);
         $definition->setArgument('$defaultKeyBindings', $config['user']['default_key_bindings']);
+
+        $definition = $container->getDefinition(MailServiceInterface::class);
+        $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
 
         $definition = $container->getDefinition(WidgetServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);

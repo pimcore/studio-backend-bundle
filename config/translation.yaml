@@ -22,6 +22,12 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Translation\Service\CsvServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\CsvService
+
+  Pimcore\Bundle\StudioBackendBundle\Translation\Service\ImportServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\ImportService
+
   Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService
 
@@ -39,3 +45,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\DeltaItemHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\DeltaItemHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\CsvSettingsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\CsvSettingsHydrator

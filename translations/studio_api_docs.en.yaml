@@ -399,6 +399,20 @@ document_get_tree_description: |
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 document_get_tree_success_response: Paginated documents with total count as header param as JSON
 document_get_tree_summary: Get all document data for the tree
+document_page_snippet_area_block_render_description: |
+  Generate the editmode HTML and editable definitions based on the document <strong>{id}</strong> and data provided. <br>
+  The <strong>{id}</strong> must be an ID of existing page snippet document. <br> 
+  Following fields are required in the request body:
+    <ul>
+        <li><strong>name</strong>: Name of the areablock</li>
+        <li><strong>realName</strong>: Real name of the areaBlock</li>
+        <li><strong>index</strong>: Index of the areablock within the document</li>
+        <li><strong>blockStateStack</strong>: State stack of the areaBlock</li>
+        <li><strong>areaBlockConfig</strong>: areaBlock config</li>
+        <li><strong>areaBlockData</strong>: Data of the areaBlock</li>
+    </ul>
+document_page_snippet_area_block_render_success_response: Rendered HTML and editable definitions
+document_page_snippet_area_block_render_summary: Render area brick for editmode
 document_page_stream_preview_description: |
   Stream page document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing page
 document_page_stream_preview_success_response: Page preview stream
@@ -593,6 +607,10 @@ export_xlsx_folder_summary: Creating XLSX file for elements based on folder
 login_description: Logs in a user with the provided credentials and returns the user information.
 login_success_response: Login successful.
 login_summary: Session-based login with user credentials.
+login_token_description: |
+  Logs in a user based on the provided token and returns the user information.
+login_token_success_response: Login successful.
+login_token_summary: Session-based login with user token.
 logout_description: Logout and invalidate current session for active user.
 logout_success_response: Logout successful.
 logout_summary: Logout and invalidate current session for active user.
@@ -888,12 +906,50 @@ translation_create_description: |
   Add new translation entries for given translation key
 translation_create_success_response: Successfully created translations
 translation_create_summary: Create translations
-translation_get_collection_description: Get translations for given keys and locale
-translation_get_collection_success_response: Key value pairs for given keys and locale
-translation_get_collection_summary: Get translations
+translation_export_list_description: |
+  Export translations for the given domain. <br> 
+  You can specify different filters in your request body. Example filters are: <br>
+    <ul>
+    <li><strong>translationLike</strong>: Filter by value</li>
+    <li><strong>search</strong>: Filter by search term</li>
+    </ul>
+translation_export_list_summary: Export translations for the given domain
+translation_export_list_success_response: CSV export file for the given domain
+translation_cleanup_by_domain_description: Cleanup translations for the given domain
+translation_cleanup_by_domain_summary: Cleanup translations for the given domain
+translation_cleanup_by_domain_success_description: Translation cleaned up successfully
 translation_delete_by_key_description: Delete translations for given translation key
 translation_delete_by_key_success_response: Successfully deleted translations
 translation_delete_by_key_summary: Delete translations
+translation_determine_csv_settings_for_import_description: |
+  Determine CSV dialect settings for import from a sample string.
+translation_determine_csv_settings_for_import_summary: Determine CSV dialect settings for import
+translation_determine_csv_settings_for_import_success_response: Detected CSV dialect settings
+translation_get_available_locales_description: Get all available locales in the system
+translation_get_available_locales_summary: Get all available locales in the system
+translation_get_available_locales_success_response: List of available locales in the system
+translation_get_collection_description: Get translations for given keys and locale
+translation_get_collection_success_response: Key value pairs for given keys and locale
+translation_get_collection_summary: Get translations
+translation_get_domains_description: Get all available translation domains
+translation_get_domains_summary: Get all available translation domains
+translation_get_domains_success_response: List of available translation domains
+translation_get_list_description: |
+  Get all paginated translations for the given domain. <br>
+  You can specify different filters in your request body. Example filters are: <br>
+    <ul>
+    <li><strong>page</strong>: Used for offset calculation in pagination. To be used, needs to be defined together with the pageSize</li>
+    <li><strong>pageSize</strong>: Used for limiting the result numbers per page. To be used, needs to be defined together with the page</li>
+    <li><strong>translationLike</strong>: Filter by value</li>
+    <li><strong>search</strong>: Filter by search term</li>
+    </ul>
+translation_get_list_summary: Get all translations for the given domain
+translation_get_list_success_response: List of translations for the given domain including all languages
+translation_import_csv_description: |
+  Import translations from a CSV file for the given domain. <br>
+  See the full description of request fields with the schema <strong>CsvSettings</strong>
+translation_import_csv_success_response: Translation delta based on imported data
+translation_import_csv_summary: Import translations from a CSV file
 translation_update_description: |
   Update translations for given translation data and locale.The <strong>{key}</strong> must be an existing translation key. <br> 
   See the full description of updatable translation data fields with the schema <strong>TranslationData</strong>
@@ -1305,12 +1361,3 @@ notification_get_unread_count_success_response: Count of unread notifications fo
 data_object_get_available_grid_columns_for_relation_description: Get all available grid columns for data objects Many to many relation field (defined in the visible columns)
 data_object_get_available_grid_columns_for_relation_summary: Get all available grid columns for data objects Many to many relation field
 data_object_get_available_grid_columns_success_for_relation_response: List of available grid columns for data objects Many to many relation field
-translation_get_domains_description: Get all available translation domains
-translation_get_domains_summary: Get all available translation domains
-translation_get_domains_success_response: List of available translation domains
-translation_get_list_description: Get all translations for the given domain
-translation_get_list_summary: Get all translations for the given domain
-translation_get_list_success_response: List of translations for the given domain including all languages
-translation_cleanup_by_domain_description: Cleanup translations for the given domain
-translation_cleanup_by_domain_summary: Cleanup translations for the given domain
-translation_cleanup_by_domain_success_description: Translation cleaned up successfully
