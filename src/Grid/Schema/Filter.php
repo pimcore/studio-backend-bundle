@@ -38,7 +38,7 @@ final readonly class Filter
         #[Property(
             description: 'Column Filter',
             type: 'object',
-            example: '[{"key":"name","type": "metadata.object","filterValue": 1}]'
+            example: '[{"key":"name","type": "metadata.object","filterValue": 1, "locale":"de"}]'
         )]
         private array $columnFilters = [],
         #[Property(

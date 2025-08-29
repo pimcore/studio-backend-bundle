@@ -109,7 +109,8 @@ final class FilterParameter implements
             yield new ColumnFilter(
                 $column['key'],
                 $column['type'],
-                $column['filterValue']
+                $column['filterValue'],
+                $column['locale'] ?? null
             );
         }
     }
