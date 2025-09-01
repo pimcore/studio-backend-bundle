@@ -102,6 +102,7 @@ final class ObjectBrickCollector implements
 
                 $baseLayoutName = $this->getBaseLayoutName($fieldName, $classDefinition->getLayoutDefinitions());
 
+
                 if (!$baseLayoutName) {
                     throw new InvalidArgumentException('Base layout name not found for field ' . $fieldName);
                 }
@@ -200,17 +201,13 @@ final class ObjectBrickCollector implements
     {
         foreach ($layout->getChildren() as $child) {
             if ($child instanceof Layout) {
-                if (!$baseLayoutName) {
-                    $baseLayoutName = $this->getBaseLayoutName($fieldname, $child, $child->getTitle());
+                $found = $this->getBaseLayoutName($fieldname, $child, $child->getTitle());
+
+                if ($found !== null) {
+                    return $found;
                 }
 
-                $baseLayoutName = $this->getBaseLayoutName($fieldname, $child, $baseLayoutName);
-
-                if ($baseLayoutName === null) {
-                    continue;
-                }
-
-                return $baseLayoutName;
+                continue;
             }
 
             if ($child->getName() === $fieldname) {
