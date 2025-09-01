@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
@@ -101,7 +100,6 @@ final class ObjectBrickCollector implements
                 }
 
                 $baseLayoutName = $this->getBaseLayoutName($fieldName, $classDefinition->getLayoutDefinitions());
-
 
                 if (!$baseLayoutName) {
                     throw new InvalidArgumentException('Base layout name not found for field ' . $fieldName);
