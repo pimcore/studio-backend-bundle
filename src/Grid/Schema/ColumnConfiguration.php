@@ -34,8 +34,8 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
         private readonly string $key,
-        #[Property(description: 'Group', type: 'string', example: 'system')]
-        private readonly string $group,
+        #[Property(description: 'Define the group structure', type: 'object', example: ['system', 'id'])]
+        private readonly array $group,
         #[Property(description: 'Sortable', type: 'boolean', example: true)]
         private readonly bool $sortable,
         #[Property(description: 'Editable', type: 'boolean', example: false)]
@@ -67,7 +67,7 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
         return $this->key;
     }
 
-    public function getGroup(): string
+    public function getGroup(): array
     {
         return $this->group;
     }

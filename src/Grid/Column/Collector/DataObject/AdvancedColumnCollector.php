@@ -135,7 +135,7 @@ final class AdvancedColumnCollector implements
     ): ColumnConfiguration {
         return new ColumnConfiguration(
             key: 'advanced',
-            group: 'advanced',
+            group: ['advanced'],
             sortable: false,
             editable: false,
             exportable: true,

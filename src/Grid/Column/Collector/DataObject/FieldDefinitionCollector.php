@@ -114,12 +114,12 @@ final class FieldDefinitionCollector implements
             }
 
             if ($localized) {
-                $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, $defaultGroup, true);
+                $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, [$defaultGroup], true);
 
                 continue;
             }
 
-            $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, $defaultGroup, false);
+            $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, [$defaultGroup], false);
         }
     }
 

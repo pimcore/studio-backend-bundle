@@ -32,8 +32,8 @@ readonly class ColumnSchema
         private string $key,
         #[Property(description: 'Locale of the Column', type: 'string', example: 'de')]
         private ?string $locale,
-        #[Property(description: 'Group of the Column', type: 'string', example: 'system')]
-        private string $group,
+        #[Property(description: 'Define the group structure', type: 'object', example: ['system'])]
+        private array $group,
     ) {
     }
 
@@ -47,7 +47,7 @@ readonly class ColumnSchema
         return $this->locale;
     }
 
-    public function getGroup(): string
+    public function getGroup(): array
     {
         return $this->group;
     }
