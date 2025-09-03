@@ -267,7 +267,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             $filteredColumns =
                 array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
                     if ($column->getKey() === $predefinedColumn['key'] &&
-                        $column->getGroup() === $predefinedColumn['group']
+                        $column->getGroup()[0] === $predefinedColumn['group']
                     ) {
                         return true;
                     }
