@@ -96,7 +96,7 @@ class Document extends Element implements AdditionalAttributesInterface
 
     public function getPublished(): bool
     {
-        return $this->published;
+        return $this->isPublished();
     }
 
     public function isPublished(): bool

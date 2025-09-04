@@ -27,7 +27,10 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class BooleanResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface, StudioElementColumnResolverInterface
+final class BooleanResolver implements 
+    ColumnResolverInterface, 
+    CoreElementColumnResolverInterface, 
+    StudioElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
