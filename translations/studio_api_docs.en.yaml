@@ -441,6 +441,9 @@ documents_list_available_sites_description: |
   List all available sites
 documents_list_available_sites_success_response: List of available sites
 documents_list_available_sites_summary: List all available sites
+document_get_search_description: Asset grid for search
+document_get_search_summary: Get asset data for search
+document_get_search_success_response: Assets for search grid
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |
