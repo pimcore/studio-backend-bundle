@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -34,9 +35,11 @@ interface GridSearchInterface
 
     public function searchDataObjects(GridParameter $gridParameter): DataObjectSearchResult;
 
+    public function searchDocuments(GridParameter $gridParameter): DocumentSearchResult;
+
     public function searchElementsForUser(
         string $type,
         GridParameter $gridParameter,
         UserInterface $user
-    ): AssetSearchResult|DataObjectSearchResult;
+    ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult;
 }

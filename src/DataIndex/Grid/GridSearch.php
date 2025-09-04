@@ -1,4 +1,4 @@
-<?php
+<?php 
 declare(strict_types=1);
 
 /**
@@ -16,11 +16,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -44,6 +47,7 @@ final readonly class GridSearch implements GridSearchInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
+        private DocumentSearchServiceInterface $documentSearchService,
         private SecurityServiceInterface $securityService
     ) {
         $this->filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
@@ -79,11 +83,20 @@ final readonly class GridSearch implements GridSearchInterface
         );
     }
 
+    public function searchDocuments(GridParameter $gridParameter): DocumentSearchResult
+    {
+        return $this->searchElementsForUser(
+            ElementTypes::TYPE_DOCUMENT,
+            $gridParameter,
+            $this->securityService->getCurrentUser()
+        );
+    }
+
     public function searchElementsForUser(
         string $type,
         GridParameter $gridParameter,
         UserInterface $user
-    ): AssetSearchResult|DataObjectSearchResult {
+    ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult {
         $filter = $gridParameter->getFilters();
         $type = $this->getStudioElementType($type);
 
@@ -96,6 +109,10 @@ final readonly class GridSearch implements GridSearchInterface
                 $gridParameter->getFolderId(),
                 $user
             ),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getDocumentById(
+                $gridParameter->getFolderId(),
+                $user
+            ),
             default => throw new InvalidElementTypeException($type)
         };
 
@@ -105,7 +122,7 @@ final readonly class GridSearch implements GridSearchInterface
 
         $filter->setPath($folder->getFullPath());
 
-        /** @var AssetQueryInterface|DataObjectQueryInterface $query */
+        /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
         $query = $this->filterService->applyFilters(
             $filter,
             $type
@@ -116,6 +133,7 @@ final readonly class GridSearch implements GridSearchInterface
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->searchDataObjects($query),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->searchDocuments($query),
             default => throw new InvalidElementTypeException($type)
         };
     }
@@ -127,6 +145,11 @@ final readonly class GridSearch implements GridSearchInterface
         }
 
         if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObjectFolder) {
+            return true;
+        }
+
+        // Allow all documents as folder sinc they can all have parent items. 
+        if ($type === ElementTypes::TYPE_DOCUMENT) {
             return true;
         }
 

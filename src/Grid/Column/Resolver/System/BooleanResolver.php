@@ -15,22 +15,33 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class BooleanResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface
+final class BooleanResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface, StudioElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
 
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+    {
+        return $this->getColumnData(
+            $column,
+            $this->getValue($column, $element),
+            $this->getType()
+        );
+    }
+
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         return $this->getColumnData(
             $column,
@@ -48,6 +59,7 @@ final class BooleanResolver implements ColumnResolverInterface, CoreElementColum
     {
         return [
             ElementTypes::TYPE_OBJECT,
+            ElementTypes::TYPE_DOCUMENT,
         ];
     }
 }
