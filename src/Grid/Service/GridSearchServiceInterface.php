@@ -35,4 +35,9 @@ interface GridSearchServiceInterface
      * @throws Exception
      */
     public function getDataObjectSearchGrid(SearchGridParameter $searchParameter, ?string $classId): Collection;
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getDocumentSearchGrid(SearchGridParameter $searchParameter): Collection;
 }

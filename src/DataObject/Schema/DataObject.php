@@ -134,6 +134,11 @@ class DataObject extends Element implements AdditionalAttributesInterface
         return $this->published;
     }
 
+    public function getPublished(): bool
+    {
+        return $this->isPublished();
+    }
+
     public function getHasChildren(): bool
     {
         return $this->hasChildren;

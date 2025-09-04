@@ -91,6 +91,20 @@ final class GridService implements GridServiceInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDocumentGrid(GridParameter $gridParameter): Collection
+    {
+        $result = $this->gridSearch->searchDocuments($gridParameter);
+
+        return $this->getCollectionFromSearchResult(
+            $result,
+            $gridParameter,
+            ElementTypes::TYPE_DOCUMENT
+        );
+    }
+
+    /**
      * @throws NotFoundException
      * @throws Exception
      */

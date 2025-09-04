@@ -79,6 +79,11 @@ interface GridServiceInterface
     ): Collection;
 
     /**
+     * @throws InvalidArgumentException
+     */
+    public function getDocumentGrid(GridParameter $gridParameter): Collection;
+
+    /**
      * @throws Exception
      */
     public function getPreviewOfAdvancedColumn(
