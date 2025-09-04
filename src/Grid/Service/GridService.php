@@ -93,7 +93,8 @@ final class GridService implements GridServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function getDocumentGrid(GridParameter $gridParameter): Collection {
+    public function getDocumentGrid(GridParameter $gridParameter): Collection
+    {
         $result = $this->gridSearch->searchDocuments($gridParameter);
 
         return $this->getCollectionFromSearchResult(
@@ -102,7 +103,6 @@ final class GridService implements GridServiceInterface
             ElementTypes::TYPE_DOCUMENT
         );
     }
-
 
     /**
      * @throws NotFoundException

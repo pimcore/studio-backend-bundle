@@ -1,4 +1,4 @@
-<?php 
+<?php
 declare(strict_types=1);
 
 /**
@@ -148,7 +148,7 @@ final readonly class GridSearch implements GridSearchInterface
             return true;
         }
 
-        // Allow all documents as folder sinc they can all have parent items. 
+        // Allow all documents as folder sinc they can all have parent items.
         if ($type === ElementTypes::TYPE_DOCUMENT) {
             return true;
         }
