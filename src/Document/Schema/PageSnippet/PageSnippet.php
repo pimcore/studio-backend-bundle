@@ -31,14 +31,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 final class PageSnippet extends Document
 {
     public function __construct(
-        private string $fullPath,
-        private bool $published,
-        private string $type,
-        private string $key,
-        private int $index,
-        private bool $hasChildren,
-        private bool $hasWorkflowWithPermissions,
-        private DocumentPermissions $permissions,
+        string $fullPath,
+        bool $published,
+        string $type,
+        string $key,
+        int $index,
+        bool $hasChildren,
+        bool $hasWorkflowWithPermissions,
+        DocumentPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -49,8 +49,8 @@ final class PageSnippet extends Document
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
-        private bool $isSite = false,
-        private bool $navigationExclude = false,
+        bool $isSite = false,
+        bool $navigationExclude = false,
         #[Property(description: 'Title of the Page Snippet', type: 'string', example: 'Title')]
         private ?string $title = null,
         #[Property(description: 'Description of the Page Snippet', type: 'string', example: 'Description')]
