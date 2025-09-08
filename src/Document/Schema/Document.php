@@ -143,4 +143,9 @@ class Document extends Element implements AdditionalAttributesInterface
     {
         return $this->navigationExclude;
     }
+
+    public function getFilename(): string
+    {
+        return $this->getKey();
+    }
 }
