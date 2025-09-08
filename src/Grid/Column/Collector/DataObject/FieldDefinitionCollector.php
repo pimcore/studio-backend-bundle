@@ -136,6 +136,7 @@ final class FieldDefinitionCollector implements
                     'dataobject.adapter'
                 );
             } catch (InvalidArgumentException $exception) {
+                dd($exception);
                 $this->logger->info($exception->getMessage());
 
                 continue;
