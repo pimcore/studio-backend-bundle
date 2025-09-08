@@ -285,6 +285,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\CalculatedValueDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\FieldCollectionDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
 
   #
   # Column Resolver
