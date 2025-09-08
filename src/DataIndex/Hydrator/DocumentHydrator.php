@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Page;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\PageSnippet;
 use  Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorServiceInterface;
 
 /**
@@ -29,6 +31,14 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
 
     public function hydrate(DocumentSearchResultItem $item): Document
     {
-        return new Document(...$this->hydratorService->getBaseDocumentData($item));
+        $documentBaseDate = $this->hydratorService->getBaseDocumentData($item);
+
+        if ($item instanceof Page) {
+            $documentBaseDate[] = $item->getTitle();
+            $documentBaseDate[] = $item->getDescription();
+            return new PageSnippet(...$documentBaseDate);
+        }
+
+        return new Document(...$documentBaseDate);
     }
 }
