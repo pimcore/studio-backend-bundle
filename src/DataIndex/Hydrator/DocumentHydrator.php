@@ -31,15 +31,15 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
 
     public function hydrate(DocumentSearchResultItem $item): Document
     {
-        $documentBaseDate = $this->hydratorService->getBaseDocumentData($item);
+        $documentBaseData = $this->hydratorService->getBaseDocumentData($item);
 
         if ($item instanceof Page) {
-            $documentBaseDate[] = $item->getTitle();
-            $documentBaseDate[] = $item->getDescription();
+            $documentBaseData[] = $item->getTitle();
+            $documentBaseData[] = $item->getDescription();
 
-            return new PageSnippet(...$documentBaseDate);
+            return new PageSnippet(...$documentBaseData);
         }
 
-        return new Document(...$documentBaseDate);
+        return new Document(...$documentBaseData);
     }
 }
