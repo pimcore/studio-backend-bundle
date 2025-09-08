@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     schema: 'PageSnippet',
     title: 'PageSnippet',
     required: [
-        'titel',
+        'title',
         'description',
     ],
     type: 'object'
