@@ -13,14 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet;
 
-
-
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentPermissions;
-
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 
 #[Schema(
     schema: 'PageSnippet',

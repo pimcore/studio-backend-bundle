@@ -36,6 +36,7 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
         if ($item instanceof Page) {
             $documentBaseDate[] = $item->getTitle();
             $documentBaseDate[] = $item->getDescription();
+
             return new PageSnippet(...$documentBaseDate);
         }
 
