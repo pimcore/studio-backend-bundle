@@ -23,9 +23,11 @@ enum HttpResponseErrorKeys: string
     case ELEMENT_EXISTS = 'error_element_exists';
     case ELEMENT_NOT_FOUND = 'error_element_not_found';
     case ELEMENT_VALIDATION_FAILED = 'error_element_validation_failed';
+    case ENVIRONMENT_ERROR = 'error_environment';
     case FOLDER_EXISTS = 'error_folder_exists';
     case CONFIG_NAME_INVALID = 'error_config_name_invalid';
     case WIDGET_NAME_MISSING = 'error_widget_name_missing';
     case INVALID_ARGUMENT = 'error_invalid_argument';
+    case INVALID_ASSET_TYPE = 'error_inconsistent_asset_type';
     case VALIDATION_FAILED = 'error_validation_failed';
 }

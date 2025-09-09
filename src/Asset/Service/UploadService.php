@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Helper\MimeTypeHelper;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -368,7 +369,8 @@ final readonly class UploadService implements UploadServiceInterface
                     'Inconsistent asset binary types: required asset (%s) - new asset (%s)',
                     $assetType,
                     $newType
-                )
+                ),
+                HttpResponseErrorKeys::INVALID_ASSET_TYPE->value
             );
         }
     }
