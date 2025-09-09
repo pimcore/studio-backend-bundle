@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\BasicStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
@@ -51,7 +53,11 @@ interface BinaryServiceInterface
     /**
      * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|InvalidThumbnailException
      */
-    public function streamImageByThumbnail(ElementInterface $image, string $thumbnailName): StreamedResponse;
+    public function streamImageByThumbnail(
+        ElementInterface $image,
+        string $thumbnailName,
+        ?BasicStreamConfigParameter $parameter = null
+    ): StreamedResponse;
 
     /**
      * @throws InvalidElementTypeException|InvalidThumbnailException
@@ -64,6 +70,14 @@ interface BinaryServiceInterface
     public function streamImageThumbnailFromConfig(
         Asset $image,
         ImageDownloadConfigParameter $configParameter
+    ): StreamedResponse;
+
+    /**
+     * @throws InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function streamDynamicImageThumbnail(
+        Asset $image,
+        DynamicConfigurationParameter $parameter
     ): StreamedResponse;
 
     /**

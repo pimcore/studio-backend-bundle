@@ -17,8 +17,11 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolverInterface as SystemConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface as ImageConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Video\Thumbnail\ConfigResolverInterface as VideoConfigResolver;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\BasicStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\StreamCropParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
@@ -58,7 +61,11 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     /**
      * @throws InvalidThumbnailException
      */
-    public function getImageThumbnailByName(Image $image, string $thumbnailName): ThumbnailInterface
+    public function getImageThumbnailByName(
+        Image $image,
+        string $thumbnailName,
+        ?BasicStreamConfigParameter $parameter = null
+    ): ThumbnailInterface
     {
         try {
             $thumbnail = $image->getThumbnail($thumbnailName);
@@ -67,15 +74,26 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         }
 
         $thumbnailConfig = $thumbnail->getConfig();
+
         $autoFormatConfigs = $thumbnailConfig->getAutoFormatThumbnailConfigs();
         if ($autoFormatConfigs && $thumbnailConfig->getFormat() === strtoupper(FormatTypes::SOURCE)) {
             $config = current($autoFormatConfigs);
             if ($config !== false) {
-                $thumbnail = $image->getThumbnail($config);
+                $thumbnailConfig = $config;
             }
         }
 
-        return $thumbnail;
+        if ($parameter === null) {
+            return $image->getThumbnail($thumbnailConfig);
+        }
+
+        $thumbnailConfig = $this->setThumbnailConfigFormatParameter(
+            $parameter->getMimeType() ?: $thumbnailConfig->getFormat(),
+            $thumbnailConfig
+        );
+        $thumbnailConfig = $this->setThumbnailConfigCropParameter($parameter, $thumbnailConfig);
+
+        return $image->getThumbnail($thumbnailConfig);
     }
 
     /**
@@ -93,6 +111,27 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         }
 
         return $thumbnail;
+    }
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getDynamicThumbnail(
+        Image $image,
+        DynamicConfigurationParameter $parameter
+    ): ThumbnailInterface {
+        $dynamicConfig = $parameter->getDynamicConfig()['thumbnail'] ?? $parameter->getDynamicConfig();
+        $thumbnailConfig = $image->getThumbnail($dynamicConfig)->getConfig();
+        if ($thumbnailConfig === null) {
+            throw new InvalidThumbnailException('configuration not found');
+        }
+        $thumbnailConfig = $this->setThumbnailConfigFormatParameter(
+            $parameter->getMimeType() ?: $thumbnailConfig->getFormat(),
+            $thumbnailConfig
+        );
+        $thumbnailConfig = $this->setThumbnailConfigCropParameter($parameter, $thumbnailConfig);
+
+        return $image->getThumbnail($thumbnailConfig);
     }
 
     public function getBinaryResponseFromThumbnail(
@@ -146,7 +185,8 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
      * @throws InvalidThumbnailException
      */
     public function getImageThumbnailConfigByName(
-        string $thumbnailName
+        string $thumbnailName,
+        ?StreamCropParameter $parameter = null
     ): ImageThumbnailConfig {
         try {
             $config = $this->imageConfigResolver->getByName($thumbnailName);
@@ -158,7 +198,11 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             $config = $this->imageConfigResolver->getPreviewConfig();
         }
 
-        return $config;
+        if ($parameter === null) {
+            return $config;
+        }
+
+        return $this->setThumbnailConfigCropParameter($parameter, $config);
     }
 
     public function getDocumentThumbnailConfig(
@@ -171,6 +215,26 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         }
 
         return $thumbnailConfig;
+    }
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getDynamicDocumentThumbnail(
+        Document $document,
+        DynamicConfigurationParameter $parameter
+    ): ImageThumbnailConfig {
+        $dynamicConfig = $parameter->getDynamicConfig()['thumbnail'] ?? $parameter->getDynamicConfig();
+        $thumbnailConfig = $document->getImageThumbnail($dynamicConfig)->getConfig();
+        if ($thumbnailConfig === null) {
+            throw new InvalidThumbnailException('configuration not found');
+        }
+        $thumbnailConfig = $this->setThumbnailConfigFormatParameter(
+            $parameter->getMimeType() ?: $thumbnailConfig->getFormat(),
+            $thumbnailConfig
+        );
+
+        return $this->setThumbnailConfigCropParameter($parameter, $thumbnailConfig);
     }
 
     /**
@@ -232,14 +296,13 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         $thumbnailConfig = new ImageThumbnailConfig();
         $thumbnailConfig->setName('pimcore-download-' . $assetId . '-' . md5(serialize($parameters)));
         $thumbnailConfig = $this->setThumbnailConfigResizeParameters($parameters, $thumbnailConfig);
-        $thumbnailConfig->setFormat($parameters->getMimeType());
+        $thumbnailConfig = $this->setThumbnailConfigFormatParameter($parameters->getMimeType(), $thumbnailConfig);
         $quality = $parameters->getQuality();
 
         if ($quality !== null && $quality > 0 && $quality <= 100) {
             $thumbnailConfig->setQuality($quality);
         }
 
-        $thumbnailConfig->setRasterizeSVG(true);
         if ($parameters->getMimeType() === MimeTypes::JPEG->value) {
             $thumbnailConfig->setPreserveMetaData(true);
 
@@ -260,18 +323,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             $thumbnailConfig->addItem('contain', $parameters->getContainTransformation());
         }
 
-        if ($parameters->getCropPercent()) {
-            $thumbnailConfig->addItemAt(0, 'cropPercent', [
-                'width' => $parameters->getCropWidth(),
-                'height' => $parameters->getCropHeight(),
-                'y' => $parameters->getCropTop(),
-                'x' => $parameters->getCropLeft(),
-            ]);
-
-            $thumbnailConfig->generateAutoName();
-        }
-
-        return $thumbnailConfig;
+        return $this->setThumbnailConfigCropParameter($parameters, $thumbnailConfig);
     }
 
     private function getDefaultImageThumbnailConfig(): ImageThumbnailConfig
@@ -328,6 +380,45 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             ),
             default => null
         };
+
+        return $thumbnailConfig;
+    }
+
+    private function setThumbnailConfigFormatParameter(
+        ?string $mimeType,
+        ImageThumbnailConfig $thumbnailConfig
+    ): ImageThumbnailConfig {
+        if ($mimeType === null) {
+            return $thumbnailConfig;
+        }
+
+        if ($mimeType === MimeTypes::SOURCE->value || $mimeType === MimeTypes::PRINT->value) {
+            $mimeType = MimeTypes::PNG->value;
+        }
+
+        $thumbnailConfig->setFormat($mimeType);
+        $thumbnailConfig->setRasterizeSVG(true);
+
+        return $thumbnailConfig;
+    }
+
+    private function setThumbnailConfigCropParameter(
+        StreamCropParameter $parameters,
+        ImageThumbnailConfig $thumbnailConfig
+    ): ImageThumbnailConfig {
+        if (!$parameters->getCropPercent()) {
+
+            return $thumbnailConfig;
+        }
+
+        $thumbnailConfig->addItemAt(0, 'cropPercent', [
+            'width' => $parameters->getCropWidth(),
+            'height' => $parameters->getCropHeight(),
+            'y' => $parameters->getCropTop(),
+            'x' => $parameters->getCropLeft(),
+        ]);
+
+        $thumbnailConfig->generateAutoName();
 
         return $thumbnailConfig;
     }

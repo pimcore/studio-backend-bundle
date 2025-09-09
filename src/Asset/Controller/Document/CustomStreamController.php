@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Document;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageCropParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\PageConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
@@ -85,6 +87,11 @@ final class CustomStreamController extends AbstractApiController
     #[ImageConfigParameter('height', 140)]
     #[ImageConfigParameter('quality', 80)]
     #[ImageConfigParameter('dpi', 300)]
+    #[BoolParameter('cropPercent', '', false, false)]
+    #[ImageCropParameter('cropWidth', 0)]
+    #[ImageCropParameter('cropHeight', 0)]
+    #[ImageCropParameter('cropTop', 0)]
+    #[ImageCropParameter('cropLeft', 0)]
     #[SuccessResponse(
         description: 'asset_document_stream_custom_success_response',
         content: [new MediaType('image/jpeg'), new MediaType('image/png')],

@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 
 use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\BasicStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\ThumbnailNameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageCropParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeStreamParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -24,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
@@ -34,6 +38,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -72,6 +77,12 @@ final class ThumbnailStreamController extends AbstractApiController
     )]
     #[IdParameter(type: 'image')]
     #[ThumbnailNameParameter]
+    #[BoolParameter('cropPercent', '', false, false)]
+    #[ImageCropParameter('cropWidth', 0)]
+    #[ImageCropParameter('cropHeight', 0)]
+    #[ImageCropParameter('cropTop', 0)]
+    #[ImageCropParameter('cropLeft', 0)]
+    #[MimeTypeStreamParameter]
     #[SuccessResponse(
         description: 'asset_image_stream_by_thumbnail_success_response',
         content: [new MediaType('image/*')],
@@ -83,16 +94,17 @@ final class ThumbnailStreamController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function streamImageByThumbnail(int $id, string $thumbnailName): StreamedResponse
+    public function streamImageByThumbnail(
+        int $id, 
+        string $thumbnailName,
+        #[MapQueryString] ?BasicStreamConfigParameter $parameter = null
+    ): StreamedResponse
     {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id
         );
 
-        return $this->binaryService->streamImageByThumbnail(
-            $asset,
-            $thumbnailName
-        );
+        return $this->binaryService->streamImageByThumbnail($asset, $thumbnailName, $parameter);
     }
 }

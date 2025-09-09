@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageCropParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
@@ -100,10 +101,10 @@ final class CustomStreamController extends AbstractApiController
     #[BoolParameter('cover', 'Cover', false, false)]
     #[BoolParameter('forceResize', 'Force resize', false, false)]
     #[BoolParameter('cropPercent', '', false, false)]
-    #[ImageConfigParameter('cropWidth', 0)]
-    #[ImageConfigParameter('cropHeight', 0)]
-    #[ImageConfigParameter('cropTop', 0)]
-    #[ImageConfigParameter('cropLeft', 0)]
+    #[ImageCropParameter('cropWidth', 0)]
+    #[ImageCropParameter('cropHeight', 0)]
+    #[ImageCropParameter('cropTop', 0)]
+    #[ImageCropParameter('cropLeft', 0)]
     #[SuccessResponse(
         description: 'asset_image_stream_custom_success_response',
         content: [new MediaType('image/*')],

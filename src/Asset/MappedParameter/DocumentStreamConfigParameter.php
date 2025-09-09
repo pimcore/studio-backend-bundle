@@ -13,40 +13,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
-
 /**
  * @internal
  */
-final readonly class DocumentImageDownloadConfigParameter extends ImageDownloadConfigParameter
+final readonly class DocumentStreamConfigParameter extends StreamCropParameter
 {
     public function __construct(
-        string $mimeType,
         private ?int $page = null,
-        string $resizeMode = ResizeModes::NONE,
-        ?int $width = null,
-        ?int $height = null,
-        ?int $quality = 85,
-        ?int $dpi = null,
         bool $cropPercent = false,
         ?float $cropHeight = null,
         ?float $cropWidth = null,
         ?float $cropTop = null,
         ?float $cropLeft = null,
     ) {
-        parent::__construct(
-            mimeType: $mimeType,
-            resizeMode: $resizeMode,
-            width: $width,
-            height: $height,
-            quality: $quality,
-            dpi: $dpi,
-            cropPercent: $cropPercent,
-            cropHeight: $cropHeight,
-            cropWidth: $cropWidth,
-            cropTop: $cropTop,
-            cropLeft: $cropLeft,
-        );
+        parent::__construct($cropPercent, $cropHeight, $cropWidth, $cropTop, $cropLeft);
     }
 
     public function getPage(): ?int

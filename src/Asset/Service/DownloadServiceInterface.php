@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
@@ -56,13 +58,29 @@ interface DownloadServiceInterface
     ): StreamedResponse;
 
     /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException
+     */
+    public function streamDynamicDocumentThumbnail(
+        Asset $document,
+        DynamicConfigurationParameter $parameters
+    ): StreamedResponse;
+
+    /**
      * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|InvalidThumbnailException
      */
     public function getDocumentThumbnailByName(
         Asset $document,
         string $thumbnailName,
-        int $page,
-        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+        int $page
+    ): StreamedResponse;
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function streamDocumentThumbnailByName(
+        Asset $document,
+        string $thumbnailName,
+        ?DocumentStreamConfigParameter $parameter = null
     ): StreamedResponse;
 
     /**
