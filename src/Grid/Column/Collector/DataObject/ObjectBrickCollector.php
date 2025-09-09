@@ -129,7 +129,7 @@ final class ObjectBrickCollector implements
 
             try {
                 $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                    new ColumnFieldDefinition($dataField, [$grouping], false),
+                    new ColumnFieldDefinition($dataField, $grouping, false),
                     'dataobject.objectbrick',
                     $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
                     [
