@@ -95,11 +95,10 @@ final class ThumbnailStreamController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function streamImageByThumbnail(
-        int $id, 
+        int $id,
         string $thumbnailName,
         #[MapQueryString] ?BasicStreamConfigParameter $parameter = null
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id

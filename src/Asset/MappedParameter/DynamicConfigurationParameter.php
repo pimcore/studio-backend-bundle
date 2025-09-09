@@ -35,5 +35,4 @@ final readonly class DynamicConfigurationParameter extends BasicStreamConfigPara
     {
         return $this->dynamicConfig;
     }
-
 }

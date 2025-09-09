@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Document;
 
-use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\DynamicAssetConfigRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;

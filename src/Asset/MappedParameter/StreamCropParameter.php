@@ -35,7 +35,6 @@ readonly class StreamCropParameter
         return $this->cropPercent;
     }
 
-
     public function getCropHeight(): ?float
     {
         return $this->cropHeight;

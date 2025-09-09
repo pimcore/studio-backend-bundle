@@ -65,8 +65,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         Image $image,
         string $thumbnailName,
         ?BasicStreamConfigParameter $parameter = null
-    ): ThumbnailInterface
-    {
+    ): ThumbnailInterface {
         try {
             $thumbnail = $image->getThumbnail($thumbnailName);
         } catch (Exception) {

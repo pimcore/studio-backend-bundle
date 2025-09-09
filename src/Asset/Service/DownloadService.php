@@ -157,7 +157,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         }
 
         $thumbnailConfig = $this->thumbnailService->getImageThumbnailConfigByName($thumbnailName, $parameter);
-        
+
         $page = $parameter?->getPage() ?? 1;
 
         return $this->getStreamedDocumentThumbnail(

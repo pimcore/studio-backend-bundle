@@ -82,8 +82,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         ElementInterface $image,
         string $thumbnailName,
         ?BasicStreamConfigParameter $parameter = null
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
