@@ -31,7 +31,7 @@ final class UserPermission implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Key of the Permission', type: 'string', example: 'objects')]
         private readonly string $key,
-        #[Property(description: 'Category og the Permission', type: 'string', example: 'Datahub')]
+        #[Property(description: 'Category of the Permission', type: 'string', example: 'Datahub')]
         private readonly string $category,
     ) {
     }

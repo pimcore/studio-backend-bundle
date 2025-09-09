@@ -544,7 +544,9 @@ error_something_generic_went_wrong: Oops, sorry seems like something unexpectedl
 error_element_exists: Element already exists
 error_folder_exists: Folder already exists
 error_element_not_found: Element not found
+error_environment: Environment error
 error_invalid_argument: Invalid argument
+error_inconsistent_asset_type: Inconsistent asset binary type
 error_widget_name_missing: Widget name have to be provided
 error_config_name_invalid: Configuration name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
 error_validation_failed: Validation failed

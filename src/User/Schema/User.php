@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id', 'active', 'admin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
-        'twoFactorAuthenticationEnabled', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
+        'twoFactorAuthentication', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
         'perspectives',
     ],
@@ -79,8 +79,12 @@ final class User implements AdditionalAttributesInterface
         private readonly array $permissions,
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private readonly array $roles,
-        #[Property(description: 'Two Factor Authentication Enabled', type: 'boolean', example: false)]
-        private readonly bool $twoFactorAuthenticationEnabled,
+        #[Property(
+            description: 'Two Factor Authentication',
+            type: 'array',
+            items: new Items(ref: TwoFactorAuth::class)
+        )]
+        private readonly TwoFactorAuth $twoFactorAuthentication,
         #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
         private readonly array $websiteTranslationLanguagesEdit,
         #[Property(description: 'Website Translation Languages View', type: 'object', example: ['de'])]
@@ -202,9 +206,9 @@ final class User implements AdditionalAttributesInterface
         return $this->allowDirtyClose;
     }
 
-    public function isTwoFactorAuthenticationEnabled(): bool
+    public function getTwoFactorAuthentication(): TwoFactorAuth
     {
-        return $this->twoFactorAuthenticationEnabled;
+        return $this->twoFactorAuthentication;
     }
 
     public function getWebsiteTranslationLanguagesEdit(): array
