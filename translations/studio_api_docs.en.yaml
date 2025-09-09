@@ -60,6 +60,11 @@ asset_document_stream_custom_description: |
   The <strong>{id}</strong> must be an ID of existing asset document
 asset_document_stream_custom_success_response: Custom document image stream
 asset_document_stream_custom_summary: Stream custom document image by ID and configuration
+asset_document_stream_dynamic_description: |
+  Stream the custom image based on the provided <strong>{id}</strong> and dynamic config data. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset document
+asset_document_stream_dynamic_success_response: Document image stream based on dynamic thumbnail configuration
+asset_document_stream_dynamic_summary: Stream document image by ID and dynamic configuration
 asset_document_stream_preview_description: |
   Stream asset document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset document
 asset_document_stream_preview_success_response: Asset PDF preview stream
@@ -142,6 +147,11 @@ asset_image_stream_custom_description: |
   The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_stream_custom_success_response: Image asset stream based on custom thumbnail configuration
 asset_image_stream_custom_summary: Stream custom image thumbnail by ID and configuration
+asset_image_stream_dynamic_description: |
+  Stream image asset thumbnail based on the provided <strong>{id}</strong> and dynamic config data. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_stream_dynamic_success_response: Image asset stream based on dynamic thumbnail configuration
+asset_image_stream_dynamic_summary: Stream image thumbnail by ID and dynamic configuration
 asset_image_stream_preview_description: |
   Stream image asset preview based on the provided <strong>{id}</strong>. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
@@ -441,9 +451,9 @@ documents_list_available_sites_description: |
   List all available sites
 documents_list_available_sites_success_response: List of available sites
 documents_list_available_sites_summary: List all available sites
-document_get_search_description: Asset grid for search
-document_get_search_summary: Get asset data for search
-document_get_search_success_response: Assets for search grid
+document_get_search_description: Document grid for search
+document_get_search_summary: Get document data for search
+document_get_search_success_response: Documents for search grid
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |

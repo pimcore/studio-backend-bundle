@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
@@ -102,11 +104,31 @@ final readonly class DownloadService implements DownloadServiceInterface
     /**
      * {@inheritdoc}
      */
+    public function streamDynamicDocumentThumbnail(
+        Asset $document,
+        DynamicConfigurationParameter $parameters
+    ): StreamedResponse {
+        if (!$document instanceof Document) {
+            throw new InvalidElementTypeException($document->getType());
+        }
+
+        $thumbnailConfig = $this->thumbnailService->getDynamicDocumentThumbnail($document, $parameters);
+
+        return $this->getStreamedDocumentThumbnail(
+            $document,
+            $thumbnailConfig,
+            $parameters->getDynamicConfig()['page'] ?? 1,
+            HttpResponseHeaders::INLINE_TYPE->value
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getDocumentThumbnailByName(
         Asset $document,
         string $thumbnailName,
-        int $page,
-        string $attachmentType = HttpResponseHeaders::ATTACHMENT_TYPE->value
+        int $page
     ): StreamedResponse {
         if (!$document instanceof Document) {
             throw new InvalidElementTypeException($document->getType());
@@ -114,7 +136,35 @@ final readonly class DownloadService implements DownloadServiceInterface
 
         $thumbnailConfig = $this->thumbnailService->getImageThumbnailConfigByName($thumbnailName);
 
-        return $this->getStreamedDocumentThumbnail($document, $thumbnailConfig, $page, $attachmentType
+        return $this->getStreamedDocumentThumbnail(
+            $document,
+            $thumbnailConfig,
+            $page,
+            HttpResponseHeaders::ATTACHMENT_TYPE->value
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function streamDocumentThumbnailByName(
+        Asset $document,
+        string $thumbnailName,
+        ?DocumentStreamConfigParameter $parameter = null
+    ): StreamedResponse {
+        if (!$document instanceof Document) {
+            throw new InvalidElementTypeException($document->getType());
+        }
+
+        $thumbnailConfig = $this->thumbnailService->getImageThumbnailConfigByName($thumbnailName, $parameter);
+
+        $page = $parameter?->getPage() ?? 1;
+
+        return $this->getStreamedDocumentThumbnail(
+            $document,
+            $thumbnailConfig,
+            $page,
+            HttpResponseHeaders::INLINE_TYPE->value
         );
     }
 

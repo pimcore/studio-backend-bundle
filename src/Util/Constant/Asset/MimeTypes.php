@@ -25,6 +25,7 @@ enum MimeTypes: string
     case CSV = 'text/csv';
     case JPEG = 'JPEG';
     case ORIGINAL = 'original';
+    case PRINT = 'print';
     case PJPEG = 'PJPEG';
     case PNG = 'PNG';
     case PDF = 'application/pdf';
