@@ -47,13 +47,7 @@ final readonly class ImageService implements ImageServiceInterface
             return;
         }
 
-        if ($user->isAdmin()) {
-            throw new ForbiddenException('Only admin users are allowed to modify admin users');
-        }
-
-        if ($user->getId() !== $currentUser->getId()) {
-            throw new ForbiddenException('Only admin users are allowed to modify users other than themselves');
-        }
+        $this->validateUserAccess($user, $currentUser);
 
         $this->setUserImage($user, $file);
     }
@@ -64,14 +58,17 @@ final readonly class ImageService implements ImageServiceInterface
     public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse
     {
         $user = $this->userRepository->getUserById($userId);
+        $currentUser = $this->securityService->getCurrentUser();
 
-        $stream = $user->getImage();
+        if ($currentUser->isAdmin()) {
+            return $this->streamUserImage($user);
+        }
 
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, [
-            'Content-Type' => 'image/png',
-        ]);
+        if ($user->getId() !== $currentUser->getId()) {
+            throw new ForbiddenException('Only admin users are allowed to view other users');
+        }
+
+        return $this->streamUserImage($user);
     }
 
     /**
@@ -88,6 +85,13 @@ final readonly class ImageService implements ImageServiceInterface
             return;
         }
 
+        $this->validateUserAccess($user, $currentUser);
+
+        $user->setImage(null);
+    }
+
+    private function validateUserAccess(UserInterface $user, UserInterface $currentUser): void
+    {
         if ($user->isAdmin()) {
             throw new ForbiddenException('Only admin users are allowed to modify admin users');
         }
@@ -95,8 +99,6 @@ final readonly class ImageService implements ImageServiceInterface
         if ($user->getId() !== $currentUser->getId()) {
             throw new ForbiddenException('Only admin users are allowed to modify users other than themselves');
         }
-
-        $user->setImage(null);
     }
 
     private function setUserImage(UserInterface $user, UploadedFile $file): void
@@ -108,5 +110,16 @@ final readonly class ImageService implements ImageServiceInterface
         }
 
         $user->setImage($file->getPathname());
+    }
+
+    private function streamUserImage(UserInterface $user): StreamedResponse
+    {
+        $stream = $user->getImage();
+
+        return new StreamedResponse(function () use ($stream) {
+            fpassthru($stream);
+        }, 200, [
+            'Content-Type' => 'image/png',
+        ]);
     }
 }
