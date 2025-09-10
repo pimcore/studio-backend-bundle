@@ -975,6 +975,11 @@ user_clone_by_id_summary: Clone a specific user.
 user_create_success_response: Node of the new created User.
 user_create_summary: Create a new user.
 user_delete_by_id_summary: Delete a specific user.
+user_image_delete_by_id_description: |
+  Delete the image of a specific user based on the given <strong>{id}</strong>. <br> 
+  The <strong>{id}</strong> must be an ID of existing user.
+user_image_delete_by_id_success_response: Successfully deleted user image
+user_image_delete_by_id_summary: Delete user image by ID
 user_folder_create_success_response: Node of the new created Folder.
 user_folder_create_summary: Create a new user folder.
 user_folder_delete_by_id_summary: Delete a specific user folder with all users in this folder.

@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -34,26 +34,33 @@ final readonly class ImageService implements ImageServiceInterface
     }
 
     /**
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function uploadUserImage(UploadedFile $file, int $userId): void
     {
         $user = $this->userRepository->getUserById($userId);
         $currentUser = $this->securityService->getCurrentUser();
 
-        if ($user->isAdmin() && !$currentUser->isAdmin()) {
-            throw new ForbiddenException('You are not allowed to upload an image for an admin user');
+        if ($currentUser->isAdmin()) {
+            $this->setUserImage($user, $file);
+
+            return;
         }
 
-        $fileType = $this->assetResolver->getTypeFromMimeMapping($file->getMimeType(), $file->getFilename());
-
-        if ($fileType !== 'image') {
-            throw new ForbiddenException('Only images are allowed');
+        if ($user->isAdmin()) {
+            throw new ForbiddenException('Only admin users are allowed to modify admin users');
         }
 
-        $user->setImage($file->getPathname());
+        if ($user->getId() !== $currentUser->getId()) {
+            throw new ForbiddenException('Only admin users are allowed to modify users other than themselves');
+        }
+
+        $this->setUserImage($user, $file);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse
     {
         $user = $this->userRepository->getUserById($userId);
@@ -65,5 +72,41 @@ final readonly class ImageService implements ImageServiceInterface
         }, 200, [
             'Content-Type' => 'image/png',
         ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteUserImage(int $userId): void
+    {
+        $user = $this->userRepository->getUserById($userId);
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if ($currentUser->isAdmin()) {
+            $user->setImage(null);
+
+            return;
+        }
+
+        if ($user->isAdmin()) {
+            throw new ForbiddenException('Only admin users are allowed to modify admin users');
+        }
+
+        if ($user->getId() !== $currentUser->getId()) {
+            throw new ForbiddenException('Only admin users are allowed to modify users other than themselves');
+        }
+
+        $user->setImage(null);
+    }
+
+    private function setUserImage(UserInterface $user, UploadedFile $file): void
+    {
+        $fileType = $this->assetResolver->getTypeFromMimeMapping($file->getMimeType(), $file->getFilename());
+
+        if ($fileType !== 'image') {
+            throw new ForbiddenException('Only images are allowed');
+        }
+
+        $user->setImage($file->getPathname());
     }
 }
