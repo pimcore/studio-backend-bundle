@@ -17,6 +17,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -64,9 +65,7 @@ final readonly class ImageService implements ImageServiceInterface
             return $this->streamUserImage($user);
         }
 
-        if ($user->getId() !== $currentUser->getId()) {
-            throw new ForbiddenException('Only admin users are allowed to view other users');
-        }
+        $this->validateCurrentUser($user, $currentUser);
 
         return $this->streamUserImage($user);
     }
@@ -90,14 +89,27 @@ final readonly class ImageService implements ImageServiceInterface
         $user->setImage(null);
     }
 
+    /**
+     * @throws ForbiddenException
+     */
     private function validateUserAccess(UserInterface $user, UserInterface $currentUser): void
     {
         if ($user->isAdmin()) {
             throw new ForbiddenException('Only admin users are allowed to modify admin users');
         }
 
-        if ($user->getId() !== $currentUser->getId()) {
-            throw new ForbiddenException('Only admin users are allowed to modify users other than themselves');
+        $this->validateCurrentUser($user, $currentUser);
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function validateCurrentUser(UserInterface $user, UserInterface $currentUser): void
+    {
+        if (!$currentUser->isAllowed(UserPermissions::USER_MANAGEMENT->value) &&
+            ($user->getId() !== $currentUser->getId())
+        ) {
+            throw new ForbiddenException('You do not have required permissions for this action');
         }
     }
 
