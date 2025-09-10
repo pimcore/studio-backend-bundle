@@ -48,7 +48,6 @@ final class UserImageController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route('/user/image/{id}', name: 'pimcore_studio_api_get_user_image', methods: ['GET'])]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::PREFIX . '/user/image/{id}',
         operationId: 'user_get_image',
