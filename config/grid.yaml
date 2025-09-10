@@ -288,6 +288,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\FieldCollectionDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ClassificationStoreDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
 
   #
   # Column Resolver
@@ -345,6 +348,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\AdvancedColumnResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\ClassificationStoreResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   #
