@@ -58,7 +58,7 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
 
         if (!$baseResolver instanceof CoreElementColumnResolverInterface) {
             throw new InvalidArgumentException(
-                "Can not load adapter resolver. This is neded to get base data of the Classification Store"
+                'Can not load adapter resolver. This is neded to get base data of the Classification Store'
             );
         }
 
