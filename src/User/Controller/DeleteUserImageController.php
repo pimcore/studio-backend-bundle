@@ -13,56 +13,59 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class UserImageController extends AbstractApiController
+final class DeleteUserImageController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
+    private const string ROUTE = '/user/image/{id}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ImageServiceInterface $imageUploadService
+        private readonly ImageServiceInterface $imageService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws NotFoundException
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
      */
-    #[Route('/user/image/{id}', name: 'pimcore_studio_api_get_user_image', methods: ['GET'])]
-    #[Get(
-        path: self::PREFIX . '/user/image/{id}',
-        operationId: 'user_get_image',
-        summary: 'user_get_image_summary',
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_user_image_delete', methods: ['DELETE'])]
+    #[Delete(
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'user_image_delete_by_id',
+        description: 'user_image_delete_by_id_description',
+        summary: 'user_image_delete_by_id_summary',
         tags: [Tags::User->value]
     )]
-    #[IdParameter(type: 'User')]
+    #[IdParameter(type: 'user')]
     #[SuccessResponse(
-        description: 'user_get_image_success_response',
-        content: new MediaType('image/png'),
+        description: 'user_image_delete_by_id_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::FORBIDDEN,
     ])]
-    public function getUserImage(
-        int $id,
-    ): StreamedResponse {
-        return $this->imageUploadService->getImageFromUserAsStreamedResponse($id);
+    public function deleteUserImage(int $id): Response
+    {
+        $this->imageService->deleteUserImage($id);
+
+        return new Response();
     }
 }

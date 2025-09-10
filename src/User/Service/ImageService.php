@@ -15,9 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -34,17 +35,86 @@ final readonly class ImageService implements ImageServiceInterface
     }
 
     /**
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function uploadUserImage(UploadedFile $file, int $userId): void
     {
         $user = $this->userRepository->getUserById($userId);
         $currentUser = $this->securityService->getCurrentUser();
 
-        if ($user->isAdmin() && !$currentUser->isAdmin()) {
-            throw new ForbiddenException('You are not allowed to upload an image for an admin user');
+        if ($currentUser->isAdmin()) {
+            $this->setUserImage($user, $file);
+
+            return;
         }
 
+        $this->validateUserAccess($user, $currentUser);
+
+        $this->setUserImage($user, $file);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse
+    {
+        $user = $this->userRepository->getUserById($userId);
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if ($currentUser->isAdmin()) {
+            return $this->streamUserImage($user);
+        }
+
+        $this->validateCurrentUser($user, $currentUser);
+
+        return $this->streamUserImage($user);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteUserImage(int $userId): void
+    {
+        $user = $this->userRepository->getUserById($userId);
+        $currentUser = $this->securityService->getCurrentUser();
+
+        if ($currentUser->isAdmin()) {
+            $user->setImage(null);
+
+            return;
+        }
+
+        $this->validateUserAccess($user, $currentUser);
+
+        $user->setImage(null);
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function validateUserAccess(UserInterface $user, UserInterface $currentUser): void
+    {
+        if ($user->isAdmin()) {
+            throw new ForbiddenException('Only admin users are allowed to modify admin users');
+        }
+
+        $this->validateCurrentUser($user, $currentUser);
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function validateCurrentUser(UserInterface $user, UserInterface $currentUser): void
+    {
+        if (!$currentUser->isAllowed(UserPermissions::USER_MANAGEMENT->value) &&
+            ($user->getId() !== $currentUser->getId())
+        ) {
+            throw new ForbiddenException('You do not have required permissions for this action');
+        }
+    }
+
+    private function setUserImage(UserInterface $user, UploadedFile $file): void
+    {
         $fileType = $this->assetResolver->getTypeFromMimeMapping($file->getMimeType(), $file->getFilename());
 
         if ($fileType !== 'image') {
@@ -54,10 +124,8 @@ final readonly class ImageService implements ImageServiceInterface
         $user->setImage($file->getPathname());
     }
 
-    public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse
+    private function streamUserImage(UserInterface $user): StreamedResponse
     {
-        $user = $this->userRepository->getUserById($userId);
-
         $stream = $user->getImage();
 
         return new StreamedResponse(function () use ($stream) {

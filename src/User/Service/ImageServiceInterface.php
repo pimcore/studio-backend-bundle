@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -21,7 +24,18 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 interface ImageServiceInterface
 {
+    /**
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
+     */
     public function uploadUserImage(UploadedFile $file, int $userId): void;
 
+    /**
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
+     */
     public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse;
+
+    /**
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
+     */
+    public function deleteUserImage(int $userId): void;
 }
