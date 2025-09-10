@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -28,7 +29,8 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
     public function __construct(
         SystemSettingsConfig $systemSettingsConfig,
-        private AdminResolverInterface $adminResolver
+        private AdminResolverInterface $adminResolver,
+        private ToolResolverInterface $toolResolver
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
@@ -40,6 +42,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
                 $this->systemSettings['general']['valid_languages'],
             'validLanguages' => $this->systemSettings['general']['valid_languages'],
             'availableAdminLanguages' => $this->adminResolver->getLanguages(),
+            'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
             'upload_max_filesize' => $this->getUploadMaxFilesize(),
