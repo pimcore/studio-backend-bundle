@@ -30,6 +30,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -109,6 +110,7 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
+            // Use ObjectbricksCollector
             if (!$definition instanceof Data || $definition instanceof Objectbricks) {
                 continue;
             }
@@ -131,6 +133,16 @@ final class FieldDefinitionCollector implements
         $columns = [];
         foreach ($this->groupedDefinitions as $definition) {
             try {
+                if ($definition->getFieldDefinition() instanceof Classificationstore) {
+                    $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
+                    $definition,
+                    'dataobject.classificationstore'
+                    );
+
+                    continue;
+                }
+
+
                 $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
                     $definition,
                     'dataobject.adapter'
