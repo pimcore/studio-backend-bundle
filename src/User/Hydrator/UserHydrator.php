@@ -32,6 +32,7 @@ final readonly class UserHydrator implements UserHydratorInterface
         private WorkspaceHydratorInterface $workspaceHydrator,
         private ObjectDependenciesServiceInterface $objectDependenciesService,
         private KeyBindingServiceInterface $keyBindingService,
+        private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPerspectiveServiceInterface $userPerspectiveService
     ) {
     }
@@ -58,8 +59,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             parentId: $user->getParentId(),
             permissions: $this->sanitizePermissions($user->getPermissions()),
             roles: $user->getRoles(),
-            twoFactorAuthenticationEnabled:
-                $user->getTwoFactorAuthentication('enabled') || $user->getTwoFactorAuthentication('secret'),
+            twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             websiteTranslationLanguagesEdit: $user->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $user->getWebsiteTranslationLanguagesView(),
             welcomeScreen: $user->getWelcomeScreen(),
