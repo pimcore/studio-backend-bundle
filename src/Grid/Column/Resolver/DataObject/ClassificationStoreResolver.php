@@ -57,7 +57,9 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
         $baseResolver = $this->gridService->getColumnResolvers()['dataobject.adapter'];
 
         if (!$baseResolver instanceof CoreElementColumnResolverInterface) {
-            throw new InvalidArgumentException('Can not load adapter resolver. This is neded to get base data of the Classification Store');
+            throw new InvalidArgumentException(
+                "Can not load adapter resolver. This is neded to get base data of the Classification Store"
+            );
         }
 
         $normalizedData = $baseResolver->resolveForCoreElement($column, $element);
