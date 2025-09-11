@@ -80,9 +80,9 @@ final class User implements AdditionalAttributesInterface
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private readonly array $roles,
         #[Property(
+            ref: TwoFactorAuth::class,
             description: 'Two Factor Authentication',
-            type: 'array',
-            items: new Items(ref: TwoFactorAuth::class)
+            type: 'object'
         )]
         private readonly TwoFactorAuth $twoFactorAuthentication,
         #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
