@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\GroupEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\GroupLayoutEvent;
@@ -43,6 +44,7 @@ final readonly class GroupService implements GroupServiceInterface
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyGroupLayoutServiceInterface $keyGroupLayoutService,
         private GroupLayoutHydratorInterface $groupLayoutHydrator,
+        private ClassDefinitionResolverInterface $classDefinitionResolver,
     ) {
     }
 
@@ -85,17 +87,17 @@ final readonly class GroupService implements GroupServiceInterface
      */
     public function getAllowedGroupIds(ListClassificationStoreParameter $parameter): array
     {
-        if (!$parameter->getObjectId()) {
+        if (!$parameter->getClassId()) {
             return [];
         }
 
-        $object = $this->concreteObjectResolver->getById($parameter->getObjectId());
+        $class = $this->classDefinitionResolver->getById($parameter->getClassId());
 
-        if (!$object) {
-            throw new NotFoundException('object', $parameter->getObjectId());
+        if (!$class) {
+            throw new NotFoundException('Class', $parameter->getClassId());
         }
 
-        $class = $object->getClass();
+    
         $fieldDefinition = $class->getFieldDefinition($parameter->getFieldName());
 
         if (!$fieldDefinition instanceof Classificationstore) {
