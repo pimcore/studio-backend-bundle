@@ -44,6 +44,11 @@ interface RoleServiceInterface
     public function getRoleTreeCollection(ParentIdParameter $listingParameter): Collection;
 
     /**
+     * @throws DatabaseException
+     */
+    public function roleSearch(string $searchQuery): Collection;
+
+    /**
      * @throws DatabaseException|NotFoundException
      */
     public function deleteRole(int $roleId): void;

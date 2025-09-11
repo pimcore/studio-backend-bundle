@@ -102,6 +102,30 @@ final class RoleRepository implements RoleRepositoryInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function searchRoles(string $searchQuery): array
+    {
+        $q = '%' . $searchQuery . '%';
+
+        try {
+            $roleListing = new Listing();
+            $roleListing->setCondition(
+                'name LIKE ? OR id = ?',
+                [$q, (int)$searchQuery]
+            );
+            $roleListing->addConditionParam('`type` = ?', ['role']);
+            $roleListing->setOrder('ASC');
+            $roleListing->setOrderKey('name');
+            $roleListing->load();
+
+            return $roleListing->getRoles();
+        } catch (Exception $e) {
+            throw new DatabaseException(sprintf('Error while searching for roles: %s', $e->getMessage()));
+        }
+    }
+
+    /**
      * @throws Exception
      */
     public function deleteRole(Role $role): void

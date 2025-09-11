@@ -96,6 +96,16 @@ final readonly class RoleService implements RoleServiceInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function roleSearch(string $searchQuery): Collection
+    {
+        $roles = $this->roleRepository->searchRoles($searchQuery);
+
+        return $this->getSimpleRoleCollection($roles);
+    }
+
+    /**
      * @throws DatabaseException|NotFoundException
      */
     public function deleteRole(int $roleId): void
