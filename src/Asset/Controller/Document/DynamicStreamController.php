@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Document;
 
-use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\DynamicAssetConfigRequestBody;
+use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
@@ -25,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
@@ -36,7 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -65,10 +65,10 @@ final class DynamicStreamController extends AbstractApiController
     #[Route(
         '/assets/{id}/document/stream/dynamic',
         name: 'pimcore_studio_api_stream_document_dynamic',
-        methods: ['POST']
+        methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Post(
+    #[Get(
         path: self::PREFIX . '/assets/{id}/document/stream/dynamic',
         operationId: 'asset_document_stream_dynamic',
         description: 'asset_document_stream_dynamic_description',
@@ -76,7 +76,25 @@ final class DynamicStreamController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_DOCUMENT)]
-    #[DynamicAssetConfigRequestBody]
+    #[TextFieldParameter(
+        'config',
+        'A JSON encoded thumbnail configuration.',
+        true,
+        '{' .
+             '"alt": "",' .
+             '"cropPercent": false,' .
+             '"cropWidth": 0,' .
+             '"cropHeight": 0,' .
+             '"cropTop": 0,' .
+             '"cropLeft": 0,' .
+             '"thumbnail": {' .
+                '"width": 200,' .
+                '"height": 200,' .
+                '"interlace": true,' .
+                '"quality": 90' .
+             '}' .
+        '}',
+    )]
     #[SuccessResponse(
         description: 'asset_document_stream_dynamic_success_response',
         content: [new MediaType('image/*')],
@@ -89,7 +107,7 @@ final class DynamicStreamController extends AbstractApiController
     ])]
     public function streamDynamicThumbnailConfig(
         int $id,
-        #[MapRequestPayload] DynamicConfigurationParameter $parameter
+        #[MapQueryString] DynamicConfigurationParameter $parameter
     ): StreamedResponse {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
