@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
     description: 'User Schema to update a User.',
     required: [
         'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
-        'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
+        'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationRequired',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'perspectives',
     ],
@@ -70,7 +70,7 @@ final readonly class UpdateUser
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private array $roles,
         #[Property(description: 'Two Factor Authentication Enabled', type: 'boolean', example: false)]
-        private bool $twoFactorAuthenticationEnabled,
+        private bool $twoFactorAuthenticationRequired,
         #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
         private array $websiteTranslationLanguagesEdit,
         #[Property(description: 'Website Translation Languages View', type: 'object', example: ['de'])]
@@ -170,9 +170,9 @@ final readonly class UpdateUser
         return $this->allowDirtyClose;
     }
 
-    public function isTwoFactorAuthenticationEnabled(): bool
+    public function isTwoFactorAuthenticationRequired(): bool
     {
-        return $this->twoFactorAuthenticationEnabled;
+        return $this->twoFactorAuthenticationRequired;
     }
 
     public function getWebsiteTranslationLanguagesEdit(): array
