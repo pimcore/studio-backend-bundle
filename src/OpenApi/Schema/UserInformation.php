@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id', 'username', 'email', 'firstname', 'lastname', 'permissions', 'isAdmin', 'classes', 'docTypes',
         'language', 'dateTimeLocale', 'welcomeScreen', 'memorizeTabs', 'allowDirtyClose', 'hasImage',
-        'contentLanguages', 'keyBindings', 'activePerspective', 'perspectives',
+        'contentLanguages', 'keyBindings', 'twoFactorAuthentication', 'activePerspective', 'perspectives',
         'allowedLanguagesForEditingWebsiteTranslations', 'allowedLanguagesForViewingWebsiteTranslations',
     ],
     type: 'object'
@@ -107,9 +107,9 @@ final class UserInformation implements AdditionalAttributesInterface
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
         private readonly array $keyBindings,
         #[Property(
+            ref: TwoFactorAuth::class,
             description: 'Two Factor Authentication',
-            type: 'array',
-            items: new Items(ref: TwoFactorAuth::class)
+            type: 'object'
         )]
         private readonly TwoFactorAuth $twoFactorAuthentication,
         #[Property(
