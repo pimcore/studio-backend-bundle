@@ -26,8 +26,7 @@ final class EnvironmentException extends AbstractApiException
         string $message,
         string $errorKey = HttpResponseErrorKeys::ENVIRONMENT_ERROR->value,
         ?Throwable $previous = null
-    )
-    {
+    ) {
         parent::__construct(
             statusCode: HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
             message: $message,
