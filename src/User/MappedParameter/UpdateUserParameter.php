@@ -42,7 +42,7 @@ final readonly class UpdateUserParameter
         private int $parentId,
         private array $permissions,
         private array $roles,
-        private bool $twoFactorAuthenticationEnabled,
+        private bool $twoFactorAuthenticationRequired,
         private array $websiteTranslationLanguagesEdit,
         private array $websiteTranslationLanguagesView,
         private bool $welcomeScreen,
@@ -131,9 +131,9 @@ final readonly class UpdateUserParameter
         return $this->roles;
     }
 
-    public function isTwoFactorAuthenticationEnabled(): bool
+    public function isTwoFactorAuthenticationRequired(): bool
     {
-        return $this->twoFactorAuthenticationEnabled;
+        return $this->twoFactorAuthenticationRequired;
     }
 
     public function getWebsiteTranslationLanguagesEdit(): array

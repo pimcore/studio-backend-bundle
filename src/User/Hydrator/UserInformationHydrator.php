@@ -48,6 +48,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
             welcomeScreen: $user->getWelcomeScreen(),
             memorizeTabs: $user->getMemorizeTabs(),
+            allowDirtyClose: $user->getAllowDirtyClose(),
             hasImage: $user->hasImage(),
             contentLanguages: $this->contentLanguagesHydrator->hydrate($user),
             allowedLanguagesForEditingWebsiteTranslations:
