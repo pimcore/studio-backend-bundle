@@ -77,10 +77,11 @@ final class GetKeyGroupRelationsController extends AbstractApiController
         description: 'Classification Store ID',
         namePrefix: 'store',
     )]
-    #[IdParameter(
-        description: 'object ID',
-        namePrefix: 'object',
-        required: false
+    #[TextFieldParameter(
+        description: 'Class ID',
+        name: 'classId',
+        required: false,
+        example: 'AP'
     )]
     #[TextFieldParameter(
         name: 'searchTerm',
