@@ -13,11 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
+use Exception;
 use JsonException;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
@@ -65,8 +67,13 @@ final readonly class AdapterService implements AdapterServiceInterface
     public function getAdapterColumns(array $dataSourceConfig): array
     {
         $configuration = $this->getClassFromArray($dataSourceConfig);
+        $adapter = $this->createAdapterFromConfig($configuration);
 
-        return $this->createAdapterFromConfig($configuration)->getColumnsWithMetadata($configuration);
+        try {
+            return $adapter->getColumnsWithMetadata($configuration);
+        } catch (Exception $e) {
+            throw new EnvironmentException(message: $e->getMessage(), previous: $e);
+        }
     }
 
     /**

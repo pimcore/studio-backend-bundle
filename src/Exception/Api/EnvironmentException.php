@@ -15,17 +15,22 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Throwable;
 
 /**
  * @internal
  */
 final class EnvironmentException extends AbstractApiException
 {
-    public function __construct(string $message, string $errorKey = HttpResponseErrorKeys::ENVIRONMENT_ERROR->value)
-    {
+    public function __construct(
+        string $message,
+        string $errorKey = HttpResponseErrorKeys::ENVIRONMENT_ERROR->value,
+        ?Throwable $previous = null
+    ) {
         parent::__construct(
             statusCode: HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
             message: $message,
+            previous: $previous,
             errorKey: $errorKey
         );
     }
