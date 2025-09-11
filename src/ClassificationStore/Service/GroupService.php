@@ -97,7 +97,6 @@ final readonly class GroupService implements GroupServiceInterface
             throw new NotFoundException('Class', $parameter->getClassId());
         }
 
-    
         $fieldDefinition = $class->getFieldDefinition($parameter->getFieldName());
 
         if (!$fieldDefinition instanceof Classificationstore) {
