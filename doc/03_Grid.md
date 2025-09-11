@@ -180,7 +180,7 @@ The `staticText` is a static text that is not related to the object. You can pas
 ```
 
 ### Classification Store
-To get values from the Classification Store into the the Grid you need to define the `groupId`and the `keyId` of the Classification Store.
+To get values from the Classification Store into the Grid, you need to define the `groupId` and the `keyId` of the Classification Store.
 The type of the column needs to be `dataobject.classificationstore`
 
 ```json
