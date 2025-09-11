@@ -179,6 +179,26 @@ The `staticText` is a static text that is not related to the object. You can pas
 ...
 ```
 
+### Classification Store
+To get values from the Classification Store into the the Grid you need to define the `groupId`and the `keyId` of the Classification Store.
+The type of the column needs to be `dataobject.classificationstore`
+
+```json
+...
+"columns": [
+    {
+        "key": "technicalAttributes",
+        "locale": null,
+        "type": "dataobject.classificationstore",
+        "config": {
+            "groupId": 2,
+            "keyId": 4
+        }
+    }
+]
+...
+```
+
 ### Transformers
 Transformers can be applied to advanced columns to modify the output. For example, you can use the `changeChase` Transformer to change all values to uppercase.
 The transformer will be applied to all data sources of the advanced column separately.
