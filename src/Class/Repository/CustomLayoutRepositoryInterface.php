@@ -29,7 +29,9 @@ interface CustomLayoutRepositoryInterface
     /**
      * @return CustomLayout[]
      */
-    public function getCustomLayouts(string $dataObjectClassId): array;
+    public function getCustomLayoutsByClass(string $dataObjectClassId): array;
+
+    public function getAllCustomLayouts(): array;
 
     /**
      * @throws NotFoundException

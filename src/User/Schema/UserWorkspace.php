@@ -30,7 +30,7 @@ use OpenApi\Attributes\Schema;
     ],
     type: 'object',
 )]
-final readonly class UserWorkspace
+readonly class UserWorkspace
 {
     public function __construct(
         #[Property(description: 'ID of the element', type: 'integer', example: '1')]
