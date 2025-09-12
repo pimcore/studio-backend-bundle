@@ -281,6 +281,10 @@ bundle_seo_redirect_update_by_id_description: |
     Please note that <strong>all fields<strong> have to be provided.
 bundle_seo_redirect_update_by_id_success_response: Successfully updated redirect
 bundle_seo_redirect_update_by_id_summary: Update a redirect by ID
+class_all_layout_collection_description: |
+    Get all available layouts for classes.
+class_all_layout_collection_success_response: List of all available class layouts
+class_all_layout_collection_summary: Get all available class layouts
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object

@@ -25,7 +25,7 @@ final class CustomLayoutEvent extends AbstractPreResponseEvent
         parent::__construct($this->customLayout);
     }
 
-    public function getClassDefinition(): CustomLayout
+    public function getCustomLayout(): CustomLayout
     {
         return $this->customLayout;
     }
