@@ -42,7 +42,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     ) {
     }
 
-    public function getCustomLayouts(string $dataObjectClassId): array
+    public function getCustomLayoutsByClass(string $dataObjectClassId): array
     {
         $customLayoutListing = new Listing();
         $customLayoutListing->setFilter(
@@ -50,6 +50,20 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
                 $layout->getClassId() === $dataObjectClassId &&
                 !str_contains($layout->getId(), '.brick.')
         );
+
+        return $customLayoutListing->load();
+    }
+
+    public function getAllCustomLayouts(): array
+    {
+        $customLayoutListing = new Listing();
+        $customLayoutListing->setFilter(
+            fn (CustomLayout $layout) => !str_contains($layout->getId(), '.brick.')
+        );
+
+        $customLayoutListing->setOrder(function (CustomLayout $a, CustomLayout $b) {
+            return strcmp($a->getName(), $b->getName());
+        });
 
         return $customLayoutListing->load();
     }

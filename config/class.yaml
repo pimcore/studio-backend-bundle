@@ -26,6 +26,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\LayoutServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\LayoutService
+
   #
   # Repositories
   #
@@ -44,6 +47,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydrator

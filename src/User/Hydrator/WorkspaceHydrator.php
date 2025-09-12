@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\User\Workspace\AbstractWorkspace;
@@ -30,7 +32,7 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
     {
         $workspaces = [];
         foreach ($user->getWorkspacesAsset() as $workspace) {
-            $workspaces[] = $this->hydrate($workspace);
+            $workspaces[] = new UserWorkspace(...$this->hydrateBaseWorkspace($workspace));
         }
 
         return $workspaces;
@@ -43,7 +45,14 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
     {
         $workspaces = [];
         foreach ($user->getWorkspacesObject() as $workspace) {
-            $workspaces[] = $this->hydrate($workspace);
+            $workspaces[] = new UserDataObjectWorkspace(
+                $workspace->getSave(),
+                $workspace->getUnpublish(),
+                $workspace->getLEdit(),
+                $workspace->getLView(),
+                $workspace->getLayouts(),
+                ...$this->hydrateBaseWorkspace($workspace)
+            );
         }
 
         return $workspaces;
@@ -56,15 +65,19 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
     {
         $workspaces = [];
         foreach ($user->getWorkspacesDocument() as $workspace) {
-            $workspaces[] = $this->hydrate($workspace);
+            $workspaces[] = new UserDocumentWorkspace(
+                $workspace->getSave(),
+                $workspace->getUnpublish(),
+                ...$this->hydrateBaseWorkspace($workspace)
+            );
         }
 
         return $workspaces;
     }
 
-    private function hydrate(AbstractWorkspace $workspace): UserWorkspace
+    private function hydrateBaseWorkspace(AbstractWorkspace $workspace): array
     {
-        return new UserWorkspace(
+        return [
             $workspace->getCid(),
             $workspace->getCpath(),
             $workspace->getList(),
@@ -76,6 +89,6 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
             $workspace->getSettings(),
             $workspace->getVersions(),
             $workspace->getProperties(),
-        );
+        ];
     }
 }

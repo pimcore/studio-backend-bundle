@@ -69,6 +69,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `asset.delete`
 - `data_object.delete`
 - `document.delete`
+- `pre_response.all_layouts.collection`
 - `pre_response.asset`
 - `pre_response.asset_custom_metadata`
 - `pre_response.asset_custom_settings`

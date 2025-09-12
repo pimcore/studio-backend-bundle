@@ -82,7 +82,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function getCustomLayoutCollection(string $dataObjectClass): array
     {
         $compactLayouts = [];
-        $layouts = $this->customLayoutRepository->getCustomLayouts($dataObjectClass);
+        $layouts = $this->customLayoutRepository->getCustomLayoutsByClass($dataObjectClass);
 
         foreach ($layouts as $layout) {
             $compactLayouts[] = $this->hydrateCompactLayout($layout);
@@ -104,7 +104,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function getUserCustomLayouts(DataObject $dataObject, UserInterface $user, array $allowedLayouts): array
     {
         $layouts = $this->handleCustomLayoutPermissions(
-            $this->customLayoutRepository->getCustomLayouts($dataObject->getClassId()),
+            $this->customLayoutRepository->getCustomLayoutsByClass($dataObject->getClassId()),
             $user,
             $allowedLayouts
         );
