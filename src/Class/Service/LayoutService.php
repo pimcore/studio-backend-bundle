@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CompactLayoutCollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
@@ -54,12 +53,12 @@ final readonly class LayoutService implements LayoutServiceInterface
             if (!isset($mapping[$class->getId()])) {
                 continue;
             }
-                $classMapping = $mapping[$class->getId()];
-                $compactLayouts[] = $this->hydrateCompactLayout($class);
+            $classMapping = $mapping[$class->getId()];
+            $compactLayouts[] = $this->hydrateCompactLayout($class);
 
-                foreach ($classMapping as $layout) {
-                    $compactLayouts[] = $this->hydrateCompactLayout($class, $layout);
-                }
+            foreach ($classMapping as $layout) {
+                $compactLayouts[] = $this->hydrateCompactLayout($class, $layout);
+            }
 
         }
 
@@ -69,8 +68,7 @@ final readonly class LayoutService implements LayoutServiceInterface
     private function hydrateCompactLayout(
         ClassDefinition $classDefinition,
         ?CustomLayout $layout = null
-    ): LayoutCompact
-    {
+    ): LayoutCompact {
         $compactLayout = $this->compactLayoutHydrator->hydrate($classDefinition, $layout);
         $this->eventDispatcher->dispatch(
             new CompactLayoutCollectionEvent($compactLayout),

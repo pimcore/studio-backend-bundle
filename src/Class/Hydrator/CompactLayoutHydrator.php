@@ -23,15 +23,17 @@ use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 final readonly class CompactLayoutHydrator implements CompactLayoutHydratorInterface
 {
     private const string MAIN_TYPE = 'main';
+
     private const string CUSTOM_TYPE = 'custom';
+
     private const int MAIN_LAYOUT_ID = 0;
+
     private const string ID_SEPARATOR = '_';
 
     public function hydrate(
         ClassDefinition $classDefinition,
         ?CustomLayout $layout = null
-    ): LayoutCompact
-    {
+    ): LayoutCompact {
         if ($layout === null) {
             return $this->createMainLayout($classDefinition);
         }

@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\LayoutCompact;
  */
 interface LayoutServiceInterface
 {
-
     /**
      * @return LayoutCompact[]
      */
