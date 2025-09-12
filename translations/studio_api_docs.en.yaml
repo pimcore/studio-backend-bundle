@@ -791,6 +791,9 @@ role_list_with_permission_description: |
   The <strong>{permission}</strong> must be an existing user permission.
 role_list_with_permission_success_response: List of roles with the given permission
 role_list_with_permission_summary: Get all roles with a specific permission
+role_search_description: Search for roles by query. The query can be a part of the role name or ID.
+role_search_success_response: List of roles
+role_search_summary: Search for roles by query.
 role_update_by_id_response: Updated data.
 role_update_by_id_summary: Update role by id.
 schedule_create_for_element_by_type_and_id_description: |
@@ -1115,8 +1118,9 @@ data_object_delete_grid_configuration_by_configurationId_summary: Delete grid co
 asset_delete_grid_configuration_by_configurationId_description: |
     Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID
-user_search_summary: Search for users by query. The query can be a part of the username, first name, last name, email or user ID.
-user_search_response: List of users
+user_search_description: Search for users by query. The query can be a part of the username, first name, last name, email or user ID.
+user_search_success_response: List of users
+user_search_summary: Search for users by query.
 user_default_key_bindings_description: |
   Get default key bindings for user management
 user_default_key_bindings_summary: Get default key bindings

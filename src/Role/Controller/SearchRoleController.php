@@ -14,20 +14,22 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole as DetailedRoleSchema;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -35,9 +37,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetRoleController extends AbstractApiController
+final class SearchRoleController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
+    private const string ROUTE = '/role/search';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -49,27 +53,33 @@ final class GetRoleController extends AbstractApiController
     /**
      * @throws NotFoundException|DatabaseException
      */
-    #[Route('/role/{id}', name: 'pimcore_studio_api_role_get', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_role_search', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::PREFIX . '/role/{id}',
-        operationId: 'role_get_by_id',
-        summary: 'role_get_by_id_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'role_search',
+        description: 'role_search_description',
+        summary: 'role_search_summary',
         tags: [Tags::Role->value]
     )]
-    #[IdParameter(type: 'role')]
+    #[TextFieldParameter(
+        name: 'searchQuery',
+        description: 'Query to search for a role. This can be a part of role name or ID.',
+        required: false
+    )]
     #[SuccessResponse(
-        description: 'role_get_by_id_success_response',
-        content: new JsonContent(ref: DetailedRoleSchema::class)
+        description: 'role_search_success_response',
+        content: new CollectionJson(new GenericCollection(SimpleRole::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getRoleById(int $id): JsonResponse
+    public function getRoleSearch(#[MapQueryParameter] string $searchQuery): JsonResponse
     {
         return $this->jsonResponse(
-            $this->roleService->getRoleById($id)
+            $this->roleService->roleSearch($searchQuery)
         );
     }
 }

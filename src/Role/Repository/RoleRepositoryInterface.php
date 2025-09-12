@@ -51,6 +51,13 @@ interface RoleRepositoryInterface
     public function getRoleListingWithFolderByParentId(int $parentId): Listing;
 
     /**
+     * @return Role[]
+     *
+     * @throws DatabaseException
+     */
+    public function searchRoles(string $searchQuery): array;
+
+    /**
      * @throws Exception
      */
     public function deleteRole(Role $role): void;

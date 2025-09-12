@@ -56,16 +56,17 @@ final class SearchUserController extends AbstractApiController
     #[Get(
         path: self::PREFIX . '/user/search',
         operationId: 'pimcore_studio_api_user_search',
+        description: 'user_search_description',
         summary: 'user_search_summary',
         tags: [Tags::User->value]
     )]
     #[TextFieldParameter(
         name: 'searchQuery',
-        description: 'Query to search for an user. This can be a part of username, firstname, lastname, email or id.',
+        description: 'Query to search for an user. This can be a part of username, firstname, lastname, email or ID.',
         required: false
     )]
     #[SuccessResponse(
-        description: 'user_search_summary_response',
+        description: 'user_search_success_response',
         content: new CollectionJson(new GenericCollection(SimpleUser::class))
     )]
     #[DefaultResponses([
