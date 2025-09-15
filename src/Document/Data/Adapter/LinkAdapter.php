@@ -35,7 +35,7 @@ final readonly class LinkAdapter implements SetterDataInterface, SettingsNormali
 {
     private const string PATH_KEY = 'path';
 
-    private const string LINK_TYPE_KEY = 'linktype';
+    private const string LINK_TYPE_KEY = 'linkType';
 
     private const string INTERNAL_TYPE_KEY = 'internalType';
 
