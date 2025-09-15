@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Settings\SnippetSettingsData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Model\Document;
-use Pimcore\Model\Document\Email;
+use Pimcore\Model\Document\Snippet;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -28,7 +28,7 @@ final readonly class SnippetAdapter extends AbstractPageSnippetAdapter
 {
     public function normalizeSettings(Document $document): ?SettingsDataInterface
     {
-        if (!$document instanceof Email) {
+        if (!$document instanceof Snippet) {
             return null;
         }
 
