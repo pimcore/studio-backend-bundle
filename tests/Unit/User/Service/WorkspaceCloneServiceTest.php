@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
@@ -22,8 +22,11 @@ use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 /**
  * @internal
  */
-final class WorkspaceCloneServiceTest extends Unit
+final class WorkspaceCloneServiceTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService::cloneAssetWorkspace
+     */
     public function testCloneAssetWorkspace(): void
     {
         $workspace = new AssetWorkspace();
@@ -37,6 +40,9 @@ final class WorkspaceCloneServiceTest extends Unit
         $this->assertTrue($objectVars['create']);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService::cloneDocumentWorkspace
+     */
     public function testCloneDocumentWorkspace(): void
     {
         $workspace = new DocumentWorkspace();
@@ -50,6 +56,9 @@ final class WorkspaceCloneServiceTest extends Unit
         $this->assertTrue($objectVars['create']);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService::cloneDataObjectWorkspace
+     */
     public function testCloneDataObjectWorkspace(): void
     {
         $workspace = new DataObjectWorkspace();

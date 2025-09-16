@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
-use Codeception\Test\Unit;
 use Exception;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
@@ -30,7 +30,10 @@ use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
-final class TranslatorServiceTest extends Unit
+/**
+ * @covers \Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService
+ */
+final class TranslatorServiceTest extends TestCase
 {
     /**
      * @throws Exception
@@ -79,18 +82,19 @@ final class TranslatorServiceTest extends Unit
      */
     private function mockTranslatorService(bool $loggedIn = true): TranslatorServiceInterface
     {
-        $translator = $this->makeEmpty(Translator::class);
-        $repository = $this->makeEmpty(TranslationRepositoryInterface::class);
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
-            'isLoggedIn' => $loggedIn,
-        ]);
-        $adminResolver = $this->makeEmpty(AdminResolverInterface::class);
-        $listingFilter = $this->makeEmpty(ListingFilterInterface::class);
-        $filterMapper = $this->makeEmpty(FilterMapperServiceInterface::class);
-        $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
-        $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
-        $cacheResolver = $this->makeEmpty(CacheResolverInterface::class);
-        $toolResolver = $this->makeEmpty(ToolResolverInterface::class);
+        $translator = $this->createMock(Translator::class);
+        $repository = $this->createMock(TranslationRepositoryInterface::class);
+        
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('isLoggedIn')->willReturn($loggedIn);
+        
+        $adminResolver = $this->createMock(AdminResolverInterface::class);
+        $listingFilter = $this->createMock(ListingFilterInterface::class);
+        $filterMapper = $this->createMock(FilterMapperServiceInterface::class);
+        $translationsHydrator = $this->createMock(TranslationsHydratorInterface::class);
+        $eventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $cacheResolver = $this->createMock(CacheResolverInterface::class);
+        $toolResolver = $this->createMock(ToolResolverInterface::class);
 
         return new TranslatorService(
             $translator,

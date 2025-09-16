@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService;
@@ -25,21 +25,24 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
 /**
  * @internal
  */
-final class WorkflowActionServiceTest extends Unit
+final class WorkflowActionServiceTest extends TestCase
 {
     private WorkflowActionService $workflowActionService;
 
-    public function _before(): void
+    protected function setUp(): void
     {
         $this->workflowActionService = new WorkflowActionService(
-            $this->makeEmpty(Manager::class),
-            $this->makeEmpty(Registry::class),
-            $this->makeEmpty(SecurityServiceInterface::class),
-            $this->makeEmpty(ServiceProviderInterface::class),
-            $this->makeEmpty(ServiceResolverInterface::class)
+            $this->createMock(Manager::class),
+            $this->createMock(Registry::class),
+            $this->createMock(SecurityServiceInterface::class),
+            $this->createMock(ServiceProviderInterface::class),
+            $this->createMock(ServiceResolverInterface::class)
         );
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService::enrichActionNotes
+     */
     public function testEnrichActionNotes(): void
     {
         $folder = new Folder();

@@ -23,12 +23,11 @@ trait ColumnFilterMockTrait
 {
     public function getColumnFilterMock(string $key, string $type, mixed $value): ColumnFiltersParameterInterface
     {
-        return $this->makeEmpty(ColumnFiltersParameterInterface::class, [
-            'getColumnFilterByType' => function () use ($key, $type, $value) {
-                return [
-                    new ColumnFilter($key, $type, $value),
-                ];
-            },
+        $mock = $this->createMock(ColumnFiltersParameterInterface::class);
+        $mock->method('getColumnFilterByType')->willReturn([
+            new ColumnFilter($key, $type, $value),
         ]);
+        
+        return $mock;
     }
 }

@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\FolderResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository;
@@ -23,26 +22,30 @@ use Pimcore\Model\User\Folder;
 /**
  * @internal
  */
-final class UserFolderRepositoryTest extends Unit
+final class UserFolderRepositoryTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository::deleteUserFolder
+     */
     public function testDeleteUserFolder(): void
     {
-        $folderResolverMock = $this->makeEmpty(FolderResolverInterface::class);
-        $folderMock =  $this->makeEmpty(Folder::class, [
-            'delete' => Expected::once(),
-        ]);
+        $folderResolverMock = $this->createMock(FolderResolverInterface::class);
+        $folderMock = $this->createMock(Folder::class);
+        $folderMock->expects($this->once())->method('delete');
 
         $folderRepository = new UserFolderRepository($folderResolverMock);
 
         $folderRepository->deleteUserFolder($folderMock);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository::getUserFolderById
+     */
     public function testGetUserFolderByIdNoUserFound(): void
     {
         $folderId = 1;
-        $folderResolverMock = $this->makeEmpty(FolderResolverInterface::class, [
-            'getById' => null,
-        ]);
+        $folderResolverMock = $this->createMock(FolderResolverInterface::class);
+        $folderResolverMock->method('getById')->willReturn(null);
 
         $folderRepository = new UserFolderRepository($folderResolverMock);
 
@@ -51,15 +54,18 @@ final class UserFolderRepositoryTest extends Unit
         $folderRepository->getUserFolderById($folderId);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository::getUserFolderById
+     */
     public function testGetUserFolderById(): void
     {
         $folderId = 1;
         $folder = new Folder();
         $folder->setId($folderId);
 
-        $folderResolverMock = $this->makeEmpty(FolderResolverInterface::class, [
-            'getById' => $folder,
-        ]);
+        $folderResolverMock = $this->createMock(FolderResolverInterface::class);
+        $folderResolverMock->method('getById')->willReturn($folder);
+        
         $folderRepository = new UserFolderRepository($folderResolverMock);
 
         $this->assertSame($folder, $folderRepository->getUserFolderById($folderId));

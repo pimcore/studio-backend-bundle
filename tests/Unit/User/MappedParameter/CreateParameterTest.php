@@ -13,20 +13,26 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\MappedParameter;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 
 /**
  * @internal
  */
-final class CreateParameterTest extends Unit
+final class CreateParameterTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter::getName
+     */
     public function testGetName(): void
     {
         $parameter = new CreateParameter(1, 'test');
         $this->assertSame('test', $parameter->getName());
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter::getParentId
+     */
     public function testGetParentId(): void
     {
         $parameter = new CreateParameter(1, 'test');

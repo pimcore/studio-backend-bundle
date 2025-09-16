@@ -13,16 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset;
 
-use Codeception\Test\Unit;
 use DateTime;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
 /**
  * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait
  */
-final class IsAssetFilterTraitTest extends Unit
+final class IsAssetFilterTraitTest extends TestCase
 {
     public function testValidateParameterTypeNullIfWrongInterface(): void
     {
@@ -36,7 +37,7 @@ final class IsAssetFilterTraitTest extends Unit
     public function testValidateParameterType(): void
     {
         $myTestClass = new MyTestClass();
-        $columnFiltersParameterInterfaceMock = $this->makeEmpty(ColumnFiltersParameterInterface::class);
+        $columnFiltersParameterInterfaceMock = $this->createMock(ColumnFiltersParameterInterface::class);
         $this->assertSame(
             $columnFiltersParameterInterfaceMock,
             $myTestClass->validateParameterType($columnFiltersParameterInterfaceMock)
@@ -55,7 +56,7 @@ final class IsAssetFilterTraitTest extends Unit
     public function testValidateQueryType(): void
     {
         $myTestClass = new MyTestClass();
-        $columnFiltersParameterInterfaceMock = $this->makeEmpty(AssetQueryInterface::class);
+        $columnFiltersParameterInterfaceMock = $this->createMock(AssetQueryInterface::class);
         $this->assertSame(
             $columnFiltersParameterInterfaceMock,
             $myTestClass->validateQueryType($columnFiltersParameterInterfaceMock)

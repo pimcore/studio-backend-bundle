@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -25,14 +24,16 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-final class UserRepositoryTest extends Unit
+final class UserRepositoryTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository::getUserById
+     */
     public function testGetUserByIdNoUserFound(): void
     {
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
-        $userResolverMock = $this->makeEmpty(UserResolverInterface::class, [
-            'getById' => null,
-        ]);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $userResolverMock = $this->createMock(UserResolverInterface::class);
+        $userResolverMock->method('getById')->willReturn(null);
 
         $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
 
@@ -41,30 +42,34 @@ final class UserRepositoryTest extends Unit
         $userRepository->getUserById(1);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository::getUserById
+     */
     public function testGetUserById(): void
     {
         $userId = 1;
         $user = new User();
         $user->setId($userId);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
-        $userResolverMock = $this->makeEmpty(UserResolverInterface::class, [
-            'getById' => $user,
-        ]);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $userResolverMock = $this->createMock(UserResolverInterface::class);
+        $userResolverMock->method('getById')->willReturn($user);
 
         $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
 
         $this->assertSame($user, $userRepository->getUserById($userId));
     }
 
-    public function testDeleteUser()
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository::deleteUser
+     */
+    public function testDeleteUser(): void
     {
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
-        $userResolverMock = $this->makeEmpty(UserResolverInterface::class);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $userResolverMock = $this->createMock(UserResolverInterface::class);
 
-        $userMock = $this->makeEmpty(UserInterface::class, [
-            'delete' => Expected::once(),
-        ]);
+        $userMock = $this->createMock(UserInterface::class);
+        $userMock->expects($this->once())->method('delete');
 
         $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
         $userRepository->deleteUser($userMock);

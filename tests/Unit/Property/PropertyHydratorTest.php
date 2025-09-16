@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Property;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
@@ -24,7 +24,11 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 
-final class PropertyHydratorTest extends Unit
+/**
+ * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator
+ */
+final class PropertyHydratorTest extends TestCase
 {
     /**
      * @throws Exception
@@ -83,13 +87,11 @@ final class PropertyHydratorTest extends Unit
      */
     private function mockPredefinedResolver(): PredefinedResolverInterface
     {
-        return $this->makeEmpty(
-            PredefinedResolverInterface::class,
-            [
-                'getById' => $this->getPredefined(),
-                'getByKey' => $this->getPredefined(),
-            ]
-        );
+        $mock = $this->createMock(PredefinedResolverInterface::class);
+        $mock->method('getById')->willReturn($this->getPredefined());
+        $mock->method('getByKey')->willReturn($this->getPredefined());
+        
+        return $mock;
     }
 
     /**
@@ -97,17 +99,15 @@ final class PropertyHydratorTest extends Unit
      */
     private function mockDataResolver(): ReferenceResolverInterface
     {
-        return $this->makeEmpty(
-            ReferenceResolverInterface::class,
-            [
-                'resolve' => [
-                    'path' => '/test',
-                    'id' => 1,
-                    'type' => 'page',
-                    'key' => 'test',
-                ],
-            ]
-        );
+        $mock = $this->createMock(ReferenceResolverInterface::class);
+        $mock->method('resolve')->willReturn([
+            'path' => '/test',
+            'id' => 1,
+            'type' => 'page',
+            'key' => 'test',
+        ]);
+        
+        return $mock;
     }
 
     private function getPredefined(): Predefined

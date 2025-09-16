@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
@@ -37,19 +36,24 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @internal
  */
-final class UserServiceTest extends Unit
+final class UserServiceTest extends TestCase
 {
-    public function testDeleteUserWhenUserToDeleteIsAdminButCurrentUserNot()
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserService::deleteUser
+     */
+    public function testDeleteUserWhenUserToDeleteIsAdminButCurrentUserNot(): void
     {
         $userToDelete = new User();
         $userToDelete->setAdmin(true);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
-        ]);
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(false);
+        
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
+        
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userToDelete);
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
 
@@ -58,21 +62,23 @@ final class UserServiceTest extends Unit
         $userService->deleteUser(1);
     }
 
-    public function testDeleteUserWithDatabaseException()
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserService::deleteUser
+     */
+    public function testDeleteUserWithDatabaseException(): void
     {
         $userToDelete = new User();
         $userToDelete->setAdmin(false);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(true);
+        
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
-            'deleteUser' => function (User $user) {
-                throw new Exception('Database error');
-            },
-        ]);
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userToDelete);
+        $userRepositoryMock->method('deleteUser')->willThrowException(new Exception('Database error'));
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
 
@@ -81,39 +87,46 @@ final class UserServiceTest extends Unit
         $userService->deleteUser(1);
     }
 
-    public function testDeleteUser()
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserService::deleteUser
+     */
+    public function testDeleteUser(): void
     {
         $userToDelete = new User();
         $userToDelete->setAdmin(false);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(true);
+        
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userToDelete,
-            'deleteUser' => Expected::once(),
-        ]);
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userToDelete);
+        $userRepositoryMock->expects($this->once())->method('deleteUser')->with($userToDelete);
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
 
         $userService->deleteUser(1);
+        
+        // The test passes if no exception is thrown and deleteUser is called once
+        $this->assertTrue(true);
     }
 
     private function getUserService(
         SecurityServiceInterface $securityServiceMock,
         UserRepositoryInterface $userRepositoryMock
     ): UserService {
-        $loggerMock = $this->makeEmpty(LoggerInterface::class);
-        $authenticationResolverMock = $this->makeEmpty(AuthenticationResolverInterface::class);
-        $userResolverMock = $this->makeEmpty(UserResolverInterface::class);
-        $mailServiceMock = $this->makeEmpty(MailServiceInterface::class);
-        $rateLimiterMock = $this->makeEmpty(RateLimiterInterface::class);
-        $userTreeNodeHydratorMock = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
-        $eventDispatcherMock = $this->makeEmpty(EventDispatcherInterface::class);
-        $userFolderRepositoryMock = $this->makeEmpty(UserFolderRepositoryInterface::class);
-        $userHydratorMock = $this->makeEmpty(UserHydratorInterface::class);
-        $simpleUserHydratorMock = $this->makeEmpty(SimpleUserHydratorInterface::class);
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $authenticationResolverMock = $this->createMock(AuthenticationResolverInterface::class);
+        $userResolverMock = $this->createMock(UserResolverInterface::class);
+        $mailServiceMock = $this->createMock(MailServiceInterface::class);
+        $rateLimiterMock = $this->createMock(RateLimiterInterface::class);
+        $userTreeNodeHydratorMock = $this->createMock(UserTreeNodeHydratorInterface::class);
+        $eventDispatcherMock = $this->createMock(EventDispatcherInterface::class);
+        $userFolderRepositoryMock = $this->createMock(UserFolderRepositoryInterface::class);
+        $userHydratorMock = $this->createMock(UserHydratorInterface::class);
+        $simpleUserHydratorMock = $this->createMock(SimpleUserHydratorInterface::class);
 
         return new UserService(
             $authenticationResolverMock,

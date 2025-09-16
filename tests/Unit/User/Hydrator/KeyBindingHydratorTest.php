@@ -13,14 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Hydrator;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator;
 
 /**
  * @internal
  */
-final class KeyBindingHydratorTest extends Unit
+final class KeyBindingHydratorTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator::hydrate
+     */
     public function testHydrate(): void
     {
         $hydrator = new KeyBindingHydrator();

@@ -13,14 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dependency;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
 
-final class DependencyHydratorTest extends Unit
+/**
+ * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator
+ */
+final class DependencyHydratorTest extends TestCase
 {
     /**
      * @throws Exception
@@ -52,15 +56,12 @@ final class DependencyHydratorTest extends Unit
      */
     private function mockElementSearchResultItemInterface(): ElementSearchResultItemInterface
     {
-        return $this->makeEmpty(
-            ElementSearchResultItemInterface::class,
-            [
-                'getId' => 1,
-                'getFullPath' => '/testtest',
-                'getType' => 'page',
-                'getElementType' => ElementType::DOCUMENT,
-                'isPublished' => true,
-            ]
-        );
+        $mock = $this->createMock(ElementSearchResultItemInterface::class);
+        $mock->method('getId')->willReturn(1);
+        $mock->method('getFullPath')->willReturn('/testtest');
+        $mock->method('getType')->willReturn('page');
+        $mock->method('getElementType')->willReturn(ElementType::DOCUMENT);
+        
+        return $mock;
     }
 }

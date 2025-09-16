@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService;
@@ -23,24 +23,25 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-final class ObjectDependenciesServiceTest extends Unit
+final class ObjectDependenciesServiceTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService::getDependenciesForUser
+     */
     public function testIfHiddenIsSet(): void
     {
-        $demoObject = $this->makeEmpty(Concrete::class, [
-            'isAllowed' => false,
-        ]);
+        $demoObject = $this->createMock(Concrete::class);
+        $demoObject->method('isAllowed')->willReturn(false);
 
-        $dataObjectServiceResolver = $this->makeEmpty(DataObjectServiceResolverInterface::class, [
-            'getObjectsReferencingUser' => [$demoObject],
-        ]);
-        $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class);
+        $dataObjectServiceResolver = $this->createMock(DataObjectServiceResolverInterface::class);
+        $dataObjectServiceResolver->method('getObjectsReferencingUser')->willReturn([$demoObject]);
+        
+        $dependencyHydrator = $this->createMock(DependencyHydratorInterface::class);
 
         $objectDependenciesService = new ObjectDependenciesService($dataObjectServiceResolver, $dependencyHydrator);
 
-        $user = $this->makeEmpty(UserInterface::class, [
-            'getId' => 1,
-        ]);
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn(1);
 
         $objectDependencies = $objectDependenciesService->getDependenciesForUser($user);
 

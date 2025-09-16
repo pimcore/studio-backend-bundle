@@ -13,14 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Schema;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 /**
  * @internal
  */
-final class UserTreeNodeTest extends Unit
+final class UserTreeNodeTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::getId
+     */
     public function testGetId(): void
     {
         $id = 1;
@@ -29,6 +32,9 @@ final class UserTreeNodeTest extends Unit
         $this->assertSame($id, $userTreeNode->getId());
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::getName
+     */
     public function testGetName(): void
     {
         $name = 'name';
@@ -37,6 +43,9 @@ final class UserTreeNodeTest extends Unit
         $this->assertSame($name, $userTreeNode->getName());
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::getType
+     */
     public function testGetType(): void
     {
         $type = 'user';
@@ -45,6 +54,9 @@ final class UserTreeNodeTest extends Unit
         $this->assertSame($type, $userTreeNode->getType());
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::hasChildren
+     */
     public function testIsHasChildren(): void
     {
         $hasChildren = false;

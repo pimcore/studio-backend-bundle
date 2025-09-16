@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FullTextFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -23,17 +22,17 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter
 
 /**
  * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FullTextFilter
  */
-final class FullTextFilterTest extends Unit
+final class FullTextFilterTest extends TestCase
 {
     public function testIsExceptionThrownWhenFilterIsNotAString(): void
     {
         $columnFilter = new SimpleColumnFilter('system.fulltext', 1);
-        $parameter = $this->makeEmpty(SimpleColumnFiltersParameterInterface::class, [
-            'getSimpleColumnFilterByType' => $columnFilter,
-        ]);
+        $parameter = $this->createMock(SimpleColumnFiltersParameterInterface::class);
+        $parameter->method('getSimpleColumnFilterByType')->willReturn($columnFilter);
 
-        $query = $this->makeEmpty(QueryInterface::class);
+        $query = $this->createMock(QueryInterface::class);
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Filter value for the fulltext filter must be a string');
@@ -45,17 +44,14 @@ final class FullTextFilterTest extends Unit
     public function testIfFilterFullTextIsCalled(): void
     {
         $columnFilter = new SimpleColumnFilter('system.fulltext', 'term');
-        $parameter = $this->makeEmpty(SimpleColumnFiltersParameterInterface::class, [
-            'getSimpleColumnFilterByType' => $columnFilter,
-        ]);
+        $parameter = $this->createMock(SimpleColumnFiltersParameterInterface::class);
+        $parameter->method('getSimpleColumnFilterByType')->willReturn($columnFilter);
 
-        $query = $this->makeEmpty(QueryInterface::class, [
-            'filterFullText' => Expected::once(function ($term) {
-                $this->assertSame('term', $term);
-
-                return $this->makeEmpty(QueryInterface::class);
-            }),
-        ]);
+        $query = $this->createMock(QueryInterface::class);
+        $query->expects($this->once())
+            ->method('filterFullText')
+            ->with('term')
+            ->willReturn($this->createMock(QueryInterface::class));
 
         $filter = new FullTextFilter();
         $filter->apply($parameter, $query);

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService;
 use Psr\Log\LoggerInterface;
@@ -21,8 +21,11 @@ use Psr\Log\LoggerInterface;
 /**
  * @internal
  */
-final class KeyBindingServiceTest extends Unit
+final class KeyBindingServiceTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService::getDefaultKeyBindings
+     */
     public function testGetDefaultKeyBindings(): void
     {
         $data = [
@@ -46,7 +49,7 @@ final class KeyBindingServiceTest extends Unit
         $keyBindingService = new KeyBindingService(
             $data,
             $keyBindingHydrator,
-            $this->makeEmpty(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class)
         );
 
         $keyBindings = $keyBindingService->getDefaultKeyBindings();

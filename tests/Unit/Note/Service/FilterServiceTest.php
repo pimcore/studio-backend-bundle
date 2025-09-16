@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Note\Service;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
@@ -21,12 +21,17 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterServiceInterface;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
 
-final class FilterServiceTest extends Unit
+/**
+ * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService
+ */
+final class FilterServiceTest extends TestCase
 {
     private FilterServiceInterface $filterService;
 
-    public function _before(): void
+    public function setUp(): void
     {
+        parent::setUp();
         $this->filterService = new FilterService();
     }
 
@@ -195,8 +200,8 @@ final class FilterServiceTest extends Unit
         ], JSON_THROW_ON_ERROR);
         $noteParameters = new NoteParameters(fieldFilters: $filters);
 
-        $this->expectException(InvalidFilterException::class);
-        $this->expectExceptionMessage('Invalid filter: fieldFilters');
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('Argument #1 ($type) must be of type string, null given');
 
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
     }

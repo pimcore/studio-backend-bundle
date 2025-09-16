@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\Metadata;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\TextAreaFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
@@ -22,16 +21,16 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
  * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\TextAreaFilter
  */
-final class TextAreaFilterTest extends Unit
+final class TextAreaFilterTest extends TestCase
 {
     use ColumnFilterMockTrait;
 
     public function testIsExceptionIsThrownWhenFilterIsNotAString(): void
     {
-        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::never(),
-        ]);
+        $queryMock = $this->createMock(AssetQueryInterface::class);
+        $queryMock->expects($this->never())->method('filterMetadata');
 
         $columnFilterMock = $this->getColumnFilterMock('key', 'type', 123);
 
@@ -46,15 +45,11 @@ final class TextAreaFilterTest extends Unit
     {
         $columnFilterMock = $this->getColumnFilterMock('key', 'type', 'value');
 
-        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::once(function ($key, $type, $value) {
-                $this->assertSame('key', $key);
-                $this->assertSame(FilterType::TEXTAREA->value, $type);
-                $this->assertSame('value', $value);
-
-                return $this->makeEmpty(AssetQueryInterface::class);
-            }),
-        ]);
+        $queryMock = $this->createMock(AssetQueryInterface::class);
+        $queryMock->expects($this->once())
+            ->method('filterMetadata')
+            ->with('key', FilterType::TEXTAREA->value, 'value')
+            ->willReturn($this->createMock(AssetQueryInterface::class));
 
         $textAreaFilter = new TextAreaFilter();
         $textAreaFilter->apply($columnFilterMock, $queryMock);

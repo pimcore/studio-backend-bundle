@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Hydrator;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalAction;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
@@ -23,23 +23,28 @@ use Pimcore\Workflow\Transition;
 /**
  * @internal
  */
-final class GlobalActionsHydratorTest extends Unit
+final class GlobalActionsHydratorTest extends TestCase
 {
     private GlobalActionsHydrator $hydrator;
 
-    public function _before(): void
+    protected function setUp(): void
     {
         $this->hydrator = new GlobalActionsHydrator(
-            $this->makeEmpty(WorkflowActionServiceInterface::class)
-
+            $this->createMock(WorkflowActionServiceInterface::class)
         );
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator::hydrate
+     */
     public function testHydrateEmpty(): void
     {
         $this->assertEmpty($this->hydrator->hydrate([], new Asset()));
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator::hydrate
+     */
     public function testHydrateWithAsset(): void
     {
         $transition = new Transition(
@@ -56,6 +61,9 @@ final class GlobalActionsHydratorTest extends Unit
         $this->assertEquals($transition->getLabel(), $hydratedTransitions[0]->getLabel());
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator::hydrate
+     */
     public function testHydrateWithNotes(): void
     {
         $transition = new Transition(

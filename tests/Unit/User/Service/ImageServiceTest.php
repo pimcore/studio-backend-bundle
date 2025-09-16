@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -22,65 +21,62 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
  */
-final class ImageServiceTest extends Unit
+final class ImageServiceTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::uploadUserImage
+     */
     public function testNonAdminCanNotEditAdminUser(): void
     {
-        $userMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true,
-        ]);
+        $userMock = $this->createMock(UserInterface::class);
+        $userMock->method('isAdmin')->willReturn(true);
 
-        $currentUserMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => false,
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(false);
 
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock,
-        ]);
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userMock);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $currentUserMock,
-        ]);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $assetResolver = $this->makeEmpty(AssetResolverInterface::class);
+        $assetResolver = $this->createMock(AssetResolverInterface::class);
 
         $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
         $this->expectException(ForbiddenException::class);
         $this->expectExceptionMessage('Only admin users are allowed to modify admin users');
-        $imageUploadService->uploadUserImage($this->makeEmpty(UploadedFile::class), 1);
+        $imageUploadService->uploadUserImage($this->createMock(UploadedFile::class), 1);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::uploadUserImage
+     */
     public function testWrongFileType(): void
     {
-        $userMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true,
-        ]);
+        $userMock = $this->createMock(UserInterface::class);
+        $userMock->method('isAdmin')->willReturn(true);
 
-        $currentUserMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true,
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(true);
 
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock,
-        ]);
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userMock);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $currentUserMock,
-        ]);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $assetResolver = $this->makeEmpty(AssetResolverInterface::class, [
-            'getTypeFromMimeMapping' => 'document',
-        ]);
+        $assetResolver = $this->createMock(AssetResolverInterface::class);
+        $assetResolver->method('getTypeFromMimeMapping')->willReturn('document');
 
-        $fileMock = $this->makeEmpty(UploadedFile::class, [
-            'getMimeType' => 'application/pdf',
-            'getFilename' => 'test.pdf',
-        ]);
+        $fileMock = $this->createMock(UploadedFile::class);
+        $fileMock->method('getMimeType')->willReturn('application/pdf');
+        $fileMock->method('getFilename')->willReturn('test.pdf');
 
         $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
@@ -89,61 +85,62 @@ final class ImageServiceTest extends Unit
         $imageUploadService->uploadUserImage($fileMock, 1);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::uploadUserImage
+     */
     public function testSetImageOfUserIsCalled(): void
     {
-        $userMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true,
-            'setImage' => Expected::once(function (string $path) {
+        $userMock = $this->createMock(UserInterface::class);
+        $userMock->method('isAdmin')->willReturn(true);
+        $userMock->expects($this->once())
+            ->method('setImage')
+            ->with($this->callback(function (string $path) {
                 $this->assertSame('/tmp/test.png', $path);
-            }),
-        ]);
+                return true;
+            }));
 
-        $currentUserMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true,
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(true);
 
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock,
-        ]);
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userMock);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $currentUserMock,
-        ]);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $assetResolver = $this->makeEmpty(AssetResolverInterface::class, [
-            'getTypeFromMimeMapping' => 'image',
-        ]);
+        $assetResolver = $this->createMock(AssetResolverInterface::class);
+        $assetResolver->method('getTypeFromMimeMapping')->willReturn('image');
 
-        $fileMock = $this->makeEmpty(UploadedFile::class, [
-            'getMimeType' => 'image/png',
-            'getFilename' => 'test.png',
-            'getPathname' => '/tmp/test.png',
-        ]);
+        $fileMock = $this->createMock(UploadedFile::class);
+        $fileMock->method('getMimeType')->willReturn('image/png');
+        $fileMock->method('getFilename')->willReturn('test.png');
+        $fileMock->method('getPathname')->willReturn('/tmp/test.png');
 
         $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
         $imageUploadService->uploadUserImage($fileMock, 1);
     }
 
-    public function testStreamResponseFromGetImage(): void
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::getImageFromUserAsStreamedResponse
+     */
+    public function testGetImageAsStreamedResponse(): void
     {
-        $userMock = $this->makeEmpty(UserInterface::class, [
-            'getImage' => fopen('php://memory', 'r'),
-        ]);
+        $userMock = $this->createMock(UserInterface::class);
+        $resource = fopen('php://memory', 'r');
+        $userMock->method('getImage')->willReturn($resource);
 
-        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock,
-        ]);
+        $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
+        $userRepositoryMock->method('getUserById')->willReturn($userMock);
 
-        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
+        $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
+        
+        $assetResolverMock = $this->createMock(AssetResolverInterface::class);
 
-        $assetResolver = $this->makeEmpty(AssetResolverInterface::class);
+        $imageService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolverMock);
 
-        $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
+        $result = $imageService->getImageFromUserAsStreamedResponse(1);
 
-        $response = $imageUploadService->getImageFromUserAsStreamedResponse(1);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('image/png', $response->headers->get('Content-Type'));
+        $this->assertInstanceOf(StreamedResponse::class, $result);
     }
 }

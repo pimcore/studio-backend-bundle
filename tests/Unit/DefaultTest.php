@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 
-class DefaultTest extends Unit
+final class DefaultTest extends TestCase
 {
     public function testDefault(): void
     {

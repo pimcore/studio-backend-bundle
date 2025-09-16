@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\System;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\StringFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -23,21 +22,18 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 
 /**
  * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\StringFilter
  */
-final class StringFilterTest extends Unit
+final class StringFilterTest extends TestCase
 {
     public function testIsExceptionIsThrownWhenFilterIsNotAString(): void
     {
-        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'wildcardSearch' => Expected::never(),
-        ]);
+        $queryMock = $this->createMock(AssetQueryInterface::class);
+        $queryMock->expects($this->never())->method('wildcardSearch');
 
-        $columnFilterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
-            'getColumnFilterByType' => function () {
-                return [
-                    new ColumnFilter('key', 'type', 123),
-                ];
-            },
+        $columnFilterMock = $this->createMock(ColumnFiltersParameterInterface::class);
+        $columnFilterMock->method('getColumnFilterByType')->willReturn([
+            new ColumnFilter('key', 'type', 123),
         ]);
 
         $stringFilter = new StringFilter();
@@ -49,21 +45,15 @@ final class StringFilterTest extends Unit
 
     public function testApplyStringFilter(): void
     {
-        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'wildcardSearch' => Expected::once(function ($key, $value) {
-                $this->assertSame('key', $key);
-                $this->assertSame('value', $value);
+        $queryMock = $this->createMock(AssetQueryInterface::class);
+        $queryMock->expects($this->once())
+            ->method('wildcardSearch')
+            ->with('key', 'value')
+            ->willReturn($this->createMock(AssetQueryInterface::class));
 
-                return $this->makeEmpty(AssetQueryInterface::class);
-            }),
-        ]);
-
-        $columnFilterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
-            'getColumnFilterByType' => function () {
-                return [
-                    new ColumnFilter('key', 'type', 'value'),
-                ];
-            },
+        $columnFilterMock = $this->createMock(ColumnFiltersParameterInterface::class);
+        $columnFilterMock->method('getColumnFilterByType')->willReturn([
+            new ColumnFilter('key', 'type', 'value'),
         ]);
 
         $stringFilter = new StringFilter();

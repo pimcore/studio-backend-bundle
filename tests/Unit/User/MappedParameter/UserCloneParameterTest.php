@@ -13,14 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\MappedParameter;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserCloneParameter;
 
 /**
  * @internal
  */
-final class UserCloneParameterTest extends Unit
+final class UserCloneParameterTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserCloneParameter::getName
+     */
     public function testGetName(): void
     {
         $parameter = new UserCloneParameter('test');

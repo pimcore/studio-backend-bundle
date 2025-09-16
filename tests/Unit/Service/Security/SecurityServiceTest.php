@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
@@ -24,9 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\Asset;
 use Pimcore\Model\User as PimcoreUser;
 
-final class SecurityServiceTest extends Unit
+final class SecurityServiceTest extends TestCase
 {
     /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService::getCurrentUser
      * @throws Exception
      */
     public function testGetCurrentUserWithOutValidUser(): void
@@ -38,6 +39,7 @@ final class SecurityServiceTest extends Unit
     }
 
     /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService::getCurrentUser
      * @throws Exception
      */
     public function testGetCurrentUserWithValidUser(): void
@@ -51,6 +53,7 @@ final class SecurityServiceTest extends Unit
     }
 
     /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService::hasElementPermission
      * @throws Exception
      */
     public function testHasElementPermission(): void
@@ -84,9 +87,10 @@ final class SecurityServiceTest extends Unit
 
     private function mockElementPermissionService(bool $hasPermission): ElementPermissionServiceInterface
     {
-        return $this->makeEmpty(ElementPermissionServiceInterface::class, [
-            'isAllowed' => $hasPermission,
-        ]);
+        $mock = $this->createMock(ElementPermissionServiceInterface::class);
+        $mock->method('isAllowed')->willReturn($hasPermission);
+        
+        return $mock;
     }
 
     private function mockAuthenticationResolver(bool $withUser): AuthenticationResolverInterface
@@ -94,8 +98,9 @@ final class SecurityServiceTest extends Unit
         $user = new PimcoreUser();
         $user->setUsername('test');
 
-        return $this->makeEmpty(AuthenticationResolverInterface::class, [
-            'authenticateSession' => $withUser ? $user : null,
-        ]);
+        $mock = $this->createMock(AuthenticationResolverInterface::class);
+        $mock->method('authenticateSession')->willReturn($withUser ? $user : null);
+        
+        return $mock;
     }
 }

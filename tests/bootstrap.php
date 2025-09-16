@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This source file is available under the terms of the
  * Pimcore Open Core License (POCL)
@@ -19,6 +21,7 @@ foreach (['APP_ENV' => 'test', 'PIMCORE_SKIP_DOTENV_FILE' => true] as $name => $
     putenv("{$name}={$value}");
     $_ENV[$name] = $_SERVER[$name] = $value;
 }
+
 require_once PIMCORE_PROJECT_ROOT . '/vendor/autoload.php';
 
 \Pimcore\Bootstrap::setProjectRoot();

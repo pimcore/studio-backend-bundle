@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Asset\Encoder;
 
-use Codeception\Test\Unit;
 use Exception;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -25,15 +25,18 @@ use Pimcore\Model\Asset\Text;
 /**
  * @internal
  */
-final class EncoderTest extends Unit
+final class EncoderTest extends TestCase
 {
     private TextEncoderInterface $encoder;
 
-    public function _before(): void
+    protected function setUp(): void
     {
         $this->encoder = new TextEncoder();
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder::encodeUTF8
+     */
     public function testWrongElementType(): void
     {
         $element = new Document();
@@ -44,11 +47,13 @@ final class EncoderTest extends Unit
     }
 
     /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder::encodeUTF8
      * @throws Exception
      */
     public function testFileSizeExceeded(): void
     {
-        $element = $this->makeEmpty(Text::class, ['getFileSize' => 2000001]);
+        $element = $this->createMock(Text::class);
+        $element->method('getFileSize')->willReturn(2000001);
 
         $this->expectException(MaxFileSizeExceededException::class);
 
@@ -56,11 +61,14 @@ final class EncoderTest extends Unit
     }
 
     /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder::encodeUTF8
      * @throws Exception
      */
     public function testUTF8Encoding(): void
     {
-        $element = $this->makeEmpty(Text::class, ['getData' => 'Héllö, 世界!']);
+        $element = $this->createMock(Text::class);
+        $element->method('getData')->willReturn('Héllö, 世界!');
+        
         $encodedData = $this->encoder->encodeUTF8($element);
 
         $this->assertTrue(mb_check_encoding($encodedData, 'UTF-8'));

@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -28,15 +27,21 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-final class UserFolderServiceTest extends Unit
+final class UserFolderServiceTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService::deleteUserFolderById
+     */
     public function testDeleteUserFolderByIdAsNonAdminUser(): void
     {
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
-        ]);
-        $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class);
-        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(false);
+        
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('getCurrentUser')->willReturn($currentUserMock);
+        
+        $userFolderRepository = $this->createMock(UserFolderRepositoryInterface::class);
+        $userTreeNodeHydrator = $this->createMock(UserTreeNodeHydratorInterface::class);
 
         $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
 
@@ -45,19 +50,23 @@ final class UserFolderServiceTest extends Unit
         $userFolderService->deleteUserFolderById(1);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService::deleteUserFolderById
+     */
     public function testDeleteUserFolderByIdWithDatabaseException(): void
     {
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(true);
+        
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class, [
-            'getUserFolderById' => new Folder(),
-            'deleteUserFolder' => function (Folder $folder) {
-                throw new Exception('Database error');
-            },
-        ]);
-        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
+        $folder = new Folder();
+        $userFolderRepository = $this->createMock(UserFolderRepositoryInterface::class);
+        $userFolderRepository->method('getUserFolderById')->willReturn($folder);
+        $userFolderRepository->method('deleteUserFolder')->willThrowException(new Exception('Database error'));
+        
+        $userTreeNodeHydrator = $this->createMock(UserTreeNodeHydratorInterface::class);
 
         $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
 
@@ -66,19 +75,28 @@ final class UserFolderServiceTest extends Unit
         $userFolderService->deleteUserFolderById(1);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService::deleteUserFolderById
+     */
     public function testDeleteUserFolderById(): void
     {
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-        ]);
+        $currentUserMock = $this->createMock(UserInterface::class);
+        $currentUserMock->method('isAdmin')->willReturn(true);
+        
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('getCurrentUser')->willReturn($currentUserMock);
 
-        $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class, [
-            'getUserFolderById' => new Folder(),
-            'deleteUserFolder' => Expected::once(),
-        ]);
-        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
+        $folder = new Folder();
+        $userFolderRepository = $this->createMock(UserFolderRepositoryInterface::class);
+        $userFolderRepository->method('getUserFolderById')->willReturn($folder);
+        $userFolderRepository->expects($this->once())->method('deleteUserFolder')->with($folder);
+        
+        $userTreeNodeHydrator = $this->createMock(UserTreeNodeHydratorInterface::class);
 
         $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
         $userFolderService->deleteUserFolderById(1);
+        
+        // The test passes if no exception is thrown and deleteUserFolder is called once
+        $this->assertTrue(true);
     }
 }

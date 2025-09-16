@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Factory;
 
-use Codeception\Test\Unit;
 use Exception;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearch;
@@ -29,7 +29,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 
-final class QueryFactoryTest extends Unit
+/**
+ * @covers \Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory
+ */
+final class QueryFactoryTest extends TestCase
 {
     /**
      * @throws InvalidQueryTypeException
@@ -95,11 +98,12 @@ final class QueryFactoryTest extends Unit
      */
     private function mockAssetAdapterInterface(): AssetQueryProviderInterface
     {
-        return $this->makeEmpty(AssetQueryProviderInterface::class, [
-            'createAssetQuery' => function () {
-                return new AssetQuery($this->makeEmpty(AssetSearchInterface::class));
-            },
-        ]);
+        $mock = $this->createMock(AssetQueryProviderInterface::class);
+        $mock->method('createAssetQuery')->willReturnCallback(function () {
+            return new AssetQuery($this->createMock(AssetSearchInterface::class));
+        });
+        
+        return $mock;
     }
 
     /**
@@ -107,14 +111,15 @@ final class QueryFactoryTest extends Unit
      */
     private function mockDataObjectAdapterInterface(): DataObjectQueryProviderInterface
     {
-        return $this->makeEmpty(DataObjectQueryProviderInterface::class, [
-            'createDataObjectQuery' => function () {
-                return new DataObjectQuery(
-                    new DataObjectSearch(),
-                    $this->makeEmpty(ClassDefinitionResolverInterface::class)
-                );
-            },
-        ]);
+        $mock = $this->createMock(DataObjectQueryProviderInterface::class);
+        $mock->method('createDataObjectQuery')->willReturnCallback(function () {
+            return new DataObjectQuery(
+                new DataObjectSearch(),
+                $this->createMock(ClassDefinitionResolverInterface::class)
+            );
+        });
+        
+        return $mock;
     }
 
     /**
@@ -122,10 +127,11 @@ final class QueryFactoryTest extends Unit
      */
     private function mockDocumentAdapterInterface(): DocumentQueryProviderInterface
     {
-        return $this->makeEmpty(DocumentQueryProviderInterface::class, [
-            'createDocumentQuery' => function () {
-                return new DocumentQuery(new DocumentSearch());
-            },
-        ]);
+        $mock = $this->createMock(DocumentQueryProviderInterface::class);
+        $mock->method('createDocumentQuery')->willReturnCallback(function () {
+            return new DocumentQuery(new DocumentSearch());
+        });
+        
+        return $mock;
     }
 }

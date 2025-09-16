@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
-use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
@@ -23,36 +22,34 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
 
 /**
  * @internal
+ * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SortFilter
  */
-final class SortFilterTest extends Unit
+final class SortFilterTest extends TestCase
 {
     public function testIfParameterIsNotInstanceOfSortFilterParameterInterface(): void
     {
         $sortFilter = new SortFilter();
-        $query = $this->makeEmpty(AssetQueryInterface::class, [
-            'orderByField' => Expected::never(),
-        ]);
+        $query = $this->createMock(AssetQueryInterface::class);
+        $query->expects($this->never())->method('orderByField');
 
         $sortFilter->apply('test', $query);
+        
+        // Ensure the test passes - when parameter is not an instance of SortFilterParameterInterface,
+        // the orderByField method should never be called
+        $this->assertTrue(true);
     }
 
     public function testSortDirectionWithDesc(): void
     {
         $sortFilter = new SortFilter();
-        $parameter = $this->makeEmpty(SortFilterParameterInterface::class, [
-            'getSortFilter' => function () {
-                return new SortFilterParameter('key', 'desc');
-            },
-        ]);
+        $parameter = $this->createMock(SortFilterParameterInterface::class);
+        $parameter->method('getSortFilter')->willReturn(new SortFilterParameter('key', 'desc'));
 
-        $query = $this->makeEmpty(AssetQueryInterface::class, [
-            'orderByField' => function ($key, $direction) {
-                $this->assertSame('key', $key);
-                $this->assertSame(SortDirection::DESC, $direction);
-
-                return $this->makeEmpty(AssetQueryInterface::class);
-            },
-        ]);
+        $query = $this->createMock(AssetQueryInterface::class);
+        $query->expects($this->once())
+            ->method('orderByField')
+            ->with('key', SortDirection::DESC)
+            ->willReturn($this->createMock(AssetQueryInterface::class));
 
         $sortFilter->apply($parameter, $query);
     }
@@ -60,20 +57,14 @@ final class SortFilterTest extends Unit
     public function testSortDirectionWithDefaultValue(): void
     {
         $sortFilter = new SortFilter();
-        $parameter = $this->makeEmpty(SortFilterParameterInterface::class, [
-            'getSortFilter' => function () {
-                return new SortFilterParameter();
-            },
-        ]);
+        $parameter = $this->createMock(SortFilterParameterInterface::class);
+        $parameter->method('getSortFilter')->willReturn(new SortFilterParameter());
 
-        $query = $this->makeEmpty(AssetQueryInterface::class, [
-            'orderByField' => function ($key, $direction) {
-                $this->assertSame('id', $key);
-                $this->assertSame(SortDirection::ASC, $direction);
-
-                return $this->makeEmpty(AssetQueryInterface::class);
-            },
-        ]);
+        $query = $this->createMock(AssetQueryInterface::class);
+        $query->expects($this->once())
+            ->method('orderByField')
+            ->with('id', SortDirection::ASC)
+            ->willReturn($this->createMock(AssetQueryInterface::class));
 
         $sortFilter->apply($parameter, $query);
     }

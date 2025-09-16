@@ -13,15 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Service;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapper;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService;
 
 /**
  * @internal
  */
-final class SystemColumnServiceTest extends Unit
+final class SystemColumnServiceTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService::getSystemColumnsForAssets
+     */
     public function testGetSystemColumnsForAssets(): void
     {
         $mapper = new ColumnMapper();
@@ -40,6 +43,9 @@ final class SystemColumnServiceTest extends Unit
         ], $systemColumnService->getSystemColumnsForAssets());
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService::getSystemColumnsForDataObjects
+     */
     public function testGetSystemColumnsForDataObjects(): void
     {
         $mapper = new ColumnMapper();

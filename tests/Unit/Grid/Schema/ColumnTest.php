@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Schema;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
@@ -22,8 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 /**
  * @internal
  */
-final class ColumnTest extends Unit
+final class ColumnTest extends TestCase
 {
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column::getAdvancedColumnConfig
+     */
     public function testGetAdvancedColumnConfigException(): void
     {
         $column = new Column(
@@ -40,6 +43,9 @@ final class ColumnTest extends Unit
         $column->getAdvancedColumnConfig();
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column::getAdvancedColumnConfig
+     */
     public function testGetAdvancedColumnConfigSimpleField(): void
     {
         $column = new Column(
@@ -66,6 +72,9 @@ final class ColumnTest extends Unit
         $this->assertInstanceOf(SimpleFieldConfig::class, $configs->getColumns()[0]);
     }
 
+    /**
+     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column::getAdvancedColumnConfig
+     */
     public function testGetAdvancedColumnConfigRelationField(): void
     {
         $column = new Column(
