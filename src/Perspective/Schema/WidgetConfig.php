@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'name',
         'widgetType',
         'icon',
-        'elementType'
+        'elementType',
     ],
     type: 'object'
 )]
