@@ -46,6 +46,12 @@ final class DatetimeFilter implements FilterInterface
 
         $filterValue = $column->getFilterValue();
 
+        if (isset($filterValue['from'], $filterValue['to'])) {
+            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon(), $this->getToAsCarbon());
+
+            return $query;
+        }
+
         if (isset($filterValue['on'])) {
             $query->filterDatetime($column->getKey(), null, null, $this->getOnAsCarbon());
         }
