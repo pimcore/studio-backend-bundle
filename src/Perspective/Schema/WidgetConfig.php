@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'name',
         'widgetType',
         'icon',
+        'elementType'
     ],
     type: 'object'
 )]
@@ -42,6 +43,8 @@ class WidgetConfig implements AdditionalAttributesInterface
         private readonly string $widgetType,
         #[Property(description: 'Icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
+        #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
+        private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
     ) {
     }
 
@@ -63,5 +66,10 @@ class WidgetConfig implements AdditionalAttributesInterface
     public function getIcon(): ElementIcon
     {
         return $this->icon;
+    }
+
+    public function getElementType(): string
+    {
+        return $this->elementType;
     }
 }
