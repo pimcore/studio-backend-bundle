@@ -28,12 +28,12 @@ final readonly class WidgetConfigListHydrator implements WidgetConfigListHydrato
 
     public function hydrate(array $widgetData): WidgetConfig
     {
-
         return new WidgetConfig(
             $widgetData['id'],
             $widgetData['name'],
             $widgetData['widgetType'],
             $this->iconService->getIconForValue($widgetData['icon']),
+            $widgetData['elementType']
         );
     }
 }
