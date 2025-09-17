@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Request\RenderAreaBlockRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\RenderAreaBlockParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -46,7 +47,7 @@ final class RenderAreaBlockIndexController extends AbstractApiController
     private const string ROUTE = '/documents/page-snippet/{id}/area-block/render';
 
     public function __construct(
-        private readonly PageSnippetServiceInterface $pageSnippetService,
+        private readonly BlockServiceInterface $blockService,
         SerializerInterface $serializer,
     ) {
         parent::__construct($serializer);
@@ -82,6 +83,6 @@ final class RenderAreaBlockIndexController extends AbstractApiController
         #[MapRequestPayload] RenderAreaBlockParameter $parameters
     ): JsonResponse {
 
-        return $this->jsonResponse($this->pageSnippetService->renderAreaBlock($id, $request, $parameters));
+        return $this->jsonResponse($this->blockService->renderAreaBlock($id, $request, $parameters));
     }
 }
