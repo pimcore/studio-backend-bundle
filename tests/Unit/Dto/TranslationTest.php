@@ -13,14 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 
+#[CoversClass(Translation::class)]
 final class TranslationTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation
-     */
     public function testTranslation(): void
     {
         $translation = new Translation('en', ['login']);

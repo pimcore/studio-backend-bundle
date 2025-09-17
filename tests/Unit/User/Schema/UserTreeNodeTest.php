@@ -15,14 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Schema;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 /**
  * @internal
  */
 #[CoversClass(TreeNode::class)]
-#[UsesClass(TreeNode::class)]
 final class UserTreeNodeTest extends TestCase
 {
     public function testGetId(): void

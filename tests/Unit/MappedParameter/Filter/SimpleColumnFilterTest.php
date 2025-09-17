@@ -13,13 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\MappedParameter\Filter;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter;
 
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter
  */
+#[CoversClass(SimpleColumnFilter::class)]
 final class SimpleColumnFilterTest extends TestCase
 {
     public function testTrimFilterValue(): void

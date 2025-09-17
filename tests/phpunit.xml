@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
+         bootstrap="bootstrap.php"
+         cacheDirectory="../.phpunit.cache"
+         executionOrder="depends,defects"
+         requireCoverageMetadata="true"
+         beStrictAboutCoverageMetadata="true"
+         beStrictAboutOutputDuringTests="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         colors="true">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>Unit</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>../src</directory>
+        </include>
+        <exclude>
+            <directory>../src/Controller</directory>
+            <directory>../src/DependencyInjection</directory>
+            <directory>../src/Repository</directory>
+            <file>../src/Installer.php</file>
+        </exclude>
+    </source>
+
+    <coverage>
+        <report>
+            <html outputDirectory="_output/coverage" lowUpperBound="50" highLowerBound="90"/>
+            <text outputFile="_output/coverage.txt"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile="_output/report.xml"/>
+    </logging>
+
+    <php>
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="-1"/>
+        <ini name="memory_limit" value="-1"/>
+        <env name="APP_ENV" value="test"/>
+        <env name="SHELL_VERBOSITY" value="-1"/>
+    </php>
+</phpunit>

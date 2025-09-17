@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset;
 
 use DateTime;
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
@@ -21,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait
  */
+#[CoversNothing]
 final class IsAssetFilterTraitTest extends TestCase
 {
     public function testValidateParameterTypeNullIfWrongInterface(): void
