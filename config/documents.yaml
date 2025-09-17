@@ -39,6 +39,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorService
 
