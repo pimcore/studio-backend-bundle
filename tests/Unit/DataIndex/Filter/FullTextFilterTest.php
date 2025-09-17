@@ -13,17 +13,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FullTextFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
 
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FullTextFilter
  */
+#[CoversClass(FullTextFilter::class)]
+#[UsesClass(SimpleColumnFilter::class)]
+#[UsesClass(InvalidArgumentException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class FullTextFilterTest extends TestCase
 {
     public function testIsExceptionThrownWhenFilterIsNotAString(): void

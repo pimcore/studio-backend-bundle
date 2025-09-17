@@ -14,17 +14,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Event;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 
 /**
  * @internal
  */
+#[CoversClass(UserTreeNodeEvent::class)]
+#[UsesClass(AbstractPreResponseEvent::class)]
+#[UsesClass(TreeNode::class)]
 final class UserTreeNodeEventTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent::getUserTreeNode
-     */
     public function testGetUserTreeNode(): void
     {
         $userTreeNode = new TreeNode(

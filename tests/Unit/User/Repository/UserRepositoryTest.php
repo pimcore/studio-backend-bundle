@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository;
@@ -24,11 +27,11 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
+#[CoversClass(UserRepository::class)]
+#[UsesClass(NotFoundException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class UserRepositoryTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository::getUserById
-     */
     public function testGetUserByIdNoUserFound(): void
     {
         $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
@@ -42,9 +45,6 @@ final class UserRepositoryTest extends TestCase
         $userRepository->getUserById(1);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository::getUserById
-     */
     public function testGetUserById(): void
     {
         $userId = 1;
@@ -60,9 +60,6 @@ final class UserRepositoryTest extends TestCase
         $this->assertSame($user, $userRepository->getUserById($userId));
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository::deleteUser
-     */
     public function testDeleteUser(): void
     {
         $securityServiceMock = $this->createMock(SecurityServiceInterface::class);

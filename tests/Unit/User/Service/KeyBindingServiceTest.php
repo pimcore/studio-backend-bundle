@@ -14,18 +14,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService;
 use Psr\Log\LoggerInterface;
 
 /**
  * @internal
  */
+#[CoversClass(KeyBindingService::class)]
+#[UsesClass(KeyBindingHydrator::class)]
+#[UsesClass(KeyBinding::class)]
 final class KeyBindingServiceTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService::getDefaultKeyBindings
-     */
     public function testGetDefaultKeyBindings(): void
     {
         $data = [

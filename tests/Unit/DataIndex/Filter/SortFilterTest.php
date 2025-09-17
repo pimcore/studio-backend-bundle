@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SortFilter;
@@ -22,8 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
 
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SortFilter
  */
+#[CoversClass(SortFilter::class)]
+#[UsesClass(SortFilterParameter::class)]
 final class SortFilterTest extends TestCase
 {
     public function testIfParameterIsNotInstanceOfSortFilterParameterInterface(): void

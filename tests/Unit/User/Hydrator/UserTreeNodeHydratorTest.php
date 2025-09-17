@@ -14,17 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Hydrator;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydrator;
 use Pimcore\Model\User;
 
 /**
  * @internal
  */
+#[CoversClass(UserTreeNodeHydrator::class)]
+#[UsesClass(TreeNode::class)]
 final class UserTreeNodeHydratorTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydrator::hydrate
-     */
     public function testHydrateWithUser(): void
     {
         $user = new User();
@@ -41,9 +43,6 @@ final class UserTreeNodeHydratorTest extends TestCase
         $this->assertFalse($userTreeNode->hasChildren());
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydrator::hydrate
-     */
     public function testHydrateWithFolder(): void
     {
         $folder = new User\Folder();

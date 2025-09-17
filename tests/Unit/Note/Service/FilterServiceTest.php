@@ -15,15 +15,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Note\Service;
 
 use PHPUnit\Framework\TestCase;
 use JsonException;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterServiceInterface;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
 
+#[CoversClass(FilterService::class)]
+#[UsesClass(NoteParameters::class)]
+#[UsesClass(CollectionParameters::class)]
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService
  */
 final class FilterServiceTest extends TestCase
 {

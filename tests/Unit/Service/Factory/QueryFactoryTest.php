@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Factory;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearch;
@@ -25,12 +27,18 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderI
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQuery;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 
+#[CoversClass(QueryFactory::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(DataObjectQuery::class)]
+#[UsesClass(DocumentQuery::class)]
+#[UsesClass(AssetQuery::class)]
 /**
- * @covers \Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory
+ * @internal
  */
 final class QueryFactoryTest extends TestCase
 {

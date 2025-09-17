@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Asset\Encoder;
 
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Model\Asset\Document;
@@ -25,6 +28,10 @@ use Pimcore\Model\Asset\Text;
 /**
  * @internal
  */
+#[CoversClass(TextEncoder::class)]
+#[UsesClass(MaxFileSizeExceededException::class)]
+#[UsesClass(InvalidElementTypeException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class EncoderTest extends TestCase
 {
     private TextEncoderInterface $encoder;
@@ -34,9 +41,6 @@ final class EncoderTest extends TestCase
         $this->encoder = new TextEncoder();
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder::encodeUTF8
-     */
     public function testWrongElementType(): void
     {
         $element = new Document();
@@ -47,7 +51,6 @@ final class EncoderTest extends TestCase
     }
 
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder::encodeUTF8
      * @throws Exception
      */
     public function testFileSizeExceeded(): void
@@ -61,7 +64,6 @@ final class EncoderTest extends TestCase
     }
 
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder::encodeUTF8
      * @throws Exception
      */
     public function testUTF8Encoding(): void

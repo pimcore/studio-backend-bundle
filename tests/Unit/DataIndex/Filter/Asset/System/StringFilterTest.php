@@ -20,9 +20,18 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter;
+
+#[CoversClass(StringFilter::class)]
+#[UsesClass(InvalidArgumentException::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(ColumnFilter::class)]
+#[UsesClass(SimpleColumnFilter::class)]
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\StringFilter
  */
 final class StringFilterTest extends TestCase
 {

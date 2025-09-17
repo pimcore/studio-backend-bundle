@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Hydrator;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\WorkflowUnsavedBehaviorTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
@@ -24,6 +26,9 @@ use Pimcore\Workflow\Transition;
 /**
  * @internal
  */
+#[CoversClass(AllowedTransitionsHydrator::class)]
+#[UsesClass(AllowedTransition::class)]
+#[UsesClass(Transition::class)]
 final class AllowedTransitionsHydratorTest extends TestCase
 {
     private AllowedTransitionsHydrator $hydrator;
@@ -35,17 +40,11 @@ final class AllowedTransitionsHydratorTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator::hydrate
-     */
     public function testHydrateEmpty(): void
     {
         $this->assertEmpty($this->hydrator->hydrate([], new Asset()));
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator::hydrate
-     */
     public function testHydrateWithAsset(): void
     {
         $transition = new Transition(
@@ -66,9 +65,6 @@ final class AllowedTransitionsHydratorTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator::hydrate
-     */
     public function testHydrateWithNotes(): void
     {
         $transition = new Transition(

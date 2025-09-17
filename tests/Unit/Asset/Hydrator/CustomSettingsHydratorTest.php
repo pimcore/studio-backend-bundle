@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Asset\Hydrator;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting\FixedCustomSettings;
@@ -21,6 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 /**
  * @internal
  */
+#[CoversClass(CustomSettingsHydrator::class)]
+#[UsesClass(FixedCustomSettings::class)]
+#[UsesClass(CustomSettings::class)]
 final class CustomSettingsHydratorTest extends TestCase
 {
     private CustomSettingsHydrator $hydrator;
@@ -30,9 +35,6 @@ final class CustomSettingsHydratorTest extends TestCase
         $this->hydrator = new CustomSettingsHydrator();
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator::hydrate
-     */
     public function testHydrateEmpty(): void
     {
         $fixedCustomSettings = new FixedCustomSettings();
@@ -44,9 +46,6 @@ final class CustomSettingsHydratorTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator::hydrate
-     */
     public function testHydrate(): void
     {
         $assetCustomSettings = [

@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -36,11 +39,12 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @internal
  */
+#[CoversClass(UserService::class)]
+#[UsesClass(ForbiddenException::class)]
+#[UsesClass(DatabaseException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class UserServiceTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserService::deleteUser
-     */
     public function testDeleteUserWhenUserToDeleteIsAdminButCurrentUserNot(): void
     {
         $userToDelete = new User();
@@ -62,9 +66,6 @@ final class UserServiceTest extends TestCase
         $userService->deleteUser(1);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserService::deleteUser
-     */
     public function testDeleteUserWithDatabaseException(): void
     {
         $userToDelete = new User();
@@ -87,9 +88,6 @@ final class UserServiceTest extends TestCase
         $userService->deleteUser(1);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserService::deleteUser
-     */
     public function testDeleteUser(): void
     {
         $userToDelete = new User();

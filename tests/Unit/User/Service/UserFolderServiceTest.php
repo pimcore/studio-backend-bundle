@@ -15,6 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -27,10 +30,13 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
+#[CoversClass(UserFolderService::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(DatabaseException::class)]
+#[UsesClass(ForbiddenException::class)]
 final class UserFolderServiceTest extends TestCase
 {
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService::deleteUserFolderById
      */
     public function testDeleteUserFolderByIdAsNonAdminUser(): void
     {
@@ -51,7 +57,6 @@ final class UserFolderServiceTest extends TestCase
     }
 
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService::deleteUserFolderById
      */
     public function testDeleteUserFolderByIdWithDatabaseException(): void
     {
@@ -76,7 +81,6 @@ final class UserFolderServiceTest extends TestCase
     }
 
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService::deleteUserFolderById
      */
     public function testDeleteUserFolderById(): void
     {

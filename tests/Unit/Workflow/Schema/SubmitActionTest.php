@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Schema;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidActionTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
@@ -21,11 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 /**
  * @internal
  */
+#[CoversClass(SubmitAction::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(InvalidActionTypeException::class)]
+#[UsesClass(InvalidElementTypeException::class)]
 final class SubmitActionTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction::__construct
-     */
     public function testSubmitActionException(): void
     {
         $this->expectException(InvalidActionTypeException::class);
@@ -40,9 +44,6 @@ final class SubmitActionTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction::__construct
-     */
     public function testSubmitActionElementException(): void
     {
         $this->expectException(InvalidElementTypeException::class);
@@ -57,9 +58,6 @@ final class SubmitActionTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction
-     */
     public function testSubmitActionParameters(): void
     {
         $parameters = new SubmitAction(

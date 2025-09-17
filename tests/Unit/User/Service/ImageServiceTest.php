@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
@@ -26,11 +29,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * @internal
  */
+#[CoversClass(ImageService::class)]
+#[UsesClass(ForbiddenException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class ImageServiceTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::uploadUserImage
-     */
     public function testNonAdminCanNotEditAdminUser(): void
     {
         $userMock = $this->createMock(UserInterface::class);
@@ -54,9 +57,6 @@ final class ImageServiceTest extends TestCase
         $imageUploadService->uploadUserImage($this->createMock(UploadedFile::class), 1);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::uploadUserImage
-     */
     public function testWrongFileType(): void
     {
         $userMock = $this->createMock(UserInterface::class);
@@ -85,9 +85,6 @@ final class ImageServiceTest extends TestCase
         $imageUploadService->uploadUserImage($fileMock, 1);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::uploadUserImage
-     */
     public function testSetImageOfUserIsCalled(): void
     {
         $userMock = $this->createMock(UserInterface::class);
@@ -121,9 +118,6 @@ final class ImageServiceTest extends TestCase
         $imageUploadService->uploadUserImage($fileMock, 1);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService::getImageFromUserAsStreamedResponse
-     */
     public function testGetImageAsStreamedResponse(): void
     {
         $userMock = $this->createMock(UserInterface::class);

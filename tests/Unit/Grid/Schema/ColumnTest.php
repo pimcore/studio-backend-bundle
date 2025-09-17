@@ -14,7 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Schema;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\AdvancedColumnConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -22,11 +26,14 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 /**
  * @internal
  */
+#[CoversClass(Column::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(InvalidArgumentException::class)]
+#[UsesClass(SimpleFieldConfig::class)]
+#[UsesClass(RelationFieldConfig::class)]
+#[UsesClass(AdvancedColumnConfig::class)]
 final class ColumnTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column::getAdvancedColumnConfig
-     */
     public function testGetAdvancedColumnConfigException(): void
     {
         $column = new Column(
@@ -43,9 +50,6 @@ final class ColumnTest extends TestCase
         $column->getAdvancedColumnConfig();
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column::getAdvancedColumnConfig
-     */
     public function testGetAdvancedColumnConfigSimpleField(): void
     {
         $column = new Column(
@@ -72,9 +76,6 @@ final class ColumnTest extends TestCase
         $this->assertInstanceOf(SimpleFieldConfig::class, $configs->getColumns()[0]);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column::getAdvancedColumnConfig
-     */
     public function testGetAdvancedColumnConfigRelationField(): void
     {
         $column = new Column(

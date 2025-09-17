@@ -14,17 +14,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\OpenApi;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Extension\Bundle\PimcoreBundleManager;
 use stdClass;
 
+#[CoversClass(OpenApiService::class)]
 /**
- * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiService
- */
-/**
- * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiService
+ * @internal
  */
 final class OpenApiServiceTest extends TestCase
 {

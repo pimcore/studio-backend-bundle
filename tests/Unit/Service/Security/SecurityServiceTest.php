@@ -15,8 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
@@ -24,10 +27,16 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\Asset;
 use Pimcore\Model\User as PimcoreUser;
 
+#[CoversClass(SecurityService::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(UserNotFoundException::class)]
+#[UsesClass(ForbiddenException::class)]
+/**
+ * @internal
+ */
 final class SecurityServiceTest extends TestCase
 {
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService::getCurrentUser
      * @throws Exception
      */
     public function testGetCurrentUserWithOutValidUser(): void
@@ -39,7 +48,6 @@ final class SecurityServiceTest extends TestCase
     }
 
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService::getCurrentUser
      * @throws Exception
      */
     public function testGetCurrentUserWithValidUser(): void
@@ -53,7 +61,6 @@ final class SecurityServiceTest extends TestCase
     }
 
     /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService::hasElementPermission
      * @throws Exception
      */
     public function testHasElementPermission(): void

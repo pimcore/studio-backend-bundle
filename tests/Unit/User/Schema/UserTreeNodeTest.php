@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * This source file is available under the terms of the
+ * This source     public function testHasChildren(): void is available under the terms of the
  * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
@@ -14,16 +14,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Schema;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 /**
  * @internal
  */
+#[CoversClass(TreeNode::class)]
+#[UsesClass(TreeNode::class)]
 final class UserTreeNodeTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::getId
-     */
     public function testGetId(): void
     {
         $id = 1;
@@ -32,9 +33,6 @@ final class UserTreeNodeTest extends TestCase
         $this->assertSame($id, $userTreeNode->getId());
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::getName
-     */
     public function testGetName(): void
     {
         $name = 'name';
@@ -43,9 +41,6 @@ final class UserTreeNodeTest extends TestCase
         $this->assertSame($name, $userTreeNode->getName());
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::getType
-     */
     public function testGetType(): void
     {
         $type = 'user';
@@ -54,9 +49,6 @@ final class UserTreeNodeTest extends TestCase
         $this->assertSame($type, $userTreeNode->getType());
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode::hasChildren
-     */
     public function testIsHasChildren(): void
     {
         $hasChildren = false;

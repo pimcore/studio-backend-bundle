@@ -15,18 +15,24 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Property;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 
+#[CoversClass(PropertyHydrator::class)]
+#[UsesClass(PredefinedProperty::class)]
+#[UsesClass(ElementProperty::class)]
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator
  */
 final class PropertyHydratorTest extends TestCase
 {

@@ -13,10 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsService;
@@ -27,11 +31,13 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 /**
  * @internal
  */
+#[CoversClass(WorkflowDetailsService::class)]
+#[UsesClass(AbstractApiException::class)]
+#[UsesClass(NotFoundException::class)]
+#[UsesClass(ElementProviderTrait::class)]
+#[UsesClass(WorkflowDetailsParameters::class)]
 final class WorkflowDetailsServiceTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsService::getWorkflowDetails
-     */
     public function testHydrateWorkflowDetails(): void
     {
         $parameters = new WorkflowDetailsParameters(

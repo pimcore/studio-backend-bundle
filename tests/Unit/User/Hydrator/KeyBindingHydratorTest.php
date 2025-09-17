@@ -14,16 +14,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Hydrator;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 
 /**
  * @internal
  */
+#[CoversClass(KeyBindingHydrator::class)]
+#[UsesClass(KeyBinding::class)]
 final class KeyBindingHydratorTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator::hydrate
-     */
     public function testHydrate(): void
     {
         $hydrator = new KeyBindingHydrator();

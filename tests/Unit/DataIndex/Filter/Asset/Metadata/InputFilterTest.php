@@ -13,16 +13,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\Metadata;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\InputFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter;
 
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\InputFilter
  */
+#[CoversClass(InputFilter::class)]
+#[UsesClass(ColumnFilter::class)]
+#[UsesClass(SimpleColumnFilter::class)]
+#[UsesClass(InvalidArgumentException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class InputFilterTest extends TestCase
 {
     use ColumnFilterMockTrait;

@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
@@ -23,11 +26,10 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
+#[CoversClass(ObjectDependenciesService::class)]
+#[UsesClass(ObjectDependencies::class)]
 final class ObjectDependenciesServiceTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService::getDependenciesForUser
-     */
     public function testIfHiddenIsSet(): void
     {
         $demoObject = $this->createMock(Concrete::class);

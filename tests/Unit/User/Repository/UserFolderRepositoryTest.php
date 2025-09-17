@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\FolderResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository;
 use Pimcore\Model\User\Folder;
@@ -22,11 +25,11 @@ use Pimcore\Model\User\Folder;
 /**
  * @internal
  */
+#[CoversClass(UserFolderRepository::class)]
+#[UsesClass(NotFoundException::class)]
+#[UsesClass(AbstractApiException::class)]
 final class UserFolderRepositoryTest extends TestCase
 {
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository::deleteUserFolder
-     */
     public function testDeleteUserFolder(): void
     {
         $folderResolverMock = $this->createMock(FolderResolverInterface::class);
@@ -38,9 +41,6 @@ final class UserFolderRepositoryTest extends TestCase
         $folderRepository->deleteUserFolder($folderMock);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository::getUserFolderById
-     */
     public function testGetUserFolderByIdNoUserFound(): void
     {
         $folderId = 1;
@@ -54,9 +54,6 @@ final class UserFolderRepositoryTest extends TestCase
         $folderRepository->getUserFolderById($folderId);
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository::getUserFolderById
-     */
     public function testGetUserFolderById(): void
     {
         $folderId = 1;

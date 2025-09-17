@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService;
@@ -25,6 +27,7 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
 /**
  * @internal
  */
+#[CoversClass(WorkflowActionService::class)]
 final class WorkflowActionServiceTest extends TestCase
 {
     private WorkflowActionService $workflowActionService;
@@ -40,9 +43,6 @@ final class WorkflowActionServiceTest extends TestCase
         );
     }
 
-    /**
-     * @covers \Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService::enrichActionNotes
-     */
     public function testEnrichActionNotes(): void
     {
         $folder = new Folder();

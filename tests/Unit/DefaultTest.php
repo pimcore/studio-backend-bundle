@@ -13,8 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ */
+#[CoversNothing]
 final class DefaultTest extends TestCase
 {
     public function testDefault(): void

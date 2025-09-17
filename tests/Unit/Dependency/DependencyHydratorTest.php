@@ -15,14 +15,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dependency;
 
 use PHPUnit\Framework\TestCase;
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\UsesClass;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
+#[CoversClass(DependencyHydrator::class)]
+#[UsesClass(Dependency::class)]
+#[UsesClass(AdditionalAttributesTrait::class)]
 /**
  * @internal
- * @covers \Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator
  */
 final class DependencyHydratorTest extends TestCase
 {
