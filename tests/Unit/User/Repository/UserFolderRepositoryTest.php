@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\FolderResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -62,7 +62,7 @@ final class UserFolderRepositoryTest extends TestCase
 
         $folderResolverMock = $this->createMock(FolderResolverInterface::class);
         $folderResolverMock->method('getById')->willReturn($folder);
-        
+
         $folderRepository = new UserFolderRepository($folderResolverMock);
 
         $this->assertSame($folder, $folderRepository->getUserFolderById($folderId));

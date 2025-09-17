@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -93,6 +93,7 @@ final class ImageServiceTest extends TestCase
             ->method('setImage')
             ->with($this->callback(function (string $path) {
                 $this->assertSame('/tmp/test.png', $path);
+
                 return true;
             }));
 
@@ -128,7 +129,7 @@ final class ImageServiceTest extends TestCase
         $userRepositoryMock->method('getUserById')->willReturn($userMock);
 
         $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
-        
+
         $assetResolverMock = $this->createMock(AssetResolverInterface::class);
 
         $imageService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolverMock);

@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 
-use PHPUnit\Framework\TestCase;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
@@ -96,7 +96,7 @@ final class SecurityServiceTest extends TestCase
     {
         $mock = $this->createMock(ElementPermissionServiceInterface::class);
         $mock->method('isAllowed')->willReturn($hasPermission);
-        
+
         return $mock;
     }
 
@@ -107,7 +107,7 @@ final class SecurityServiceTest extends TestCase
 
         $mock = $this->createMock(AuthenticationResolverInterface::class);
         $mock->method('authenticateSession')->willReturn($withUser ? $user : null);
-        
+
         return $mock;
     }
 }

@@ -36,7 +36,7 @@ final class SortFilterTest extends TestCase
         $query->expects($this->never())->method('orderByField');
 
         $sortFilter->apply('test', $query);
-        
+
         // Ensure the test passes - when parameter is not an instance of SortFilterParameterInterface,
         // the orderByField method should never be called
         $this->assertTrue(true);

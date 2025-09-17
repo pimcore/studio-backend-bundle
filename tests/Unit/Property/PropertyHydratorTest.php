@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Property;
 
-use PHPUnit\Framework\TestCase;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
@@ -96,7 +96,7 @@ final class PropertyHydratorTest extends TestCase
         $mock = $this->createMock(PredefinedResolverInterface::class);
         $mock->method('getById')->willReturn($this->getPredefined());
         $mock->method('getByKey')->willReturn($this->getPredefined());
-        
+
         return $mock;
     }
 
@@ -112,7 +112,7 @@ final class PropertyHydratorTest extends TestCase
             'type' => 'page',
             'key' => 'test',
         ]);
-        
+
         return $mock;
     }
 

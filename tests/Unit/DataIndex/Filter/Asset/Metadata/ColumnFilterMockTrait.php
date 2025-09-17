@@ -27,7 +27,7 @@ trait ColumnFilterMockTrait
         $mock->method('getColumnFilterByType')->willReturn([
             new ColumnFilter($key, $type, $value),
         ]);
-        
+
         return $mock;
     }
 }

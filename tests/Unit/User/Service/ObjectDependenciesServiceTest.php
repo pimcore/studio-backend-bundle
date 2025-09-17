@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
@@ -37,7 +37,7 @@ final class ObjectDependenciesServiceTest extends TestCase
 
         $dataObjectServiceResolver = $this->createMock(DataObjectServiceResolverInterface::class);
         $dataObjectServiceResolver->method('getObjectsReferencingUser')->willReturn([$demoObject]);
-        
+
         $dependencyHydrator = $this->createMock(DependencyHydratorInterface::class);
 
         $objectDependenciesService = new ObjectDependenciesService($dataObjectServiceResolver, $dependencyHydrator);

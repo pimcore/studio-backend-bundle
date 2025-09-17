@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dependency;
 
-use PHPUnit\Framework\TestCase;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
@@ -67,7 +67,7 @@ final class DependencyHydratorTest extends TestCase
         $mock->method('getFullPath')->willReturn('/testtest');
         $mock->method('getType')->willReturn('page');
         $mock->method('getElementType')->willReturn(ElementType::DOCUMENT);
-        
+
         return $mock;
     }
 }

@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
 use Exception;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
@@ -89,10 +89,10 @@ final class TranslatorServiceTest extends TestCase
     {
         $translator = $this->createMock(Translator::class);
         $repository = $this->createMock(TranslationRepositoryInterface::class);
-        
+
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->method('isLoggedIn')->willReturn($loggedIn);
-        
+
         $adminResolver = $this->createMock(AdminResolverInterface::class);
         $listingFilter = $this->createMock(ListingFilterInterface::class);
         $filterMapper = $this->createMock(FilterMapperServiceInterface::class);

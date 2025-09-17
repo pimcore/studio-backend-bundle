@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Factory;
 
 use Exception;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearch;
@@ -110,7 +110,7 @@ final class QueryFactoryTest extends TestCase
         $mock->method('createAssetQuery')->willReturnCallback(function () {
             return new AssetQuery($this->createMock(AssetSearchInterface::class));
         });
-        
+
         return $mock;
     }
 
@@ -126,7 +126,7 @@ final class QueryFactoryTest extends TestCase
                 $this->createMock(ClassDefinitionResolverInterface::class)
             );
         });
-        
+
         return $mock;
     }
 
@@ -139,7 +139,7 @@ final class QueryFactoryTest extends TestCase
         $mock->method('createDocumentQuery')->willReturnCallback(function () {
             return new DocumentQuery(new DocumentSearch());
         });
-        
+
         return $mock;
     }
 }

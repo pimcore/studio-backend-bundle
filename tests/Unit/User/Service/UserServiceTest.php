@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
-use PHPUnit\Framework\TestCase;
+use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
-use Exception;
+use PHPUnit\Framework\TestCase;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
@@ -52,10 +52,10 @@ final class UserServiceTest extends TestCase
 
         $currentUserMock = $this->createMock(UserInterface::class);
         $currentUserMock->method('isAdmin')->willReturn(false);
-        
+
         $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
         $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
-        
+
         $userRepositoryMock = $this->createMock(UserRepositoryInterface::class);
         $userRepositoryMock->method('getUserById')->willReturn($userToDelete);
 
@@ -73,7 +73,7 @@ final class UserServiceTest extends TestCase
 
         $currentUserMock = $this->createMock(UserInterface::class);
         $currentUserMock->method('isAdmin')->willReturn(true);
-        
+
         $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
         $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
@@ -95,7 +95,7 @@ final class UserServiceTest extends TestCase
 
         $currentUserMock = $this->createMock(UserInterface::class);
         $currentUserMock->method('isAdmin')->willReturn(true);
-        
+
         $securityServiceMock = $this->createMock(SecurityServiceInterface::class);
         $securityServiceMock->method('getCurrentUser')->willReturn($currentUserMock);
 
@@ -106,7 +106,7 @@ final class UserServiceTest extends TestCase
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
 
         $userService->deleteUser(1);
-        
+
         // The test passes if no exception is thrown and deleteUser is called once
         $this->assertTrue(true);
     }

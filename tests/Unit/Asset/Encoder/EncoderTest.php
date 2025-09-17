@@ -70,7 +70,7 @@ final class EncoderTest extends TestCase
     {
         $element = $this->createMock(Text::class);
         $element->method('getData')->willReturn('Héllö, 世界!');
-        
+
         $encodedData = $this->encoder->encodeUTF8($element);
 
         $this->assertTrue(mb_check_encoding($encodedData, 'UTF-8'));
