@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Listing;
 use Pimcore\Model\Document\Page;
+use function sprintf;
+use function strlen;
 
 /**
  * @internal
