@@ -41,4 +41,4 @@ jobs:
                   dependency-versions: ${{ matrix.dependencies }}
 
             - name: "Run PHPUnit tests"
-              run: vendor/bin/phpunit --configuration=/var/cli/tests/phpunit-no-coverage.xml
+              run: vendor/bin/phpunit --configuration= ${{ github.workspace }}/tests/phpunit-no-coverage.xml
