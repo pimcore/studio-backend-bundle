@@ -43,10 +43,6 @@ final readonly class PageService implements PageServiceInterface
      */
     public function checkPrettyUrl(string $prettyUrl, int $documentId): void
     {
-        if (empty($prettyUrl)) {
-            return;
-        }
-
         $this->validatePrettyUrl($prettyUrl);
 
         $existingDocuments = $this->findConflictingDocuments($prettyUrl, $documentId);

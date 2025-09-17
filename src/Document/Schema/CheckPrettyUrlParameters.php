@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @internal
@@ -29,6 +30,7 @@ final readonly class CheckPrettyUrlParameters
 {
     public function __construct(
         #[Property(description: 'Pretty URL to check', type: 'string', example: '/my-pretty-url')]
+        #[NotBlank(message: 'The prettyUrl must not be blank.')]
         private string $prettyUrl,
     ) {
     }
