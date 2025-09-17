@@ -13,16 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\RenderAreaBlockParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Controller;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Template;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ReflectionException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Symfony\Component\HttpFoundation\Request;
+use Pimcore\Model\Document\PageSnippet;
 
 /**
  * @internal
@@ -42,11 +41,13 @@ interface PageSnippetServiceInterface
     public function getAvailableTemplates(): array;
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|UserNotFoundException
+     * @throws ElementSavingFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException|UserNotFoundException
      */
-    public function renderAreaBlock(
-        int $documentId,
-        Request $request,
-        RenderAreaBlockParameter $parameter
-    ): RenderAreaBlockData;
+    public function setMainDocument(int $documentId, ?string $mainDocumentPath = null): void;
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getPageSnippet(int $id): PageSnippet;
 }

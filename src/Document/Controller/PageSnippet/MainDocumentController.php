@@ -13,26 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller\PageSnippet;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Request\RenderAreaBlockRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\RenderAreaBlockParameter;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
-use Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\ChangeMainDocumentParameters;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -41,47 +39,47 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class RenderAreaBlockIndexController extends AbstractApiController
+final class MainDocumentController extends AbstractApiController
 {
-    private const string ROUTE = '/documents/page-snippet/{id}/area-block/render';
+    private const string ROUTE = '/documents/{id}/page-snippet/change-main-document';
 
     public function __construct(
-        private readonly BlockServiceInterface $blockService,
+        private readonly PageSnippetServiceInterface $pageSnippetService,
         SerializerInterface $serializer,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|UserNotFoundException
+     * @throws ElementSavingFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException|UserNotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_area_block_render', methods: ['POST'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_page_snippet_change_main_document', methods: ['PUT'])]
     #[IsGranted(UserPermissions::DOCUMENTS->value)]
-    #[Post(
+    #[Put(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'document_page_snippet_area_block_render',
-        description: 'document_page_snippet_area_block_render_description',
-        summary: 'document_page_snippet_area_block_render_summary',
+        operationId: 'document_page_snippet_change_main_document',
+        description: 'document_page_snippet_change_main_document_description',
+        summary: 'document_page_snippet_change_main_document_summary',
         tags: [Tags::Documents->value]
     )]
-    #[IdParameter(type: ElementTypes::TYPE_DOCUMENT)]
-    #[RenderAreaBlockRequestBody]
     #[SuccessResponse(
-        description: 'document_page_snippet_area_block_render_success_response',
-        content: new JsonContent(ref: RenderAreaBlockData::class)
+        description: 'document_page_snippet_change_main_document_success_response'
     )]
+    #[IdParameter(type: ElementTypes::TYPE_DOCUMENT, name: 'id')]
+    #[ReferenceRequestBody(ChangeMainDocumentParameters::class)]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function renderAreaBlock(
+    public function changeMainDocument(
         int $id,
-        Request $request,
-        #[MapRequestPayload] RenderAreaBlockParameter $parameters
-    ): JsonResponse {
+        #[MapRequestPayload] ChangeMainDocumentParameters $parameters
+    ): Response {
+        $this->pageSnippetService->setMainDocument($id, $parameters->getMainDocumentPath());
 
-        return $this->jsonResponse($this->blockService->renderAreaBlock($id, $request, $parameters));
+        return new Response();
     }
 }
