@@ -413,6 +413,11 @@ document_get_tree_description: |
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 document_get_tree_success_response: Paginated documents with total count as header param as JSON
 document_get_tree_summary: Get all document data for the tree
+document_page_check_pretty_url_description: |
+  Check if the given <strong>{prettyUrl}</strong> is available and valid for the document with the given <strong>{id}</strong>. 
+  <br> The <strong>{id}</strong> must be an ID of existing document.
+document_page_check_pretty_url_success_response: Returns success if pretty URL is available and valid
+document_page_check_pretty_url_summary: Check if pretty URL is available and valid
 document_page_snippet_area_block_render_description: |
   Generate the editmode HTML and editable definitions based on the document <strong>{id}</strong> and data provided. <br>
   The <strong>{id}</strong> must be an ID of existing page snippet document. <br> 
