@@ -47,6 +47,9 @@ services:
     arguments:
       $classResolver: '@pimcore.class.resolver.document'
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\PageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\PageService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetService
 
