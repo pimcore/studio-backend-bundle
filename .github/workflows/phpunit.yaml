@@ -11,19 +11,19 @@ on:
         types: [opened, synchronize, reopened]
 
 env:
-  PIMCORE_PROJECT_ROOT: ${{ github.workspace }}
+    PIMCORE_PROJECT_ROOT: ${{ github.workspace }}
 
 jobs:
     phpunit-tests:
         runs-on: ubuntu-latest
-        
+
         strategy:
             matrix:
                 php-version: [8.3, 8.4]
                 dependencies: [highest]
-        
+
         name: "PHPUnit tests | PHP ${{ matrix.php-version }} | ${{ matrix.dependencies }}"
-        
+
         steps:
             - name: "Checkout code"
               uses: actions/checkout@v4
@@ -41,11 +41,4 @@ jobs:
                   dependency-versions: ${{ matrix.dependencies }}
 
             - name: "Run PHPUnit tests"
-              run: vendor/bin/phpunit --coverage-clover=coverage.xml
-
-            - name: "Upload coverage reports to Codecov"
-              uses: codecov/codecov-action@v3
-              with:
-                  file: ./coverage.xml
-                  flags: unittests
-                  name: codecov-umbrella
+              run: vendor/bin/phpunit --configuration=/var/cli/tests/phpunit-no-coverage.xml
