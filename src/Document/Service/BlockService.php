@@ -37,7 +37,7 @@ use function sprintf;
 final readonly class BlockService implements BlockServiceInterface
 {
     public function __construct(
-        private BlockStateStack $blockStateStack,        
+        private BlockStateStack $blockStateStack,
         private DocumentResolver $documentResolver,
         private EditmodeEditableDefinitionCollector $definitionCollector,
         private EditableRenderer $editableRenderer,

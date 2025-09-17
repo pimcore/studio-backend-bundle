@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Request\RenderAreaBloc
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\RenderAreaBlockParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;

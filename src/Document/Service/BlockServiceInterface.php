@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Model\Document\PageSnippet;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -35,5 +34,4 @@ interface BlockServiceInterface
         Request $request,
         RenderAreaBlockParameter $parameter
     ): RenderAreaBlockData;
-
 }
