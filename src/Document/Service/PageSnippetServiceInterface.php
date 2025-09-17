@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\RenderAreaBlockP
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Controller;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Template;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -49,4 +50,10 @@ interface PageSnippetServiceInterface
         Request $request,
         RenderAreaBlockParameter $parameter
     ): RenderAreaBlockData;
+
+    /**
+     * @throws ElementSavingFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException|UserNotFoundException
+     */
+    public function setMainDocument(int $documentId, ?string $mainDocumentPath = null): void;
 }

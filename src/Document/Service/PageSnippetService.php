@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\RenderAreaBlockP
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Controller;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\RenderAreaBlockData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Template;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ReflectionException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -104,7 +105,7 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
         Request $request,
         RenderAreaBlockParameter $parameter
     ): RenderAreaBlockData {
-        $document = $this->getPageSnippet($documentId);
+        $document = $this->getPageSnippetClone($documentId);
         $this->blockStateStack->loadArray($parameter->getBlockStateStack());
 
         $document->setEditables([]);
@@ -127,6 +128,21 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function setMainDocument(int $documentId, ?string $mainDocumentPath = null): void
+    {
+        try {
+            $snippet = $this->getPageSnippet($documentId);
+            $snippet->setEditables([]);
+            $snippet->setContentMainDocumentId($mainDocumentPath, true);
+            $snippet->saveVersion();
+        } catch (Exception $exception) {
+            throw new ElementSavingFailedException($documentId, $exception->getMessage(), $exception);
+        }
+    }
+
+    /**
      * @throws InvalidArgumentException
      */
     private function getPageSnippet(int $id): PageSnippet
@@ -137,7 +153,15 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
             throw new InvalidArgumentException(sprintf('Document with id %d is not a PageSnippet', $id));
         }
 
-        return clone $document;
+        return $document;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getPageSnippetClone(int $id): PageSnippet
+    {
+        return clone $this->getPageSnippet($id);
     }
 
     /**
