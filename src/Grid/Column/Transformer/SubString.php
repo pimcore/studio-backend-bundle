@@ -50,6 +50,7 @@ final class SubString implements TransformerInterface
             $data = $val->getValue();
             if (!is_string($data)) {
                 $results[] = new AdvancedValue('string', $data);
+
                 continue;
             }
 

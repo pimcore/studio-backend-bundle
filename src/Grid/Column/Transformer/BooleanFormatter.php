@@ -49,6 +49,7 @@ final class BooleanFormatter implements TransformerInterface
             $data = $val->getValue();
             if (!is_bool($data)) {
                 $results[] = new AdvancedValue('string', '');
+
                 continue;
             }
 

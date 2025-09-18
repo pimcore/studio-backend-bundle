@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
+use Countable;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use function count;
+use function is_array;
 
 /**
  * @internal
@@ -30,8 +31,9 @@ final class ElementCounter implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
 
-            if (!is_array($data) && !($data instanceof \Countable)) {
+            if (!is_array($data) && !($data instanceof Countable)) {
                 $results[] = new AdvancedValue('integer', 0);
+
                 continue;
             }
 
