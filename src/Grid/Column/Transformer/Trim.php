@@ -13,17 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
-<<<<<<< HEAD
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use function is_string;
-use function sprintf;
-=======
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
-use function is_string;
->>>>>>> deadcbd0 (Transformers and Testing)
 use function trim;
 
 /**
@@ -33,60 +25,17 @@ final class Trim implements TransformerInterface
 {
     public function transform(array $value, array $config): array
     {
-<<<<<<< HEAD
-        if (!isset($config['mode']) || !is_string($config['mode'])) {
-            throw new TransformerException(
-                $this->getName(),
-                sprintf(
-                    'Missing or invalid "mode" configuration (must be a string) for %s transformer.',
-                    $this->getKey()
-                )
-            );
-        }
-
-=======
->>>>>>> deadcbd0 (Transformers and Testing)
         $results = [];
 
         foreach ($value as $val) {
             $data = $val->getValue();
             if (!is_string($data)) {
-<<<<<<< HEAD
-                $results[] = new AdvancedValue($val->getType(), $data);
-
-                continue;
-            }
-
-            switch ($config['mode']) {
-                case 'left':
-                    $results[] = new AdvancedValue('string', ltrim($data));
-
-                    break;
-                case 'right':
-                    $results[] = new AdvancedValue('string', rtrim($data));
-
-                    break;
-                case 'both':
-                    $results[] = new AdvancedValue('string', trim($data));
-
-                    break;
-                case 'disabled':
-                    $results[] = new AdvancedValue('string', $data);
-
-                    break;
-                default:
-                    throw new TransformerException(
-                        $this->getName(),
-                        sprintf('Invalid mode "%s" for trim transformer.', $config['mode'])
-                    );
-            }
-=======
                 $results[] = new AdvancedValue('string', $data);
+
                 continue;
             }
 
             $results[] = new AdvancedValue('string', trim($data));
->>>>>>> deadcbd0 (Transformers and Testing)
         }
 
         return $results;
@@ -109,24 +58,6 @@ final class Trim implements TransformerInterface
 
     public function getConfigOptions(): array
     {
-<<<<<<< HEAD
-        return [
-            'mode' => [
-                'type' => 'radio',
-                'label' => 'Trim',
-                'options' => [
-                    ['value' => 'both', 'label' => 'Both'],
-                    ['value' => 'left', 'label' => 'Left'],
-                    ['value' => 'right', 'label' => 'Right'],
-                    ['value' => 'disabled', 'label' => 'Disabled'],
-                ],
-                'default' => 'both',
-            ],
-        ];
-    }
-}
-=======
         return [];
     }
 }
->>>>>>> deadcbd0 (Transformers and Testing)

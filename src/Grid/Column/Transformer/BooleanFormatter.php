@@ -30,28 +30,14 @@ final class BooleanFormatter implements TransformerInterface
         if (!isset($config['trueLabel']) || !is_string($config['trueLabel'])) {
             throw new TransformerException(
                 $this->getName(),
-<<<<<<< HEAD
-                sprintf(
-                    'Missing or invalid "trueLabel" configuration (must be a string) for %s transformer.',
-                    $this->getKey()
-                )
-=======
                 sprintf('Missing or invalid "trueLabel" configuration for %s transformer.', $this->getKey())
->>>>>>> deadcbd0 (Transformers and Testing)
             );
         }
 
         if (!isset($config['falseLabel']) || !is_string($config['falseLabel'])) {
             throw new TransformerException(
                 $this->getName(),
-<<<<<<< HEAD
-                sprintf(
-                    'Missing or invalid "falseLabel" configuration (must be a string) for %s transformer.',
-                    $this->getKey()
-                )
-=======
                 sprintf('Missing or invalid "falseLabel" configuration for %s transformer.', $this->getKey())
->>>>>>> deadcbd0 (Transformers and Testing)
             );
         }
 
@@ -62,12 +48,8 @@ final class BooleanFormatter implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
             if (!is_bool($data)) {
-<<<<<<< HEAD
-                $results[] = new AdvancedValue($val->getType(), $data);
-
-=======
                 $results[] = new AdvancedValue('string', '');
->>>>>>> deadcbd0 (Transformers and Testing)
+
                 continue;
             }
 
@@ -99,8 +81,4 @@ final class BooleanFormatter implements TransformerInterface
             'falseLabel' => ['type' => 'input', 'label' => 'False Label', 'default' => 'No'],
         ];
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> deadcbd0 (Transformers and Testing)

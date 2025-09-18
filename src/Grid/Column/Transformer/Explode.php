@@ -30,14 +30,7 @@ final class Explode implements TransformerInterface
         if (!isset($config['delimiter']) || !is_string($config['delimiter'])) {
             throw new TransformerException(
                 $this->getName(),
-<<<<<<< HEAD
-                sprintf(
-                    'Missing or invalid "delimiter" configuration for %s transformer.',
-                    $this->getKey()
-                )
-=======
                 sprintf('Missing or invalid "delimiter" configuration for %s transformer.', $this->getKey())
->>>>>>> deadcbd0 (Transformers and Testing)
             );
         }
 
@@ -47,12 +40,8 @@ final class Explode implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
             if (!is_string($data)) {
-<<<<<<< HEAD
-                $results[] = new AdvancedValue($val->getType(), $data);
-
-=======
                 $results[] = new AdvancedValue('array', []);
->>>>>>> deadcbd0 (Transformers and Testing)
+
                 continue;
             }
 
@@ -83,8 +72,4 @@ final class Explode implements TransformerInterface
             'delimiter' => ['type' => 'input', 'label' => 'Delimiter', 'default' => ','],
         ];
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> deadcbd0 (Transformers and Testing)
