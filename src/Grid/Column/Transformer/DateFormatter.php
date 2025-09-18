@@ -18,6 +18,7 @@ use DateTimeInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+use function is_int;
 use function is_string;
 use function sprintf;
 
@@ -38,7 +39,6 @@ final class DateFormatter implements TransformerInterface
         $format = $config['format'];
         $results = [];
 
-        
         foreach ($value as $val) {
             $data = $val->getValue();
 
@@ -48,12 +48,12 @@ final class DateFormatter implements TransformerInterface
 
             if (!($data instanceof DateTimeInterface)) {
                 $results[] = new AdvancedValue('string', '');
+
                 continue;
             }
 
             $results[] = new AdvancedValue('string', $data->format($format));
         }
-
 
         return $results;
     }
