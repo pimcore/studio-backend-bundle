@@ -1,6 +1,4 @@
 {
-
-  "version": "1.x-dev",
   "name": "pimcore/studio-backend-bundle",
   "license": "proprietary",
   "type": "pimcore-bundle",
