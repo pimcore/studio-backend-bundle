@@ -109,6 +109,8 @@ final readonly class PropertyService implements PropertyServiceInterface
             'properties'
         );
 
+        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+        $element = $this->getVersionData($element, $version);
         $hydratedProperties = [];
 
         foreach ($element->getProperties() as $property) {
