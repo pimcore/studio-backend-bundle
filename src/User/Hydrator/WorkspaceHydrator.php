@@ -39,7 +39,7 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function hydrateDataObjectWorkspace(UserInterface|UserRoleInterface $user): array
     {
@@ -59,7 +59,7 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function hydrateDocumentWorkspace(UserInterface|UserRoleInterface $user): array
     {
