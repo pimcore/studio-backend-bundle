@@ -93,9 +93,17 @@ final class User implements AdditionalAttributesInterface
         private readonly bool $welcomeScreen,
         #[Property(description: 'Asset Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private readonly array $assetWorkspaces,
-        #[Property(description: 'Data Object Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
+        #[Property(
+            description: 'Data Object Workspace',
+            type: 'array',
+            items: new Items(ref: UserDataObjectWorkspace::class)
+        )]
         private readonly array $dataObjectWorkspaces,
-        #[Property(description: 'Document Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
+        #[Property(
+            description: 'Document Workspace',
+            type: 'array',
+            items: new Items(ref: UserDocumentWorkspace::class)
+        )]
         private readonly array $documentWorkspaces,
         #[Property(ref: ObjectDependencies::class, description: 'Object Dependencies', type: 'object')]
         private readonly ObjectDependencies $objectDependencies,
@@ -235,7 +243,7 @@ final class User implements AdditionalAttributesInterface
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function getDataObjectWorkspaces(): array
     {
@@ -243,7 +251,7 @@ final class User implements AdditionalAttributesInterface
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function getDocumentWorkspaces(): array
     {
