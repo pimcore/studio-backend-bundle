@@ -30,14 +30,20 @@ final class BooleanFormatter implements TransformerInterface
         if (!isset($config['trueLabel']) || !is_string($config['trueLabel'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "trueLabel" configuration (must be a string) for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "trueLabel" configuration (must be a string) for %s transformer.', 
+                    $this->getKey()
+                    )
             );
         }
 
         if (!isset($config['falseLabel']) || !is_string($config['falseLabel'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "falseLabel" configuration (must be a string) for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "falseLabel" configuration (must be a string) for %s transformer.',
+                    $this->getKey()
+                    )
             );
         }
 

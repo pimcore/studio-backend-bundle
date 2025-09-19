@@ -30,7 +30,10 @@ final class Explode implements TransformerInterface
         if (!isset($config['delimiter']) || !is_string($config['delimiter'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "delimiter" configuration for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "delimiter" configuration for %s transformer.', 
+                    $this->getKey()
+                    )
             );
         }
 

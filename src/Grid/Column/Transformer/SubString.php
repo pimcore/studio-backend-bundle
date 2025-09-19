@@ -31,14 +31,20 @@ final class SubString implements TransformerInterface
         if (!isset($config['start']) || !is_int($config['start'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "start" configuration (must be an integer) for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "start" configuration (must be an integer) for %s transformer.', 
+                    $this->getKey()
+                    )
             );
         }
 
         if (!isset($config['length']) || !is_int($config['length'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "length" configuration (must be an integer) for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "length" configuration (must be an integer) for %s transformer.', 
+                    $this->getKey()
+                    )
             );
         }
 

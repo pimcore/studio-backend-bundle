@@ -29,7 +29,10 @@ final class Trim implements TransformerInterface
     if (!isset($config['mode']) || !is_string($config['mode'])) {
         throw new TransformerException(
             $this->getName(),
-            sprintf('Missing or invalid "mode" configuration (must be a string) for %s transformer.', $this->getKey())
+            sprintf(
+                'Missing or invalid "mode" configuration (must be a string) for %s transformer.', 
+                $this->getKey()
+                )
         );
     }
 

@@ -30,7 +30,10 @@ final class StringReplace implements TransformerInterface
         if (!isset($config['find']) || !is_string($config['find'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "find" configuration (must be a string) for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "find" configuration (must be a string) for %s transformer.', 
+                    $this->getKey()
+                    )
 
             );
         }
@@ -38,7 +41,10 @@ final class StringReplace implements TransformerInterface
         if (!isset($config['replace']) || !is_string($config['replace'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "replace" configuration (must be a string) for %s transformer.', $this->getKey())
+                sprintf(
+                    'Missing or invalid "replace" configuration (must be a string) for %s transformer.', 
+                    $this->getKey()
+                    )
             );
         }
 
