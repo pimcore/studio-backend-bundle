@@ -40,8 +40,8 @@ final class Explode implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
             if (!is_string($data)) {
-                $results[] = new AdvancedValue('array', []);
-
+                $originalType = $val->getType();
+                $results[] = new AdvancedValue($originalType, $data);
                 continue;
             }
 

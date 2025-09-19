@@ -388,9 +388,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\ElementCounter:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Concatenator:
-    tags: [ 'pimcore.studio_backend.grid_transformer' ]
-
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\StringReplace:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
 
