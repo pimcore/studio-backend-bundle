@@ -32,7 +32,7 @@ final class DateFormatter implements TransformerInterface
         if (!isset($config['format']) || !is_string($config['format'])) {
             throw new TransformerException(
                 $this->getName(),
-                sprintf('Missing or invalid "format" configuration for %s transformer.', $this->getKey())
+                sprintf('Missing or invalid "format" configuration (must be a string) for %s transformer.', $this->getKey())
             );
         }
 
@@ -47,8 +47,8 @@ final class DateFormatter implements TransformerInterface
             }
 
             if (!($data instanceof DateTimeInterface)) {
-                $results[] = new AdvancedValue('string', '');
-
+                $originalType = $val->getType();
+                $results[] = new AdvancedValue($originalType, $data);
                 continue;
             }
 
