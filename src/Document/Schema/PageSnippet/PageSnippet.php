@@ -52,9 +52,9 @@ final class PageSnippet extends Document
         bool $isSite = false,
         bool $navigationExclude = false,
         #[Property(description: 'Title of the Page Snippet', type: 'string', example: 'Title')]
-        private ?string $title = null,
+        private readonly ?string $title = null,
         #[Property(description: 'Description of the Page Snippet', type: 'string', example: 'Description')]
-        private ?string $description = null,
+        private readonly ?string $description = null,
     ) {
         parent::__construct(
             $fullPath,
@@ -75,8 +75,8 @@ final class PageSnippet extends Document
             $isLocked,
             $creationDate,
             $modificationDate,
-            $isSite = false,
-            $navigationExclude = false,
+            $isSite,
+            $navigationExclude,
         );
     }
 
