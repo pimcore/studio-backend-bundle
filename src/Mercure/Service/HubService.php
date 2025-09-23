@@ -39,7 +39,7 @@ final readonly class HubService implements HubServiceInterface
         if (!empty($this->jwtCookieHost)) {
             $host = $this->jwtCookieHost;
         }
-        
+
         if ($host === '' && isset($urlParts[Mercure::URL_HOST->value])) {
             $host = $urlParts[Mercure::URL_HOST->value];
         }
