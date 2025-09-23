@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateTimeTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 
@@ -48,6 +49,9 @@ final class DateFilter implements FilterInterface
 
     private function applyDateFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
     {
+        if (!is_array($column->getFilterValue())) {
+            throw new InvalidArgumentException('Filter value for this filter must be an array');
+        }
 
         $this->setFilterValue($column->getFilterValue());
 
