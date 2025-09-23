@@ -30,7 +30,7 @@ specific column, like the `system.tag` filter. This filters will be applied to t
 Available filters are:
 
 | Type                                     | filterValue        | Options                            | `key` required |
-|-:-:--------------------------------------|-:-:----------------|-:-:--------------------------------|-:-:------------|
+|:----------------------------------------:|:------------------:|:----------------------------------:|:--------------:|
 | metadata.select                          | string             |                                    | true           |
 | metadata.date                            | object of ISO 8601 | `from`, `to`, or `on`              | true           |
 | metadata.input                           | string             |                                    | true           |
