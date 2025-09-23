@@ -49,7 +49,7 @@ final class DateFilter implements FilterInterface
     private function applyDateFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
     {
 
-        $this->setFilterValue($column);
+        $this->setFilterValue($column->getFilterValue());
 
         $filterValue = $column->getFilterValue();
 

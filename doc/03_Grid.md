@@ -48,6 +48,11 @@ Available filters are:
 |  system.integer   |      integer       |                             |      true      |
 |  system.fulltext  |       string       |                             |     false      |
 |  system.boolean   |  boolean or null   |                             |      true      |
+|  classificationstore.string   |  string   |                             |      true      |
+|  classificationstore.rbga   |  array of integer   |    `r`,`g`,`b`,`a`    |      true      |
+|  classificationstore.date  | object of ISO 8601 |    `from`, `to`, or `on`    |      true      |
+|  classificationstore.quantity_value  | sting, integer |    `unitId`(string), `value`(integer)    |      true      |
+|  classificationstore.input_quantity_value  | string |    `unitId`(string), `value`(string)    |      true      |
 
 
 
@@ -91,6 +96,24 @@ Filter by Tags:
     "filterValue": {
       "considerChildTags": true,
       "tags": [1,2,3]
+    }
+  }
+]
+...
+```
+
+Classification Store Basic Filter Value:
+The filter value of a Classification Store looks a bit difrent. All Filter need to have a groupId and keyId
+```json
+...
+"columnFilters" [
+  {
+    "key": "technicalAttributes",
+    "type": "classificationstore.string",
+    "filterValue": {
+      "groupId": 6,
+      "keyId": 12,
+      "value": "filtervalue"
     }
   }
 ]

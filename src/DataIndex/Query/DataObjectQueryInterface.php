@@ -14,6 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\BooleanFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\FullTextSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 
 /**
  * @internal
@@ -28,4 +35,11 @@ interface DataObjectQueryInterface extends QueryInterface
     public function setClassDefinitionIds(array $classDefinitionIds): self;
 
     public function booleanFilter(string $fieldName, null|bool $value): self;
+
+    public function classificationStoreFilter(
+        string $fieldName,
+        string $group,
+        BooleanFilter|DateFilter|FullTextSearch|IntegerFilter|MultiSelectFilter|NumberRangeFilter|WildcardSearch $subModifier,
+        ?string $locale
+    ): self;
 }

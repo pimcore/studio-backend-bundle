@@ -27,13 +27,9 @@ trait DateTimeTrait
 {
     private array $filterValue = [];
 
-    public function setFilterValue(ColumnFilter $column): void
+    public function setFilterValue(array $value): void
     {
-        if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for this filter must be an array');
-        }
-
-        $this->filterValue = $column->getFilterValue();
+        $this->filterValue = $value;
     }
 
     public function getOnAsCarbon(): Carbon

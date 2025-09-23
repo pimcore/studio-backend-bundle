@@ -42,7 +42,7 @@ final class DatetimeFilter implements FilterInterface
 
     private function applyDatetimeFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
     {
-        $this->setFilterValue($column);
+        $this->setFilterValue($column->getFilterValue());
 
         $filterValue = $column->getFilterValue();
 

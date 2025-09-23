@@ -35,4 +35,14 @@ final readonly class ColumnFilter extends SimpleColumnFilter
 
         return $this->key;
     }
+
+    public function getKeyWithOutLocale(): string
+    {
+        return $this->key;
+    }
+
+    public function getLocale(): ?string
+    {
+        return $this->locale;
+    }
 }
