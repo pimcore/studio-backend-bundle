@@ -31,9 +31,9 @@ final class BooleanFormatter implements TransformerInterface
             throw new TransformerException(
                 $this->getName(),
                 sprintf(
-                    'Missing or invalid "trueLabel" configuration (must be a string) for %s transformer.', 
+                    'Missing or invalid "trueLabel" configuration (must be a string) for %s transformer.',
                     $this->getKey()
-                    )
+                )
             );
         }
 
@@ -43,7 +43,7 @@ final class BooleanFormatter implements TransformerInterface
                 sprintf(
                     'Missing or invalid "falseLabel" configuration (must be a string) for %s transformer.',
                     $this->getKey()
-                    )
+                )
             );
         }
 
@@ -55,6 +55,7 @@ final class BooleanFormatter implements TransformerInterface
             $data = $val->getValue();
             if (!is_bool($data)) {
                 $results[] = new AdvancedValue($val->getType(), $data);
+
                 continue;
             }
 

@@ -31,8 +31,9 @@ final class ElementCounter implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
 
-            if (!is_array($data) && !($data instanceof \Countable)) {
+            if (!is_array($data) && !($data instanceof Countable)) {
                 $results[] = new AdvancedValue($val->getType(), $data);
+
                 continue;
             }
 
