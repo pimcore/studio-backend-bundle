@@ -37,7 +37,7 @@ class Video extends Asset implements ThumbnailPathInterface
             type: 'string',
             example: '/path/to/video/imagethumbnail.jpg'
         )]
-        private readonly?string $imageThumbnailPath,
+        private readonly ?string $imageThumbnailPath,
         bool $hasChildren,
         string $type,
         string $filename,
