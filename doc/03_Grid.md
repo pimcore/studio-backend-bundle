@@ -29,30 +29,30 @@ specific column, like the `system.tag` filter. This filters will be applied to t
 
 Available filters are:
 
-|       Type        |    filterValue     |           Options           | `key` required |
-|:-----------------:|:------------------:|:---------------------------:|:--------------:|
-|  metadata.select  |       string       |                             |      true      |
-|   metadata.date   | object of ISO 8601 |    `from`, `to`, or `on`    |      true      |
-|  metadata.input   |       string       |                             |      true      |
-| metadata.checkbox |      boolean       |                             |      true      |
-| metadata.textarea |       string       |                             |      true      |
-|  metadata.object  |      integer       |      ID of the object       |      true      |
-| metadata.document |      integer       |     ID fo the document      |      true      |
-|  metadata.asset   |      integer       |       ID fo the asset       |      true      |
-|   system.string   |       string       | Wildcard search can be used |      true      |
-|  system.datetime  | object of ISO 8601 |    `from`, `to`, or `on`    |      true      |
-|    system.tag     |       object       | `considerChildTags`, `tags` |     false      |
-|    system.pql     |       string       |          PQL Query          |     false      |
-|     system.id     |      integer       |                             |     false      |
-|    system.ids     |  array of integer  |                             |     false      |
-|  system.integer   |      integer       |                             |      true      |
-|  system.fulltext  |       string       |                             |     false      |
-|  system.boolean   |  boolean or null   |                             |      true      |
-|  classificationstore.string   |  string   |                             |      true      |
-|  classificationstore.rbga   |  array of integer   |    `r`,`g`,`b`,`a`    |      true      |
-|  classificationstore.date  | object of ISO 8601 |    `from`, `to`, or `on`    |      true      |
-|  classificationstore.quantity_value  | sting, integer |    `unitId`(string), `value`(integer)    |      true      |
-|  classificationstore.input_quantity_value  | string |    `unitId`(string), `value`(string)    |      true      |
+| Type                                     | filterValue        | Options                            | `key` required |
+|-:-:--------------------------------------|-:-:----------------|-:-:--------------------------------|-:-:------------|
+| metadata.select                          | string             |                                    | true           |
+| metadata.date                            | object of ISO 8601 | `from`, `to`, or `on`              | true           |
+| metadata.input                           | string             |                                    | true           |
+| metadata.checkbox                        | boolean            |                                    | true           |
+| metadata.textarea                        | string             |                                    | true           |
+| metadata.object                          | integer            | ID of the object                   | true           |
+| metadata.document                        | integer            | ID fo the document                 | true           |
+| metadata.asset                           | integer            | ID fo the asset                    | true           |
+| system.string                            | string             | Wildcard search can be used        | true           |
+| system.datetime                          | object of ISO 8601 | `from`, `to`, or `on`              | true           |
+| system.tag                               | object             | `considerChildTags`, `tags`        | false          |
+| system.pql                               | string             | PQL Query                          | false          |
+| system.id                                | integer            |                                    | false          |
+| system.ids                               | array of integer   |                                    | false          |
+| system.integer                           | integer            |                                    | true           |
+| system.fulltext                          | string             |                                    | false          |
+| system.boolean                           | boolean or null    |                                    | true           |
+| classificationstore.string               | string             |                                    | true           |
+| classificationstore.rbga                 | array of integer   | `r`,`g`,`b`,`a`                    | true           |
+| classificationstore.date                 | object of ISO 8601 | `from`, `to`, or `on`              | true           |
+| classificationstore.quantity_value       | sting, integer     | `unitId`(string), `value`(integer) | true           |
+| classificationstore.input_quantity_value | string             | `unitId`(string), `value`(string)  | true           |
 
 
 
