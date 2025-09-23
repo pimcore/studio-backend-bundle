@@ -20,37 +20,15 @@ use OpenApi\Attributes\Property;
  */
 trait ClassDataTrait
 {
-    #[Property(description: 'Inheritance allowed', type: 'bool', example: false)]
-    private ?bool $allowInheritance = null;
-
-    #[Property(description: 'Variants allowed', type: 'bool', example: false)]
-    private ?bool $allowVariants = null;
-
     #[Property(description: 'Show variants', type: 'bool', example: false)]
     private ?bool $showVariants = null;
+
+    #[Property(description: 'Inheritance allowed', type: 'bool', example: false)]
+    private ?bool $allowInheritance = null;
 
     #[Property(description: 'Has preview', type: 'bool', example: false)]
     private ?bool $hasPreview = null;
 
-    public function getAllowInheritance(): ?bool
-    {
-        return $this->allowInheritance;
-    }
-
-    public function setAllowInheritance(bool $allowInheritance): void
-    {
-        $this->allowInheritance = $allowInheritance;
-    }
-
-    public function getAllowVariants(): ?bool
-    {
-        return $this->allowVariants;
-    }
-
-    public function setAllowVariants(bool $allowVariants): void
-    {
-        $this->allowVariants = $allowVariants;
-    }
 
     public function getShowVariants(): ?bool
     {
@@ -60,6 +38,16 @@ trait ClassDataTrait
     public function setShowVariants(bool $showVariants): void
     {
         $this->showVariants = $showVariants;
+    }
+
+    public function getAllowInheritance(): ?bool
+    {
+        return $this->allowInheritance;
+    }
+
+    public function setAllowInheritance(bool $allowInheritance): void
+    {
+        $this->allowInheritance = $allowInheritance;
     }
 
     public function getHasPreview(): ?bool

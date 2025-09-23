@@ -94,6 +94,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.custom_report_tree_node`
 - `pre_response.custom_report.column_information`
 - `pre_response.data_object`
+- `pre_response.data_object_detail`
 - `pre_response.data_object.dynamic_select_option`
 - `pre_response.data_object.formated_path`
 - `pre_response.data_object.layout`

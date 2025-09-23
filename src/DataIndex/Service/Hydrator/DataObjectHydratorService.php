@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObjectHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 use function get_class;
@@ -39,5 +40,15 @@ final readonly class DataObjectHydratorService implements DataObjectHydratorServ
         }
 
         return $this->dataObjectHydrator->hydrate($item);
+    }
+
+    public function hydrateDetailObjects(DataObjectSearchResultItem $item): DataObjectDetail|DataObjectFolder
+    {
+        $class = get_class($item);
+        if ($this->hydratorLocator->has($class)) {
+            return $this->hydratorLocator->get($class)->hydrate($item);
+        }
+
+        return $this->dataObjectHydrator->hydrateDetail($item);
     }
 }

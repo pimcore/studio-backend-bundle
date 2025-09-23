@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
@@ -60,7 +61,7 @@ final readonly class DataService implements DataServiceInterface
      * {@inheritdoc}
      */
     public function setObjectDetailData(
-        DataObjectFolder|DataObject|DataObjectVersion $dataObject,
+        DataObjectFolder|DataObjectDetail|DataObjectVersion $dataObject,
         DataObjectModel $element,
         ?DataObjectVersionModel $version = null,
     ): void {
@@ -79,7 +80,7 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setHasPreview($classData->getHasPreview());
         $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
 
-        if ($dataObject instanceof DataObject) {
+        if ($dataObject instanceof DataObjectDetail) {
             $dataObject->setDraftData($this->getDraftData($element, $version));
 
             if ($dataObject->getAllowInheritance()) {

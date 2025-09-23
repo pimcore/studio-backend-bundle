@@ -15,8 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 /**
@@ -24,7 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
  */
 final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 {
+    use ValidateObjectDataTrait;
+
     public function __construct(
+        private ClassDefinitionResolverInterface $classDefinitionResolver,
         private ElementLockServiceInterface $elementLockService,
         private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
@@ -34,6 +40,22 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
     public function hydrate(DataObjectSearchResultItem $dataObject): DataObject
     {
         return new DataObject(
+            ...$this->getObjectBaseData($dataObject)
+        );
+    }
+
+    public function hydrateDetail(DataObjectSearchResultItem $dataObject): DataObjectDetail
+    {
+        return new DataObjectDetail(
+            ...$this->getObjectBaseData($dataObject)
+        );
+    }
+
+    private function getObjectBaseData(DataObjectSearchResultItem $dataObject): array
+    {
+        $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
+
+        return [
             $dataObject->getKey(),
             $dataObject->getClassName(),
             $dataObject->getType(),
@@ -45,6 +67,7 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->getIndex(),
             $dataObject->getChildrenSortBy(),
             $dataObject->getChildrenSortOrder(),
+            $class->getAllowVariants(),
             $dataObject->getId(),
             $dataObject->getParentId(),
             $dataObject->getPath(),
@@ -59,6 +82,6 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             ),
             $dataObject->getCreationDate(),
             $dataObject->getModificationDate()
-        );
+        ];
     }
 }

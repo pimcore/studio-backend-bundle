@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 
 /**
@@ -23,4 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 interface DataObjectHydratorServiceInterface
 {
     public function hydrateDataObjects(DataObjectSearchResultItem $item): DataObject|DataObjectFolder;
+
+    public function hydrateDetailObjects(DataObjectSearchResultItem $item): DataObjectDetail|DataObjectFolder;
 }
