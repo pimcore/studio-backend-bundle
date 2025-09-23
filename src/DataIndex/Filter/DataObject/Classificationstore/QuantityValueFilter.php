@@ -30,13 +30,12 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
  */
 final class QuantityValueFilter implements FilterInterface
 {
-
     use GetClassificationStoreFilterValueTrait;
 
     public function __construct(
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
-    ){
+    ) {
 
     }
 
@@ -57,7 +56,6 @@ final class QuantityValueFilter implements FilterInterface
             $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             $value = $filterValue->getValue();
-            
 
             if (!isset($value['value'], $value['unitId'])) {
                 throw new InvalidArgumentException('Value must contain valu and unitId');

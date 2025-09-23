@@ -18,8 +18,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function count;
 
 /**
@@ -117,7 +117,8 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * @inheritDoc
      */
-    public function getByKeyId(int $keyId): KeyGroupRelation {
+    public function getByKeyId(int $keyId): KeyGroupRelation
+    {
 
         $listing = new Listing();
         $listing->setOrder('ASC');
@@ -125,7 +126,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
         $list = $listing->load();
 
-        if(count($list) != 1) {
+        if (count($list) != 1) {
             throw new NotFoundException('KeyGroupRelation', $keyId);
         }
 

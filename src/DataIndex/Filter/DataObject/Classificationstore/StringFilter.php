@@ -23,19 +23,19 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFil
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_string;
 
 /**
  * @internal
  */
 final class StringFilter implements FilterInterface
 {
-
     use GetClassificationStoreFilterValueTrait;
 
     public function __construct(
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
-    ){
+    ) {
 
     }
 
@@ -57,7 +57,6 @@ final class StringFilter implements FilterInterface
 
             $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
-            
 
             if (!is_string($filterValue->getValue())) {
                 throw new InvalidArgumentException('Filter value for this filter must be a string');

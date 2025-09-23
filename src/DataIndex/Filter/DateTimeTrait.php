@@ -16,8 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use function is_array;
 use function sprintf;
 
 /**

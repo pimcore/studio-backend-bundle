@@ -23,19 +23,17 @@ trait GetClassificationStoreFilterValueTrait
     public function getClassificationStoreFilterValue(array $rawFilterValue): ClassificationStoreFilterValue
     {
 
-        if(!isset($rawFilterValue['groupId'])) {
-            throw new InvalidArgumentException("Classificationstore filter need a groupId");
+        if (!isset($rawFilterValue['groupId'])) {
+            throw new InvalidArgumentException('Classificationstore filter need a groupId');
         }
 
-        if(!isset($rawFilterValue['keyId'])) {
-            throw new InvalidArgumentException("Classificationstore filter need a keyId");
+        if (!isset($rawFilterValue['keyId'])) {
+            throw new InvalidArgumentException('Classificationstore filter need a keyId');
         }
 
-        if(!isset($rawFilterValue['value'])) {
-            throw new InvalidArgumentException("Classificationstore filter need a value");
+        if (!isset($rawFilterValue['value'])) {
+            throw new InvalidArgumentException('Classificationstore filter need a value');
         }
-
-
 
         return new ClassificationStoreFilterValue(
             $rawFilterValue['groupId'],
@@ -43,7 +41,5 @@ trait GetClassificationStoreFilterValueTrait
             $rawFilterValue['value']
         );
 
-
     }
-    
 }

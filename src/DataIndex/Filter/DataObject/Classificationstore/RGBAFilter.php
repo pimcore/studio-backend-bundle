@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
@@ -30,13 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
  */
 final class RGBAFilter implements FilterInterface
 {
-
     use GetClassificationStoreFilterValueTrait;
 
     public function __construct(
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
-    ){
+    ) {
 
     }
 
@@ -57,7 +55,6 @@ final class RGBAFilter implements FilterInterface
             $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             $value = $filterValue->getValue();
-            
 
             if (!isset($value['r'], $value['g'], $value['b'], $value['a'])) {
                 throw new InvalidArgumentException('Value must contain r,g,b,a');
