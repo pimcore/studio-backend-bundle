@@ -33,8 +33,8 @@ trait SimpleGetterTrait
     private function getGetter(Column $column, StudioElementInterface|ElementInterface $element): string
     {
         $key = $column->getKey();
-        if($column->getKey() == "filename" &&  $element instanceof DataObject) {
-            $key = "key";
+        if ($column->getKey() == 'filename' &&  $element instanceof DataObject) {
+            $key = 'key';
         }
 
         return 'get' . ucfirst($key);
