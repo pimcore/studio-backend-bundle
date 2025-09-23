@@ -81,7 +81,7 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
                 $dataObject->getLocked()
             ),
             $dataObject->getCreationDate(),
-            $dataObject->getModificationDate()
+            $dataObject->getModificationDate(),
         ];
     }
 }

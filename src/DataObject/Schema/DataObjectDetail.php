@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'allowInheritance',
         'showVariants',
         'hasPreview',
-        'hasWorkflowAvailable'
+        'hasWorkflowAvailable',
     ],
     type: 'object'
 )]

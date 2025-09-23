@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
     title: 'DataObjectVersion',
     required: [
         'allowInheritance', 'showVariants', 'hasPreview', 'hasWorkflowAvailable',
-        'key', 'type', 'hasChildren', 'fullPath', 'index', 'allowVariants', 'className', 'published', 'objectData'
+        'key', 'type', 'hasChildren', 'fullPath', 'index', 'allowVariants', 'className', 'published', 'objectData',
     ],
     type: 'object'
 )]

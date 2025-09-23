@@ -29,7 +29,6 @@ trait ClassDataTrait
     #[Property(description: 'Has preview', type: 'bool', example: false)]
     private ?bool $hasPreview = null;
 
-
     public function getShowVariants(): ?bool
     {
         return $this->showVariants;
