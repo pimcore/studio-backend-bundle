@@ -48,12 +48,6 @@ class Configuration implements ConfigurationInterface
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
-    private const array ALLOWED_COOKIE_SAME_SITE_VALUES = [
-        Cookie::SAMESITE_LAX,
-        Cookie::SAMESITE_NONE,
-        Cookie::SAMESITE_STRICT,
-    ];
-
     /**
      * {@inheritdoc}
      */
