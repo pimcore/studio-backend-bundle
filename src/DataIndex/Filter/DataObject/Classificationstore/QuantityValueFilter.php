@@ -51,7 +51,7 @@ final class QuantityValueFilter implements FilterInterface
 
         foreach (
             $parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_QUANTITY_VALUE->value) as $column
-            ) {
+        ) {
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
 
