@@ -35,12 +35,13 @@ final readonly class HubService implements HubServiceInterface
     {
         $urlParts = parse_url($this->urlService->getClientSideUrl());
 
+        $host = '';
         if (!empty($this->jwtCookieHost)) {
             $host = $this->jwtCookieHost;
-        } elseif (isset($urlParts[Mercure::URL_HOST->value])) {
+        }
+        
+        if ($host === '' && isset($urlParts[Mercure::URL_HOST->value])) {
             $host = $urlParts[Mercure::URL_HOST->value];
-        } else {
-            $host = '';
         }
 
         return new Cookie(
