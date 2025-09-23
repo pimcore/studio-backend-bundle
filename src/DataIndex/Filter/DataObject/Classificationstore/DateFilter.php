@@ -112,9 +112,9 @@ final class DateFilter implements FilterInterface
 
     private function buildDateFilterModifier(
         string $field,
-        Carbon $startDate = null,
-        Carbon $endDate = null,
-        Carbon $onDate = null,
+        ?Carbon $startDate = null,
+        ?Carbon $endDate = null,
+        ?Carbon $onDate = null,
     ): GDIDateFilter {
         return new GDIDateFilter($field, $startDate, $endDate, $onDate);
     }
