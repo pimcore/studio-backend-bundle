@@ -54,8 +54,7 @@ final class BooleanFormatter implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
             if (!is_bool($data)) {
-                $originalType = $val->getType();
-                $results[] = new AdvancedValue($originalType, $data);
+                $results[] = new AdvancedValue($val->getType(), $data);
                 continue;
             }
 

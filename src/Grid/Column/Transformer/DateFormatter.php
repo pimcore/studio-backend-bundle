@@ -50,8 +50,7 @@ final class DateFormatter implements TransformerInterface
             }
 
             if (!($data instanceof DateTimeInterface)) {
-                $originalType = $val->getType();
-                $results[] = new AdvancedValue($originalType, $data);
+                $results[] = new AdvancedValue($val->getType(), $data);
                 continue;
             }
 

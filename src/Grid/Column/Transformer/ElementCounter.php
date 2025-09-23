@@ -32,8 +32,7 @@ final class ElementCounter implements TransformerInterface
             $data = $val->getValue();
 
             if (!is_array($data) && !($data instanceof \Countable)) {
-                $originalType = $val->getType();
-                $results[] = new AdvancedValue($originalType, $data);
+                $results[] = new AdvancedValue($val->getType(), $data);
                 continue;
             }
 
