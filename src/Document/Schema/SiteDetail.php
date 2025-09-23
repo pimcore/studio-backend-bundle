@@ -56,7 +56,7 @@ final class SiteDetail implements AdditionalAttributesInterface
                     'type' => 'document',
                     'subtype' => 'page',
                     'fullPath' => 'en/error-page',
-                    'isPublished' => true
+                    'isPublished' => true,
                 ],
             ],
             additionalProperties: new AdditionalProperties(
