@@ -15,13 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 
 trait SimpleGetterTrait
 {
     private function getValue(Column $column, StudioElementInterface|ElementInterface $element): mixed
     {
-        $getter = $this->getGetter($column);
+        $getter = $this->getGetter($column, $element);
         if (method_exists($element, $getter) === false) {
             return null;
         }
@@ -29,8 +30,13 @@ trait SimpleGetterTrait
         return $element->$getter();
     }
 
-    private function getGetter(Column $column): string
+    private function getGetter(Column $column, StudioElementInterface|ElementInterface $element): string
     {
-        return 'get' . ucfirst($column->getKey());
+        $key = $column->getKey();
+        if($column->getKey() == "filename" &&  $element instanceof DataObject) {
+            $key = "key";
+        }
+
+        return 'get' . ucfirst($key);
     }
 }
