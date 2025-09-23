@@ -238,7 +238,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function classificationStoreFilter(
         string $fieldName,
         string $group,
-        BooleanFilter|DateFilter|FullTextSearch|IntegerFilter|MultiSelectFilter|NumberRangeFilter|WildcardSearch $subModifier,
+        BooleanFilter|
+        DateFilter|
+        FullTextSearch|
+        IntegerFilter|
+        MultiSelectFilter|
+        NumberRangeFilter|
+        WildcardSearch $subModifier,
         ?string $locale = null
     ): self {
         if ($locale === null) {

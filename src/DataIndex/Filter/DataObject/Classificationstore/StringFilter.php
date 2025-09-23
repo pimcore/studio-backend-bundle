@@ -49,8 +49,6 @@ final class StringFilter implements FilterInterface
             return $query;
         }
 
-        //dd($parameters);
-
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_STRING->value) as $column) {
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
