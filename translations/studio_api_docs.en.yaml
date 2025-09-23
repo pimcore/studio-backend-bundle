@@ -454,6 +454,11 @@ document_delete_site_description: |
   Delete the existing site by the given document <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document
 document_delete_site_success_response: Successfully deleted site
 document_delete_site_summary: Delete the existing site by its document ID
+document_get_site_description: |
+  Get the site detail data by the given document <strong>{documentId}</strong>. <br> 
+  The <strong>{documentId}</strong> must be an ID of existing root document of the site
+document_get_site_success_response: Site detail data
+document_get_site_summary: Get the site detail data by its document ID
 document_update_by_id_description: |
   You can create/update/delete list entries like properties, settings or editable fields.
 document_update_by_id_success_response: Successfully updated document

@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Site;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\SiteDetail;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Site as SiteModel;
 
 /**
@@ -22,4 +25,9 @@ use Pimcore\Model\Site as SiteModel;
 interface SiteHydratorInterface
 {
     public function hydrate(SiteModel $siteModel): Site;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function hydrateDetail(SiteModel $siteModel): SiteDetail;
 }
