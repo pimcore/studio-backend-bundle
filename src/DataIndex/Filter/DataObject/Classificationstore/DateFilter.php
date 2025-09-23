@@ -50,7 +50,7 @@ final class DateFilter implements FilterInterface
         if (!$query instanceof DataObjectQueryInterface) {
             return $query;
         }
-        
+
         /** @var $query DataObjectQueryInterface */
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_DATE->value) as $column) {
             $query = $this->applyDateFilter($column, $query);
