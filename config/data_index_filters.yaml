@@ -72,6 +72,21 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\BooleanFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\StringFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\RGBAFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\DateFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\QuantityValueFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\InputQuantityValueFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
   # Asset Metadata
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\SelectFilter:
     tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]

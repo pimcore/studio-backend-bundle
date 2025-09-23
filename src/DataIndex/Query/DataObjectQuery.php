@@ -22,7 +22,10 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Exc
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\ClassificationStoreFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ClassIdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
@@ -228,6 +231,42 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function booleanFilter(string $fieldName, null|bool $value): self
     {
         $this->search->addModifier(new BooleanFilter($fieldName, $value));
+
+        return $this;
+    }
+
+    public function classificationStoreFilter(
+        string $fieldName,
+        string $group,
+        BooleanFilter|
+        DateFilter|
+        FullTextSearch|
+        IntegerFilter|
+        MultiSelectFilter|
+        NumberRangeFilter|
+        WildcardSearch $subModifier,
+        ?string $locale = null
+    ): self {
+        if ($locale === null) {
+            $this->search->addModifier(
+                new ClassificationStoreFilter(
+                    $fieldName,
+                    $group,
+                    $subModifier,
+                )
+            );
+
+            return $this;
+        }
+
+        $this->search->addModifier(
+            new ClassificationStoreFilter(
+                $fieldName,
+                $group,
+                $subModifier,
+                $locale
+            )
+        );
 
         return $this;
     }

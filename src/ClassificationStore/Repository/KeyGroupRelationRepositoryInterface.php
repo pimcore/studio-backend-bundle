@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
@@ -37,4 +38,9 @@ interface KeyGroupRelationRepositoryInterface
      * @return KeyGroupRelation[]
      */
     public function getByGroupId(int $groupId): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getByKeyId(int $keyId): KeyGroupRelation;
 }

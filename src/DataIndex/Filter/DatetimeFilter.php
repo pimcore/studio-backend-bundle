@@ -15,9 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_array;
 
 /**
  * @internal
@@ -42,7 +44,12 @@ final class DatetimeFilter implements FilterInterface
 
     private function applyDatetimeFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
     {
-        $this->setFilterValue($column);
+
+        if (!is_array($column->getFilterValue())) {
+            throw new InvalidArgumentException('Filter value for this filter must be an array');
+        }
+
+        $this->setFilterValue($column->getFilterValue());
 
         $filterValue = $column->getFilterValue();
 
