@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\ExcludeMainSiteParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Site;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\SiteDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\UpdateSiteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -30,6 +31,11 @@ interface SiteServiceInterface
      * @return Site[]
      */
     public function getAvailableSites(ExcludeMainSiteParameter $parameter): array;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function getSite(int $documentId): SiteDetail;
 
     /**
      * @throws ForbiddenException|ElementSavingFailedException|UserNotFoundException|NotFoundException
