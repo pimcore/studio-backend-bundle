@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Carbon\Carbon;
-use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\BooleanFilter;
@@ -100,11 +99,25 @@ final class DataObjectQuery implements DataObjectQueryInterface
     }
 
     /**
-     * @throws Exception
+     * {@inheritdoc}
      */
     public function setClassDefinitionName(string $classDefinitionId): self
     {
         $classDefinition = $this->classDefinitionResolver->getByName($classDefinitionId);
+        if ($classDefinition === null) {
+            throw new NotFoundException('Class definition', $classDefinitionId);
+        }
+        $this->search->setClassDefinition($classDefinition);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setClassDefinition(string $classDefinitionId): self
+    {
+        $classDefinition = $this->classDefinitionResolver->getById($classDefinitionId);
         if ($classDefinition === null) {
             throw new NotFoundException('Class definition', $classDefinitionId);
         }

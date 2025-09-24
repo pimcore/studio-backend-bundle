@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportFolderDataCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -40,6 +41,7 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly DataObjectServiceInterface $dataObjectService,
         private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
@@ -76,27 +78,24 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
 
         $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
 
-        $dataObjects = $this->gridSearch->searchElementsForUser(
-            'object',
-            new GridParameter(
-                $jobFolder['id'],
-                $columns,
-                $this->filterParameterMapper->fromArray($filters)
-            ),
+        $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
+        $filters = $this->filterParameterMapper->fromArray($filters);
+        $filters->setClassId($classId);
+
+        $dataObjects = $this->gridSearch->searchElementIdsForUser(
+            ElementTypes::TYPE_OBJECT,
+            new GridParameter($jobFolder['id'], $columns, $filters),
             $user
         );
 
-        if (count($dataObjects->getItems()) === 0) {
+        if (count($dataObjects) === 0) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
 
             return;
         }
 
-        $dataObject = $dataObjects->getItems()[0];
-
-        $className = $dataObject->getClassName();
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
-            $className,
+            $classId,
             $jobFolder['id'],
             $user
         );
@@ -106,13 +105,13 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
             $columnsDefinitions
         );
 
-        foreach ($dataObjects->getItems() as $dataObject) {
+        foreach ($dataObjects as $dataObjectId) {
             try {
                 $dataObjectData = [
-                    $dataObject->getId() => $this->gridService->getGridValuesForElement(
+                    $dataObjectId => $this->gridService->getGridValuesForElement(
                         $columnCollection,
-                        $dataObject,
                         ElementTypes::TYPE_OBJECT,
+                        $dataObjectId,
                         true
                     ),
                 ];
@@ -122,7 +121,7 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                     [
-                        'id' => $dataObject->getId(),
+                        'id' => $dataObjectId,
                         'message' => $e->getMessage(),
                     ]
                 ));
@@ -137,7 +136,7 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
                 StepConfig::GRID_EXPORT_DATA_INFO->value,
                 [
                     'type' => ElementTypes::TYPE_OBJECT,
-                    'className' => $className,
+                    'classId' => $classId,
                 ]
             );
         }
@@ -161,6 +160,11 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
         $this->stepConfiguration->setAllowedTypes(
             StepConfig::CONFIG_FILTERS->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
+        );
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_CLASS_ID->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENT_CLASS_ID->value,
+            StepConfig::CONFIG_TYPE_STRING->value
         );
     }
 }

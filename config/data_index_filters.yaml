@@ -69,6 +69,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassIdFilter:
+      tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassIdsFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 

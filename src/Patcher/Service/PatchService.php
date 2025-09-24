@@ -31,9 +31,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\Concrete;
@@ -79,11 +81,19 @@ final readonly class PatchService implements PatchServiceInterface
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function patchFolder(
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
     ): ?int {
+        $classId = $patchFolderParameter->getClassId();
+        if ($elementType === ElementTypes::TYPE_OBJECT && $classId === null) {
+            throw new InvalidArgumentException('Class ID must be provided for object folder patching');
+        }
+
         $job = new Job(
             name: Jobs::PATCH_ELEMENTS->value,
             steps: [
@@ -91,7 +101,10 @@ final readonly class PatchService implements PatchServiceInterface
                     JobSteps::ELEMENT_FOLDER_PATCHING->value,
                     PatchFolderMessage::class,
                     '',
-                    ['filters' => $patchFolderParameter->getFilters()]
+                    [
+                        StepConfig::CONFIG_FILTERS->value => $patchFolderParameter->getFilters(),
+                        StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
+                    ]
                 ),
             ],
             selectedElements: array_map(

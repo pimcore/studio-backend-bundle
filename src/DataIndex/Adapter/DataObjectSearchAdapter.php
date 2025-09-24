@@ -13,13 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
+use Pimcore\Bundle\GenericDataIndexBundle\Permission\Workspace\DataObjectWorkspace;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\SearchHelper;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -42,6 +45,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function __construct(
         private DataObjectSearchServiceInterface $searchService,
         private DataObjectHydratorServiceInterface $hydratorService,
+        private SearchHelper $searchHelper,
         private SearchResultIdListServiceInterface $searchResultIdListService,
     ) {
     }
@@ -96,8 +100,11 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function fetchDataObjectIds(QueryInterface $dataObjectQuery): array
     {
         try {
-            $search = $dataObjectQuery->getSearch();
-            $search->addModifier(new OrderByFullPath());
+            $search = $this->searchHelper->addSearchRestrictions(
+                search: $dataObjectQuery->getSearch(),
+                userPermission: UserPermissionTypes::OBJECTS->value,
+                workspaceType: DataObjectWorkspace::WORKSPACE_TYPE,
+            );
 
             return $this->searchResultIdListService->getAllIds($search);
         } catch (DataObjectSearchException) {

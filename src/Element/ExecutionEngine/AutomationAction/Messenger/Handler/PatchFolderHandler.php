@@ -71,20 +71,22 @@ final class PatchFolderHandler extends AbstractHandler
         }
 
         $folderId = $validatedParameters->getSubject()->getId();
-        $elementType =  $validatedParameters->getSubject()->getType();
+        $elementType = $validatedParameters->getSubject()->getType();
         $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
+        $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
+        $filters = $this->filterParameterMapper->fromArray($filters);
+        if ($classId !== '') {
+            $filters->setClassId($classId);
+        }
 
-        $result = $this->gridSearch->searchElementsForUser(
+
+        $elementIds = $this->gridSearch->searchElementIdsForUser(
             $elementType,
-            new GridParameter(
-                $folderId,
-                [],
-                $this->filterParameterMapper->fromArray($filters)
-            ),
+            new GridParameter($folderId, [], $filters),
             $validatedParameters->getUser()
         );
 
-        if (empty($result->getItems())) {
+        if (empty($elementIds)) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
 
             return;
@@ -92,10 +94,10 @@ final class PatchFolderHandler extends AbstractHandler
 
         $jobEnvironmentData = $jobRun->getJob()?->getEnvironmentData();
 
-        foreach ($result->getItems() as $item) {
+        foreach ($elementIds as $elementId) {
             $element = $this->elementService->getAllowedElementById(
                 $elementType,
-                $item->getId(),
+                $elementId,
                 $validatedParameters->getUser()
             );
 
@@ -127,6 +129,11 @@ final class PatchFolderHandler extends AbstractHandler
         $this->stepConfiguration->setAllowedTypes(
             StepConfig::CONFIG_FILTERS->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
+        );
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_CLASS_ID->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENT_CLASS_ID->value,
+            StepConfig::CONFIG_TYPE_STRING->value
         );
     }
 }

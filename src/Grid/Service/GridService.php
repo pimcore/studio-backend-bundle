@@ -167,15 +167,16 @@ final class GridService implements GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        StudioElementInterface $element,
+        ?StudioElementInterface $element,
         string $elementType,
+        int $elementId,
         bool $isExport = false
     ): array {
         $data = [];
 
         $databaseElement = null;
-        if ($elementType === ElementTypes::TYPE_OBJECT) {
-            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $element->getId());
+        if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
+            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
         }
 
         foreach ($columnCollection->getColumns() as $column) {
@@ -191,7 +192,7 @@ final class GridService implements GridServiceInterface
                     $resolver->resolveForExport($column, $databaseElement),
                 $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
                     $resolver->resolveForCoreElement($column, $databaseElement),
-                $resolver instanceof StudioElementColumnResolverInterface =>
+                $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
                     $resolver->resolveForStudioElement($column, $element),
                 default =>
                     throw new InvalidArgumentException(
@@ -205,10 +206,10 @@ final class GridService implements GridServiceInterface
                 GridColumnDataEvent::EVENT_NAME
             );
 
-            $data['id'] = $element->getId();
+            $data['id'] = $elementId;
             $data['columns'][] = $columnData;
-            $data['isLocked'] = $element->getIsLocked();
-            $data['permissions'] = $element->getPermissions();
+            $data['isLocked'] = $element?->getIsLocked();
+            $data['permissions'] = $element?->getPermissions();
         }
 
         return $data;
@@ -219,11 +220,12 @@ final class GridService implements GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        StudioElementInterface $element,
         string $elementType,
+        int $elementId,
         bool $isExport = false
     ): array {
-        $data = $this->getGridDataForElement($columnCollection, $element, $elementType, $isExport);
+
+        $data = $this->getGridDataForElement($columnCollection, null, $elementType, $elementId, $isExport);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -372,7 +374,8 @@ final class GridService implements GridServiceInterface
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $item,
-                $elementType
+                $elementType,
+                $item->getId()
             );
         }
 

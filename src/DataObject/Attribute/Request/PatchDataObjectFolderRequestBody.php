@@ -18,6 +18,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
@@ -63,8 +64,13 @@ final class PatchDataObjectFolderRequestBody extends RequestBody
                     ),
                     new Property(
                         property: 'filters',
-                        ref: Filter::class,
+                        ref: ExportAllFilter::class,
                         type: 'object'
+                    ),
+                    new Property(
+                        property: 'classId',
+                        type: 'string',
+                        example: 'CAR',
                     ),
                 ],
                 type: 'object',

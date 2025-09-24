@@ -42,4 +42,10 @@ interface GridSearchInterface
         GridParameter $gridParameter,
         UserInterface $user
     ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult;
+
+    public function searchElementIdsForUser(
+        string $type,
+        GridParameter $gridParameter,
+        UserInterface $user
+    ): array;
 }
