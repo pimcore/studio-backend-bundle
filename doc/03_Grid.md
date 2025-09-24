@@ -48,6 +48,7 @@ Available filters are:
 | system.integer                           | integer            |                                    | true           |
 | system.fulltext                          | string             |                                    | false          |
 | system.boolean                           | boolean or null    |                                    | true           |
+| system.number                            | object             | `from`, `to`, `is`, `setting`      | true           |
 | classificationstore.string               | string             |                                    | true           |
 | classificationstore.rbga                 | array of integer   | `r`,`g`,`b`,`a`                    | true           |
 | classificationstore.date                 | object of ISO 8601 | `from`, `to`, or `on`              | true           |
@@ -96,6 +97,22 @@ Filter by Tags:
     "filterValue": {
       "considerChildTags": true,
       "tags": [1,2,3]
+    }
+  }
+]
+...
+```
+
+Filter by Number:
+```json
+...
+"columnFilters" [
+  {
+    "type": "system.number",
+    "key": "id",
+    "filterValue": {
+        "setting": "less",
+        "to": 100
     }
   }
 ]

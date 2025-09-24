@@ -384,3 +384,24 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Combine:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\ElementCounter:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\StringReplace:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\SubString:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Trim:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\BooleanFormatter:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\DateFormatter:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Explode:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]

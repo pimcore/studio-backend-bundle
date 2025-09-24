@@ -23,6 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Exc
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\ClassificationStoreFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
@@ -275,6 +276,27 @@ final class DataObjectQuery implements DataObjectQueryInterface
                 $locale
             )
         );
+
+        return $this;
+    }
+
+    public function filterNumber(
+        string $fieldName,
+        int|float $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new NumberFilter($fieldName, $searchTerm, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterNumberRange(
+        string $fieldName,
+        int|float|null $min = null,
+        int|float|null $max = null,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new NumberRangeFilter($fieldName, $min, $max, $enablePqlFieldNameResolution));
 
         return $this;
     }

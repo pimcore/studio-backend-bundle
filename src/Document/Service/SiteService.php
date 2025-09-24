@@ -16,11 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Site\SiteResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\SiteDetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\SiteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\ExcludeMainSiteParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Site;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\SiteDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\UpdateSiteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -68,6 +70,23 @@ final readonly class SiteService implements SiteServiceInterface
         }
 
         return $sites;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSite(int $documentId): SiteDetail
+    {
+        $siteDocument = $this->siteResolver->getByRootId($documentId);
+
+        if ($siteDocument === null) {
+            throw new NotFoundException(type: 'site', id: $documentId, parameter: 'document ID');
+        }
+
+        $site = $this->siteHydrator->hydrateDetail($siteDocument);
+        $this->eventDispatcher->dispatch(new SiteDetailEvent($site), SiteDetailEvent::EVENT_NAME);
+
+        return $site;
     }
 
     /**
