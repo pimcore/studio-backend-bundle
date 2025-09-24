@@ -70,7 +70,11 @@ interface QueryInterface
         bool $enablePqlFieldNameResolution = true
     ): self;
 
-    public function filterNumber(string $fieldName, int|float $searchTerm, bool $enablePqlFieldNameResolution = true): self;
+    public function filterNumber(
+        string $fieldName, 
+        int|float $searchTerm, 
+        bool $enablePqlFieldNameResolution = true
+    ): self;
 
     public function filterNumberRange(
         string $fieldName,

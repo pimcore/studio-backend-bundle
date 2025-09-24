@@ -207,7 +207,11 @@ final class DocumentQuery implements DocumentQueryInterface
         return $this;
     }
 
-    public function filterNumber(string $fieldName, int|float $searchTerm, bool $enablePqlFieldNameResolution = true): self
+    public function filterNumber(
+        string $fieldName, 
+        int|float $searchTerm, 
+        bool $enablePqlFieldNameResolution = true
+    ): self
     {
         $this->search->addModifier(new NumberFilter($fieldName, $searchTerm, $enablePqlFieldNameResolution));
 
