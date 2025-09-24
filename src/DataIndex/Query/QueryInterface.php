@@ -82,4 +82,10 @@ interface QueryInterface
         int|float|null $max = null,
         bool $enablePqlFieldNameResolution = true
     ): self;
+
+    public function filterMultiSelect(
+        string $fieldName,
+        array $values,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
 }
