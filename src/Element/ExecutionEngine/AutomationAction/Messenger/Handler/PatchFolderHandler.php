@@ -79,7 +79,6 @@ final class PatchFolderHandler extends AbstractHandler
             $filters->setClassId($classId);
         }
 
-
         $elementIds = $this->gridSearch->searchElementIdsForUser(
             $elementType,
             new GridParameter($folderId, [], $filters),

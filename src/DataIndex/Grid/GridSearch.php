@@ -139,8 +139,7 @@ final readonly class GridSearch implements GridSearchInterface
         string $type,
         int $folderId,
         ?UserInterface $user
-    ): FilterParameter
-    {
+    ): FilterParameter {
         $folder = match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById($folderId, $user),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->getDataObjectById($folderId, $user),

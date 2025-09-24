@@ -14,10 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 

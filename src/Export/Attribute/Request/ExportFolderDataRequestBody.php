@@ -21,7 +21,6 @@ use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**

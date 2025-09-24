@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
