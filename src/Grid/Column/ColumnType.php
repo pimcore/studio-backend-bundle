@@ -23,6 +23,7 @@ enum ColumnType: string
     case SYSTEM_BOOLEAN = 'system.boolean';
     case SYSTEM_TAG = 'system.tag';
     case SYSTEM_PQL_QUERY = 'system.pql';
+    case SYSTEM_NUMBER = 'system.number';
     case SYSTEM_FULLTEXT = 'system.fulltext';
     case METADATA_SELECT = 'metadata.select';
     case METADATA_INPUT = 'metadata.input';

@@ -62,6 +62,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DatetimeFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\NumberFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]

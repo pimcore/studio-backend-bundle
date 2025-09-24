@@ -69,4 +69,14 @@ interface QueryInterface
         bool $roundToDay = true,
         bool $enablePqlFieldNameResolution = true
     ): self;
+
+    public function filterNumber(string $fieldName, int|float $searchTerm, bool $enablePqlFieldNameResolution = true): self;
+
+
+    public function filterNumberRange(
+        string $fieldName,
+        int|float|null $min = null,
+        int|float|null $max = null,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
 }
