@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_array;
 
 /**
  * @internal
@@ -29,7 +30,6 @@ final class SelectFilter implements FilterInterface
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
             return $query;
         }
-
 
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_SELECT->value) as $column) {
             $query = $this->applySelectFilter($column, $query);
@@ -45,7 +45,6 @@ final class SelectFilter implements FilterInterface
         if (!is_array($fiterValue)) {
             throw new InvalidArgumentException('Value for select filter must ba an array');
         }
-
 
         return $query->filterMultiSelect($column->getKey(), $column->getFilterValue());
     }
