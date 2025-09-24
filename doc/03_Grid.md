@@ -49,7 +49,7 @@ Available filters are:
 | system.fulltext                          | string             |                                    | false          |
 | system.boolean                           | array              | `true`, `false` or `null`          | true           |
 | system.number                            | object             | `from`, `to`, `is`, `setting`      | true           |
-| system.select                            | srray              |                                    | true           |
+| system.select                            | array              |                                    | true           |
 | classificationstore.string               | string             |                                    | true           |
 | classificationstore.rbga                 | array of integer   | `r`,`g`,`b`,`a`                    | true           |
 | classificationstore.date                 | object of ISO 8601 | `from`, `to`, or `on`              | true           |
