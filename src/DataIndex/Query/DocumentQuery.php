@@ -219,8 +219,7 @@ final class DocumentQuery implements DocumentQueryInterface
         int|float|null $min = null,
         int|float|null $max = null,
         bool $enablePqlFieldNameResolution = true
-    ): self
-    {
+    ): self {
         $this->search->addModifier(new NumberRangeFilter($fieldName, $min, $max, $enablePqlFieldNameResolution));
 
         return $this;

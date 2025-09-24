@@ -18,7 +18,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
-use function is_int;
 
 /**
  * @internal
@@ -43,11 +42,9 @@ final class NumberFilter implements FilterInterface
         $fiterValue = $column->getFilterValue();
 
         if (!isset($fiterValue['setting'])) {
-            throw new InvalidArgumentException("This filter requires a setting value");
+            throw new InvalidArgumentException('This filter requires a setting value');
         }
-        $setting = $fiterValue["setting"];
-
-
+        $setting = $fiterValue['setting'];
 
         if (isset($fiterValue['is']) && $setting == 'is') {
             return $query->filterNumber($column->getKey(), $fiterValue['is']);
@@ -58,14 +55,13 @@ final class NumberFilter implements FilterInterface
         }
 
         if (isset($fiterValue['from']) && $setting == 'more') {
-            return $query->filterNumberRange($column->getKey(),  $fiterValue['from'], null);
+            return $query->filterNumberRange($column->getKey(), $fiterValue['from'], null);
         }
 
         if ($setting == 'between') {
             return $query->filterNumberRange($column->getKey(), $fiterValue['from'], $fiterValue['to']);
         }
 
-        
         throw new InvalidArgumentException('Unable to apply number filter no correct setting given');
     }
 }
