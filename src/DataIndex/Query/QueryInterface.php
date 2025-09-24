@@ -71,8 +71,8 @@ interface QueryInterface
     ): self;
 
     public function filterNumber(
-        string $fieldName, 
-        int|float $searchTerm, 
+        string $fieldName,
+        int|float $searchTerm,
         bool $enablePqlFieldNameResolution = true
     ): self;
 

@@ -273,11 +273,10 @@ final class DataObjectQuery implements DataObjectQueryInterface
     }
 
     public function filterNumber(
-        string $fieldName, 
-        int|float $searchTerm, 
+        string $fieldName,
+        int|float $searchTerm,
         bool $enablePqlFieldNameResolution = true
-    ): self
-    {
+    ): self {
         $this->search->addModifier(new NumberFilter($fieldName, $searchTerm, $enablePqlFieldNameResolution));
 
         return $this;
