@@ -24,6 +24,7 @@ enum ColumnType: string
     case SYSTEM_TAG = 'system.tag';
     case SYSTEM_PQL_QUERY = 'system.pql';
     case SYSTEM_NUMBER = 'system.number';
+    case SYSTEM_SELECT = 'system.select';
     case SYSTEM_FULLTEXT = 'system.fulltext';
     case METADATA_SELECT = 'metadata.select';
     case METADATA_INPUT = 'metadata.input';
@@ -41,4 +42,5 @@ enum ColumnType: string
     case CLASSIFICATION_STORE_INPUT_QUANTITY_VALUE = 'classificationstore.input_quantity_value';
     case CLASSIFICATION_STORE_QUANTITY_VALUE_RANGE = 'classificationstore.quantity_value_range';
     case CLASSIFICATION_STORE_SELECT = 'classificationstore.select';
+    case CLASSIFICATION_STORE_BOOLEAN = 'classificationstore.boolean';
 }

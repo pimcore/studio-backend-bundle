@@ -23,6 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Ids
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
@@ -224,6 +225,16 @@ final class DocumentQuery implements DocumentQueryInterface
         bool $enablePqlFieldNameResolution = true
     ): self {
         $this->search->addModifier(new NumberRangeFilter($fieldName, $min, $max, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterMultiSelect(
+        string $fieldName,
+        array $values,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new MultiSelectFilter($fieldName, $values, $enablePqlFieldNameResolution));
 
         return $this;
     }

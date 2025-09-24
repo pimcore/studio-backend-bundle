@@ -47,14 +47,16 @@ Available filters are:
 | system.ids                               | array of integer   |                                    | false          |
 | system.integer                           | integer            |                                    | true           |
 | system.fulltext                          | string             |                                    | false          |
-| system.boolean                           | boolean or null    |                                    | true           |
+| system.boolean                           | array              | `true`, `false` or `null`          | true           |
 | system.number                            | object             | `from`, `to`, `is`, `setting`      | true           |
+| system.select                            | array              |                                    | true           |
 | classificationstore.string               | string             |                                    | true           |
 | classificationstore.rbga                 | array of integer   | `r`,`g`,`b`,`a`                    | true           |
 | classificationstore.date                 | object of ISO 8601 | `from`, `to`, or `on`              | true           |
 | classificationstore.quantity_value       | sting, integer     | `unitId`(string), `value`(integer) | true           |
 | classificationstore.input_quantity_value | string             | `unitId`(string), `value`(string)  | true           |
-
+| classificationstore.select               | array              |                                    | true           |
+| classificationstore.boolean              | array              | `true`, `false` or `null`          | true           |
 
 
 ### Examples:
