@@ -93,6 +93,7 @@ final class PatchFolderHandler extends AbstractHandler
 
         $jobEnvironmentData = $jobRun->getJob()?->getEnvironmentData();
 
+        $elementCount = count($elementIds);
         foreach ($elementIds as $elementId) {
             $element = $this->elementService->getAllowedElementById(
                 $elementType,
@@ -118,7 +119,12 @@ final class PatchFolderHandler extends AbstractHandler
                 ));
             }
 
-            $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+            $this->updateProgress(
+                $this->publishService,
+                $jobRun,
+                $this->getJobStep($message)->getName(),
+                $elementCount
+            );
         }
     }
 
