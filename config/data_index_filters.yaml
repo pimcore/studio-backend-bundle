@@ -99,6 +99,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\BooleanFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\CRM\ConsentFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
   # Asset Metadata
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\SelectFilter:
     tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
