@@ -42,7 +42,7 @@ final readonly class CsvExportService extends AbstractExportService
         $data = [];
 
         if (!empty($headers)) {
-            $data[]  = $headers;
+            $data[] = $headers;
         }
 
         $data = array_merge($data, $exportData);

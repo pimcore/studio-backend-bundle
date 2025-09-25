@@ -23,6 +23,7 @@ final readonly class PatchFolderParameter extends DataParameter
     public function __construct(
         array $data,
         private ?FilterParameter $filters,
+        private ?string $classId = null
     ) {
         parent::__construct($data);
     }
@@ -30,5 +31,10 @@ final readonly class PatchFolderParameter extends DataParameter
     public function getFilters(): FilterParameter
     {
         return $this->filters ?? new FilterParameter();
+    }
+
+    public function getClassId(): ?string
+    {
+        return $this->classId;
     }
 }

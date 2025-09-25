@@ -19,8 +19,8 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
@@ -58,7 +58,7 @@ final class ExportFolderDataRequestBody extends RequestBody
                     ),
                     new Property(
                         property: 'filters',
-                        ref: Filter::class,
+                        ref: ExportAllFilter::class,
                         type: 'object'
                     ),
                     new Property(property: 'config', properties: $configProperties, type: 'object'),
@@ -67,6 +67,12 @@ final class ExportFolderDataRequestBody extends RequestBody
                         type: 'string',
                         enum: ElementTypes::ALLOWED_TYPES,
                         example: ElementTypes::TYPE_ASSET
+                    ),
+                    new Property(
+                        property: 'classId',
+                        type: 'string',
+                        example: 'CAR',
+                        nullable: true
                     ),
                 ],
                 type: 'object'

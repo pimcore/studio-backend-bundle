@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassIdParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
@@ -37,11 +38,14 @@ final class FilterParameter implements
     ColumnFiltersParameterInterface,
     SimpleColumnFiltersParameterInterface,
     SortFilterParameterInterface,
-    ClassNameParametersInterface
+    ClassNameParametersInterface,
+    ClassIdParametersInterface
 {
     private ?string $path = null;
 
     private ?string $className = null;
+
+    private ?string $classId = null;
 
     private bool $excludeFolders = true;
 
@@ -161,5 +165,15 @@ final class FilterParameter implements
     public function setClassName(?string $className): void
     {
         $this->className = $className;
+    }
+
+    public function getClassId(): ?string
+    {
+        return $this->classId;
+    }
+
+    public function setClassId(?string $classId): void
+    {
+        $this->classId = $classId;
     }
 }
