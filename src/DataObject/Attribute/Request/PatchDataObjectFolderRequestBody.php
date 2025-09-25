@@ -35,7 +35,7 @@ final class PatchDataObjectFolderRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['data'],
+                required: ['data', 'classId'],
                 properties: [
                     new Property(
                         property: 'data',
@@ -70,6 +70,7 @@ final class PatchDataObjectFolderRequestBody extends RequestBody
                         property: 'classId',
                         type: 'string',
                         example: 'CAR',
+                        nullable: false
                     ),
                 ],
                 type: 'object',
