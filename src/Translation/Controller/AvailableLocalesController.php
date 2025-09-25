@@ -21,10 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Response\LocaleList;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -42,7 +40,6 @@ final class AvailableLocalesController extends AbstractApiController
     }
 
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_available_locales', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TRANSLATIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'translation_get_available_locales',

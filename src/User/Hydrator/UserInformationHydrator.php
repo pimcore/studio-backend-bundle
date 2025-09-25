@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -28,6 +29,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
+        private UserPermissionServiceInterface $userPermissionService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
     ) {
     }
@@ -40,7 +42,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             email: $user->getEmail(),
             firstname: $user->getFirstname(),
             lastname: $user->getLastname(),
-            permissions: $user->getPermissions(),
+            permissions: $this->userPermissionService->getAllowedUserPermissions($user),
             isAdmin: $user->isAdmin(),
             classes: $user->getClasses(),
             docTypes: $user->getDocTypes(),
