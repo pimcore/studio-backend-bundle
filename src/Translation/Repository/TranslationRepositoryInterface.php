@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Model\Translation;
@@ -27,7 +29,7 @@ use Pimcore\Model\Translation\Listing;
 interface TranslationRepositoryInterface
 {
     /**
-     * @throws ElementExistsException
+     * @throws ForbiddenException|ElementExistsException|UserNotFoundException
      */
     public function createTranslations(bool $throwError, array $translationData): void;
 
