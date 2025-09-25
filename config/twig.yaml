@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # Register TemplateGenerator
+    Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator
+
+    # The parameters are handled by the Dependency Injection Extension
+    Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer
