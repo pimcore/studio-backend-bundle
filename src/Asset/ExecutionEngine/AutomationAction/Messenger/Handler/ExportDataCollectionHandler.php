@@ -96,8 +96,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
             $assetData = [
                 $asset->getId() => $this->gridService->getGridValuesForElement(
                     $columnCollection,
-                    $asset,
                     ElementTypes::TYPE_ASSET,
+                    $asset->getId(),
                     true
                 ),
             ];

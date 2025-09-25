@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
@@ -99,35 +100,10 @@ final readonly class GridSearch implements GridSearchInterface
     ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult {
         $filter = $gridParameter->getFilters();
         $type = $this->getStudioElementType($type);
-
-        $folder = match($type) {
-            ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById(
-                $gridParameter->getFolderId(),
-                $user
-            ),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->getDataObjectById(
-                $gridParameter->getFolderId(),
-                $user
-            ),
-            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getDocumentById(
-                $gridParameter->getFolderId(),
-                $user
-            ),
-            default => throw new InvalidElementTypeException($type)
-        };
-
-        if (!$this->isFolderOfType($type, $folder)) {
-            throw new NotFoundException($type . ' Folder', $gridParameter->getFolderId());
-        }
-
-        $filter->setPath($folder->getFullPath());
+        $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
 
         /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
-        $query = $this->filterService->applyFilters(
-            $filter,
-            $type
-        );
-
+        $query = $this->filterService->applyFilters($filter, $type);
         $query->setUser($user);
 
         return match($type) {
@@ -136,6 +112,48 @@ final readonly class GridSearch implements GridSearchInterface
             ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->searchDocuments($query),
             default => throw new InvalidElementTypeException($type)
         };
+    }
+
+    public function searchElementIdsForUser(
+        string $type,
+        GridParameter $gridParameter,
+        UserInterface $user
+    ): array {
+        $filter = $gridParameter->getFilters();
+        $type = $this->getStudioElementType($type);
+        $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
+
+        /** @var AssetQueryInterface|DataObjectQueryInterface $query */
+        $query = $this->filterService->applyFilters($filter, $type);
+        $query->setUser($user);
+
+        return match($type) {
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->fetchAssetIds($query),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->fetchDataObjectIds($query),
+            default => throw new InvalidElementTypeException($type)
+        };
+    }
+
+    private function setFilterPath(
+        FilterParameter $filter,
+        string $type,
+        int $folderId,
+        ?UserInterface $user
+    ): FilterParameter {
+        $folder = match($type) {
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById($folderId, $user),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->getDataObjectById($folderId, $user),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getDocumentById($folderId, $user),
+            default => throw new InvalidElementTypeException($type)
+        };
+
+        if (!$this->isFolderOfType($type, $folder)) {
+            throw new NotFoundException($type . ' Folder', $folderId);
+        }
+
+        $filter->setPath($folder->getFullPath());
+
+        return $filter;
     }
 
     private function isFolderOfType(string $type, StudioElementInterface $element): bool

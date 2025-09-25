@@ -18,7 +18,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 
 /**
  * @internal
@@ -34,7 +34,7 @@ final class ZipExportFolderRequestBody extends RequestBody
                     new Property(property: 'folders', type: 'array', items: new Items(type: 'integer'), example: [83]),
                     new Property(
                         property: 'filters',
-                        ref: Filter::class,
+                        ref: ExportAllFilter::class,
                         type: 'object'
                     ),
                 ],
