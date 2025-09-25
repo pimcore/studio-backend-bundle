@@ -43,4 +43,5 @@ enum ColumnType: string
     case CLASSIFICATION_STORE_QUANTITY_VALUE_RANGE = 'classificationstore.quantity_value_range';
     case CLASSIFICATION_STORE_SELECT = 'classificationstore.select';
     case CLASSIFICATION_STORE_BOOLEAN = 'classificationstore.boolean';
+    case CRM_CONSENT = 'crm.consent';
 }
