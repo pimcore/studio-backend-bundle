@@ -113,7 +113,7 @@ final class RoleRepository implements RoleRepositoryInterface
                 [
                     'name' => '%' . $searchQuery . '%',
                     'id' => (int)$searchQuery,
-                    'type' => 'role'
+                    'type' => 'role',
                 ]
             );
             $roleListing->setOrder('ASC');
