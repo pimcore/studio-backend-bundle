@@ -42,7 +42,6 @@ final class AvailableLocalesController extends AbstractApiController
     }
 
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_available_locales', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TRANSLATIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'translation_get_available_locales',

@@ -17,11 +17,14 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
 use function in_array;
@@ -35,6 +38,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     public function __construct(
         private Connection $db,
         private AdminResolverInterface $adminResolver,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -44,9 +48,16 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     public function createTranslations(bool $throwError, array $translationData): void
     {
         $languages = $this->adminResolver->getLanguages();
+        $hasPermissions = $this->securityService->getCurrentUser()->isAllowed(UserPermissions::TRANSLATIONS->value);
 
         /** @var CreateTranslationData $translation */
         foreach ($translationData as $translation) {
+            $domain = $translation->getDomain();
+            if ($domain !== TranslatorServiceInterface::DOMAIN && $hasPermissions === false
+            ) {
+                throw new ForbiddenException('You do not have required permissions for this action');
+            }
+
             if ($this->getTranslationByKey($translation->getKey(), $translation->getDomain()) !== null) {
                 if ($throwError) {
                     throw new ElementExistsException(
