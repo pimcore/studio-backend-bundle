@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdF
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\ClassificationStoreFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
@@ -242,9 +243,9 @@ final class DataObjectQuery implements DataObjectQueryInterface
         return $this;
     }
 
-    public function booleanFilter(string $fieldName, null|bool $value): self
+    public function booleanFilter(string $fieldName, array $values): self
     {
-        $this->search->addModifier(new BooleanFilter($fieldName, $value));
+        $this->search->addModifier(new BooleanMultiSelectFilter($fieldName, $values));
 
         return $this;
     }
@@ -258,6 +259,7 @@ final class DataObjectQuery implements DataObjectQueryInterface
         IntegerFilter|
         MultiSelectFilter|
         NumberRangeFilter|
+        BooleanMultiSelectFilter|
         WildcardSearch $subModifier,
         ?string $locale = null
     ): self {
@@ -302,6 +304,16 @@ final class DataObjectQuery implements DataObjectQueryInterface
         bool $enablePqlFieldNameResolution = true
     ): self {
         $this->search->addModifier(new NumberRangeFilter($fieldName, $min, $max, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterMultiSelect(
+        string $fieldName,
+        array $values,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new MultiSelectFilter($fieldName, $values, $enablePqlFieldNameResolution));
 
         return $this;
     }

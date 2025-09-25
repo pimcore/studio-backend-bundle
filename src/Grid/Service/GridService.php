@@ -267,7 +267,7 @@ final class GridService implements GridServiceInterface
     {
         return array_map(
             static function (Column $column) use ($withGroup) {
-                if (!$column->getGroup()) {
+                if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
 

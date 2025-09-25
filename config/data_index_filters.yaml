@@ -65,6 +65,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\NumberFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SelectFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
@@ -91,6 +94,12 @@ services:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\InputQuantityValueFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\SelectFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\BooleanFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   # Asset Metadata
