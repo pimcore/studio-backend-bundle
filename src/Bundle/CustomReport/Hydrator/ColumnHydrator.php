@@ -34,7 +34,10 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
         );
     }
 
-    public function getCustomReportColumnConfiguration(array $columns): array
+    /**
+     * @param ColumnInformation[] $metaData
+     */
+    public function getCustomReportColumnConfiguration(array $columns, array $metaData): array
     {
         $columnConfig = [];
         foreach ($columns as $column) {

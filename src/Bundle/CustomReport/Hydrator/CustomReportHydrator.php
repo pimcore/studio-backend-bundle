@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 
 /**
  * @internal
@@ -26,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTr
 final readonly class CustomReportHydrator implements CustomReportHydratorInterface
 {
     public function __construct(
+        private AdapterServiceInterface $adapterService,
         private ColumnHydratorInterface $columnHydrator,
     ) {
     }
@@ -55,13 +57,15 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
 
     public function extractReportDetails(Config $report): CustomReportDetails
     {
+        $adapter = $this->adapterService->getAdapter($report);
+        $metadata = $adapter->getColumnsWithMetadata($report->getDataSourceConfig());
+        $columnNames = array_map(static fn ($column) => $column->getName(), $metadata);
+        $columnMap = array_combine($columnNames, $metadata);
 
         return new CustomReportDetails(
             $report->getName(),
             $report->getSql(),
-            $this->columnHydrator->getCustomReportColumnConfiguration(
-                $report->getColumnConfiguration()
-            ),
+            $this->columnHydrator->getCustomReportColumnConfiguration($report->getColumnConfiguration(), $columnMap),
             $report->getNiceName(),
             $report->getGroup(),
             $report->getGroupIconClass(),

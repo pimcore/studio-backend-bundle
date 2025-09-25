@@ -38,7 +38,7 @@ final readonly class CustomReportUpdate
         #[Property(
             description: 'Configuration for columns to be displayed in report',
             type: 'array',
-            items: new Items(CustomReportColumnConfiguration::class)
+            items: new Items(CustomReportColumnConfigurationUpdate::class)
         )]
         private array $columnConfigurations,
         #[Property(description: 'Label/nice name of report', type: 'string', example: 'Attributes')]

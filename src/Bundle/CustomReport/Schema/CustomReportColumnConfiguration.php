@@ -22,93 +22,76 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'BundleCustomReportsColumnConfiguration',
     title: 'Bundle Custom Reports Column Configuration',
-    required: [
-        'name', 'display', 'export', 'order', 'label', 'action',
-        'id', 'width', 'displayType', 'filterType', 'filterDrilldown',
-    ],
+    required: ['disableOrderBy', 'disableFilterable', 'disableDropdownFilterable', 'disableLabel'],
     type: 'object',
 )]
-final readonly class CustomReportColumnConfiguration
+final readonly class CustomReportColumnConfiguration extends CustomReportColumnConfigurationUpdate
 {
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'attributesAvailable')]
-        private string $name,
+        string $name,
         #[Property(description: 'Display column', type: 'bool', example: true)]
-        private bool $display,
+        bool $display,
         #[Property(description: 'Whether the column should be included in exports', type: 'bool', example: true)]
-        private bool $export,
+        bool $export,
         #[Property(description: 'Order', type: 'bool', example: true)]
-        private bool $order,
+        bool $order,
         #[Property(description: 'Label/display name of column', type: 'string', example: 'Attributes')]
-        private string $label,
+        string $label,
         #[Property(description: 'Action of the column', type: 'string', example: 'openObject')]
-        private string $action,
+        string $action,
         #[Property(description: 'Id', type: 'string', example: '401-3')]
-        private string $id,
+        string $id,
         #[Property(description: 'Width of the column', type: 'integer', example: 200)]
-        private ?int $width = null,
+        ?int $width = null,
         #[Property(description: 'Display type of the column', type: 'string', example: 'text')]
-        private ?string $displayType = null,
+        ?string $displayType = null,
         #[Property(description: 'Type of the filter', type: 'string', example: 'numeric')]
-        private ?string $filterType = null,
+        ?string $filterType = null,
         #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter')]
-        private ?string $filterDrilldown = null,
+        ?string $filterDrilldown = null,
+        #[Property(description: 'Disable order by', type: 'bool', example: false)]
+        private bool $disableOrderBy = false,
+        #[Property(description: 'Disable filterable', type: 'bool', example: false)]
+        private bool $disableFilterable = false,
+        #[Property(description: 'Disable dropdown filterable', type: 'bool', example: false)]
+        private bool $disableDropdownFilterable = false,
+        #[Property(description: 'Disable label', type: 'bool', example: false)]
+        private bool $disableLabel = false,
     ) {
-
+        parent::__construct(
+            name: $name,
+            display: $display,
+            export: $export,
+            order: $order,
+            label: $label,
+            action: $action,
+            id: $id,
+            width: $width,
+            displayType: $displayType,
+            filterType: $filterType,
+            filterDrilldown: $filterDrilldown
+        );
     }
 
-    public function getName(): string
+
+    public function isDisableOrderBy(): bool
     {
-        return $this->name;
+        return $this->disableOrderBy;
     }
 
-    public function getDisplay(): bool
+    public function isDisableFilterable(): bool
     {
-        return $this->display;
+        return $this->disableFilterable;
     }
 
-    public function getDisplayType(): ?string
+    public function isDisableDropdownFilterable(): bool
     {
-        return $this->displayType;
+        return $this->disableDropdownFilterable;
     }
 
-    public function getExport(): bool
+    public function isDisableLabel(): bool
     {
-        return $this->export;
-    }
-
-    public function getOrder(): bool
-    {
-        return $this->order;
-    }
-
-    public function getLabel(): string
-    {
-        return $this->label;
-    }
-
-    public function getAction(): string
-    {
-        return $this->action;
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    public function getWidth(): ?int
-    {
-        return $this->width;
-    }
-
-    public function getFilterType(): ?string
-    {
-        return $this->filterType;
-    }
-
-    public function getFilterDrilldown(): ?string
-    {
-        return $this->filterDrilldown;
+        return $this->disableLabel;
     }
 }
