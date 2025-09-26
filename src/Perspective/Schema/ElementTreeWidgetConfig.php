@@ -21,8 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContex
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
