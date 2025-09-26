@@ -106,15 +106,16 @@ final class RoleRepository implements RoleRepositoryInterface
      */
     public function searchRoles(string $searchQuery): array
     {
-        $q = '%' . $searchQuery . '%';
-
         try {
             $roleListing = new Listing();
             $roleListing->setCondition(
-                'name LIKE ? OR id = ?',
-                [$q, (int)$searchQuery]
+                '(name LIKE :name OR id = :id) AND `type` = :type',
+                [
+                    'name' => '%' . $searchQuery . '%',
+                    'id' => (int)$searchQuery,
+                    'type' => 'role',
+                ]
             );
-            $roleListing->addConditionParam('`type` = ?', ['role']);
             $roleListing->setOrder('ASC');
             $roleListing->setOrderKey('name');
             $roleListing->load();
