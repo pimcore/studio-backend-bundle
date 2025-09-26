@@ -17,12 +17,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
+use Throwable;
+use function sprintf;
 
 final class TwigOperator implements TransformerInterface
 {
     public function __construct(
         private readonly TemplateGeneratorInterface $templateGenerator
-    ) {}
+    ) {
+    }
 
     public function transform(array $value, array $config): array
     {
@@ -32,7 +35,7 @@ final class TwigOperator implements TransformerInterface
             try {
                 $rendered = $this->templateGenerator->generate($template, ['value' => $val->getValue()]);
                 $val->setValue($rendered);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 throw new TransformerException(
                     $this->getName(),
                     sprintf(

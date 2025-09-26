@@ -14,9 +14,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Twig\Initializers;
 
+use Pimcore\Twig\Sandbox\SecurityPolicy;
 use Twig\Environment;
 use Twig\Extension\SandboxExtension;
-use Pimcore\Twig\Sandbox\SecurityPolicy;
 
 final class SandboxExtensionInitializer implements SandboxExtensionInitializerInterface
 {
@@ -25,17 +25,19 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
         private readonly array $allowedTags,
         private readonly array $allowedFilters,
         private readonly array $allowedFunctions
-    ) {}
+    ) {
+    }
 
     public function initialize(): SandboxExtension
     {
         $securityPolicy = new SecurityPolicy(
-            $this->allowedTags, 
-            $this->allowedFilters, 
+            $this->allowedTags,
+            $this->allowedFilters,
             $this->allowedFunctions
         );
         $sandbox = $this->twig->getExtension(SandboxExtension::class);
         $sandbox->setSecurityPolicy($securityPolicy);
+
         return $sandbox;
     }
 }
