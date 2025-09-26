@@ -31,20 +31,28 @@ final class SubString implements TransformerInterface
         if (!isset($config['start']) || !is_int($config['start'])) {
             throw new TransformerException(
                 $this->getName(),
+<<<<<<< HEAD
                 sprintf(
                     'Missing or invalid "start" configuration (must be an integer) for %s transformer.',
                     $this->getKey()
                 )
+=======
+                sprintf('Missing or invalid "start" configuration for %s transformer.', $this->getKey())
+>>>>>>> deadcbd0 (Transformers and Testing)
             );
         }
 
         if (!isset($config['length']) || !is_int($config['length'])) {
             throw new TransformerException(
                 $this->getName(),
+<<<<<<< HEAD
                 sprintf(
                     'Missing or invalid "length" configuration (must be an integer) for %s transformer.',
                     $this->getKey()
                 )
+=======
+                sprintf('Missing or invalid "length" configuration for %s transformer.', $this->getKey())
+>>>>>>> deadcbd0 (Transformers and Testing)
             );
         }
 
@@ -55,8 +63,12 @@ final class SubString implements TransformerInterface
         foreach ($value as $val) {
             $data = $val->getValue();
             if (!is_string($data)) {
+<<<<<<< HEAD
                 $results[] = new AdvancedValue($val->getType(), $data);
 
+=======
+                $results[] = new AdvancedValue('string', $data);
+>>>>>>> deadcbd0 (Transformers and Testing)
                 continue;
             }
 
@@ -88,4 +100,8 @@ final class SubString implements TransformerInterface
             'length' => ['type' => 'number', 'label' => 'Length', 'default' => 0],
         ];
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> deadcbd0 (Transformers and Testing)

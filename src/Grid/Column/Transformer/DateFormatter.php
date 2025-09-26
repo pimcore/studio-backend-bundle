@@ -18,7 +18,10 @@ use DateTimeInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+<<<<<<< HEAD
 use function is_int;
+=======
+>>>>>>> deadcbd0 (Transformers and Testing)
 use function is_string;
 use function sprintf;
 
@@ -32,16 +35,24 @@ final class DateFormatter implements TransformerInterface
         if (!isset($config['format']) || !is_string($config['format'])) {
             throw new TransformerException(
                 $this->getName(),
+<<<<<<< HEAD
                 sprintf(
                     'Missing or invalid "format" configuration (must be a string) for %s transformer.',
                     $this->getKey()
                 )
+=======
+                sprintf('Missing or invalid "format" configuration for %s transformer.', $this->getKey())
+>>>>>>> deadcbd0 (Transformers and Testing)
             );
         }
 
         $format = $config['format'];
         $results = [];
 
+<<<<<<< HEAD
+=======
+        
+>>>>>>> deadcbd0 (Transformers and Testing)
         foreach ($value as $val) {
             $data = $val->getValue();
 
@@ -50,14 +61,22 @@ final class DateFormatter implements TransformerInterface
             }
 
             if (!($data instanceof DateTimeInterface)) {
+<<<<<<< HEAD
                 $results[] = new AdvancedValue($val->getType(), $data);
 
+=======
+                $results[] = new AdvancedValue('string', '');
+>>>>>>> deadcbd0 (Transformers and Testing)
                 continue;
             }
 
             $results[] = new AdvancedValue('string', $data->format($format));
         }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> deadcbd0 (Transformers and Testing)
         return $results;
     }
 
@@ -82,4 +101,8 @@ final class DateFormatter implements TransformerInterface
             'format' => ['type' => 'input', 'label' => 'Format', 'default' => 'Y-m-d'],
         ];
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> deadcbd0 (Transformers and Testing)
