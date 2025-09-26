@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator;
 
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\ColumnInformation;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportColumnInformation;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 use function is_int;
 
 /**
@@ -23,6 +25,11 @@ use function is_int;
  */
 final readonly class ColumnHydrator implements ColumnHydratorInterface
 {
+    public function __construct(
+        private AdapterServiceInterface $adapterService,
+    ) {
+    }
+
     public function hydrateColumnInfo(ColumnInformation $information): CustomReportColumnInformation
     {
         return new CustomReportColumnInformation(
@@ -34,13 +41,13 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
         );
     }
 
-    /**
-     * @param ColumnInformation[] $metaData
-     */
-    public function getCustomReportColumnConfiguration(array $columns, array $metaData): array
+    public function getCustomReportColumnConfiguration(Config $report): array
     {
         $columnConfig = [];
-        foreach ($columns as $column) {
+        $metadataMap = $this->getMetadataMap($report);
+        foreach ($report->getColumnConfiguration() as $column) {
+            /* @var ColumnInformation|null $metadata */
+            $metadata = $metadataMap[$column['name']] ?? null;
             $width = $column['width'] ?? null;
             $columnConfig[] = new CustomReportColumnConfiguration(
                 $column['name'] ?? '',
@@ -53,10 +60,23 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
                 is_int($width) ? $width : null,
                 $column['displayType'] ?? null,
                 $column['filter'] ?? null,
-                $column['filter_drilldown'] ?? null
+                $column['filter_drilldown'] ?? null,
+                $metadata?->isDisableOrderBy(),
+                $metadata?->isDisableFilterable(),
+                $metadata?->isDisableDropdownFilterable(),
+                $metadata?->isDisableLabel()
             );
         }
 
         return $columnConfig;
+    }
+
+    private function getMetadataMap(Config $report): array
+    {
+        $adapter = $this->adapterService->getAdapter($report);
+        $metadata = $adapter->getColumnsWithMetadata($report->getDataSourceConfig());
+        $columnNames = array_map(static fn ($column) => $column->getName(), $metadata);
+
+        return array_combine($columnNames, $metadata);
     }
 }
