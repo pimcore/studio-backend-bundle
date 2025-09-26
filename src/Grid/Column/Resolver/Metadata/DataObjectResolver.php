@@ -17,25 +17,44 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInter
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\CoreLocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class DataObjectResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
+final class DataObjectResolver implements
+    ColumnResolverInterface,
+    StudioElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
+    use CoreLocalizedValueTrait;
 
     public function __construct(
         private readonly DataObjectServiceInterface $dataObjectService
     ) {
+    }
+
+    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    {
+        $dataObject = $this->getCoreLocalizedValue($column, $element);
+
+        if (!$dataObject instanceof DataObject) {
+            return $this->getColumnData($column, null, $this->getType());
+        }
+
+        return $this->getColumnData($column, $dataObject->getFullPath(), $this->getType());
     }
 
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
