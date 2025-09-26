@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -23,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -32,6 +34,7 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
 {
     public function __construct(
         private ContextPermissionServiceInterface $contextPermissionService,
+        private ElementDataServiceInterface $elementDataService,
         private ElementServiceInterface $elementService,
         private IconServiceInterface $iconService,
         private LoggerInterface $pimcoreLogger,
@@ -55,8 +58,7 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
             ),
             $this->iconService->getIconForValue($widgetData['icon']),
             $widgetData['elementType'],
-            $widgetData['rootFolder'],
-            $this->getRootFolderId($widgetData),
+            $this->getRootFolder($widgetData),
             $widgetData['showRoot'],
             $widgetData['classes'],
             $widgetData['pql'],
@@ -65,23 +67,58 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
         );
     }
 
-    private function getRootFolderId(array $widgetData): int
+    private function getRootFolder(array $widgetData): RelatedElementData
     {
-        $folderId = ElementFolderIds::ROOT->value;
-        if ($widgetData['rootFolder'] === '' || $widgetData['rootFolder'] === ElementFolderPaths::ROOT->value) {
-            return $folderId;
+        $elementType = $widgetData['elementType'] === ElementTypes::TYPE_DATA_OBJECT ?
+            ElementTypes::TYPE_OBJECT :
+            $widgetData['elementType']
+        ;
+
+        if ($this->isDefaultRootFolder($widgetData['rootFolder'])) {
+            return $this->createDefaultRootFolder($elementType);
         }
 
+        return $this->resolveCustomRootFolder($widgetData, $elementType) ??
+            $this->createDefaultRootFolder($elementType);
+    }
+
+    private function isDefaultRootFolder(string $rootFolder): bool
+    {
+        return $rootFolder === '' || $rootFolder === ElementFolderPaths::ROOT->value;
+    }
+
+    private function createDefaultRootFolder(string $elementType): RelatedElementData
+    {
+        return new RelatedElementData(
+            ElementFolderIds::ROOT->value,
+            $elementType,
+            ElementTypes::TYPE_FOLDER,
+            '/',
+            null
+        );
+    }
+
+    private function resolveCustomRootFolder(array $widgetData, string $elementType): ?RelatedElementData
+    {
         try {
-            $folderId = $this->elementService->getElementIdByPath(
-                $widgetData['elementType'],
-                new PathParameter($widgetData['rootFolder']),
+            $folder = $this->elementService->getAllowedElementByPath(
+                $elementType,
+                $widgetData['rootFolder'],
                 $this->securityService->getCurrentUser()
             );
-        } catch (NotFoundException $exception) {
-            $this->pimcoreLogger->error($exception->getMessage());
-        }
 
-        return $folderId;
+            return $this->elementDataService->getRelatedElementData($folder);
+        } catch (NotFoundException $exception) {
+            $this->pimcoreLogger->error(
+                'Failed to resolve custom root folder: {path} for element type: {elementType}. Error: {error}',
+                [
+                    'path' => $widgetData['rootFolder'],
+                    'elementType' => $elementType,
+                    'error' => $exception->getMessage(),
+                ]
+            );
+
+            return null;
+        }
     }
 }
