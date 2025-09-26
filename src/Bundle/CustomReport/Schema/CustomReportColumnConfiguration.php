@@ -74,7 +74,6 @@ final readonly class CustomReportColumnConfiguration extends CustomReportColumnC
         );
     }
 
-
     public function isDisableOrderBy(): bool
     {
         return $this->disableOrderBy;
