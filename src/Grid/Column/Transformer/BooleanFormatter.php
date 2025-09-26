@@ -50,6 +50,7 @@ final class BooleanFormatter implements TransformerInterface
             if (!is_bool($data)) {
                 $originalType = $val->getType();
                 $results[] = new AdvancedValue($originalType, $data);
+
                 continue;
             }
 

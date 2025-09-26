@@ -51,6 +51,7 @@ final class StringReplace implements TransformerInterface
             if (!is_string($data)) {
                 $originalType = $val->getType();
                 $results[] = new AdvancedValue($originalType, $data);
+
                 continue;
             }
 

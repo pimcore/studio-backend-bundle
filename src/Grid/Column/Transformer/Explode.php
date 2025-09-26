@@ -42,6 +42,7 @@ final class Explode implements TransformerInterface
             if (!is_string($data)) {
                 $originalType = $val->getType();
                 $results[] = new AdvancedValue($originalType, $data);
+
                 continue;
             }
 
