@@ -652,7 +652,6 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
-
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
     {
         $node->children()
