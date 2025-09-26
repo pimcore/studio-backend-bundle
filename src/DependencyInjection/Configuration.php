@@ -85,6 +85,7 @@ class Configuration implements ConfigurationInterface
         $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
+        $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
@@ -591,6 +592,66 @@ class Configuration implements ConfigurationInterface
             ->end()
         ->end();
     }
+
+    private function addTwigSandboxNode(): ArrayNodeDefinition
+    {
+        $treeBuilder = new TreeBuilder('twig');
+        $node = $treeBuilder->getRootNode();
+        $node->info('Configure the Twig sandbox policy.');
+        $node->addDefaultsIfNotSet();
+
+        $childNode = $node->children();
+        $sandboxNode = $childNode->arrayNode('sandbox_security_policy');
+        $sandboxNode->addDefaultsIfNotSet();
+
+        $sandboxChildNode = $sandboxNode->children();
+        $sandboxChildNode->arrayNode('tags')
+            ->scalarPrototype()->end()
+            ->defaultValue(
+                [
+                    'if',
+                    'for',
+                    'set',
+                ]
+            );
+
+        $sandboxChildNode->arrayNode('filters')
+            ->scalarPrototype()->end()
+            ->defaultValue(
+                [
+                    'escape',
+                    'raw',
+                    'date',
+                    'length',
+                    'upper',
+                    'lower',
+                    'title',
+                    'number_format',
+                    'capitalize',
+                    'first',
+                    'last',
+                    'trim',
+                    'join',
+                    'replace',
+                    'striptags',
+                ]
+            );
+
+        $sandboxChildNode->arrayNode('functions')
+            ->scalarPrototype()->end()
+            ->defaultValue(
+                [
+                    'range',
+                    'date',
+                    'max',
+                    'min',
+                    'random',
+                ]
+            );
+
+        return $node;
+    }
+
 
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
     {
