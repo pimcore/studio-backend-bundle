@@ -405,3 +405,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Explode:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]

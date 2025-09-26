@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -174,6 +175,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$serverSideUrl' => $config['mercure_settings']['hub_url_server'],
             '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
         ]);
+
+        $this->populateTwigSandboxExtension($config, $container);
     }
 
     /**
@@ -280,6 +283,24 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         foreach ($configs as $config) {
             $configLoader->load($config);
         }
+    }
+
+    private function populateTwigSandboxExtension(array $config, ContainerBuilder $container): void
+    {
+        $definition = $container->getDefinition(SandboxExtensionInitializerInterface::class);
+
+        $definition->setArgument(
+            '$allowedTags',
+            $config['twig']['sandbox_security_policy']['tags']
+        );
+        $definition->setArgument(
+            '$allowedFilters',
+            $config['twig']['sandbox_security_policy']['filters']
+        );
+        $definition->setArgument(
+            '$allowedFunctions',
+            $config['twig']['sandbox_security_policy']['functions']
+        );
     }
 
     /**
