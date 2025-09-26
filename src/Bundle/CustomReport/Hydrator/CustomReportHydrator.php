@@ -55,13 +55,10 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
 
     public function extractReportDetails(Config $report): CustomReportDetails
     {
-
         return new CustomReportDetails(
             $report->getName(),
             $report->getSql(),
-            $this->columnHydrator->getCustomReportColumnConfiguration(
-                $report->getColumnConfiguration()
-            ),
+            $this->columnHydrator->getCustomReportColumnConfiguration($report),
             $report->getNiceName(),
             $report->getGroup(),
             $report->getGroupIconClass(),

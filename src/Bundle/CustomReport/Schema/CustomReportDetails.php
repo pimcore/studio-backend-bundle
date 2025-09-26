@@ -32,6 +32,7 @@ use stdClass;
         'dataSourceConfig',
         'columnConfigurations',
         'niceName',
+        'group',
         'groupIconClass',
         'iconClass',
         'menuShortcut',
