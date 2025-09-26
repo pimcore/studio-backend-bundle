@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\PatchDataObjectFolderRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
@@ -47,7 +48,7 @@ final class PatchFolderController extends AbstractApiController
     }
 
     /**
-     * @throws UserNotFoundException
+     * @throws InvalidArgumentException|UserNotFoundException
      */
     #[Route('/data-objects/folder', name: 'pimcore_studio_api_patch_data_object_folder', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]

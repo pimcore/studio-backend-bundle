@@ -98,8 +98,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
             $dataObjectData = [
                 $dataObject->getId() => $this->gridService->getGridValuesForElement(
                     $columnCollection,
-                    $dataObject,
                     ElementTypes::TYPE_OBJECT,
+                    $dataObject->getId(),
                     true
                 ),
             ];

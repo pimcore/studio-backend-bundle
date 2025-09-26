@@ -11,20 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
-
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\UserInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
 
 /**
  * @internal
  */
-interface UserPermissionServiceInterface
+interface ClassIdParametersInterface
 {
-    public function getAvailablePermissions(): Collection;
-
-    /**
-     * @return array<string>
-     */
-    public function getAllowedUserPermissions(UserInterface $user): array;
+    public function getClassId(): ?string;
 }

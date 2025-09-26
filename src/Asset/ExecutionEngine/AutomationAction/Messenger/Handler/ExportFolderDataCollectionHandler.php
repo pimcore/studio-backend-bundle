@@ -76,7 +76,8 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
 
         $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
 
-        $assets = $this->gridSearch->searchAssetsForUser(
+        $assets = $this->gridSearch->searchElementIdsForUser(
+            ElementTypes::TYPE_ASSET,
             new GridParameter(
                 $jobFolder['id'],
                 $columns,
@@ -85,7 +86,7 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
             $user
         );
 
-        if (count($assets->getItems()) === 0) {
+        if (count($assets) === 0) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
 
             return;
@@ -98,13 +99,13 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
             $columnsDefinitions
         );
 
-        foreach ($assets->getItems() as $asset) {
+        foreach ($assets as $assetId) {
             try {
                 $assetData = [
-                    $asset->getId() => $this->gridService->getGridValuesForElement(
+                    $assetId => $this->gridService->getGridValuesForElement(
                         $columnCollection,
-                        $asset,
                         ElementTypes::TYPE_ASSET,
+                        $assetId,
                         true
                     ),
                 ];
@@ -114,7 +115,7 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                     [
-                        'id' => $asset->getId(),
+                        'id' => $assetId,
                         'message' => $e->getMessage(),
                     ]
                 ));

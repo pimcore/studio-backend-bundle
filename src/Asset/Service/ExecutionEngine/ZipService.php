@@ -159,7 +159,8 @@ final readonly class ZipService implements ZipServiceInterface
         $assets = [];
         foreach ($folders as $folder) {
 
-            $result = $this->gridSearch->searchAssetsForUser(
+            $ids = $this->gridSearch->searchElementIdsForUser(
+                ElementTypes::TYPE_ASSET,
                 new GridParameter(
                     $folder->getId(),
                     [],
@@ -167,10 +168,6 @@ final readonly class ZipService implements ZipServiceInterface
                 ),
                 $this->securityService->getCurrentUser()
             );
-
-            $ids = array_map(static function ($item) {
-                return $item->getId();
-            }, $result->getItems());
 
             $assets = [...$assets, ...$ids];
             $this->validateDownloadItems($assets);

@@ -73,6 +73,10 @@ final readonly class ExportService implements ExportServiceInterface
             StepConfig::CONFIG_FILTERS->value => $exportParameter->getFilters(),
         ];
 
+        if ($exportParameter->getElementType() === ElementTypes::TYPE_OBJECT) {
+            $collectionSettings[StepConfig::ELEMENT_CLASS_ID->value] = $exportParameter->getClassId();
+        }
+
         $creationSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
             StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
