@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\CoreLocalizedVal
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 

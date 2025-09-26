@@ -46,6 +46,7 @@ final class SelectResolver implements
             $this->getType()
         );
     }
+
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         return $this->getColumnData(

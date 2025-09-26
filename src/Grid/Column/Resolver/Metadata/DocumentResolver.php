@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\CoreLocalizedVal
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 
@@ -41,6 +40,7 @@ final class DocumentResolver implements
     use ColumnDataTrait;
     use LocalizedValueTrait;
     use CoreLocalizedValueTrait;
+
     public function __construct(
         private readonly DocumentServiceInterface $documentService
     ) {

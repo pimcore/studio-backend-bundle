@@ -46,6 +46,7 @@ final class CheckboxResolver implements
             $this->getType()
         );
     }
+
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         $value = $this->getLocalizedValue($column, $element);

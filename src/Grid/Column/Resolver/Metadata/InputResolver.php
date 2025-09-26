@@ -47,7 +47,6 @@ final class InputResolver implements
         );
     }
 
-
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         return $this->getColumnData(

@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
-use Exception;
 
 /**
  * @internal
@@ -52,7 +51,6 @@ final class AssetResolver implements
 
         return $this->getColumnData($column, $asset->getFullPath(), $this->getType());
     }
-
 
     public function __construct(
         private readonly AssetServiceInterface $assetService
