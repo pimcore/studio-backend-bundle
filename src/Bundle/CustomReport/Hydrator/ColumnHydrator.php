@@ -46,7 +46,7 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
         $columnConfig = [];
         $metadataMap = $this->getMetadataMap($report);
         foreach ($report->getColumnConfiguration() as $column) {
-            // @var ColumnInformation|null $metadata
+            /** @var ColumnInformation|null $metadata */
             $metadata = $metadataMap[$column['name']] ?? null;
             $width = $column['width'] ?? null;
             $columnConfig[] = new CustomReportColumnConfiguration(
