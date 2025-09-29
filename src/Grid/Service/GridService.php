@@ -270,8 +270,9 @@ final class GridService implements GridServiceInterface
                 if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
+                $firstGroup = $column->getGroup()[0] ?? '';
 
-                return $column->getKey() . ($withGroup ? '~' . $column->getGroup() : '');
+                return $column->getKey() . ($withGroup ? '~' . $firstGroup : '');
             },
             $columnCollection->getColumns()
         );

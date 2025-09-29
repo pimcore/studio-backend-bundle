@@ -41,8 +41,8 @@ final readonly class Column
         private ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'system.id')]
         private string $type,
-        #[Property(description: 'Group', type: 'string', example: 'system')]
-        private ?string $group,
+        #[Property(description: 'Group', type: 'array', items: new Items(type: 'string'), example: ['system'])]
+        private ?array $group,
         #[Property(
             description: 'Config',
             type: 'array',
@@ -72,7 +72,7 @@ final readonly class Column
         return $this->type;
     }
 
-    public function getGroup(): ?string
+    public function getGroup(): ?array
     {
         return $this->group;
     }
