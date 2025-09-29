@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator;
 
+use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\ColumnInformation;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportColumnConfiguration;
@@ -61,10 +62,10 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
                 $column['displayType'] ?? null,
                 $column['filter'] ?? null,
                 $column['filter_drilldown'] ?? null,
-                $metadata?->isDisableOrderBy(),
-                $metadata?->isDisableFilterable(),
-                $metadata?->isDisableDropdownFilterable(),
-                $metadata?->isDisableLabel()
+                $metadata && $metadata->isDisableOrderBy(),
+                $metadata && $metadata->isDisableFilterable(),
+                $metadata && $metadata->isDisableDropdownFilterable(),
+                $metadata && $metadata->isDisableLabel()
             );
         }
 
@@ -74,9 +75,13 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
     private function getMetadataMap(Config $report): array
     {
         $adapter = $this->adapterService->getAdapter($report);
-        $metadata = $adapter->getColumnsWithMetadata($report->getDataSourceConfig());
-        $columnNames = array_map(static fn ($column) => $column->getName(), $metadata);
+        try {
+            $metadata = $adapter->getColumnsWithMetadata($report->getDataSourceConfig());
+            $columnNames = array_map(static fn ($column) => $column->getName(), $metadata);
 
-        return array_combine($columnNames, $metadata);
+            return array_combine($columnNames, $metadata);
+        } catch (Exception) {
+            return [];
+        }
     }
 }
