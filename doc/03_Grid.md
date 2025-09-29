@@ -194,6 +194,7 @@ The `relationField` is a relation field in the object. You can pass the `relatio
                 }
             ]
         }
+
     }
 ]
 ...
@@ -324,4 +325,37 @@ Available configurations:
 ]
 ...
 ```
+#### Twig Operator Transformer
+
+Available configurations:
+
+- `template` - a valid Twig template string. Use `{{ value }}` to reference the column data. You can also apply Twig filters like `join`, `upper`, `lower`, etc.
+
+```json
+"columns": [
+  {
+    "key": "combinedColors",
+    "locale": "en",
+    "type": "dataobject.advanced",
+    "config": {
+      "title": "Available Colors",
+      "advancedColumns": [
+        {
+          "key": "simpleField",
+          "config": {
+            "field": "color"
+          }
+        }
+      ],
+      "transformers": [
+        {
+          "key": "twigOperator",
+          "config": {
+            "template": "Colors: {{ value|join(', ') }}"
+          }
+        }
+      ]
+    }
+  }
+]
 
