@@ -29,26 +29,39 @@ final class TwigOperator implements TransformerInterface
 
     public function transform(array $value, array $config): array
     {
+        if (isset($config['template']) && !is_string($config['template'])) {
+            throw new TransformerException(
+                $this->getName(),
+                sprintf(
+                    'Invalid "template" configuration (must be a string) for %s transformer. ' .
+                    'Example: "template": "{{ value|date(\'d.m.Y H:i\') }}"',
+                    $this->getKey()
+                )
+            );
+        }
+
         $template = $config['template'] ?? '{{ value }}';
 
+        $results = [];
+
         foreach ($value as $val) {
-            try {
-                $rendered = $this->templateGenerator->generate($template, ['value' => $val->getValue()]);
-                $val->setValue($rendered);
-            } catch (Throwable $e) {
+            $rendered = $this->templateGenerator->generate($template, ['value' => $val->getValue()]);
+
+            if (!is_string($rendered)) {
                 throw new TransformerException(
                     $this->getName(),
                     sprintf(
-                        'Twig rendering failed for %s transformer: %s',
-                        $this->getKey(),
-                        $e->getMessage()
+                        'Twig rendering did not return a string for %s transformer.',
+                        $this->getKey()
                     )
                 );
-
             }
+
+            $val->setValue($rendered);
+            $results[] = $val;
         }
 
-        return $value;
+        return $results;
     }
 
     public function getName(): string

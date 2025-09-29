@@ -14,11 +14,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Twig;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
-use Throwable;
 use Twig\Environment;
 use Twig\Extension\SandboxExtension;
+use Twig\Error\Error as TwigError;
 use function sprintf;
 
 final class TemplateGenerator implements TemplateGeneratorInterface
@@ -34,16 +34,13 @@ final class TemplateGenerator implements TemplateGeneratorInterface
 
     public function generate(string $twigTemplate, array $arguments): string
     {
+        $this->sandboxExtension->enableSandbox();
         try {
-            $this->sandboxExtension->enableSandbox();
-
             return $this->twig->createTemplate($twigTemplate)->render($arguments);
-        } catch (Throwable $e) {
-            throw new TransformerException(
-                'TwigOperator',
+        } catch (TwigError $e) {
+            throw new InvalidTemplateException(
                 sprintf(
-                    'Invalid Twig template for %s transformer: %s',
-                    'twigOperator',
+                    'Invalid Twig template for TwigOperator: %s',
                     $e->getMessage()
                 )
             );
