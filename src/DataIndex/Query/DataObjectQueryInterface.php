@@ -55,4 +55,6 @@ interface DataObjectQueryInterface extends QueryInterface
         WildcardSearch $subModifier,
         ?string $locale
     ): self;
+
+    public function excludeVariants(): self;
 }

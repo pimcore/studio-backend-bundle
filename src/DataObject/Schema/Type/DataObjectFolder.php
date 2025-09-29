@@ -15,11 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type;
 
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
+    schema: 'DataObjectFolder',
     title: 'Data Object Folder',
+    required: ['hasWorkflowAvailable'],
     type: 'object'
 )]
 final class DataObjectFolder extends DataObject
 {
+    use WorkflowAvailableTrait;
 }

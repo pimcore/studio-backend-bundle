@@ -24,7 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'DataObjectVersion',
-    required: ['key', 'type', 'hasChildren', 'fullPath', 'index', 'className', 'published', 'objectData'],
+    required: [
+        'allowInheritance', 'showVariants', 'hasPreview', 'hasWorkflowAvailable',
+        'key', 'type', 'hasChildren', 'fullPath', 'index', 'allowVariants', 'className', 'published', 'objectData',
+    ],
     type: 'object'
 )]
 final class DataObjectVersion extends Element implements AdditionalAttributesInterface
@@ -60,6 +63,8 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
         private readonly ?bool $published = null,
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
+        #[Property(description: 'Allow variants', type: 'bool', example: false)]
+        private ?bool $allowVariants = null,
     ) {
         parent::__construct(
             $id,
@@ -118,5 +123,15 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
     public function getObjectData(): array
     {
         return $this->objectData;
+    }
+
+    public function getAllowVariants(): ?bool
+    {
+        return $this->allowVariants;
+    }
+
+    public function setAllowVariants(bool $allowVariants): void
+    {
+        $this->allowVariants = $allowVariants;
     }
 }

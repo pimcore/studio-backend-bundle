@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
@@ -54,6 +55,11 @@ final readonly class Schemas
     ];
 
     public const array DATA_OBJECTS = [
+        DataObjectDetail::class,
+        DataObjectFolder::class,
+    ];
+
+    public const array DATA_OBJECTS_COLLECTION = [
         DataObject::class,
         DataObjectFolder::class,
     ];

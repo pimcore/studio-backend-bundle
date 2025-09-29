@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
         'id',
         'parentId',
         'path',
+        'icon',
         'userOwner',
         'userModification',
         'locked',
