@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\User\Workspace\AbstractWorkspace;
 use Pimcore\Model\UserInterface;
+use function is_string;
 
 /**
  * @internal
@@ -101,7 +102,7 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
         return array_values(
             array_filter(
                 explode(',', $workspaceValue),
-                static fn(string $v): bool => $v !== ''
+                static fn (string $v): bool => $v !== ''
             )
         );
     }

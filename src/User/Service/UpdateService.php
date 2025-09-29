@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User\UserRoleInterface;
-use Pimcore\Model\User\Workspace\AbstractWorkspace;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;

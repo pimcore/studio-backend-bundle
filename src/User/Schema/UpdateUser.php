@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
     title: 'User',
     description: 'User Schema to update a User.',
     required: [
-        'email' ,'firstname', 'lastname', 'admin',
+        'email', 'firstname', 'lastname', 'admin',
         'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationRequired',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
