@@ -75,6 +75,7 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
     private function getMetadataMap(Config $report): array
     {
         $adapter = $this->adapterService->getAdapter($report);
+
         try {
             $metadata = $adapter->getColumnsWithMetadata($report->getDataSourceConfig());
             $columnNames = array_map(static fn ($column) => $column->getName(), $metadata);
