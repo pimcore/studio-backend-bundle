@@ -32,7 +32,7 @@ final class AnyOfDataObjects extends Property
             items: new Items(
                 anyOf: array_map(static function ($class) {
                     return new Schema(ref: $class);
-                }, Schemas::DATA_OBJECTS)
+                }, Schemas::DATA_OBJECTS_COLLECTION)
             )
         );
     }

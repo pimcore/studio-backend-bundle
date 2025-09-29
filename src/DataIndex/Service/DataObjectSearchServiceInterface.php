@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -30,7 +30,7 @@ interface DataObjectSearchServiceInterface
 {
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
 
-    public function getDataObjectById(int $id, ?UserInterface $user): DataObject|DataObjectFolder;
+    public function getDataObjectById(int $id, ?UserInterface $user): DataObjectDetail|DataObjectFolder;
 
     /**
      * @throws SearchException

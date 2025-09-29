@@ -26,7 +26,8 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchRes
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DataObjectHydratorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -73,7 +74,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectById(int $id, ?UserInterface $user = null): DataObject
+    public function getDataObjectById(int $id, ?UserInterface $user = null): DataObjectDetail|DataObjectFolder
     {
         try {
             /** @var User $user
@@ -88,7 +89,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
             throw new NotFoundException('DataObject', $id);
         }
 
-        return $this->hydratorService->hydrateDataObjects($dataObject);
+        return $this->hydratorService->hydrateDetailObjects($dataObject);
     }
 
     /**

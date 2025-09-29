@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -36,7 +36,7 @@ interface DataServiceInterface
      * @throws DatabaseException|NotFoundException
      */
     public function setObjectDetailData(
-        DataObjectFolder|DataObject|DataObjectVersion $dataObject,
+        DataObjectFolder|DataObjectDetail|DataObjectVersion $dataObject,
         DataObjectModel $element,
         ?DataObjectVersionModal $version = null,
     ): void;

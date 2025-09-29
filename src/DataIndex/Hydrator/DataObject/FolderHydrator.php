@@ -44,6 +44,7 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->getIndex(),
             $item->getChildrenSortBy(),
             $item->getChildrenSortOrder(),
+            null,
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),

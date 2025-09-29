@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\BooleanFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeVariantsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
@@ -95,6 +96,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function excludeFolders(): self
     {
         $this->search->addModifier(new ExcludeFoldersFilter());
+
+        return $this;
+    }
+
+    public function excludeVariants(): self
+    {
+        $this->search->addModifier(new ExcludeVariantsFilter());
 
         return $this;
     }
