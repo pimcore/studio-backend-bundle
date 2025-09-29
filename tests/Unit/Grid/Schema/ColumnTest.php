@@ -30,7 +30,7 @@ final class ColumnTest extends Unit
             key: 'name',
             locale: 'de',
             type: 'ttest',
-            group: 'test',
+            group: ['test'],
             config: [],
         );
 
@@ -46,7 +46,7 @@ final class ColumnTest extends Unit
             key: 'name',
             locale: 'de',
             type: 'ttest',
-            group: 'test',
+            group: ['test'],
             config: [
                 'advancedColumns' => [
                     [
@@ -72,7 +72,7 @@ final class ColumnTest extends Unit
             key: 'name',
             locale: 'de',
             type: 'ttest',
-            group: 'test',
+            group: ['test'],
             config: [
                 'advancedColumns' => [
                     [
