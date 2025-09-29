@@ -19,10 +19,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User\UserRoleInterface;
-use Pimcore\Model\User\Workspace\AbstractWorkspace;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
@@ -152,7 +153,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     /**
      * @template T of UserInterface|UserRoleInterface
      *
-     * @param UserWorkspace[] $objectWorkspacesToSet
+     * @param UserDataObjectWorkspace[] $objectWorkspacesToSet
      * @param T $user
      *
      * @throws ParseException
@@ -169,12 +170,14 @@ final readonly class UpdateService implements UpdateServiceInterface
         foreach ($objectWorkspacesToSet as $workspace) {
             $element = $this->elementServiceResolver->getElementByPath('object', $workspace->getCpath());
             if ($element) {
-                $workspaces[] = $this->setWorkspaceValues(
+                $hydrated = $this->setWorkspaceValues(
                     $workspace,
                     $element,
                     new DataObjectWorkspace(),
                     $user->getId()
                 );
+
+                $workspaces[] = $this->setDataObjectWorkspaceValues($workspace, $hydrated);
             }
         }
 
@@ -187,7 +190,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     /**
      * @template T of UserInterface|UserRoleInterface
      *
-     * @param UserWorkspace[] $documentWorkspacesToSet
+     * @param UserDocumentWorkspace[] $documentWorkspacesToSet
      * @param T $user
      *
      * @throws ParseException
@@ -204,12 +207,14 @@ final readonly class UpdateService implements UpdateServiceInterface
         foreach ($documentWorkspacesToSet as $workspace) {
             $element = $this->elementServiceResolver->getElementByPath('document', $workspace->getCpath());
             if ($element) {
-                $workspaces[] = $this->setWorkspaceValues(
+                $hydrated = $this->setWorkspaceValues(
                     $workspace,
                     $element,
                     new DocumentWorkspace(),
                     $user->getId()
                 );
+
+                $workspaces[] = $this->setDocumentWorkspaceValues($workspace, $hydrated);
             }
         }
 
@@ -256,9 +261,9 @@ final readonly class UpdateService implements UpdateServiceInterface
     private function setWorkspaceValues(
         UserWorkspace $params,
         ElementInterface $element,
-        AbstractWorkspace $workspace,
+        AssetWorkspace|DataObjectWorkspace|DocumentWorkspace $workspace,
         int $userId
-    ): AbstractWorkspace {
+    ): AssetWorkspace|DataObjectWorkspace|DocumentWorkspace {
         $workspace->setUserId($userId);
         $workspace->setCpath($element->getRealFullPath());
         $workspace->setCid($element->getId());
@@ -273,5 +278,40 @@ final readonly class UpdateService implements UpdateServiceInterface
         $workspace->setProperties($params->hasProperties());
 
         return $workspace;
+    }
+
+    private function setDataObjectWorkspaceValues(
+        UserDataObjectWorkspace $params,
+        DataObjectWorkspace $workspace
+    ): DataObjectWorkspace {
+        $hydrated = $this->setSpecialWorkspaceValues($params, $workspace);
+        $hydrated->setLEdit($this->transformLocalizedValues($params->getLocalizedEdit()));
+        $hydrated->setLView($this->transformLocalizedValues($params->getLocalizedView()));
+        $hydrated->setLayouts($this->transformLocalizedValues($params->getLayouts()));
+
+        return $hydrated;
+    }
+
+    private function setDocumentWorkspaceValues(
+        UserDocumentWorkspace $params,
+        DocumentWorkspace $workspace
+    ): DocumentWorkspace {
+
+        return $this->setSpecialWorkspaceValues($params, $workspace);
+    }
+
+    private function setSpecialWorkspaceValues(
+        UserDocumentWorkspace|UserDataObjectWorkspace $params,
+        DataObjectWorkspace|DocumentWorkspace $workspace
+    ): DataObjectWorkspace|DocumentWorkspace {
+        $workspace->setUnpublish($params->isUnpublish());
+        $workspace->setSave($params->isSave());
+
+        return $workspace;
+    }
+
+    private function transformLocalizedValues(?array $workspaceValue): ?string
+    {
+        return empty($workspaceValue) ? null : implode(',', $workspaceValue);
     }
 }
