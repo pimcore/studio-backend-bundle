@@ -167,6 +167,7 @@ final readonly class GridSearch implements GridSearchInterface
             return true;
         }
 
+        // We handle Variants as folders since they can have child items.
         if (
             $type === ElementTypes::TYPE_DATA_OBJECT
             && $element instanceof DataObject
@@ -175,7 +176,7 @@ final readonly class GridSearch implements GridSearchInterface
             return true;
         }
 
-        // Allow all documents as folder sinc they can all have parent items.
+        // Allow all documents as folder since they can all have parent items.
         if ($type === ElementTypes::TYPE_DOCUMENT) {
             return true;
         }
