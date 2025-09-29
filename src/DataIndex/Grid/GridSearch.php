@@ -167,7 +167,7 @@ final readonly class GridSearch implements GridSearchInterface
             return true;
         }
 
-        if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObject && $element->getAllowVariants() ) {
+        if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObject && $element->getAllowVariants()) {
             return true;
         }
 
