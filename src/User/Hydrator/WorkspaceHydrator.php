@@ -48,9 +48,9 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
             $workspaces[] = new UserDataObjectWorkspace(
                 $workspace->getSave(),
                 $workspace->getUnpublish(),
-                $workspace->getLEdit(),
-                $workspace->getLView(),
-                $workspace->getLayouts(),
+                $this->transformLocalizedValues($workspace->getLEdit()),
+                $this->transformLocalizedValues($workspace->getLView()),
+                $this->transformLocalizedValues($workspace->getLayouts()),
                 ...$this->hydrateBaseWorkspace($workspace)
             );
         }
@@ -90,5 +90,19 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
             $workspace->getVersions(),
             $workspace->getProperties(),
         ];
+    }
+
+    private function transformLocalizedValues(?string $workspaceValue): ?array
+    {
+        if (!is_string($workspaceValue)) {
+            return null;
+        }
+
+        return array_values(
+            array_filter(
+                explode(',', $workspaceValue),
+                static fn(string $v): bool => $v !== ''
+            )
+        );
     }
 }

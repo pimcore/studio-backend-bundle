@@ -24,7 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'User',
     description: 'Contains all information about a user',
     required: [
-        'id', 'active', 'admin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
+        'id', 'name', 'email', 'firstname', 'lastname', 'active', 'admin',
+        'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthentication', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
@@ -69,6 +70,8 @@ final class User implements AdditionalAttributesInterface
         private readonly array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private readonly string $language,
+        #[Property(description: 'Locale for dateTime', type: 'string', example: '')]
+        private readonly ?string $dateTimeLocale,
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: '1718757677')]
         private readonly ?int $lastLogin,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
@@ -182,6 +185,11 @@ final class User implements AdditionalAttributesInterface
     public function getLanguage(): string
     {
         return $this->language;
+    }
+
+    public function getDateTimeLocale(): ?string
+    {
+        return $this->dateTimeLocale;
     }
 
     public function getLastLogin(): ?int

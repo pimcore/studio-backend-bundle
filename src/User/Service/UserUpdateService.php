@@ -71,6 +71,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setActive($updateUserParameter->isActive());
         $user->setCloseWarning($updateUserParameter->isCloseWarning());
         $user->setLanguage($updateUserParameter->getLanguage());
+        $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
         $user->setMemorizeTabs($updateUserParameter->isMemorizeTabs());
         $user->setParentId($updateUserParameter->getParentId());
         $user->setAllowDirtyClose($updateUserParameter->isAllowDirtyClose());

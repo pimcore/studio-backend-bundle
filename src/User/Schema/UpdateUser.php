@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
     title: 'User',
     description: 'User Schema to update a User.',
     required: [
+        'email' ,'firstname', 'lastname', 'admin',
         'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationRequired',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
@@ -61,6 +62,8 @@ final readonly class UpdateUser
         private array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private string $language,
+        #[Property(description: 'Date Time Locale for the User', type: 'string', example: '')]
+        private string $dateTimeLocale,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private bool $memorizeTabs,
         #[Property(description: 'Parent ID', type: 'integer', example: 2)]
@@ -145,6 +148,11 @@ final readonly class UpdateUser
         return $this->language;
     }
 
+    public function getDateTimeLocale(): string
+    {
+        return $this->dateTimeLocale;
+    }
+
     public function isMemorizeTabs(): bool
     {
         return $this->memorizeTabs;
@@ -199,7 +207,7 @@ final readonly class UpdateUser
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function getDataObjectWorkspaces(): array
     {
@@ -207,7 +215,7 @@ final readonly class UpdateUser
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function getDocumentWorkspaces(): array
     {

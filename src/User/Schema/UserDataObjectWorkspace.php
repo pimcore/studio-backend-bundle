@@ -29,11 +29,11 @@ final readonly class UserDataObjectWorkspace extends UserWorkspace
         #[Property(description: 'Unpublish', type: 'bool', example: true)]
         private bool $unpublish,
         #[Property(description: 'Localized Edit', type: 'string', example: 'default')]
-        private ?string $localizedEdit,
+        private ?array $localizedEdit,
         #[Property(description: 'Localized View', type: 'string', example: 'default')]
-        private ?string $localizedView,
+        private ?array $localizedView,
         #[Property(description: 'Layouts', type: 'string', example: 'CAR')]
-        private ?string $layouts,
+        private ?array $layouts,
         private int $cid,
         private string $cpath,
         private bool $list,
@@ -71,17 +71,17 @@ final readonly class UserDataObjectWorkspace extends UserWorkspace
         return $this->unpublish;
     }
 
-    public function getLocalizedEdit(): ?string
+    public function getLocalizedEdit(): ?array
     {
         return $this->localizedEdit;
     }
 
-    public function getLocalizedView(): ?string
+    public function getLocalizedView(): ?array
     {
         return $this->localizedView;
     }
 
-    public function getLayouts(): ?string
+    public function getLayouts(): ?array
     {
         return $this->layouts;
     }
