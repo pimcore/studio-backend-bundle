@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -163,6 +164,10 @@ final readonly class GridSearch implements GridSearchInterface
         }
 
         if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObjectFolder) {
+            return true;
+        }
+
+        if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObject && $element->getAllowVariants() ) {
             return true;
         }
 
