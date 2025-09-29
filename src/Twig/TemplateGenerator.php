@@ -17,8 +17,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Twig;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Twig\Environment;
-use Twig\Extension\SandboxExtension;
 use Twig\Error\Error as TwigError;
+use Twig\Extension\SandboxExtension;
 use function sprintf;
 
 final class TemplateGenerator implements TemplateGeneratorInterface
@@ -35,6 +35,7 @@ final class TemplateGenerator implements TemplateGeneratorInterface
     public function generate(string $twigTemplate, array $arguments): string
     {
         $this->sandboxExtension->enableSandbox();
+
         try {
             return $this->twig->createTemplate($twigTemplate)->render($arguments);
         } catch (TwigError $e) {

@@ -17,7 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
-use Throwable;
+use function is_string;
 use function sprintf;
 
 final class TwigOperator implements TransformerInterface
