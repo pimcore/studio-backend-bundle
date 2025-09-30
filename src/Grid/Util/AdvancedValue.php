@@ -46,5 +46,4 @@ final class AdvancedValue
     {
         return $this->fieldName;
     }
-
 }

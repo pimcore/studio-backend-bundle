@@ -18,8 +18,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
-use function array_key_exists;
-use function is_array;
 use function is_string;
 use function sprintf;
 
