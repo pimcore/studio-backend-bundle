@@ -101,7 +101,7 @@ final readonly class UserRepository implements UserRepositoryInterface
         if ($excludeUserId !== null) {
             $listing->addConditionParam('id != :excludeUser', ['excludeUser' => $excludeUserId]);
         }
-        $roleCondition = '(roles = :roleId' .
+        $roleCondition = '(roles = :roleId ' .
             'OR roles LIKE :roleIdEnds OR roles LIKE :roleIdStarts OR roles LIKE :roleIdContains)';
         $roleParams = [
             'roleId' => $roleId,
