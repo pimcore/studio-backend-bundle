@@ -45,7 +45,7 @@ final class TwigOperator implements TransformerInterface
         $template = $config['template'] ?? '{{ value }}';
 
         $context = [
-            'value' => $this->buildAssociativeContext($value, $config),
+            'value' => $this->buildAssociativeContext($value),
         ];
 
         $rendered = $this->templateGenerator->generate($template, $context);
