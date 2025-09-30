@@ -56,6 +56,7 @@ final readonly class SendNotificationService implements SendNotificationServiceI
         ?string $payload = null
     ): void {
         $this->validateParameters($parameters);
+
         try {
             $recipients = $this->getRecipients($parameters, $sender?->getId());
         } catch (NotFoundException) {
