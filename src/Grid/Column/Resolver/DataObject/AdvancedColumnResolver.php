@@ -152,9 +152,10 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         $data = $resolver->resolveForCoreElement($subColumn, $element);
 
         $this->values[] = new AdvancedValue(
-            type: $data->getFieldType(),
-            value: $data->getValue()
-        );
+        type: $data->getFieldType(),
+        value: $data->getValue(),
+        fieldName: $fieldConfig->getField()
+     );
     }
 
     /**

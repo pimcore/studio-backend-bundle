@@ -46,12 +46,8 @@ final class TwigOperator implements TransformerInterface
 
         $template = $config['template'] ?? '{{ value }}';
 
-        // Unwrap AdvancedValue instances recursively
-        $unwrapped = $this->unwrapValues($value);
-
-        // Prepare context for Twig rendering
         $context = [
-            'value' => $this->buildAssociativeContext($unwrapped, $config),
+            'value' => $this->buildAssociativeContext($value, $config),
         ];
 
         $rendered = $this->templateGenerator->generate($template, $context);
@@ -67,55 +63,24 @@ final class TwigOperator implements TransformerInterface
         }
 
         return [
-            new AdvancedValue('string', $rendered),
+            new AdvancedValue('string', $rendered, null),
         ];
     }
 
     /**
      * Ensures that the template receives plain data (e.g., strings, arrays) instead of wrapped objects.
      */
-    private function buildAssociativeContext(array $unwrapped, array $config): array
+    private function buildAssociativeContext(array $values): array
     {
-        if (
-            !isset($config['advancedColumns']) ||
-            !is_array($config['advancedColumns']) ||
-            $config['advancedColumns'] === []
-        ) {
-            return $unwrapped;
-        }
-
         $assoc = [];
-        foreach ($config['advancedColumns'] as $index => $columnConfig) {
-            if (
-                isset($columnConfig['config']['field']) &&
-                array_key_exists($index, $unwrapped)
-            ) {
-                $assoc[$columnConfig['config']['field']] = $unwrapped[$index];
+
+        foreach ($values as $item) {
+            if ($item instanceof AdvancedValue && $item->getFieldName()) {
+                $assoc[$item->getFieldName()] = $item->getValue();
             }
         }
 
-        return $assoc ?: $unwrapped;
-    }
-
-    /**
-     * unwrapValues() is necessary to ensure the Twig template receives raw values like strings, ints, arrays.
-     */
-    private function unwrapValues(mixed $input): mixed
-    {
-        if (is_array($input)) {
-            $unwrapped = [];
-            foreach ($input as $key => $item) {
-                $unwrapped[$key] = $this->unwrapValues($item);
-            }
-
-            return $unwrapped;
-        }
-
-        if ($input instanceof AdvancedValue) {
-            return $this->unwrapValues($input->getValue());
-        }
-
-        return $input;
+        return $assoc;
     }
 
     public function getName(): string

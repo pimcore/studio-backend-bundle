@@ -344,38 +344,29 @@ The `TwigOperator` transformer allows you to render custom HTML using Twig templ
 
 ```json
 {
-    "key": "summary",
-    "locale": "en",
-    "type": "dataobject.advanced",
-    "config": {
-        "title": "Summary",
-        "advancedColumns": [
-            { "key": "simpleField", "config": { "field": "id" } },
-            { "key": "simpleField", "config": { "field": "name" } },
-            { "key": "simpleField", "config": { "field": "color" } },
-            { "key": "simpleField", "config": { "field": "fullpath" } },
-            { "key": "simpleField", "config": { "field": "filename" } },
-            { "key": "simpleField", "config": { "field": "classname" } },
-            { "key": "simpleField", "config": { "field": "bodyStyle" } }
-        ],
-        "transformers": [
-            {
-                "key": "twigOperator",
-                "config": {
-                    "template": "<h1>{{ value.name|trim }}</h1><p><strong>ID:</strong> {{ value.id }}</p>{% if value.color is iterable %}<p><strong>Available Colors:</strong></p><ul>{% for color in value.color %}<li>{{ color }}</li>{% endfor %}</ul>{% else %}<p><em>No colors available.</em></p>{% endif %}{% if value.bodyStyle is defined and value.bodyStyle.fullPath is defined %}<p><strong>Body Style:</strong> {{ value.bodyStyle.fullPath }}</p>{% endif %}<p><strong>Path:</strong> {{ value.fullpath }}</p><p><strong>Filename:</strong> {{ value.filename }}</p><p><strong>Class:</strong> {{ value.classname }}</p><hr><p><em>Generated summary for car object.</em></p>",
-                    "advancedColumns": [
-                        { "key": "simpleField", "config": { "field": "id" } },
-                        { "key": "simpleField", "config": { "field": "name" } },
-                        { "key": "simpleField", "config": { "field": "color" } },
-                        { "key": "simpleField", "config": { "field": "fullpath" } },
-                        { "key": "simpleField", "config": { "field": "filename" } },
-                        { "key": "simpleField", "config": { "field": "classname" } },
-                        { "key": "simpleField", "config": { "field": "bodyStyle" } }
-                    ]
-                }
-            }
-        ]
-    }
+  "key": "summary",
+  "locale": "en",
+  "type": "dataobject.advanced",
+  "config": {
+    "title": "Summary",
+    "advancedColumns": [
+      { "key": "simpleField", "config": { "field": "id" } },
+      { "key": "simpleField", "config": { "field": "name" } },
+      { "key": "simpleField", "config": { "field": "color" } },
+      { "key": "simpleField", "config": { "field": "fullpath" } },
+      { "key": "simpleField", "config": { "field": "filename" } },
+      { "key": "simpleField", "config": { "field": "classname" } },
+      { "key": "simpleField", "config": { "field": "bodyStyle" } }
+    ],
+    "transformers": [
+      {
+        "key": "twigOperator",
+        "config": {
+          "template": "<h1>{{ value.name|trim }}</h1><p><strong>ID:</strong> {{ value.id }}</p>{% if value.color is iterable %}<p><strong>Available Colors:</strong></p><ul>{% for color in value.color %}<li>{{ color }}</li>{% endfor %}</ul>{% else %}<p><em>No colors available.</em></p>{% endif %}{% if value.bodyStyle is defined and value.bodyStyle.fullPath is defined %}<p><strong>Body Style:</strong> {{ value.bodyStyle.fullPath }}</p>{% endif %}<p><strong>Path:</strong> {{ value.fullpath }}</p><p><strong>Filename:</strong> {{ value.filename }}</p><p><strong>Class:</strong> {{ value.classname }}</p><hr><p><em>Generated summary for car object.</em></p>"
+        }
+      }
+    ]
+  }
 }
 ...
 ```
