@@ -76,7 +76,11 @@ final class TwigOperator implements TransformerInterface
      */
     private function buildAssociativeContext(array $unwrapped, array $config): array
     {
-        if (!isset($config['advancedColumns']) || !is_array($config['advancedColumns']) || $config['advancedColumns'] === []) {
+        if (
+            !isset($config['advancedColumns']) ||
+            !is_array($config['advancedColumns']) ||
+            $config['advancedColumns'] === []
+        ) {
             return $unwrapped;
         }
 
@@ -137,8 +141,9 @@ final class TwigOperator implements TransformerInterface
                 'language' => 'twig',
                 'default' => '{{ value }}',
                 'label' => 'Twig Template',
-                'description' => 'Write a Twig template using {{ value }} as the placeholder. 
-                 If advanced columns are configured, you can access them by their field names (e.g., {{ value.someField }}).',
+                'description' => 'Write a Twig template using {{ value }} as the placeholder. '
+                    . 'If advanced columns are configured, you can access them by their field names '
+                    . '(e.g., {{ value.someField }}).',
             ],
         ];
     }
