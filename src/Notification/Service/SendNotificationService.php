@@ -56,7 +56,12 @@ final readonly class SendNotificationService implements SendNotificationServiceI
         ?string $payload = null
     ): void {
         $this->validateParameters($parameters);
-        $recipients = $this->getRecipients($parameters, $sender?->getId());
+        try {
+            $recipients = $this->getRecipients($parameters, $sender?->getId());
+        } catch (NotFoundException) {
+            throw new NotFoundException('recipient (user nor role)', $parameters->getRecipientId());
+        }
+
         $attachment = $this->getAttachment($parameters, $sender);
 
         foreach ($recipients as $recipient) {
@@ -90,7 +95,7 @@ final readonly class SendNotificationService implements SendNotificationServiceI
             }
 
             return [$user];
-        } catch (UserNotFoundException) {
+        } catch (NotFoundException) {
             $role = $this->roleRepository->getRoleById($parameters->getRecipientId());
             $roleUsers = $this->userRepository->getUserListingByRoleId($role->getId(), $senderId);
 
