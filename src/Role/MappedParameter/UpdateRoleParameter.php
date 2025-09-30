@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -75,7 +77,7 @@ final readonly class UpdateRoleParameter
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function getDataObjectWorkspaces(): array
     {
@@ -83,7 +85,7 @@ final readonly class UpdateRoleParameter
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function getDocumentWorkspaces(): array
     {

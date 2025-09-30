@@ -82,6 +82,9 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setKeyBindings(
             $this->getKeyBindingsString($updateUserParameter->getKeyBindings())
         );
+        if ($user instanceof User) {
+            $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
+        }
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
         $user = $this->updateService->updateRoles($updateUserParameter->getRoles(), $user);
