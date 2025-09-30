@@ -16,8 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
+use function array_key_exists;
+use function is_array;
+use function is_string;
 use function sprintf;
 
 final class TwigOperator implements TransformerInterface
@@ -63,7 +66,7 @@ final class TwigOperator implements TransformerInterface
             );
         }
 
-        return [ 
+        return [
             new AdvancedValue('string', $rendered),
         ];
     }
@@ -95,11 +98,12 @@ final class TwigOperator implements TransformerInterface
      */
     private function unwrapValues(mixed $input): mixed
     {
-        if (is_array($input)) { 
+        if (is_array($input)) {
             $unwrapped = [];
             foreach ($input as $key => $item) {
                 $unwrapped[$key] = $this->unwrapValues($item);
             }
+
             return $unwrapped;
         }
 
