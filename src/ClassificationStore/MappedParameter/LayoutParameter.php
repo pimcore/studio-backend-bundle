@@ -23,8 +23,7 @@ final readonly class LayoutParameter
     public function __construct(
         #[NotBlank(message: 'The field name must not be empty.')]
         private string $fieldName,
-        #[NotBlank(message: 'The field name must not be empty.')]
-        private int $objectId,
+        private ?int $objectId = null,
     ) {
     }
 
@@ -33,7 +32,7 @@ final readonly class LayoutParameter
         return $this->fieldName;
     }
 
-    public function getObjectId(): int
+    public function getObjectId(): ?int
     {
         return $this->objectId;
     }

@@ -13,7 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
@@ -26,7 +32,9 @@ use Pimcore\Model\DataObject\Concrete;
 final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInterface
 {
     public function __construct(
-        private ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver,
+        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private ConcreteObjectResolver $concreteObjectResolver,
     ) {
     }
 
@@ -35,8 +43,8 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
      */
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,
-        Concrete $object,
-        string $fieldName
+        string $fieldName,
+        ?Concrete $object = null,
     ): EncryptedField|Data {
         $definition = json_decode($keyGroupRelation->getDefinition(), true);
         $definition = $this->serviceResolver->getFieldDefinitionFromJson(
@@ -48,7 +56,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             $definition->__wakeup();
         }
 
-        if ($definition instanceof LayoutDefinitionEnrichmentInterface) {
+        if ($definition instanceof LayoutDefinitionEnrichmentInterface && $object) {
             $context['object'] = $object;
             $context['class'] = $object->getClass();
             $context['ownerType'] = 'classificationstore';
@@ -61,5 +69,33 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         }
 
         return $definition;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getKeyLayout(
+        LayoutParameter $layoutParameter,
+        int $keyId
+    ): KeyLayout {
+
+        $object = null;
+        if ($layoutParameter->getObjectId()) {
+            $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
+
+            if (!$object) {
+                throw new NotFoundException('Object', $layoutParameter->getObjectId());
+            }
+        }
+
+        $key = $this->keyGroupRelationRepository->getByKeyId($keyId);
+        $definition = $this->getLayoutDefinition($key, $layoutParameter->getFieldName(), $object);
+
+        return new KeyLayout(
+            id: $key->getKeyId(),
+            name: $key->getName(),
+            description: $key->getDescription(),
+            definition: $definition
+        );
     }
 }
