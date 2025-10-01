@@ -122,8 +122,8 @@ final readonly class GroupService implements GroupServiceInterface
         foreach ($keys as $key) {
             $definition = $this->keyGroupLayoutService->getLayoutDefinition(
                 $key,
-                $object,
-                $layoutParameter->getFieldName()
+                $layoutParameter->getFieldName(),
+                $object
             );
 
             $keyLayouts[] = new KeyLayout(
