@@ -45,7 +45,6 @@ final class Combine implements TransformerInterface
 
         $fieldName = $config['columnKey'] ?? $this->getKey();
 
-
         return [
                 new AdvancedValue(
                     'string',
