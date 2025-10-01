@@ -50,18 +50,10 @@ final class TwigOperator implements TransformerInterface
 
         $rendered = $this->templateGenerator->generate($template, $context);
 
-        if (!is_string($rendered) || trim($rendered) === '') {
-            throw new TransformerException(
-                $this->getName(),
-                sprintf(
-                    'Twig rendering did not return a valid non-empty string for %s transformer.',
-                    $this->getKey()
-                )
-            );
-        }
+        $fieldName = $config['columnKey'] ?? $this->getKey();
 
         return [
-            new AdvancedValue('string', $rendered, null),
+            new AdvancedValue('string', $rendered, $fieldName),
         ];
     }
 

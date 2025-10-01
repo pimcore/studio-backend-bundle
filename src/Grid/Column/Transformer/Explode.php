@@ -42,13 +42,15 @@ final class Explode implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
+            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
+
             if (!is_string($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data);
+                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
 
                 continue;
             }
 
-            $results[] = new AdvancedValue('array', explode($delimiter, $data));
+            $results[] = new AdvancedValue('array', explode($delimiter, $data), $fieldName);
         }
 
         return $results;

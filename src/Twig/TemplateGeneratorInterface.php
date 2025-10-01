@@ -17,7 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Twig;
 interface TemplateGeneratorInterface
 {
     /**
-     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException
      */
     public function generate(string $twigTemplate, array $arguments): string;
 }

@@ -18,7 +18,7 @@ final class AdvancedValue
     public function __construct(
         private string $type,
         private mixed $value,
-        private ?string $fieldName = null
+        private string $fieldName
     ) {
     }
 

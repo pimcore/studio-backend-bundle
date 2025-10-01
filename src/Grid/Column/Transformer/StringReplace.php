@@ -54,13 +54,15 @@ final class StringReplace implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
+            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
+
             if (!is_string($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data);
+                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
 
                 continue;
             }
 
-            $results[] = new AdvancedValue('string', str_replace($find, $replace, $data));
+            $results[] = new AdvancedValue('string', str_replace($find, $replace, $data), $fieldName);
         }
 
         return $results;

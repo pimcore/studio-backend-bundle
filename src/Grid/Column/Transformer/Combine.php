@@ -39,16 +39,21 @@ final class Combine implements TransformerInterface
             );
         }
 
-        $values = array_map(function ($val) {
+        $values = array_map(function (AdvancedValue $val) {
             return $val->getValue();
         }, $value);
 
+        $fieldName = $config['columnKey'] ?? $this->getKey();
+
+
         return [
-            new AdvancedValue(
-                'string',
-                implode($config['glue'], $values)
-            ),
-        ];
+                new AdvancedValue(
+                    'string',
+                    implode($config['glue'], $values),
+                    $fieldName
+                ),
+            ];
+
     }
 
     public function getName(): string

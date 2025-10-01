@@ -44,18 +44,19 @@ final class DateFormatter implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
+            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
 
             if (is_int($data)) {
                 $data = (new DateTimeImmutable())->setTimestamp($data);
             }
 
             if (!($data instanceof DateTimeInterface)) {
-                $results[] = new AdvancedValue($val->getType(), $data);
+                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
 
                 continue;
             }
 
-            $results[] = new AdvancedValue('string', $data->format($format));
+            $results[] = new AdvancedValue('string', $data->format($format), $fieldName);
         }
 
         return $results;
