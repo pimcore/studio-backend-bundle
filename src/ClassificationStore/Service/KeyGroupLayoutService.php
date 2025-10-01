@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
@@ -71,16 +72,15 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function getKeyLayout(
         LayoutParameter $layoutParameter,
         int $keyId
-    ): KeyLayout
-    {
+    ): KeyLayout {
 
         $object = null;
-        if($layoutParameter->getObjectId()) {
+        if ($layoutParameter->getObjectId()) {
             $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
 
             if (!$object) {
@@ -98,6 +98,4 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             definition: $definition
         );
     }
-
-
 }
