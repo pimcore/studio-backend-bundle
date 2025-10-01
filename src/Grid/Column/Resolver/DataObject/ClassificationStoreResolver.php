@@ -77,13 +77,18 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
 
         $keyGroupRelation = $this->findKeyGroupRelation($config->getGroupId(), $config->getKeyId());
 
-        return new ColumnData(
+        $returnData = new ColumnData(
             key: $column->getKey() . '.' . $keyGroupRelation->getName(),
             locale: $column->getLocale(),
             value: $value,
             fieldType: $keyGroupRelation->getType(),
             inheritance: $normalizedData->getInheritance(),
         );
+
+        $returnData->addAdditionalAttribute('groupId', $config->getGroupId());
+        $returnData->addAdditionalAttribute('keyId', $config->getKeyId());
+
+        return $returnData;
     }
 
     public function findKeyGroupRelation(int $groupId, int $keyId): KeyGroupRelation
