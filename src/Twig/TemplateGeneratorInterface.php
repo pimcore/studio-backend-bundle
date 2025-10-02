@@ -13,6 +13,7 @@ declare(strict_types=1);
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Twig;
+
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 
 interface TemplateGeneratorInterface
