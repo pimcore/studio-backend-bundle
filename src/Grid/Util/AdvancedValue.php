@@ -32,6 +32,11 @@ final class AdvancedValue
         return $this->value;
     }
 
+    public function getFieldName(): ?string
+    {
+        return $this->fieldName;
+    }
+
     public function setType(string $type): void
     {
         $this->type = $type;
@@ -42,8 +47,8 @@ final class AdvancedValue
         $this->value = $value;
     }
 
-    public function getFieldName(): ?string
+    public function setFieldName(string $fieldName): void
     {
-        return $this->fieldName;
+        $this->fieldName = $fieldName;
     }
 }

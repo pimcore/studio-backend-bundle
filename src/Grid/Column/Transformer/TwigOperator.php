@@ -47,8 +47,15 @@ final class TwigOperator implements TransformerInterface
         $context = [
             'value' => $this->buildAssociativeContext($value),
         ];
-
-        $rendered = $this->templateGenerator->generate($template, $context);
+        
+        try {
+            $rendered = $this->templateGenerator->generate($template, $context);
+        } catch (\Throwable $e) {
+            throw new TransformerException(
+                $this->getName(),
+                sprintf('Failed to render Twig template: %s', $e->getMessage())
+            );
+        }
 
         $fieldName = $config['columnKey'] ?? $this->getKey();
 
