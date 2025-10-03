@@ -73,7 +73,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     private function overrideSortable(ColumnDefinitionInterface $definition, string $column): bool
     {
         return match ($column) {
-            'filename', 'index', 'classname',  => false,
+            'filename',  => false,
             default => $definition->isSortable(),
         };
     }
