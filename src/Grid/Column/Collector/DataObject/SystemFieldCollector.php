@@ -53,10 +53,10 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
             $column = new ColumnConfiguration(
                 key: $columnKey,
                 group: [$this->getTypeName()],
-                sortable: $availableColumnDefinitions[$type]->isSortable(),
+                sortable: $this->overrideSortable($availableColumnDefinitions[$type], $columnKey),
                 editable: $this->isSystemFieldEditable($columnKey),
                 exportable: $availableColumnDefinitions[$type]->isExportable(),
-                filterable: $availableColumnDefinitions[$type]->isFilterable(),
+                filterable: $this->overrideFilterable($availableColumnDefinitions[$type], $columnKey),
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),
@@ -68,6 +68,22 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
         }
 
         return $columns;
+    }
+
+    private function overrideSortable(ColumnDefinitionInterface $definition, string $column): bool
+    {
+        return match ($column) {
+            'filename',  => false,
+            default => $definition->isSortable(),
+        };
+    }
+
+    private function overrideFilterable(ColumnDefinitionInterface $definition, string $column): bool
+    {
+        return match ($column) {
+            'filename', 'index', 'classname',  => false,
+            default => $definition->isSortable(),
+        };
     }
 
     private function isSystemFieldEditable(string $systemField): bool
