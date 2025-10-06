@@ -23,7 +23,6 @@ enum FrontendType: string
     case ID = 'id';
     case TEXTAREA = 'textarea';
     case SELECT = 'select';
-
     case MULTISELECT = 'multiselect';
     case CHECKBOX = 'checkbox';
     case DATETIME = 'datetime';

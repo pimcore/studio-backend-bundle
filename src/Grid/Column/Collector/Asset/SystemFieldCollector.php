@@ -125,10 +125,10 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
         return [
             'definition' => [
                 'options' => array_map(
-                        static fn($type) => ['key' => ucfirst($type), 'value' => $type],
-                        $this->assetResolver->getTypes()
-                )
-            ]
+                    static fn ($type) => ['key' => ucfirst($type), 'value' => $type],
+                    $this->assetResolver->getTypes()
+                ),
+            ],
         ];
     }
 }
