@@ -35,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetC
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Symfony\Component\Config\FileLocator;
@@ -174,6 +175,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$serverSideUrl' => $config['mercure_settings']['hub_url_server'],
             '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
         ]);
+
+        $this->populateTwigSandboxExtension($config, $container);
     }
 
     /**
@@ -280,6 +283,24 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         foreach ($configs as $config) {
             $configLoader->load($config);
         }
+    }
+
+    private function populateTwigSandboxExtension(array $config, ContainerBuilder $container): void
+    {
+        $definition = $container->getDefinition(SandboxExtensionInitializerInterface::class);
+
+        $definition->setArgument(
+            '$allowedTags',
+            $config['twig']['sandbox_security_policy']['tags']
+        );
+        $definition->setArgument(
+            '$allowedFilters',
+            $config['twig']['sandbox_security_policy']['filters']
+        );
+        $definition->setArgument(
+            '$allowedFunctions',
+            $config['twig']['sandbox_security_policy']['functions']
+        );
     }
 
     /**

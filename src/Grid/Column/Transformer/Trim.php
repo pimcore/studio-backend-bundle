@@ -41,27 +41,29 @@ final class Trim implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
+            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
+
             if (!is_string($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data);
+                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
 
                 continue;
             }
 
             switch ($config['mode']) {
                 case 'left':
-                    $results[] = new AdvancedValue('string', ltrim($data));
+                    $results[] = new AdvancedValue('string', ltrim($data), $fieldName);
 
                     break;
                 case 'right':
-                    $results[] = new AdvancedValue('string', rtrim($data));
+                    $results[] = new AdvancedValue('string', rtrim($data), $fieldName);
 
                     break;
                 case 'both':
-                    $results[] = new AdvancedValue('string', trim($data));
+                    $results[] = new AdvancedValue('string', trim($data), $fieldName);
 
                     break;
                 case 'disabled':
-                    $results[] = new AdvancedValue('string', $data);
+                    $results[] = new AdvancedValue('string', $data, $fieldName);
 
                     break;
                 default:

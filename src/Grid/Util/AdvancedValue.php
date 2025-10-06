@@ -17,7 +17,8 @@ final class AdvancedValue
 {
     public function __construct(
         private string $type,
-        private mixed $value
+        private mixed $value,
+        private string $fieldName
     ) {
     }
 
@@ -31,6 +32,11 @@ final class AdvancedValue
         return $this->value;
     }
 
+    public function getFieldName(): ?string
+    {
+        return $this->fieldName;
+    }
+
     public function setType(string $type): void
     {
         $this->type = $type;
@@ -39,5 +45,10 @@ final class AdvancedValue
     public function setValue(mixed $value): void
     {
         $this->value = $value;
+    }
+
+    public function setFieldName(string $fieldName): void
+    {
+        $this->fieldName = $fieldName;
     }
 }

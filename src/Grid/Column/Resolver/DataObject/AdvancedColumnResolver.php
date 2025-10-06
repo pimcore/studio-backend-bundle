@@ -97,7 +97,8 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             if ($advancedColumn instanceof StaticTextConfig) {
                 $this->values[] = new AdvancedValue(
                     type: 'string',
-                    value: $advancedColumn->getText()
+                    value: $advancedColumn->getText(),
+                    fieldName: $column->getKey()
                 );
             }
 
@@ -111,8 +112,9 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
                     type: 'error',
                     value: sprintf(
                         'Error applying transformer: %s',
-                        $exception->getMessage()
-                    )
+                        $exception->getMessage(),
+                    ),
+                    fieldName: $column->getKey()
                 ),
             ];
         }
@@ -153,7 +155,8 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
 
         $this->values[] = new AdvancedValue(
             type: $data->getFieldType(),
-            value: $data->getValue()
+            value: $data->getValue(),
+            fieldName: $fieldConfig->getField()
         );
     }
 

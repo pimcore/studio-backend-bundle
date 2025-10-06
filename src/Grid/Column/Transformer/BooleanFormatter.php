@@ -53,13 +53,15 @@ final class BooleanFormatter implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
+            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
+
             if (!is_bool($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data);
+                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
 
                 continue;
             }
 
-            $results[] = new AdvancedValue('string', $data ? $trueLabel : $falseLabel);
+            $results[] = new AdvancedValue('string', $data ? $trueLabel : $falseLabel, $fieldName);
         }
 
         return $results;
