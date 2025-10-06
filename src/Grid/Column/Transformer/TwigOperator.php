@@ -14,11 +14,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
-use Throwable;
 use function is_string;
 use function sprintf;
 
@@ -51,7 +51,7 @@ final class TwigOperator implements TransformerInterface
 
         try {
             $rendered = $this->templateGenerator->generate($template, $context);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new TransformerException(
                 $this->getName(),
                 sprintf('Failed to render Twig template: %s', $e->getMessage())
