@@ -51,7 +51,7 @@ final class TwigOperator implements TransformerInterface
 
         try {
             $rendered = $this->templateGenerator->generate($template, $context);
-        } catch (Throwable $e) {
+        } catch (\Exception $e) {
             throw new TransformerException(
                 $this->getName(),
                 sprintf('Failed to render Twig template: %s', $e->getMessage())
