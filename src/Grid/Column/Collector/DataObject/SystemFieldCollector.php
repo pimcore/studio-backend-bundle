@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -27,6 +29,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 {
     public function __construct(
         private SystemColumnServiceInterface $systemColumnService,
+        private DataObjectResolverInterface $dataObjectResolver
     ) {
     }
 
@@ -60,8 +63,11 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),
-                frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
-                config: []
+                frontendType: $this->getCustomFrontendAdapter(
+                    $columnKey,
+                    $availableColumnDefinitions[$type]->getFrontendType()
+                ),
+                config: $this->getCustomConfig($columnKey)
             );
 
             $columns[] = $column;
@@ -92,6 +98,44 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
             'published',  => true,
             default => false,
         };
+    }
+
+    private function getCustomFrontendAdapter(string $columnKey, string $defaultAdapter): string
+    {
+        $customFrontendAdapters = [
+            'type' => FrontendType::MULTISELECT->value,
+        ];
+
+        if (array_key_exists($columnKey, $customFrontendAdapters)) {
+            return $customFrontendAdapters[$columnKey];
+        }
+
+        return $defaultAdapter;
+    }
+
+    private function getCustomConfig(string $columnKey): array
+    {
+        $customConfig = [
+            'type' => $this->getTypeConfig(),
+        ];
+
+        if (array_key_exists($columnKey, $customConfig)) {
+            return $customConfig[$columnKey];
+        }
+
+        return [];
+    }
+
+    private function getTypeConfig(): array
+    {
+        return [
+            'fieldDefinition' => [
+                'options' => array_map(
+                    static fn ($type) => ['key' => ucfirst($type), 'value' => $type ],
+                    $this->dataObjectResolver->getTypes()
+                ),
+            ],
+        ];
     }
 
     public function supportedElementTypes(): array
