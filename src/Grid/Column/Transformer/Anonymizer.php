@@ -64,7 +64,7 @@ final class Anonymizer implements TransformerInterface
                     break;
 
                 case 'hide':
-                    $results[] = new AdvancedValue('string', '', $fieldName);
+                    $results[] = new AdvancedValue('string', '[hidden]', $fieldName);
                     break;
 
                 default:
@@ -126,7 +126,8 @@ final class Anonymizer implements TransformerInterface
     }
 
     private function partial(string $value): string
-    {            
+    {      
+        // Hardcoded defaults; should be configurable via transformer config if necessary      
         $visiblePrefix = 2;
         $visibleSuffix = 4;
         $maskChar = '*';

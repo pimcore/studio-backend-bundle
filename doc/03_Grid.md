@@ -370,3 +370,49 @@ The `TwigOperator` transformer allows you to render custom HTML using Twig templ
 }
 ...
 ```
+#### Anonymizer Transformer
+
+The `Anonymizer` transformer allows you to obfuscate or anonymize sensitive string data using predefined strategies such as masking, initials, partial reveal, or complete hiding. It is especially useful for protecting personal information in grid views.
+
+---
+
+**Available Configurations:**
+
+- `mask`: Masks all but a portion of the string (e.g. j***@e*****.com).
+- `initials`: Converts names to initials (e.g. John Doe → J.D.).
+- `partial`: Shows the beginning and end of the string, masking the middle (e.g. 12****7890).
+- `hide`: Replaces the entire value with [hidden].
+
+---
+
+**Example Configuration:**
+
+```json
+
+{
+  "key": "anonymizedName",
+  "locale": "en",
+  "type": "dataobject.advanced",
+  "config": {
+    "title": "Anonymized Name",
+    "advancedColumns": [
+      {
+        "key": "simpleField",
+        "config": {
+          "field": "name"
+        }
+      }
+    ],
+    "transformers": [
+      {
+        "key": "anonymizer",
+        "config": {
+          "rule": "initials"
+        }
+      }
+    ]
+  }
+}
+
+...
+```
