@@ -89,11 +89,11 @@ final class Blur implements TransformerInterface
 
     private function mask(string $value, array $config): string
     {
-        $visiblePrefix = $config['visiblePrefix'] ?? 1;
-        $visibleDomainSuffix = $config['visibleDomainSuffix'] ?? 4;
-        $minMaskLength = $config['minMaskLength'] ?? 3;
-        $minDomainMaskLength = $config['minDomainMaskLength'] ?? 5;
-        $maskChar = $config['maskChar'] ?? '*';
+        $visiblePrefix = (int) ($config['visiblePrefix'] ?? 1);
+        $visibleDomainSuffix = (int) ($config['visibleDomainSuffix'] ?? 4);
+        $minMaskLength = (int) ($config['minMaskLength'] ?? 3);
+        $minDomainMaskLength = (int) ($config['minDomainMaskLength'] ?? 5);
+        $maskChar = (string) ($config['maskChar'] ?? '*');
 
         if (!str_contains($value, '@')) {
             $length = strlen($value);
@@ -135,10 +135,10 @@ final class Blur implements TransformerInterface
 
     private function partial(string $value, array $config): string
     {
-        $visiblePrefix = $config['visiblePrefix'] ?? 2;
-        $visibleSuffix = $config['visibleSuffix'] ?? 4;
-        $maskChar = $config['maskChar'] ?? '*';
-        $minMaskLength = $config['minMaskLength'] ?? 4;
+        $visiblePrefix = (int) ($config['visiblePrefix'] ?? 2);
+        $visibleSuffix = (int) ($config['visibleSuffix'] ?? 4);
+        $maskChar = (string) ($config['maskChar'] ?? '*');
+        $minMaskLength = (int) ($config['minMaskLength'] ?? 4);
 
         $length = strlen($value);
 
