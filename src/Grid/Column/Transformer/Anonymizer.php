@@ -21,11 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use function explode;
 use function is_string;
 use function sprintf;
-use function str_repeat;
-use function strlen;
-use function substr;
-use function trim;
+use function md5;
 
+/**
+ * @internal
+ */
 final class Anonymizer implements TransformerInterface
 {
     public function transform(array $value, array $config): array
@@ -53,24 +53,12 @@ final class Anonymizer implements TransformerInterface
             }
 
             switch ($config['rule']) {
-                case 'mask':
-                    $results[] = new AdvancedValue('string', $this->mask($data), $fieldName);
-
+                case 'md5':
+                    $results[] = new AdvancedValue('string', md5($data), $fieldName);
                     break;
 
-                case 'initials':
-                    $results[] = new AdvancedValue('string', $this->initials($data), $fieldName);
-
-                    break;
-
-                case 'partial':
-                    $results[] = new AdvancedValue('string', $this->partial($data), $fieldName);
-
-                    break;
-
-                case 'hide':
-                    $results[] = new AdvancedValue('string', '[hidden]', $fieldName);
-
+                case 'bcrypt':
+                    $results[] = new AdvancedValue('string', $this->bcrypt($data), $fieldName);
                     break;
 
                 default:
@@ -83,73 +71,9 @@ final class Anonymizer implements TransformerInterface
 
         return $results;
     }
-
-    private function mask(string $value): string
+    private function bcrypt(string $value): string
     {
-        // Hardcoded defaults; should be configurable via transformer config if necessary
-        $visiblePrefix = 1;
-        $visibleDomainSuffix = 4;
-        $minMaskLength = 3;
-        $minDomainMaskLength = 5;
-
-        if (!str_contains($value, '@')) {
-            $length = strlen($value);
-            $maskedLength = max($length - $visiblePrefix, $minMaskLength);
-
-            return substr($value, 0, $visiblePrefix) . str_repeat('*', $maskedLength);
-        }
-
-        [$local, $domain] = explode('@', $value, 2);
-
-        $maskedLocal = substr($local, 0, $visiblePrefix)
-            . str_repeat('*', max(strlen($local) - $visiblePrefix, $minMaskLength));
-
-        $domainLength = strlen($domain);
-        $maskedDomain = $domainLength <= $visibleDomainSuffix + 1
-            ? str_repeat('*', max($domainLength, $minDomainMaskLength))
-            : substr($domain, 0, 1)
-                . str_repeat('*', max($domainLength - $visibleDomainSuffix - 1, $minDomainMaskLength))
-                . substr($domain, -$visibleDomainSuffix);
-
-        return $maskedLocal . '@' . $maskedDomain;
-    }
-
-    private function initials(string $name): string
-    {
-        $segments = explode(',', trim($name));
-        $initials = [];
-
-        foreach ($segments as $segment) {
-            $parts = preg_split('/\s+/', trim($segment));
-            $initials[] = implode('.', array_map(
-                static fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)),
-                array_filter($parts)
-            )) . '.';
-        }
-
-        return implode(', ', $initials);
-
-    }
-
-    private function partial(string $value): string
-    {
-        // Hardcoded defaults; should be configurable via transformer config if necessary
-        $visiblePrefix = 2;
-        $visibleSuffix = 4;
-        $maskChar = '*';
-        $minMaskLength = 4;
-
-        $length = strlen($value);
-
-        if ($length <= $visiblePrefix + $visibleSuffix) {
-            return substr($value, 0, 1) . str_repeat($maskChar, max($length - 1, $minMaskLength));
-        }
-
-        $maskedLength = $length - $visiblePrefix - $visibleSuffix;
-
-        return substr($value, 0, $visiblePrefix)
-            . str_repeat($maskChar, max($maskedLength, $minMaskLength))
-            . substr($value, -$visibleSuffix);
+        return password_hash($value, PASSWORD_BCRYPT);
     }
 
     public function getName(): string
@@ -164,7 +88,7 @@ final class Anonymizer implements TransformerInterface
 
     public function getDescription(): string
     {
-        return 'Anonymizes sensitive data using strategies like mask, initials, partial, or hide.';
+        return 'Anonymizes transforms sensitive data using strategies like md5, bcrypt.';
     }
 
     public function getConfigOptions(): array
@@ -174,12 +98,11 @@ final class Anonymizer implements TransformerInterface
                 'type' => 'select',
                 'label' => 'Anonymization Rule',
                 'options' => [
-                    ['value' => 'mask', 'label' => 'Mask (e.g. j***@e******.com)'],
-                    ['value' => 'initials', 'label' => 'Initials (e.g. J.D.)'],
-                    ['value' => 'partial', 'label' => 'Partial (e.g. 98****3210)'],
-                    ['value' => 'hide', 'label' => 'Hide (e.g. [hidden])'],
+                    ['value' => 'md5', 'label' => 'MD5 Hash'],
+                    ['value' => 'bcrypt', 'label' => 'Bcrypt'],
+                    ['value' => 'default', 'label' => 'Default Placeholder'],
                 ],
-                'default' => 'hide',
+                'default' => 'default',
             ],
         ];
     }

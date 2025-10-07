@@ -370,18 +370,71 @@ The `TwigOperator` transformer allows you to render custom HTML using Twig templ
 }
 ...
 ```
-#### Anonymizer Transformer
 
-The `Anonymizer` transformer allows you to obfuscate or anonymize sensitive string data using predefined strategies such as masking, initials, partial reveal, or complete hiding. It is especially useful for protecting personal information in grid views.
+#### Blur Transformer
+
+The `blur` transformer allows you to obfuscate or anonymize sensitive string data using predefined strategies such as masking, initials, partial reveal, or complete hiding. It is especially useful for protecting personal information in grid views.
 
 ---
 
 **Available Configurations:**
 
-- `mask`: Masks all but a portion of the string (e.g. j***@e*****.com).
-- `initials`: Converts names to initials (e.g. John Doe → J.D.).
-- `partial`: Shows the beginning and end of the string, masking the middle (e.g. 12****7890).
-- `hide`: Replaces the entire value with [hidden].
+-   `mask`: Masks all but a portion of the string (e.g. j**\*@e\*\*\***.com).
+-   `initials`: Converts names to initials (e.g. John Doe → J.D.).
+-   `partial`: Shows the beginning and end of the string, masking the middle (e.g. 12\*\*\*\*7890).
+-   `hide`: Replaces the entire value with [hidden].
+
+---
+
+**Example Configuration:**
+
+```json
+
+{
+  "key": "blurredName",
+  "locale": "en",
+  "type": "dataobject.advanced",
+  "config": {
+    "title": "Blurred Name",
+    "advancedColumns": [
+      {
+        "key": "simpleField",
+        "config": {
+          "field": "name"
+        }
+      }
+    ],
+    "transformers": [
+      {
+        "key": "blur",
+        "config": {
+          "rule": "partial",
+          "visiblePrefix": 1,
+          "visibleSuffix": 4,
+          "maskChar": "*",
+          "minMaskLength": 4,
+          "visibleDomainSuffix": 4,
+          "minDomainMaskLength": 5
+        }
+      }
+    ]
+  }
+}
+
+...
+```
+
+#### Anonymizer Transformer
+
+The `anonymizer` transformer allows you to irreversibly obfuscate sensitive string data using cryptographic hashing strategies. This is useful when you want to store or display anonymized identifiers that cannot be reversed, such as user IDs, emails, or names.
+
+---
+
+**Available Configurations:**
+
+-   `md5`: Hashes the string using the MD5 algorithm.Example: john.doe@example.com → fd876f8e4e6c3c3d3d3e3e3e3e3e3e3e
+-   `bcrypt`: Hashes the string using the Bcrypt algorithm (with salt)..Example: john.doe@example.com → $2y$10$... (varies per execution)
+    Note: Bcrypt is non-deterministic due to salting, so the output will differ each time it's applied.
 
 ---
 
@@ -407,12 +460,11 @@ The `Anonymizer` transformer allows you to obfuscate or anonymize sensitive stri
       {
         "key": "anonymizer",
         "config": {
-          "rule": "initials"
+          "rule": "bcrypt"
         }
       }
     ]
   }
 }
-
 ...
 ```
