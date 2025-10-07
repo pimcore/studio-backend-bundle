@@ -18,11 +18,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 
+use function explode;
 use function is_string;
 use function sprintf;
 use function str_repeat;
+use function strlen;
 use function substr;
-use function explode;
 use function trim;
 
 /**
@@ -50,24 +51,29 @@ final class Blur implements TransformerInterface
 
             if (!is_string($data)) {
                 $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
+
                 continue;
             }
 
             switch ($config['rule']) {
                 case 'mask':
                     $results[] = new AdvancedValue('string', $this->mask($data, $config), $fieldName);
+
                     break;
 
                 case 'initials':
                     $results[] = new AdvancedValue('string', $this->initials($data), $fieldName);
+
                     break;
 
                 case 'partial':
                     $results[] = new AdvancedValue('string', $this->partial($data, $config), $fieldName);
+
                     break;
 
                 case 'hide':
                     $results[] = new AdvancedValue('string', '[hidden]', $fieldName);
+
                     break;
 
                 default:
@@ -92,6 +98,7 @@ final class Blur implements TransformerInterface
         if (!str_contains($value, '@')) {
             $length = strlen($value);
             $maskedLength = max($length - $visiblePrefix, $minMaskLength);
+
             return substr($value, 0, $visiblePrefix) . str_repeat($maskChar, $maskedLength);
         }
 
@@ -110,24 +117,22 @@ final class Blur implements TransformerInterface
         return $maskedLocal . '@' . $maskedDomain;
     }
 
-
     private function initials(string $name): string
-    {        
+    {
         $segments = explode(',', trim($name));
-            $initials = [];
+        $initials = [];
 
-            foreach ($segments as $segment) {
-                $parts = preg_split('/\s+/', trim($segment));
-                $initials[] = implode('.', array_map(
-                    static fn(string $part): string => mb_strtoupper(mb_substr($part, 0, 1)),
-                    array_filter($parts)
-                )) . '.';
-            }
+        foreach ($segments as $segment) {
+            $parts = preg_split('/\s+/', trim($segment));
+            $initials[] = implode('.', array_map(
+                static fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)),
+                array_filter($parts)
+            )) . '.';
+        }
 
-            return implode(', ', $initials);
+        return implode(', ', $initials);
     }
 
-    
     private function partial(string $value, array $config): string
     {
         $visiblePrefix = $config['visiblePrefix'] ?? 2;
@@ -147,7 +152,6 @@ final class Blur implements TransformerInterface
             . str_repeat($maskChar, max($maskedLength, $minMaskLength))
             . substr($value, -$visibleSuffix);
     }
-
 
     public function getName(): string
     {
