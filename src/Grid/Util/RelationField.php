@@ -21,7 +21,7 @@ final readonly class RelationField extends SimpleField
     /**
      * @param SimpleField[] $fields
      */
-    public function __construct(string $name, string $key, private array $fields)
+    public function __construct(string $name, string $key, private array $classIds, private array $fields)
     {
         parent::__construct($name, $key);
     }
@@ -32,5 +32,10 @@ final readonly class RelationField extends SimpleField
     public function getFields(): array
     {
         return $this->fields;
+    }
+
+    public function getClassIds(): array
+    {
+        return $this->classIds;
     }
 }
