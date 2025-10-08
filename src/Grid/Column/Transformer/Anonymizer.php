@@ -51,9 +51,9 @@ final class Anonymizer implements TransformerInterface
             }
 
             $transformedValue = match ($config['rule']) {
-                'md5'    => md5($data), 
+                'md5'    => md5($data),
                 'bcrypt' => $this->bcrypt($data),
-                 default => throw new TransformerException(
+                default => throw new TransformerException(
                     $this->getName(),
                     sprintf('Invalid rule "%s" for anonymizer transformer.', $config['rule'])
                 ),

@@ -55,15 +55,15 @@ final class Blur implements TransformerInterface
             }
 
             $transformedValue = match ($config['rule']) {
-                    'mask'     => $this->mask($data, $config),
-                    'initials' => $this->initials($data),
-                    'partial'  => $this->partial($data, $config),
-                    'hide'     => '[hidden]',
-                     default   => throw new TransformerException(
-                        $this->getName(),
-                        sprintf('Invalid rule "%s" for blur transformer.', $config['rule'])
-                     ),
-                };
+                'mask'     => $this->mask($data, $config),
+                'initials' => $this->initials($data),
+                'partial'  => $this->partial($data, $config),
+                'hide'     => '[hidden]',
+                default   => throw new TransformerException(
+                    $this->getName(),
+                    sprintf('Invalid rule "%s" for blur transformer.', $config['rule'])
+                ),
+            };
 
             $results[] = new AdvancedValue('string', $transformedValue, $val->getFieldName());
         }
