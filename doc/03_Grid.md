@@ -386,6 +386,16 @@ The `blur` transformer allows you to obfuscate or anonymize sensitive string dat
 
 ---
 
+
+**Optional Parameters:**
+
+-   `maskChar`: Character used for masking (default: "\*").
+-   `minMaskLength`: Minimum number of mask characters to apply.
+-   `mask Rule Specific`: `visiblePrefix`- chars to show at start, `visibleDomainSuffix`: chars to show at end of domain, `minDomainMaskLength`: minimum mask length for domain .
+-   `partial Rule Specific`: `visiblePrefix`- chars to show at start , `visibleSuffix`: chars to show at end.
+
+---
+
 **Example Configuration:**
 
 ```json
@@ -437,6 +447,8 @@ The `anonymizer` transformer allows you to irreversibly obfuscate sensitive stri
     Note: Bcrypt is non-deterministic due to salting, so the output will differ each time it's applied.
 
 ---
+
+
 
 **Example Configuration:**
 

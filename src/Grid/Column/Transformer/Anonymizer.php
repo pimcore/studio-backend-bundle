@@ -43,22 +43,21 @@ final class Anonymizer implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
-            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
 
             if (!is_string($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
+                $results[] = $val;
 
                 continue;
             }
 
             switch ($config['rule']) {
                 case 'md5':
-                    $results[] = new AdvancedValue('string', md5($data), $fieldName);
+                    $results[] = new AdvancedValue('string', md5($data), $val->getFieldName());
 
                     break;
 
                 case 'bcrypt':
-                    $results[] = new AdvancedValue('string', $this->bcrypt($data), $fieldName);
+                    $results[] = new AdvancedValue('string', $this->bcrypt($data), $val->getFieldName());
 
                     break;
 

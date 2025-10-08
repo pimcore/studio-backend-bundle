@@ -47,32 +47,31 @@ final class Blur implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
-            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
 
             if (!is_string($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
+                $results[] = $val;
 
                 continue;
             }
 
             switch ($config['rule']) {
                 case 'mask':
-                    $results[] = new AdvancedValue('string', $this->mask($data, $config), $fieldName);
+                    $results[] = new AdvancedValue('string', $this->mask($data, $config), $val->getFieldName());
 
                     break;
 
                 case 'initials':
-                    $results[] = new AdvancedValue('string', $this->initials($data), $fieldName);
+                    $results[] = new AdvancedValue('string', $this->initials($data), $val->getFieldName());
 
                     break;
 
                 case 'partial':
-                    $results[] = new AdvancedValue('string', $this->partial($data, $config), $fieldName);
+                    $results[] = new AdvancedValue('string', $this->partial($data, $config), $val->getFieldName());
 
                     break;
 
                 case 'hide':
-                    $results[] = new AdvancedValue('string', '[hidden]', $fieldName);
+                    $results[] = new AdvancedValue('string', '[hidden]', $val->getFieldName());
 
                     break;
 
