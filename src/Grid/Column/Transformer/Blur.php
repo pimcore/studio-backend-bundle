@@ -54,33 +54,18 @@ final class Blur implements TransformerInterface
                 continue;
             }
 
-            switch ($config['rule']) {
-                case 'mask':
-                    $results[] = new AdvancedValue('string', $this->mask($data, $config), $val->getFieldName());
-
-                    break;
-
-                case 'initials':
-                    $results[] = new AdvancedValue('string', $this->initials($data), $val->getFieldName());
-
-                    break;
-
-                case 'partial':
-                    $results[] = new AdvancedValue('string', $this->partial($data, $config), $val->getFieldName());
-
-                    break;
-
-                case 'hide':
-                    $results[] = new AdvancedValue('string', '[hidden]', $val->getFieldName());
-
-                    break;
-
-                default:
-                    throw new TransformerException(
+            $transformedValue = match ($config['rule']) {
+                    'mask'     => $this->mask($data, $config),
+                    'initials' => $this->initials($data),
+                    'partial'  => $this->partial($data, $config),
+                    'hide'     => '[hidden]',
+                     default   => throw new TransformerException(
                         $this->getName(),
                         sprintf('Invalid rule "%s" for blur transformer.', $config['rule'])
-                    );
-            }
+                     ),
+                };
+
+            $results[] = new AdvancedValue('string', $transformedValue, $val->getFieldName());
         }
 
         return $results;
@@ -122,11 +107,16 @@ final class Blur implements TransformerInterface
         $initials = [];
 
         foreach ($segments as $segment) {
-            $parts = preg_split('/\s+/', trim($segment));
-            $initials[] = implode('.', array_map(
-                static fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)),
-                array_filter($parts)
-            )) . '.';
+            $parts = preg_split('/\s+/u', trim($segment));
+
+            $initials[] = implode(
+                '.',
+                array_map(
+                    static fn (string $part): string => mb_strtoupper(mb_substr($part, 0, 1)),
+                    array_filter($parts)
+                )
+            ) . '.';
+
         }
 
         return implode(', ', $initials);
