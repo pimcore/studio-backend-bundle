@@ -408,3 +408,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Blur:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Anonymizer:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
