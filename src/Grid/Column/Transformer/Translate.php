@@ -27,7 +27,6 @@ use function sprintf;
  */
 final readonly class Translate implements TransformerInterface
 {
-
     public function __construct(private TranslatorInterface $translator)
     {
     }
@@ -35,25 +34,25 @@ final readonly class Translate implements TransformerInterface
     public function transform(array $value, array $config): array
     {
         if (isset($config['prefix']) && !is_string($config['prefix'])) {
-                    throw new TransformerException(
-                        $this->getName(),
-                        sprintf(
-                            'Invalid "prefix" configuration (must be a string) for %s transformer.',
-                            $this->getKey()
-                        )
-                    );
-                }
+            throw new TransformerException(
+                $this->getName(),
+                sprintf(
+                    'Invalid "prefix" configuration (must be a string) for %s transformer.',
+                    $this->getKey()
+                )
+            );
+        }
 
         if (isset($config['locale']) && !is_string($config['locale'])) {
-                    throw new TransformerException(
-                        $this->getName(),
-                        sprintf(
-                            'Invalid "locale" configuration (must be a string) for %s transformer.',
-                            $this->getKey()
-                        )
-                    );
-                }
-        
+            throw new TransformerException(
+                $this->getName(),
+                sprintf(
+                    'Invalid "locale" configuration (must be a string) for %s transformer.',
+                    $this->getKey()
+                )
+            );
+        }
+
         $prefix = $config['prefix'] ?? '';
         $locale = $config['locale'] ?? null;
 
@@ -67,9 +66,9 @@ final readonly class Translate implements TransformerInterface
             $originalValue = (string) $item->getValue();
             if ($originalValue === '') {
                 $translatedValues[] = $item;
+
                 continue;
             }
-
 
             $translated = $this->translator->trans(
                 $prefix . $originalValue,
@@ -93,7 +92,7 @@ final readonly class Translate implements TransformerInterface
     {
         return 'translate';
     }
-    
+
     public function getDescription(): string
     {
         return 'Translates the value using Symfony Translator. You can optionally add a prefix and set a locale.';
@@ -116,5 +115,4 @@ final readonly class Translate implements TransformerInterface
             ],
         ];
     }
-
 }
