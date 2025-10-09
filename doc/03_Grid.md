@@ -480,3 +480,48 @@ The `anonymizer` transformer allows you to irreversibly obfuscate sensitive stri
 }
 ...
 ```
+
+
+#### Translate Transformer
+
+The `Translate` transformer translates a given value using Symfony’s Translator component. You can optionally add a prefix to the translation key and specify a locale to control the translation context. This is useful for dynamically translating field values in grids or data objects according to the configured locale and translation keys.
+
+---
+
+**Available Configurations:**
+
+-   `prefix`: Adds a prefix to the value before translation.
+-   `locale`: Specifies the locale to use for translation. Example: "de" → translates the value into German. If not set, the current application locale will be used.
+
+---
+
+**Example Configuration:**
+
+```json
+{
+  "key": "translatedName",
+  "locale": "de",
+  "type": "dataobject.advanced",
+  "config": {
+    "title": "Translated Name",
+    "advancedColumns": [
+      {
+        "key": "simpleField",
+        "config": {
+          "field": "name"
+        }
+      }
+    ],
+    "transformers": [
+      {
+        "key": "translate",
+        "config": {
+          "prefix": "attribute.",
+          "locale": "de"
+        }
+      }
+    ]
+  }
+}
+...
+```
