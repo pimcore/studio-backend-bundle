@@ -240,10 +240,15 @@ final class AdvancedColumnCollector implements
     ): RelationField {
         $classes  = $definition->getClasses();
         $fields = [];
+        $classIds = [];
         foreach ($classes as $class) {
             if (!array_key_exists('classes', $class)) {
                 continue;
             }
+
+            $classDefinition = $this->classDefinitionResolver->getByName($class['classes']);
+
+            $classIds[] = $classDefinition->getId();
 
             $fields = [
                 ...$this->buildFieldForClassName($class['classes']),
@@ -254,6 +259,7 @@ final class AdvancedColumnCollector implements
         return new RelationField(
             name: $definition->getTitle(),
             key: $definition->getName(),
+            classIds: $classIds,
             fields: $fields
         );
     }
@@ -273,14 +279,14 @@ final class AdvancedColumnCollector implements
             throw new NotFoundException('Class definition', $className);
         }
 
-        $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
+        $filteredLayoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $definitionOfTheRelation->getId(),
             $this->getFolderId(),
             $this->getUser()
         );
 
         return $this->getDefaultFields(
-            $this->collectSupportedDefinitions($test->getChildren())
+            $this->collectSupportedDefinitions($filteredLayoutDefinitions->getChildren())
         );
     }
 }

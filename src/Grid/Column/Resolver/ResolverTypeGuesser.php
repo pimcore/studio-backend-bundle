@@ -34,7 +34,7 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
      *
      * @var string[]
      */
-    private array $typeChache = [];
+    private array $typeCache = [];
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
@@ -75,15 +75,15 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
      */
     private function findType(string $key, string $classId, array $columnConfigurations): string
     {
-        $chacheName = $classId .'_'. $key;
+        $cacheName = $classId .'_'. $key;
 
-        if (isset($this->typeChache[$chacheName])) {
-            return $this->typeChache[$chacheName];
+        if (isset($this->typeCache[$cacheName])) {
+            return $this->typeCache[$cacheName];
         }
 
         foreach ($columnConfigurations as $columnConfiguration) {
             if ($columnConfiguration->getKey() === $key) {
-                $this->typeChache[$chacheName] = $columnConfiguration->getType();
+                $this->typeCache[$cacheName] = $columnConfiguration->getType();
 
                 return $columnConfiguration->getType();
             }
