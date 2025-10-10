@@ -130,6 +130,15 @@ final readonly class Column
         if (isset($this->config['transformers'])) {
             foreach ($this->config['transformers'] as $transformer) {
                 if (isset($transformer['key'])) {
+
+                    // Inject locale into original config array if not set
+                    if (
+                        !isset($transformer['config']['locale']) &&
+                        $this->getLocale() !== null
+                    ) {
+                        $transformer['config']['locale'] = $this->getLocale();
+                    }
+
                     $transformers[] = new Transformer(
                         key: $transformer['key'],
                         config: $transformer['config'] ?? []
@@ -138,7 +147,7 @@ final readonly class Column
             }
         }
 
-        return  $transformers;
+        return $transformers;
     }
 
     public function toArray(): array

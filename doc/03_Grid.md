@@ -500,7 +500,7 @@ The `Translate` transformer translates a given value using Symfony’s Translato
 ```json
 {
   "key": "translatedName",
-  "locale": "de",
+  "locale": "en",
   "type": "dataobject.advanced",
   "config": {
     "title": "Translated Name",
@@ -517,7 +517,6 @@ The `Translate` transformer translates a given value using Symfony’s Translato
         "key": "translate",
         "config": {
           "prefix": "attribute.",
-          "locale": "de"
         }
       }
     ]
