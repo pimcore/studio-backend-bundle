@@ -491,7 +491,6 @@ The `Translate` transformer translates a given value using Symfony’s Translato
 **Available Configurations:**
 
 -   `prefix`: Adds a prefix to the value before translation.
--   `locale`: Specifies the locale to use for translation. Example: "de" → translates the value into German. If not set, the current application locale will be used.
 
 ---
 

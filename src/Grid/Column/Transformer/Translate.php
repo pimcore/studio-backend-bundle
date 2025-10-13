@@ -108,13 +108,6 @@ final readonly class Translate implements TransformerInterface
                'description' => 'Prefix added before the value for translation. '
                . 'Example: "attribute." → "attribute.myValue".',
             ],
-            'locale' => [
-                'type' => 'text',
-                'default' => '',
-                'label' => 'Locale',
-                'description' => 'Optional locale to use for translation (e.g., "de"). '
-               . 'If not set, the current locale is used.',
-            ],
         ];
     }
 }
