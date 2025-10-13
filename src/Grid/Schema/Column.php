@@ -131,10 +131,10 @@ final readonly class Column
             foreach ($this->config['transformers'] as $transformer) {
                 if (isset($transformer['key'])) {
 
-                // Inject locale into original config array if not set
-                if ($this->getLocale() !== null) {
-                    $transformer['config']['locale'] = $this->getLocale();
-                }
+                    // Inject locale into original config array if not set
+                    if ($this->getLocale() !== null) {
+                        $transformer['config']['locale'] = $this->getLocale();
+                    }
 
                     $transformers[] = new Transformer(
                         key: $transformer['key'],
