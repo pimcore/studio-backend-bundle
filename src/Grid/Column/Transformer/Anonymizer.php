@@ -94,9 +94,8 @@ final class Anonymizer implements TransformerInterface
                 'options' => [
                     ['value' => 'md5', 'label' => 'MD5 Hash'],
                     ['value' => 'bcrypt', 'label' => 'Bcrypt'],
-                    ['value' => 'default', 'label' => 'Default Placeholder'],
                 ],
-                'default' => 'default',
+                'default' => 'md5',
             ],
         ];
     }

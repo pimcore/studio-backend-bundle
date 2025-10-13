@@ -414,3 +414,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Anonymizer:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Translate:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
