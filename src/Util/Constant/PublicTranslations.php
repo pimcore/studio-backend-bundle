@@ -27,5 +27,9 @@ final readonly class PublicTranslations
         'aria.login-form-additional-logins.additional-login-provider',
         'login-form.username',
         'login-form.password',
+        'forgot-password-form.success-message',
+        'forgot-password-form.username',
+        'forgot-password-form.reset-password',
+        'forgot-password-form.back',
     ];
 }
