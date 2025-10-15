@@ -32,6 +32,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Psr\Log\LoggerInterface;
+use function in_array;
 
 /**
  * @internal
@@ -54,7 +55,8 @@ final class FieldDefinitionCollector implements
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly array $skipFieldTypes = []
     ) {
     }
 
@@ -110,8 +112,11 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
-            // Use ObjectbricksCollector
-            if (!$definition instanceof Data || $definition instanceof Objectbricks) {
+            // When definition is an instance of ObjectBrick, there is an ObjectbricksCollector.
+            // We also skip all field types in skipFieldTypes
+            if (!$definition instanceof Data || $definition instanceof Objectbricks ||
+                in_array($definition->getFieldType(), $this->skipFieldTypes, true)
+            ) {
                 continue;
             }
 
