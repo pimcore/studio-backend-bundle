@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
@@ -124,6 +125,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$dataObjectSearchPredefinedColumns',
             $config['search_grid']['data_object']['predefined_columns']
         );
+
+        $definition = $container->getDefinition(FieldDefinitionCollector::class);
+        $definition->setArgument('$skipFieldTypes', $config['grid']['data_object']['skip_field_types']);
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
         $definition->setArgument('$dataObjectPredefinedColumns', $config['grid']['data_object']['predefined_columns']);

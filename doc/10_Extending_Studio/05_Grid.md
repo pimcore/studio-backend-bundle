@@ -5,6 +5,19 @@ E.g. the metadata for the asset grid have its own column definitions, resolvers 
 
 ## How to add a custom column
 
+For data object all column configurations are automatically created based on the class definition. However, sometimes it is necessary to define your own column definition, e.g., when requiring some custom-specific config or custom column group. 
+For these cases, it is possible to define your own custom column by following the steps below:
+
+Add studio configuration to skip your custom field type from automatic column generation:
+
+```yaml
+pimcore_studio_backend:
+  grid:
+    data_object:
+      skip_field_types:
+        - "myCustomFieldType"
+```
+
 In order that the grid can work with a custom column you have to implement the following classes:
 - Column Definition with the `ColumnDefinitionInterface` and tag it with `pimcore.studio_backend.column_definition`
 - Column Resolver with the `ColumnResolverInterface` and tag it with `pimcore.studio_backend.column_resolver`

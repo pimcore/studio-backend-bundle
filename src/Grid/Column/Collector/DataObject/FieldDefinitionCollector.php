@@ -54,7 +54,8 @@ final class FieldDefinitionCollector implements
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly array $skipFieldTypes = []
     ) {
     }
 
@@ -111,7 +112,9 @@ final class FieldDefinitionCollector implements
             }
 
             // Use ObjectbricksCollector
-            if (!$definition instanceof Data || $definition instanceof Objectbricks) {
+            if (!$definition instanceof Data || $definition instanceof Objectbricks ||
+                in_array($definition->getFieldType(), $this->skipFieldTypes, true)
+            ) {
                 continue;
             }
 
