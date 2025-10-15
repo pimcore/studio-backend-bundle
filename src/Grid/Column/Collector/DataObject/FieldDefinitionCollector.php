@@ -112,7 +112,7 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
-            // Use ObjectbricksCollector
+            // When definition is instance of ObjectBrick there is a ObjectbricksCollector. We also skip all field types in skipFieldTypes
             if (!$definition instanceof Data || $definition instanceof Objectbricks ||
                 in_array($definition->getFieldType(), $this->skipFieldTypes, true)
             ) {
