@@ -120,6 +120,10 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
+            if ($definition instanceof Classificationstore && $definition->localized) {
+                $localized = true;
+            }
+
             if ($localized) {
                 $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, [$defaultGroup], true);
 
