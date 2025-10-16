@@ -117,14 +117,18 @@ final readonly class WidgetService implements WidgetServiceInterface
      *
      * @return WidgetConfig[]
      */
-    public function listWidgetConfigurations(): array
+    public function listWidgetConfigurations(bool $skipWrapperWidgets): array
     {
         $hydrated = [];
         foreach ($this->loadRepositories() as $repository) {
             $widgetType = $repository->getSupportedWidgetType();
+            $isOnlyWrapper = $repository->isWidgetTypeOnlyWrapper();
             $this->widgetValidationService->validateWidgetType($widgetType);
+            if ($skipWrapperWidgets && $isOnlyWrapper) {
+                continue;
+            }
             foreach ($repository->listConfigurations() as $configData) {
-                $hydrated[] = $this->processRepositoryConfiguration($configData, $widgetType);
+                $hydrated[] = $this->processRepositoryConfiguration($configData, $widgetType, $isOnlyWrapper);
             }
         }
 
@@ -189,9 +193,11 @@ final readonly class WidgetService implements WidgetServiceInterface
 
     private function processRepositoryConfiguration(
         array $configData,
-        string $widgetType
+        string $widgetType,
+        bool $isOnlyWrapper
     ): WidgetConfig {
         $configData['widgetType'] = $widgetType;
+        $configData['onlyWrapper'] = $isOnlyWrapper;
         $hydratedConfig = $this->configListHydrator->hydrate($configData);
         $this->dispatchConfigEvent($hydratedConfig);
 

@@ -55,7 +55,7 @@ interface WidgetServiceInterface
      *
      * @return WidgetConfig[]
      */
-    public function listWidgetConfigurations(): array;
+    public function listWidgetConfigurations(bool $skipWrapperWidgets): array;
 
     /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException

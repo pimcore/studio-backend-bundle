@@ -17,6 +17,8 @@ interface WidgetConfigRepositoryInterface
 {
     public function getSupportedWidgetType(): string;
 
+    public function isWidgetTypeOnlyWrapper(): bool;
+
     public function createConfiguration(array $widgetData): string;
 
     public function updateConfiguration(array $widgetData): void;
