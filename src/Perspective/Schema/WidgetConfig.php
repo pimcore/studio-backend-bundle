@@ -21,12 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'Widget Config',
-    required: [
-        'id',
-        'name',
-        'widgetType',
-        'icon',
-    ],
+    required: ['id', 'name', 'widgetType', 'icon', 'onlyWrapper'],
     type: 'object'
 )]
 class WidgetConfig implements AdditionalAttributesInterface
@@ -42,6 +37,8 @@ class WidgetConfig implements AdditionalAttributesInterface
         private readonly string $widgetType,
         #[Property(description: 'Icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
+        #[Property(description: 'If widget is only wrapper of another configuration', type: 'bool', example: false)]
+        private readonly bool $onlyWrapper = false,
     ) {
     }
 
@@ -63,5 +60,10 @@ class WidgetConfig implements AdditionalAttributesInterface
     public function getIcon(): ElementIcon
     {
         return $this->icon;
+    }
+
+    public function isOnlyWrapper(): bool
+    {
+        return $this->onlyWrapper;
     }
 }

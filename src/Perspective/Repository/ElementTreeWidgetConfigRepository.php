@@ -52,6 +52,11 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         return WidgetTypes::ELEMENT_TREE->value;
     }
 
+    public function isWidgetTypeOnlyWrapper(): bool
+    {
+        return false;
+    }
+
     /**
      * @throws ElementSavingFailedException|NotWriteableException
      */
