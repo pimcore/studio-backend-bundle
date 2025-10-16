@@ -90,6 +90,12 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         $store = $data[$key];
+
+        if ($isPatch) {
+            $elementStore = $this->normalize($element->get($key), $fieldDefinition);
+            $store = array_replace_recursive($elementStore, $store);
+        }
+
         $activeGroups = $store['activeGroups'] ?? [];
         if (empty($activeGroups)) {
             return null;
