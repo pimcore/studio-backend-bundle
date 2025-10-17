@@ -92,7 +92,8 @@ final readonly class ClassificationStoreAdapter implements
         $store = $data[$key];
 
         if ($isPatch) {
-            $elementStore = $this->normalize($element->get($key), $fieldDefinition);
+            $elementStore = $this->handleNormalize($element->get($key), $fieldDefinition, $user);
+            $store['activeGroups'] = $this->getActiveGroupsFromStore($store);
             $store = array_replace_recursive($elementStore, $store);
         }
 
@@ -116,33 +117,7 @@ final readonly class ClassificationStoreAdapter implements
         mixed $value,
         Data $fieldDefinition
     ): ?array {
-        if (!$value instanceof ClassificationstoreModel ||
-            !$fieldDefinition instanceof ClassificationstoreDefinition
-        ) {
-            return null;
-        }
-
-        $validLanguages = $this->getValidLanguages($value->getObject(), $fieldDefinition->isLocalized());
-        $resultItems = [];
-
-        $resultItems['activeGroups'] = $value->getActiveGroups();
-        $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
-
-        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
-            $resultItems[$groupId] = [];
-            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
-            foreach ($validLanguages as $validLanguage) {
-                foreach ($keys as $key) {
-                    $normalizedValue = $this->getNormalizedValue($value, $groupId, $key, $validLanguage);
-
-                    if ($normalizedValue !== null) {
-                        $resultItems[$groupId][$validLanguage][$key->getKeyId()] = $normalizedValue;
-                    }
-                }
-            }
-        }
-
-        return $resultItems;
+        return $this->handleNormalize($value, $fieldDefinition);
     }
 
     public function getFieldInheritance(
@@ -212,6 +187,46 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $data;
+    }
+
+
+    private function handleNormalize(
+        mixed $value,
+        Data $fieldDefinition,
+        ?UserInterface $user = null
+    ): ?array {
+        if (!$value instanceof ClassificationstoreModel ||
+            !$fieldDefinition instanceof ClassificationstoreDefinition
+        ) {
+            return null;
+        }
+
+        $validLanguages = $this->getValidLanguages(
+            $value->getObject(),
+            $fieldDefinition->isLocalized(),
+            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS,
+            $user
+        );
+        $resultItems = [];
+
+        $resultItems['activeGroups'] = $value->getActiveGroups();
+        $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
+
+        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
+            $resultItems[$groupId] = [];
+            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
+            foreach ($validLanguages as $validLanguage) {
+                foreach ($keys as $key) {
+                    $normalizedValue = $this->getNormalizedValue($value, $groupId, $key, $validLanguage);
+
+                    if ($normalizedValue !== null) {
+                        $resultItems[$groupId][$validLanguage][$key->getKeyId()] = $normalizedValue;
+                    }
+                }
+            }
+        }
+
+        return $resultItems;
     }
 
     /**
@@ -400,6 +415,15 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $groups;
+    }
+
+    private function getActiveGroupsFromStore(array $store): array
+    {
+        $activeGroups = [];
+        foreach ($store as $groupId => $groupData) {
+            $activeGroups[$groupId] = true;
+        }
+        return $activeGroups;
     }
 
     /**
