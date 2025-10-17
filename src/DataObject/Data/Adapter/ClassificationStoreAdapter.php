@@ -189,7 +189,6 @@ final readonly class ClassificationStoreAdapter implements
         return $data;
     }
 
-
     private function handleNormalize(
         mixed $value,
         Data $fieldDefinition,
@@ -423,6 +422,7 @@ final readonly class ClassificationStoreAdapter implements
         foreach ($store as $groupId => $groupData) {
             $activeGroups[$groupId] = true;
         }
+
         return $activeGroups;
     }
 
