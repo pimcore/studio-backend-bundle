@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
+use Pimcore\Helper\ParameterBagHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -63,6 +64,6 @@ final class UserPasswordVoter extends Voter
     {
         $request = $this->getCurrentRequest($this->requestStack);
 
-        return $request->attributes->getInt('id');
+        return ParameterBagHelper::getInt($request->attributes, 'id');
     }
 }
