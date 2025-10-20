@@ -13,9 +13,10 @@ declare(strict_types=1);
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode;
+
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\PhpCodeTransformerInterface;
+use function is_string;
 
 /**
  * @internal
@@ -33,7 +34,7 @@ final class ExamplePhpCodeTransformer implements PhpCodeTransformerInterface
             'string',
             $transformed,
             'null'
-        )
+        ),
     ];
     }
 
@@ -52,7 +53,6 @@ final class ExamplePhpCodeTransformer implements PhpCodeTransformerInterface
         return 'Transforms string values to uppercase for demonstration purposes.';
     }
 
-    
     public function getConfigOptions(): array
     {
         return [
@@ -68,5 +68,4 @@ final class ExamplePhpCodeTransformer implements PhpCodeTransformerInterface
             ],
         ];
     }
-
 }

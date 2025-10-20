@@ -11,19 +11,23 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\PhpCodeTransformerResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+use function get_class;
+use function is_array;
+use function is_string;
+use function sprintf;
 
 final class PhpCode implements TransformerInterface
 {
     public function __construct(
-            private readonly PhpCodeTransformerResolverInterface $resolver
-        ) {}
+        private readonly PhpCodeTransformerResolverInterface $resolver
+    ) {
+    }
 
     public function transform(array $value, array $config): array
     {
@@ -50,12 +54,12 @@ final class PhpCode implements TransformerInterface
             );
         }
 
-       $transformer = $this->resolver->resolve($phpClass);
+        $transformer = $this->resolver->resolve($phpClass);
 
         if (!$transformer) {
             throw new TransformerException($this->getName(), "PHP Class  '{$phpClass}' not found.");
         }
-            
+
         $results = [];
         foreach ($value as $val) {
             $transformed = $transformer->transform($val->getValue(), $arguments);
@@ -65,9 +69,9 @@ final class PhpCode implements TransformerInterface
                 $transformed[0] ?? null,
                 $val->getFieldName()
             );
-     }
+        }
 
-    return $results;
+        return $results;
 
     }
 
@@ -93,7 +97,7 @@ final class PhpCode implements TransformerInterface
         foreach ($this->resolver->getTransformers() as $executable) {
             $options[] = [
                 'value' => get_class($executable),
-                'label' => $executable->getKey(), 
+                'label' => $executable->getKey(),
             ];
         }
 

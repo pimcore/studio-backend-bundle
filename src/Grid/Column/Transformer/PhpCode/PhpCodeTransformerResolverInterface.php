@@ -15,7 +15,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\PhpCodeTransformerInterface;
 
 /**
  * @internal
