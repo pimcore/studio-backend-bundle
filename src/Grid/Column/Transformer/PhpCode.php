@@ -56,10 +56,6 @@ final class PhpCode implements TransformerInterface
 
         $transformer = $this->resolver->resolve($phpClass);
 
-        if (!$transformer) {
-            throw new TransformerException($this->getName(), "PHP Class  '{$phpClass}' not found.");
-        }
-
         $results = [];
         foreach ($value as $val) {
             $transformed = $transformer->transform($val->getValue(), $arguments);
