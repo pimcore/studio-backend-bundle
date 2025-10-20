@@ -80,7 +80,7 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
 
         try {
             $inheritance = $normalizedData->getInheritance()[$config->getGroupId()][$locale][$config->getKeyId()];
-        } catch (Exception $e) {
+        } catch (Exception) {
             $inheritance = new InheritanceData($element->getId(), false);
         }
 
