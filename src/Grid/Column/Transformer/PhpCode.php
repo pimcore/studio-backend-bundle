@@ -44,7 +44,7 @@ final class PhpCode implements TransformerInterface
             );
         }
 
-        if (isset($arguments) && !is_array($arguments)) {
+        if (!is_array($arguments)) {
             throw new TransformerException(
                 $this->getName(),
                 sprintf(

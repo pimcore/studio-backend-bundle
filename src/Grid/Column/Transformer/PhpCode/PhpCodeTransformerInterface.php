@@ -22,10 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 interface PhpCodeTransformerInterface
 {
     /**
-     * Transforms a value of the advanced column in the grid.
-     *
-     * @param AdvancedValue[] $value
-     *
+     * @param mixed $value
+     * @param array $arguments
      * @return AdvancedValue[]
      */
     public function transform(mixed $value, array $arguments): array;
