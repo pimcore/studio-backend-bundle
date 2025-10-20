@@ -42,7 +42,7 @@ final class ColumnData implements AdditionalAttributesInterface
             example: ['objectId' => 42, 'inInherited' => true],
             nullable: true
         )]
-        private readonly ?InheritanceData $inheritance = null
+        private readonly null|InheritanceData|array $inheritance = null
     ) {
     }
 
@@ -66,7 +66,7 @@ final class ColumnData implements AdditionalAttributesInterface
         return $this->value;
     }
 
-    public function getInheritance(): ?InheritanceData
+    public function getInheritance(): null|InheritanceData|array
     {
         return $this->inheritance;
     }
