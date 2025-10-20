@@ -115,7 +115,7 @@ final class AdapterResolver implements
         ];
     }
 
-    private function getInheritanceData(Concrete $element, Data $fieldDefinition, string $field): InheritanceData
+    private function getInheritanceData(Concrete $element, Data $fieldDefinition, string $field): array|InheritanceData
     {
         return $this->dataObjectServiceResolver->useInheritedValues(
             false,

@@ -82,7 +82,7 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
             locale: $column->getLocale(),
             value: $value,
             fieldType: $keyGroupRelation->getType(),
-            inheritance: $normalizedData->getInheritance(),
+            inheritance: $normalizedData->getInheritance()[$config->getGroupId()][$locale][$config->getKeyId()],
         );
 
         $returnData->addAdditionalAttribute('groupId', $config->getGroupId());
