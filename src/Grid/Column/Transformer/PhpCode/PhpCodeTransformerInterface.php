@@ -24,6 +24,7 @@ interface PhpCodeTransformerInterface
     /**
      * @param mixed $value
      * @param array $arguments
+     *
      * @return AdvancedValue[]
      */
     public function transform(mixed $value, array $arguments): array;
