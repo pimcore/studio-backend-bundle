@@ -60,11 +60,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorPhpCodeTransformerLoader
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesserInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesser
   
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\PhpCodeTransformerResolverInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\TaggedPhpCodeTransformerResolver
 
   #
   # Repository
@@ -424,8 +425,3 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
 
-  #
-  # Example Transformer
-  #
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\ExamplePhpCodeTransformer:
-    tags: [ 'pimcore.studio_backend.phpcode_transformer' ]

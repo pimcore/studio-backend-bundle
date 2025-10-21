@@ -14,25 +14,25 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode\PhpCodeTransformerResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use function get_class;
-use function is_array;
 use function is_string;
 use function sprintf;
 
+/**
+ * @internal
+ */
 final class PhpCode implements TransformerInterface
 {
     public function __construct(
-        private readonly PhpCodeTransformerResolverInterface $resolver
+        private readonly PhpCodeTransformerLoaderInterface $resolver
     ) {
     }
 
     public function transform(array $value, array $config): array
     {
-        $phpClass  =  $config['phpClass'] ?? null;
-        $arguments =  $config['arguments'] ?? [];
+        $phpClass = $config['phpClass'] ?? null;
 
         if (!isset($phpClass) || !is_string($phpClass)) {
             throw new TransformerException(
@@ -43,30 +43,13 @@ final class PhpCode implements TransformerInterface
                 )
             );
         }
-
-        if (!is_array($arguments)) {
-            throw new TransformerException(
-                $this->getName(),
-                sprintf(
-                    'Invalid "arguments" configuration (must be an array if provided) for %s transformer.',
-                    $this->getKey()
-                )
-            );
-        }
-
+ 
+        //Check if class exists
         $transformer = $this->resolver->resolve($phpClass);
 
-        $results = [];
-        foreach ($value as $val) {
-            $transformed = $transformer->transform($val->getValue(), $arguments);
-
-            $results[] = new AdvancedValue(
-                'string',
-                $transformed[0] ?? null,
-                $val->getFieldName()
-            );
-        }
-
+        //Transform the entire value and return result
+        $results = $transformer->transform($value, $config);
+    
         return $results;
 
     }

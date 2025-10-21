@@ -12,13 +12,10 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 
-/**
- * @internal
- */
 interface PhpCodeTransformerInterface
 {
     /**
@@ -27,7 +24,7 @@ interface PhpCodeTransformerInterface
      *
      * @return AdvancedValue[]
      */
-    public function transform(mixed $value, array $arguments): array;
+    public function transform(array $value, array $config): array;
 
     public function getName(): string;
 

@@ -533,7 +533,6 @@ The `PhpCode` transformer delegates value transformation to a custom PHP class i
 **Available Configurations:**
 
 -   `phpClass`: The fully qualified class name of the transformer to execute. Must implement PhpCodeTransformerInterface.
--   `arguments`: A key-value map of arguments passed to the transformer. These can be used to customize the transformation logic.
 
 ---
 
@@ -556,17 +555,15 @@ The `PhpCode` transformer delegates value transformation to a custom PHP class i
       }
     ],
     "transformers": [
-      {
-        "key": "phpCode",
-        "config": {
-          "phpClass": "Pimcore\\Bundle\\StudioBackendBundle\\Grid\\Column\\Transformer\\PhpCode\\ExamplePhpCodeTransformer",
-          "arguments": {
-            "first": "argument1",
-            "second": "argument2"
+          {
+            "key": "phpCode",
+            "config": {
+              "phpClass": "Pimcore\\Bundle\\StudioBackendBundle\\Grid\\Column\\Transformer\\PhpCode\\ExamplePhpCodeTransformer",
+              "firstValue": "firstValue",
+              "secondValue": "secondValue"
+            }
           }
-        }
-      }
-    ]
+        ]
   }
 }
 

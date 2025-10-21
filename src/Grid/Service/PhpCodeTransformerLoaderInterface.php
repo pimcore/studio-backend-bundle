@@ -12,14 +12,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
  * @internal
  */
-interface PhpCodeTransformerResolverInterface
+interface PhpCodeTransformerLoaderInterface
 {
     public const TRANSFORMER_TAG = 'pimcore.studio_backend.phpcode_transformer';
 

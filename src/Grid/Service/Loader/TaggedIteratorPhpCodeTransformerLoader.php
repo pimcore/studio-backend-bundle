@@ -11,8 +11,10 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\PhpCode;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 use function get_class;
@@ -21,7 +23,7 @@ use function sprintf;
 /**
  * @internal
  */
-final readonly class TaggedPhpCodeTransformerResolver implements PhpCodeTransformerResolverInterface
+final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTransformerLoaderInterface
 {
     /**
      * @param iterable<PhpCodeTransformerInterface> $transformers
