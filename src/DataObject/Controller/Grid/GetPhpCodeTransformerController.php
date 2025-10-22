@@ -8,20 +8,20 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license   Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerCollectorInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -62,7 +62,7 @@ final class GetPhpCodeTransformerController extends AbstractApiController
                         new Property(property: 'label', type: 'string'),
                         new Property(property: 'description', type: 'string'),
                     ]
-                ))
+                )),
             ]
         )
     )]
@@ -76,5 +76,4 @@ final class GetPhpCodeTransformerController extends AbstractApiController
             'transformers' => $this->collector->collect(),
         ]);
     }
-
 }

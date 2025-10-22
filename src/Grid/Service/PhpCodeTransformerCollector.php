@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\PhpCodeTransformerCollectionException;
+use function get_class;
 use function sprintf;
 
 /**
@@ -24,7 +25,8 @@ final class PhpCodeTransformerCollector implements PhpCodeTransformerCollectorIn
 {
     public function __construct(
         private readonly PhpCodeTransformerLoaderInterface $loader,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws PhpCodeTransformerCollectionException

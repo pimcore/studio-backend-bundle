@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use function get_class;
 use function is_string;
 use function sprintf;
@@ -43,13 +43,13 @@ final class PhpCode implements TransformerInterface
                 )
             );
         }
- 
+
         //Check if class exists
         $transformer = $this->resolver->resolve($phpClass);
 
         //Transform the entire value and return result
         $results = $transformer->transform($value, $config);
-    
+
         return $results;
 
     }
