@@ -60,6 +60,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerCollectorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerCollector
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorPhpCodeTransformerLoader
 

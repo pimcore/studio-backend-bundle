@@ -1408,3 +1408,8 @@ notification_get_unread_count_success_response: Count of unread notifications fo
 data_object_get_available_grid_columns_for_relation_description: Get all available grid columns for data objects Many to many relation field (defined in the visible columns)
 data_object_get_available_grid_columns_for_relation_summary: Get all available grid columns for data objects Many to many relation field
 data_object_get_available_grid_columns_success_for_relation_response: List of available grid columns for data objects Many to many relation field
+data_object_get_phpcode_transformers_description: |
+  Returns a list of available PHPCode transformers used in grid rendering.  
+  These transformers can be applied to grid columns to dynamically modify or format values using PHP logic.
+data_object_get_phpcode_transformers_summary: List PHPCode transformers
+data_object_get_phpcode_transformers_success_response: List of available PHPCode transformers
