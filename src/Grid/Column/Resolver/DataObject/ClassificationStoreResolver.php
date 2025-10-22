@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
@@ -77,12 +78,18 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
 
         $keyGroupRelation = $this->findKeyGroupRelation($config->getGroupId(), $config->getKeyId());
 
+        try {
+            $inheritance = $normalizedData->getInheritance()[$config->getGroupId()][$locale][$config->getKeyId()];
+        } catch (Exception) {
+            $inheritance = new InheritanceData($element->getId(), false);
+        }
+
         $returnData = new ColumnData(
             key: $column->getKey() . '.' . $keyGroupRelation->getName(),
             locale: $column->getLocale(),
             value: $value,
             fieldType: $keyGroupRelation->getType(),
-            inheritance: $normalizedData->getInheritance()[$config->getGroupId()][$locale][$config->getKeyId()],
+            inheritance: $inheritance,
         );
 
         $returnData->addAdditionalAttribute('groupId', $config->getGroupId());
