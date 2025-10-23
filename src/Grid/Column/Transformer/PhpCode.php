@@ -48,10 +48,7 @@ final class PhpCode implements TransformerInterface
         $transformer = $this->resolver->resolve($phpClass);
 
         //Transform the entire value and return result
-        $results = $transformer->transform($value, $config);
-
-        return $results;
-
+        return $transformer->transform($value, $config);
     }
 
     public function getName(): string

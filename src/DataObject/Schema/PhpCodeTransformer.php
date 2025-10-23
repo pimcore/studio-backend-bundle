@@ -30,13 +30,22 @@ final class PhpCodeTransformer implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Unique key of the transformer', type: 'string', example: 't_key')]
+        #[Property(
+            description: 'Unique key of the transformer', 
+            type: 'string', 
+            example: 't_key')]
         private readonly string $key,
 
-        #[Property(description: 'Label of the transformer', type: 'string', example: 'Transformer')]
+        #[Property(
+            description: 'Label of the transformer', 
+            type: 'string', 
+            example: 'Transformer')]
         private readonly string $label,
 
-        #[Property(description: 'Fully qualified class name of the transformer', type: 'string', example: 'App\\Transformer\\MyTransformer')]
+        #[Property(
+            description: 'Fully qualified class name of the transformer', 
+            type: 'string', 
+            example: 'App\\Transformer\\MyTransformer')]
         private readonly string $class
     ) {
     }
