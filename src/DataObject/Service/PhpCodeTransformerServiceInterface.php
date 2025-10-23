@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -12,17 +11,14 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\PhpCodeTransformerCollectionException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
  */
-interface PhpCodeTransformerCollectorInterface
+interface PhpCodeTransformerServiceInterface
 {
-    /**
-     * @throws PhpCodeTransformerCollectionException
-     */
-    public function collect(): array;
+    public function getPhpCodeTransformers(): Collection;
 }

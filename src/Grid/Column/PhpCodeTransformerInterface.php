@@ -29,8 +29,4 @@ interface PhpCodeTransformerInterface
     public function getName(): string;
 
     public function getKey(): string;
-
-    public function getDescription(): string;
-
-    public function getConfigOptions(): array;
 }

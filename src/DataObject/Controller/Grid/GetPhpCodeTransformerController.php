@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 /**
@@ -15,17 +14,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerCollectorInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PhpCodeTransformerServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -33,9 +35,10 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetPhpCodeTransformerController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PhpCodeTransformerCollectorInterface $collector,
+        private readonly PhpCodeTransformerServiceInterface $phpCodeTransformerService,
     ) {
         parent::__construct($serializer);
     }
@@ -45,6 +48,7 @@ final class GetPhpCodeTransformerController extends AbstractApiController
         name: 'pimcore_studio_api_get_phpcode_transformers',
         methods: ['GET']
     )]
+    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::PREFIX . '/data-objects/grid/transformers/services/phpcode',
         operationId: 'data_object_get_phpcode_transformers',
@@ -53,18 +57,8 @@ final class GetPhpCodeTransformerController extends AbstractApiController
         tags: [Tags::DataObjectsGrid->value]
     )]
     #[SuccessResponse(
-        description: 'data_object_get_phpcode_transformers_success_response',
-        content: new JsonContent(
-            properties: [
-                new Property(property: 'transformers', type: 'array', items: new Items(
-                    properties: [
-                        new Property(property: 'key', type: 'string'),
-                        new Property(property: 'label', type: 'string'),
-                        new Property(property: 'description', type: 'string'),
-                    ]
-                )),
-            ]
-        )
+    description: 'data_object_get_phpcode_transformers_success_response',
+    content: new CollectionJson(new GenericCollection(PhpCodeTransformer::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -72,8 +66,12 @@ final class GetPhpCodeTransformerController extends AbstractApiController
     ])]
     public function getPhpCodeTransformers(): JsonResponse
     {
-        return $this->jsonResponse([
-            'transformers' => $this->collector->collect(),
-        ]);
+        $collection = $this->phpCodeTransformerService->getPhpCodeTransformers();
+
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $collection->getItems(),
+            $collection->getTotalItems()
+        );
     }
 }

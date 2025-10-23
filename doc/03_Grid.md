@@ -526,11 +526,7 @@ The `Translate` transformer translates a given value using Symfony’s Translato
 
 #### PhpCode Transformer
 
-The `PhpCode` transformer delegates value transformation to a custom PHP class implementing the PhpCodeTransformerInterface. This allows developers to encapsulate complex transformation logic in reusable services. You can specify the class to use via its fully qualified name (phpClass) and pass custom arguments to control its behavior. This is ideal for advanced use cases where transformation logic depends on external services, dynamic configuration, or custom business rules.
-
-To get the list of available PHP Transformer classes, you can call the following endpoint:
-`GET /pimcore-studio/api//data-objects/grid/transformers/services/phpcode`
-
+The `PhpCode` transformer delegates value transformation to a custom PHP class implementing the Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface. This allows developers to encapsulate complex transformation logic in reusable services. You can specify the class to use via its fully qualified name (phpClass) and pass custom arguments to control its behavior. This is ideal for advanced use cases where transformation logic depends on external services, dynamic configuration, or custom business rules.
 ---
 
 **Available Configurations:**
@@ -538,7 +534,6 @@ To get the list of available PHP Transformer classes, you can call the following
 -   `phpClass`: The fully qualified class name of the transformer to execute. Must implement PhpCodeTransformerInterface.
 
 ---
-
 
 **Example Configuration:**
 
@@ -562,8 +557,6 @@ To get the list of available PHP Transformer classes, you can call the following
             "key": "phpCode",
             "config": {
               "phpClass": "Pimcore\\Bundle\\StudioBackendBundle\\Grid\\Column\\Transformer\\ExamplePhpCodeTransformer",
-              "firstValue": "firstValue",
-              "secondValue": "secondValue"
             }
           }
         ]

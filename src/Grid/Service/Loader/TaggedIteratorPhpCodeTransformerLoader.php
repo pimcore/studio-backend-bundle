@@ -29,17 +29,22 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
      * @param iterable<PhpCodeTransformerInterface> $transformers
      */
     public function __construct(
-        #[TaggedIterator(self::TRANSFORMER_TAG)]
+        #[TaggedIterator(self::PHPCODE_TRANSFORMER_TAG)]
         private iterable $transformers,
     ) {
     }
 
     /**
-     * @return iterable<PhpCodeTransformerInterface>
+     *  * @return array<string, PhpCodeTransformerInterface>
      */
-    public function getTransformers(): iterable
+    public function getTransformers(): array
     {
-        return $this->transformers;
+        $transformers = [];
+        foreach ($this->transformers as $transformer) {
+            $transformers[$transformer->getKey()] = $transformer;
+        }
+
+        return $transformers;
     }
 
     /**

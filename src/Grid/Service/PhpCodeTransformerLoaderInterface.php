@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
  */
 interface PhpCodeTransformerLoaderInterface
 {
-    public const TRANSFORMER_TAG = 'pimcore.studio_backend.phpcode_transformer';
+    public const PHPCODE_TRANSFORMER_TAG = 'pimcore.studio_backend.phpcode_transformer';
 
     /**
      * @return iterable<PhpCodeTransformerInterface>
