@@ -31,5 +31,6 @@ final readonly class PublicTranslations
         'forgot-password-form.username',
         'forgot-password-form.reset-password',
         'forgot-password-form.back',
+        'forgot-password-form.username.placeholder'
     ];
 }
