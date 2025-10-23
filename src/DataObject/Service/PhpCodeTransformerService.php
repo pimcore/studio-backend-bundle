@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\PhpCodeTransformerEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\PhpCodeTransformerEvent;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function count;
 use function get_class;
 
 /**
@@ -35,7 +36,7 @@ final readonly class PhpCodeTransformerService implements PhpCodeTransformerServ
     {
         return $this->getTransformerCollection($this->loader->getTransformers());
     }
-    
+
     /**
      * Converts an array of transformers into a Collection of PhpCodeTransformer DTOs
      *

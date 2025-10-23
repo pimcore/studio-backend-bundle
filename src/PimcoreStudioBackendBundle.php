@@ -26,9 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColu
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeTransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
-use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeTransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;

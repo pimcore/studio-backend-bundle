@@ -11,12 +11,10 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
-
+use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class PhpCodeTransformerEvent extends AbstractPreResponseEvent
 {

@@ -14,8 +14,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+use function is_string;
 
 /**
  * @internal
@@ -33,7 +34,7 @@ final class ExamplePhpCodeTransformer implements PhpCodeTransformerInterface
             'string',
             $transformed,
             'null'
-        )
+        ),
     ];
     }
 
@@ -46,6 +47,4 @@ final class ExamplePhpCodeTransformer implements PhpCodeTransformerInterface
     {
         return 'examplePhpCode';
     }
-
-
 }

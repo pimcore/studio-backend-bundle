@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PhpCodeTransformerServiceInterface;
@@ -23,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -36,6 +36,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetPhpCodeTransformerController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly PhpCodeTransformerServiceInterface $phpCodeTransformerService,
@@ -57,8 +58,8 @@ final class GetPhpCodeTransformerController extends AbstractApiController
         tags: [Tags::DataObjectsGrid->value]
     )]
     #[SuccessResponse(
-    description: 'data_object_get_phpcode_transformers_success_response',
-    content: new CollectionJson(new GenericCollection(PhpCodeTransformer::class))
+        description: 'data_object_get_phpcode_transformers_success_response',
+        content: new CollectionJson(new GenericCollection(PhpCodeTransformer::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

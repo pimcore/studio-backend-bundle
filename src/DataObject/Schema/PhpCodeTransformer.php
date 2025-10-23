@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
-use OpenApi\Attributes\Property;    
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 final class PhpCodeTransformer implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
-    
+
     public function __construct(
         #[Property(description: 'Unique key of the transformer', type: 'string', example: 't_key')]
         private readonly string $key,
@@ -55,5 +55,4 @@ final class PhpCodeTransformer implements AdditionalAttributesInterface
     {
         return $this->class;
     }
-
 }
