@@ -13,8 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
+/**
+ * @template T
+ */
 final readonly class Collection
 {
+    /**
+     * @param list<T> $items
+     */
     public function __construct(
         private int $totalItems,
         private array $items
@@ -26,6 +32,9 @@ final readonly class Collection
         return $this->totalItems;
     }
 
+    /**
+     * @return list<T>
+     */
     public function getItems(): array
     {
         return $this->items;
