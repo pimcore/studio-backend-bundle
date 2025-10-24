@@ -17,7 +17,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
-use function sprintf;
 
 /**
  * @internal
