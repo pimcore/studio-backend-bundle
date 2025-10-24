@@ -25,12 +25,12 @@ interface PhpCodeTransformerLoaderInterface
     public const PHPCODE_TRANSFORMER_TAG = 'pimcore.studio_backend.phpcode_transformer';
 
     /**
-     * @return iterable<PhpCodeTransformerInterface>
+     * @return array<PhpCodeTransformerInterface>
      */
-    public function getTransformers(): iterable;
+    public function getTransformers(): array;
 
     /**
      * @throws InvalidArgumentException If no matching transformer is found
      */
-    public function resolve(string $className): PhpCodeTransformerInterface;
+    public function resolve(string $key): PhpCodeTransformerInterface;
 }

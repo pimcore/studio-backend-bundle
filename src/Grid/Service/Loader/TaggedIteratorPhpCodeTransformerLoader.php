@@ -17,7 +17,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
-use function get_class;
 use function sprintf;
 
 /**
@@ -25,9 +24,6 @@ use function sprintf;
  */
 final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTransformerLoaderInterface
 {
-    /**
-     * @param iterable<PhpCodeTransformerInterface> $transformers
-     */
     public function __construct(
         #[TaggedIterator(self::PHPCODE_TRANSFORMER_TAG)]
         private iterable $transformers,
@@ -35,7 +31,7 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
     }
 
     /**
-     *  * @return array<string, PhpCodeTransformerInterface>
+     *  @return array<string, PhpCodeTransformerInterface>
      */
     public function getTransformers(): array
     {
@@ -50,16 +46,16 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
     /**
      * @throws InvalidArgumentException
      */
-    public function resolve(string $className): PhpCodeTransformerInterface
+    public function resolve(string $key): PhpCodeTransformerInterface
     {
         foreach ($this->transformers as $transformer) {
-            if (get_class($transformer) === $className) {
+            if ($transformer->getKey() === $key) {
                 return $transformer;
             }
         }
 
         throw new InvalidArgumentException(
-            sprintf('No PhpCode transformer found for class "%s"', $className)
+            sprintf('No PhpCode transformer found for key "%s"', $key)
         );
     }
 }

@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'Simple PHP Code Transformer',
     description: 'A PHP code transformer service with basic information',
-    required: ['key', 'label', 'description', 'class'],
+    required: ['key', 'label'],
     type: 'object',
 )]
 
@@ -41,12 +41,6 @@ final class PhpCodeTransformer implements AdditionalAttributesInterface
             type: 'string',
             example: 'Transformer')]
         private readonly string $label,
-
-        #[Property(
-            description: 'Fully qualified class name of the transformer',
-            type: 'string',
-            example: 'App\\Transformer\\MyTransformer')]
-        private readonly string $class
     ) {
     }
 
@@ -58,10 +52,5 @@ final class PhpCodeTransformer implements AdditionalAttributesInterface
     public function getLabel(): string
     {
         return $this->label;
-    }
-
-    public function getClass(): string
-    {
-        return $this->class;
     }
 }

@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInte
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function count;
-use function get_class;
 
 /**
  * @internal
@@ -51,7 +50,6 @@ final readonly class PhpCodeTransformerService implements PhpCodeTransformerServ
             $item = new PhpCodeTransformer(
                 key: $transformer->getKey(),
                 label: $transformer->getName(),
-                class: get_class($transformer)
             );
 
             $this->eventDispatcher->dispatch(

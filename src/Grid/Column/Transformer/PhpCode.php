@@ -32,20 +32,20 @@ final class PhpCode implements TransformerInterface
 
     public function transform(array $value, array $config): array
     {
-        $phpClass = $config['phpClass'] ?? null;
+        $phpCodeKey = $config['phpCodeKey'] ?? null;
 
-        if (!isset($phpClass) || !is_string($phpClass)) {
+        if (!isset($phpCodeKey) || !is_string($phpCodeKey)) {
             throw new TransformerException(
                 $this->getName(),
                 sprintf(
-                    'Invalid "phpClass" configuration (must be a string) for %s transformer. ',
+                    'Invalid "phpCodeKey" configuration (must be a string) for %s transformer. ',
                     $this->getKey()
                 )
             );
         }
 
         //Check if class exists
-        $transformer = $this->resolver->resolve($phpClass);
+        $transformer = $this->resolver->resolve($phpCodeKey);
 
         //Transform the entire value and return result
         return $transformer->transform($value, $config);

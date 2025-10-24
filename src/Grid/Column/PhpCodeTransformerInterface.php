@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 interface PhpCodeTransformerInterface
 {
     /**
-     * @param array $value
+     * @param AdvancedValue[] $value
      * @param array $config
      *
      * @return AdvancedValue[]
