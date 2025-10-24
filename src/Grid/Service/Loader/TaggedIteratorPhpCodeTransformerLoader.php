@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
@@ -44,7 +44,7 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
     public function resolve(string $key): PhpCodeTransformerInterface
     {
@@ -54,8 +54,6 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
             }
         }
 
-        throw new InvalidArgumentException(
-            sprintf('No PhpCode transformer found for key "%s"', $key)
-        );
+        throw new NotFoundException('PhpCode transformer', $key, 'key');
     }
 }

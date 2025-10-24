@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 
 /**
@@ -30,7 +30,7 @@ interface PhpCodeTransformerLoaderInterface
     public function getTransformers(): array;
 
     /**
-     * @throws InvalidArgumentException If no matching transformer is found
+     * @throws NotFoundException
      */
     public function resolve(string $key): PhpCodeTransformerInterface;
 }

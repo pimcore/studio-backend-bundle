@@ -78,9 +78,9 @@ final class PhpCode implements TransformerInterface
         }
 
         return [
-            'phpClass' => [
+            'phpCodeKey' => [
                 'type' => 'select',
-                'label' => 'PHP Transformer Class',
+                'label' => 'PHP Transformer Key',
                 'options' => $options,
             ],
             'arguments' => [
