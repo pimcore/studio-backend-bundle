@@ -29,9 +29,6 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
     ) {
     }
 
-    /**
-     *  @return array<string, PhpCodeTransformerInterface>
-     */
     public function getTransformers(): array
     {
         $transformers = [];
@@ -42,9 +39,6 @@ final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTr
         return $transformers;
     }
 
-    /**
-     * @throws NotFoundException
-     */
     public function resolve(string $key): PhpCodeTransformerInterface
     {
         foreach ($this->transformers as $transformer) {

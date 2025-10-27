@@ -49,7 +49,7 @@ final class GetPhpCodeTransformerController extends AbstractApiController
         name: 'pimcore_studio_api_get_phpcode_transformers',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/data-objects/grid/transformers/services/phpcode',
         operationId: 'data_object_get_phpcode_transformers',
