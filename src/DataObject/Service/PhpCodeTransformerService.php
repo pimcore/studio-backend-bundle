@@ -40,6 +40,7 @@ final readonly class PhpCodeTransformerService implements PhpCodeTransformerServ
      * Converts an array of transformers into a Collection of PhpCodeTransformer DTOs
      *
      * @param PhpCodeTransformerInterface[] $transformers Array of PhpCodeTransformerInterface instances
+     *
      * @return Collection<PhpCodeTransformer>
      */
     private function getTransformerCollection(array $transformers): Collection
