@@ -15,8 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\PhpCodeTransformerEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function count;
