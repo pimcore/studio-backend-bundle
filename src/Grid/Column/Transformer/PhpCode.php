@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
-use function get_class;
 use function is_string;
 use function sprintf;
 
@@ -70,7 +69,6 @@ final class PhpCode implements TransformerInterface
     {
         $options = [];
 
-        
         foreach ($this->resolver->getTransformers() as $executable) {
             $options[] = [
                 'value' => $executable->getKey(),
