@@ -70,10 +70,11 @@ final class PhpCode implements TransformerInterface
     {
         $options = [];
 
+        
         foreach ($this->resolver->getTransformers() as $executable) {
             $options[] = [
-                'value' => get_class($executable),
-                'label' => $executable->getKey(),
+                'value' => $executable->getKey(),
+                'label' => $executable->getName(),
             ];
         }
 

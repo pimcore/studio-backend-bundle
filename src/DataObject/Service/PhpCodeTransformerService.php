@@ -42,7 +42,7 @@ final readonly class PhpCodeTransformerService implements PhpCodeTransformerServ
      * @param iterable<object> $transformers Raw transformer objects
      *
      */
-    private function getTransformerCollection(iterable $transformers): Collection
+    private function getTransformerCollection(array $transformers): Collection
     {
         $items = [];
 
