@@ -39,7 +39,7 @@ final readonly class PhpCodeTransformerService implements PhpCodeTransformerServ
     /**
      * Converts an array of transformers into a Collection of PhpCodeTransformer DTOs
      *
-     * @param iterable<object> $transformers Raw transformer objects
+     * @param array<object> $transformers Raw transformer objects
      *
      */
     private function getTransformerCollection(array $transformers): Collection
