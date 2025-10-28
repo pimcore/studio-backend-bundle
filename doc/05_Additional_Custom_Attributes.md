@@ -157,3 +157,4 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.website_settings.item`
 - `pre_response.workflow_details`
 - `pre_response.notification_recipient`
+- `pre_response.php_code_transformer`

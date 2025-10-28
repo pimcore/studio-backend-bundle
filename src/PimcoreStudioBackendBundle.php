@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColu
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeTransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
@@ -92,6 +93,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new MercureTopicsProviderPass());
         $container->addCompilerPass(new FieldDefinitionResolverPass());
         $container->addCompilerPass(new TransformerPass());
+        $container->addCompilerPass(new PhpCodeTransformerPass());
         $container->addCompilerPass(new DocumentTypeAdapterPass());
     }
 
