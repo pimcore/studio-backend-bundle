@@ -68,6 +68,16 @@ final class FilterParameter implements
         return $this->pageSize;
     }
 
+    public function getStart(): int
+    {
+        $page = $this->page - 1;
+        if ($page < 0) {
+            $page = 0;
+        }
+
+        return $page * $this->pageSize;
+    }
+
     public function getExcludeFolders(): bool
     {
         return $this->excludeFolders;
