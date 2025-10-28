@@ -75,7 +75,6 @@ final class FilterParameter implements
             $page = 0;
         }
 
-
         return $page * $this->pageSize;
     }
 
