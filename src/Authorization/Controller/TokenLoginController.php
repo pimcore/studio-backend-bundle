@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attribute\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attribute\Response\InvalidCredentialsResponse;
@@ -21,12 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationServiceInterface;
-use Pimcore\Security\User\User;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 /**
  * @internal
@@ -47,17 +42,12 @@ final class TokenLoginController extends AbstractApiController
     )]
     #[TokenRequestBody]
     #[SuccessResponse(
-        description: 'login_token_success_response',
-        content: new JsonContent(ref: UserInformation::class)
+        description: 'login_token_success_response'
     )]
     #[InvalidCredentialsResponse]
     #[DefaultResponses]
-    public function tokenLogin(
-        #[CurrentUser] User $user,
-        UserInformationServiceInterface $userInformationService
-    ): JsonResponse {
-        return $this->jsonResponse(
-            $userInformationService->getUserInformation($user->getUser())
-        );
+    public function tokenLogin(): Response
+    {
+        return new Response();
     }
 }
