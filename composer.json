@@ -58,6 +58,9 @@
     }
   },
   "extra": {
+    "branch-alias": {
+      "dev-1.x": "1.0.x-dev"
+    },
     "pimcore": {
       "bundles": [
         "Pimcore\\Bundle\\StudioBackendBundle\\PimcoreStudioBackendBundle"
