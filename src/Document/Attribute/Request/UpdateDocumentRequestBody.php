@@ -67,6 +67,7 @@ final class UpdateDocumentRequestBody extends RequestBody
                                 ]
                             ),
                             new UpdateBooleanProperty(DocumentFieldKeys::MISSING_REQUIRED_EDITABLE->value),
+                            new UpdateBooleanProperty(DocumentFieldKeys::APPEND_EDITABLES->value),
                             new UpdateElementProperties(),
                         ],
                         type: 'object',
