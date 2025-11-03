@@ -49,7 +49,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'main_domain' => $this->systemSettings['general']['domain'],
             'upload_max_filesize' => $this->getUploadMaxFilesize(),
             'platform_version' => $this->versionResolver->getPlatformVersion(),
-            'version' => $this->versionResolver->getVersion()
+            'version' => $this->versionResolver->getVersion(),
         ];
     }
 
