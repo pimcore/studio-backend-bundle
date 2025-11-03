@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\VersionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function ini_get;
