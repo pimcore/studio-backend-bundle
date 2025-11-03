@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
@@ -77,6 +78,8 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
                 $this->pimcoreLogger->error(sprintf(
                     'Failed to retrieve widget (%s): %s', $widgetId, $e->getMessage())
                 );
+            } catch (ForbiddenException) {
+                continue;
             }
         }
 
