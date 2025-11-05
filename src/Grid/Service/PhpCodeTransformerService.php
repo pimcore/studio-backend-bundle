@@ -11,10 +11,10 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\PhpCodeTransformerEvent;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\PhpCodeTransformerEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\PhpCodeTransformer;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
