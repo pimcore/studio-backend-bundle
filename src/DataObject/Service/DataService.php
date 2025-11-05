@@ -94,13 +94,13 @@ final readonly class DataService implements DataServiceInterface
         mixed $value,
         Data $fieldDefinition
     ): mixed {
-        if (!$fieldDefinition instanceof NormalizerInterface) {
-            return null;
-        }
-
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataNormalizerInterface) {
             return $adapter->normalize($value, $fieldDefinition);
+        }
+
+        if (!$fieldDefinition instanceof NormalizerInterface) {
+            return null;
         }
 
         return $fieldDefinition->normalize($value);
