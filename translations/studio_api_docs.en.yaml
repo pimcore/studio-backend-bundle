@@ -1413,3 +1413,8 @@ data_object_get_phpcode_transformers_description: |
   These transformers can be applied to grid columns to dynamically modify or format values using PHP logic.
 data_object_get_phpcode_transformers_summary: List PHPCode transformers
 data_object_get_phpcode_transformers_success_response: List of available PHPCode transformers
+pimcore_studio_api_elements_get_usage: Get usage of element
+element_get_usage: Get usage of element
+element_get_usage_description: Get usage of element. Use <strong>{elementType}</strong> and <strong>{id}</strong> to specify the element.
+element_get_usage_summary: Get usage of element
+element_get_usage_success_response: Where the element is referenced

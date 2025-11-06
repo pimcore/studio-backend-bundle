@@ -45,6 +45,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageService
+
   #
   # Handler
   #
@@ -84,3 +87,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydrator
