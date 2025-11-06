@@ -33,6 +33,5 @@ enum Jobs: string
     case BATCH_TAG_REPLACE = 'studio_ee_job_batch_tag_replace';
     case RECYCLE_BIN_DELETE = 'studio_ee_job_recycle_bin_delete';
     case RECYCLE_BIN_RESTORE = 'studio_ee_job_recycle_bin_restore';
-
     case ELEMENT_USAGE_REPLACE = 'studio_ee_job_element_usage_replace';
 }
