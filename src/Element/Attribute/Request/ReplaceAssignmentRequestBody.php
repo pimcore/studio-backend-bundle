@@ -19,7 +19,6 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageBaseItem;
-use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
