@@ -55,7 +55,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         $limit = $usageParameter->getPageSize();
         $queryLimit = $limit;
         $total = $element->getDependencies()->getRequiredByTotalCount();
-        $queryOffset = ($usageParameter->getPage() - 1) * $limit;
+        $queryOffset = $this->getOffset($limit, $usageParameter->getPage());;
 
         while (
             $this->continueCollectingUsageItems(
@@ -132,5 +132,9 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         int $totalDependencies
     ): bool {
         return count($collectedItems) < $maxItemsToCollect && $currentOffset < $totalDependencies;
+    }
+
+    private function getOffset(int $limit, int $page): int {
+        return ($page - 1) * $limit;
     }
 }

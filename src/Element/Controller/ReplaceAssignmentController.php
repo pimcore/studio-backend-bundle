@@ -13,21 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 
-use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Element\Attribute\Request\ReplaceAssignmentRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortByParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortOrderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -42,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetUsageController extends AbstractApiController
+final class ReplaceAssignmentController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -55,34 +50,30 @@ final class GetUsageController extends AbstractApiController
      * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     #[Route(
-        '/elements/usage/{elementType}/{id}',
-        name: 'pimcore_studio_api_elements_get_usage',
-        methods: ['GET']
+        '/elements/usage/replace/{elementType}/{id}',
+        name: 'pimcore_studio_api_elements_usage_replace',
+        methods: ['Post']
     )]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
-    #[Get(
-        path: self::PREFIX . '/elements/usage/{elementType}/{id}',
-        operationId: 'element_get_usage',
-        description: 'element_get_usage_description',
-        summary: 'element_get_usage_summary',
+    #[Post(
+        path: self::PREFIX . '/elements/usage/replace/{elementType}/{id}',
+        operationId: 'element_usage_replace',
+        description: 'element_usage_replace_description',
+        summary: 'element_usage_replace_summary',
         tags: [Tags::Elements->name]
     )]
     #[IdParameter]
     #[ElementTypeParameter]
-    #[PageParameter]
-    #[PageSizeParameter]
-    #[SortOrderParameter]
-    #[SortByParameter(['id', 'path', 'type'])]
+    #[ReplaceAssignmentRequestBody]
     #[SuccessResponse(
-        description: 'element_get_usage_success_response',
-        content: new JsonContent(ref: ElementUsage::class)
+        description: 'element_usage_replace_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getUsageAction(
+    public function replaceAssignmentAction(
         int $id,
         string $elementType,
         #[MapQueryString] UsageParameter $usageParameters,

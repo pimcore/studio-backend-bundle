@@ -28,28 +28,19 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     ],
     type: 'object'
 )]
-final class ElementUsageItem implements AdditionalAttributesInterface
+final class ElementUsageItem extends ElementUsageBaseItem implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 9)]
-        private readonly int $id,
+        readonly int $id,
         #[Property(description: 'type', type: 'string', example: 'object')]
-        private readonly string $type,
+        readonly string $type,
         #[Property(description: 'path', type: 'string', example: '/Product Data/Cars/jaguar/E-Type')]
         private readonly string $path
     ) {
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
+        parent::__construct($id, $type);
     }
 
     public function getPath(): string
