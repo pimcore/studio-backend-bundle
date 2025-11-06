@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id',
         'type',
-        'path'
+        'path',
     ],
     type: 'object'
 )]

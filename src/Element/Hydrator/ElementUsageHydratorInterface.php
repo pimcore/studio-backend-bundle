@@ -17,7 +17,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
 use Pimcore\Model\Element\ElementInterface;
 
-
 /**
  * @internal
  */

@@ -26,8 +26,7 @@ final readonly class ElementUsageHydrator implements ElementUsageHydratorInterfa
         array $usageItems,
         bool $hasHidden,
         int $totalCount
-    ): ElementUsage
-    {
+    ): ElementUsage {
         return new ElementUsage(
             $usageItems,
             $hasHidden,
