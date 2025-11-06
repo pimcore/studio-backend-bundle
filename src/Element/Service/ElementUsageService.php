@@ -17,10 +17,18 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
+use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -36,7 +44,72 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private ServiceResolverInterface $serviceResolver,
         private ElementUsageHydratorInterface $elementUsageHydrator,
+        private SecurityServiceInterface $securityService
     ) {
+    }
+
+    /**
+     * @throws DuplicateFullPathException
+     */
+    public function replaceUsage(
+        string $elementType,
+        int $elementId,
+        ReplaceAssignmentParameter $replaceAssignmentParameter
+    ): int {
+
+        $targetId = $replaceAssignmentParameter->getTargetId();
+        $targetType = $replaceAssignmentParameter->getTargetType();
+
+        if($elementType !== $targetType) {
+            throw new InvalidArgumentException("Source and target element types must match.");
+        }
+
+        if($elementId === $targetId) {
+            throw new InvalidArgumentException("Source and target element cannot be the same.");
+        }
+
+        $sourceElement = $this->getElement(
+            $this->serviceResolver,
+            $elementType,
+            $elementId
+        );
+
+        $targetElement = $this->getElement(
+            $this->serviceResolver,
+            $replaceAssignmentParameter->getTargetType(),
+            $replaceAssignmentParameter->getTargetId()
+        );
+
+        $rewriteConfig = [
+            $sourceElement->getType() => [
+                $sourceElement->getId() => $targetElement->getId(),
+            ],
+        ];
+
+        foreach($replaceAssignmentParameter->getElements() as $elementData) {
+            $element = $this->getElement(
+                $this->serviceResolver,
+                $elementData->getType(),
+                $elementData->getId()
+            );
+
+            if(!$element->isAllowed('save')) {
+                continue;
+            }
+
+            if ($element instanceof Document) {
+                $element = Document\Service::rewriteIds($element, $rewriteConfig);
+            } elseif ($element instanceof AbstractObject) {
+                $element = DataObject\Service::rewriteIds($element, $rewriteConfig);
+            } elseif ($element instanceof Asset) {
+                $element = Asset\Service::rewriteIds($element, $rewriteConfig);
+            }
+
+            $element->setUserModification($this->securityService->getCurrentUser()->getId());
+            $element->save();
+        }
+
+        return 10;
     }
 
     public function getUsages(

@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 
 interface ElementUsageServiceInterface
 {
+    public function replaceUsage(
+        string $elementType,
+        int $elementId,
+        ReplaceAssignmentParameter $replaceAssignmentParameter
+    ): int;
+
     public function getUsages(
         string $elementType,
         int $elementId,

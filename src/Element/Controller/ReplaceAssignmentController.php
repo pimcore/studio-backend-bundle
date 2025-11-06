@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Element\Attribute\Request\ReplaceAssignmentRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -76,13 +78,13 @@ final class ReplaceAssignmentController extends AbstractApiController
     public function replaceAssignmentAction(
         int $id,
         string $elementType,
-        #[MapQueryString] UsageParameter $usageParameters,
+        #[MapRequestPayload] ReplaceAssignmentParameter $replaceAssignmentParameter,
     ): JsonResponse {
         return $this->jsonResponse(
-            $this->elementUsageService->getUsages(
+            $this->elementUsageService->replaceUsage(
                 $elementType,
                 $id,
-                $usageParameters,
+                $replaceAssignmentParameter,
             )
         );
     }
