@@ -18,10 +18,10 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
-use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageItemEvent;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
@@ -94,9 +94,8 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         ElementInterface $targetElement,
         ElementInterface $element,
         User $user = null
-    ): void
-    {
-        if(!$element->isAllowed('save')) {
+    ): void {
+        if (!$element->isAllowed('save')) {
             return;
         }
 
@@ -123,8 +122,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     public function getElementById(
         string $elementType,
         int $elementId
-    ): ElementInterface
-    {
+    ): ElementInterface {
         return $this->getElement(
             $this->serviceResolver,
             $elementType,
@@ -244,8 +242,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         string $sourceElementType,
         int $sourceElementId,
         array $elements
-    ): int
-    {
+    ): int {
         $job = new Job(
             Jobs::ELEMENT_USAGE_REPLACE->value,
             [
@@ -257,10 +254,10 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
                         self::REPLACE_ELEMENT_USAGE_TARGET_TYPE => $targetElementType,
                         self::REPLACE_ELEMENT_USAGE_TARGET_ID => $targetElementId,
                         self::REPLACE_ELEMENT_USAGE_SOURCE_TYPE => $sourceElementType,
-                        self::REPLACE_ELEMENT_USAGE_SOURCE_ID => $sourceElementId
+                        self::REPLACE_ELEMENT_USAGE_SOURCE_ID => $sourceElementId,
                     ],
                     SelectionProcessingMode::ONCE
-                )
+                ),
             ],
             $this->toElementDescriptors($elements)
         );
@@ -276,12 +273,13 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
 
     /**
      * @param ElementUsageBaseItem[] $elements
+     *
      * @return ElementDescriptor[]
      */
     private function toElementDescriptors(array $elements): array
     {
         return array_map(
-            static fn(ElementUsageBaseItem $element) => new ElementDescriptor($element->getType(), $element->getId()),
+            static fn (ElementUsageBaseItem $element) => new ElementDescriptor($element->getType(), $element->getId()),
             $elements
         );
     }

@@ -74,7 +74,7 @@ final class ReplaceAssignmentController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::CREATED
+        HttpResponseCodes::CREATED,
     ])]
     public function replaceAssignmentAction(
         int $id,
@@ -87,7 +87,7 @@ final class ReplaceAssignmentController extends AbstractApiController
                     $elementType,
                     $id,
                     $replaceAssignmentParameter,
-                )
+                ),
             ],
             HttpResponseCodes::CREATED->value
         );

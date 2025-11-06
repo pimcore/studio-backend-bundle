@@ -35,6 +35,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     private ElementInterface $sourceElement;
+
     private ElementInterface $targetElement;
 
     public function __construct(
@@ -60,7 +61,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
             $elements = [];
         }
 
-        foreach($elements as $elementData) {
+        foreach ($elements as $elementData) {
             $element = $this->elementUsageService->getElementById(
                 $elementData->getType(),
                 $elementData->getId()
@@ -143,9 +144,10 @@ final class ElementUsageReplaceHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    private function getUser(JobRun $jobRun): User {
+    private function getUser(JobRun $jobRun): User
+    {
         $user = $this->userResolver->getById($jobRun->getOwnerId());
-        if($user === null) {
+        if ($user === null) {
             $this->abort($this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,
                 [

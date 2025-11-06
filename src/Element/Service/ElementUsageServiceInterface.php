@@ -22,8 +22,11 @@ use Pimcore\Model\User;
 interface ElementUsageServiceInterface
 {
     public const string REPLACE_ELEMENT_USAGE_TARGET_TYPE = 'targetElementType';
+
     public const string REPLACE_ELEMENT_USAGE_TARGET_ID = 'targetElementId';
+
     public const string REPLACE_ELEMENT_USAGE_SOURCE_TYPE = 'sourceElementType';
+
     public const string REPLACE_ELEMENT_USAGE_SOURCE_ID = 'sourceElementId';
 
     public function createReplaceUsageJobRun(
