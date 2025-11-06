@@ -34,8 +34,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
-use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -69,12 +69,12 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         $targetId = $replaceAssignmentParameter->getTargetId();
         $targetType = $replaceAssignmentParameter->getTargetType();
 
-        if($elementType !== $targetType) {
-            throw new InvalidArgumentException("Source and target element types must match.");
+        if ($elementType !== $targetType) {
+            throw new InvalidArgumentException('Source and target element types must match.');
         }
 
-        if($elementId === $targetId) {
-            throw new InvalidArgumentException("Source and target element cannot be the same.");
+        if ($elementId === $targetId) {
+            throw new InvalidArgumentException('Source and target element cannot be the same.');
         }
 
         return $this->executeReplaceUsageJobRun(
