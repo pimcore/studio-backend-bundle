@@ -73,7 +73,8 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
                     $usageParameter->getSortOrder()
                 );
 
-            [$hydratedUsageItems, $hasHidden] = $this->processElementUsage($elements);
+            [$hydratedUsageItems, $currentHasHiddenValue] = $this->processElementUsage($elements);
+            $hasHidden = $hasHidden || $currentHasHiddenValue;
 
             $queryOffset += count($elements);
             $queryLimit = $limit - count($hydratedUsageItems);
