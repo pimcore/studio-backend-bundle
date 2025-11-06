@@ -66,8 +66,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesserInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesser
 
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PhpCodeTransformerServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PhpCodeTransformerService
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerService
 
   #
   # Repository

@@ -15,8 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PhpCodeTransformer;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PhpCodeTransformerServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\PhpCodeTransformer;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;

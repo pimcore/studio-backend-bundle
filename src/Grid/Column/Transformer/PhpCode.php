@@ -83,7 +83,7 @@ final class PhpCode implements TransformerInterface
                 'options' => $options,
             ],
             'arguments' => [
-                'type' => 'keyValue',
+                'type' => 'text',
                 'label' => 'Arguments',
                 'default' => [],
             ],
