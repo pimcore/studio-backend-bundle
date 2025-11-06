@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'Element Usage',
     required: [
         'data',
-        'hasHidden'
+        'hasHidden',
     ],
     type: 'object'
 )]

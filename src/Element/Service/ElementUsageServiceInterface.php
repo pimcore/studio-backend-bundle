@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 
 interface ElementUsageServiceInterface
 {

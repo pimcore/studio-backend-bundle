@@ -17,12 +17,13 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 
 /**
  * @internal
@@ -42,8 +43,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         string $elementType,
         int $elementId,
         UsageParameter $usageParameter
-    ): ElementUsage
-    {
+    ): ElementUsage {
         $element = $this->getElement(
             $this->serviceResolver,
             $elementType,
@@ -64,7 +64,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
                 $queryOffset,
                 $total
             )
-        ){
+        ) {
             $elements = $element->getDependencies()
                 ->getRequiredByWithPath(
                     $queryOffset,
@@ -95,9 +95,11 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
 
     /**
      * @param array<ElementInterface> $elements
+     *
      * @return array{array<ElementUsageItem>, bool}
      */
-    private function processElementUsage(array $elements): array {
+    private function processElementUsage(array $elements): array
+    {
         $hydratedUsageItems = [];
         $hasHidden = false;
 
