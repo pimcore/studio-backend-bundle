@@ -17,6 +17,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
@@ -91,7 +92,8 @@ class DataObject extends Element implements AdditionalAttributesInterface
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate
+            $modificationDate,
+            ElementTypes::TYPE_DATA_OBJECT
         );
     }
 
