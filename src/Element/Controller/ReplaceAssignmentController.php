@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -69,11 +70,13 @@ final class ReplaceAssignmentController extends AbstractApiController
     #[ReplaceAssignmentRequestBody]
     #[SuccessResponse(
         description: 'element_usage_replace_success_response',
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::CREATED
     ])]
     public function replaceAssignmentAction(
         int $id,
@@ -81,11 +84,14 @@ final class ReplaceAssignmentController extends AbstractApiController
         #[MapRequestPayload] ReplaceAssignmentParameter $replaceAssignmentParameter,
     ): JsonResponse {
         return $this->jsonResponse(
-            $this->elementUsageService->replaceUsage(
-                $elementType,
-                $id,
-                $replaceAssignmentParameter,
-            )
+            [
+                'jobRunId' => $this->elementUsageService->createReplaceUsageJobRun(
+                    $elementType,
+                    $id,
+                    $replaceAssignmentParameter,
+                )
+            ],
+            HttpResponseCodes::CREATED->value
         );
     }
 }

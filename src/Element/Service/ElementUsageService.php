@@ -13,15 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageBaseItem;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
@@ -29,7 +38,9 @@ use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\DuplicateFullPathException;
+use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -44,14 +55,12 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private ServiceResolverInterface $serviceResolver,
         private ElementUsageHydratorInterface $elementUsageHydrator,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private JobExecutionAgentInterface $jobExecutionAgent
     ) {
     }
 
-    /**
-     * @throws DuplicateFullPathException
-     */
-    public function replaceUsage(
+    public function createReplaceUsageJobRun(
         string $elementType,
         int $elementId,
         ReplaceAssignmentParameter $replaceAssignmentParameter
@@ -68,17 +77,28 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
             throw new InvalidArgumentException("Source and target element cannot be the same.");
         }
 
-        $sourceElement = $this->getElement(
-            $this->serviceResolver,
+        return $this->executeReplaceUsageJobRun(
+            $targetType,
+            $targetId,
             $elementType,
-            $elementId
+            $elementId,
+            $replaceAssignmentParameter->getElements()
         );
+    }
 
-        $targetElement = $this->getElement(
-            $this->serviceResolver,
-            $replaceAssignmentParameter->getTargetType(),
-            $replaceAssignmentParameter->getTargetId()
-        );
+    /**
+     * @throws DuplicateFullPathException
+     */
+    public function replaceElementUsage(
+        ElementInterface $sourceElement,
+        ElementInterface $targetElement,
+        ElementInterface $element,
+        User $user = null
+    ): void
+    {
+        if(!$element->isAllowed('save')) {
+            return;
+        }
 
         $rewriteConfig = [
             $sourceElement->getType() => [
@@ -86,30 +106,30 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
             ],
         ];
 
-        foreach($replaceAssignmentParameter->getElements() as $elementData) {
-            $element = $this->getElement(
-                $this->serviceResolver,
-                $elementData->getType(),
-                $elementData->getId()
-            );
-
-            if(!$element->isAllowed('save')) {
-                continue;
-            }
-
-            if ($element instanceof Document) {
-                $element = Document\Service::rewriteIds($element, $rewriteConfig);
-            } elseif ($element instanceof AbstractObject) {
-                $element = DataObject\Service::rewriteIds($element, $rewriteConfig);
-            } elseif ($element instanceof Asset) {
-                $element = Asset\Service::rewriteIds($element, $rewriteConfig);
-            }
-
-            $element->setUserModification($this->securityService->getCurrentUser()->getId());
-            $element->save();
+        if ($element instanceof Document) {
+            $element = Document\Service::rewriteIds($element, $rewriteConfig);
+        } elseif ($element instanceof AbstractObject) {
+            $element = DataObject\Service::rewriteIds($element, $rewriteConfig);
+        } elseif ($element instanceof Asset) {
+            $element = Asset\Service::rewriteIds($element, $rewriteConfig);
         }
 
-        return 10;
+        $element->setUserModification(
+            $user === null ? $this->securityService->getCurrentUser()->getId() : $user->getId()
+        );
+        $element->save();
+    }
+
+    public function getElementById(
+        string $elementType,
+        int $elementId
+    ): ElementInterface
+    {
+        return $this->getElement(
+            $this->serviceResolver,
+            $elementType,
+            $elementId
+        );
     }
 
     public function getUsages(
@@ -213,5 +233,56 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     private function getOffset(int $limit, int $page): int
     {
         return ($page - 1) * $limit;
+    }
+
+    /**
+     * @param ElementUsageBaseItem[] $elements
+     */
+    private function executeReplaceUsageJobRun(
+        string $targetElementType,
+        int $targetElementId,
+        string $sourceElementType,
+        int $sourceElementId,
+        array $elements
+    ): int
+    {
+        $job = new Job(
+            Jobs::ELEMENT_USAGE_REPLACE->value,
+            [
+                new JobStep(
+                    JobSteps::ELEMENT_USAGE_REPLACE->value,
+                    ElementUsageReplaceMessage::class,
+                    '',
+                    [
+                        self::REPLACE_ELEMENT_USAGE_TARGET_TYPE => $targetElementType,
+                        self::REPLACE_ELEMENT_USAGE_TARGET_ID => $targetElementId,
+                        self::REPLACE_ELEMENT_USAGE_SOURCE_TYPE => $sourceElementType,
+                        self::REPLACE_ELEMENT_USAGE_SOURCE_ID => $sourceElementId
+                    ],
+                    SelectionProcessingMode::ONCE
+                )
+            ],
+            $this->toElementDescriptors($elements)
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $this->securityService->getCurrentUser()->getId(),
+            Config::CONTEXT_STOP_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
+    }
+
+    /**
+     * @param ElementUsageBaseItem[] $elements
+     * @return ElementDescriptor[]
+     */
+    private function toElementDescriptors(array $elements): array
+    {
+        return array_map(
+            static fn(ElementUsageBaseItem $element) => new ElementDescriptor($element->getType(), $element->getId()),
+            $elements
+        );
     }
 }

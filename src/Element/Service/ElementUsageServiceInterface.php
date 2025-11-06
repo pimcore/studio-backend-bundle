@@ -16,18 +16,37 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 
 interface ElementUsageServiceInterface
 {
-    public function replaceUsage(
+    public const string REPLACE_ELEMENT_USAGE_TARGET_TYPE = 'targetElementType';
+    public const string REPLACE_ELEMENT_USAGE_TARGET_ID = 'targetElementId';
+    public const string REPLACE_ELEMENT_USAGE_SOURCE_TYPE = 'sourceElementType';
+    public const string REPLACE_ELEMENT_USAGE_SOURCE_ID = 'sourceElementId';
+
+    public function createReplaceUsageJobRun(
         string $elementType,
         int $elementId,
         ReplaceAssignmentParameter $replaceAssignmentParameter
     ): int;
+
+    public function replaceElementUsage(
+        ElementInterface $sourceElement,
+        ElementInterface $targetElement,
+        ElementInterface $element,
+        User $user
+    ): void;
 
     public function getUsages(
         string $elementType,
         int $elementId,
         UsageParameter $usageParameter
     ): ElementUsage;
+
+    public function getElementById(
+        string $elementType,
+        int $elementId
+    ): ElementInterface;
 }
