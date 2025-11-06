@@ -34,9 +34,9 @@ final class ElementUsageItem extends ElementUsageBaseItem implements AdditionalA
 
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 9)]
-        readonly int $id,
+        public readonly int $id,
         #[Property(description: 'type', type: 'string', example: 'object')]
-        readonly string $type,
+        public readonly string $type,
         #[Property(description: 'path', type: 'string', example: '/Product Data/Cars/jaguar/E-Type')]
         private readonly string $path
     ) {

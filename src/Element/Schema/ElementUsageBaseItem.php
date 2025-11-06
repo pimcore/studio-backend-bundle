@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
     title: 'Element Usage Base Item',
     required: [
         'id',
-        'type'
+        'type',
     ],
     type: 'object'
 )]
