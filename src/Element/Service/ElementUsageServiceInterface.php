@@ -36,7 +36,7 @@ interface ElementUsageServiceInterface
         ElementInterface $sourceElement,
         ElementInterface $targetElement,
         ElementInterface $element,
-        User $user
+        ?User $user = null
     ): void;
 
     public function getUsages(

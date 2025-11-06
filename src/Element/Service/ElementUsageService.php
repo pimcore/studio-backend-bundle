@@ -93,7 +93,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         ElementInterface $sourceElement,
         ElementInterface $targetElement,
         ElementInterface $element,
-        User $user = null
+        ?User $user = null
     ): void
     {
         if(!$element->isAllowed('save')) {
