@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\PhpCodeTransformerEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\PhpCodeTransformer;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function count;
