@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInte
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageBaseItem;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
