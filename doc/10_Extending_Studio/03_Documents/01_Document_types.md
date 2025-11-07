@@ -226,10 +226,11 @@ Important interfaces:
 - `Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface` - The mandatory interface that must be implemented by the adapter.
 - `Pimcore\Bundle\StudioBackendBundle\Document\Data\EditableDataNormalizerInterface` - The interface that needs to be implemented if the adapter should be able to normalize editable data.
 - `Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface` - The interface that needs to be implemented if the adapter should be able to normalize document settings data.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SetInitialDataInterface` - Marker interface that needs to be implemented by the adapter if it there is a need to adapt this initial data on document creation.
 - `Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\EditableDataInterface` - Marker interface that needs to be implemented by custom editable data model. This interface is returned by the `normalizeEditableData` method of the `EditableNormalizerInterface`.
 - `Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface` - Marker interface that needs to be implemented by custom settings data model. This interface is returned by the `normalizeSettings` method of the `SettingsNormalizerInterface`.
 
-Important data keys:
+- Important data keys:
 - `editableData` - The key for the detail data of the document (e.g., editable fields of your document).
 - `settingsData` - The key for the document settings data (e.g., document settings like title, description, prettyUrl).
 
