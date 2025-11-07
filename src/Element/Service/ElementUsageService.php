@@ -43,6 +43,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
+use function is_array;
 
 /**
  * @internal
@@ -78,7 +79,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         }
 
         $elements  = $replaceAssignmentParameter->getElements();
-        if(count($elements) === 0) {
+        if (count($elements) === 0) {
             $element = $this->getElementById(
                 $elementType,
                 $elementId
