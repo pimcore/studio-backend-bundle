@@ -244,7 +244,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     }
 
     /**
-     * @param ElementUsageBaseItem[]|array $elements
+     * @param array $elements
      */
     private function executeReplaceUsageJobRun(
         string $targetElementType,
@@ -282,7 +282,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     }
 
     /**
-     * @param ElementUsageBaseItem[]|array $elements
+     * @param array $elements
      *
      * @return ElementDescriptor[]
      */
