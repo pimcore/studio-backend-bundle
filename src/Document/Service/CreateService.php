@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocTypeResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetInitialDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Util\Trait\DocumentClassTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -47,6 +48,7 @@ final readonly class CreateService implements CreateServiceInterface
     public function __construct(
         private DocumentResolverInterface $documentResolver,
         private DocTypeResolverInterface $docTypeResolver,
+        private DocumentTypeServiceInterface $documentTypeService,
         private ElementSaveServiceInterface $elementSaveService,
         private ResolverInterface $classResolver,
         private ServiceResolverInterface $serviceResolver,
@@ -70,6 +72,11 @@ final readonly class CreateService implements CreateServiceInterface
 
         if ($isTranslation) {
             $this->addLanguageProperty($document, $baseTranslationDocument, $parameters->getLanguage());
+        }
+
+        $adapter = $this->documentTypeService->tryTypeAdapter($document->getType());
+        if ($adapter instanceof SetInitialDataInterface) {
+            $adapter->setInitialData($document, $data, $user);
         }
 
         try {
