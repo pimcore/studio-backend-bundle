@@ -77,12 +77,22 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
             throw new InvalidArgumentException('Source and target element cannot be the same.');
         }
 
+        $elements  = $replaceAssignmentParameter->getElements();
+        if(count($elements) === 0) {
+            $element = $this->getElementById(
+                $elementType,
+                $elementId
+            );
+
+            $elements = $element->getDependencies()->getRequiredByWithPath();
+        }
+
         return $this->executeReplaceUsageJobRun(
             $targetType,
             $targetId,
             $elementType,
             $elementId,
-            $replaceAssignmentParameter->getElements()
+            $elements
         );
     }
 
@@ -234,7 +244,7 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     }
 
     /**
-     * @param ElementUsageBaseItem[] $elements
+     * @param ElementUsageBaseItem[]|array $elements
      */
     private function executeReplaceUsageJobRun(
         string $targetElementType,
@@ -272,14 +282,30 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     }
 
     /**
-     * @param ElementUsageBaseItem[] $elements
+     * @param ElementUsageBaseItem[]|array $elements
      *
      * @return ElementDescriptor[]
      */
     private function toElementDescriptors(array $elements): array
     {
         return array_map(
-            static fn (ElementUsageBaseItem $element) => new ElementDescriptor($element->getType(), $element->getId()),
+            static function ($element) {
+                if ($element instanceof ElementInterface) {
+                    return new ElementDescriptor(
+                        $element->getType(),
+                        $element->getId()
+                    );
+                }
+
+                if (is_array($element)) {
+                    return new ElementDescriptor(
+                        $element['type'],
+                        $element['id']
+                    );
+                }
+
+                throw new InvalidArgumentException('Invalid element type');
+            },
             $elements
         );
     }
