@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Exception;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -29,6 +29,7 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\ElementInterface;
 use Psr\Log\LoggerInterface;
 use Random\RandomException;
+use function sprintf;
 
 /**
  * @internal
@@ -48,6 +49,7 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
     {
         if ($element instanceof DataObject) {
             $this->indexRelatedObjects($element, $newIndex);
+
             return;
         }
 
@@ -64,10 +66,9 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
         }
 
         $this->executeInsideTransaction(
-            fn() => $this->reindexSiblingObjects($updatedObject, $newIndex, $parent)
+            fn () => $this->reindexSiblingObjects($updatedObject, $newIndex, $parent)
         );
     }
-
 
     private function indexRelatedDocuments(Document $updatedDocument, int $newIndex): void
     {
@@ -146,7 +147,7 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
 
     /**
      * @throws Exception|DbalException
-     * @throws \Exception
+     * @throws Exception
      */
     private function updateSiblingVersions(
         DataObject $updatedObject,
@@ -218,6 +219,7 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
     private function rollBackTransaction(Connection $db, int $retries, Exception $exception): void
     {
         $maxRetries = 5;
+
         try {
             $db->rollBack();
 
