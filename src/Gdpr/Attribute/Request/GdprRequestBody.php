@@ -7,18 +7,17 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 
 /**
  * @internal
@@ -38,9 +37,9 @@ final class GdprRequestBody extends RequestBody
                         description: 'A list of provider keys to search (e.g., data_objects, emails, etc.)',
                         type: 'array',
                         items: new Items(
-                            type: 'string', 
+                            type: 'string',
                             example: 'data_objects'
-                            )
+                        )
                     ),
                     new Property(
                         property: 'searchTerms',
@@ -55,4 +54,3 @@ final class GdprRequestBody extends RequestBody
         );
     }
 }
-

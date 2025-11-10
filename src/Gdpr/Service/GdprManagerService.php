@@ -13,18 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\DataProviderLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function count;
+use function sprintf;
 
 /**
  * @internal
@@ -55,7 +56,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             $provider = $this->loader->resolve($providerKey);
 
             $permission = $provider->getRequiredPermission();
-            
+
             // Check if the current user has the required permission to access the provider
             if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
                 throw new ForbiddenException(
@@ -65,19 +66,19 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                         $permission->value
                     )
                 );
+            }
+
+            $results = $provider->findData($request->searchTerms);
+
+            if (!empty($results)) {
+                $allResults[] = new GdprSearchResult(
+                    providerKey: $providerKey,
+                    results: $results
+                );
+            }
         }
 
-        $results = $provider->findData($request->searchTerms);
-
-        if (!empty($results)) {
-            $allResults[] = new GdprSearchResult(
-                providerKey: $providerKey,
-                results: $results
-            );
-        }
-    }
-
-    return new GdprSearchResultCollection($allResults);
+        return new GdprSearchResultCollection($allResults);
     }
 
     /**
@@ -103,12 +104,11 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
             $items[] = $item;
         }
-        
 
         return new Collection(count($items), $items);
     }
 
-     /**
+    /**
      * Sorts the providers by priority.
      *
      * @param array<string, DataProviderInterface> $providers

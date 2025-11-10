@@ -7,19 +7,19 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+
 /**
  * @internal
-*/
+ */
 final readonly class DataObjectProvider implements DataProviderInterface
 {
     public function findData(?SearchTerms $terms): array

@@ -13,11 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;  
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal

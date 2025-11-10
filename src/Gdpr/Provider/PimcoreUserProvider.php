@@ -7,8 +7,8 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
@@ -51,7 +51,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                 $params[] = '%' . $terms->email . '%';
             }
         }
-        
 
         // If we have conditions, apply them.
         //check the result and test it , pending
@@ -72,7 +71,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             ];
         }
 
-      return $results;
+        return $results;
     }
 
     public function getName(): string
@@ -106,5 +105,4 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         ];
         //How to get email firstname lastname
     }
-
 }

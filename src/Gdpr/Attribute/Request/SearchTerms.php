@@ -7,8 +7,8 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request;
@@ -17,6 +17,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Type;
+
 /**
  * @internal
  */
@@ -41,12 +42,12 @@ final readonly class SearchTerms
         public ?string $lastname = null,
 
         #[Property(description: 'The email address to search for.', type: 'string', nullable: true)]
-        #[Type('string')]//why is #[Email] constraint causing issues 
+        #[Type('string')]//why is #[Email] constraint causing issues
         public ?string $email = null,
     ) {
     }
 
-     public function getId(): ?string
+    public function getId(): ?string
     {
         return $this->id;
     }
