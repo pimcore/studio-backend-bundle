@@ -1,0 +1,46 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
+
+use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\Loader\TaggedIteratorDataProviderLoader;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\MustImplementInterfaceTrait;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+
+/**
+ * @internal
+ */
+final readonly class DataProviderPass implements CompilerPassInterface
+{
+    use MustImplementInterfaceTrait;
+
+    /**
+     * @throws MustImplementInterfaceException
+     */
+    public function process(ContainerBuilder $container): void
+    {
+        $taggedServices = array_keys(
+            [
+                ... $container->findTaggedServiceIds(TaggedIteratorDataProviderLoader::DATA_PROVIDER_TAG),
+
+            ]
+        );
+
+        foreach ($taggedServices as $environmentType) {
+            $this->checkInterface($environmentType, DataProviderInterface::class);
+        }
+    }
+}

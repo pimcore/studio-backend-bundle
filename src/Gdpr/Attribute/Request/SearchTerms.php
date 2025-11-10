@@ -1,0 +1,68 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ * @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Type;
+/**
+ * @internal
+ */
+#[Schema(
+    title: 'GDPR Search Terms',
+    description: 'Object containing the values to search for. All fields are optional.',
+    type: 'object'
+)]
+final readonly class SearchTerms
+{
+    public function __construct(
+        #[Property(description: 'The ID to search for.', type: 'string', nullable: true)]
+        #[Type('string')]
+        public ?string $id = null,
+
+        #[Property(description: 'The first name to search for.', type: 'string', nullable: true)]
+        #[Type('string')]
+        public ?string $firstname = null,
+
+        #[Property(description: 'The last name to search for.', type: 'string', nullable: true)]
+        #[Type('string')]
+        public ?string $lastname = null,
+
+        #[Property(description: 'The email address to search for.', type: 'string', nullable: true)]
+        #[Type('string')]//why is #[Email] constraint causing issues 
+        public ?string $email = null,
+    ) {
+    }
+
+     public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+}

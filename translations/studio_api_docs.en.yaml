@@ -1413,3 +1413,6 @@ data_object_get_phpcode_transformers_description: |
   These transformers can be applied to grid columns to dynamically modify or format values using PHP logic.
 data_object_get_phpcode_transformers_summary: List PHPCode transformers
 data_object_get_phpcode_transformers_success_response: List of available PHPCode transformers
+gdpr_list_providers_summary: List of available GDPR providers
+gdpr_list_providers_description: Returns a list of all configured GDPR providers that can be used for data compliance operations.
+gdpr_list_providers_success_response: Successfully retrieved the list of GDPR providers
