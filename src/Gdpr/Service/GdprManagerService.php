@@ -60,7 +60,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             $permission = $provider->getRequiredPermission();
 
             // Check if the current user has the required permission to access the provider
-            if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
+            if (!$currentUser->isAllowed($permission->value)) {
                 throw new ForbiddenException(
                     sprintf(
                         'Not allowed to access the targeted provider "%s". Required permission: "%s"',
@@ -92,7 +92,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             $provider = $this->loader->resolve($providerKey);
 
             $permission = $provider->getRequiredPermission();
-            if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
+            if (!$currentUser->isAllowed($permission->value)) {
                 throw new ForbiddenException("Not allowed for provider: $providerKey");
             }
 
