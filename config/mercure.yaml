@@ -20,7 +20,7 @@ services:
         arguments:
             $tokenProvider: '@Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService'
             $cookieLifetime: '%pimcore_studio_backend.mercure_settings.cookie_lifetime%'
-            $jwt_cookie_strictness: '%pimcore_studio_backend.mercure_settings.jwt_cookie_strictness%'
+            $jwtCookieStrictness: '%pimcore_studio_backend.mercure_settings.jwt_cookie_strictness%'
             $jwtCookieHost: '%pimcore_studio_backend.mercure_settings.jwt_cookie_host%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface:

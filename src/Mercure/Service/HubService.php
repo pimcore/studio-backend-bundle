@@ -26,7 +26,7 @@ final readonly class HubService implements HubServiceInterface
         private TokenProviderInterface $tokenProvider,
         private UrlServiceInterface $urlService,
         private int $cookieLifetime = 3600,
-        private bool $jwt_cookie_strictness = true,
+        private bool $jwtCookieStrictness = true,
         private ?string $jwtCookieHost = null,
     ) {
     }
@@ -53,7 +53,7 @@ final readonly class HubService implements HubServiceInterface
             $urlParts[Mercure::URL_SCHEME->value] === Mercure::URL_SCHEME_HTTPS->value,
             true,
             false,
-            $this->jwt_cookie_strictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
+            $this->jwtCookieStrictness ? Cookie::SAMESITE_STRICT : Cookie::SAMESITE_NONE
         );
     }
 }
