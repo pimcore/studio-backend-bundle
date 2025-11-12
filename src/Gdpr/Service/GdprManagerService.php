@@ -21,8 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEv
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchParameters;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJob;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -34,6 +32,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJob;
 use function count;
 use function sprintf;
 use function strlen;
@@ -135,7 +136,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         foreach ($providers as $provider) {
 
             $permission = $provider->getRequiredPermission();
-            if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
+            if (!$currentUser->isAllowed($permission->value)) {
                 continue;
             }
 
