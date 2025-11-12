@@ -39,7 +39,7 @@ interface GdprManagerServiceInterface
 
     /**
      * @throws ForbiddenException
-    */
+     */
     public function startBackgroundExport(GdprStructuredSearchRequest $request): GdprExportJobCollection;
 
     /**

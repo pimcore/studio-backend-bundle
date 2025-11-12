@@ -14,17 +14,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\GdprRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -44,13 +44,13 @@ final class ExportController extends AbstractApiController
     }
 
     #[Route(
-        '/gdpr/export/start', 
-        name: 'pimcore_studio_api_gdpr_export_start', 
+        '/gdpr/export/start',
+        name: 'pimcore_studio_api_gdpr_export_start',
         methods: ['POST']
-        )]
+    )]
     #[IsGranted(UserPermissions::GDPR->value)]
     #[GET(summary: 'Start background export job', tags: ['GDPR'])]
-     #[GET(
+    #[GET(
         path: self::PREFIX . '/gdpr/export/start',
         operationId: 'start_gdpr_export',
         summary: 'start_gdpr_export_summary',
@@ -74,7 +74,7 @@ final class ExportController extends AbstractApiController
     ])]
     public function startExport(
         #[MapRequestPayload] GdprStructuredSearchRequest $request
-        ): JsonResponse {
+    ): JsonResponse {
         $jobId = $this->gdprManagerService->startBackgroundExport($request);
 
         return new JsonResponse(['jobId' => $jobId, 'status' => 'started'], 202);
