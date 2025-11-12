@@ -17,6 +17,10 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearch
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal

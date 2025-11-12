@@ -24,6 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJob;
 use function count;
 use function sprintf;
 
