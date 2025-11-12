@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEv
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchParameters;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJob;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -33,8 +35,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJob;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function count;
 use function sprintf;
 use function strlen;
