@@ -117,7 +117,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
             $permission = $provider->getRequiredPermission();
             if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
-                throw new ForbiddenException("Not allowed for provider: $provider");
+                continue;
             }
 
             if ($provider->ownsJob($jobId)) {

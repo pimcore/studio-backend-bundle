@@ -15,13 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 
 use Pimcore\Model\Element\AbstractElement;
 
-/**
- * @internal
- */
+
 interface DataProviderInterface
 {
     /**
@@ -29,7 +31,8 @@ interface DataProviderInterface
      *
      * @param SearchTerms|null $terms The search values (can be null if none provided)
      *
-     * @return array<AbstractElement> A list of found elements (Objects, Assets, etc.)
+
+     * @return array<array<string, mixed>>
      */
     public function findData(?SearchTerms $terms): array;
 
@@ -67,4 +70,22 @@ interface DataProviderInterface
      * @return UserPermissions
      */
     public function getRequiredPermission(): UserPermissions;
+
+    /**
+     * @param GdprStructuredSearchRequest $request
+     *
+     * @return string Job ID
+     */
+    public function startJobExecution(GdprStructuredSearchRequest $request): string;
+
+    /**
+     * Checks if this provider is responsible for the given job.
+     */
+    public function ownsJob(int $jobRunId): bool;
+
+    /**
+     * @throws NotFoundException
+     * @throws ForbiddenException
+     */
+    public function getExportFile(int $jobRunId): StreamedResponse;
 }
