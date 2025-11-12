@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
