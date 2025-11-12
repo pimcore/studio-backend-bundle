@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
@@ -36,7 +37,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         private DataProviderLoaderInterface $loader,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
-        private AuthorizationCheckerInterface $authChecker
     ) {
     }
 
@@ -79,6 +79,52 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         }
 
         return new GdprSearchResultCollection($allResults);
+    }
+
+    public function startBackgroundExport(GdprStructuredSearchRequest $request): GdprExportJobCollection
+    {
+        $jobs = [];
+        $currentUser = $this->securityService->getCurrentUser();
+
+        foreach ($request->providers as $providerKey) {
+            $provider = $this->loader->resolve($providerKey);
+
+            $permission = $provider->getRequiredPermission();
+            if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
+                throw new ForbiddenException("Not allowed for provider: $providerKey");
+            }
+
+            $jobId = $provider->startJobExecution($request);
+            $jobs[] = new GdprExportJob($providerKey, $jobId);
+        }
+
+        return new GdprExportJobCollection($jobs);
+    }
+
+    /**
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     */
+    public function getExportFile(int $jobId): StreamedResponse
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+        
+        $providers = $this->loader->getDataProviders();
+
+        foreach ($providers as $provider) {
+            
+            $permission = $provider->getRequiredPermission();
+            if ($currentUser === null || !$currentUser->isAllowed($permission->value)) {
+                throw new ForbiddenException("Not allowed for provider: $provider");
+            }
+
+            if ($provider->ownsJob($jobId)) {
+                
+                return $provider->getExportFile($jobId);
+            }
+        }
+        
+        throw new NotFoundException('Export job with ID %d not found or access denied.', $jobId);
     }
 
     /**

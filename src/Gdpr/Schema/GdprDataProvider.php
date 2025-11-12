@@ -19,9 +19,12 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'GDPR Data Provider',
-    description: 'Represents a single data source (e.g., "Data Objects", "Sent Mails") available for searching in the GDPR Data Extractor tool.',
+    description: 'GDPR Data Extractor search source(e.g., "Data Objects", "Pimcore user").',
     required: ['key', 'label', 'columns'],
     type: 'object',
 )]

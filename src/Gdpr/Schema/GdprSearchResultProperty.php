@@ -42,12 +42,6 @@ final class GdprSearchResultProperty extends Property
                         type: 'array',
                         items: new Items(type: 'object', example: '{"id": 1, "path": "/data/customer/1"}')
                     ),
-                    new Property(
-                        property: 'additionalAttributes',
-                        description: 'Additional attributes for the search result',
-                        type: 'object',
-                        nullable: true
-                    ),
                 ]
             )
         );

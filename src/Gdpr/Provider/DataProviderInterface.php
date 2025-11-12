@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 use Pimcore\Model\Element\AbstractElement;
 

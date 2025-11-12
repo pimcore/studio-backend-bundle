@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'GDPR Data Column',
     description: 'A single column definition for the GDPR data result grid',

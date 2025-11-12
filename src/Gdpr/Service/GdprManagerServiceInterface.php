@@ -36,4 +36,15 @@ interface GdprManagerServiceInterface
      * @throws ForbiddenException
      */
     public function search(GdprStructuredSearchRequest $request): GdprSearchResultCollection;
+
+    /**
+     * @throws ForbiddenException
+    */
+    public function startBackgroundExport(GdprStructuredSearchRequest $request): GdprExportJobCollection;
+
+    /**
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     */
+    public function getExportFile(int $jobRunId): StreamedResponse;
 }
