@@ -50,8 +50,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $report->getName(),
             $report->getName(),
             'pimcore_treenode_disabled',
-            $report->isWriteable(),
-            $report->getDataSourceConfig()
+            $report->isWriteable()
         );
     }
 
