@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Property\FilterProperty;
 
 /**
  * @internal
-*/
+ */
 #[Attribute(Attribute::TARGET_METHOD)]
 final class GdprRequestBody extends RequestBody
 {

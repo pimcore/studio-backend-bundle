@@ -36,8 +36,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait; 
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function count;
 use function sprintf;
 use function strlen;
@@ -110,7 +111,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
      * @throws ForbiddenException
      * @throws NotFoundException
      */
-    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse 
+    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
     {
         $currentUser = $this->securityService->getCurrentUser();
 
@@ -121,7 +122,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             throw new ForbiddenException("Not allowed for provider: {$provider->getKey()}");
         }
 
-        $data = $provider->getSingleItemForDownload($id);//id is a single item of a particular provider
+        $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
 
         $jsonData = json_encode($data, JSON_PRETTY_PRINT);
 
@@ -141,7 +142,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                 echo $jsonData;
             },
             HttpResponseCodes::SUCCESS->value,
-            $headers 
+            $headers
         );
 
         return $response;
