@@ -39,7 +39,8 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             htmlspecialchars($report->getGroup()),
             htmlspecialchars($report->getGroupIconClass()),
             $report->getMenuShortcut(),
-            htmlspecialchars($report->getReportClass())
+            htmlspecialchars($report->getReportClass()),
+            (bool)$report->getDataSourceConfig()
         );
     }
 
@@ -49,7 +50,8 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $report->getName(),
             $report->getName(),
             'pimcore_treenode_disabled',
-            $report->isWriteable()
+            $report->isWriteable(),
+            $report->getDataSourceConfig()
         );
     }
 
