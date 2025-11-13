@@ -16,10 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 interface DataProviderInterface
 {
@@ -69,20 +67,13 @@ interface DataProviderInterface
     public function getRequiredPermission(): UserPermissions;
 
     /**
-     * @param GdprStructuredSearchRequest $request
+     * Fetches a single item's data for export.
+     * The returned data will be serialized as JSON.
+     * @param int $id
+     * @return array|object
      *
-     * @return string Job ID
-     */
-    public function startJobExecution(GdprStructuredSearchRequest $request): string;
-
-    /**
-     * Checks if this provider is responsible for the given job.
-     */
-    public function ownsJob(int $jobRunId): bool;
-
-    /**
      * @throws NotFoundException
      * @throws ForbiddenException
      */
-    public function getExportFile(int $jobRunId): StreamedResponse;
+    public function getSingleItemForDownload(int $id): array|object;
 }

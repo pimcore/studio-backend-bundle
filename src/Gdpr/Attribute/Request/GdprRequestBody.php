@@ -14,14 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 
 /**
  * @internal
- */
+*/
 #[Attribute(Attribute::TARGET_METHOD)]
 final class GdprRequestBody extends RequestBody
 {
@@ -30,23 +29,13 @@ final class GdprRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['providers'],
+                required: ['providerName'],
                 properties: [
                     new Property(
-                        property: 'providers',
-                        description: 'A list of provider keys to search (e.g., data_objects, emails, etc.)',
-                        type: 'array',
-                        items: new Items(
-                            type: 'string',
-                            example: 'data_objects'
-                        )
-                    ),
-                    new Property(
-                        property: 'searchTerms',
-                        description: 'The object containing the search values. Can also be empty.',
-                        ref: SearchTerms::class,
-                        type: 'object',
-                        nullable: true
+                        property: 'providerName',
+                        description: 'The key of the single provider to search (e.g., pimcore_user)',
+                        type: 'string',
+                        example: 'pimcore_user'
                     ),
                 ],
                 type: 'object',

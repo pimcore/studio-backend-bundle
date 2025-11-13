@@ -20,3 +20,5 @@ services:
         class: Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\Loader\TaggedIteratorDataProviderLoader
 
     # --- GDPR Providers ---
+    Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\PimcoreUserProvider:
+        tags: ["pimcore.studio_backend.gdpr_data_provider"]

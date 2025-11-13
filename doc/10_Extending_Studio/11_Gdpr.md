@@ -2,7 +2,9 @@
 
 The GDPR Data Provider system provides a centralized interface to find and export personal data from any part of your Pimcore application. You can add new data sources (like Data Objects, Assets, Users, or any custom entity) by creating your own provider.
 
-New providers are created by implementing the `Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface` and tagging your class as a service with `pimcore.studio_backend.gdpr_data_provider`.
+New providers are created by implementing the `Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface` and tagging your class as a service with `pimcore.studio_backend.gdpr_data_provider` in gdpr.yaml.
+
+If you're using the default service configuration, simply placing your class in the `src/Gdpr/Provider/` directory is all you need for it to be registered.
 
 ## How does it work
 
@@ -14,25 +16,48 @@ The `GdprManagerService` acts as the central coordinator for all registered prov
 2.  When a user performs a search, the manager first checks `getRequiredPermission()` to see if the current user is allowed to use your provider.
 3.  If permitted, the manager calls your provider's `findData()` method, passing the user's search terms. The results are then displayed in the grid.
 
-### For Exporting
+### For Exporting (Direct Download)
 
-The export process is a two-step flow handled by your provider:
+The export process is a "direct download" flow.
 
-1.  **Start Job:** The manager calls `startJobExecution()`. Your provider is responsible for starting a background process (e.g., a Symfony Messenger job) and immediately returning a **unique Job ID** (as a string).
-2.  **Get File:** When the user clicks the download button for that job, the manager loops through all providers and calls `ownsJob($jobId)` on each one to find the correct owner.
-    -   Once the owner is found, the manager calls `getExportFile($jobId)`.
-    -   Your provider is then responsible for finding the completed job's file, checking specific permissions (e.g., "does this user own this job?"), and streaming the file back as a `StreamedResponse`.
+1.  **Request:** The user makes a `GET` request to the export endpoint, specifying the item `id` in the URL and the `providerKey` as a query parameter.
+    `GET /pimcore-studio/api/gdpr/export-data/1?providerKey=pimcore_users`
+2.  **Logic:** The `GdprManagerService` resolves the one provider specified (`pimcore_users`).
+3.  **Permission Check:** It calls your provider's `getRequiredPermission()` to check if the user is allowed.
+4.  **Data Retrieval:** If permitted, the manager calls your provider's `getSingleItemForDownload(1)` method.
+5.  **Response:** Your provider returns the raw data (like a DataObject or an array). The `GdprManagerService` automatically serializes this data into a downloadable JSON file, a "Save As..." dialog in the user's browser.
+
+---
 
 ## Example Data Provider
 
-Here is a example of a provider that searches for **Customer** data objects.
+Here is an example of a provider that supports both searching and direct exporting for **Customer** data objects.
 
 ```php
+<?php
+declare(strict_types=1);
 
+namespace App\Gdpr\Provider;
+
+// 1. Import all required classes
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\DataObject;
+// You need to import the class for your DataObject
+use Pimcore\Model\DataObject\Customer;
+
+// 2. Add the AutoconfigureTag to register the provider
 final class CustomerObjectProvider implements DataProviderInterface
 {
-
+    /**
+     * You can inject any services you need.
+     */
     public function __construct(
+        // e.g. private readonly SecurityService $securityService
     ) {
     }
 
@@ -80,7 +105,7 @@ final class CustomerObjectProvider implements DataProviderInterface
         return [
             new GdprDataColumn('id', 'ID'),
             new GdprDataColumn('email', 'Email Address'),
-            new GdDprDataColumn('path', 'Full Path'),
+            new GdprDataColumn('path', 'Full Path'),
         ];
     }
 
@@ -91,53 +116,57 @@ final class CustomerObjectProvider implements DataProviderInterface
      */
     public function findData(?SearchTerms $terms): array
     {
-      //Finds the data matched with search terms
+        // Note: $terms can be null
+        if ($terms === null || empty($terms->value)) {
+            return [];
+        }
 
+        $listing = new DataObject\Customer\Listing();
+        $listing->setCondition('email LIKE ?', ['%' . $terms->value . '%']);
+        $listing->load();
+
+        $results = [];
+        foreach ($listing as $customer) {
+            // The keys here MUST match the keys in getAvailableColumns()
+            $results[] = [
+                'id' => $customer->getId(),
+                'email' => $customer->getEmail(),
+                'path' => $customer->getFullPath(),
+            ];
+        }
+
+        return $results;
     }
 
     /**
-     * Starts the background export job.
+     * Fetches a single item's data for export.
+     * The returned data (array or object) will be serialized by the manager.
      *
-     * @return string The unique Job ID
+     * @param int $id The ID of the item to fetch
+     * @return array|object The data to be serialized
+     *
+     * @throws NotFoundException
+     * @throws ForbiddenException
      */
-    public function startJobExecution(GdprStructuredSearchRequest $request): string
+    public function getSingleItemForDownload(int $id): array|object
     {
-        $jobId = '1';//Create a job id
+        // 1. Find the item
+        $customer = Customer::getById($id);
 
-        return $jobId;
-    }
+        if ($customer === null) {
+            throw new NotFoundException('Customer', $id);
+        }
 
-    /**
-     * A quick check to see if this provider is responsible for a job.
-     * This should be a fast check (e.g., checking a job type or ID prefix).
-     */
-    public function ownsJob(int $jobRunId): bool
-    {
-        // return $this->jobService->doesJobExist?
-
-    }
-
-    /**
-     * Finds the completed job file and streams it.
-     * This is only called after ownsJob() returns true.
-     */
-    public function getExportFile(int $jobRunId): StreamedResponse
-    {
-        // 1. Find the job in your storage
-
-        // 2. If the job doesn't exist (or isn't yours), you MUST throw this
-        // if ($job === null) {
-        //     throw new NotFoundException('Export job not found');
+        // 2. (Optional) Check for specific permissions
+        // if ($this->securityService->isAllowedToSee($customer) === false) {
+        //     throw new ForbiddenException('You are not allowed to export this item.');
         // }
 
+        // 3. Return the data.
+        // The GdprManagerService will receive this and must serialize it.
+        return $customer;
 
-        // 3. Find the file on disk (or stream from S3, etc.)
-        // $filePath = $this->fileService->getFilePath($job->getFileName());
-        // if (!$this->fileService->exists($filePath)) {
-        //     throw new NotFoundException('Export file is missing or not yet generated.');
-        // }
-
-        //Return response
     }
 }
+
 ```

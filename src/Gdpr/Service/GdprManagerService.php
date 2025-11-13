@@ -19,14 +19,15 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEv
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJob;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait; 
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use function count;
 use function sprintf;
 
@@ -35,6 +36,8 @@ use function sprintf;
  */
 final readonly class GdprManagerService implements GdprManagerServiceInterface
 {
+    use StreamedResponseTrait;
+
     public function __construct(
         private DataProviderLoaderInterface $loader,
         private EventDispatcherInterface $eventDispatcher,
@@ -83,50 +86,45 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return new GdprSearchResultCollection($allResults);
     }
 
-    public function startBackgroundExport(GdprStructuredSearchRequest $request): GdprExportJobCollection
-    {
-        $jobs = [];
-        $currentUser = $this->securityService->getCurrentUser();
-
-        foreach ($request->providers as $providerKey) {
-            $provider = $this->loader->resolve($providerKey);
-
-            $permission = $provider->getRequiredPermission();
-            if (!$currentUser->isAllowed($permission->value)) {
-                throw new ForbiddenException("Not allowed for provider: $providerKey");
-            }
-
-            $jobId = $provider->startJobExecution($request);
-            $jobs[] = new GdprExportJob($providerKey, $jobId);
-        }
-
-        return new GdprExportJobCollection($jobs);
-    }
-
     /**
      * @throws ForbiddenException
      * @throws NotFoundException
      */
-    public function getExportFile(int $jobId): StreamedResponse
+    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse 
     {
         $currentUser = $this->securityService->getCurrentUser();
 
-        $providers = $this->loader->getDataProviders();
+        $provider = $this->loader->resolve($providerKey);
 
-        foreach ($providers as $provider) {
-
-            $permission = $provider->getRequiredPermission();
-            if (!$currentUser->isAllowed($permission->value)) {
-                continue;
-            }
-
-            if ($provider->ownsJob($jobId)) {
-
-                return $provider->getExportFile($jobId);
-            }
+        $permission = $provider->getRequiredPermission();
+        if (!$currentUser->isAllowed($permission->value)) {
+            throw new ForbiddenException("Not allowed for provider: {$provider->getKey()}");
         }
 
-        throw new NotFoundException('Export job with ID %d not found or access denied.', $jobId);
+        $data = $provider->getSingleItemForDownload($id);//id is a single item of a particular provider
+
+        $jsonData = json_encode($data, JSON_PRETTY_PRINT);
+
+        $filename = sprintf('gdpr-export-%s-%d.json', $providerKey, $id);
+        $fileSize = strlen($jsonData);
+
+        $headers = $this->getResponseHeaders(
+            mimeType: 'application/json',
+            fileSize: $fileSize,
+            filename: $filename,
+            contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value, // 'attachment'
+            additionalHeaders: []
+        );
+
+        $response = new StreamedResponse(
+            function () use ($jsonData) {
+                echo $jsonData;
+            },
+            HttpResponseCodes::SUCCESS->value,
+            $headers 
+        );
+
+        return $response;
     }
 
     /**

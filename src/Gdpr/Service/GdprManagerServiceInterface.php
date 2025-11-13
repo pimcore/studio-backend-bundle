@@ -17,11 +17,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprExportJobCollection;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
 /**
  * @internal
  */
@@ -43,12 +41,7 @@ interface GdprManagerServiceInterface
 
     /**
      * @throws ForbiddenException
-     */
-    public function startBackgroundExport(GdprStructuredSearchRequest $request): GdprExportJobCollection;
-
-    /**
-     * @throws ForbiddenException
      * @throws NotFoundException
      */
-    public function getExportFile(int $jobRunId): StreamedResponse;
+    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse;
 }
