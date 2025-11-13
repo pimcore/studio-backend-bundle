@@ -20,7 +20,7 @@ use OpenApi\Attributes\RequestBody;
 
 /**
  * @internal
-*/
+ */
 #[Attribute(Attribute::TARGET_METHOD)]
 final class GdprRequestBody extends RequestBody
 {

@@ -14,22 +14,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Parameter; 
+use OpenApi\Attributes\Parameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\StreamedResponse; 
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @internal
@@ -63,7 +62,7 @@ final class ExportController extends AbstractApiController
                 required: true,
                 description: 'The key of the single provider to export',
                 example: 'pimcore_user'
-            )
+            ),
         ]
     )]
     #[SuccessResponse(
@@ -78,7 +77,7 @@ final class ExportController extends AbstractApiController
     ])]
     public function startExport(
         int $id,
-        #[MapQueryParameter] string $providerKey 
+        #[MapQueryParameter] string $providerKey
     ): StreamedResponse {
         return $this->gdprManagerService->getExportDataAsJson($id, $providerKey);
     }

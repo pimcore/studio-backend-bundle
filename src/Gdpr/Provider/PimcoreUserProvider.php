@@ -1,14 +1,13 @@
 <?php
 
-
 /**
  * This source file is available under the terms of the
  * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
@@ -18,9 +17,8 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\User;
-use Pimcore\Model\User\Concrete;
 use Pimcore\Model\User\Listing;
-use Carbon\Carbon;
+use function count;
 
 /**
  * Searches for Pimcore backend users.
@@ -85,7 +83,9 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
      * Required by the manager service for single-item export.
      *
      * @param int $id
+     *
      * @return array<string, mixed>
+     *
      * @throws NotFoundException
      */
     public function getSingleItemForDownload(int $id): array

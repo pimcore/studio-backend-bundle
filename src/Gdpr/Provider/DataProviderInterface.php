@@ -69,7 +69,9 @@ interface DataProviderInterface
     /**
      * Fetches a single item's data for export.
      * The returned data will be serialized as JSON.
+     *
      * @param int $id
+     *
      * @return array|object
      *
      * @throws NotFoundException
