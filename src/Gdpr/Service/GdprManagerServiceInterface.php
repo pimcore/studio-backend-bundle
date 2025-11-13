@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
 /**
  * @internal
  */
