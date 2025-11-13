@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;

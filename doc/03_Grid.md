@@ -529,6 +529,7 @@ The `Translate` transformer translates a given value using Symfony’s Translato
 The `PhpCode` transformer delegates value transformation to a custom PHP class implementing the Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface. This allows developers to encapsulate complex transformation logic in reusable services. 
 To register a transformer, the service must be tagged with the appropriate Symfony service tag (studio_backend.grid.php_code_transformer) so it can be discovered by the system.
 Developers can write their own PHP services to handle complex transformations. This is helpful when the logic needs to use other services or custom settings.
+
 ---
 
 **Available Configurations:**

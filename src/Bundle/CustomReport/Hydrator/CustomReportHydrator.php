@@ -39,7 +39,8 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             htmlspecialchars($report->getGroup()),
             htmlspecialchars($report->getGroupIconClass()),
             $report->getMenuShortcut(),
-            htmlspecialchars($report->getReportClass())
+            htmlspecialchars($report->getReportClass()),
+            (bool)$report->getDataSourceConfig()
         );
     }
 

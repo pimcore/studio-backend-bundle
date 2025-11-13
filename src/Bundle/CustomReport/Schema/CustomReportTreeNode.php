@@ -24,7 +24,16 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'BundleCustomReportsTreeNode',
     title: 'Bundle Custom Reports Tree Node',
-    required: ['name', 'niceName', 'iconClass', 'group', 'groupIconClass', 'menuShortcut', 'reportClass'],
+    required: [
+        'name',
+        'niceName',
+        'iconClass',
+        'group',
+        'groupIconClass',
+        'menuShortcut',
+        'reportClass',
+        'hasDataSourceConfig',
+    ],
     type: 'object'
 )]
 final class CustomReportTreeNode implements AdditionalAttributesInterface
@@ -45,7 +54,13 @@ final class CustomReportTreeNode implements AdditionalAttributesInterface
         #[Property(description: 'menu shortcut', type: 'bool', example: true)]
         private readonly bool $menuShortcut,
         #[Property(description: 'report class', type: 'string', example: '')]
-        private readonly string $reportClass
+        private readonly string $reportClass,
+        #[Property(
+            description: 'Whether the report has a data source configuration.',
+            type: 'bool',
+            example: false
+        )]
+        private readonly bool $hasDataSourceConfig = false,
     ) {
 
     }
@@ -83,5 +98,10 @@ final class CustomReportTreeNode implements AdditionalAttributesInterface
     public function getReportClass(): string
     {
         return $this->reportClass;
+    }
+
+    public function isHasDataSourceConfig(): bool
+    {
+        return $this->hasDataSourceConfig;
     }
 }

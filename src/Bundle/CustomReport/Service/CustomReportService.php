@@ -76,7 +76,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
     public function getCustomReportConfigTree(): array
     {
         $treeConfigData = [];
-        $reportTree = $this->customReportRepository->loadForCurrentUser();
+        $reportTree = $this->customReportRepository->loadAll();
 
         foreach ($reportTree as $report) {
             $data = $this->customReportHydrator->extractConfigTreeData($report);
