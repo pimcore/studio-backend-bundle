@@ -24,6 +24,8 @@ use Pimcore\Model\User;
  */
 interface CustomReportRepositoryInterface
 {
+    public function loadAll(): array;
+
     public function loadForUser(User $user): array;
 
     public function loadForCurrentUser(): array;

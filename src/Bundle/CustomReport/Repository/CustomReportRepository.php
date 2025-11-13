@@ -39,6 +39,11 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
     ) {
     }
 
+    public function loadAll(): array
+    {
+        return (new Listing())->getDao()->loadList();
+    }
+
     public function loadForUser(User $user): array
     {
         return (new Listing())->getDao()->loadForGivenUser(
