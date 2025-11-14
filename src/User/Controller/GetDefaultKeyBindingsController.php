@@ -45,7 +45,6 @@ final class GetDefaultKeyBindingsController extends AbstractApiController
     }
 
     #[Route('/users/default-key-bindings', name: 'pimcore_studio_api_users_default_key_bindings', methods: ['GET'])]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::PREFIX . '/users/default-key-bindings',
         operationId: 'user_default_key_bindings',
