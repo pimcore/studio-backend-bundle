@@ -39,7 +39,7 @@ final class GetDefaultKeyBindingsController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private KeyBindingServiceInterface $keyBindingService
+        private readonly KeyBindingServiceInterface $keyBindingService
     ) {
         parent::__construct($serializer);
     }
