@@ -22,11 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
@@ -39,13 +37,12 @@ final class GetDefaultKeyBindingsController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private KeyBindingServiceInterface $keyBindingService
+        private readonly KeyBindingServiceInterface $keyBindingService
     ) {
         parent::__construct($serializer);
     }
 
     #[Route('/users/default-key-bindings', name: 'pimcore_studio_api_users_default_key_bindings', methods: ['GET'])]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::PREFIX . '/users/default-key-bindings',
         operationId: 'user_default_key_bindings',
