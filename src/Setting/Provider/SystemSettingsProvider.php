@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
+use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
@@ -32,7 +33,8 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         SystemSettingsConfig $systemSettingsConfig,
         private AdminResolverInterface $adminResolver,
         private ToolResolverInterface $toolResolver,
-        private VersionResolverInterface $versionResolver
+        private VersionResolverInterface $versionResolver,
+        private ConfigResolver $configResolver
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
@@ -50,6 +52,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'upload_max_filesize' => $this->getUploadMaxFilesize(),
             'platform_version' => $this->versionResolver->getPlatformVersion(),
             'version' => $this->versionResolver->getVersion(),
+            'environment' => $this->configResolver->getEnvironment(),
         ];
     }
 
