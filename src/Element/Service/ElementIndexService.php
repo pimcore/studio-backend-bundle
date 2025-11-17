@@ -17,6 +17,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DbalException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -36,9 +37,10 @@ use function sprintf;
  */
 final readonly class ElementIndexService implements ElementIndexServiceInterface
 {
-    private const string DATA_OBJET_TABLE = 'objects';
+    private const string DATA_OBJECT_TABLE = 'objects';
 
     public function __construct(
+        private CacheResolverInterface $cacheResolver,
         private ConcreteObjectResolverInterface $concreteResolver,
         private DbResolverInterface $dbResolver,
         private LoggerInterface $logger,
@@ -55,6 +57,52 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
 
         if ($element instanceof Document) {
             $this->indexRelatedDocuments($element, $newIndex);
+        }
+    }
+    
+    public function reindexBasedOnSortBy(AbstractObject $parentObject, string $currentSortOrder): void
+    {
+        $this->executeInsideTransaction(fn () => $this->reindexByIndex($parentObject, $currentSortOrder));
+    }
+
+    /**
+     * @throws DbalException
+     */
+    private function reindexByIndex(AbstractObject $dataObject, string $currentSortOrder): void
+    {
+        $db = $this->dbResolver->get();
+        $db->executeStatement(
+            'UPDATE '. self::DATA_OBJECT_TABLE .' o,
+                    (
+                    SELECT newIndex, id FROM (
+                        SELECT @n := @n +1 AS newIndex, id
+                        FROM '. self::DATA_OBJECT_TABLE .',
+                                (SELECT @n := -1) variable
+                                 WHERE parentId = ? ORDER BY `key` ' . $currentSortOrder
+            .') tmp
+                    ) order_table
+                    SET o.index = order_table.newIndex
+                    WHERE o.id=order_table.id',
+            [
+                $dataObject->getId(),
+            ]
+        );
+
+        $children = $db->fetchAllAssociative(
+            'SELECT id, modificationDate, versionCount FROM ' . self::DATA_OBJECT_TABLE .
+            ' WHERE parentId = ? ORDER BY `index` ASC',
+            [$dataObject->getId()]
+        );
+
+        foreach ($children as $child) {
+            $element = $this->concreteResolver->getById($child['id']);
+            if ($element === null) {
+                continue;
+            }
+            $this->updateLatestVersionIndex($element, $child['modificationDate']);
+            $this->cacheResolver->clearTags(
+                [sprintf('object_%s', $child['id']), 'object_properties', 'output']
+            );
         }
     }
 
@@ -123,11 +171,11 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
     ): void {
         $db = $this->dbResolver->get();
         $db->executeStatement(
-            'UPDATE '. self::DATA_OBJET_TABLE .' o,
+            'UPDATE '. self::DATA_OBJECT_TABLE .' o,
             (
                 SELECT newIndex, id
                 FROM (
-                    With cte As (SELECT `index`, id FROM ' . self::DATA_OBJET_TABLE .
+                    With cte As (SELECT `index`, id FROM ' . self::DATA_OBJECT_TABLE .
             ' WHERE parentId = ? AND id != ? ORDER BY `index` LIMIT '.
             $parent->getChildAmount() .')
                     SELECT @n := IF(@n = ? - 1,@n + 2,@n + 1) AS newIndex, id
@@ -155,7 +203,7 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
     ): void {
         $db = $this->dbResolver->get();
         $siblings = $db->fetchAllAssociative(
-            'SELECT id, modificationDate, versionCount, `key`, `index` FROM ' . self::DATA_OBJET_TABLE .
+            'SELECT id, modificationDate, versionCount, `key`, `index` FROM ' . self::DATA_OBJECT_TABLE .
             ' WHERE parentId = ? AND id != ? ORDER BY `index` ASC',
             [$updatedObject->getParentId(), $updatedObject->getId()]
         );
@@ -216,6 +264,9 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
         }
     }
 
+    /**
+     * @throws DatabaseException|EnvironmentException
+     */
     private function rollBackTransaction(Connection $db, int $retries, Exception $exception): void
     {
         $maxRetries = 5;

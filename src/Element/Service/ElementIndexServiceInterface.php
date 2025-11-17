@@ -13,9 +13,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Element\ElementInterface;
 
 interface ElementIndexServiceInterface
 {
+
+    /**
+     * @throws DatabaseException|EnvironmentException
+     */
     public function indexRelatedElements(ElementInterface $element, int $newIndex): void;
+
+    /**
+     * @throws DatabaseException|EnvironmentException
+     */
+    public function reindexBasedOnSortBy(AbstractObject $parentObject, string $currentSortOrder): void;
 }
