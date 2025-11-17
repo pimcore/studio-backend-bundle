@@ -59,7 +59,7 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
             $this->indexRelatedDocuments($element, $newIndex);
         }
     }
-    
+
     public function reindexBasedOnSortBy(AbstractObject $parentObject, string $currentSortOrder): void
     {
         $this->executeInsideTransaction(fn () => $this->reindexByIndex($parentObject, $currentSortOrder));

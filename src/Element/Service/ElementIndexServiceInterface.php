@@ -20,7 +20,6 @@ use Pimcore\Model\Element\ElementInterface;
 
 interface ElementIndexServiceInterface
 {
-
     /**
      * @throws DatabaseException|EnvironmentException
      */
