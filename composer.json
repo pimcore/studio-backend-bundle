@@ -29,7 +29,7 @@
     "symfony/mercure-bundle": "^0.3.9",
     "lcobucci/jwt": "^5.3",
     "phpdocumentor/reflection-docblock": "^5.6",
-    "phpoffice/phpspreadsheet": "^3.3",
+    "phpoffice/phpspreadsheet": "^3.3|^4.0|^5.0",
     "ext-intl": "*",
     "ext-filter": "*"
   },
