@@ -58,10 +58,10 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
         $search = $this->validateSearch($dataObjectQuery->getSearch());
+
         try {
             $searchResult = $this->searchService->search($search);
-        }
-        catch (ParsingException $e) {
+        } catch (ParsingException $e) {
             throw new GdiParsingException(
                 $e->getMessage(),
                 $e->getPosition(),

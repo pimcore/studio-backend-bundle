@@ -61,8 +61,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
             $searchResult = $this->searchService->search($documentQuery->getSearch());
         } catch (DocumentSearchException) {
             throw new SearchException('documents');
-        }
-        catch (ParsingException $e) {
+        } catch (ParsingException $e) {
             throw new GdiParsingException(
                 $e->getMessage(),
                 $e->getPosition(),
