@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\AssetHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -63,6 +65,16 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
             $searchResult = $this->searchService->search($assetQuery->getSearch());
         } catch (AssetSearchException) {
             throw new SearchException('assets');
+        } catch (ParsingException $e) {
+            throw new GdiParsingException(
+                $e->getMessage(),
+                $e->getPosition(),
+                $e->getExpected(),
+                $e->getQuery(),
+                $e->getFound(),
+                $e->getToken(),
+                $e
+            );
         } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }

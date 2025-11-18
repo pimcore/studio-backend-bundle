@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -59,24 +60,12 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
     private function createResponse(HttpExceptionInterface $exception): Response
     {
-        if ($exception instanceof HttpException && $exception->getPrevious() instanceof ValidationFailedException) {
-            return $this->handleSymfonyValidationFailedException(
-                $exception->getPrevious(),
-                $exception->getStatusCode(),
-                $exception->getMessage()
-            );
-        }
+        $responseData = $this->getResponseData($exception);
 
-        if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
-            return new JsonResponse($exception->getMessage(), $exception->getStatusCode());
-        }
-
-        $responseData = [
-            'message' => $exception->getMessage(),
-            'errorKey' => $exception->getErrorKey(),
-        ];
-
-        if ($this->environment === 'dev') {
+        if (
+            $this->environment === 'dev' &&
+            array_key_exists('detail', $responseData) === false
+        ) {
             $responseData['detail'] = $exception->getTraceAsString();
         }
 
@@ -86,11 +75,35 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         );
     }
 
+    private function getResponseData(HttpExceptionInterface $exception): array
+    {
+        if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
+            return [
+                $exception->getMessage()
+            ];
+        }
+
+        if ($exception->getPrevious() instanceof ValidationFailedException) {
+            return $this->handleSymfonyValidationFailedException(
+                $exception->getPrevious(),
+                $exception->getMessage()
+            );
+        }
+
+        if($exception instanceof GdiParsingException) {
+            return $this->handleGdiParsingException($exception);
+        }
+
+        return [
+            'message' => $exception->getMessage(),
+            'errorKey' => $exception->getErrorKey(),
+        ];
+    }
+
     private function handleSymfonyValidationFailedException(
         ValidationFailedException $exception,
-        int $status,
         string $message
-    ): JsonResponse {
+    ): array {
         $violations = $exception->getViolations();
         $collectedViolations = [];
 
@@ -101,18 +114,23 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
             ];
         }
 
-        $responseData = [
+        return [
             'message' => $message,
             'violations' => $collectedViolations,
         ];
+    }
 
-        if ($this->environment === 'dev') {
-            $responseData['detail'] = $exception->getTraceAsString();
-        }
-
-        return new JsonResponse(
-            $responseData,
-            $status
-        );
+    private function handleGdiParsingException(
+        GdiParsingException $exception
+    ): array {
+        return [
+            'message' => $exception->getMessage(),
+            'position' => $exception->getPosition(),
+            'expected' => $exception->getExpected(),
+            'query' => $exception->getQuery(),
+            'found' => $exception->getFound(),
+            'token' => $exception->getToken(),
+            'errorKey' => $exception->getErrorKey()
+        ];
     }
 }

@@ -30,4 +30,5 @@ enum HttpResponseErrorKeys: string
     case INVALID_ARGUMENT = 'error_invalid_argument';
     case INVALID_ASSET_TYPE = 'error_inconsistent_asset_type';
     case VALIDATION_FAILED = 'error_validation_failed';
+    case GDI_PARSING_EXCEPTION = 'error_gdi_parsing_exception';
 }
