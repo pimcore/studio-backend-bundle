@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\AbstractServerToClientProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
