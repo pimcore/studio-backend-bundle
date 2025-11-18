@@ -17,63 +17,32 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 
 interface DataProviderInterface
 {
     /**
-     * Searches for personal data within this provider's domain.
-     *
-     * @param SearchTerms|null $terms The search values (can be null if none provided)
-     *
-
-     * @return array<array<string, mixed>>
+     * @return GdprDataRow[]
      */
     public function findData(?SearchTerms $terms): array;
 
-    /**
-     * Returns the human-readable name for this provider.
-     *
-     * @return string
-     */
     public function getName(): string;
 
-    /**
-     * Returns the unique identifying key for this provider.
-     *
-     * @return string
-     */
     public function getKey(): string;
 
-    /**
-     * A higher number means a higher priority (appears first).
-     *
-     * @return int
-     */
     public function getSortPriority(): int;
 
     /**
-     * Returns the list of available columns for the result data.
-     *
      * @return GdprDataColumn[]
-     */
+    */
     public function getAvailableColumns(): array;
 
-    /**
-     * Returns the general UserPermission required to run this provider.
-     *
-     * @return UserPermissions
+    /**     
+     * @return string[] (e.g., ['users', 'objects'])
      */
-    public function getRequiredPermission(): UserPermissions;
+    public function getRequiredPermissions(): array;
 
     /**
-     * Fetches a single item's data for export.
-     * The returned data will be serialized as JSON.
-     *
-     * @param int $id
-     *
-     * @return array|object
-     *
      * @throws NotFoundException
      * @throws ForbiddenException
      */

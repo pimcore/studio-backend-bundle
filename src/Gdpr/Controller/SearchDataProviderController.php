@@ -74,6 +74,7 @@ final class SearchDataProviderController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function searchData(
         #[MapRequestPayload] GdprStructuredSearchRequest $request

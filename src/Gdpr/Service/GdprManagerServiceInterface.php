@@ -27,8 +27,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 interface GdprManagerServiceInterface
 {
     /**
-     * Returns a sorted collection of all available GDPR data providers.
-     *
      * @return Collection<GdprDataProvider>
      */
     public function getAvailableProviders(): Collection;

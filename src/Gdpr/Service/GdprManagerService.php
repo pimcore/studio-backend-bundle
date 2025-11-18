@@ -28,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprExportDataEvent;
 use function count;
 use function sprintf;
 use function strlen;
@@ -46,6 +48,9 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     ) {
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getAvailableProviders(): Collection
     {
         $providers = $this->sortProviders($this->loader->getDataProviders());
@@ -53,6 +58,9 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $this->getDataProviderCollection($providers);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function search(GdprStructuredSearchRequest $request): GdprSearchResultCollection
     {
         $allResults = [];
@@ -61,15 +69,27 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         foreach ($request->providers as $providerKey) {
             $provider = $this->loader->resolve($providerKey);
 
-            $permission = $provider->getRequiredPermission();
+            $permissions = $provider->getRequiredPermissions();
+            $isGranted = false;
 
-            // Check if the current user has the required permission to access the provider
-            if (!$currentUser->isAllowed($permission->value)) {
+            if (empty($permissions)) {
+                $isGranted = true; // No permissions required
+            } else {
+                foreach ($permissions as $permission) {
+                    if ($currentUser->isAllowed($permission)) {
+                        $isGranted = true;
+                        break;
+                    }
+                }
+            }
+
+            // Check if the current user has the required permission
+            if (!$isGranted) {
                 throw new ForbiddenException(
                     sprintf(
-                        'Not allowed to access the targeted provider "%s". Required permission: "%s"',
+                        'Not allowed to access the targeted provider "%s". Required permission(s): "%s"',
                         $providerKey,
-                        $permission->value
+                        implode(', ', $permissions)
                     )
                 );
             }
@@ -83,13 +103,12 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                 );
             }
         }
+        return $this->getSearchResultCollection($allResults);
 
-        return new GdprSearchResultCollection($allResults);
     }
 
     /**
-     * @throws ForbiddenException
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
     {
@@ -97,35 +116,33 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         $provider = $this->loader->resolve($providerKey);
 
-        $permission = $provider->getRequiredPermission();
-        if (!$currentUser->isAllowed($permission->value)) {
-            throw new ForbiddenException("Not allowed for provider: {$provider->getKey()}");
+        $permissions = $provider->getRequiredPermissions();
+        $isGranted = false;
+
+        if (empty($permissions)) {
+            $isGranted = true; // No permissions required
+        } else { 
+            foreach ($permissions as $permission) {
+                if ($currentUser->isAllowed($permission)) {
+                    $isGranted = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$isGranted) {
+            throw new ForbiddenException(
+                sprintf(
+                    'Not allowed for provider: %s. Required permission(s): %s',
+                    $provider->getKey(),
+                    implode(', ', $permissions)
+                )
+            );
         }
 
         $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
 
-        $jsonData = json_encode($data, JSON_PRETTY_PRINT);
-
-        $filename = sprintf('gdpr-export-%s-%d.json', $providerKey, $id);
-        $fileSize = strlen($jsonData);
-
-        $headers = $this->getResponseHeaders(
-            mimeType: 'application/json',
-            fileSize: $fileSize,
-            filename: $filename,
-            contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value, // 'attachment'
-            additionalHeaders: []
-        );
-
-        $response = new StreamedResponse(
-            function () use ($jsonData) {
-                echo $jsonData;
-            },
-            HttpResponseCodes::SUCCESS->value,
-            $headers
-        );
-
-        return $response;
+        return $this->createExportResponse($data, $providerKey, $id);
     }
 
     /**
@@ -156,8 +173,52 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     }
 
     /**
-     * Sorts the providers by priority.
-     *
+     * @param array<GdprSearchResult> $results
+     */
+    private function getSearchResultCollection(array $results): GdprSearchResultCollection
+    {
+        $collection = new GdprSearchResultCollection($results);
+
+        $this->eventDispatcher->dispatch(
+            new GdprSearchResultEvent($collection),
+            GdprSearchResultEvent::EVENT_NAME
+        );
+
+        return $collection;
+    }
+
+    /**
+     * Helper to create the export response, dispatch event, and stream data.
+     */
+    private function createExportResponse(mixed $data, string $providerKey, int $id): StreamedResponse
+    {
+        $event = new GdprExportDataEvent($data);
+        $this->eventDispatcher->dispatch($event, GdprExportDataEvent::EVENT_NAME);
+        $finalData = $event->getData();
+
+        $jsonData = json_encode($finalData, JSON_THROW_ON_ERROR);
+
+        $filename = sprintf('gdpr-export-%s-%d.json', $providerKey, $id);
+        $fileSize = strlen($jsonData);
+
+        $headers = $this->getResponseHeaders(
+            mimeType: 'application/json',
+            fileSize: $fileSize,
+            filename: $filename,
+            contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value,
+            additionalHeaders: []
+        );
+
+        return new StreamedResponse(
+            function () use ($jsonData) {
+                echo $jsonData;
+            },
+            HttpResponseCodes::SUCCESS->value,
+            $headers
+        );
+    }
+
+    /**
      * @param array<string, DataProviderInterface> $providers
      *
      * @return array<string, DataProviderInterface>

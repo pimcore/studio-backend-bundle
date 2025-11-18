@@ -16,17 +16,18 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Model\User;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Model\User\Listing;
 use function count;
 
 /**
- * Searches for Pimcore backend users.
- *
  * @internal
  */
 final readonly class PimcoreUserProvider implements DataProviderInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function findData(?SearchTerms $terms): array
     {
         $listing = new Listing();
@@ -55,8 +56,8 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         }
 
         // If we have conditions, apply them.
-        if (count($conditionParts) > 1) { // We have more than just the base "type = 'user'"
-            $listing->setCondition(implode(' OR ', $conditionParts), $params);
+        if (count($conditionParts) > 1) {
+            $listing->setCondition(implode(' AND ', $conditionParts), $params);
         } else {
             // Only the "type = 'user'" condition exists
             $listing->setCondition($conditionParts[0]);
@@ -64,29 +65,25 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $users = $listing->getUsers();
 
-        $results = [];
-        foreach ($users as $user) {
-            $results[] = [
-                'id' => $user->getId(),
-                'name' => $user->getName(),
-                'firstname' => $user->getFirstname(),
-                'lastname' => $user->getLastname(),
-                'email' => $user->getEmail(),
-            ];
-        }
+        $columns = $this->getAvailableColumns();
 
-        return $results;
+        return array_map(
+            fn ($user) => new GdprDataRow(
+                [
+                    'id' => $user->getId(),
+                    'name' => $user->getName(),
+                    'firstname' => $user->getFirstname(),
+                    'lastname' => $user->getLastname(),
+                    'email' => $user->getEmail(),
+                ],
+                $columns
+            ),
+            $users
+        );
     }
 
     /**
-     * Get all relevant GDPR data for a single user.
-     * Required by the manager service for single-item export.
-     *
-     * @param int $id
-     *
-     * @return array<string, mixed>
-     *
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function getSingleItemForDownload(int $id): array
     {
@@ -104,15 +101,10 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         return [
             'id' => $user->getId(),
-            'parentId' => $user->getParentId(),
-            'type' => $user->getType(),
             'name' => $user->getName(),
             'firstname' => $user->getFirstname(),
             'lastname' => $user->getLastname(),
             'email' => $user->getEmail(),
-            'active' => $user->getActive(),
-            'admin' => $user->isAdmin(),
-            'language' => $user->getLanguage(),
         ];
     }
 
@@ -131,24 +123,25 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         return 5;
     }
 
-    public function getRequiredPermission(): UserPermissions
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequiredPermissions(): array
     {
-        return UserPermissions::PIMCORE_USER;
+        return [UserPermissions::PIMCORE_USER->value];
     }
 
+    /**
+     * {@inheritdoc}
+    */
     public function getAvailableColumns(): array
     {
         return [
             new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('parentId', 'Parent ID'),
-            new GdprDataColumn('type', 'Type'),
             new GdprDataColumn('name', 'Username'),
             new GdprDataColumn('firstname', 'First Name'),
             new GdprDataColumn('lastname', 'Last Name'),
             new GdprDataColumn('email', 'Email'),
-            new GdprDataColumn('active', 'Active'),
-            new GdprDataColumn('admin', 'Admin'),
-            new GdprDataColumn('language', 'Language'),
         ];
     }
 }

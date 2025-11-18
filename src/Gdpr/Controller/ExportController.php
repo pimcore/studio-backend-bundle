@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Controller;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Parameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
@@ -54,15 +55,14 @@ final class ExportController extends AbstractApiController
         operationId: 'gdpr_export',
         summary: 'gdpr_export_summary',
         description: 'gdpr_export_description',
-        tags: [Tags::Export->name],
+        tags: [Tags::Export->value],
         parameters: [
-            new Parameter(
+            new TextFieldParameter(
                 name: 'providerKey',
-                in: 'query',
-                required: true,
                 description: 'The key of the single provider to export',
+                required: true,
                 example: 'pimcore_user'
-            ),
+            )
         ]
     )]
     #[SuccessResponse(
@@ -74,6 +74,7 @@ final class ExportController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function startExport(
         int $id,
