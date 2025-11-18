@@ -21,5 +21,5 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Schema\JobRun;
  */
 interface JobRunListHydratorInterface
 {
-    public function hydrate(JobRunEntity $jobRun): JobRun;
+    public function hydrate(JobRunEntity $jobRun, bool $forceReload = false): JobRun;
 }

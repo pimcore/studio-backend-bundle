@@ -17,6 +17,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use function count;
 
 /**
@@ -58,7 +59,7 @@ trait HandlerProgressTrait
         }
 
         $publishService->publish(
-            Events::HANDLER_PROGRESS->value,
+            Topics::STUDIO->value,
             new Progress(
                 $progress,
                 // $currentStep + 1 because the current step is 0-based

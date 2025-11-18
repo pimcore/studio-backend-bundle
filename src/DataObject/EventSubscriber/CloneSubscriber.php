@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -50,7 +51,7 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
         ) {
             $jobRun = $this->jobRunRepository->getJobRunById($event->getJobRunId());
             $this->publishService->publish(
-                Events::CLONING_FINISHED->value,
+                Topics::STUDIO->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

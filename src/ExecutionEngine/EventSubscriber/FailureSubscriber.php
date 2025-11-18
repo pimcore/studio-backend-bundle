@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use function in_array;
 
@@ -67,7 +68,7 @@ final readonly class FailureSubscriber implements EventSubscriberInterface
             );
 
             $this->publishService->publish(
-                Events::FAILED->value,
+                Topics::STUDIO->value,
                 new Finished(
                     $jobRunId,
                     $event->getJobName(),

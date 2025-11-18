@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberSe
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -49,7 +50,7 @@ final readonly class PatchSubscriber implements EventSubscriberInterface
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Events::PATCH_FINISHED->value,
+                Topics::STUDIO->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -62,7 +63,7 @@ final readonly class XlsxCreationSubscriber implements EventSubscriberInterface
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
-                Events::XLSX_DOWNLOAD_READY->value,
+                Topics::STUDIO->value,
                 $event
             ),
             JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),

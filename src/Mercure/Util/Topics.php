@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * This source file is available under the terms of the
@@ -11,17 +10,13 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-/**
- * @internal
- */
-enum Events: string
+enum Topics: string
 {
     use EnumToValueArrayTrait;
 
-    case RECYCLE_BIN_DELETE_FINISHED = 'recycle-bin-delete-finished';
-    case RECYCLE_BIN_RESTORE_FINISHED = 'recycle-bin-restore-finished';
+    case STUDIO = 'studio_backend';
 }
