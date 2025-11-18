@@ -18,5 +18,5 @@ enum Topics: string
 {
     use EnumToValueArrayTrait;
 
-    case STUDIO = 'studio-backend';
+    case STUDIO = 'studio-backend-default';
 }
