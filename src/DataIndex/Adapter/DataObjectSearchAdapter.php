@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
@@ -28,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DataObjectHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -51,13 +53,25 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     }
 
     /**
-     * @throws InvalidSearchException
+     * @throws InvalidSearchException|GdiParsingException
      */
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
-
         $search = $this->validateSearch($dataObjectQuery->getSearch());
-        $searchResult = $this->searchService->search($search);
+        try {
+            $searchResult = $this->searchService->search($search);
+        }
+        catch (ParsingException $e) {
+            throw new GdiParsingException(
+                $e->getMessage(),
+                $e->getPosition(),
+                $e->getExpected(),
+                $e->getQuery(),
+                $e->getFound(),
+                $e->getToken()?->value,
+                $e
+            );
+        }
 
         $result = array_map(function (DataObjectSearchResultItem $item) {
             return $this->hydratorService->hydrateDataObjects($item);

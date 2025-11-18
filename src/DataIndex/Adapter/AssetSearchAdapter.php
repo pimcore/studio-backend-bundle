@@ -72,7 +72,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
                 $e->getExpected(),
                 $e->getQuery(),
                 $e->getFound(),
-                $e->getToken(),
+                $e->getToken()?->value,
                 $e
             );
         } catch (Exception $e) {
