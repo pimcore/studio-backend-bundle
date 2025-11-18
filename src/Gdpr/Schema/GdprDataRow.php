@@ -25,7 +25,7 @@ final readonly class GdprDataRow
      */
     public function __construct(
         private array $data,
-        private array $availableColumns
+        array $availableColumns
     ) {
         foreach ($availableColumns as $column) {
             $columnName = $column->getKey();
