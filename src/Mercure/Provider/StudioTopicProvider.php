@@ -11,18 +11,19 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Notification\Mercure\Provider;
+namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Provider;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\AbstractServerToClientProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(TaggedIteratorAdapter::TOPIC_LOADER_TAG)]
-final class NotificationTopicProvider extends AbstractServerToClientProvider
+final class StudioTopicProvider extends AbstractServerToClientProvider
 {
     public function getClientSubscribableTopic(): array
     {
@@ -36,6 +37,6 @@ final class NotificationTopicProvider extends AbstractServerToClientProvider
 
     private function getEvents(): array
     {
-        return Events::values();
+        return Topics::values();
     }
 }
