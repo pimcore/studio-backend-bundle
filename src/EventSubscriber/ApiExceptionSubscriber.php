@@ -20,9 +20,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use function array_key_exists;
 
 /**
  * @internal
@@ -79,7 +79,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
     {
         if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
             return [
-                $exception->getMessage()
+                $exception->getMessage(),
             ];
         }
 
@@ -90,7 +90,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
             );
         }
 
-        if($exception instanceof GdiParsingException) {
+        if ($exception instanceof GdiParsingException) {
             return $this->handleGdiParsingException($exception);
         }
 
@@ -130,7 +130,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
             'query' => $exception->getQuery(),
             'found' => $exception->getFound(),
             'token' => $exception->getToken(),
-            'errorKey' => $exception->getErrorKey()
+            'errorKey' => $exception->getErrorKey(),
         ];
     }
 }
