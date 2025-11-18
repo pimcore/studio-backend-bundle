@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
@@ -59,6 +60,7 @@ final readonly class PatchService implements PatchServiceInterface
         private DataAdapterServiceInterface $dataAdapterService,
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
+        private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService
     ) {
     }
@@ -156,6 +158,10 @@ final readonly class PatchService implements PatchServiceInterface
                 $user,
                 $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
             );
+
+            if (isset($elementPatchData['index'])) {
+                $this->indexService->indexRelatedElements($element, $elementPatchData['index']);
+            }
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())

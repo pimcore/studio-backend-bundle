@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -49,6 +50,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private DocumentDataService $documentDataService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
     ) {
     }
@@ -78,6 +80,10 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         try {
             $this->elementSaveService->save($element, $user, $task);
+
+            if (isset($data['index'])) {
+                $this->indexService->indexRelatedElements($element, $data['index']);
+            }
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())

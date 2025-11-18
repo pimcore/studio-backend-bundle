@@ -34,7 +34,7 @@
     "ext-filter": "*"
   },
   "require-dev": {
-    "codeception/codeception": "^5.0.10",
+    "codeception/codeception": "^5.3.2",
     "roave/security-advisories": "dev-latest",
     "codeception/phpunit-wrapper": "^9",
     "codeception/module-asserts": "^2",

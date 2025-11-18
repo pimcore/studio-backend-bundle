@@ -28,7 +28,7 @@ use function sprintf;
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final readonly class ChildrenSortOrderAdapter implements UpdateAdapterInterface
 {
-    private const INDEX_KEY = 'childrenSortOrder';
+    public const string INDEX_KEY = 'childrenSortOrder';
 
     /**
      * @throws ElementSavingFailedException
