@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 
 /**
  * @internal
@@ -29,7 +30,7 @@ use OpenApi\Attributes\Schema;
 final class GdprSearchResult
 {
     /**
-     * @param array<array<string, mixed>> $results
+     * @param GdprDataRow[] $results
      */
     public function __construct(
         #[Property(
@@ -37,14 +38,14 @@ final class GdprSearchResult
             type: 'string',
             example: 'data_objects'
         )]
-        private string $providerKey,
+        private readonly string $providerKey,
 
         #[Property(
             description: 'The list of results found by this provider',
             type: 'array',
-            items: new Items(type: 'object', example: '{"id": 1, "path": "/data/customer/1"}')
+            items: new Items(ref: GdprDataRow::class)
         )]
-        private array $results,
+        private readonly array $results,
     ) {
     }
 
@@ -54,7 +55,7 @@ final class GdprSearchResult
     }
 
     /**
-     * @return array<array<string, mixed>>
+     * @return GdprDataRow[] 
      */
     public function getResults(): array
     {
