@@ -34,10 +34,10 @@ interface DataProviderInterface
 
     /**
      * @return GdprDataColumn[]
-    */
+     */
     public function getAvailableColumns(): array;
 
-    /**     
+    /**
      * @return string[] (e.g., ['users', 'objects'])
      */
     public function getRequiredPermissions(): array;

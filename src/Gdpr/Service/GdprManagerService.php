@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprExportDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
@@ -28,8 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprExportDataEvent;
 use function count;
 use function sprintf;
 use function strlen;
@@ -78,6 +77,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                 foreach ($permissions as $permission) {
                     if ($currentUser->isAllowed($permission)) {
                         $isGranted = true;
+
                         break;
                     }
                 }
@@ -103,6 +103,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                 );
             }
         }
+
         return $this->getSearchResultCollection($allResults);
 
     }
@@ -121,10 +122,11 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         if (empty($permissions)) {
             $isGranted = true; // No permissions required
-        } else { 
+        } else {
             foreach ($permissions as $permission) {
                 if ($currentUser->isAllowed($permission)) {
                     $isGranted = true;
+
                     break;
                 }
             }
