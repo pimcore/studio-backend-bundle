@@ -12,13 +12,14 @@ As a developer, you only need to register it with the `pimcore.studio_backend.gd
 
 This flow happens when a user opens the GDPR Data Extractor page and clicks "Search".
 
-1.  **To build the page:** The system first calls these methods on your provider to build the UI:
+1.  **To build the page:** The user needs to create these methods on their newly created provider:
 
     -   `getName()`: To get the human-friendly name for the provider list.
     -   `getKey()`: To get the unique ID.
     -   `getSortPriority()`: To decide where to place your provider in the list.
     -   `getAvailableColumns()`: To build the columns for the search results grid.
-    -   add more
+    -   `getRequiredPermissions()`: One or more permissions required by user to access the data provider information
+    -   `findData()`: Find the data in the particular provider using the searched terms
 
 2.  **When the user clicks "Search":**
     -   The system first calls your `getRequiredPermissions()` method to check if the current user is allowed to use your provider.
