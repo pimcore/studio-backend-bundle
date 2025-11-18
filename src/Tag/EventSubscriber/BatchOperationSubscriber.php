@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Mercure\Events;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use function count;
 

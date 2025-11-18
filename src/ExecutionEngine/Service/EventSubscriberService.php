@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\SendNotificationParameters;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface;
