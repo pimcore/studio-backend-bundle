@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Controller;
 
-use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -23,11 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionReques
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -40,8 +37,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ListController extends AbstractApiController
 {
-
     use PaginatedResponseTrait;
+
     private const string ROUTE = '/execution-engine/running-jobs';
 
     public function __construct(
@@ -79,8 +76,7 @@ final class ListController extends AbstractApiController
     ])]
     public function getRunningJobsList(
         #[MapRequestPayload] CollectionFilterParameter $parameters,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->engineService->listJobRuns($parameters);
 
         return $this->getPaginatedCollection(

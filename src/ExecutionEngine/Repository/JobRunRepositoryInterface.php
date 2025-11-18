@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository;
 
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 
@@ -26,7 +25,6 @@ interface JobRunRepositoryInterface
     public function update(JobRunHidden $jobRunHidden): void;
 
     public function getByJobRunId(int $jobRunId): ?JobRunHidden;
-
 
     public function getStudioJobRuns(int $ownerId, CollectionFilterParameter $parameter): Paginator;
 }

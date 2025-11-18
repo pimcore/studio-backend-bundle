@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Hydrator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun as JobRunEntity;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Schema\JobRun;
+use function count;
 
 /**
  * @internal
