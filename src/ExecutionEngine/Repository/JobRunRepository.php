@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 
 /**
  * @internal
@@ -44,7 +47,7 @@ final readonly class JobRunRepository implements JobRunRepositoryInterface
             ->findOneBy(['jobRunId' => $jobRunId]);
     }
 
-    public function getStudioJobRuns(int $ownerId): array
+    public function getStudioJobRuns(int $ownerId, CollectionFilterParameter $parameter): Paginator
     {
         $qb = $this->entityManager
             ->getRepository(JobRun::class)
@@ -56,10 +59,30 @@ final readonly class JobRunRepository implements JobRunRepositoryInterface
         $qb->andWhere('jr.ownerId = :ownerId')
             ->setParameter('ownerId', $ownerId);
 
+        $qb->setFirstResult($parameter->getFilters()->getStart());
+        $qb->setMaxResults($parameter->getFilters()->getPageSize());
+
+        $this->applyFilter($parameter, $qb);
+
+        $qb->orderBy(
+            'jr.'.$parameter->getFilters()->getSortFilter()->getKey(),
+            $parameter->getFilters()->getSortFilter()->getDirection());
+
         // Add execution contexts condition
         $qb->andWhere('jr.executionContext IN (:executionContexts)')
             ->setParameter('executionContexts', ['studio_stop_on_error', 'studio_continue_on_error']);
 
-        return $qb->getQuery()->getResult();
+        return new Paginator($qb, fetchJoinCollection: true);
+    }
+
+    private function applyFilter(CollectionFilterParameter $parameter, QueryBuilder $queryBuilder): void
+    {
+        if ($filter = $parameter->getFilters()->getSimpleColumnFilterByType('state')) {
+            $queryBuilder->andWhere('jr.state = :state')->setParameter('state', $filter->getFilterValue());
+        }
+
+        if ($filter = $parameter->getFilters()->getSimpleColumnFilterByType('id')) {
+            $queryBuilder->andWhere('jr.id = :id')->setParameter('id', $filter->getFilterValue());
+        }
     }
 }
