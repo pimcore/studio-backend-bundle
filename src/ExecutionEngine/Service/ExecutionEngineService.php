@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Event\PreResponse\JobRunL
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Hydrator\JobRunListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\HideJobRunsParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Exception\NotFoundException as CoreNotFoundException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -46,9 +48,12 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
     /**
      * {@inheritdoc}
      */
-    public function listJobRuns(): array
+    public function listJobRuns(CollectionFilterParameter $parameter): Collection
     {
-        $jobs = $this->jobRunRepository->getStudioJobRuns($this->securityService->getCurrentUser()->getId());
+        $jobs = $this->jobRunRepository->getStudioJobRuns(
+            $this->securityService->getCurrentUser()->getId(),
+            $parameter
+        );
         $hydratedJobs = [];
 
         foreach ($jobs as $job) {
@@ -57,7 +62,10 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
             $hydratedJobs[] = $hydrated;
         }
 
-        return $hydratedJobs;
+        return new Collection(
+            $jobs->count(),
+            $hydratedJobs
+        );
     }
 
     /**

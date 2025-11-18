@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\ChildrenSortOrderAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -31,9 +33,10 @@ use function sprintf;
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
 {
-    private const INDEX_KEY = 'childrenSortBy';
+    private const string INDEX_KEY = 'childrenSortBy';
 
     public function __construct(
+        private ElementIndexServiceInterface $indexService,
         private SecurityServiceInterface $securityService
     ) {
     }
@@ -61,7 +64,10 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
             throw new ElementSavingFailedException(null, sprintf('Invalid sort method "%s"', $value));
         }
 
-        $element->setChildrenSortBy($data[$this->getIndexKey()]);
+        $element->setChildrenSortBy($value);
+        if ($value === AbstractObject::OBJECT_CHILDREN_SORT_BY_INDEX) {
+            $this->indexService->reindexBasedOnSortBy($element, $this->getDefaultSortOrder($data));
+        }
     }
 
     public function getIndexKey(): string
@@ -74,5 +80,18 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
         return [
             ElementTypes::TYPE_OBJECT,
         ];
+    }
+
+    private function getDefaultSortOrder(array $data): string
+    {
+        if (!in_array(
+            $data[ChildrenSortOrderAdapter::INDEX_KEY] ?? '',
+            ['ASC', 'DESC'],
+            true
+        )) {
+            return AbstractObject::OBJECT_CHILDREN_SORT_ORDER_DEFAULT;
+        }
+
+        return $data[ChildrenSortOrderAdapter::INDEX_KEY];
     }
 }

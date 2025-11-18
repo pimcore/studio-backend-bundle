@@ -29,12 +29,12 @@
     "symfony/mercure-bundle": "^0.3.9",
     "lcobucci/jwt": "^5.3",
     "phpdocumentor/reflection-docblock": "^5.6",
-    "phpoffice/phpspreadsheet": "^3.3",
+    "phpoffice/phpspreadsheet": "^3.3|^4.0|^5.0",
     "ext-intl": "*",
     "ext-filter": "*"
   },
   "require-dev": {
-    "codeception/codeception": "^5.0.10",
+    "codeception/codeception": "^5.3.2",
     "roave/security-advisories": "dev-latest",
     "codeception/phpunit-wrapper": "^9",
     "codeception/module-asserts": "^2",

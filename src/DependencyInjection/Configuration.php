@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Symfony\Component\HttpFoundation\Cookie;
 use function is_array;
 use function is_int;
 use function is_null;
@@ -47,12 +46,6 @@ class Configuration implements ConfigurationInterface
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
-
-    private const array ALLOWED_COOKIE_SAME_SITE_VALUES = [
-        Cookie::SAMESITE_LAX,
-        Cookie::SAMESITE_NONE,
-        Cookie::SAMESITE_STRICT,
-    ];
 
     /**
      * {@inheritdoc}
@@ -303,14 +296,13 @@ class Configuration implements ConfigurationInterface
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
                         ->defaultValue(3600)
                     ->end()
-                     ->enumNode('cookie_same_site')
-                        ->info('Same site setting for the mercure cookie. Default is "' .
-                            Cookie::SAMESITE_STRICT .'". ' .
-                            'Possible values are: ' .
-                            implode(',', self::ALLOWED_COOKIE_SAME_SITE_VALUES) .'".'
-                        )
-                        ->values(self::ALLOWED_COOKIE_SAME_SITE_VALUES)
-                        ->defaultValue(Cookie::SAMESITE_STRICT)
+                     ->scalarNode('jwt_cookie_host')
+                        ->info('Domain where to set the Mercure auth cookie, e.g. ".example.com".')
+                        ->defaultNull()
+                    ->end()
+                     ->booleanNode('jwt_cookie_strictness')
+                        ->info('If true, use SameSite=Strict; if false, use SameSite=None.')
+                        ->defaultTrue()
                     ->end()
                 ->end()
             ->end();
