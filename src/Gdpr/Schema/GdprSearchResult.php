@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 
 /**
  * @internal
