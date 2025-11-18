@@ -53,8 +53,6 @@ Instead of handling deletion logic inside the provider, you simply **point** to 
 Example below shows some of the important functions with their implementations
 
 ```php
-<?php
-declare(strict_types=1);
 
 final class UserCreatedDataProvider implements DataProviderInterface
 {

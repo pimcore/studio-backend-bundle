@@ -37,7 +37,7 @@ interface DataProviderInterface
 
     /**
      * @return GdprDataColumn[]
-     */
+    */
     public function getAvailableColumns(): array;
 
     /**

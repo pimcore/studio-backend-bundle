@@ -88,6 +88,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                 );
             }
         }
+        return $this->getSearchResultCollection($allResults);
 
         return $this->getSearchResultCollection($allResults);
 
@@ -108,8 +109,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     }
 
     /**
-     * @throws ForbiddenException
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
     {
@@ -117,35 +117,33 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         $provider = $this->loader->resolve($providerKey);
 
-        $permission = $provider->getRequiredPermission();
-        if (!$currentUser->isAllowed($permission->value)) {
-            throw new ForbiddenException("Not allowed for provider: {$provider->getKey()}");
+        $permissions = $provider->getRequiredPermissions();
+        $isGranted = false;
+
+        if (empty($permissions)) {
+            $isGranted = true; // No permissions required
+        } else { 
+            foreach ($permissions as $permission) {
+                if ($currentUser->isAllowed($permission)) {
+                    $isGranted = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$isGranted) {
+            throw new ForbiddenException(
+                sprintf(
+                    'Not allowed for provider: %s. Required permission(s): %s',
+                    $provider->getKey(),
+                    implode(', ', $permissions)
+                )
+            );
         }
 
         $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
 
-        $jsonData = json_encode($data, JSON_PRETTY_PRINT);
-
-        $filename = sprintf('gdpr-export-%s-%d.json', $providerKey, $id);
-        $fileSize = strlen($jsonData);
-
-        $headers = $this->getResponseHeaders(
-            mimeType: 'application/json',
-            fileSize: $fileSize,
-            filename: $filename,
-            contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value, // 'attachment'
-            additionalHeaders: []
-        );
-
-        $response = new StreamedResponse(
-            function () use ($jsonData) {
-                echo $jsonData;
-            },
-            HttpResponseCodes::SUCCESS->value,
-            $headers
-        );
-
-        return $response;
+        return $this->createExportResponse($data, $providerKey, $id);
     }
 
     /**
