@@ -88,6 +88,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
                 );
             }
         }
+
         return $this->getSearchResultCollection($allResults);
 
         return $this->getSearchResultCollection($allResults);
@@ -122,10 +123,11 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         if (empty($permissions)) {
             $isGranted = true; // No permissions required
-        } else { 
+        } else {
             foreach ($permissions as $permission) {
                 if ($currentUser->isAllowed($permission)) {
                     $isGranted = true;
+
                     break;
                 }
             }
