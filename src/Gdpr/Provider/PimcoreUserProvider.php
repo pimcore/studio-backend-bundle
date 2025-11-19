@@ -196,6 +196,50 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         }
     }
 
+    protected function getVersionDataForUser(User\AbstractUser $user): array
+    {
+        $db = Db::get();
+        $versions = $db->fetchAllAssociative("SELECT ctype, cid, note, FROM_UNIXTIME(`date`) AS 'date' FROM versions WHERE userId = ?", [$user->getId()]);
+
+        return $versions;
+    }
+
+    protected function getUsageLogDataForUser(User\AbstractUser $user): array
+    {
+        $logsDir = PIMCORE_PROJECT_ROOT . '/var/log';
+
+        $pattern = ' [' . $user->getId() . ',';
+        $matches = [];
+
+        $handle = @fopen($logsDir . '/usage.log', 'r');
+        if ($handle) {
+            while (!feof($handle)) {
+                $buffer = fgets($handle);
+                if ($buffer && strpos($buffer, $pattern) !== false) {
+                    $matches[] = $buffer;
+                }
+            }
+            fclose($handle);
+        }
+
+        $archiveFiles = glob($logsDir . '/usage-archive-*.log.gz');
+        foreach ($archiveFiles as $archiveFile) {
+            $handle = @gzopen($archiveFile, 'r');
+            if ($handle) {
+                while (!feof($handle)) {
+                    $buffer = fgets($handle);
+                    if (strpos($buffer, $pattern) !== false) {
+                        $matches[] = $buffer;
+                    }
+                }
+                fclose($handle);
+            }
+        }
+
+        return $matches;
+    }
+
+
     public function getName(): string
     {
         return 'Pimcore Users';

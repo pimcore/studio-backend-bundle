@@ -118,7 +118,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         $this->checkProviderPermission($provider);
 
-        $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
+        $data = $provider->getSingleItemForDownload($id); 
 
         return $this->createExportResponse($data, $providerKey, $id);
     }
