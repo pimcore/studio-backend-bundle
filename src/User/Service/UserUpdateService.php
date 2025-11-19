@@ -79,6 +79,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setContentLanguages($updateUserParameter->getContentLanguages());
         $user->setWebsiteTranslationLanguagesEdit($updateUserParameter->getWebsiteTranslationLanguagesEdit());
         $user->setWebsiteTranslationLanguagesView($updateUserParameter->getWebsiteTranslationLanguagesView());
+        $user->setDocTypes($updateUserParameter->getDocTypes());
         $user->setKeyBindings(
             $this->getKeyBindingsString($updateUserParameter->getKeyBindings())
         );

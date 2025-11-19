@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\Attribute\Request\ResetPasswordRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -38,7 +38,7 @@ final class ResetPasswordController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserServiceInterface $userService
+        private readonly UserLoginServiceInterface $loginService
     ) {
         parent::__construct($serializer);
     }
@@ -61,7 +61,7 @@ final class ResetPasswordController extends AbstractApiController
     ])]
     public function resetPassword(#[MapRequestPayload] ResetPassword $resetPassword): Response
     {
-        $this->userService->resetPassword($resetPassword);
+        $this->loginService->resetPassword($resetPassword);
 
         return new Response();
     }
