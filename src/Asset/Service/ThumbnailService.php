@@ -92,8 +92,10 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         );
 
         $currentThumbnailFormat = strtolower($thumbnailConfig->getFormat());
-        if ($currentThumbnailFormat === 'source' || $currentThumbnailFormat === 'print') {
-            $thumbnailConfig->setFormat('PNG');
+        if (
+            $currentThumbnailFormat === MimeTypes::SOURCE->value || $currentThumbnailFormat === MimeTypes::PRINT->value
+        ) {
+            $thumbnailConfig->setFormat(MimeTypes::PNG->value);
             $thumbnailConfig->setRasterizeSVG(true);
         }
 
