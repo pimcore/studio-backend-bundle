@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'GDPR Search Result Collection',
     description: 'A collection of search results from all providers.',
-    type: 'object',
-    required: ['items']
+    required: ['items'],
+    type: 'object'
 )]
 
 final class GdprSearchResultCollection implements AdditionalAttributesInterface

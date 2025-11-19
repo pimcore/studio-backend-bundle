@@ -42,7 +42,8 @@ final readonly class SearchTerms
         public ?string $lastname = null,
 
         #[Property(description: 'The email address to search for.', type: 'string', nullable: true)]
-        #[Type('string')]//why is #[Email] constraint causing issues
+        #[Type('string')]
+        #[Email]
         public ?string $email = null,
     ) {
     }

@@ -58,8 +58,8 @@ final class GetDataProviderController extends AbstractApiController
     #[GET(
         path: self::PREFIX . '/gdpr/providers',
         operationId: 'gdpr_list_providers',
-        summary: 'gdpr_list_providers_summary',
         description: 'gdpr_list_providers_description',
+        summary: 'gdpr_list_providers_summary',
         tags: [Tags::GDPR->value]
     )]
     #[SuccessResponse(

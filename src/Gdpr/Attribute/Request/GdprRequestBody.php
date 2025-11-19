@@ -45,8 +45,8 @@ final class GdprRequestBody extends RequestBody
 
                     new Property(
                         property: 'searchTerms',
-                        description: 'The object containing the search values.',
                         ref: SearchTerms::class,
+                        description: 'The object containing the search values.',
                         type: 'object'
                     ),
                 ],

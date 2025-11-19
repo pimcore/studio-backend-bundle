@@ -35,24 +35,22 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         $params = [];
 
         $conditionParts[] = "`type` = 'user'";
-        // Only try to build if we actually have search terms
-        if ($terms !== null) {
-            if ($terms->id !== null) {
-                $conditionParts[] = 'id = ?';
-                $params[] = $terms->id;
-            }
-            if ($terms->firstname !== null) {
-                $conditionParts[] = 'firstname LIKE ?';
-                $params[] = '%' . $terms->firstname . '%';
-            }
-            if ($terms->lastname !== null) {
-                $conditionParts[] = 'lastname LIKE ?';
-                $params[] = '%' . $terms->lastname . '%';
-            }
-            if ($terms->email !== null) {
-                $conditionParts[] = 'email LIKE ?';
-                $params[] = '%' . $terms->email . '%';
-            }
+
+        if ($terms->id !== null) {
+            $conditionParts[] = 'id = ?';
+            $params[] = $terms->id;
+        }
+        if ($terms->firstname !== null) {
+            $conditionParts[] = 'firstname LIKE ?';
+            $params[] = '%' . $terms->firstname . '%';
+        }
+        if ($terms->lastname !== null) {
+            $conditionParts[] = 'lastname LIKE ?';
+            $params[] = '%' . $terms->lastname . '%';
+        }
+        if ($terms->email !== null) {
+            $conditionParts[] = 'email LIKE ?';
+            $params[] = '%' . $terms->email . '%';
         }
 
         // If we have conditions, apply them.

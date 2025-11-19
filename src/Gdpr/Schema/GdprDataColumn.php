@@ -25,7 +25,7 @@ use OpenApi\Attributes\Schema;
     required: ['key', 'label'],
     type: 'object',
 )]
-final class GdprDataColumn
+final readonly class GdprDataColumn
 {
     public function __construct(
         #[Property(
@@ -33,14 +33,14 @@ final class GdprDataColumn
             type: 'string',
             example: 'email'
         )]
-        private readonly string $key,
+        private string $key,
 
         #[Property(
             description: 'Translated label of the column (for the header)',
             type: 'string',
             example: 'Email Address'
         )]
-        private readonly string $label,
+        private string $label,
     ) {
     }
 

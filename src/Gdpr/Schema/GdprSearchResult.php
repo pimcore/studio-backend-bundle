@@ -26,7 +26,7 @@ use OpenApi\Attributes\Schema;
     required: ['providerKey', 'results'],
     type: 'object',
 )]
-final class GdprSearchResult
+final readonly class GdprSearchResult
 {
     /**
      * @param GdprDataRow[] $results

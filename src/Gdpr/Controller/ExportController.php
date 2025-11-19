@@ -45,16 +45,16 @@ final class ExportController extends AbstractApiController
     #[Route(
         '/gdpr/export-data/{id}',
         name: 'pimcore_studio_api_gdpr_export_start',
-        methods: ['GET'],
-        requirements: ['id' => '\d+']
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
     )]
     #[IsGranted(UserPermissions::GDPR->value)]
     #[Get(
         path: self::PREFIX . '/gdpr/export-data/{id}',
         operationId: 'gdpr_export',
-        summary: 'gdpr_export_summary',
         description: 'gdpr_export_description',
-        tags: [Tags::Export->value]
+        summary: 'gdpr_export_summary',
+        tags: [Tags::GDPR->value]
     )]
     #[TextFieldParameter(
         name: 'providerKey',

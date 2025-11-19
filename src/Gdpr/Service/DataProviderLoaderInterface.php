@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
  */
 interface DataProviderLoaderInterface
 {
-    public const DATA_PROVIDER_TAG = 'pimcore.studio_backend.gdpr_data_provider';
+    public const string DATA_PROVIDER_TAG = 'pimcore.studio_backend.gdpr_data_provider';
 
     /**
      * @return array<string, DataProviderInterface>

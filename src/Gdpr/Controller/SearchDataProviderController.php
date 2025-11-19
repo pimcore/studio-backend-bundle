@@ -57,8 +57,8 @@ final class SearchDataProviderController extends AbstractApiController
     #[POST(
         path: self::PREFIX . '/gdpr/search',
         operationId: 'gdpr_search_data',
-        summary: 'gdpr_search_data_summary',
         description: 'gdpr_search_data_description',
+        summary: 'gdpr_search_data_summary',
         tags: [Tags::GDPR->value]
     )]
     #[GdprRequestBody]

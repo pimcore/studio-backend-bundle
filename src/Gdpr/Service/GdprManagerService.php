@@ -166,8 +166,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             mimeType: 'application/json',
             fileSize: $fileSize,
             filename: $filename,
-            contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value,
-            additionalHeaders: []
+            contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value
         );
 
         return new StreamedResponse(
@@ -205,13 +204,11 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         // Check if user has at least one of the required permissions in order to access the provider
         $isGranted = false;
 
-        if ($currentUser !== null) {
-            foreach ($permissions as $permission) {
-                if ($currentUser->isAllowed($permission)) {
-                    $isGranted = true;
+        foreach ($permissions as $permission) {
+            if ($currentUser->isAllowed($permission)) {
+                $isGranted = true;
 
-                    break;
-                }
+                break;
             }
         }
 
