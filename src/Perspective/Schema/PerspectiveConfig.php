@@ -18,6 +18,7 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use Symfony\Component\Serializer\Attribute\SerializedName;
 
 #[Schema(
     title: 'Perspective Config',
@@ -60,7 +61,7 @@ class PerspectiveConfig implements AdditionalAttributesInterface
         return $this->icon;
     }
 
-    public function isWriteable(): bool
+    public function getIsWriteable(): bool
     {
         return $this->isWriteable;
     }
