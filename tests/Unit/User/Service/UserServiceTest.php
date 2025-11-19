@@ -16,22 +16,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\SimpleUserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -104,11 +99,6 @@ final class UserServiceTest extends Unit
         SecurityServiceInterface $securityServiceMock,
         UserRepositoryInterface $userRepositoryMock
     ): UserService {
-        $loggerMock = $this->makeEmpty(LoggerInterface::class);
-        $authenticationResolverMock = $this->makeEmpty(AuthenticationResolverInterface::class);
-        $userResolverMock = $this->makeEmpty(UserResolverInterface::class);
-        $mailServiceMock = $this->makeEmpty(MailServiceInterface::class);
-        $rateLimiterMock = $this->makeEmpty(RateLimiterInterface::class);
         $userTreeNodeHydratorMock = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
         $eventDispatcherMock = $this->makeEmpty(EventDispatcherInterface::class);
         $userFolderRepositoryMock = $this->makeEmpty(UserFolderRepositoryInterface::class);
@@ -116,11 +106,6 @@ final class UserServiceTest extends Unit
         $simpleUserHydratorMock = $this->makeEmpty(SimpleUserHydratorInterface::class);
 
         return new UserService(
-            $authenticationResolverMock,
-            $userResolverMock,
-            $mailServiceMock,
-            $rateLimiterMock,
-            $loggerMock,
             $userRepositoryMock,
             $userTreeNodeHydratorMock,
             $eventDispatcherMock,
