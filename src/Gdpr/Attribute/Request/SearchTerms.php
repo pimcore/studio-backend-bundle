@@ -50,7 +50,7 @@ final readonly class SearchTerms
             $this->lastname === null &&
             $this->email === null
         ) {
-            throw new InvalidArgumentException('You must provide at least one search term (id, firstname, lastname, or email).');
+            throw new InvalidArgumentException('Provide at least one search term.');
         }
     }
 
