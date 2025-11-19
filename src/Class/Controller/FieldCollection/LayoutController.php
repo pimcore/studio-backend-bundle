@@ -66,7 +66,7 @@ final class LayoutController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::UNPROCESSABLE_CONTENT
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function getFieldCollectionLayoutForObject(int $objectId): JsonResponse
     {

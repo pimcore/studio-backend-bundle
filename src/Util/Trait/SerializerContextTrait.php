@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use function in_array;
+use function is_array;
 
 /**
  * @internal
