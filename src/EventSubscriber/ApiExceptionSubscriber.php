@@ -79,7 +79,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
     {
         if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
             return [
-                $exception->getMessage(),
+                'message' => $exception->getMessage(),
             ];
         }
 
