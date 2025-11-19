@@ -29,8 +29,8 @@ trait SerializerContextTrait
         $ignored = $context[AbstractNormalizer::IGNORED_ATTRIBUTES] ?? [];
         $ignored = is_array($ignored) ? $ignored : [$ignored];
 
-        if (!in_array('childrenByRef', $ignored, true)) {
-            $ignored[] = 'childrenByRef';
+        if (!in_array(self::DEFAULT_IGNORE_ATTRIBUTE, $ignored, true)) {
+            $ignored[] = self::DEFAULT_IGNORE_ATTRIBUTE;
         }
 
         $context[AbstractNormalizer::IGNORED_ATTRIBUTES] = $ignored;
