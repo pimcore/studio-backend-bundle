@@ -239,7 +239,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         return $matches;
     }
 
-
     public function getName(): string
     {
         return 'Pimcore Users';
