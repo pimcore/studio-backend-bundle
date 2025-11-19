@@ -106,7 +106,11 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     protected function getVersionDataForUser(User\AbstractUser $user): array
     {
         $db = Db::get();
-        $versions = $db->fetchAllAssociative("SELECT ctype, cid, note, FROM_UNIXTIME(`date`) AS 'date' FROM versions WHERE userId = ?", [$user->getId()]);
+        $versions = $db->fetchAllAssociative(
+            "SELECT ctype, cid, note, FROM_UNIXTIME(`date`) AS 'date' 
+            FROM versions 
+            WHERE userId = ?", [$user->getId()]
+        );
 
         return $versions;
     }
@@ -118,7 +122,19 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         $pattern = ' [' . $user->getId() . ',';
         $matches = [];
 
-        $handle = @fopen($logsDir . '/usage.log', 'r');
+        $this->readPlainFile($logsDir . '/usage.log', $pattern, $matches);
+
+        $archiveFiles = glob($logsDir . '/usage-archive-*.log.gz');
+        foreach ($archiveFiles as $archiveFile) {
+            $this->readGzFile($archiveFile, $pattern, $matches);
+        }
+
+        return $matches;
+    }
+
+    private function readPlainFile(string $file, string $pattern, array &$matches): void
+    {
+        $handle = @fopen($file, 'r');
         if ($handle) {
             while (!feof($handle)) {
                 $buffer = fgets($handle);
@@ -128,22 +144,20 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             }
             fclose($handle);
         }
+    }
 
-        $archiveFiles = glob($logsDir . '/usage-archive-*.log.gz');
-        foreach ($archiveFiles as $archiveFile) {
-            $handle = @gzopen($archiveFile, 'r');
-            if ($handle) {
-                while (!feof($handle)) {
-                    $buffer = fgets($handle);
-                    if (strpos($buffer, $pattern) !== false) {
-                        $matches[] = $buffer;
-                    }
+    private function readGzFile(string $file, string $pattern, array &$matches): void
+    {
+        $handle = @gzopen($file, 'r');
+        if ($handle) {
+            while (!feof($handle)) {
+                $buffer = fgets($handle);
+                if ($buffer && strpos($buffer, $pattern) !== false) {
+                    $matches[] = $buffer;
                 }
-                fclose($handle);
             }
+            fclose($handle);
         }
-
-        return $matches;
     }
 
     public function getName(): string
