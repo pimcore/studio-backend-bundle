@@ -90,6 +90,13 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             $parameter->getMimeType() ?: $thumbnailConfig->getFormat(),
             $thumbnailConfig
         );
+
+        $currentThumbnailFormat = strtolower($thumbnailConfig->getFormat());
+        if ($currentThumbnailFormat === 'source' || $currentThumbnailFormat === 'print') {
+            $thumbnailConfig->setFormat('PNG');
+            $thumbnailConfig->setRasterizeSVG(true);
+        }
+
         $thumbnailConfig = $this->setThumbnailConfigCropParameter($parameter, $thumbnailConfig);
 
         return $image->getThumbnail($thumbnailConfig);
