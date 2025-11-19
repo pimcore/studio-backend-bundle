@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 
-
 final class GdprSearchResultEvent extends AbstractPreResponseEvent
 {
     public const string EVENT_NAME = 'pre_response.gdpr_search_result';

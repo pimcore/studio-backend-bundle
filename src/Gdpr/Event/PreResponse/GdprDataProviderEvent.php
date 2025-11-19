@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 
-
 final class GdprDataProviderEvent extends AbstractPreResponseEvent
 {
     public const string EVENT_NAME = 'pre_response.data_provider';
