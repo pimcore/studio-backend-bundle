@@ -93,7 +93,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         $this->checkProviderPermission($provider);
 
-        $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
+        $data = $provider->getSingleItemForDownload($id); 
 
         return $this->createExportResponse($data, $providerKey, $id);
     }
@@ -140,9 +140,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $collection;
     }
 
-    /**
-     * Helper to create the export response, dispatch event, and stream data.
-     */
     private function createExportResponse(mixed $data, string $providerKey, int $id): StreamedResponse
     {
         try {
@@ -185,7 +182,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
      */
     private function sortProviders(array $providers): array
     {
-        // Higher number = Higher priority.
         uasort($providers, static fn (DataProviderInterface $a, DataProviderInterface $b): int
             => $b->getSortPriority() <=> $a->getSortPriority()
         );
@@ -201,7 +197,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         $currentUser = $this->securityService->getCurrentUser();
         $permissions = $provider->getRequiredPermissions();
 
-        // Check if user has at least one of the required permissions in order to access the provider
         $isGranted = false;
 
         foreach ($permissions as $permission) {

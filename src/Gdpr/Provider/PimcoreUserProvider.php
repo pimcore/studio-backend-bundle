@@ -12,13 +12,14 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
+use Pimcore\Db;
+use Pimcore\Model\User;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\User\Listing;
-use function count;
 
 /**
  * @internal
@@ -33,8 +34,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         $listing = new Listing();
         $conditionParts = [];
         $params = [];
-
-        $conditionParts[] = "`type` = 'user'";
 
         if ($terms->id !== null) {
             $conditionParts[] = 'id = ?';
@@ -53,13 +52,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             $params[] = '%' . $terms->email . '%';
         }
 
-        // If we have conditions, apply them.
-        if (count($conditionParts) > 1) {
-            $listing->setCondition(implode(' AND ', $conditionParts), $params);
-        } else {
-            // Only the "type = 'user'" condition exists
-            $listing->setCondition($conditionParts[0]);
-        }
+        $listing->setCondition(implode(' AND ', $conditionParts), $params);
 
         $users = $listing->getUsers();
 
@@ -86,7 +79,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     public function getSingleItemForDownload(int $id): array
     {
         $listing = new Listing();
-        $listing->setCondition('id = ? AND `type` = ?', [$id, 'user']);
+        $listing->setCondition('id = ?', [$id]);
         $listing->setLimit(1);
 
         $users = $listing->getUsers();
@@ -97,14 +90,62 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $user = $users[0];
 
-        return [
+        $userData = [
             'id' => $user->getId(),
             'name' => $user->getName(),
             'firstname' => $user->getFirstname(),
             'lastname' => $user->getLastname(),
             'email' => $user->getEmail(),
+            'versions' => $this->getVersionDataForUser($user),
+            'usageLog' => $this->getUsageLogDataForUser($user),
         ];
+
+        return $userData;
     }
+
+    protected function getVersionDataForUser(User\AbstractUser $user): array
+    {
+        $db = Db::get();
+        $versions = $db->fetchAllAssociative("SELECT ctype, cid, note, FROM_UNIXTIME(`date`) AS 'date' FROM versions WHERE userId = ?", [$user->getId()]);
+
+        return $versions;
+    }
+
+    protected function getUsageLogDataForUser(User\AbstractUser $user): array
+    {
+        $logsDir = PIMCORE_PROJECT_ROOT . '/var/log';
+
+        $pattern = ' [' . $user->getId() . ',';
+        $matches = [];
+
+        $handle = @fopen($logsDir . '/usage.log', 'r');
+        if ($handle) {
+            while (!feof($handle)) {
+                $buffer = fgets($handle);
+                if ($buffer && strpos($buffer, $pattern) !== false) {
+                    $matches[] = $buffer;
+                }
+            }
+            fclose($handle);
+        }
+
+        $archiveFiles = glob($logsDir . '/usage-archive-*.log.gz');
+        foreach ($archiveFiles as $archiveFile) {
+            $handle = @gzopen($archiveFile, 'r');
+            if ($handle) {
+                while (!feof($handle)) {
+                    $buffer = fgets($handle);
+                    if (strpos($buffer, $pattern) !== false) {
+                        $matches[] = $buffer;
+                    }
+                }
+                fclose($handle);
+            }
+        }
+
+        return $matches;
+    }
+
 
     public function getName(): string
     {

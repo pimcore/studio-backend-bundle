@@ -17,6 +17,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
@@ -56,11 +57,15 @@ final class ExportController extends AbstractApiController
         summary: 'gdpr_export_summary',
         tags: [Tags::GDPR->value]
     )]
+    #[IdParameter(
+        name: 'id',
+        required: true,
+    )]
     #[TextFieldParameter(
         name: 'providerKey',
         description: 'The key of the single provider to export',
         required: true,
-        example: 'pimcore_user'
+        example: 'pimcore_users'
     )]
     #[SuccessResponse(
         description: 'gdpr_export_success_response',
