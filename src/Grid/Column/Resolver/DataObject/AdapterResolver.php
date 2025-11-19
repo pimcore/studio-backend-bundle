@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
@@ -92,7 +93,7 @@ final class AdapterResolver implements
 
         $inheritanceData = null;
         if ($classDefinition->getAllowInherit() && $fieldDefinition->supportsInheritance()) {
-            $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $column->getKey());
+            $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $column);
         }
 
         return $this->getColumnData(
@@ -115,12 +116,17 @@ final class AdapterResolver implements
         ];
     }
 
-    private function getInheritanceData(Concrete $element, Data $fieldDefinition, string $field): array|InheritanceData
+    private function getInheritanceData(Concrete $element, Data $fieldDefinition, Column $column): array|InheritanceData
     {
         return $this->dataObjectServiceResolver->useInheritedValues(
             false,
-            function () use ($element, $fieldDefinition, $field) {
-                return $this->inheritanceService->processFieldDefinition($element, $fieldDefinition, $field);
+            function () use ($element, $fieldDefinition, $column) {
+                return $this->inheritanceService->processFieldDefinition(
+                    $element,
+                    $fieldDefinition,
+                    $column->getKey(),
+                    new FieldContextData(contextObject: null, language: $column->getLocale())
+                );
             }
         );
     }
