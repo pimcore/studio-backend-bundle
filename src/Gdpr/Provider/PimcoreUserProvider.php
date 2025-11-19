@@ -28,7 +28,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(?SearchTerms $terms): array
+    public function findData(SearchTerms $terms): array
     {
         $listing = new Listing();
         $conditionParts = [];

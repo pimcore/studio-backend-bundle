@@ -54,15 +54,13 @@ final class ExportController extends AbstractApiController
         operationId: 'gdpr_export',
         summary: 'gdpr_export_summary',
         description: 'gdpr_export_description',
-        tags: [Tags::Export->value],
-        parameters: [
-            new TextFieldParameter(
-                name: 'providerKey',
-                description: 'The key of the single provider to export',
-                required: true,
-                example: 'pimcore_user'
-            ),
-        ]
+        tags: [Tags::Export->value]
+    )]
+    #[TextFieldParameter(
+        name: 'providerKey',
+        description: 'The key of the single provider to export',
+        required: true,
+        example: 'pimcore_user'
     )]
     #[SuccessResponse(
         description: 'gdpr_export_success_response',

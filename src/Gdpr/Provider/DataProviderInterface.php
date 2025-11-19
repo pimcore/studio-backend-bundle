@@ -24,7 +24,7 @@ interface DataProviderInterface
     /**
      * @return GdprDataRow[]
      */
-    public function findData(?SearchTerms $terms): array;
+    public function findData(SearchTerms $terms): array;
 
     public function getName(): string;
 

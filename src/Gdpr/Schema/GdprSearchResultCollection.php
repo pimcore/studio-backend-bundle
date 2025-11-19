@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -27,8 +29,10 @@ use OpenApi\Attributes\Schema;
     required: ['items']
 )]
 
-final class GdprSearchResultCollection
+final class GdprSearchResultCollection implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     /**
      * @param array<GdprSearchResult> $items
      */
@@ -38,7 +42,8 @@ final class GdprSearchResultCollection
             type: 'array',
             items: new Items(ref: GdprSearchResult::class)
         )]
-        private array $items,
+
+        private readonly array $items,
     ) {
     }
 
