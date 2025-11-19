@@ -83,8 +83,7 @@ final class LayoutController extends AbstractApiController
     ): JsonResponse {
 
         return $this->jsonResponse(
-            data: $this->layoutService->getDataObjectLayout($id, $layoutIdParameter->getLayoutId()),
-            context: [AbstractNormalizer::IGNORED_ATTRIBUTES => ['childrenByRef']]
+            $this->layoutService->getDataObjectLayout($id, $layoutIdParameter->getLayoutId())
         );
     }
 }

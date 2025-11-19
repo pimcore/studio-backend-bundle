@@ -22,14 +22,21 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 trait PaginatedResponseTrait
 {
+    use SerializerContextTrait;
+
     private const HEADER_TOTAL_ITEMS = 'X-Pimcore-Total-Items';
 
     protected function getPaginatedCollection(
         SerializerInterface $serializer,
         array $items,
-        int $totalItems = 0
+        int $totalItems = 0,
+        array $context = []
     ): JsonResponse {
-        $serialized = $serializer->serialize(new Collection($totalItems, $items), 'json');
+        $serialized = $serializer->serialize(
+            new Collection($totalItems, $items),
+            'json',
+            $this->getSerializerContext($context)
+        );
 
         return new JsonResponse($serialized, 200, [self::HEADER_TOTAL_ITEMS => $totalItems], true);
     }

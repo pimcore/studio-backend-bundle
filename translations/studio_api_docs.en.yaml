@@ -1317,6 +1317,9 @@ pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
 pimcore_studio_api_class_custom_layout_import_success_response: Http status code
 pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout
 pimcore_studio_api_classes_folder_collection: Get list of all data object classes in a folder
+ping_action_description: Ping action to check if the API is reachable
+ping_action_summary: Ping action
+ping_action_success_response: API is reachable
 class_definition_folder_collection: Get list of all data object classes in a folder
 class_definition_folder_collection_description: Get list of all data object classes in a folder
 class_definition_folder_collection_summary: Get list of all data object classes in a folder

@@ -18,6 +18,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -44,7 +45,7 @@ final class LayoutController extends AbstractApiController
     }
 
     /**
-     * @throws Exception|NotFoundException
+     * @throws Exception|InvalidElementTypeException|NotFoundException
      */
     #[Route(
         '/class/object-brick/{objectId}/object/layout',
@@ -65,6 +66,7 @@ final class LayoutController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function getObjectBrickLayoutForObject(int $objectId): JsonResponse
     {
