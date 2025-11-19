@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\GridRequestBody;
@@ -45,7 +46,7 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|GdiParsingException
      */
     #[Route('/assets/grid', name: 'pimcore_studio_api_get_asset_grid', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -67,6 +68,7 @@ final class GetController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function getAssetGrid(#[MapRequestPayload] GridParameter $gridParameter): JsonResponse
     {
