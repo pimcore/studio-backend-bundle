@@ -89,14 +89,14 @@ final readonly class UserLoginService implements UserLoginServiceInterface
                 HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
             );
         }
-        
+
         if ($user->getPassword() === null || $user->getPassword() === '') {
             throw new ForbiddenException(
                 'Cannot generate login token URL for this user without password set',
                 HttpResponseErrorKeys::LOGIN_TOKEN_NO_PASSWORD->value
             );
         }
-        
+
         /** @var User $user */
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
@@ -110,7 +110,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
             UrlGeneratorInterface::ABSOLUTE_URL
         );
     }
-
 
     /**
      * @return array<string, bool|string>
