@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -116,7 +115,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
     {
         $provider = $this->loader->resolve($providerKey);
-        
+
         $this->checkProviderPermission($provider);
 
         $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
