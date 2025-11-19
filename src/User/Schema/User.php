@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     description: 'Contains all information about a user',
     required: [
         'id', 'name', 'email', 'firstname', 'lastname', 'active', 'admin',
-        'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
+        'classes', 'docTypes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthentication', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
@@ -54,6 +54,12 @@ final class User implements AdditionalAttributesInterface
         private readonly bool $admin,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
+        #[Property(
+            description: 'Allowed doc types to create',
+            type: 'array',
+            items: new Items(type: 'string')
+        )]
+        private readonly array $docTypes,
         #[Property(description: 'Show close warning', type: 'boolean', example: true)]
         private readonly bool $closeWarning,
         #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
@@ -157,6 +163,11 @@ final class User implements AdditionalAttributesInterface
     public function getClasses(): array
     {
         return $this->classes;
+    }
+
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
     }
 
     public function isCloseWarning(): bool

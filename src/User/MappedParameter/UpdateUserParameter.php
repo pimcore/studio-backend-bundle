@@ -32,6 +32,7 @@ final readonly class UpdateUserParameter
         private bool $active,
         private bool $admin,
         private array $classes,
+        private array $docTypes,
         private bool $closeWarning,
         private bool $allowDirtyClose,
         private array $contentLanguages,
@@ -84,6 +85,11 @@ final readonly class UpdateUserParameter
     public function getClasses(): array
     {
         return $this->classes;
+    }
+
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
     }
 
     public function isCloseWarning(): bool
