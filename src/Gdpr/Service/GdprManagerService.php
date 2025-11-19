@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -114,34 +115,9 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
      */
     public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
     {
-        $currentUser = $this->securityService->getCurrentUser();
-
         $provider = $this->loader->resolve($providerKey);
-
-        $permissions = $provider->getRequiredPermissions();
-        $isGranted = false;
-
-        if (empty($permissions)) {
-            $isGranted = true; // No permissions required
-        } else {
-            foreach ($permissions as $permission) {
-                if ($currentUser->isAllowed($permission)) {
-                    $isGranted = true;
-
-                    break;
-                }
-            }
-        }
-
-        if (!$isGranted) {
-            throw new ForbiddenException(
-                sprintf(
-                    'Not allowed for provider: %s. Required permission(s): %s',
-                    $provider->getKey(),
-                    implode(', ', $permissions)
-                )
-            );
-        }
+        
+        $this->checkProviderPermission($provider);
 
         $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
 

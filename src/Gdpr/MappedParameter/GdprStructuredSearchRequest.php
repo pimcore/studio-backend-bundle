@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Constraints\Valid;
+use Symfony\Component\Validator\Constraints\NotNull;
 
 /**
  * @internal
@@ -33,7 +34,8 @@ final readonly class GdprStructuredSearchRequest
         public array $providers,
 
         #[Valid]
-        public ?SearchTerms $searchTerms = null
+        #[NotNull]
+        public SearchTerms $searchTerms
     ) {
     }
 }
