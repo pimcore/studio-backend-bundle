@@ -12,13 +12,13 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
-use Pimcore\Db;
-use Pimcore\Model\User;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Db;
+use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
 
 /**
@@ -145,7 +145,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         return $matches;
     }
-
 
     public function getName(): string
     {

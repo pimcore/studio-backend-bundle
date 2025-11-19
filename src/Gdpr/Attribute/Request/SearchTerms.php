@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Type;
 
 /**
@@ -44,7 +43,7 @@ final readonly class SearchTerms
 
         #[Property(description: 'The email address to search for.', type: 'string', nullable: true)]
         #[Type('string')]
-       public ?string $email = null,
+        public ?string $email = null,
     ) {
         if ($this->id === null &&
             $this->firstname === null &&
