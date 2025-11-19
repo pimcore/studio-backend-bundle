@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -22,6 +23,8 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final readonly class ElementUsageHydrator implements ElementUsageHydratorInterface
 {
+    use ElementProviderTrait;
+
     public function hydrateUsage(
         array $usageItems,
         bool $hasHidden,
@@ -38,8 +41,8 @@ final readonly class ElementUsageHydrator implements ElementUsageHydratorInterfa
     {
         return new ElementUsageItem(
             $element->getId(),
-            $element->getType(),
-            $element->getPath(),
+            $this->getElementType($element),
+            $element->getFullPath(),
         );
     }
 }

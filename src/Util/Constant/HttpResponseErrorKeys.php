@@ -32,4 +32,5 @@ enum HttpResponseErrorKeys: string
     case VALIDATION_FAILED = 'error_validation_failed';
     case LOGIN_TOKEN_NON_ADMIN = 'error_login_token_as_admin_non_admin_user';
     case LOGIN_TOKEN_NO_PASSWORD = 'error_login_token_no_user_password';
+    case GDI_PARSING_EXCEPTION = 'error_gdi_parsing_exception';
 }
