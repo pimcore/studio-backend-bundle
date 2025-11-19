@@ -82,24 +82,16 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             }
         }
 
-        if ($parameter === null) {
-            return $image->getThumbnail($thumbnailConfig);
+        $format = $thumbnailConfig->getFormat();
+        if ($parameter !== null) {
+            $thumbnailConfig = $this->setThumbnailConfigCropParameter($parameter, $thumbnailConfig);
+            $format = $parameter->getMimeType() ?: $format;
         }
 
         $thumbnailConfig = $this->setThumbnailConfigFormatParameter(
-            $parameter->getMimeType() ?: $thumbnailConfig->getFormat(),
+            $format,
             $thumbnailConfig
         );
-
-        $currentThumbnailFormat = strtolower($thumbnailConfig->getFormat());
-        if (
-            $currentThumbnailFormat === MimeTypes::SOURCE->value || $currentThumbnailFormat === MimeTypes::PRINT->value
-        ) {
-            $thumbnailConfig->setFormat(MimeTypes::PNG->value);
-            $thumbnailConfig->setRasterizeSVG(true);
-        }
-
-        $thumbnailConfig = $this->setThumbnailConfigCropParameter($parameter, $thumbnailConfig);
 
         return $image->getThumbnail($thumbnailConfig);
     }
@@ -400,6 +392,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             return $thumbnailConfig;
         }
 
+        $mimeType = strtolower($mimeType);
         if ($mimeType === MimeTypes::SOURCE->value || $mimeType === MimeTypes::PRINT->value) {
             $mimeType = MimeTypes::PNG->value;
         }
