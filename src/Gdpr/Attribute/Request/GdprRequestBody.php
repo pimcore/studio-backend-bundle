@@ -31,7 +31,7 @@ final class GdprRequestBody extends RequestBody
             required: true,
             content: new JsonContent(
 
-                required: ['providers', 'searchTerms'], 
+                required: ['providers', 'searchTerms'],
                 properties: [
                     new Property(
                         property: 'providers',

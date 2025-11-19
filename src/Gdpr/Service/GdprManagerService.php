@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
+use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
@@ -26,10 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use JsonException;
 use function count;
 use function sprintf;
 use function strlen;
@@ -67,7 +67,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
         foreach ($request->providers as $providerKey) {
             $provider = $this->loader->resolve($providerKey);
-            
+
             $this->checkProviderPermission($provider);
 
             $results = $provider->findData($request->searchTerms);
@@ -90,7 +90,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
     {
         $provider = $this->loader->resolve($providerKey);
-        
+
         $this->checkProviderPermission($provider);
 
         $data = $provider->getSingleItemForDownload($id); //id is a single item of a particular provider
@@ -209,6 +209,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             foreach ($permissions as $permission) {
                 if ($currentUser->isAllowed($permission)) {
                     $isGranted = true;
+
                     break;
                 }
             }
