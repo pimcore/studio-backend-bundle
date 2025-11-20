@@ -29,7 +29,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-        private string $logsDir;
+    private string $logsDir;
 
     public function __construct(string $logsDir)
     {
@@ -98,7 +98,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         }
 
         $user = $users[0];
-
 
         return [
                 'id'        => $user->getId(),
