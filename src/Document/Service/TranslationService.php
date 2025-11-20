@@ -57,7 +57,7 @@ final class TranslationService implements TranslationServiceInterface
         }
 
         try {
-            $translations = $this->coreDocumentService->getTranslations($document);
+            $translations = $this->coreDocumentService->getTranslations($parent);
         } catch (Exception $exception) {
             throw new DatabaseException($exception->getMessage());
         }
