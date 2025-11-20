@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
@@ -74,7 +75,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         $this->applySearchOptions($listing, $options);
 
         $users = $listing->getUsers();
-
+        
         $columns = $this->getAvailableColumns();
 
         return array_map(

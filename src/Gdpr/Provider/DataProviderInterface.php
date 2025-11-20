@@ -29,6 +29,8 @@ interface DataProviderInterface
 
     public function getDeleteSwaggerOperationId(): string;
 
+    public function getDeleteSwaggerOperationId(): string;
+
     public function getName(): string;
 
     public function getKey(): string;
