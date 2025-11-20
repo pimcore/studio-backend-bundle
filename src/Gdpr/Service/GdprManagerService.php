@@ -111,6 +111,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             $item = new GdprDataProvider(
                 key: $key,
                 label: $provider->getName(),
+                deleteOperationId: $provider->getDeleteSwaggerOperationId(),
                 columns: $provider->getAvailableColumns(),
             );
 

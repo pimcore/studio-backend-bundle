@@ -26,6 +26,8 @@ interface DataProviderInterface
      */
     public function findData(SearchTerms $terms): array;
 
+    public function getDeleteSwaggerOperationId(): string;
+
     public function getName(): string;
 
     public function getKey(): string;

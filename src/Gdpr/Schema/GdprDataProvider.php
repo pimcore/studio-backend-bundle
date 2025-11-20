@@ -51,6 +51,13 @@ final class GdprDataProvider implements AdditionalAttributesInterface
         private readonly string $label,
 
         #[Property(
+            description: 'The Operation ID to call when deleting an item.',
+            type: 'string',
+            example: 'user_delete_by_id'
+        )]
+        private readonly string $deleteOperationId,
+
+        #[Property(
             description: 'List of column definitions for the result grid',
             type: 'array',
             items: new Items(ref: GdprDataColumn::class)
@@ -67,6 +74,11 @@ final class GdprDataProvider implements AdditionalAttributesInterface
     public function getLabel(): string
     {
         return $this->label;
+    }
+
+    public function getDeleteOperationId(): string
+    {
+        return $this->deleteOperationId;
     }
 
     /**

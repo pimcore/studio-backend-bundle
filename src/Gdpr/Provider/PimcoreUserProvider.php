@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
@@ -26,43 +27,50 @@ use Pimcore\Model\User\Listing;
  */
 final readonly class PimcoreUserProvider implements DataProviderInterface
 {
+    public function __construct(
+        private readonly string $logsDir,
+        private readonly SecurityServiceInterface $securityService
+    ) {
+
+     }
+
     /**
      * {@inheritdoc}
      */
-    private string $logsDir;
-
-    public function __construct(string $logsDir)
-    {
-        $this->logsDir = $logsDir;
-    }
-
     public function findData(SearchTerms $terms): array
     {
         $listing = new Listing();
-        $conditionParts = [];
-        $params = [];
 
         if ($terms->id !== null) {
-            $conditionParts[] = 'id = ?';
-            $params[] = $terms->id;
-        }
-        if ($terms->firstname !== null) {
-            $conditionParts[] = 'firstname LIKE ?';
-            $params[] = '%' . $terms->firstname . '%';
-        }
-        if ($terms->lastname !== null) {
-            $conditionParts[] = 'lastname LIKE ?';
-            $params[] = '%' . $terms->lastname . '%';
-        }
-        if ($terms->email !== null) {
-            $conditionParts[] = 'email LIKE ?';
-            $params[] = '%' . $terms->email . '%';
+            $listing->addConditionParam(
+                'id = :id',
+                ['id' => $terms->id]
+            );
         }
 
-        $listing->setCondition(implode(' AND ', $conditionParts), $params);
+        if ($terms->firstname !== null) {
+            $listing->addConditionParam(
+                'firstname LIKE :firstname',
+                ['firstname' => '%' . $terms->firstname . '%']
+          );
+        }
+
+        if ($terms->lastname !== null) {
+            $listing->addConditionParam(
+                'lastname LIKE :lastname',
+                ['lastname' => '%' . $terms->lastname . '%']
+            );
+        }
+
+        if ($terms->email !== null) {
+          $listing->addConditionParam(
+            'email LIKE :email',
+            ['email' => '%' . $terms->email . '%']
+          );
+        }
 
         $users = $listing->getUsers();
-
+        
         $columns = $this->getAvailableColumns();
 
         return array_map(
@@ -73,13 +81,17 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                     'firstname' => $user->getFirstname(),
                     'lastname' => $user->getLastname(),
                     'email' => $user->getEmail(),
-                    'versions'  => $this->getVersionDataForUser($user),
-                    'usageLog'  => $this->getUsageLogDataForUser($user),
+                     '__gdprIsDeletable' => $user->getId() != $this->securityService->getCurrentUser()->getId(),
                 ],
                 $columns
             ),
             $users
         );
+    }
+
+    public function getDeleteSwaggerOperationId(): string
+    {
+        return 'user_delete_by_id';
     }
 
     /**
@@ -197,8 +209,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             new GdprDataColumn('firstname', 'First Name'),
             new GdprDataColumn('lastname', 'Last Name'),
             new GdprDataColumn('email', 'Email'),
-            new GdprDataColumn('versions', 'Versions'),
-            new GdprDataColumn('usageLog', 'Usage Log'),
+            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable')
         ];
     }
 }
