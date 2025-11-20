@@ -27,6 +27,5 @@ enum Events: string
     case CLONING_FINISHED = 'cloning-finished';
     case PATCH_FINISHED = 'patch-finished';
     case REWRITE_REFERENCES_FINISHED = 'rewrite-references-finished';
-
     case REPLACE_ASSIGNMENT_FINISHED = 'replace-assignment-finished';
 }
