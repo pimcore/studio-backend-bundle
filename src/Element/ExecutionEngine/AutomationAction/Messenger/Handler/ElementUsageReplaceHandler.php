@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
+use function is_array;
 
 /**
  * @internal
@@ -77,8 +79,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
                     $element,
                     $user
                 );
-            }
-            catch(Exception $e) {
+            } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::ELEMENT_REPLACE_ASSIGNMENT_FAILED->value,
                     [
