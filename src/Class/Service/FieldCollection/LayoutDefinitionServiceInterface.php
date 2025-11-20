@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
@@ -23,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 interface LayoutDefinitionServiceInterface
 {
     /**
-     * @throws NotFoundException|Exception
+     * @throws InvalidElementTypeException|NotFoundException|Exception
      *
      * @return LayoutDefinition[]
      */
