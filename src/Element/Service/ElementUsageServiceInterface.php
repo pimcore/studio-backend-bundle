@@ -36,7 +36,6 @@ interface ElementUsageServiceInterface
         ReplaceAssignmentParameter $replaceAssignmentParameter
     ): int;
 
-
     /**
      * @throws DuplicateFullPathException
      */
