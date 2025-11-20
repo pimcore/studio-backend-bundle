@@ -16,8 +16,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
@@ -32,7 +32,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         private readonly SecurityServiceInterface $securityService
     ) {
 
-     }
+    }
 
     /**
      * {@inheritdoc}
@@ -52,7 +52,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             $listing->addConditionParam(
                 'firstname LIKE :firstname',
                 ['firstname' => '%' . $terms->firstname . '%']
-          );
+            );
         }
 
         if ($terms->lastname !== null) {
@@ -63,14 +63,14 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         }
 
         if ($terms->email !== null) {
-          $listing->addConditionParam(
-            'email LIKE :email',
-            ['email' => '%' . $terms->email . '%']
-          );
+            $listing->addConditionParam(
+                'email LIKE :email',
+                ['email' => '%' . $terms->email . '%']
+            );
         }
 
         $users = $listing->getUsers();
-        
+
         $columns = $this->getAvailableColumns();
 
         return array_map(
@@ -209,7 +209,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             new GdprDataColumn('firstname', 'First Name'),
             new GdprDataColumn('lastname', 'Last Name'),
             new GdprDataColumn('email', 'Email'),
-            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable')
+            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
         ];
     }
 }
