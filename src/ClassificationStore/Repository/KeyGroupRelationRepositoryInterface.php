@@ -32,7 +32,7 @@ interface KeyGroupRelationRepositoryInterface
         ?string $searchTerm = null
     ): array;
 
-    public function getCountByStoreId(int $storeId, ?array $groupIds = null): int;
+    public function getCountByStoreId(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): int;
 
     /**
      * @return KeyGroupRelation[]

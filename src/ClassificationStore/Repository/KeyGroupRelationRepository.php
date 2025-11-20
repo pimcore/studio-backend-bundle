@@ -42,36 +42,16 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         ?array $groupIds = null,
         ?string $searchTerm = null
     ): array {
-
-        $groupIds = array_map(
-            fn ($group) => $group->getId(),
-            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
-        );
-
-        $listing = new Listing();
+        $listing = $this->getBaseListing($storeId, $groupIds, $searchTerm);
         $listing->setOffset($this->getOffset($collectionParameters));
-        $listing->setOrder('ASC');
-        $listing->setOrderKey('sorter');
-        $this->applyGroupIdsFilter($listing, $groupIds);
-
-        if ($searchTerm !== null) {
-            $this->applySearchTermFilter($listing, $searchTerm);
-        }
+        $listing->setLimit($collectionParameters->getPageSize());
 
         return $listing->getList();
     }
 
-    public function getCountByStoreId(int $storeId, ?array $groupIds = null): int
+    public function getCountByStoreId(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): int
     {
-        $groupIds = array_map(
-            fn ($group) => $group->getId(),
-            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
-        );
-
-        $listing = new Listing();
-        $this->applyGroupIdsFilter($listing, $groupIds);
-
-        return $listing->count();
+        return $this->getBaseListing($storeId, $groupIds, $searchTerm)->count();
     }
 
     /**
@@ -85,6 +65,43 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         $listing->setCondition('groupID = ?', [$groupId]);
 
         return $listing->load();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByKeyId(int $keyId): KeyGroupRelation
+    {
+        $listing = new Listing();
+        $listing->setOrder('ASC');
+        $listing->setCondition('id = ?', $keyId);
+
+        $list = $listing->load();
+
+        if (count($list) !== 1) {
+            throw new NotFoundException('KeyGroupRelation', $keyId);
+        }
+
+        return $list[0];
+    }
+
+    private function getBaseListing(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): Listing
+    {
+        $groupIds = array_map(
+            static fn ($group) => $group->getId(),
+            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
+        );
+
+        $listing = new Listing();
+        $listing->setOrder('ASC');
+        $listing->setOrderKey('sorter');
+        $this->applyGroupIdsFilter($listing, $groupIds);
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $this->applySearchTermFilter($listing, $searchTerm);
+        }
+
+        return $listing;
     }
 
     private function applySearchTermFilter(Listing $list, string $searchTerm): void
@@ -105,6 +122,9 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {
+        if (empty($groupIds)) {
+            return;
+        }
         $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
         $list->addConditionParam('groupID IN ('. $placeholders .')', $groupIds);
     }
@@ -112,24 +132,5 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     private function getOffset(CollectionParametersInterface $collectionParameters): int
     {
         return ($collectionParameters->getPage() - 1) * $collectionParameters->getPageSize();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getByKeyId(int $keyId): KeyGroupRelation
-    {
-
-        $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->setCondition('id = ?', $keyId);
-
-        $list = $listing->load();
-
-        if (count($list) != 1) {
-            throw new NotFoundException('KeyGroupRelation', $keyId);
-        }
-
-        return $list[0];
     }
 }
