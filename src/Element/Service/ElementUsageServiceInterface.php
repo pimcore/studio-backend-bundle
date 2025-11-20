@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
+use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 
@@ -35,6 +36,10 @@ interface ElementUsageServiceInterface
         ReplaceAssignmentParameter $replaceAssignmentParameter
     ): int;
 
+
+    /**
+     * @throws DuplicateFullPathException
+     */
     public function replaceElementUsage(
         ElementInterface $sourceElement,
         ElementInterface $targetElement,

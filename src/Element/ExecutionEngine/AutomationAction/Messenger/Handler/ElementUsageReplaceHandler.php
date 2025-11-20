@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -33,6 +34,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class ElementUsageReplaceHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
+    use ElementProviderTrait;
 
     private ElementInterface $sourceElement;
 
@@ -54,31 +56,48 @@ final class ElementUsageReplaceHandler extends AbstractHandler
         $jobRun = $this->getJobRun($message);
         $user = $this->getUser($jobRun);
         $this->initializeElements($message);
-        $elementCount = 0;
 
         $elements = $jobRun->getJob()?->getSelectedElements();
-        if ($elements === null) {
-            $elements = [];
+        if (empty($elements)) {
+            $elements = $this->sourceElement->getDependencies()->getRequiredByWithPath();
         }
 
+        $elementCount = count($elements);
         foreach ($elements as $elementData) {
+            $isArray = is_array($elementData);
             $element = $this->elementUsageService->getElementById(
-                $elementData->getType(),
-                $elementData->getId()
+                $isArray ? $elementData['type'] : $elementData->getType(),
+                $isArray ? $elementData['id'] : $elementData->getId()
             );
 
-            $this->elementUsageService->replaceElementUsage(
-                $this->sourceElement,
-                $this->targetElement,
-                $element,
-                $user
-            );
+            try {
+                $this->elementUsageService->replaceElementUsage(
+                    $this->sourceElement,
+                    $this->targetElement,
+                    $element,
+                    $user
+                );
+            }
+            catch(Exception $e) {
+                $this->abort($this->getAbortData(
+                    Config::ELEMENT_REPLACE_ASSIGNMENT_FAILED->value,
+                    [
+                        'sourceType' => $this->getElementType($this->sourceElement),
+                        'sourceId' => $this->sourceElement->getId(),
+                        'targetType' => $this->getElementType($this->targetElement),
+                        'targetId' => $this->targetElement->getId(),
+                        'elementId' => $element->getId(),
+                        'elementType' => $this->getElementType($element),
+                        'message' => $e->getMessage(),
+                    ],
+                ));
+            }
 
             $this->updateProgress(
                 $this->publishService,
                 $jobRun,
                 $this->getJobStep($message)->getName(),
-                ++$elementCount
+                $elementCount
             );
         }
     }

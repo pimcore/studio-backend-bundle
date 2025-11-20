@@ -17,6 +17,9 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementUsageItemEvent;
@@ -26,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInte
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ReplaceAssignmentParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\UsageParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageBaseItem;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ElementUsageItem;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -33,7 +37,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
-use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\DuplicateFullPathException;
@@ -56,7 +59,10 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementUsageHydratorInterface $elementUsageHydrator,
         private SecurityServiceInterface $securityService,
-        private JobExecutionAgentInterface $jobExecutionAgent
+        private JobExecutionAgentInterface $jobExecutionAgent,
+        private AssetServiceResolverInterface $assetServiceResolver,
+        private DocumentServiceResolverInterface $documentServiceResolver,
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver
     ) {
     }
 
@@ -78,14 +84,6 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         }
 
         $elements  = $replaceAssignmentParameter->getElements();
-        if (count($elements) === 0) {
-            $element = $this->getElementById(
-                $elementType,
-                $elementId
-            );
-
-            $elements = $element->getDependencies()->getRequiredByWithPath();
-        }
 
         return $this->executeReplaceUsageJobRun(
             $targetType,
@@ -96,9 +94,6 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         );
     }
 
-    /**
-     * @throws DuplicateFullPathException
-     */
     public function replaceElementUsage(
         ElementInterface $sourceElement,
         ElementInterface $targetElement,
@@ -110,18 +105,27 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
         }
 
         $rewriteConfig = [
-            $sourceElement->getType() => [
+            $this->getElementType($sourceElement, true) => [
                 $sourceElement->getId() => $targetElement->getId(),
             ],
         ];
 
-        if ($element instanceof Document) {
-            $element = Document\Service::rewriteIds($element, $rewriteConfig);
-        } elseif ($element instanceof AbstractObject) {
-            $element = DataObject\Service::rewriteIds($element, $rewriteConfig);
-        } elseif ($element instanceof Asset) {
-            $element = Asset\Service::rewriteIds($element, $rewriteConfig);
-        }
+        $element = match(true) {
+            $element instanceof Document =>
+                $this->documentServiceResolver->rewriteIds(
+                    $element, $rewriteConfig
+                ),
+            $element instanceof AbstractObject =>
+                $this->dataObjectServiceResolver->rewriteIds(
+                    $element, $rewriteConfig
+                ),
+            $element instanceof Asset =>
+                $this->assetServiceResolver->rewriteIds(
+                    $element, $rewriteConfig
+                ),
+            default =>
+                throw new InvalidArgumentException('Invalid element type.'),
+        };
 
         $element->setUserModification(
             $user === null ? $this->securityService->getCurrentUser()->getId() : $user->getId()
@@ -282,25 +286,16 @@ final readonly class ElementUsageService implements ElementUsageServiceInterface
     }
 
     /**
-     * @param array $elements
-     *
      * @return ElementDescriptor[]
      */
     private function toElementDescriptors(array $elements): array
     {
         return array_map(
             static function ($element) {
-                if ($element instanceof ElementInterface) {
+                if ($element instanceof ElementInterface || $element instanceof ElementUsageBaseItem) {
                     return new ElementDescriptor(
                         $element->getType(),
                         $element->getId()
-                    );
-                }
-
-                if (is_array($element)) {
-                    return new ElementDescriptor(
-                        $element['type'],
-                        $element['id']
                     );
                 }
 
