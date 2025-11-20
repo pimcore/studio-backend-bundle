@@ -182,8 +182,10 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
      */
     private function sortProviders(array $providers): array
     {
-        uasort($providers, static fn (DataProviderInterface $a, DataProviderInterface $b): int
-            => $b->getSortPriority() <=> $a->getSortPriority()
+        uasort(
+            $providers,
+            static fn (DataProviderInterface $a, DataProviderInterface $b): int =>
+                $b->getSortPriority() <=> $a->getSortPriority()
         );
 
         return $providers;

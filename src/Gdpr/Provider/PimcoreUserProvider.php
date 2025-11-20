@@ -29,6 +29,13 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
+        private string $logsDir;
+
+    public function __construct(string $logsDir)
+    {
+        $this->logsDir = $logsDir;
+    }
+
     public function findData(SearchTerms $terms): array
     {
         $listing = new Listing();
@@ -66,6 +73,8 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                     'firstname' => $user->getFirstname(),
                     'lastname' => $user->getLastname(),
                     'email' => $user->getEmail(),
+                    'versions'  => $this->getVersionDataForUser($user),
+                    'usageLog'  => $this->getUsageLogDataForUser($user),
                 ],
                 $columns
             ),
@@ -90,41 +99,36 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $user = $users[0];
 
-        $userData = [
-            'id' => $user->getId(),
-            'name' => $user->getName(),
-            'firstname' => $user->getFirstname(),
-            'lastname' => $user->getLastname(),
-            'email' => $user->getEmail(),
-            'versions' => $this->getVersionDataForUser($user),
-            'usageLog' => $this->getUsageLogDataForUser($user),
-        ];
 
-        return $userData;
+        return [
+                'id'        => $user->getId(),
+                'name'      => $user->getName(),
+                'firstname' => $user->getFirstname(),
+                'lastname'  => $user->getLastname(),
+                'email'     => $user->getEmail(),
+                'versions'  => $this->getVersionDataForUser($user),
+                'usageLog'  => $this->getUsageLogDataForUser($user),
+            ];
     }
 
     protected function getVersionDataForUser(User\AbstractUser $user): array
     {
-        $db = Db::get();
-        $versions = $db->fetchAllAssociative(
-            "SELECT ctype, cid, note, FROM_UNIXTIME(`date`) AS 'date' 
-            FROM versions 
-            WHERE userId = ?", [$user->getId()]
+        return Db::get()->fetchAllAssociative(
+            "SELECT ctype, cid, note, FROM_UNIXTIME(`date`) AS 'date'
+            FROM versions
+            WHERE userId = ?",
+            [$user->getId()]
         );
-
-        return $versions;
     }
 
     protected function getUsageLogDataForUser(User\AbstractUser $user): array
     {
-        $logsDir = PIMCORE_PROJECT_ROOT . '/var/log';
-
         $pattern = ' [' . $user->getId() . ',';
         $matches = [];
 
-        $this->readPlainFile($logsDir . '/usage.log', $pattern, $matches);
+        $this->readPlainFile($this->logsDir . '/usage.log', $pattern, $matches);
 
-        $archiveFiles = glob($logsDir . '/usage-archive-*.log.gz');
+        $archiveFiles = glob($this->logsDir . '/usage-archive-*.log.gz');
         foreach ($archiveFiles as $archiveFile) {
             $this->readGzFile($archiveFile, $pattern, $matches);
         }
@@ -194,6 +198,8 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             new GdprDataColumn('firstname', 'First Name'),
             new GdprDataColumn('lastname', 'Last Name'),
             new GdprDataColumn('email', 'Email'),
+            new GdprDataColumn('versions', 'Versions'),
+            new GdprDataColumn('usageLog', 'Usage Log'),
         ];
     }
 }
