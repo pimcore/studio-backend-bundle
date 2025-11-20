@@ -71,6 +71,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\RewriteReferencesSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\DeletionSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\BatchDeletionSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\ReplaceAssignmentSubscriber: ~
 
   #
   # Mercure SSE
