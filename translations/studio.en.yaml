@@ -62,3 +62,4 @@ studio_ee_invalid_element_type_provided: 'Collection for element with ID %elemen
 studio_ee_no_assets_found_for_job_run: 'No assets found for job run. ID: %jobRunId%'
 studio_ee_asset_upload_failed: 'File could not be uploaded: %message%'
 studio_email_param_children: 'Children (%count%)'
+studio_ee_element_replace_assignment_failed: 'Could not replace %sourceId% (%sourceType%) with %targetId% (%targetType%) in %elementId% (%elementType%). Error: %message%'
