@@ -104,6 +104,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     {
         $customFrontendAdapters = [
             'type' => FrontendType::MULTISELECT->value,
+            'fullpath' => FrontendType::OBJECT_LINK->value,
         ];
 
         if (array_key_exists($columnKey, $customFrontendAdapters)) {
