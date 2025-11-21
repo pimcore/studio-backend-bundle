@@ -28,8 +28,8 @@ use Pimcore\Model\User\Listing;
 final readonly class PimcoreUserProvider implements DataProviderInterface
 {
     public function __construct(
-        private readonly string $logsDir,
-        private readonly SecurityServiceInterface $securityService
+        private string $logsDir,
+        private SecurityServiceInterface $securityService
     ) {
 
     }

@@ -144,7 +144,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     private function createExportResponse(mixed $data, string $providerKey, int $id): StreamedResponse
     {
         try {
-            $jsonData = json_encode($data, JSON_THROW_ON_ERROR);
+            $jsonData = json_encode($data, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
         } catch (JsonException $e) {
             throw new InvalidArgumentException(
                 sprintf(
