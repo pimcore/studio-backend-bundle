@@ -25,8 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CustomReportPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -51,11 +52,6 @@ final class GetController extends AbstractApiController
      * @throws Exception
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_report', methods: ['GET'])]
-    #[IsGranted(
-        new Expression(
-            'is_granted("reports") or is_granted("reports_permissions")'
-        )
-    )]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'custom_reports_report',
@@ -76,6 +72,14 @@ final class GetController extends AbstractApiController
     ])]
     public function getByName(string $name): JsonResponse
     {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                CustomReportPermissions::REPORTS_CONFIG->value,
+                CustomReportPermissions::REPORTS->value,
+            ])
+        );
+
         return $this->jsonResponse(
             $this->customReportService->getCustomReportDetails($name)
         );
