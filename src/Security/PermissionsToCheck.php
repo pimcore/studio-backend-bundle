@@ -20,7 +20,7 @@ final readonly class PermissionsToCheck
     public function __construct(
         private array $permissionsToCheck
     ) {
-        if(empty($this->permissionsToCheck)) {
+        if (empty($this->permissionsToCheck)) {
             throw new InvalidArgumentException('Permissions to check must not be empty');
         }
     }

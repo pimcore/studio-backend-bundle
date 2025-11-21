@@ -44,16 +44,16 @@ final class HasOneOfUserPermissionVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        foreach($subject->getPermissionsToCheck() as $permissionToCheck) {
+        foreach ($subject->getPermissionsToCheck() as $permissionToCheck) {
             if ($this->securityService->getCurrentUser()->isAllowed($permissionToCheck)) {
                 return true;
             }
         }
 
         throw new ForbiddenException(
-            "Access denied. User does not have one of the following permissions: "
+            'Access denied. User does not have one of the following permissions: '
             . implode(
-                ", ", $subject->getPermissionsToCheck()
+                ', ', $subject->getPermissionsToCheck()
             )
         );
     }
