@@ -14,11 +14,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
@@ -26,7 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ClassificationStoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use function array_key_exists;
 use function is_int;
@@ -35,7 +43,10 @@ use function sprintf;
 /**
  * @internal
  */
-final class ClassificationStoreResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface
+final class ClassificationStoreResolver implements
+    ColumnResolverInterface,
+    CoreElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
@@ -43,6 +54,8 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
     public function __construct(
         private readonly GridServiceInterface $gridService,
         private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private readonly ServiceResolverInterface $classificationStoreServiceResolver,
+        private readonly DataServiceInterface $dataService,
 
     ) {
     }
@@ -53,13 +66,12 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
-
         $config = $this->validateConfig($column->getConfig());
         $baseResolver = $this->gridService->getColumnResolvers()['dataobject.adapter'];
 
         if (!$baseResolver instanceof CoreElementColumnResolverInterface) {
             throw new InvalidArgumentException(
-                'Can not load adapter resolver. This is neded to get base data of the Classification Store'
+                'Can not load adapter resolver. This is needed to get base data of the Classification Store'
             );
         }
 
@@ -97,6 +109,52 @@ final class ClassificationStoreResolver implements ColumnResolverInterface, Core
 
         return $returnData;
     }
+
+    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    {
+        if (!$element instanceof Concrete) {
+            throw new InvalidArgumentException('Element must be a concrete object');
+        }
+
+        $config = $this->validateConfig($column->getConfig());
+        $keyConfig = KeyConfig::getById(
+            $config->getKeyId(),
+        );
+
+        if (!$keyConfig instanceof KeyConfig) {
+            throw new InvalidArgumentException(sprintf('Key with %s not set', $config->getKeyId()));
+        }
+
+        $fieldDefinition = $this->classificationStoreServiceResolver->getFieldDefinitionFromJson(
+            json_decode($keyConfig->getDefinition(), true),
+            $keyConfig->getType()
+        );
+
+        $locale = 'default';
+        if ($column->getLocale()) {
+            $locale = $column->getLocale();
+        }
+
+        $context = new FieldContextData(
+            legacyParameters: ['context' => [
+                'containerType' => 'classificationstore',
+                'fieldname' => $column->getKey(),
+                'groupId' => $config->getGroupId(),
+                'keyId' => $config->getKeyId(),
+                'language' => $locale,
+            ]]
+        );
+
+        $value = $this->dataService->getExportFieldValue(
+            $element,
+            $fieldDefinition,
+            $column->getKey(),
+            $context
+        );
+
+        return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
+    }
+
 
     public function findKeyGroupRelation(int $groupId, int $keyId): KeyGroupRelation
     {
