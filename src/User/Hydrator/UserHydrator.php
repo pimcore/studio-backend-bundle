@@ -49,6 +49,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             active: $user->getActive(),
             admin: $user->isAdmin(),
             classes: $user->getClasses(),
+            docTypes: $user->getDocTypes(),
             closeWarning: $user->getCloseWarning(),
             allowDirtyClose: $user->getAllowDirtyClose(),
             contentLanguages: $this->contentLanguagesHydrator->hydrate($user),

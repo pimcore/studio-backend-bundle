@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DocumentSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterf
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -59,6 +61,16 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
             $searchResult = $this->searchService->search($documentQuery->getSearch());
         } catch (DocumentSearchException) {
             throw new SearchException('documents');
+        } catch (ParsingException $e) {
+            throw new GdiParsingException(
+                $e->getMessage(),
+                $e->getPosition(),
+                $e->getExpected(),
+                $e->getQuery(),
+                $e->getFound(),
+                $e->getToken()?->value,
+                $e
+            );
         } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }

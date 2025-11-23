@@ -28,6 +28,7 @@ enum FrontendType: string
     case DATETIME = 'datetime';
     case IMAGE = 'image';
     case ASSET_LINK = 'asset-link';
+    case OBJECT_LINK = 'object-link';
     case ASSET_PREVIEW = 'asset-preview';
     case BOOLEAN = 'boolean';
 }
