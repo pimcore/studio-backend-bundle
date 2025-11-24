@@ -20,6 +20,7 @@ use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\GlobalAction;
+use Pimcore\Workflow\Transition;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
@@ -33,6 +34,7 @@ interface WorkflowActionServiceInterface
     ): ActionSubmissionResponse;
 
     public function enrichActionNotes(
+        GlobalAction|Transition $action,
         Concrete|Folder $object,
         array $notes
     ): array;

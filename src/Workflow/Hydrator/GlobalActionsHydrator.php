@@ -40,7 +40,7 @@ final readonly class GlobalActionsHydrator implements GlobalActionsHydratorInter
         foreach ($globalActionsArray as $action) {
             $notes = $action->getNotes();
             if (($element instanceof Concrete || $element instanceof Folder) && $notes) {
-                $notes = $this->workflowActionService->enrichActionNotes($element, $notes);
+                $notes = $this->workflowActionService->enrichActionNotes($action, $element, $notes);
             }
             $hydrated[] = new GlobalAction(
                 name: $action->getName(),
