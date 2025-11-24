@@ -75,6 +75,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_export_description'
 )]
 #[Tag(
+    name: Tags::GDPR->value,
+    description: 'tag_gdpr_description'
+)]
+#[Tag(
     name: Tags::Mercure->value,
     description: 'tag_mercure_description'
 )]
@@ -181,6 +185,7 @@ enum Tags: string
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';
     case Export = 'Export';
+    case GDPR = 'GDPR Data Extractor';
     case Mercure = 'Mercure';
     case Metadata = 'Metadata';
     case Notes = 'Notes';
