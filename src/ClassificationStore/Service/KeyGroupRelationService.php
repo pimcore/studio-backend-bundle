@@ -74,7 +74,11 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         }
 
         return new Collection(
-            $this->keyGroupRelationRepository->getCountByStoreId($parameter->getStoreId(), $allowedGroupIds),
+            $this->keyGroupRelationRepository->getCountByStoreId(
+                $parameter->getStoreId(),
+                $allowedGroupIds,
+                $parameter->getSearchTerm()
+            ),
             $hydratedKeyGroupRelations
         );
     }
