@@ -149,8 +149,7 @@ final class WorkflowActionService implements WorkflowActionServiceInterface
         ElementInterface $element,
         array $customHtml,
         ?CustomHtmlServiceInterface $customHtmlService
-    ): array
-    {
+    ): array {
         $customHtml['values'] = [];
         if ($customHtmlService === null) {
             return $customHtml;
