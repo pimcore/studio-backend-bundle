@@ -34,7 +34,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -83,8 +82,7 @@ final class LayoutController extends AbstractApiController
     ): JsonResponse {
 
         return $this->jsonResponse(
-            data: $this->layoutService->getDataObjectLayout($id, $layoutIdParameter->getLayoutId()),
-            context: [AbstractNormalizer::IGNORED_ATTRIBUTES => ['childrenByRef']]
+            $this->layoutService->getDataObjectLayout($id, $layoutIdParameter->getLayoutId())
         );
     }
 }

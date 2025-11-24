@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
     description: 'User Schema to update a User.',
     required: [
         'email', 'firstname', 'lastname', 'admin',
-        'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
+        'active', 'classes', 'docTypes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationRequired',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'perspectives',
@@ -48,6 +48,8 @@ final readonly class UpdateUser
         private bool $active,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private array $classes,
+        #[Property(description: 'Allowed Document types to create', type: 'object', example: ['3', '5'])]
+        private array $docTypes,
         #[Property(description: 'Show Close Warning', type: 'boolean', example: true)]
         private bool $closeWarning,
         #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
@@ -123,6 +125,11 @@ final readonly class UpdateUser
     public function getClasses(): array
     {
         return $this->classes;
+    }
+
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
     }
 
     public function isCloseWarning(): bool

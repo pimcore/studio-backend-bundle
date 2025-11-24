@@ -16,14 +16,19 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
+use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function get_class;
+use function sprintf;
 
 /**
  * @internal
@@ -32,6 +37,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
     public function __construct(
         private readonly DataObjectResolverInterface $dataObjectResolver,
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
@@ -48,8 +54,10 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     {
         $dataObject = $this->dataObjectResolver->getById($dataObjectId);
 
-        if (!$dataObject) {
-            throw new NotFoundException('data Object', $dataObjectId);
+        if (!$dataObject instanceof Concrete) {
+            throw new InvalidElementTypeException(
+                sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))
+            );
         }
 
         $this->collectFieldCollectionTypes(
@@ -58,7 +66,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 
         $layoutDefinitions = [];
         foreach ($this->fieldCollectionTypes as $fieldCollectionType) {
-            $layoutDefinitions[] = $this->getLayoutDefinitionByType($fieldCollectionType);
+            $layoutDefinitions[] = $this->getLayoutDefinitionByType($fieldCollectionType, $dataObject);
         }
 
         return $layoutDefinitions;
@@ -67,14 +75,15 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     /**
      * @throws Exception
      */
-    private function getLayoutDefinitionByType(string $name): LayoutDefinition
+    private function getLayoutDefinitionByType(string $name, Concrete $dataObject): LayoutDefinition
     {
         $definition = $this->definitionResolver->getByKey($name);
 
         if (!$definition) {
             throw new NotFoundException('Field Collection Definition', $name);
         }
-
+        $layoutDefinitions = $definition->getLayoutDefinitions();
+        $this->dataObjectServiceResolver->enrichLayoutDefinition($layoutDefinitions, $dataObject);
         $layoutDefinition = $this->layoutDefinitionHydrator->hydrate($definition);
 
         $this->eventDispatcher->dispatch(

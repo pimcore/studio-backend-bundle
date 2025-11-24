@@ -14,17 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserWithPermissionParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 
 /**
@@ -32,11 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
  */
 interface UserServiceInterface
 {
-    /**
-     * @throws RateLimitException|DomainConfigurationException|SendMailException
-     */
-    public function resetPassword(ResetPassword $resetPassword): void;
-
     public function getUserTreeListing(ParentIdParameter $userListParameter): Collection;
 
     /**

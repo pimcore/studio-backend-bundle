@@ -14,14 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -34,13 +29,10 @@ use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserWithPermissionParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Model\UserInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 use function sprintf;
@@ -51,11 +43,6 @@ use function sprintf;
 final readonly class UserService implements UserServiceInterface
 {
     public function __construct(
-        private AuthenticationResolverInterface $authenticationResolver,
-        private UserResolverInterface $userResolver,
-        private MailServiceInterface $mailService,
-        private RateLimiterInterface $rateLimiter,
-        private LoggerInterface $pimcoreLogger,
         private UserRepositoryInterface $userRepository,
         private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
         private EventDispatcherInterface $eventDispatcher,
@@ -64,38 +51,6 @@ final readonly class UserService implements UserServiceInterface
         private UserHydratorInterface $userHydrator,
         private SimpleUserHydratorInterface $simpleUserHydrator
     ) {
-    }
-
-    /**
-     * @throws RateLimitException|DomainConfigurationException|SendMailException
-     */
-    public function resetPassword(ResetPassword $resetPassword): void
-    {
-        $this->rateLimiter->check();
-
-        $user = $this->userResolver->getByName($resetPassword->getUsername());
-
-        $userChecks = $this->userChecks($user);
-        if (!$user || !$userChecks['success']) {
-            $this->pimcoreLogger->error('Reset password failed', ['error' => $userChecks['error']]);
-
-            return;
-        }
-
-        $token = $this->authenticationResolver->generateTokenByUser($user);
-        $loginUrl = null;
-        if ($resetPassword->getResetPasswordUrl() !== null) {
-            $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
-        }
-
-        try {
-            $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);
-        } catch (DomainConfigurationException|SendMailException $exception) {
-            $this->pimcoreLogger->error('Error sending password recovery email', ['error' => $exception->getMessage()]);
-
-            throw $exception;
-        }
-
     }
 
     public function getUserTreeListing(ParentIdParameter $userListParameter): Collection
@@ -234,30 +189,6 @@ final readonly class UserService implements UserServiceInterface
         } catch (NotFoundException) {
             return null;
         }
-    }
-
-    /**
-     * @return array<string, bool|string>
-     */
-    private function userChecks(?UserInterface $user): array
-    {
-        if (!$user) {
-            return ['success' => false, 'error' => 'user_unknown'];
-        }
-
-        if (!$user->getEmail() || !filter_var($user->getEmail(), FILTER_VALIDATE_EMAIL)) {
-            return ['success' => false, 'error' => 'user_no_email_address'];
-        }
-
-        if (!$user->isActive()) {
-            return ['success' => false, 'error' => 'user_inactive'];
-        }
-
-        if (!$user->getPassword()) {
-            return ['success' => false, 'error' => 'user_no_password'];
-        }
-
-        return ['success' => true, 'error' => ''];
     }
 
     /**

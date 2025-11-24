@@ -1020,6 +1020,11 @@ user_list_with_permission_description: |
 user_list_with_permission_success_response: List of users with the given permission
 user_list_with_permission_summary: Get all users with a specific permission
 user_reset_password_summary: Sending username to reset password.
+user_token_link_get_description: |
+  Generate a login link with a token for a user based on the provided user <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of existing user.
+user_token_link_get_success_response: Token login link for the user
+user_token_link_get_summary: Generate login link and token for a user by ID
 user_update_active_perspective_summary: Update the active perspective for the current user.
 user_update_active_perspective_success_response: Updated active perspective for the current user.
 user_update_by_id_success_response: Updated data.
@@ -1312,6 +1317,9 @@ pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
 pimcore_studio_api_class_custom_layout_import_success_response: Http status code
 pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout
 pimcore_studio_api_classes_folder_collection: Get list of all data object classes in a folder
+ping_action_description: Ping action to check if the API is reachable
+ping_action_summary: Ping action
+ping_action_success_response: API is reachable
 class_definition_folder_collection: Get list of all data object classes in a folder
 class_definition_folder_collection_description: Get list of all data object classes in a folder
 class_definition_folder_collection_summary: Get list of all data object classes in a folder
@@ -1413,6 +1421,16 @@ data_object_get_phpcode_transformers_description: |
   These transformers can be applied to grid columns to dynamically modify or format values using PHP logic.
 data_object_get_phpcode_transformers_summary: List PHPCode transformers
 data_object_get_phpcode_transformers_success_response: List of available PHPCode transformers
+gdpr_list_providers_summary: List of available GDPR providers
+gdpr_list_providers_description: Returns a list of all configured GDPR providers that can be used for data compliance operations.
+gdpr_list_providers_success_response: Successfully retrieved the list of GDPR providers
+tag_gdpr_description: All operations related to GDPR data search and export.
+gdpr_export_summary: Export a single GDPR data provider item
+gdpr_export_description: Fetches the data for a single data provider item (by ID) and returns it as a downloadable JSON file.
+gdpr_export_success_response: Successfully retrieved the data export as a downloadable JSON file.
+gdpr_search_data_summary: Search for GDPR data from all the available data providers
+gdpr_search_data_description: Searches for GDPR data using the provided search terms and returns a list of results grouped by each provider name.
+gdpr_search_data_success_response: Successfully retrieved the list of matching data from all searched providers.
 pimcore_studio_api_elements_get_usage: Get usage of element
 element_get_usage: Get usage of element
 element_get_usage_description: Get usage of element. Use <strong>{elementType}</strong> and <strong>{id}</strong> to specify the element.
