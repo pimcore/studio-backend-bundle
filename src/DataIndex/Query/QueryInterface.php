@@ -88,4 +88,6 @@ interface QueryInterface
         array $values,
         bool $enablePqlFieldNameResolution = true
     ): self;
+
+    public function booleanFilter(string $fieldName, array $values): self;
 }
