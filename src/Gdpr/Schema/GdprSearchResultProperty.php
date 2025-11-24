@@ -40,7 +40,7 @@ final class GdprSearchResultProperty extends Property
                         property: 'results',
                         description: 'The list of results found by this provider',
                         type: 'array',
-                        items: new Items(type: 'object', example: '{"id": 1, "path": "/data/customer/1"}')
+                        items: new Items(ref: GdprDataRow::class)
                     ),
                 ]
             )
