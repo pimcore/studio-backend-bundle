@@ -11,10 +11,8 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -29,10 +27,6 @@ final class BooleanFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
-            return $query;
-        }
-
-        if (!$query instanceof DataObjectQueryInterface) {
             return $query;
         }
 
