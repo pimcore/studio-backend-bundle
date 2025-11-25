@@ -82,7 +82,7 @@ final class XlsxCreationHandler extends AbstractHandler
                     $exportData,
                     $exportDataInfo,
                     $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
-                    $headers === StepConfig::SETTINGS_HEADER_NAME->value
+                    $headers === StepConfig::SETTINGS_HEADER_NAME
                 ),
                 $user
             );
