@@ -23,10 +23,20 @@ final readonly class SortFilter
     public function __construct(
         private string $key = 'id',
         private string $direction = SortDirection::ASC->value,
+        private ?string $locale = null
     ) {
     }
 
     public function getKey(): string
+    {
+        if (!empty($this->locale)) {
+            return $this->key . '.' . $this->locale;
+        }
+
+        return $this->key;
+    }
+
+    public function getKeyWithOutLocale(): string
     {
         return $this->key;
     }
