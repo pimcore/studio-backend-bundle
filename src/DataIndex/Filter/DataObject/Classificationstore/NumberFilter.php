@@ -92,10 +92,10 @@ final class NumberFilter implements FilterInterface
         }
 
         if (
-            ($mode === FilterModes::IS && !is_numeric($isValue)) ||
-            ($mode === FilterModes::BETWEEN && (!is_numeric($fromValue) || !is_numeric($toValue))) ||
-            ($mode === FilterModes::LESS && is_numeric($toValue)) ||
-            ($mode === FilterModes::MORE && !is_numeric($fromValue))
+            ($mode === FilterModes::IS->value && !is_numeric($isValue)) ||
+            ($mode === FilterModes::BETWEEN->value && (!is_numeric($fromValue) || !is_numeric($toValue))) ||
+            ($mode === FilterModes::LESS->value && is_numeric($toValue)) ||
+            ($mode === FilterModes::MORE->value && !is_numeric($fromValue))
         ) {
             throw new InvalidArgumentException('Filter values must be numeric.');
         }
