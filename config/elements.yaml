@@ -74,13 +74,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\ReplaceAssignmentSubscriber: ~
 
   #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Provider\ElementTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]
-
-  #
   # Hydrator
   #
 

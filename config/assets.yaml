@@ -86,10 +86,3 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\UploadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipDownloadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipUploadSubscriber: ~
-
-  #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Provider\AssetTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

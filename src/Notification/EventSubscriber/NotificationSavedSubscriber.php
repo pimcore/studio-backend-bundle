@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Pimcore\Event\Model\NotificationEvent;
@@ -51,7 +51,7 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
         }
 
         $this->publishService->publish(
-            Events::NOTIFICATION_SAVED->value,
+            Topics::STUDIO->value,
             [
                 'unreadNotificationsCount' => $this->notificationRepository->getUnreadCountByUser(
                     $notification->getRecipient()
