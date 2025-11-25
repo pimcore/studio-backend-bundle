@@ -25,6 +25,7 @@ use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 use function is_int;
+use function is_string;
 
 /**
  * @internal
