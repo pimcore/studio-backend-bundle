@@ -40,16 +40,21 @@ final readonly class UserAdapter implements SetterDataInterface, DataNormalizerI
         UserInterface $user,
         ?FieldContextData $contextData = null,
         bool $isPatch = false
-    ): ?int {
-
-        if (!array_key_exists($key, $data) ||
-            !$fieldDefinition instanceof NormalizerInterface ||
-            !is_int($data[$key])
+    ): ?string {
+        if (
+            !$fieldDefinition instanceof NormalizerInterface
+            || !array_key_exists($key, $data)
         ) {
             return null;
         }
 
-        return $data[$key];
+        $value = $data[$key];
+
+        if (!is_int($value) && !is_string($value)) {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     public function normalize(mixed $value, Data $fieldDefinition): ?int
