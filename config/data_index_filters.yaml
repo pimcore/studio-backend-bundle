@@ -84,6 +84,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\StringFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\NumberFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\RGBAFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 

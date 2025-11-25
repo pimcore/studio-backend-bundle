@@ -36,6 +36,7 @@ enum ColumnType: string
     case METADATA_CHECKBOX = 'metadata.checkbox';
     case METADATA_STRING = 'metadata.string';
     case CLASSIFICATION_STORE_STRING = 'classificationstore.string';
+    case CLASSIFICATION_STORE_NUMBER = 'classificationstore.number';
     case CLASSIFICATION_STORE_RGBA = 'classificationstore.rgba';
     case CLASSIFICATION_STORE_DATE = 'classificationstore.date';
     case CLASSIFICATION_STORE_QUANTITY_VALUE = 'classificationstore.quantity_value';
