@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
@@ -128,7 +129,7 @@ final readonly class ImageGalleryAdapter implements
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function getExportData(
         Concrete $object,
@@ -144,7 +145,7 @@ final readonly class ImageGalleryAdapter implements
 
         $items = $data->getItems();
         $paths = array_map(
-            static fn($item) => $item->getImage()?->getFrontendFullPath(),
+            static fn ($item) => $item->getImage()?->getFrontendFullPath(),
             $items
         );
 
