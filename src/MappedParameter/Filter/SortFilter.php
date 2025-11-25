@@ -29,7 +29,7 @@ final readonly class SortFilter
 
     public function getKey(): string
     {
-        if ($this->locale !== null && $this->locale !== '') {
+        if (!empty($this->locale)) {
             return $this->key . '.' . $this->locale;
         }
 
