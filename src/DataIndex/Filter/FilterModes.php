@@ -20,6 +20,6 @@ enum FilterModes: string
 
     case IS = 'is';
     case LESS = 'less';
-    CASE MORE = 'more';
-    CASE BETWEEN = 'between';
+    case MORE = 'more';
+    case BETWEEN = 'between';
 }

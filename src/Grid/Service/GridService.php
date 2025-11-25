@@ -273,7 +273,7 @@ final class GridService implements GridServiceInterface
                 $firstGroup = $column->getGroup()[0] ?? '';
                 $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
-                if($withGroup) {
+                if ($withGroup) {
                     $key = $fd ? $fd['name'] : $column->getKey();
                 } else {
                     $key = $fd ? $fd['title'] : $column->getKey();
