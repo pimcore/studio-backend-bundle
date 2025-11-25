@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function in_array;
 
 /**
  * @internal
@@ -82,8 +83,7 @@ final class NumberFilter implements FilterInterface
         mixed $fromValue,
         mixed $toValue,
         string $mode
-    ): void
-    {
+    ): void {
         $filterModes = FilterModes::values();
         if (!in_array($mode, $filterModes, true)) {
             throw new InvalidArgumentException(
@@ -110,8 +110,7 @@ final class NumberFilter implements FilterInterface
         int|float|null $isValue,
         int|float|null $fromValue,
         int|float|null $toValue
-    ): void
-    {
+    ): void {
         match($mode) {
             FilterModes::IS->value =>
             $query->classificationStoreFilter(
@@ -144,7 +143,7 @@ final class NumberFilter implements FilterInterface
                 $group->getName(),
                 new NumberRangeFilter(
                     $key->getName(),
-                    NULL,
+                    null,
                     $toValue,
                     true
                 ),
