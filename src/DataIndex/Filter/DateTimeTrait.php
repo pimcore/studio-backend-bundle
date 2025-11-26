@@ -109,7 +109,8 @@ trait DateTimeTrait
                 $this->getFromAsCarbon(),
                 $this->getToAsCarbon(),
                 null,
-                $roundToDay);
+                $roundToDay
+            );
 
             return $query;
         }
@@ -180,7 +181,8 @@ trait DateTimeTrait
                     $key->getName(),
                     null,
                     $this->getToAsCarbon(),
-                    null, $roundToDay
+                    null,
+                    $roundToDay
                 ),
                 $column->getLocale()
             );
@@ -194,7 +196,8 @@ trait DateTimeTrait
                     $key->getName(),
                     $this->getFromAsCarbon(),
                     null,
-                    null, $roundToDay
+                    null,
+                    $roundToDay
                 ),
                 $column->getLocale()
             );
