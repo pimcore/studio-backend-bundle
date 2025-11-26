@@ -40,3 +40,10 @@ services:
             - '%pimcore_studio_backend.mercure_settings.jwt_key%'
 
 
+      #
+      # Mercure SSE
+      #
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\StudioTopicProvider: ~
+
+

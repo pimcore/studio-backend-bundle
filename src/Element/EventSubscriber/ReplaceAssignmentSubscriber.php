@@ -15,11 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
-use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -49,7 +49,7 @@ final readonly class ReplaceAssignmentSubscriber implements EventSubscriberInter
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Events::REPLACE_ASSIGNMENT_FINISHED->value,
+                Topics::STUDIO->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

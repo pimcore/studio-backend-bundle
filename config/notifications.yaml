@@ -47,10 +47,3 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Notification\EventSubscriber\NotificationSavedSubscriber: ~
-
-  #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Notification\Mercure\Provider\NotificationTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

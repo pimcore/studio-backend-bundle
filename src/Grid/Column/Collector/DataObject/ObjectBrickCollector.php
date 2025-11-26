@@ -199,7 +199,7 @@ final class ObjectBrickCollector implements
     {
         foreach ($layout->getChildren() as $child) {
             if ($child instanceof Layout) {
-                $found = $this->getBaseLayoutName($fieldname, $child, $child->getTitle());
+                $found = $this->getBaseLayoutName($fieldname, $child, $child->getTitle() ?: $child->getName());
 
                 if ($found !== null) {
                     return $found;

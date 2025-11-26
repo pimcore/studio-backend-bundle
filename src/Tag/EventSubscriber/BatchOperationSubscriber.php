@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberSe
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -51,7 +51,7 @@ final readonly class BatchOperationSubscriber implements EventSubscriberInterfac
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                $this->getEventName($event->getJobName()),
+                Topics::STUDIO->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
@@ -66,12 +66,5 @@ final readonly class BatchOperationSubscriber implements EventSubscriberInterfac
             ),
             default => null,
         };
-    }
-
-    private function getEventName(string $jobName): string
-    {
-        return $jobName === Jobs::BATCH_TAG_ASSIGN->value ?
-            Events::TAG_ASSIGNMENT_FINISHED->value :
-            Events::TAG_REPLACEMENT_FINISHED->value;
     }
 }

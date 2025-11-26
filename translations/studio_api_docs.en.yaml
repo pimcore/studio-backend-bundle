@@ -176,7 +176,7 @@ asset_update_by_id_description: |
 asset_update_by_id_summary: Update an asset by ID
 asset_upload_info_description: |
   Get information if asset already exists based on the given <strong>{parentId}</strong> and <strong>{fileName}</strong> query parameter.
-asset_upload_info_success_response: Returns true if asset with the same name and in the same path already exists, false otherwise
+asset_upload_info_success_response: Returns true and existing asset ID, if asset with the same name and in the same path already exists, false otherwise
 asset_upload_info_summary: Get information if asset already exists
 asset_upload_zip_created_response: Successfully created jobRun ID to upload multiple assets
 asset_upload_zip_description: |

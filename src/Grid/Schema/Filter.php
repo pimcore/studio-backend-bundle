@@ -44,7 +44,7 @@ final readonly class Filter
         #[Property(
             description: 'Sort Filter',
             type: 'object',
-            example: '{"key":"id","direction": "ASC"}'
+            example: '{"key":"id","direction": "ASC", "locale": "en"}'
         )]
         private array $sortFilter = []
 

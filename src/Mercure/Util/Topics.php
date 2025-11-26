@@ -11,21 +11,13 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-/**
- * @internal
- */
-enum Events: string
+enum Topics: string
 {
     use EnumToValueArrayTrait;
 
-    case DELETION_FINISHED = 'deletion-finished';
-    case BATCH_DELETION_FINISHED = 'batch-deletion-finished';
-    case CLONING_FINISHED = 'cloning-finished';
-    case PATCH_FINISHED = 'patch-finished';
-    case REWRITE_REFERENCES_FINISHED = 'rewrite-references-finished';
-    case REPLACE_ASSIGNMENT_FINISHED = 'replace-assignment-finished';
+    case STUDIO = 'studio-backend-default';
 }

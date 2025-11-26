@@ -50,10 +50,21 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
             'upload_max_filesize' => $this->getUploadMaxFilesize(),
+            'session_gc_maxlifetime' => $this->getSessionLifeTime(),
             'platform_version' => $this->versionResolver->getPlatformVersion(),
             'version' => $this->versionResolver->getVersion(),
             'environment' => $this->configResolver->getEnvironment(),
         ];
+    }
+
+    private function getSessionLifeTime(): int
+    {
+        $lifetime = ini_get('session.gc_maxlifetime');
+        if (empty($lifetime)) {
+            $lifetime = 120;
+        }
+
+        return (int)$lifetime;
     }
 
     private function getUploadMaxFilesize(): int

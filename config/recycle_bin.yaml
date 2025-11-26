@@ -46,10 +46,3 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\DeleteItemsSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\RestoreItemsSubscriber: ~
-
-  #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Mercure\Provider\RecycleBinTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]
