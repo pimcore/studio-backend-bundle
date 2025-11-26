@@ -55,6 +55,7 @@ final class QuantityValueFilter implements FilterInterface
         ) {
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
+            $value = $filterValue->getValue();
 
             $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
@@ -68,7 +69,7 @@ final class QuantityValueFilter implements FilterInterface
                 throw new InvalidArgumentException('This filter requires a setting value');
             }
 
-            $setting = $filterValue['setting'];
+            $setting = $value['setting'];
 
             if (isset($value['is']) && $setting == 'is') {
                 $query->classificationStoreFilter(
@@ -79,20 +80,20 @@ final class QuantityValueFilter implements FilterInterface
                 );
             }
 
-            if (isset($filterValue['to']) && $setting == 'less') {
+            if (isset($value['to']) && $setting == 'less') {
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($column->getKey().'value', null, $filterValue['to'], true),
+                    new NumberRangeFilter($column->getKey().'value', null, $value['to'], true),
                     null
                 );
             }
 
-            if (isset($filterValue['from']) && $setting == 'more') {
+            if (isset($value['from']) && $setting == 'more') {
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($column->getKey().'value', $filterValue['from'], null, true),
+                    new NumberRangeFilter($column->getKey().'value', $value['from'], null, true),
                     null
                 );
             }
@@ -101,7 +102,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($column->getKey().'value', $filterValue['from'], $filterValue['to'], true),
+                    new NumberRangeFilter($column->getKey().'value', $value['from'], $value['to'], true),
                     null
                 );
             }
