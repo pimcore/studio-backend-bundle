@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function is_array;
 use function sprintf;
 
 /**
@@ -127,8 +128,7 @@ trait DateTimeTrait
         GroupConfig $group,
         ClassificationStoreFilterValue $filterValue,
         bool $roundToDay
-    ): QueryInterface
-    {
+    ): QueryInterface {
         $this->setFilterValue($filterValue->getValue());
 
         if (isset($this->filterValue['from'], $this->filterValue['to'])) {

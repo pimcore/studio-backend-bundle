@@ -7,10 +7,9 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
@@ -43,7 +42,6 @@ trait NumberFilterTrait
         if (isset($filterValue['from']) && $setting == 'more') {
             return $query->filterNumberRange($column->getKey().$postFix, $filterValue['from'], null);
         }
-
 
         if ($setting == 'between') {
             return $query->filterNumberRange($column->getKey().$postFix, $filterValue['from'], $filterValue['to']);

@@ -14,9 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
 /**
@@ -24,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
  */
 final class NumberFilter implements FilterInterface
 {
-
     use NumberFilterTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
