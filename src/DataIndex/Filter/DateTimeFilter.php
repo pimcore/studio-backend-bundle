@@ -24,7 +24,7 @@ use function is_array;
 /**
  * @internal
  */
-final class DatetimeFilter implements FilterInterface
+final class DateTimeFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
     use DateTimeTrait;
@@ -36,39 +36,7 @@ final class DatetimeFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_DATETIME->value) as $column) {
-            $query = $this->applyDatetimeFilter($column, $query);
-        }
-
-        return $query;
-    }
-
-    private function applyDatetimeFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
-    {
-
-        if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for this filter must be an array');
-        }
-
-        $this->setFilterValue($column->getFilterValue());
-
-        $filterValue = $column->getFilterValue();
-
-        if (isset($filterValue['from'], $filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon(), $this->getToAsCarbon());
-
-            return $query;
-        }
-
-        if (isset($filterValue['on'])) {
-            $query->filterDatetime($column->getKey(), null, null, $this->getOnAsCarbon());
-        }
-
-        if (isset($filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), null, $this->getToAsCarbon());
-        }
-
-        if (isset($filterValue['from'])) {
-            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon());
+            $query = $this->applySystemDatetimeFilter($column, $query, false);
         }
 
         return $query;

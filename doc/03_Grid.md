@@ -29,30 +29,32 @@ specific column, like the `system.tag` filter. This filters will be applied to t
 
 Available filters are:
 
-|                   Type                   |    filterValue     |                 Options                 | `key` required |
-|:----------------------------------------:|:------------------:|:---------------------------------------:|:--------------:|
-|              system.string               |       string       |       Wildcard search can be used       |      true      |
-|             system.datetime              | object of ISO 8601 |          `from`, `to`, or `on`          |      true      |
-|                system.tag                |       object       |       `considerChildTags`, `tags`       |     false      |
-|                system.pql                |       string       |                PQL Query                |     false      |
-|                system.id                 |      integer       |                                         |     false      |
-|                system.ids                |  array of integer  |                                         |     false      |
-|              system.integer              |      integer       |                                         |      true      |
-|             system.fulltext              |       string       |                                         |     false      |
-|              system.boolean              |       array        |        `true`, `false` or `null`        |      true      |
-|              system.number               |       object       |      `from`, `to`, `is`, `setting`      |      true      |
-|              system.select               |       array        |                                         |      true      |
-|          system.quantity_value           |       array        | `from`, `to`, `is`, `setting`, `unitId` |      true      |
-|       system.input_quantity_value        |       string       |    `unitId`(string), `value`(string)    |      true      |
-|               system.rbga                |       object       |             `r`,`g`,`b`,`a`             |      true      |
-|        classificationstore.string        |       string       |                                         |      true      |
-|         classificationstore.rbga         |       object       |             `r`,`g`,`b`,`a`             |      true      |
-|         classificationstore.date         | object of ISO 8601 |          `from`, `to`, or `on`          |      true      |
-|    classificationstore.quantity_value    |   sting, integer   | `from`, `to`, `is`, `setting`, `unitId` |      true      |
-| classificationstore.input_quantity_value |       string       |    `unitId`(string), `value`(string)    |      true      |
-|        classificationstore.select        |       array        |                                         |      true      |
-|       classificationstore.boolean        |       array        |        `true`, `false` or `null`        |      true      |
-|               crm.consent                |       array        |            `true` or `false`            |      true      |
+|                   Type                   |               filterValue                |                 Options                 | `key` required |
+|:----------------------------------------:|:----------------------------------------:|:---------------------------------------:|:--------------:|
+|              system.string               |                  string                  |       Wildcard search can be used       |      true      |
+|             system.datetime              |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
+|               system.date                | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
+|                system.tag                |                  object                  |       `considerChildTags`, `tags`       |     false      |
+|                system.pql                |                  string                  |                PQL Query                |     false      |
+|                system.id                 |                 integer                  |                                         |     false      |
+|                system.ids                |             array of integer             |                                         |     false      |
+|              system.integer              |                 integer                  |                                         |      true      |
+|             system.fulltext              |                  string                  |                                         |     false      |
+|              system.boolean              |                  array                   |        `true`, `false` or `null`        |      true      |
+|              system.number               |                  object                  |      `from`, `to`, `is`, `setting`      |      true      |
+|              system.select               |                  array                   |                                         |      true      |
+|          system.quantity_value           |                  array                   | `from`, `to`, `is`, `setting`, `unitId` |      true      |
+|       system.input_quantity_value        |                  string                  |    `unitId`(string), `value`(string)    |      true      |
+|               system.rbga                |                  object                  |             `r`,`g`,`b`,`a`             |      true      |
+|        classificationstore.string        |                  string                  |                                         |      true      |
+|         classificationstore.rbga         |                  object                  |             `r`,`g`,`b`,`a`             |      true      |
+|         classificationstore.date         | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
+|       classificationstore.datetime       |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
+|    classificationstore.quantity_value    |              sting, integer              | `from`, `to`, `is`, `setting`, `unitId` |      true      |
+| classificationstore.input_quantity_value |                  string                  |    `unitId`(string), `value`(string)    |      true      |
+|        classificationstore.select        |                  array                   |                                         |      true      |
+|       classificationstore.boolean        |                  array                   |        `true`, `false` or `null`        |      true      |
+|               crm.consent                |                  array                   |            `true` or `false`            |      true      |
 
 
 ### Examples:
