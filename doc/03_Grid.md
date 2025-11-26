@@ -54,6 +54,7 @@ Available filters are:
 | classificationstore.input_quantity_value |                  string                  |    `unitId`(string), `value`(string)    |      true      |
 |        classificationstore.select        |                  array                   |                                         |      true      |
 |       classificationstore.boolean        |                  array                   |        `true`, `false` or `null`        |      true      |
+|        classificationstore.number        |                  object                  |      `from`, `to`, `is`, `setting`      |      true      |
 |               crm.consent                |                  array                   |            `true` or `false`            |      true      |
 
 

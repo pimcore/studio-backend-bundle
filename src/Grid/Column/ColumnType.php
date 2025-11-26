@@ -44,6 +44,8 @@ enum ColumnType: string
     case CLASSIFICATION_STORE_DATE = 'classificationstore.date';
     case CLASSIFICATION_STORE_DATETIME = 'classificationstore.datetime';
     case CLASSIFICATION_STORE_QUANTITY_VALUE = 'classificationstore.quantity_value';
+
+    case CLASSIFICATION_STORE_NUMBER = 'classificationstore.number';
     case CLASSIFICATION_STORE_INPUT_QUANTITY_VALUE = 'classificationstore.input_quantity_value';
     case CLASSIFICATION_STORE_QUANTITY_VALUE_RANGE = 'classificationstore.quantity_value_range';
     case CLASSIFICATION_STORE_SELECT = 'classificationstore.select';
