@@ -123,7 +123,7 @@ final readonly class PatchService implements PatchServiceInterface
                     messageFQCN: PatchMessage::class,
                     condition: '',
                     config:[
-                        StepConfig::FOLDER_TO_EXPORT->value => $folderId
+                        StepConfig::FOLDER_TO_EXPORT->value => $folderId,
                     ]
                 ),
             ],

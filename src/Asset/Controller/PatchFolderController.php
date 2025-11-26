@@ -71,11 +71,10 @@ final class PatchFolderController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function assetPatchFolderById (
+    public function assetPatchFolderById(
         int $id,
         #[MapRequestPayload] PatchFolderParameter $patchFolderParameter
-    ): Response
-    {
+    ): Response {
         $jobRunId = $this->patchService->patchFolder(
             $id,
             ElementTypes::TYPE_ASSET,
