@@ -25,3 +25,6 @@ services:
         tags: ["pimcore.studio_backend.gdpr_data_provider"]
         arguments:
             $logsDir: "%kernel.logs_dir%"
+    
+    Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataObjectProvider:
+        tags: ["pimcore.studio_backend.gdpr_data_provider"]

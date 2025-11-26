@@ -29,11 +29,11 @@ use Symfony\Component\Validator\Constraints\Type;
 final readonly class SearchTerms
 {
     public function __construct(
-        #[Property(description: 'The ID to search for.', type: 'string', nullable: true)]
-        #[Type('string')]
-        public ?string $id = null,
+        #[Property(description: 'The ID to search for.', type: 'int', nullable: true)]
+        #[Type('int')]
+        public ?int $id = null,
 
-        #[Property(description: 'The first name to search for.', type: 'string', nullable: true)]
+        #[Property(description: 'The first name to search for. ', type: 'string', nullable: true)]
         #[Type('string')]
         public ?string $firstname = null,
 
@@ -54,7 +54,7 @@ final readonly class SearchTerms
         }
     }
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }

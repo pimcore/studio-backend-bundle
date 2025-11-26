@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
@@ -37,7 +38,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms): array
+    public function findData(SearchTerms $terms, GdprSearchOptions $options): array
     {
         $listing = new Listing();
 

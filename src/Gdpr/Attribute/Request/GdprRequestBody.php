@@ -49,6 +49,24 @@ final class GdprRequestBody extends RequestBody
                         description: 'The object containing the search values.',
                         type: 'object'
                     ),
+                    
+                    new Property(
+                        property: 'filters',
+                        description: 'Pagination and sorting options',
+                        properties: [
+                            new Property(property: 'page', type: 'integer', example: 1),
+                            new Property(property: 'pageSize', type: 'integer', example: 20),
+                            new Property(
+                                property: 'sortFilter',
+                                type: 'object',
+                                properties: [
+                                    new Property(property: 'key', type: 'string', example: 'id'),
+                                    new Property(property: 'direction', type: 'string', example: 'ASC')
+                                ]
+                            )
+                        ],
+                        type: 'object'
+                    )
                 ],
                 type: 'object',
             ),

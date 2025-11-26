@@ -19,6 +19,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Validator\Constraints\Valid;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
 
 /**
  * @internal
@@ -35,7 +36,10 @@ final readonly class GdprStructuredSearchRequest
 
         #[Valid]
         #[NotNull]
-        public SearchTerms $searchTerms
+        public SearchTerms $searchTerms,
+
+        #[Valid]
+        public GdprSearchOptions $filters
     ) {
     }
 }

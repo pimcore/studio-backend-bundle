@@ -70,7 +70,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
             $this->checkProviderPermission($provider);
 
-            $results = $provider->findData($request->searchTerms);
+            $results = $provider->findData($request->searchTerms, $request->filters);
 
             if (!empty($results)) {
                 $allResults[] = new GdprSearchResult(
