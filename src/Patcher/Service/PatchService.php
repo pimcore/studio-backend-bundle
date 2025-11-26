@@ -17,10 +17,12 @@ use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RefreshJobMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -87,10 +89,11 @@ final readonly class PatchService implements PatchServiceInterface
      * {@inheritdoc}
      */
     public function patchFolder(
+        int $folderId,
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
-    ): ?int {
+    ): int {
         $classId = $patchFolderParameter->getClassId();
         if ($elementType === ElementTypes::TYPE_OBJECT && $classId === null) {
             throw new InvalidArgumentException('Class ID must be provided for object folder patching');
@@ -100,23 +103,32 @@ final readonly class PatchService implements PatchServiceInterface
             name: Jobs::PATCH_ELEMENTS->value,
             steps: [
                 new JobStep(
-                    JobSteps::ELEMENT_FOLDER_PATCHING->value,
-                    PatchFolderMessage::class,
-                    '',
-                    [
+                    name: JobSteps::ELEMENT_FOLDER_PATCHING->value,
+                    messageFQCN: PatchFolderMessage::class,
+                    condition: '',
+                    config: [
                         StepConfig::CONFIG_FILTERS->value => $patchFolderParameter->getFilters(),
                         StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
                     ]
                 ),
-            ],
-            selectedElements: array_map(
-                static fn (array $data) => new ElementDescriptor(
-                    $elementType,
-                    $data['folderId']
+                new JobStep(
+                    name: JobSteps::ELEMENT_REFRESH_COUNT->value,
+                    messageFQCN: RefreshJobMessage::class,
+                    condition: '',
+                    config:[],
+                    selectionProcessingMode: SelectionProcessingMode::ONCE
                 ),
-                $patchFolderParameter->getData()
-            ),
-            environmentData: array_column($patchFolderParameter->getData(), null, 'folderId'),
+                new JobStep(
+                    name: JobSteps::ELEMENT_PATCHING->value,
+                    messageFQCN: PatchMessage::class,
+                    condition: '',
+                    config:[
+                        StepConfig::FOLDER_TO_EXPORT->value => $folderId
+                    ]
+                ),
+            ],
+            selectedElements: [new ElementDescriptor($elementType, $folderId)],
+            environmentData: [$folderId => $patchFolderParameter->getData()],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

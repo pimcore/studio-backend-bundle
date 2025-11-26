@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\PatchAssetFolderR
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -38,6 +39,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class PatchFolderController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/folder/{id}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly PatchServiceInterface $patchService,
@@ -49,15 +52,16 @@ final class PatchFolderController extends AbstractApiController
     /**
      * @throws UserNotFoundException
      */
-    #[Route('/assets/folder', name: 'pimcore_studio_api_patch_asset_folder', methods: ['PATCH'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_patch_asset_folder', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
-        path: self::PREFIX . '/assets/folder',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_patch_folder_by_id',
         description: 'asset_patch_folder_by_id_description',
         summary: 'asset_patch_folder_by_id_summary',
         tags: [Tags::Assets->name]
     )]
+    #[IdParameter(type: ElementTypes::TYPE_FOLDER, name: 'id')]
     #[PatchAssetFolderRequestBody]
     #[CreatedResponse(
         description: 'asset_patch_by_id_created_response',
@@ -67,10 +71,13 @@ final class PatchFolderController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function assetPatchFolderById(#[MapRequestPayload] PatchFolderParameter $patchFolderParameter): Response
+    public function assetPatchFolderById (
+        int $id,
+        #[MapRequestPayload] PatchFolderParameter $patchFolderParameter
+    ): Response
     {
-
         $jobRunId = $this->patchService->patchFolder(
+            $id,
             ElementTypes::TYPE_ASSET,
             $patchFolderParameter,
             $this->securityService->getCurrentUser()

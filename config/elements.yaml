@@ -62,6 +62,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchFolderHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\ElementUsageReplaceHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RefreshJobHandler: ~
 
   #
   # Event Subscriber

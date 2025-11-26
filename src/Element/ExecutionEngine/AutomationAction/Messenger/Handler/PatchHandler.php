@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
@@ -70,9 +71,12 @@ final class PatchHandler extends AbstractHandler
             $this->elementService
         );
         $elementId = $element->getId();
-        $elementType = $this->getElementType($element);
+        $elementType = $this->getElementType($element, true);
+        $folderId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::FOLDER_TO_EXPORT->value);
         $jobEnvironmentData = $jobRun->getJob()?->getEnvironmentData();
-        if (!isset($jobEnvironmentData[(string)$elementId])) {
+
+        $patchDataKey = $folderId ?? $elementId;
+        if (!isset($jobEnvironmentData[$patchDataKey])) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_PATCH_FAILED_MESSAGE->value,
                 [
@@ -87,7 +91,7 @@ final class PatchHandler extends AbstractHandler
             $this->patchService->patchElement(
                 $element,
                 $elementType,
-                $jobEnvironmentData[$elementId],
+                $jobEnvironmentData[$patchDataKey],
                 $validatedParameters->getUser()
             );
         } catch (Exception $exception) {
@@ -102,5 +106,14 @@ final class PatchHandler extends AbstractHandler
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setDefault(StepConfig::FOLDER_TO_EXPORT->value, null);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::FOLDER_TO_EXPORT->value,
+            StepConfig::CONFIG_TYPE_INT->value
+        );
     }
 }

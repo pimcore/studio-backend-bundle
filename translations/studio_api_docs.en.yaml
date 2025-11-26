@@ -163,7 +163,7 @@ asset_patch_by_id_description: |
 asset_patch_by_id_success_response: Successfully patched asset
 asset_patch_by_id_summary: Patch assets by ID
 asset_patch_folder_by_id_description: |
-  Patching assets based on the given folder ID and data. <br> Patching on folders will be done asynchronously. <br>
+  Patching assets based on the given folder ID and data. <br> Patching on folder will be done asynchronously. <br>
   You can also use filters and sorting. Filter assets from folder based on the grid filter schema
 asset_patch_folder_by_id_summary: Patch all assets based on folder ID and filters
 asset_replace_description: |
@@ -321,7 +321,7 @@ data_object_patch_by_id_description: |
 data_object_patch_by_id_success_response: Successfully patched data object
 data_object_patch_by_id_summary: Patch data objects by ID
 data_object_patch_folder_by_id_description: |
-  Patching data objects based on the given folder ID, filters and data. <br> Patching on folders will be done asynchronously. <br>
+  Patching data objects based on the given folder ID, filters and data. <br> Patching on folder will be done asynchronously. <br>
   You can also use filters and sorting. Filter data objects from folder based on the grid filter schema
 data_object_patch_folder_by_id_summary: Patch all data objects based on folder ID and filters
 data_object_replace_content_description: |
