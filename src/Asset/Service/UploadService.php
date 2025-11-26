@@ -24,6 +24,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterfa
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -69,13 +70,18 @@ final readonly class UploadService implements UploadServiceInterface
         int $parentId,
         string $fileName,
         UserInterface $user
-    ): bool {
+    ): AssetInfo {
         $parent = $this->assetService->getAssetElement($user, $parentId);
+        $filePath = $parent->getRealFullPath() . '/' . $fileName;
+        $exists = $this->assetServiceResolver->pathExists($filePath, ElementTypes::TYPE_ASSET);
 
-        return $this->assetServiceResolver->pathExists(
-            $parent->getRealFullPath() . '/' . $fileName,
-            ElementTypes::TYPE_ASSET
-        );
+        if ($exists === false) {
+            return new AssetInfo(false);
+        }
+
+        $asset = $this->assetService->getAssetElementByPath($user, $filePath);
+
+        return  new AssetInfo(true, $asset->getId());
     }
 
     /**

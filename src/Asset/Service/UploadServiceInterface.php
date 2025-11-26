@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -36,7 +37,7 @@ interface UploadServiceInterface
         int $parentId,
         string $fileName,
         UserInterface $user
-    ): bool;
+    ): AssetInfo;
 
     /**
      * @throws DatabaseException
