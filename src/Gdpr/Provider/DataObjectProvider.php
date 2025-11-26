@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporter;
 use Pimcore\Model\DataObject\Concrete;
 
 /**
@@ -30,8 +31,6 @@ use Pimcore\Model\DataObject\Concrete;
  */
 final readonly class DataObjectProvider implements DataProviderInterface
 {
-    private const DATE_FORMAT = 'Y-m-d H:i:s';
-
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,
@@ -45,9 +44,9 @@ final readonly class DataObjectProvider implements DataProviderInterface
     {
         $query = $this->query->createDataObjectQuery();
 
-        $searchTerm = $this->buildSearchTermForSearch($terms);
+        $searchTerm = (string)$terms->getId();
 
-        $query->filterFullText($searchTerm);
+        $query->filterFullText($searchTerm);//is this correct ?
 
         $this->applySearchOptions($query, $options);
 
@@ -59,16 +58,10 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         return array_map(
             fn ($item) => new GdprDataRow([
-                'id' => $item->getId(),
-                'key' => $item->getKey(),
-                'path' => $item->getPath(),
-                'className' => ($item instanceof Concrete) ? $item->getClassName() : null,
-                'fullPath' => $item->getFullPath(),
-                'parentId' => $item->getParentId(),
                 'type' => $item->getType(),
-                'published' => $item->isPublished(),
-                'creationDate' => date(self::DATE_FORMAT, $item->getCreationDate()),
-                'modificationDate' => date(self::DATE_FORMAT, $item->getModificationDate()),
+                'id' => $item->getId(),
+                'fullPath' => $item->getFullPath(),
+                'className' => ($item instanceof Concrete) ? $item->getClassName() : null,
             ], $columns),
             $items
         );
@@ -93,25 +86,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
         }
     }
 
-    private function buildSearchTermForSearch(SearchTerms $terms): string
-    {
-        return trim(
-            preg_replace(
-                '/\s+/u',
-                ' ',
-                implode(
-                    ' ',
-                    array_filter([
-                        $terms->id,
-                        $terms->firstname,
-                        $terms->lastname,
-                        $terms->email,
-                    ])
-                )
-            )
-        );
-    }
-
     public function getDeleteSwaggerOperationId(): string
     {
         return 'pimcore_studio_api_delete_data_object_grid_configuration'; //is this correct ?
@@ -132,18 +106,23 @@ final readonly class DataObjectProvider implements DataProviderInterface
             throw new NotFoundException('Requested object is not a Concrete data object', $id);
         }
 
-        return [
-            'id'               => $object->getId(),
-            'key'              => $object->getKey(),
-            'path'             => $object->getPath(),
-            'className'        => $object->getClassName(),
-            'fullPath'         => $object->getFullPath(),
-            'parentId'         => $object->getParentId(),
-            'type'             => $object->getType(),
-            'published'        => $object->isPublished(),
-            'creationDate'     => date(self::DATE_FORMAT, $object->getCreationDate()),
-            'modificationDate' => date(self::DATE_FORMAT, $object->getModificationDate()),
+        $export = [
+            'id'            => $object->getId(),
+            'fullPath'      => $object->getFullPath(),
         ];
+
+        $properties = $object->getProperties();
+        $finalProperties = [];
+
+        foreach ($properties as $property) {
+            $finalProperties[] = $property->serialize();
+        }
+
+        $export['properties'] = $finalProperties;
+
+        ObjectExporter::doExportObject($object, $export);
+
+        return $export;
     }
 
     public function getName(): string
@@ -175,16 +154,10 @@ final readonly class DataObjectProvider implements DataProviderInterface
     public function getAvailableColumns(): array
     {
         return [
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('key', 'Key'),
-            new GdprDataColumn('fullPath', 'Full Path'),
-            new GdprDataColumn('path', 'Path'),
-            new GdprDataColumn('className', 'Class Name'),
-            new GdprDataColumn('parentId', 'Parent ID'),
             new GdprDataColumn('type', 'Type'),
-            new GdprDataColumn('published', 'Published'),
-            new GdprDataColumn('creationDate', 'Created At'),
-            new GdprDataColumn('modificationDate', 'Updated At'),
+            new GdprDataColumn('id', 'ID'),
+            new GdprDataColumn('fullPath', 'Full Path'),
+            new GdprDataColumn('className', 'Class Name')
         ];
     }
 }

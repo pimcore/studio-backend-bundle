@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Constraints\Valid;
 /**
  * @internal
  */
-final readonly class GdprStructuredSearchRequest
+final readonly class GdprStructuredSearchParameters
 {
     /**
      * @param string[] $providers

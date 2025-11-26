@@ -18,6 +18,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Property\FilterProperty;
 
 /**
  * @internal
@@ -50,23 +51,7 @@ final class GdprRequestBody extends RequestBody
                         type: 'object'
                     ),
 
-                    new Property(
-                        property: 'filters',
-                        description: 'Pagination and sorting options',
-                        properties: [
-                            new Property(property: 'page', type: 'integer', example: 1),
-                            new Property(property: 'pageSize', type: 'integer', example: 20),
-                            new Property(
-                                property: 'sortFilter',
-                                type: 'object',
-                                properties: [
-                                    new Property(property: 'key', type: 'string', example: 'id'),
-                                    new Property(property: 'direction', type: 'string', example: 'ASC'),
-                                ]
-                            ),
-                        ],
-                        type: 'object'
-                    ),
+                    new FilterProperty(),
                 ],
                 type: 'object',
             ),

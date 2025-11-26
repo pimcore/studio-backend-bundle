@@ -17,7 +17,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\GdprRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchParameters;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultProperty;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -77,7 +77,7 @@ final class SearchDataProviderController extends AbstractApiController
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function searchData(
-        #[MapRequestPayload] GdprStructuredSearchRequest $request
+        #[MapRequestPayload] GdprStructuredSearchParameters $request
     ): JsonResponse {
 
         $collection = $this->gdprManagerService->search($request);

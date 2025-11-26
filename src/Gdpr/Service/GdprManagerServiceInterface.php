@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchParameters;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -36,7 +36,7 @@ interface GdprManagerServiceInterface
      *
      * @throws ForbiddenException
      */
-    public function search(GdprStructuredSearchRequest $request): GdprSearchResultCollection;
+    public function search(GdprStructuredSearchParameters $request): GdprSearchResultCollection;
 
     /**
      * @throws ForbiddenException
