@@ -44,8 +44,9 @@ Available filters are:
 |              system.select               |       array        |                                         |      true      |
 |          system.quantity_value           |       array        | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 |       system.input_quantity_value        |       string       |    `unitId`(string), `value`(string)    |      true      |
+|               system.rbga                |       object       |             `r`,`g`,`b`,`a`             |      true      |
 |        classificationstore.string        |       string       |                                         |      true      |
-|         classificationstore.rbga         |  array of integer  |             `r`,`g`,`b`,`a`             |      true      |
+|         classificationstore.rbga         |       object       |             `r`,`g`,`b`,`a`             |      true      |
 |         classificationstore.date         | object of ISO 8601 |          `from`, `to`, or `on`          |      true      |
 |    classificationstore.quantity_value    |   sting, integer   | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 | classificationstore.input_quantity_value |       string       |    `unitId`(string), `value`(string)    |      true      |

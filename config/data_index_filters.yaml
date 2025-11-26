@@ -77,6 +77,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\InputQuantityValueFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\RGBAFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
