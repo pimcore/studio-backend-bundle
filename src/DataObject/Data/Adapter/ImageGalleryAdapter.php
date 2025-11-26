@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -33,7 +35,10 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ImageGalleryAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class ImageGalleryAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataExportInterface
 {
     use ValidateObjectDataTrait;
 
@@ -121,5 +126,29 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface, DataNor
         }
 
         return $existingValues;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getExportData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string {
+        $data = $this->getValidFieldValue($object, $key, $contextData);
+
+        if (!$data instanceof ImageGalleryData) {
+            return '';
+        }
+
+        $items = $data->getItems();
+        $paths = array_map(
+            static fn ($item) => $item->getImage()?->getFrontendFullPath(),
+            $items
+        );
+
+        return implode(', ', array_filter($paths));
     }
 }
