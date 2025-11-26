@@ -22,7 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
  */
 trait NumberFilterTrait
 {
-    private function applyNumberFilter(ColumnFilter $column, QueryInterface $query, string $postFix = ''): QueryInterface
+    private function applyNumberFilter(
+        ColumnFilter $column,
+        QueryInterface $query,
+        string $postFix = ''
+    ): QueryInterface
     {
         $filterValue = $column->getFilterValue();
 

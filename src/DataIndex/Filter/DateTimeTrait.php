@@ -89,7 +89,11 @@ trait DateTimeTrait
         }
     }
 
-    private function applySystemDatetimeFilter(ColumnFilter $column, QueryInterface $query, bool $roundToDay): QueryInterface
+    private function applySystemDatetimeFilter(
+        ColumnFilter $column,
+        QueryInterface $query,
+        bool $roundToDay
+    ): QueryInterface
     {
 
         if (!is_array($column->getFilterValue())) {
@@ -101,7 +105,12 @@ trait DateTimeTrait
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['from'], $filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon(), $this->getToAsCarbon(), null, $roundToDay);
+            $query->filterDatetime(
+                $column->getKey(),
+                $this->getFromAsCarbon(),
+                $this->getToAsCarbon(),
+                null,
+                $roundToDay);
 
             return $query;
         }
@@ -153,7 +162,13 @@ trait DateTimeTrait
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                $this->buildDateFilterModifier($key->getName(), null, null, $this->getOnAsCarbon(), $roundToDay),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    null,
+                    null,
+                    $this->getOnAsCarbon(),
+                    $roundToDay
+                ),
                 $column->getLocale()
             );
         }
@@ -162,7 +177,12 @@ trait DateTimeTrait
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                $this->buildDateFilterModifier($key->getName(), null, $this->getToAsCarbon(), null, $roundToDay),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    null,
+                    $this->getToAsCarbon(),
+                    null, $roundToDay
+                ),
                 $column->getLocale()
             );
         }
@@ -171,7 +191,12 @@ trait DateTimeTrait
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                $this->buildDateFilterModifier($key->getName(), $this->getFromAsCarbon(), null, null, $roundToDay),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    $this->getFromAsCarbon(),
+                    null,
+                    null, $roundToDay
+                ),
                 $column->getLocale()
             );
             $query->filterDatetime($column->getKey(), $this->getFromAsCarbon());
