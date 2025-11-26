@@ -55,7 +55,6 @@ final class QuantityValueFilter implements FilterInterface
         ) {
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
-            $value = $filterValue->getValue();
 
             $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
