@@ -13,11 +13,11 @@
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
 use Pimcore\Model\DataObject;
-use Pimcore\Normalizer\NormalizerInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Objectbrick;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Normalizer\NormalizerInterface;
 
 /**
  * Copied from old admin-ui-classic-bundle
@@ -38,11 +38,9 @@ final readonly class ObjectExporter
 
             if ($fd instanceof Data\Fieldcollections && $value instanceof Fieldcollection) {
                 self::doExportFieldcollection($object, $result, $value, $fd);
-            }
-            elseif ($fd instanceof Data\Objectbricks && $value instanceof Objectbrick) {
+            } elseif ($fd instanceof Data\Objectbricks && $value instanceof Objectbrick) {
                 self::doExportBrick($object, $result, $value, $fd);
-            } 
-            else {
+            } else {
                 if ($fd instanceof NormalizerInterface
                     && $fd instanceof DataObject\ClassDefinition\Data) {
                     $marshalledValue = $fd->normalize($value);
@@ -109,6 +107,4 @@ final readonly class ObjectExporter
         }
         $result[$container->getFieldname()] = $resultContainer;
     }
-
-
 }
