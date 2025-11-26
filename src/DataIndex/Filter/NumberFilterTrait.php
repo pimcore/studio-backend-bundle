@@ -26,8 +26,7 @@ trait NumberFilterTrait
         ColumnFilter $column,
         QueryInterface $query,
         string $postFix = ''
-    ): QueryInterface
-    {
+    ): QueryInterface {
         $filterValue = $column->getFilterValue();
 
         if (!isset($filterValue['setting'])) {

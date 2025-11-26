@@ -93,8 +93,7 @@ trait DateTimeTrait
         ColumnFilter $column,
         QueryInterface $query,
         bool $roundToDay
-    ): QueryInterface
-    {
+    ): QueryInterface {
 
         if (!is_array($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for this filter must be an array');

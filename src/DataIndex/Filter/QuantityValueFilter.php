@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 final class QuantityValueFilter implements FilterInterface
 {
     use NumberFilterTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
