@@ -12,37 +12,42 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+
 
 /**
  * @internal
  */
 final readonly class DataObjectProvider implements DataProviderInterface
 {
+    private const DATE_FORMAT = 'Y-m-d H:i:s';
+    
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,
-    ) {
-    }
+    ) {}
 
     /**
      * {@inheritdoc}
-     */
+    */
     public function findData(SearchTerms $terms, GdprSearchOptions $options): array
     {
         $query = $this->query->createDataObjectQuery();
 
-        $searchTerm = $this->buildSearchTerm($terms);
+        $searchTerm = $this->buildSearchTermForSearch($terms);
 
         $query->filterFullText($searchTerm);
 
@@ -55,40 +60,49 @@ final readonly class DataObjectProvider implements DataProviderInterface
         $items   = $searchResult->getItems();
 
         return array_map(
-            fn ($item) => new GdprDataRow([
+            fn($item) => new GdprDataRow([
                 'id' => $item->getId(),
                 'key' => $item->getKey(),
                 'path' => $item->getPath(),
-                'className' => $item->getClassName(),
+                'className' => ($item instanceof Concrete) ? $item->getClassName() : null,
                 'fullPath' => $item->getFullPath(),
                 'parentId' => $item->getParentId(),
                 'type' => $item->getType(),
                 'published' => $item->isPublished(),
-                'creationDate' => date('Y-m-d H:i:s', $item->getCreationDate()),
-                'modificationDate' => date('Y-m-d H:i:s', $item->getModificationDate()),
+                'creationDate' => date(self::DATE_FORMAT, $item->getCreationDate()),
+                'modificationDate' => date(self::DATE_FORMAT, $item->getModificationDate()),
             ], $columns),
             $items
         );
     }
-
+    
     private function applySearchOptions(QueryInterface $query, GdprSearchOptions $options): void
     {
-        // Pagination
         $query->setPage($options->page);
         $query->setPageSize($options->pageSize);
 
-        // Sorting
-        if ($options->sortFilter && isset($options->sortFilter['key'], $options->sortFilter['direction'])) {
-            $directionEnum = SortDirection::tryFrom($options->sortFilter['direction']);
-            if ($directionEnum) {
-                $query->orderByField($options->sortFilter['key'], $directionEnum);
+        $filter = $options->sortFilter;
+
+        if ($filter !== null && isset($filter['key'], $filter['direction'])) {
+            
+            $directionEnum = SortDirection::ASC;
+
+            if (strtolower($filter['direction']) === SortDirection::DESC->value) {
+                $directionEnum = SortDirection::DESC;
             }
+
+            $query->orderByField($filter['key'], $directionEnum);
         }
     }
 
-    private function buildSearchTerm(SearchTerms $terms): string
+    private function buildSearchTermForSearch(SearchTerms $terms): string
     {
-        return implode(' ', array_filter([$terms->id, $terms->firstname, $terms->lastname, $terms->email]));
+        return trim(preg_replace('/\s+/', ' ', implode(' ', array_filter([
+            $terms->id,
+            $terms->firstname,
+            $terms->lastname,
+            $terms->email,
+        ]))));
     }
 
     public function getDeleteSwaggerOperationId(): string
@@ -98,7 +112,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     /**
      * {@inheritdoc}
-     */
+    */
     public function getSingleItemForDownload(int $id): array
     {
         try {
@@ -107,17 +121,21 @@ final readonly class DataObjectProvider implements DataProviderInterface
             throw new NotFoundException('Data Object Not Found', $id);
         }
 
+        if (!$object instanceof Concrete) {
+            throw new NotFoundException('Requested object is not a Concrete data object', $id);
+        }
+
         return [
-            'id' => $object->getId(),
-            'key' => $object->getKey(),
-            'path' => $object->getPath(),
-            'className' => $object->getClassName(),
-            'fullPath' => $object->getFullPath(),
-            'parentId' => $object->getParentId(),
-            'type' => $object->getType(),
-            'published' => $object->isPublished(),
-            'creationDate' => date('Y-m-d H:i:s', $object->getCreationDate()),
-            'modificationDate' => date('Y-m-d H:i:s', $object->getModificationDate()),
+            'id'               => $object->getId(),
+            'key'              => $object->getKey(),
+            'path'             => $object->getPath(),
+            'className'        => $object->getClassName(), 
+            'fullPath'         => $object->getFullPath(),
+            'parentId'         => $object->getParentId(),
+            'type'             => $object->getType(),
+            'published'        => $object->isPublished(),
+            'creationDate'     => date(self::DATE_FORMAT, $object->getCreationDate()),
+            'modificationDate' => date(self::DATE_FORMAT, $object->getModificationDate()),
         ];
     }
 
@@ -149,17 +167,17 @@ final readonly class DataObjectProvider implements DataProviderInterface
      */
     public function getAvailableColumns(): array
     {
-        return [
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('key', 'Key'),
-            new GdprDataColumn('fullPath', 'Full Path'),
-            new GdprDataColumn('path', 'Path'),
-            new GdprDataColumn('className', 'Class Name'),
-            new GdprDataColumn('parentId', 'Parent ID'),
-            new GdprDataColumn('type', 'Type'),
-            new GdprDataColumn('published', 'Published'),
-            new GdprDataColumn('creationDate', 'Created At'),
-            new GdprDataColumn('modificationDate', 'Updated At'),
-        ];
+            return [
+                new GdprDataColumn('id', 'ID'),
+                new GdprDataColumn('key', 'Key'),
+                new GdprDataColumn('fullPath', 'Full Path'),
+                new GdprDataColumn('path', 'Path'),
+                new GdprDataColumn('className', 'Class Name'),
+                new GdprDataColumn('parentId', 'Parent ID'),
+                new GdprDataColumn('type', 'Type'),
+                new GdprDataColumn('published', 'Published'),
+                new GdprDataColumn('creationDate', 'Created At'),
+                new GdprDataColumn('modificationDate', 'Updated At'),
+            ];
     }
 }
