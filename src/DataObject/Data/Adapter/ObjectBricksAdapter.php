@@ -278,7 +278,7 @@ final readonly class ObjectBricksAdapter implements
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
             $fieldName = $fd->getName();
-            if (!$adapter || !isset($brickValue[$fieldName])) {
+            if (!$adapter || !array_key_exists($fieldName, $brickValue)) {
                 continue;
             }
 
