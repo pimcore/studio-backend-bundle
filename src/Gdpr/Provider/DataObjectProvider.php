@@ -12,34 +12,32 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Model\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
-
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\DataObject;
 
 /**
  * @internal
  */
 final readonly class DataObjectProvider implements DataProviderInterface
 {
-    
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,
-    ) {}
-
+    ) {
+    }
 
     /**
      * {@inheritdoc}
-    */
+     */
     public function findData(SearchTerms $terms, GdprSearchOptions $options): array
     {
         $query = $this->query->createDataObjectQuery();
@@ -57,7 +55,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
         $items   = $searchResult->getItems();
 
         return array_map(
-            fn($item) => new GdprDataRow([
+            fn ($item) => new GdprDataRow([
                 'id' => $item->getId(),
                 'key' => $item->getKey(),
                 'path' => $item->getPath(),
@@ -72,7 +70,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
             $items
         );
     }
-
 
     private function applySearchOptions(QueryInterface $query, GdprSearchOptions $options): void
     {
@@ -89,9 +86,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
         }
     }
 
-
-
-
     private function buildSearchTerm(SearchTerms $terms): string
     {
         return implode(' ', array_filter([$terms->id, $terms->firstname, $terms->lastname, $terms->email]));
@@ -104,7 +98,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     /**
      * {@inheritdoc}
-    */
+     */
     public function getSingleItemForDownload(int $id): array
     {
         try {
@@ -155,17 +149,17 @@ final readonly class DataObjectProvider implements DataProviderInterface
      */
     public function getAvailableColumns(): array
     {
-            return [
-                new GdprDataColumn('id', 'ID'),
-                new GdprDataColumn('key', 'Key'),
-                new GdprDataColumn('fullPath', 'Full Path'),
-                new GdprDataColumn('path', 'Path'),
-                new GdprDataColumn('className', 'Class Name'),
-                new GdprDataColumn('parentId', 'Parent ID'),
-                new GdprDataColumn('type', 'Type'),
-                new GdprDataColumn('published', 'Published'),
-                new GdprDataColumn('creationDate', 'Created At'),
-                new GdprDataColumn('modificationDate', 'Updated At'),
-            ];
+        return [
+            new GdprDataColumn('id', 'ID'),
+            new GdprDataColumn('key', 'Key'),
+            new GdprDataColumn('fullPath', 'Full Path'),
+            new GdprDataColumn('path', 'Path'),
+            new GdprDataColumn('className', 'Class Name'),
+            new GdprDataColumn('parentId', 'Parent ID'),
+            new GdprDataColumn('type', 'Type'),
+            new GdprDataColumn('published', 'Published'),
+            new GdprDataColumn('creationDate', 'Created At'),
+            new GdprDataColumn('modificationDate', 'Updated At'),
+        ];
     }
 }
