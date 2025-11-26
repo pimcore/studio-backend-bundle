@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
+
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
@@ -22,18 +24,29 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 /**
  * @internal
  */
-final class NumberFilter implements FilterInterface
+final class QuantityValueFilter implements FilterInterface
 {
-
     use NumberFilterTrait;
+
+    public function __construct(
+    ) {
+
+    }
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
             return $query;
         }
 
-        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_NUMBER->value) as $column) {
-            $this->applyNumberFilter($column, $query);
+        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_QUANTITY_VALUE->value) as $column) {
+            $filterValue = $column->getFilterValue();
+            if (!isset($filterValue['unitId'])) {
+                throw new InvalidArgumentException('Value must contain unitId');
+            }
+
+            $this->applyNumberFilter($column, $query, '.value')
+                ->wildcardSearch($column->getKey().'.unitId', $filterValue['unitId']);
         }
 
         return $query;

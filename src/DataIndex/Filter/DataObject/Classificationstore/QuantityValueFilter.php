@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
@@ -59,16 +61,52 @@ final class QuantityValueFilter implements FilterInterface
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             $value = $filterValue->getValue();
 
-            if (!isset($value['value'], $value['unitId'])) {
-                throw new InvalidArgumentException('Value must contain valu and unitId');
+            if (!isset($value['unitId'])) {
+                throw new InvalidArgumentException('Value must contain unitId');
             }
 
-            $query->classificationStoreFilter(
-                $column->getKeyWithOutLocale(),
-                $group->getName(),
-                new IntegerFilter($key->getName(). '.value', $value['value'], true),
-                null
-            );
+            if (!isset($value['setting'])) {
+                throw new InvalidArgumentException('This filter requires a setting value');
+            }
+
+            $setting = $filterValue['setting'];
+
+            if (isset($value['is']) && $setting == 'is') {
+                $query->classificationStoreFilter(
+                    $column->getKeyWithOutLocale(),
+                    $group->getName(),
+                    new NumberFilter($key->getName(). '.value', $value['is'], true),
+                    null
+                );
+            }
+
+            if (isset($filterValue['to']) && $setting == 'less') {
+                $query->classificationStoreFilter(
+                    $column->getKeyWithOutLocale(),
+                    $group->getName(),
+                    new NumberRangeFilter($column->getKey().'value', null, $filterValue['to'], true),
+                    null
+                );
+            }
+
+            if (isset($filterValue['from']) && $setting == 'more') {
+                $query->classificationStoreFilter(
+                    $column->getKeyWithOutLocale(),
+                    $group->getName(),
+                    new NumberRangeFilter($column->getKey().'value', $filterValue['from'], null, true),
+                    null
+                );
+            }
+
+
+            if ($setting == 'between') {
+                $query->classificationStoreFilter(
+                    $column->getKeyWithOutLocale(),
+                    $group->getName(),
+                    new NumberRangeFilter($column->getKey().'value', $filterValue['from'], $filterValue['to'], true),
+                    null
+                );
+            }
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
