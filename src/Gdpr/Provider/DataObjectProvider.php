@@ -95,7 +95,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     private function buildSearchTermForSearch(SearchTerms $terms): string
     {
-        // Builds a normalized search term string by combining non-empty values (id, firstname, lastname, email) and collapsing multiple spaces.
         return trim(
             preg_replace(
                 '/\s+/u',
