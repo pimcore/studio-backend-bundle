@@ -48,12 +48,11 @@ final class RefreshJobHandler extends AbstractHandler
         }
 
         $selectedElementCount = count($jobRun->getJob()?->getSelectedElements() ?? []);
-        $totalElements = $jobRun->getTotalElements();
-        if ($selectedElementCount === $totalElements) {
+        if ($selectedElementCount === $jobRun->getTotalElements()) {
             return;
         }
 
-        $jobRun->setTotalElements(count($jobRun->getJob()?->getSelectedElements() ?? []));
+        $jobRun->setTotalElements($selectedElementCount);
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
