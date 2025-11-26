@@ -27,6 +27,7 @@ enum ColumnType: string
     case SYSTEM_SELECT = 'system.select';
     case SYSTEM_FULLTEXT = 'system.fulltext';
     case SYSTEM_QUANTITY_VALUE = 'system.quantity_value';
+    case SYSTEM_INPUT_QUANTITY_VALUE = 'system.input_quantity_value';
     case METADATA_SELECT = 'metadata.select';
     case METADATA_INPUT = 'metadata.input';
     case METADATA_DATE = 'metadata.date';

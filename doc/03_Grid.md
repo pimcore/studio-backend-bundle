@@ -43,6 +43,7 @@ Available filters are:
 |              system.number               |       object       |      `from`, `to`, `is`, `setting`      |      true      |
 |              system.select               |       array        |                                         |      true      |
 |          system.quantity_value           |       array        | `from`, `to`, `is`, `setting`, `unitId` |      true      |
+|       system.input_quantity_value        |       string       |    `unitId`(string), `value`(string)    |      true      |
 |        classificationstore.string        |       string       |                                         |      true      |
 |         classificationstore.rbga         |  array of integer  |             `r`,`g`,`b`,`a`             |      true      |
 |         classificationstore.date         | object of ISO 8601 |          `from`, `to`, or `on`          |      true      |
