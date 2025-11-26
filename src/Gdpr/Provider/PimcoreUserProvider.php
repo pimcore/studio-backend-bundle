@@ -98,7 +98,9 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         $listing->setOffset(($options->page - 1) * $options->pageSize);
         $listing->setLimit($options->pageSize);
 
-        if (($filter = $options->sortFilter) && isset($filter['key'], $filter['direction'])) {
+        $filter = $options->sortFilter;
+
+        if ($filter && isset($filter['key'], $filter['direction'])) {
             $listing->setOrderKey($filter['key']);
             $listing->setOrder(
                 strtolower($filter['direction']) === SortDirection::DESC->value

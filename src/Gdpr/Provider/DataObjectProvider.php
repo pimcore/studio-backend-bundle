@@ -95,12 +95,22 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     private function buildSearchTermForSearch(SearchTerms $terms): string
     {
-        return trim(preg_replace('/\s+/', ' ', implode(' ', array_filter([
-            $terms->id,
-            $terms->firstname,
-            $terms->lastname,
-            $terms->email,
-        ]))));
+        // Builds a normalized search term string by combining non-empty values (id, firstname, lastname, email) and collapsing multiple spaces.
+        return trim(
+            preg_replace(
+                '/\s+/u',
+                ' ',
+                implode(
+                    ' ',
+                    array_filter([
+                        $terms->id,
+                        $terms->firstname,
+                        $terms->lastname,
+                        $terms->email,
+                    ])
+                )
+            )
+        );
     }
 
     public function getDeleteSwaggerOperationId(): string
