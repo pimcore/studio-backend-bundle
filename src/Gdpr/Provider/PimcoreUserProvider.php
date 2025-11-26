@@ -12,6 +12,7 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
@@ -19,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
@@ -95,8 +95,8 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
     private function applySearchOptions(Listing $listing, GdprSearchOptions $options): void
     {
-            $listing->setOffset(($options->page - 1) * $options->pageSize);
-            $listing->setLimit($options->pageSize);
+        $listing->setOffset(($options->page - 1) * $options->pageSize);
+        $listing->setLimit($options->pageSize);
 
         if (($filter = $options->sortFilter) && isset($filter['key'], $filter['direction'])) {
             $listing->setOrderKey($filter['key']);
