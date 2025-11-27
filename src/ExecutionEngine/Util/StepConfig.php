@@ -25,6 +25,7 @@ enum StepConfig: string
     case ELEMENT_CLASS_ID = 'element_class_id';
     case ELEMENT_TO_EXPORT = 'element_to_export';
     case ELEMENT_TYPE = 'element_type';
+    case EXPORT_FORMAT = 'export_format';
     case FOLDER_TO_EXPORT = 'folder_to_export';
     case GRID_EXPORT_DATA = 'grid_export_data';
     case GRID_EXPORT_DATA_INFO = 'grid_export_data_info';

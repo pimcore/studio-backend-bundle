@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
@@ -177,6 +178,13 @@ final class GridService implements GridServiceInterface
         $databaseElement = null;
         if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
             $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
+        }
+
+        if ($isExport && $databaseElement->getType() === ElementTypes::TYPE_FOLDER) {
+            throw new InvalidArgumentException(
+                message: 'Exporting folder elements is not supported',
+                errorKey: Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value
+            );
         }
 
         foreach ($columnCollection->getColumns() as $column) {

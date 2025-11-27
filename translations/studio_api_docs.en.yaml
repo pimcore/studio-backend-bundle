@@ -593,8 +593,8 @@ export_csv_description: |
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
 export_csv_summary: Creating CSV file for elements
 export_csv_folder_description: |
-  Creating the CSV file for elements based on the folder. <br> Parameters are: <ul>
-    <li><strong>folders</strong>: Array of folder ids</li>
+  Creating the CSV file for elements based on the folder. <br> 
+  Parameters are: <ul>
     <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
     <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
     <li><strong>config</strong>: Delimiter and header options</li>
@@ -630,8 +630,9 @@ export_xlsx_description: |
   Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
 export_xlsx_summary: Creating XLSX file export for elements
 export_xlsx_folder_description: |
-  Creating the XLSX file for elements based on the folder. <br> Parameters are: <ul>
-    <li><strong>folders</strong>: Array of folder ids</li>
+  Creating the XLSX file for elements based on the folder. <br> 
+  Parameters are: 
+  <ul>
     <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
     <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
     <li><strong>config</strong>: Header options</li>

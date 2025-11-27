@@ -15,9 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -40,8 +38,6 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
-        private readonly ClassDefinitionRepositoryInterface $classDefinitionRepository,
-        private readonly DataObjectServiceInterface $dataObjectService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly GridServiceInterface $gridService
@@ -70,22 +66,10 @@ final class ExportDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobDataObject = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
-
-        $dataObject = $this->dataObjectService->getDataObjectForUser($jobDataObject['id'], $user);
-        $classId = $this->classDefinitionRepository->getClassDefinition($dataObject->getClassName())->getId();
-
-        if ($dataObject->getType() === ElementTypes::TYPE_FOLDER) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
-                [
-                    'folderId' => $dataObject->getId(),
-                ]
-            ));
-
-            return;
-        }
-
+        $dataObjectId = $this->extractConfigFieldFromJobStepConfig(
+            $message, StepConfig::ELEMENT_TO_EXPORT->value
+        )['id'];
+        $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $classId,
@@ -96,10 +80,10 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
         try {
             $dataObjectData = [
-                $dataObject->getId() => $this->gridService->getGridValuesForElement(
+                $dataObjectId => $this->gridService->getGridValuesForElement(
                     $columnCollection,
                     ElementTypes::TYPE_OBJECT,
-                    $dataObject->getId(),
+                    $dataObjectId,
                     true
                 ),
             ];
@@ -123,7 +107,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $dataObject->getId(),
+                    'id' => $dataObjectId,
                     'message' => $e->getMessage(),
                 ]
             ));

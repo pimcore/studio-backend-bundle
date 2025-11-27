@@ -100,35 +100,35 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         $job = new Job(
-            name: Jobs::PATCH_ELEMENTS->value,
-            steps: [
+            Jobs::PATCH_ELEMENTS->value,
+            [
                 new JobStep(
-                    name: JobSteps::ELEMENT_FOLDER_PATCHING->value,
-                    messageFQCN: PatchFolderMessage::class,
-                    condition: '',
-                    config: [
+                    JobSteps::ELEMENT_FOLDER_PATCHING->value,
+                    PatchFolderMessage::class,
+                    '',
+                    [
                         StepConfig::CONFIG_FILTERS->value => $patchFolderParameter->getFilters(),
                         StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
                     ]
                 ),
                 new JobStep(
-                    name: JobSteps::ELEMENT_REFRESH_COUNT->value,
-                    messageFQCN: RefreshJobMessage::class,
-                    condition: '',
-                    config:[],
-                    selectionProcessingMode: SelectionProcessingMode::ONCE
+                    JobSteps::ELEMENT_REFRESH_COUNT->value,
+                    RefreshJobMessage::class,
+                    '',
+                    [],
+                    SelectionProcessingMode::ONCE
                 ),
                 new JobStep(
-                    name: JobSteps::ELEMENT_PATCHING->value,
-                    messageFQCN: PatchMessage::class,
-                    condition: '',
-                    config:[
+                    JobSteps::ELEMENT_PATCHING->value,
+                    PatchMessage::class,
+                    '',
+                    [
                         StepConfig::FOLDER_TO_EXPORT->value => $folderId,
                     ]
                 ),
             ],
-            selectedElements: [new ElementDescriptor($elementType, $folderId)],
-            environmentData: [$folderId => $patchFolderParameter->getData()],
+            [new ElementDescriptor($elementType, $folderId)],
+            [$folderId => $patchFolderParameter->getData()],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

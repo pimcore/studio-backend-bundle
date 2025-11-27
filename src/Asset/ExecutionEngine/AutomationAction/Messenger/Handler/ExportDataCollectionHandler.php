@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -41,8 +40,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
-        private readonly GridServiceInterface $gridService,
-        private readonly AssetServiceInterface $assetService
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct();
     }
@@ -69,20 +67,6 @@ final class ExportDataCollectionHandler extends AbstractHandler
         }
 
         $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
-
-        $asset = $this->assetService->getAssetForUser($jobAsset['id'], $user);
-
-        if ($asset->getType() === ElementTypes::TYPE_FOLDER) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
-                [
-                    'folderId' => $asset->getId(),
-                ]
-            ));
-
-            return;
-        }
-
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
         $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
@@ -94,10 +78,10 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
         try {
             $assetData = [
-                $asset->getId() => $this->gridService->getGridValuesForElement(
+                $jobAsset['id'] => $this->gridService->getGridValuesForElement(
                     $columnCollection,
                     ElementTypes::TYPE_ASSET,
-                    $asset->getId(),
+                    $jobAsset['id'],
                     true
                 ),
             ];
@@ -105,7 +89,6 @@ final class ExportDataCollectionHandler extends AbstractHandler
             $this->updateContextArrayValues($jobRun, StepConfig::GRID_EXPORT_DATA->value, $assetData);
 
             $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? null;
-
             if ($csvExportDataInfo === null) {
                 $this->updateContextArrayValues(
                     $jobRun,
@@ -120,7 +103,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $asset->getId(),
+                    'id' => $jobAsset['id'],
                     'message' => $e->getMessage(),
                 ]
             ));

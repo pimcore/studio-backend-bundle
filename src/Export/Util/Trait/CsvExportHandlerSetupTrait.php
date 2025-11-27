@@ -22,6 +22,11 @@ trait CsvExportHandlerSetupTrait
 {
     protected function configureStep(): void
     {
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_CLASS_ID->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENT_CLASS_ID->value,
+            StepConfig::CONFIG_TYPE_STRING->value
+        );
         $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
             StepConfig::ELEMENT_TO_EXPORT->value,

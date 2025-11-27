@@ -17,14 +17,14 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage as AssetCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportFolderDataCollectionMessage as AssetFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage as DataObjectCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportFolderDataCollectionMessage as DataObjectFolderCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\XlsxCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFormat;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -45,9 +46,23 @@ final readonly class ExportService implements ExportServiceInterface
     ) {
     }
 
-    public function generateExportFileForElements(ExportParameter $exportParameter, string $exportFormat): int
+    /**
+     * {@inheritdoc}
+     */
+    public function generateExportFileForElements(
+        ExportParameter $exportParameter,
+        string $exportFormat,
+        ?UserInterface $user = null,
+    ): int
     {
+        $elementType = $exportParameter->getElementType();
+        $classId = $exportParameter->getClassId();
+        if ($elementType === ElementTypes::TYPE_OBJECT && empty($classId)) {
+            throw new InvalidArgumentException('Class ID must be provided for object folder patching');
+        }
+
         $collectionSettings = [
+            StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
             StepConfig::ELEMENT_TYPE->value => $exportParameter->getElementType(),
         ];
@@ -57,56 +72,68 @@ final readonly class ExportService implements ExportServiceInterface
             StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
         ];
 
-        return $this->generateExportFileJob(
-            $exportParameter->getElements(),
-            $collectionSettings,
-            $creationSettings,
-            $this->getMessageClass($exportParameter->getElementType()),
-            $exportFormat
-        );
-    }
-
-    public function generateExportFileForFolders(ExportFolderParameter $exportParameter, string $exportFormat): int
-    {
-        $collectionSettings = [
-            StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
-            StepConfig::CONFIG_FILTERS->value => $exportParameter->getFilters(),
+        $jobSteps = [
+            ...$this->mapJobSteps(
+                $exportParameter->getElements(),
+                $collectionSettings,
+                $this->getMessageClass($exportParameter->getElementType())
+            ),
+            ...[$this->getExportFileStep($creationSettings, $exportFormat)],
         ];
 
-        if ($exportParameter->getElementType() === ElementTypes::TYPE_OBJECT) {
-            $collectionSettings[StepConfig::ELEMENT_CLASS_ID->value] = $exportParameter->getClassId();
+        if ($user === null) {
+            $user = $this->securityService->getCurrentUser();
         }
 
-        $creationSettings = [
-            StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
-            StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
-        ];
+        return $this->generateExportFileJob($jobSteps, $exportFormat, $user->getId());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function generateExportFileForFolders(
+        int $folderId,
+        ExportFolderParameter $exportParameter,
+        string $exportFormat
+    ): int
+    {
+        $elementType = $exportParameter->getElementType();
+        $classId = $exportParameter->getClassId();
+        if ($elementType === ElementTypes::TYPE_OBJECT && empty($classId)) {
+            throw new InvalidArgumentException('Class ID must be provided for object folder patching');
+        }
 
         return $this->generateExportFileJob(
-            $exportParameter->getFolders(),
-            $collectionSettings,
-            $creationSettings,
-            $this->getMessageClassForFolder($exportParameter->getElementType()),
-            $exportFormat
+            [
+                new JobStep(
+                    JobSteps::DATA_COLLECTION->value,
+                    FolderCollectionMessage::class,
+                    '',
+                    [
+                        StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
+                        StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
+                        StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
+                        StepConfig::CONFIG_FILTERS->value => $exportParameter->getFilters(),
+                        StepConfig::EXPORT_FORMAT->value => $exportFormat,
+                        StepConfig::ELEMENT_TYPE->value => $elementType,
+                    ]
+                )
+            ],
+            $exportFormat,
+            $this->securityService->getCurrentUser()->getId(),
+            [new ElementDescriptor($elementType, $folderId)]
         );
     }
 
     private function generateExportFileJob(
-        array $elements,
-        array $collectionSettings,
-        array $creationSettings,
-        string $messageFQCN,
-        string $exportFormat
+        array $jobSteps,
+        string $exportFormat,
+        int $ownerId,
+        array $selectedElements = [],
     ): int {
-
-        $jobSteps = [
-            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, StepConfig::ELEMENT_TO_EXPORT),
-            ...[$this->getExportFileStep($creationSettings, $exportFormat)],
-        ];
-
         $jobRun = $this->jobExecutionAgent->startJobExecution(
-            $this->createJobByFormat($jobSteps, $exportFormat),
-            $this->securityService->getCurrentUser()->getId(),
+            $this->createJobByFormat($jobSteps, $exportFormat, $selectedElements),
+            $ownerId,
             Config::CONTEXT_STOP_ON_ERROR->value
         );
 
@@ -117,14 +144,13 @@ final readonly class ExportService implements ExportServiceInterface
         array $elements,
         array $collectionSettings,
         string $messageFQCN,
-        StepConfig $export
     ): array {
         return array_map(
             static fn (ElementDescriptor $element) => new JobStep(
                 JobSteps::DATA_COLLECTION->value,
                 $messageFQCN,
                 '',
-                array_merge([$export->value => $element], $collectionSettings)
+                array_merge([StepConfig::ELEMENT_TO_EXPORT->value => $element], $collectionSettings)
             ),
             $elements,
         );
@@ -159,17 +185,14 @@ final readonly class ExportService implements ExportServiceInterface
         );
     }
 
-    private function createJobByFormat(array $jobSteps, string $exportFormat): Job
+    private function createJobByFormat(array $jobSteps, string $exportFormat, array $selectedElements = []): Job
     {
         $name = Jobs::CREATE_CSV->value;
         if ($exportFormat === ExportFormat::XLSX->value) {
             $name = Jobs::CREATE_XLSX->value;
         }
 
-        return new Job(
-            name: $name,
-            steps: $jobSteps
-        );
+        return new Job($name, $jobSteps, $selectedElements);
     }
 
     private function getMessageClass(string $elementType): string
@@ -177,15 +200,6 @@ final readonly class ExportService implements ExportServiceInterface
         return match($elementType) {
             ElementTypes::TYPE_ASSET => AssetCollectionMessage::class,
             ElementTypes::TYPE_OBJECT => DataObjectCollectionMessage::class,
-            default => throw new InvalidElementTypeException($elementType)
-        };
-    }
-
-    private function getMessageClassForFolder(string $elementType): string
-    {
-        return match($elementType) {
-            ElementTypes::TYPE_ASSET => AssetFolderCollectionMessage::class,
-            ElementTypes::TYPE_OBJECT => DataObjectFolderCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }
