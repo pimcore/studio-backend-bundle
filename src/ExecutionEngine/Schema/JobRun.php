@@ -23,7 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'JobRun',
     title: 'JobRun',
-    required: ['id', 'ownerId', 'state', 'executionContext', 'totalElements', 'creationDate', 'modificationDate'],
+    required: [
+        'id', 'ownerId', 'state', 'executionContext', 'totalElements', 'currentMessage',
+        'jobRunChildId', 'currentStep', 'totalSteps','creationDate', 'modificationDate'
+    ],
     type: 'object'
 )]
 final class JobRun implements AdditionalAttributesInterface
@@ -43,6 +46,8 @@ final class JobRun implements AdditionalAttributesInterface
         private readonly int $totalElements,
         #[Property(description: 'Current Message og the last Event', type: 'string', example: 'Message')]
         private readonly string $currentMessage,
+        #[Property(description: 'Id of the child Job run', type: 'integer', example: 55)]
+        private readonly ?int $jobRunChildId = null,
         #[Property(description: 'Current Step of a running Job', type: 'integer', example: 0)]
         private readonly ?int $currentStep = null,
         #[Property(description: 'Number of total Steps of a running Job', type: 'integer', example: 0)]
@@ -82,6 +87,11 @@ final class JobRun implements AdditionalAttributesInterface
     public function getCreationDate(): ?int
     {
         return $this->creationDate;
+    }
+
+    public function getChildJobRunId(): ?int
+    {
+        return $this->jobRunChildId;
     }
 
     public function getModificationDate(): ?int
