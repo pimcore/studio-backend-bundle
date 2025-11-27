@@ -17,8 +17,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProvide
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
@@ -72,9 +72,9 @@ final readonly class DataObjectProvider implements DataProviderInterface
     {
         $query->setPage($options->getPage());
         $query->setPageSize($options->getPageSize());
-        
+
         $sortFilter = $options->getSortFilter();
-        
+
         if ($sortFilter->getKey() && $sortFilter->getDirection()) {
             $directionEnum = strtolower($sortFilter->getDirection()) === SortDirection::DESC->value
                 ? SortDirection::DESC
