@@ -64,9 +64,7 @@ final readonly class SearchTerms
         )]
         #[Type('string')]
         private ?string $email = null,
-    )
-    
-    {
+    ) {
         if ($this->id === null &&
             $this->firstname === null &&
             $this->lastname === null &&
