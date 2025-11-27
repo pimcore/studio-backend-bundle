@@ -51,18 +51,18 @@ final readonly class DataObjectProvider implements DataProviderInterface
             $query->filterInteger('id', $terms->getId());
         }
 
-            $texts = [
-                $terms->getFirstname(),
-                $terms->getLastname(),
-                $terms->getEmail(),
-            ];
+        $texts = [
+            $terms->getFirstname(),
+            $terms->getLastname(),
+            $terms->getEmail(),
+        ];
 
-            foreach ($texts as $value) {
-                $value = trim((string)$value);
-                if ($value !== '') {
-                    $query->filterFullText($value);
-                }
+        foreach ($texts as $value) {
+            $value = trim((string)$value);
+            if ($value !== '') {
+                $query->filterFullText($value);
             }
+        }
 
         $this->applySearchOptions($query, $options);
 
