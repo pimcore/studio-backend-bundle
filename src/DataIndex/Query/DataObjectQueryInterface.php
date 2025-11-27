@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\BooleanFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
@@ -49,6 +50,7 @@ interface DataObjectQueryInterface extends QueryInterface
         IntegerFilter|
         MultiSelectFilter|
         NumberRangeFilter|
+        NumberFilter|
         BooleanMultiSelectFilter|
         WildcardSearch $subModifier,
         ?string $locale

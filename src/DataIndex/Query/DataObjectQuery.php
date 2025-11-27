@@ -267,6 +267,7 @@ final class DataObjectQuery implements DataObjectQueryInterface
         IntegerFilter|
         MultiSelectFilter|
         NumberRangeFilter|
+        NumberFilter|
         BooleanMultiSelectFilter|
         WildcardSearch $subModifier,
         ?string $locale = null

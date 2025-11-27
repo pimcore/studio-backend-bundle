@@ -59,7 +59,10 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\StringFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DatetimeFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateTimeFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\NumberFilter:
@@ -69,6 +72,15 @@ services:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\BooleanFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\QuantityValueFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\InputQuantityValueFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\RGBAFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   # DataObject
@@ -91,6 +103,9 @@ services:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\DateFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\DateTimeFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\QuantityValueFilter:

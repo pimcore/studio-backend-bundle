@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -20,9 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 /**
  * @internal
  */
-final class NumberFilter implements FilterInterface
+final class DateFilter implements FilterInterface
 {
-    use NumberFilterTrait;
+    use IsAssetFilterTrait;
+    use DateTimeTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -30,8 +32,8 @@ final class NumberFilter implements FilterInterface
             return $query;
         }
 
-        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_NUMBER->value) as $column) {
-            $this->applyNumberFilter($column, $query);
+        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_DATE->value) as $column) {
+            $query = $this->applySystemDatetimeFilter($column, $query, true);
         }
 
         return $query;
