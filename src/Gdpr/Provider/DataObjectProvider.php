@@ -20,11 +20,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporter;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
 
 /**
  * @internal
@@ -34,13 +34,14 @@ final readonly class DataObjectProvider implements DataProviderInterface
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,
+        private ObjectExporterInterface $objectExporter
     ) {
     }
 
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, GdprSearchOptions $options): array
+    public function findData(SearchTerms $terms, GdprSearchOptionsParameters $options): array
     {
         $query = $this->query->createDataObjectQuery();
 
@@ -67,7 +68,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
         );
     }
 
-    private function applySearchOptions(QueryInterface $query, GdprSearchOptions $options): void
+    private function applySearchOptions(QueryInterface $query, GdprSearchOptionsParameters $options): void
     {
         $query->setPage($options->page);
         $query->setPageSize($options->pageSize);
@@ -120,7 +121,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $export['properties'] = $finalProperties;
 
-        ObjectExporter::doExportObject($object, $export);
+        $this->objectExporter->doExportObject($object, $export);
 
         return $export;
     }

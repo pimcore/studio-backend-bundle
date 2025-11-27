@@ -26,9 +26,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
  *
  * @internal
  */
-final readonly class ObjectExporter
+final readonly class ObjectExporter implements ObjectExporterInterface
 {
-    public static function doExportObject(Concrete $object, array &$result = []): void
+    public function doExportObject(Concrete $object, array &$result = []): void
     {
         $fDefs = $object->getClass()->getFieldDefinitions();
 
@@ -37,10 +37,10 @@ final readonly class ObjectExporter
             $value = $object->$getter();
 
             if ($fd instanceof Data\Fieldcollections && $value instanceof Fieldcollection) {
-                self::doExportFieldcollection($object, $result, $value, $fd);
+                self::doExportFieldcollection($result, $value);
             }
             elseif ($fd instanceof Data\Objectbricks && $value instanceof Objectbrick) {
-                self::doExportBrick($object, $result, $value, $fd);
+                self::doExportBrick($result, $value);
             } 
             else {
                 if ($fd instanceof NormalizerInterface
@@ -52,7 +52,7 @@ final readonly class ObjectExporter
         }
     }
 
-    private static function doExportBrick(Concrete $object, array &$result, Objectbrick $container, Data\Objectbricks $brickFieldDef): void
+    private function doExportBrick(array &$result, Objectbrick $container): void
     {
         $allowedBrickTypes = $container->getAllowedBrickTypes();
         $resultContainer = [];
@@ -78,7 +78,7 @@ final readonly class ObjectExporter
         $result[$container->getFieldname()] = $resultContainer;
     }
 
-    private static function doExportFieldcollection(Concrete $object, array &$result, Fieldcollection $container, Data\Fieldcollections $containerDef): void
+    private function doExportFieldcollection(array &$result, Fieldcollection $container): void
     {
         $resultContainer = [];
 

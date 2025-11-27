@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
@@ -39,7 +39,7 @@ final readonly class GdprStructuredSearchParameters
         public SearchTerms $searchTerms,
 
         #[Valid]
-        public GdprSearchOptions $filters
+        public GdprSearchOptionsParameters $filters
     ) {
     }
 }

@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter;
 
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Collection;
@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Constraints\Type;
 /**
  * @internal
  */
-final readonly class GdprSearchOptions
+final readonly class GdprSearchOptionsParameters
 {
     public function __construct(
         #[Positive]
