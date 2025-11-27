@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
@@ -41,7 +41,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, GdprSearchOptionsParameters $options): array
+    public function findData(SearchTerms $terms, FilterParameter $options): array
     {
         $query = $this->query->createDataObjectQuery();
 
@@ -68,23 +68,21 @@ final readonly class DataObjectProvider implements DataProviderInterface
         );
     }
 
-    private function applySearchOptions(QueryInterface $query, GdprSearchOptionsParameters $options): void
+    private function applySearchOptions(QueryInterface $query, FilterParameter $options): void
     {
-        $query->setPage($options->page);
-        $query->setPageSize($options->pageSize);
+        $query->setPage($options->getPage());
+        $query->setPageSize($options->getPageSize());
+        
+        $sortFilter = $options->getSortFilter();
+        
+        if ($sortFilter->getKey() && $sortFilter->getDirection()) {
+            $directionEnum = strtolower($sortFilter->getDirection()) === SortDirection::DESC->value
+                ? SortDirection::DESC
+                : SortDirection::ASC;
 
-        $filter = $options->sortFilter;
-
-        if ($filter !== null && isset($filter['key'], $filter['direction'])) {
-
-            $directionEnum = SortDirection::ASC;
-
-            if (strtolower($filter['direction']) === SortDirection::DESC->value) {
-                $directionEnum = SortDirection::DESC;
-            }
-
-            $query->orderByField($filter['key'], $directionEnum);
+            $query->orderByField($sortFilter->getKey(), $directionEnum);
         }
+
     }
 
     public function getDeleteSwaggerOperationId(): string

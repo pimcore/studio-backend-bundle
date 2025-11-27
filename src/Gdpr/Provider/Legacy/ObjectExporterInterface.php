@@ -21,7 +21,6 @@ use Pimcore\Model\DataObject\Concrete;
 interface ObjectExporterInterface
 {
     /**
-     * @param Concrete $object
      * @param array<string, mixed> $result
      */
     public function doExportObject(Concrete $object, array &$result = []): void;

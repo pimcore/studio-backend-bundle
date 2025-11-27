@@ -15,11 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
@@ -39,7 +39,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, GdprSearchOptionsParameters $options): array
+    public function findData(SearchTerms $terms, FilterParameter $options): array
     {
         $listing = new Listing();
 
@@ -93,17 +93,17 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         );
     }
 
-    private function applySearchOptions(Listing $listing, GdprSearchOptionsParameters $options): void
+    private function applySearchOptions(Listing $listing, FilterParameter $options): void
     {
-        $listing->setOffset(($options->page - 1) * $options->pageSize);
-        $listing->setLimit($options->pageSize);
+        $listing->setOffset($options->getStart());
+        $listing->setLimit($options->getPageSize());
 
-        $filter = $options->sortFilter;
+        $sortFilter = $options->getSortFilter();
 
-        if ($filter && isset($filter['key'], $filter['direction'])) {
-            $listing->setOrderKey($filter['key']);
+        if ($sortFilter->getKey() && $sortFilter->getDirection()) {
+            $listing->setOrderKey($sortFilter->getKey());
             $listing->setOrder(
-                strtolower($filter['direction']) === SortDirection::DESC->value
+                strtolower($sortFilter->getDirection()) === SortDirection::DESC->value
                     ? SortDirection::DESC->value
                     : SortDirection::ASC->value
             );
