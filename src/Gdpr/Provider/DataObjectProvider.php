@@ -44,9 +44,9 @@ final readonly class DataObjectProvider implements DataProviderInterface
     public function findData(SearchTerms $terms, FilterParameter $options): array
     {
         $query = $this->query->createDataObjectQuery();
-        
+
         $query->excludeFolders();
-        
+
         if ($terms->getId() !== null) {
             $query->filterInteger('id', $terms->getId());
         }
