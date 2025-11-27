@@ -53,8 +53,7 @@ final readonly class ExportService implements ExportServiceInterface
         ExportParameter $exportParameter,
         string $exportFormat,
         ?UserInterface $user = null,
-    ): int
-    {
+    ): int {
         $elementType = $exportParameter->getElementType();
         $classId = $exportParameter->getClassId();
         if ($elementType === ElementTypes::TYPE_OBJECT && empty($classId)) {
@@ -95,8 +94,7 @@ final readonly class ExportService implements ExportServiceInterface
         int $folderId,
         ExportFolderParameter $exportParameter,
         string $exportFormat
-    ): int
-    {
+    ): int {
         $elementType = $exportParameter->getElementType();
         $classId = $exportParameter->getClassId();
         if ($elementType === ElementTypes::TYPE_OBJECT && empty($classId)) {
@@ -117,7 +115,7 @@ final readonly class ExportService implements ExportServiceInterface
                         StepConfig::EXPORT_FORMAT->value => $exportFormat,
                         StepConfig::ELEMENT_TYPE->value => $elementType,
                     ]
-                )
+                ),
             ],
             $exportFormat,
             $this->securityService->getCurrentUser()->getId(),
