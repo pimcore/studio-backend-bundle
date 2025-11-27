@@ -34,6 +34,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,
+        private ObjectExporterInterface $objectExporter
     ) {
     }
 
@@ -120,7 +121,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $export['properties'] = $finalProperties;
 
-        ObjectExporter::doExportObject($object, $export);
+        $this->objectExporter->doExportObject($object, $export);
 
         return $export;
     }

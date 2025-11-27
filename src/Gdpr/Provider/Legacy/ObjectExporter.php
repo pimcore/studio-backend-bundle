@@ -29,7 +29,7 @@ use Pimcore\Normalizer\NormalizerInterface;
  */
 final readonly class ObjectExporter
 {
-    public static function doExportObject(Concrete $object, array &$result = []): void
+    public function doExportObject(Concrete $object, array &$result = []): void
     {
         $fDefs = $object->getClass()->getFieldDefinitions();
 
@@ -51,7 +51,7 @@ final readonly class ObjectExporter
         }
     }
 
-    private static function doExportBrick(array &$result, Objectbrick $container): void
+    private function doExportBrick(array &$result, Objectbrick $container): void
     {
         $allowedBrickTypes = $container->getAllowedBrickTypes();
         $resultContainer = [];
@@ -77,7 +77,7 @@ final readonly class ObjectExporter
         $result[$container->getFieldname()] = $resultContainer;
     }
 
-    private static function doExportFieldcollection(array &$result, Fieldcollection $container): void
+    private function doExportFieldcollection(array &$result, Fieldcollection $container): void
     {
         $resultContainer = [];
 
