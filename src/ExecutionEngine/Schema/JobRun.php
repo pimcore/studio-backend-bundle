@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'JobRun',
     required: [
         'id', 'ownerId', 'state', 'executionContext', 'totalElements', 'currentMessage',
-        'jobRunChildId', 'currentStep', 'totalSteps','creationDate', 'modificationDate'
+        'jobRunChildId', 'currentStep', 'totalSteps', 'creationDate', 'modificationDate',
     ],
     type: 'object'
 )]
