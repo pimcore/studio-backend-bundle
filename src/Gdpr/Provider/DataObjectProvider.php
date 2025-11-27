@@ -18,13 +18,13 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
 
 /**
  * @internal
@@ -47,7 +47,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $searchTerm = (string)$terms->getId();
 
-        $query->filterFullText($searchTerm);//is this correct ?
+        $query->filterFullText($searchTerm); //is this correct ?
 
         $this->applySearchOptions($query, $options);
 
@@ -158,7 +158,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
             new GdprDataColumn('type', 'Type'),
             new GdprDataColumn('id', 'ID'),
             new GdprDataColumn('fullPath', 'Full Path'),
-            new GdprDataColumn('className', 'Class Name')
+            new GdprDataColumn('className', 'Class Name'),
         ];
     }
 }
