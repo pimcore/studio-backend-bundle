@@ -46,9 +46,9 @@ Available filters are:
 |              system.select               |                  array                   |                                         |      true      |
 |          system.quantity_value           |                  array                   | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 |       system.input_quantity_value        |                  string                  |    `unitId`(string), `value`(string)    |      true      |
-|               system.rbga                |                  object                  |             `r`,`g`,`b`,`a`             |      true      |
+|               system.rgba                |                  object                  |         `r`,`g`,`b`,`a (0 - 1)`         |      true      |
 |        classificationstore.string        |                  string                  |                                         |      true      |
-|         classificationstore.rbga         |                  object                  |             `r`,`g`,`b`,`a`             |      true      |
+|         classificationstore.rgba         |                  object                  |         `r`,`g`,`b`,`a(0 - 1)`          |      true      |
 |         classificationstore.date         | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
 |       classificationstore.datetime       |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
 |         classificationstore.time         |              object (12:45)              |          `from`, `to`, or `on`          |      true      |

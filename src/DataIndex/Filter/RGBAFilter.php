@@ -37,10 +37,14 @@ final class RGBAFilter implements FilterInterface
                 throw new InvalidArgumentException('Value must contain r,g,b,a');
             }
 
+            if (!is_float($filterValue['a']) || $filterValue['a'] > 1) {
+                $filterValue['a'] = 1;
+            }
+
             $query->filterInteger($column->getKey().'.r', $filterValue['r'])
                 ->filterInteger($column->getKey().'.g', $filterValue['g'])
                 ->filterInteger($column->getKey().'.b', $filterValue['b'])
-                ->filterInteger($column->getKey().'.a', $filterValue['a']);
+                ->filterInteger($column->getKey().'.a', (int)($filterValue['a'] * 255));
         }
 
         return $query;
