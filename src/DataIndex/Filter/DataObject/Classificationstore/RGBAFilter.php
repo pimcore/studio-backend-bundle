@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFil
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_float;
 
 /**
  * @internal
@@ -60,6 +61,10 @@ final class RGBAFilter implements FilterInterface
                 throw new InvalidArgumentException('Value must contain r,g,b,a');
             }
 
+            if (!is_float($value['a']) || $value['a'] > 1) {
+                $value['a'] = 1;
+            }
+
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
@@ -84,7 +89,7 @@ final class RGBAFilter implements FilterInterface
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new IntegerFilter($key->getName(). '.a', $value['a'], true),
+                new IntegerFilter($key->getName(). '.a', (int)($value['a'] * 255), true),
                 null
             );
         }
