@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -41,35 +41,35 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, GdprSearchOptions $options): array
+    public function findData(SearchTerms $terms, GdprSearchOptionsParameters $options): array
     {
         $listing = new Listing();
 
-        if ($terms->id !== null) {
+        if ($terms->getId() !== null) {
             $listing->addConditionParam(
                 'id = :id',
-                ['id' => $terms->id]
+                ['id' => $terms->getId()]
             );
         }
 
-        if ($terms->firstname !== null) {
+        if ($terms->getFirstname() !== null) {
             $listing->addConditionParam(
                 'firstname LIKE :firstname',
-                ['firstname' => '%' . $terms->firstname . '%']
+                ['firstname' => '%' . $terms->getFirstname() . '%']
             );
         }
 
-        if ($terms->lastname !== null) {
+        if ($terms->getLastname() !== null) {
             $listing->addConditionParam(
                 'lastname LIKE :lastname',
-                ['lastname' => '%' . $terms->lastname . '%']
+                ['lastname' => '%' . $terms->getLastname() . '%']
             );
         }
 
-        if ($terms->email !== null) {
+        if ($terms->getEmail() !== null) {
             $listing->addConditionParam(
                 'email LIKE :email',
-                ['email' => '%' . $terms->email . '%']
+                ['email' => '%' . $terms->getEmail() . '%']
             );
         }
 
@@ -95,7 +95,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         );
     }
 
-    private function applySearchOptions(Listing $listing, GdprSearchOptions $options): void
+    private function applySearchOptions(Listing $listing, GdprSearchOptionsParameters $options): void
     {
         $listing->setOffset(($options->page - 1) * $options->pageSize);
         $listing->setLimit($options->pageSize);

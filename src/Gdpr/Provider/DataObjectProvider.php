@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
@@ -40,7 +40,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, GdprSearchOptions $options): array
+    public function findData(SearchTerms $terms, GdprSearchOptionsParameters $options): array
     {
         $query = $this->query->createDataObjectQuery();
 
@@ -67,7 +67,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
         );
     }
 
-    private function applySearchOptions(QueryInterface $query, GdprSearchOptions $options): void
+    private function applySearchOptions(QueryInterface $query, GdprSearchOptionsParameters $options): void
     {
         $query->setPage($options->page);
         $query->setPageSize($options->pageSize);

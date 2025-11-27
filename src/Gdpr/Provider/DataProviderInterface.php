@@ -18,14 +18,14 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchOptions;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprSearchOptionsParameters;
 
 interface DataProviderInterface
 {
     /**
      * @return GdprDataRow[]
      */
-    public function findData(SearchTerms $terms, GdprSearchOptions $options): array;
+    public function findData(SearchTerms $terms, GdprSearchOptionsParameters $options): array;
 
     public function getDeleteSwaggerOperationId(): string;
 

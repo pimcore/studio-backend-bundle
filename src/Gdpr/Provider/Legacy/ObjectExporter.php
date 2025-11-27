@@ -21,7 +21,8 @@ use Pimcore\Normalizer\NormalizerInterface;
 
 /**
  * Copied from old admin-ui-classic-bundle
- * https://github.com/pimcore/admin-ui-classic-bundle/blob/9258d42920dbb475badc1adea59a7552ab089ac4/src/GDPR/DataProvider/Exporter.php#L32
+ * https://github.com/pimcore/admin-ui-classic-bundle/blob/
+ * 9258d42920dbb475badc1adea59a7552ab089ac4/src/GDPR/DataProvider/Exporter.php#L32
  * Use with caution, this is a copy from the admin-ui-classic-bundle
  *
  * @internal
@@ -50,7 +51,7 @@ final readonly class ObjectExporter
         }
     }
 
-    private static function doExportBrick(Concrete $object, array &$result, Objectbrick $container, Data\Objectbricks $brickFieldDef): void
+    private static function doExportBrick(array &$result, Objectbrick $container): void
     {
         $allowedBrickTypes = $container->getAllowedBrickTypes();
         $resultContainer = [];
@@ -76,7 +77,7 @@ final readonly class ObjectExporter
         $result[$container->getFieldname()] = $resultContainer;
     }
 
-    private static function doExportFieldcollection(Concrete $object, array &$result, Fieldcollection $container, Data\Fieldcollections $containerDef): void
+    private static function doExportFieldcollection(array &$result, Fieldcollection $container): void
     {
         $resultContainer = [];
 
