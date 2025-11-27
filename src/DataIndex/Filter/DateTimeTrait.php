@@ -201,7 +201,6 @@ trait DateTimeTrait
                 ),
                 $column->getLocale()
             );
-            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon());
         }
 
         return $query;

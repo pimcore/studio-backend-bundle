@@ -83,6 +83,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\RGBAFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\TimeFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
@@ -118,6 +121,9 @@ services:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\BooleanFilter:
+    tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\TimeFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\CRM\ConsentFilter:

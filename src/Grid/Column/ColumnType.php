@@ -20,6 +20,7 @@ enum ColumnType: string
     case SYSTEM_INTEGER = 'system.integer';
     case SYSTEM_ID = 'system.id';
     case SYSTEM_DATETIME = 'system.datetime';
+    case SYSTEM_TIME = 'system.time';
     case SYSTEM_DATE = 'system.date';
     case SYSTEM_BOOLEAN = 'system.boolean';
     case SYSTEM_TAG = 'system.tag';
@@ -44,6 +45,8 @@ enum ColumnType: string
     case CLASSIFICATION_STORE_RGBA = 'classificationstore.rgba';
     case CLASSIFICATION_STORE_DATE = 'classificationstore.date';
     case CLASSIFICATION_STORE_DATETIME = 'classificationstore.datetime';
+
+    case CLASSIFICATION_STORE_TIME = 'classificationstore.time';
     case CLASSIFICATION_STORE_QUANTITY_VALUE = 'classificationstore.quantity_value';
     case CLASSIFICATION_STORE_INPUT_QUANTITY_VALUE = 'classificationstore.input_quantity_value';
     case CLASSIFICATION_STORE_QUANTITY_VALUE_RANGE = 'classificationstore.quantity_value_range';

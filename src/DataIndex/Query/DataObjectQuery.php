@@ -26,6 +26,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Num
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\ClassificationStoreFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\TimeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ClassIdsFilter;
@@ -251,6 +252,25 @@ final class DataObjectQuery implements DataObjectQueryInterface
         return $this;
     }
 
+    public function filterTime(
+        string $field,
+        string|null $startTime = null,
+        string|null $endTime = null,
+        string|null $onTime = null,
+        bool $enablePqlFieldNameResolution = true
+    ): QueryInterface
+    {
+        $this->search->addModifier(new TimeFilter(
+            $field,
+            $startTime,
+            $endTime,
+            $onTime,
+            $enablePqlFieldNameResolution
+        ));
+
+        return $this;
+    }
+
     public function booleanFilter(string $fieldName, array $values): self
     {
         $this->search->addModifier(new BooleanMultiSelectFilter($fieldName, $values));
@@ -269,6 +289,7 @@ final class DataObjectQuery implements DataObjectQueryInterface
         NumberRangeFilter|
         NumberFilter|
         BooleanMultiSelectFilter|
+        TimeFilter|
         WildcardSearch $subModifier,
         ?string $locale = null
     ): self {
