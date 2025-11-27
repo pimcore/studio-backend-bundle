@@ -34,6 +34,7 @@ Available filters are:
 |              system.string               |                  string                  |       Wildcard search can be used       |      true      |
 |             system.datetime              |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
 |               system.date                | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
+|               system.time                |              object (12:15)              |          `from`, `to`, or `on`          |      true      |
 |                system.tag                |                  object                  |       `considerChildTags`, `tags`       |     false      |
 |                system.pql                |                  string                  |                PQL Query                |     false      |
 |                system.id                 |                 integer                  |                                         |     false      |
@@ -50,6 +51,7 @@ Available filters are:
 |         classificationstore.rbga         |                  object                  |             `r`,`g`,`b`,`a`             |      true      |
 |         classificationstore.date         | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
 |       classificationstore.datetime       |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
+|         classificationstore.time         |              object (12:45)              |          `from`, `to`, or `on`          |      true      |
 |    classificationstore.quantity_value    |              sting, integer              | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 | classificationstore.input_quantity_value |                  string                  |    `unitId`(string), `value`(string)    |      true      |
 |        classificationstore.select        |                  array                   |                                         |      true      |

@@ -26,6 +26,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\TimeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
@@ -156,6 +157,24 @@ final class AssetQuery implements AssetQueryInterface
             $endDate,
             $onDate,
             $roundToDay,
+            $enablePqlFieldNameResolution
+        ));
+
+        return $this;
+    }
+
+    public function filterTime(
+        string $field,
+        string|null $startTime = null,
+        string|null $endTime = null,
+        string|null $onTime = null,
+        bool $enablePqlFieldNameResolution = true
+    ): QueryInterface {
+        $this->search->addModifier(new TimeFilter(
+            $field,
+            $startTime,
+            $endTime,
+            $onTime,
             $enablePqlFieldNameResolution
         ));
 
