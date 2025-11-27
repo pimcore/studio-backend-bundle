@@ -67,7 +67,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
         }
 
         $dataObjectId = $this->extractConfigFieldFromJobStepConfig(
-            $message, StepConfig::ELEMENT_TO_EXPORT->value
+            $message,
+            StepConfig::ELEMENT_TO_EXPORT->value
         )['id'];
         $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
