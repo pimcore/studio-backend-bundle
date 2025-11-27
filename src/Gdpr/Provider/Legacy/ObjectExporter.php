@@ -21,9 +21,8 @@ use Pimcore\Normalizer\NormalizerInterface;
 
 /**
  * Copied from old admin-ui-classic-bundle
- * https://github.com/pimcore/admin-ui-classic-bundle/blob/9258d42920dbb475badc1adea59a7552ab089ac4/src/GDPR/DataProvider/Exporter.php#L32
- * Use with caution, this is a copy from the admin-ui-classic-bundle
- *
+ * https://github.com/pimcore/admin-ui-classic-bundle/blob/9258d42920dbb475badc1adea59a7552ab089ac4/src/GDPR/
+ * DataProvider/Exporter.php#L32
  * @internal
  */
 final readonly class ObjectExporter implements ObjectExporterInterface
