@@ -33,8 +33,8 @@ final class BooleanFilter implements FilterInterface
     use GetClassificationStoreFilterValueTrait;
 
     public function __construct(
-        private GroupConfigRepositoryInterface $groupConfigRepository,
-        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
+        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
+        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
     ) {
 
     }

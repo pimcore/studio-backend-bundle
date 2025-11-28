@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
 
 /**
  * @internal
@@ -278,7 +279,7 @@ final readonly class ObjectBricksAdapter implements
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
             $fieldName = $fd->getName();
-            if (!$adapter || !isset($brickValue[$fieldName])) {
+            if (!$adapter || !array_key_exists($fieldName, $brickValue)) {
                 continue;
             }
 

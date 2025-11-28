@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Hydrator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun as JobRunEntity;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Schema\JobRun;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use function count;
 
 /**
@@ -37,6 +38,7 @@ final class JobRunListHydrator implements JobRunListHydratorInterface
             executionContext: $jobRun->getExecutionContext(),
             totalElements: $jobRun->getTotalElements(),
             currentMessage: $jobRun->getCurrentMessage(),
+            jobRunChildId: $jobRun->getContext()[JobRunContext::CHILD_JOB_RUN->value] ?? null,
             currentStep: $jobRun->getCurrentStep(),
             totalSteps: $totalSteps,
             creationDate: $jobRun->getCreationDate(),

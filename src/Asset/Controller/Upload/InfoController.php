@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\NameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\BoolJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -66,7 +67,7 @@ final class InfoController extends AbstractApiController
     #[NameParameter(name: 'fileName', description: 'Name of the file to upload', example: 'file.jpg')]
     #[SuccessResponse(
         description: 'asset_upload_info_success_response',
-        content: new BoolJson(name: 'exists', description: 'True if asset exists, false otherwise')
+        content: new JsonContent(ref: AssetInfo::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
@@ -77,13 +78,11 @@ final class InfoController extends AbstractApiController
     {
 
         return $this->jsonResponse(
-            [
-                'exists' => $this->uploadService->fileExists(
-                    $parentId,
-                    $fileName,
-                    $this->securityService->getCurrentUser()
-                ),
-            ]
+            $this->uploadService->fileExists(
+                $parentId,
+                $fileName,
+                $this->securityService->getCurrentUser()
+            )
         );
     }
 }

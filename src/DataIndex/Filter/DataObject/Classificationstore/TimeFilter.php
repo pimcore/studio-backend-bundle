@@ -13,22 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\TimeFilter as GDITimeFilter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\GetClassificationStoreFilterValueTrait;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
-use function is_float;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
  * @internal
  */
-final class RGBAFilter implements FilterInterface
+final class TimeFilter implements FilterInterface
 {
     use GetClassificationStoreFilterValueTrait;
 
@@ -49,51 +51,91 @@ final class RGBAFilter implements FilterInterface
             return $query;
         }
 
-        foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_RGBA->value) as $column) {
-
+        foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_TIME->value) as $column) {
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
-
             $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
-            $value = $filterValue->getValue();
+            /** @var DataObjectQueryInterface $query */
+            $query = $this->applyTimeFilter($column, $query, $key, $group, $filterValue);
+        }
 
-            if (!isset($value['r'], $value['g'], $value['b'], $value['a'])) {
-                throw new InvalidArgumentException('Value must contain r,g,b,a');
-            }
+        return $query;
+    }
 
-            if (!is_float($value['a']) || $value['a'] > 1) {
-                $value['a'] = 1;
-            }
+    private function applyTimeFilter(
+        ColumnFilter $column,
+        DataObjectQueryInterface $query,
+        KeyGroupRelation $key,
+        GroupConfig $group,
+        ClassificationStoreFilterValue $filterValue,
+    ): QueryInterface {
+
+        $value = $filterValue->getValue();
+
+        if (isset($value['from'], $value['to'])) {
 
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new IntegerFilter($key->getName(). '.r', $value['r'], true),
-                null
+                $this->buildTimeFilterModifier(
+                    $key->getName(),
+                    $value['from'],
+                    $value['to']
+                ),
+                $column->getLocale()
             );
 
-            $query->classificationStoreFilter(
-                $column->getKeyWithOutLocale(),
-                $group->getName(),
-                new IntegerFilter($key->getName(). '.g', $value['g'], true),
-                null
-            );
+            return $query;
+        }
 
+        if (isset($value['on'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new IntegerFilter($key->getName(). '.b', $value['b'], true),
-                null
+                $this->buildTimeFilterModifier(
+                    $key->getName(),
+                    null,
+                    null,
+                    $value['on']
+                ),
+                $column->getLocale()
             );
+        }
 
+        if (isset($value['to'])) {
             $query->classificationStoreFilter(
                 $column->getKeyWithOutLocale(),
                 $group->getName(),
-                new IntegerFilter($key->getName(). '.a', (int)($value['a'] * 255), true),
-                null
+                $this->buildTimeFilterModifier(
+                    $key->getName(),
+                    null,
+                    $value['to']
+                ),
+                $column->getLocale()
+            );
+        }
+
+        if (isset($value['from'])) {
+            $query->classificationStoreFilter(
+                $column->getKeyWithOutLocale(),
+                $group->getName(),
+                $this->buildTimeFilterModifier(
+                    $key->getName(),
+                    $value['from']
+                ),
+                $column->getLocale()
             );
         }
 
         return $query;
+    }
+
+    private function buildTimeFilterModifier(
+        string $field,
+        ?string $startTime = null,
+        ?string $endTime = null,
+        ?string $onTime = null,
+    ): GDITimeFilter {
+        return new GDITimeFilter($field, $startTime, $endTime, $onTime);
     }
 }

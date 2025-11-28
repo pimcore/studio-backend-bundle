@@ -70,6 +70,14 @@ interface QueryInterface
         bool $enablePqlFieldNameResolution = true
     ): self;
 
+    public function filterTime(
+        string $field,
+        string|null $startTime = null,
+        string|null $endTime = null,
+        string|null $onTime = null,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
+
     public function filterNumber(
         string $fieldName,
         int|float $searchTerm,

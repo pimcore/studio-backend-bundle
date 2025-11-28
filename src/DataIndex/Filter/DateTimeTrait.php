@@ -15,7 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter as GDIDateFilter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Utils\ClassificationStoreFilterValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function is_array;
 use function sprintf;
 
 /**
@@ -79,5 +87,132 @@ trait DateTimeTrait
                 $e->getMessage()
             ));
         }
+    }
+
+    private function applySystemDatetimeFilter(
+        ColumnFilter $column,
+        QueryInterface $query,
+        bool $roundToDay
+    ): QueryInterface {
+
+        if (!is_array($column->getFilterValue())) {
+            throw new InvalidArgumentException('Filter value for this filter must be an array');
+        }
+
+        $this->setFilterValue($column->getFilterValue());
+
+        $filterValue = $column->getFilterValue();
+
+        if (isset($filterValue['from'], $filterValue['to'])) {
+            $query->filterDatetime(
+                $column->getKey(),
+                $this->getFromAsCarbon(),
+                $this->getToAsCarbon(),
+                null,
+                $roundToDay
+            );
+
+            return $query;
+        }
+
+        if (isset($filterValue['on'])) {
+            $query->filterDatetime($column->getKey(), null, null, $this->getOnAsCarbon(), $roundToDay);
+        }
+
+        if (isset($filterValue['to'])) {
+            $query->filterDatetime($column->getKey(), null, $this->getToAsCarbon(), null, $roundToDay);
+        }
+
+        if (isset($filterValue['from'])) {
+            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon(), null, null, $roundToDay);
+        }
+
+        return $query;
+    }
+
+    private function applyClassificationStoreDateFilter(
+        ColumnFilter $column,
+        DataObjectQueryInterface $query,
+        KeyGroupRelation $key,
+        GroupConfig $group,
+        ClassificationStoreFilterValue $filterValue,
+        bool $roundToDay
+    ): QueryInterface {
+        $this->setFilterValue($filterValue->getValue());
+
+        if (isset($this->filterValue['from'], $this->filterValue['to'])) {
+
+            $query->classificationStoreFilter(
+                $column->getKeyWithOutLocale(),
+                $group->getName(),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    $this->getFromAsCarbon(),
+                    $this->getToAsCarbon(),
+                    null,
+                    $roundToDay
+                ),
+                $column->getLocale()
+            );
+
+            return $query;
+        }
+
+        if (isset($this->filterValue['on'])) {
+            $query->classificationStoreFilter(
+                $column->getKeyWithOutLocale(),
+                $group->getName(),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    null,
+                    null,
+                    $this->getOnAsCarbon(),
+                    $roundToDay
+                ),
+                $column->getLocale()
+            );
+        }
+
+        if (isset($this->filterValue['to'])) {
+            $query->classificationStoreFilter(
+                $column->getKeyWithOutLocale(),
+                $group->getName(),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    null,
+                    $this->getToAsCarbon(),
+                    null,
+                    $roundToDay
+                ),
+                $column->getLocale()
+            );
+        }
+
+        if (isset($this->filterValue['from'])) {
+            $query->classificationStoreFilter(
+                $column->getKeyWithOutLocale(),
+                $group->getName(),
+                $this->buildDateFilterModifier(
+                    $key->getName(),
+                    $this->getFromAsCarbon(),
+                    null,
+                    null,
+                    $roundToDay
+                ),
+                $column->getLocale()
+            );
+        }
+
+        return $query;
+    }
+
+    private function buildDateFilterModifier(
+        string $field,
+        ?Carbon $startDate = null,
+        ?Carbon $endDate = null,
+        ?Carbon $onDate = null,
+        bool $roundToDay = true
+    ): GDIDateFilter {
+        return new GDIDateFilter($field, $startDate, $endDate, $onDate, $roundToDay);
     }
 }
