@@ -102,7 +102,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     public function getDeleteSwaggerOperationId(): string
     {
-        return 'pimcore_studio_api_delete_data_object_grid_configuration'; //is this correct ?
+        return 'data_object_batch_delete';
     }
 
     /**
