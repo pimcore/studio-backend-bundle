@@ -35,6 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
+use function array_slice;
+use function count;
 
 /**
  * @internal
