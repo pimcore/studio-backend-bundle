@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine;
 
+use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -40,6 +41,8 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class ExportService implements ExportServiceInterface
 {
+    private const int EXPORT_BATCH_SIZE = 500;
+
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService
@@ -63,13 +66,15 @@ final readonly class ExportService implements ExportServiceInterface
         $collectionSettings = [
             StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
-            StepConfig::ELEMENT_TYPE->value => $exportParameter->getElementType(),
         ];
 
-        $creationSettings = [
-            StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
-            StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
-        ];
+        $creationSettings = array_merge(
+            $collectionSettings,
+            [
+                StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
+                StepConfig::ELEMENT_TYPE->value => $exportParameter->getElementType(),
+            ]
+        );
 
         $jobSteps = [
             ...$this->mapJobSteps(
@@ -143,15 +148,32 @@ final readonly class ExportService implements ExportServiceInterface
         array $collectionSettings,
         string $messageFQCN,
     ): array {
-        return array_map(
-            static fn (ElementDescriptor $element) => new JobStep(
+        $steps = [];
+
+        foreach ($this->chunkGenerator($elements, self::EXPORT_BATCH_SIZE) as $batch) {
+
+            $config = [
+                    StepConfig::ELEMENTS_TO_EXPORT->value => $batch,
+                ] + $collectionSettings;
+
+            $steps[] = new JobStep(
                 JobSteps::DATA_COLLECTION->value,
                 $messageFQCN,
                 '',
-                array_merge([StepConfig::ELEMENT_TO_EXPORT->value => $element], $collectionSettings)
-            ),
-            $elements,
-        );
+                $config
+            );
+        }
+
+        return $steps;
+    }
+
+    private function chunkGenerator(array $elements, int $size): Generator
+    {
+        $total = count($elements);
+
+        for ($i = 0; $i < $total; $i += $size) {
+            yield array_slice($elements, $i, $size);
+        }
     }
 
     private function getExportFileStep(array $settings, string $exportFormat): JobStep

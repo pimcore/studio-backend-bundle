@@ -66,10 +66,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $dataObjectId = $this->extractConfigFieldFromJobStepConfig(
-            $message,
-            StepConfig::ELEMENT_TO_EXPORT->value
-        )['id'];
+        $dataObjects = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENTS_TO_EXPORT->value);
+        $totalObjects = count($dataObjects);
         $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
@@ -79,41 +77,52 @@ final class ExportDataCollectionHandler extends AbstractHandler
         );
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
-        try {
-            $dataObjectData = [
-                $dataObjectId => $this->gridService->getGridValuesForElement(
+        $data = [];
+        foreach ($dataObjects as $object) {
+            try {
+                $data[$object['id']] = $this->gridService->getGridValuesForElement(
                     $columnCollection,
                     ElementTypes::TYPE_OBJECT,
-                    $dataObjectId,
+                    $object['id'],
                     true
-                ),
-            ];
-
-            $this->updateContextArrayValues($jobRun, StepConfig::GRID_EXPORT_DATA->value, $dataObjectData);
-
-            $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? null;
-
-            if ($csvExportDataInfo === null) {
-                $this->updateContextArrayValues(
-                    $jobRun,
-                    StepConfig::GRID_EXPORT_DATA_INFO->value,
-                    [
-                        'type' => ElementTypes::TYPE_OBJECT,
-                        'classId' => $classId,
-                    ]
                 );
+
+            } catch (Exception $e) {
+                $this->abort($this->getAbortData(
+                    Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
+                    [
+                        'id' => $object['id'],
+                        'message' => $e->getMessage(),
+                    ]
+                ));
             }
 
+            $this->updateProgress(
+                $this->publishService,
+                $jobRun,
+                $this->getJobStep($message)->getName(),
+                $totalObjects
+            );
+        }
+
+        try {
+            if (!empty($data)) {
+                $context = $jobRun->getContext();
+                if (isset($context[StepConfig::GRID_EXPORT_DATA->value])) {
+                    $data = array_merge(
+                        $context[StepConfig::GRID_EXPORT_DATA->value],
+                        $data
+                    );
+                }
+                $this->updateJobRunContext($jobRun, StepConfig::GRID_EXPORT_DATA->value, $data);
+            }
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $dataObjectId,
                     'message' => $e->getMessage(),
                 ]
             ));
         }
-
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }
