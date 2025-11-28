@@ -606,15 +606,19 @@ export_csv_folder_summary: Creating CSV file for elements based on folder
 export_delete_csv_description: |
   Delete the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
 export_delete_csv_summary: Delete CSV export file based on jobRunId
-export_download_csv_description: |
-  Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
+export_download_csv_description: |  
+  Download the CSV file using the <strong>{jobRunId}</strong> returned by the create export endpoint. <br>
+  For folder exports, you must provide the ID of the corresponding child job run. <br>
+  The folder export first collects all elements and then creates a child job run to export them.
 export_download_csv_success_response: CSV File as attachment
 export_download_csv_summary: Download CSV file for job run id
 export_delete_xlsx_description: |
   Delete the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
 export_delete_xlsx_summary: Delete XLSX export file based on jobRunId
 export_download_xlsx_description: |
-  Download the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
+  Download the XLSX file using the <strong>{jobRunId}</strong> returned by the create export endpoint. <br>
+  For folder exports, you must provide the ID of the corresponding child job run. <br>
+  The folder export first collects all elements and then creates a child job run to export them.
 export_download_xlsx_success_response: XLSX File as attachment
 export_download_xlsx_summary: Download XLSX file for job run id
 export_xlsx_created_response: Successfully created <strong>jobRun</strong> for
