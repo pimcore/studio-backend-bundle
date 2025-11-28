@@ -115,22 +115,8 @@ final readonly class AssetsProvider implements DataProviderInterface
         } catch (NotFoundException) {
             throw new NotFoundException('Asset Not Found', $id);
         }
-
-        $export = [
-            'id'            => $asset->getId(),
-            'fullPath'      => $asset->getFullPath(),
-        ];
-
-        $properties = $asset->getProperties();
-        $finalProperties = [];
-
-        foreach ($properties as $property) {
-            $finalProperties[] = $property->serialize();
-        }
-
-        $export['properties'] = $finalProperties;
-
-        $this->assetExporter->doexportAsset($asset, $export);
+        
+        $export = $this->assetExporter->doexportAsset($asset);
 
         return $export;
     }

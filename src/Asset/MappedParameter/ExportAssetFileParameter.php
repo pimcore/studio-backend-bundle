@@ -24,9 +24,6 @@ final readonly class ExportAssetFileParameter
     ) {
     }
 
-    /**
-     * @return Asset[]
-     */
     public function getAssets(): array
     {
         return $this->assets;
