@@ -11,24 +11,17 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
+use Pimcore\Model\Asset;
 
 /**
  * @internal
  */
-final readonly class ExportAssetFileParameter
+interface AssetExporterInterface
 {
-    /** @param array<int> $assets */
-    public function __construct(
-        private array $assets
-    ) {
-    }
-
     /**
-     * @return Asset[]
+     * @param array<string, mixed> $result
      */
-    public function getAssets(): array
-    {
-        return $this->assets;
-    }
+    public function doexportAsset(Asset $theAsset): array;
+
 }

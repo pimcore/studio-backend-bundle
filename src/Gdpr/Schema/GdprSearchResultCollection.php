@@ -42,10 +42,14 @@ final class GdprSearchResultCollection implements AdditionalAttributesInterface
             type: 'array',
             items: new Items(ref: GdprSearchResult::class)
         )]
-
         private readonly array $items,
-    ) {
-    }
+
+        #[Property(
+            description: 'Total number of items across all pages',
+            type: 'integer'
+        )]
+        private readonly int $totalItems,
+    ) {}
 
     /**
      * @return array<GdprSearchResult>
@@ -53,5 +57,10 @@ final class GdprSearchResultCollection implements AdditionalAttributesInterface
     public function getItems(): array
     {
         return $this->items;
+    }
+
+    public function getTotalItems(): int
+    {
+        return $this->totalItems;
     }
 }

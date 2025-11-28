@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -37,6 +38,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class SearchDataProviderController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly GdprManagerServiceInterface $gdprManagerService,
@@ -82,6 +85,10 @@ final class SearchDataProviderController extends AbstractApiController
 
         $collection = $this->gdprManagerService->search($request);
 
-        return $this->jsonResponse($collection);
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $collection->getItems(),
+            $collection->getTotalItems()
+        );
     }
 }

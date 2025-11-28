@@ -131,7 +131,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
      */
     private function getSearchResultCollection(array $results): GdprSearchResultCollection
     {
-        $collection = new GdprSearchResultCollection($results);
+        $collection = new GdprSearchResultCollection($results, count($results));
 
         $this->eventDispatcher->dispatch(
             new GdprSearchResultEvent($collection),
