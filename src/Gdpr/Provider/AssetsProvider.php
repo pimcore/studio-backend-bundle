@@ -115,7 +115,7 @@ final readonly class AssetsProvider implements DataProviderInterface
         } catch (NotFoundException) {
             throw new NotFoundException('Asset Not Found', $id);
         }
-        
+
         $export = $this->assetExporter->doexportAsset($asset);
 
         return $export;
