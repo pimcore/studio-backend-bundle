@@ -21,7 +21,7 @@ use Pimcore\Model\Asset;
 interface AssetExporterInterface
 {
     /**
-     * @param array<string, mixed> $result
+     * @return array<string, mixed>
      */
     public function doexportAsset(Asset $theAsset): array;
 }
