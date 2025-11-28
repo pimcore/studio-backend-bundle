@@ -46,5 +46,4 @@ final readonly class AssetExporter implements AssetExporterInterface
 
         return $resultItem;
     }
-
 }
