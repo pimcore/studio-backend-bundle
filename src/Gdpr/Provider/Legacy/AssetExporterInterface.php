@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
+
 use Pimcore\Model\Asset;
 
 /**
@@ -23,5 +24,4 @@ interface AssetExporterInterface
      * @param array<string, mixed> $result
      */
     public function doexportAsset(Asset $theAsset): array;
-
 }

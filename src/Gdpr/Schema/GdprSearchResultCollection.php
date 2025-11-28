@@ -49,7 +49,8 @@ final class GdprSearchResultCollection implements AdditionalAttributesInterface
             type: 'integer'
         )]
         private readonly int $totalItems,
-    ) {}
+    ) {
+    }
 
     /**
      * @return array<GdprSearchResult>
