@@ -25,8 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -127,7 +125,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getSingleItemForDownload(int $id): Response
+    public function getSingleItemForDownload(int $id): array
     {
         $user = User::getById($id);
 
@@ -142,7 +140,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         $userData['versions'] = $this->getVersionDataForUser($user);
         $userData['usageLog'] = $this->getUsageLogDataForUser($user);
 
-        return new JsonResponse($userData);
+        return $userData;
     }
 
     protected function getVersionDataForUser(User\AbstractUser $user): array

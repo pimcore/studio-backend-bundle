@@ -27,8 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -118,7 +116,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getSingleItemForDownload(int $id): Response
+    public function getSingleItemForDownload(int $id): array
     {
         try {
             $object = DataObject::getById((int)$id);
@@ -146,9 +144,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $this->objectExporter->doExportObject($object, $export);
 
-        return new JsonResponse(
-            $export
-        );
+       return $export;
     }
 
     public function getName(): string

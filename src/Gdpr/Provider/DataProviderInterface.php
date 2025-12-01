@@ -45,5 +45,5 @@ interface DataProviderInterface
     /**
      * @throws NotFoundException
      */
-    public function getSingleItemForDownload(int $id): Response;
+    public function getSingleItemForDownload(int $id): array|Response;
 }

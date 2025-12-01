@@ -146,12 +146,14 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
     private function createExportResponse(mixed $data, string $providerKey, int $id): Response
     {
-        if (!$data instanceof JsonResponse) {
-            return $data;
+        // If $data is a Response (e.g., assets export), return it directly.
+        // Otherwise, assume $data is an array and encode it as pretty JSON for download.
+        if ($data instanceof Response) {
+                return $data;
         }
 
         try {
-            $jsonData = json_encode(json_decode($data->getContent(), true), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+            $jsonData = json_encode($data, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
         } catch (JsonException $e) {
             throw new InvalidArgumentException(
                 sprintf(
