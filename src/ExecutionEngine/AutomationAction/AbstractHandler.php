@@ -180,7 +180,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
                 $values
             )
         );
-        if($persist) {
+        if ($persist) {
             $this->jobRunRepository->update($jobRun);
         }
     }

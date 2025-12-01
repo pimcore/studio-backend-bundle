@@ -51,7 +51,7 @@ trait HandlerProgressTrait
         $this->updateJobRunContextValues(
             $jobRun,
             [
-                self::PROCESSED_ELEMENTS => $processedElements
+                self::PROCESSED_ELEMENTS => $processedElements,
             ]
         );
         $updateFrequency = max(1, (int)($totalEvents / self::FREQUENCY));
@@ -88,7 +88,7 @@ trait HandlerProgressTrait
         $this->updateJobRunContextValues(
             $jobRun,
             [
-                self::TOTAL_STEPS => $totalSteps
+                self::TOTAL_STEPS => $totalSteps,
             ],
             false
         );
@@ -133,7 +133,7 @@ trait HandlerProgressTrait
         $this->updateJobRunContextValues(
             $jobRun,
             [
-                self::ELEMENTS_PER_STEP => $elementsPerStep
+                self::ELEMENTS_PER_STEP => $elementsPerStep,
             ],
             false
         );

@@ -95,7 +95,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
                 ));
             }
 
-            if($elementCount > 0) {
+            if ($elementCount > 0) {
                 $this->updateProgress(
                     $this->publishService,
                     $jobRun,
