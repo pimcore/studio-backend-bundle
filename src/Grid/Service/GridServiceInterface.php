@@ -46,7 +46,7 @@ interface GridServiceInterface
         string $elementType,
         int $elementId,
         bool $isExport = false,
-        UserInterface $user = null,
+        ?UserInterface $user = null,
     ): array;
 
     /**

@@ -176,7 +176,7 @@ final class GridService implements GridServiceInterface
         string $elementType,
         int $elementId,
         bool $isExport = false,
-        UserInterface $user = null,
+        ?UserInterface $user = null,
     ): array {
         $data = [];
 
