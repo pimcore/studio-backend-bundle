@@ -22,7 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFold
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\Folder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -34,10 +38,10 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ClassDefinitionHydratorInterface $classDefinitionHydrator,
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
+        private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator,
+        private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
-        private DataObjectServiceInterface $dataObjectService,
-        private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator
     ) {
     }
 
@@ -76,10 +80,10 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         int $folderId
     ): array {
         $hydratedClassDefinitions = [];
-        $folder = $this->dataObjectService->getDataObjectElement(
-            $this->securityService->getCurrentUser(),
-            $folderId
-        );
+        $folder = $this->elementService->getElementById(ElementTypes::TYPE_DATA_OBJECT, $folderId);
+        if (!$folder instanceof Folder) {
+            throw new NotFoundException(ElementTypes::TYPE_DATA_OBJECT . ' Folder', $folderId);
+        }
 
         foreach ($folder->getDao()->getClasses() as $classDefinition) {
             $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);

@@ -54,10 +54,6 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException
-     * @throws ForbiddenException
-     * @throws InvalidElementTypeException
-     * @throws UserNotFoundException
      * @throws NotFoundException
      */
     #[Route(
@@ -80,8 +76,6 @@ final class CollectionController extends AbstractApiController
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'folderId')]
     #[DefaultResponses([
-        HttpResponseCodes::FORBIDDEN,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
