@@ -12,8 +12,9 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
-use Symfony\Component\HttpFoundation\Response;
 use Pimcore\Model\Asset;
+use Symfony\Component\HttpFoundation\Response;
+use ZipArchive;
 
 /**
  * Copied from old admin-ui-classic-bundle
@@ -54,8 +55,8 @@ final readonly class AssetExporter implements AssetExporterInterface
         $exportIds[$asset->getId()] = true;
 
         $file = tempnam('/tmp', 'zip');
-        $zip = new \ZipArchive();
-        $zip->open($file, \ZipArchive::OVERWRITE);
+        $zip = new ZipArchive();
+        $zip->open($file, ZipArchive::OVERWRITE);
 
         foreach (array_keys($exportIds) as $id) {
             $theAsset = Asset::getById($id);

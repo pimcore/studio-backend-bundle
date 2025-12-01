@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -92,7 +92,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                 $columns
             ),
             $users
-        );    
+        );
 
         return [
                 'totalSubItems' => $listing->getTotalCount(),

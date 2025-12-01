@@ -60,5 +60,4 @@ final readonly class GdprStructuredSearchParameters
     {
         return $this->filters;
     }
-
 }

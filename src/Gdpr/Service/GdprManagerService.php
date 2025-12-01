@@ -28,10 +28,10 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use function count;
 use function sprintf;
 use function strlen;
@@ -88,7 +88,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
     /**
      * {@inheritdoc}
-    */
+     */
     public function getExportData(int $id, string $providerKey): Response
     {
         $provider = $this->loader->resolve($providerKey);
