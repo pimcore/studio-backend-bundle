@@ -144,7 +144,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $this->objectExporter->doExportObject($object, $export);
 
-       return $export;
+        return $export;
     }
 
     public function getName(): string

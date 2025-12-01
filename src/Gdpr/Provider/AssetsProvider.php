@@ -117,10 +117,10 @@ final readonly class AssetsProvider implements DataProviderInterface
      */
     public function getSingleItemForDownload(int $id): Response
     {
-       $asset = Asset::getById((int)$id);
-       
+        $asset = Asset::getById((int)$id);
+
         if (!$asset) {
-         throw new NotFoundException('Asset Not Found', $id);
+            throw new NotFoundException('Asset Not Found', $id);
         }
 
         return $this->assetExporter->doExportData($asset);

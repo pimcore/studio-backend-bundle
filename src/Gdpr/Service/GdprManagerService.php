@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -149,7 +148,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         // If $data is a Response (e.g., assets export), return it directly.
         // Otherwise, assume $data is an array and encode it as pretty JSON for download.
         if ($data instanceof Response) {
-                return $data;
+            return $data;
         }
 
         try {
