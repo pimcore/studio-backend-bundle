@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
@@ -38,6 +39,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use function array_key_exists;
 
 /**
@@ -59,6 +61,7 @@ final class AdvancedColumnCollector implements
         private readonly TransformerLoaderInterface $transformerLoader,
         private readonly DefinitionResolverInterface $objectBrickdefinitionResolver,
         private readonly ObjectBrickServiceInterface $objectBrickService,
+        private readonly SystemColumnServiceInterface $systemColumnService,
     ) {
     }
 
@@ -69,13 +72,13 @@ final class AdvancedColumnCollector implements
 
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
-        $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
+        $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
             $this->getFolderId(),
             $this->getUser()
         );
 
-        $children = $test->getChildren();
+        $children = $layoutDefinitions->getChildren();
 
         $collectedDefinitions = $this->collectSupportedDefinitions($children);
 
@@ -158,7 +161,7 @@ final class AdvancedColumnCollector implements
      */
     private function getDefaultFields(array $groupedDefinitions): array
     {
-        $simpleFields = [];
+        $simpleFields = $this->getSystemFields();
         foreach ($groupedDefinitions as $definition) {
             if ($definition instanceof Objectbricks) {
                 $simpleFields = [
@@ -178,6 +181,20 @@ final class AdvancedColumnCollector implements
         }
 
         return $simpleFields;
+    }
+
+    private function getSystemFields(): array
+    {
+        $systemColumns = $this->systemColumnService->getSystemColumnsForDataObjects();
+
+        foreach ($systemColumns as $key => $systemField) {
+            $systemFields[] = new SimpleField(
+                name: $key,
+                key: $key,
+            );
+        }
+
+        return $systemFields ?? [];
     }
 
     /**
