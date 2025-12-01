@@ -77,7 +77,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
             if (!empty($results->getItems())) {
                 $allResults[] = new GdprSearchResult(
                     providerKey: $providerKey,
-                    results: $results->getItems(),       
+                    results: $results->getItems(),
                     totalSubItems: $results->getTotalItems()
                 );
             }

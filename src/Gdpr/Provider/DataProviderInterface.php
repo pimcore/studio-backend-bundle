@@ -17,8 +17,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
-use Symfony\Component\HttpFoundation\Response;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Symfony\Component\HttpFoundation\Response;
 
 interface DataProviderInterface
 {

@@ -23,10 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\Response;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -85,9 +85,9 @@ final readonly class AssetsProvider implements DataProviderInterface
         );
 
         return new Collection(
-                totalItems: $searchResult->getTotalItems(),
-                items: $rows
-            );
+            totalItems: $searchResult->getTotalItems(),
+            items: $rows
+        );
     }
 
     private function applySearchOptions(QueryInterface $query, FilterParameter $options): void
