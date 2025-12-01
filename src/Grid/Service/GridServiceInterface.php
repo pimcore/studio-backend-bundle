@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -44,7 +45,8 @@ interface GridServiceInterface
         ?StudioElementInterface $element,
         string $elementType,
         int $elementId,
-        bool $isExport = false
+        bool $isExport = false,
+        ?UserInterface $user = null,
     ): array;
 
     /**
@@ -54,7 +56,7 @@ interface GridServiceInterface
         ColumnCollection $columnCollection,
         string $elementType,
         int $elementId,
-        bool $isExport = false
+        UserInterface $user
     ): array;
 
     /**
