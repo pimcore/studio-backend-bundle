@@ -23,7 +23,10 @@ use Symfony\Component\HttpFoundation\Response;
 interface DataProviderInterface
 {
     /**
-     * @return GdprDataRow[]
+     * @return array{
+     *     totalSubItems: int,
+     *     rows: GdprDataRow[]
+     * }
      */
     public function findData(SearchTerms $terms, FilterParameter $options): array;
 
