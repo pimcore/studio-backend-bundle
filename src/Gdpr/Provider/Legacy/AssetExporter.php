@@ -45,7 +45,9 @@ final readonly class AssetExporter implements AssetExporterInterface
         $webAsset['customSettings'] = $theAsset->getCustomSettings();
 
         $resultItem = json_decode(json_encode($webAsset), true);
-        unset($resultItem['data']);declare(strict_types=1);
+        unset($resultItem['data']);
+
+        declare(strict_types=1);
 
         return $resultItem;
     }
