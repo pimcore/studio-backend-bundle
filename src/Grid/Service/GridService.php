@@ -37,9 +37,12 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -72,6 +75,7 @@ final class GridService implements GridServiceInterface
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver
     ) {
@@ -164,20 +168,28 @@ final class GridService implements GridServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException
+     * {@inheritdoc}
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
         ?StudioElementInterface $element,
         string $elementType,
         int $elementId,
-        bool $isExport = false
+        bool $isExport = false,
+        UserInterface $user = null,
     ): array {
         $data = [];
 
         $databaseElement = null;
         if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
             $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
+            if ($user !== null) {
+                $this->securityService->hasElementPermission(
+                    $databaseElement,
+                    $user,
+                    ElementPermissions::VIEW_PERMISSION
+                );
+            }
         }
 
         if ($isExport && $databaseElement->getType() === ElementTypes::TYPE_FOLDER) {
@@ -230,10 +242,10 @@ final class GridService implements GridServiceInterface
         ColumnCollection $columnCollection,
         string $elementType,
         int $elementId,
-        bool $isExport = false
+        UserInterface $user
     ): array {
 
-        $data = $this->getGridDataForElement($columnCollection, null, $elementType, $elementId, $isExport);
+        $data = $this->getGridDataForElement($columnCollection, null, $elementType, $elementId, true, $user);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -324,9 +336,7 @@ final class GridService implements GridServiceInterface
             return false;
         }
 
-        /** @var ColumnResolverInterface $resolver */
         $resolver = $this->getColumnResolvers()[$column->getType()];
-
         if (!in_array($elementType, $resolver->supportedElementTypes(), true)) {
             return false;
         }

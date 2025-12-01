@@ -85,7 +85,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
                     $columnCollection,
                     ElementTypes::TYPE_OBJECT,
                     $object['id'],
-                    true
+                    $user
                 );
 
             } catch (Exception $e) {
