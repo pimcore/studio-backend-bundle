@@ -58,13 +58,14 @@ final class ElementUsageReplaceHandler extends AbstractHandler
         $jobRun = $this->getJobRun($message);
         $user = $this->getUser($jobRun);
         $this->initializeElements($message);
+        $elementCount = 0;
 
         $elements = $jobRun->getJob()?->getSelectedElements();
         if (empty($elements)) {
             $elements = $this->sourceElement->getDependencies()->getRequiredByWithPath();
+            $elementCount = count($elements);
         }
 
-        $elementCount = count($elements);
         foreach ($elements as $elementData) {
             $isArray = is_array($elementData);
             $element = $this->elementUsageService->getElementById(
@@ -94,12 +95,20 @@ final class ElementUsageReplaceHandler extends AbstractHandler
                 ));
             }
 
-            $this->updateProgress(
-                $this->publishService,
-                $jobRun,
-                $this->getJobStep($message)->getName(),
-                $elementCount
-            );
+            if($elementCount > 0) {
+                $this->updateProgress(
+                    $this->publishService,
+                    $jobRun,
+                    $this->getJobStep($message)->getName(),
+                    $elementCount
+                );
+            } else {
+                $this->updateProgress(
+                    $this->publishService,
+                    $jobRun,
+                    $this->getJobStep($message)->getName()
+                );
+            }
         }
     }
 

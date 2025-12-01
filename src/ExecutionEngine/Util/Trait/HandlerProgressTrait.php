@@ -48,7 +48,12 @@ trait HandlerProgressTrait
 
         $processedElements = $jobRun->getContext()[self::PROCESSED_ELEMENTS] ?? 0;
         $processedElements++;
-        $this->updateJobRunContext($jobRun, self::PROCESSED_ELEMENTS, $processedElements);
+        $this->updateJobRunContextValues(
+            $jobRun,
+            [
+                self::PROCESSED_ELEMENTS => $processedElements
+            ]
+        );
         $updateFrequency = max(1, (int)($totalEvents / self::FREQUENCY));
 
         $progress = (int)($processedElements / $totalEvents * 100);
@@ -80,7 +85,13 @@ trait HandlerProgressTrait
         }
 
         $totalSteps = count($jobRun->getJob()?->getSteps() ?? []);
-        $this->updateJobRunContext($jobRun, self::TOTAL_STEPS, $totalSteps);
+        $this->updateJobRunContextValues(
+            $jobRun,
+            [
+                self::TOTAL_STEPS => $totalSteps
+            ],
+            false
+        );
 
         return $totalSteps;
     }
@@ -94,9 +105,15 @@ trait HandlerProgressTrait
         }
 
         $currentStep = $jobRun->getCurrentStep();
-        $this->updateJobRunContext($jobRun, self::PROCESSED_ELEMENTS, 0);
-        $this->updateJobRunContext($jobRun, self::ELEMENTS_PER_STEP, null);
-        $this->updateJobRunContext($jobRun, self::CURRENT_STEP, $currentStep);
+        $this->updatejobRunContextValues(
+            $jobRun,
+            [
+                self::PROCESSED_ELEMENTS => 0,
+                self::CURRENT_STEP => $currentStep,
+                self::ELEMENTS_PER_STEP => null,
+            ],
+            false
+        );
 
         return $currentStep;
     }
@@ -113,7 +130,13 @@ trait HandlerProgressTrait
             $elementsPerStep = $jobRun->getTotalElements() * $elementsPerStep;
         }
 
-        $this->updateJobRunContext($jobRun, self::ELEMENTS_PER_STEP, $elementsPerStep);
+        $this->updateJobRunContextValues(
+            $jobRun,
+            [
+                self::ELEMENTS_PER_STEP => $elementsPerStep
+            ],
+            false
+        );
 
         return $elementsPerStep;
     }
