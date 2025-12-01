@@ -17,18 +17,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 interface DataProviderInterface
 {
-    /**
-     * @return array{
-     *     totalSubItems: int,
-     *     rows: GdprDataRow[]
-     * }
-     */
-    public function findData(SearchTerms $terms, FilterParameter $options): array;
+    public function findData(SearchTerms $terms, FilterParameter $options): Collection;
 
     public function getDeleteSwaggerOperationId(): string;
 

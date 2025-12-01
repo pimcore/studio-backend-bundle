@@ -65,7 +65,7 @@ final readonly class AssetExporter implements AssetExporterInterface
             $resultItem = $this->doexportAsset($theAsset);
             $resultItem = json_encode($resultItem);
 
-            $zip->addFromString($asset->getFilename() . '.txt', $resultItem);
+            $zip->addFromString($asset->getFilename() . '.json', $resultItem);
 
             if (!$theAsset instanceof Asset\Folder) {
                 $zip->addFromString($theAsset->getFilename(), $theAsset->getData());

@@ -28,6 +28,7 @@ use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -44,7 +45,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, FilterParameter $options): array
+    public function findData(SearchTerms $terms, FilterParameter $options): Collection
     {
         $query = $this->query->createDataObjectQuery();
 
@@ -85,10 +86,10 @@ final readonly class DataObjectProvider implements DataProviderInterface
             $items
         );
 
-        return [
-                'totalSubItems' => $searchResult->getTotalItems(),
-                'rows'          => $rows,
-            ];
+        return new Collection(
+            totalItems: $searchResult->getTotalItems(),
+            items: $rows
+        );
 
     }
 

@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -42,7 +43,7 @@ final readonly class AssetsProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, FilterParameter $options): array
+    public function findData(SearchTerms $terms, FilterParameter $options): Collection
     {
         $query = $this->query->createAssetQuery();
 
@@ -83,10 +84,10 @@ final readonly class AssetsProvider implements DataProviderInterface
             $items
         );
 
-        return [
-                'totalSubItems' => $searchResult->getTotalItems(),
-                'rows'          => $rows,
-            ];
+        return new Collection(
+                totalItems: $searchResult->getTotalItems(),
+                items: $rows
+            );
     }
 
     private function applySearchOptions(QueryInterface $query, FilterParameter $options): void

@@ -69,8 +69,8 @@ final class ExportController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'gdpr_export_success_response',
-        content: new MediaType('application/json'),
-        headers: [new ContentDisposition('inline')]
+        content: [new MediaType('*/*')],
+        headers: [new ContentDisposition('attachment')]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

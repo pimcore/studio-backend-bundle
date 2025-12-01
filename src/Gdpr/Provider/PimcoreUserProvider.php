@@ -26,7 +26,7 @@ use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 /**
  * @internal
  */
@@ -42,7 +42,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, FilterParameter $options): array
+    public function findData(SearchTerms $terms, FilterParameter $options): Collection
     {
         $listing = new Listing();
 
@@ -95,10 +95,10 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             $users
         );
 
-        return [
-                'totalSubItems' => $listing->getTotalCount(),
-                'rows'          => $rows,
-            ];
+        return new Collection(
+            totalItems: $listing->getTotalCount(),
+            items: $rows
+        );
     }
 
     private function applySearchOptions(Listing $listing, FilterParameter $options): void

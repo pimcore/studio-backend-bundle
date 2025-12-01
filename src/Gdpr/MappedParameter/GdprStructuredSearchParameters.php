@@ -32,14 +32,14 @@ final readonly class GdprStructuredSearchParameters
     public function __construct(
         #[NotBlank]
         #[All(new Type('string'))]
-        private readonly array $providers,
+        private array $providers,
 
         #[Valid]
         #[NotNull]
-        private readonly SearchTerms $searchTerms,
+        private SearchTerms $searchTerms,
 
         #[Valid]
-        private readonly FilterParameter $filters
+        private FilterParameter $filters
     ) {
     }
 
