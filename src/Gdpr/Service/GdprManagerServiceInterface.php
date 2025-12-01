@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearch
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -42,5 +42,5 @@ interface GdprManagerServiceInterface
      * @throws ForbiddenException
      * @throws NotFoundException
      */
-    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse;
+    public function getExportData(int $id, string $providerKey): Response;
 }

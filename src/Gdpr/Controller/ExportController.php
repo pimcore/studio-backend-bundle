@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -81,7 +81,7 @@ final class ExportController extends AbstractApiController
     public function startExport(
         int $id,
         #[MapQueryParameter] string $providerKey
-    ): StreamedResponse {
-        return $this->gdprManagerService->getExportDataAsJson($id, $providerKey);
+    ): Response {
+        return $this->gdprManagerService->getExportData($id, $providerKey);
     }
 }

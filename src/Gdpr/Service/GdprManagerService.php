@@ -28,8 +28,10 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use function count;
 use function sprintf;
 use function strlen;
@@ -65,12 +67,12 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     {
         $allResults = [];
 
-        foreach ($request->providers as $providerKey) {
+        foreach ($request->getProviders() as $providerKey) {
             $provider = $this->loader->resolve($providerKey);
 
             $this->checkProviderPermission($provider);
 
-            $results = $provider->findData($request->searchTerms, $request->filters);
+            $results = $provider->findData($request->getSearchTerms(), $request->getFilters());
 
             if (!empty($results)) {
                 $allResults[] = new GdprSearchResult(
@@ -86,8 +88,8 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
 
     /**
      * {@inheritdoc}
-     */
-    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
+    */
+    public function getExportData(int $id, string $providerKey): Response
     {
         $provider = $this->loader->resolve($providerKey);
 
@@ -141,10 +143,14 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $collection;
     }
 
-    private function createExportResponse(mixed $data, string $providerKey, int $id): StreamedResponse
+    private function createExportResponse(mixed $data, string $providerKey, int $id): Response
     {
+        if (!$data instanceof JsonResponse) {
+            return $data;
+        }
+
         try {
-            $jsonData = json_encode($data, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
+            $jsonData = json_encode(json_decode($data->getContent(), true), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
         } catch (JsonException $e) {
             throw new InvalidArgumentException(
                 sprintf(

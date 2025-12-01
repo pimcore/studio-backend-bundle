@@ -12,6 +12,7 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
+use Symfony\Component\HttpFoundation\Response;
 use Pimcore\Model\Asset;
 
 /**
@@ -26,7 +27,7 @@ final readonly class AssetExporter implements AssetExporterInterface
     /**
      * {@inheritdoc}
      */
-    public function doexportAsset(Asset $theAsset): array
+    private function doexportAsset(Asset $theAsset): array
     {
         $webAsset = [];
         $webAsset['id'] = $theAsset->getId();
@@ -45,5 +46,41 @@ final readonly class AssetExporter implements AssetExporterInterface
         unset($resultItem['data']);
 
         return $resultItem;
+    }
+
+    public function doExportData(Asset $asset): Response
+    {
+        $exportIds = [];
+        $exportIds[$asset->getId()] = true;
+
+        $file = tempnam('/tmp', 'zip');
+        $zip = new \ZipArchive();
+        $zip->open($file, \ZipArchive::OVERWRITE);
+
+        foreach (array_keys($exportIds) as $id) {
+            $theAsset = Asset::getById($id);
+
+            $resultItem = $this->doexportAsset($theAsset);
+            $resultItem = json_encode($resultItem);
+
+            $zip->addFromString($asset->getFilename() . '.txt', $resultItem);
+
+            if (!$theAsset instanceof Asset\Folder) {
+                $zip->addFromString($theAsset->getFilename(), $theAsset->getData());
+            }
+        }
+
+        $zip->close();
+
+        $size = filesize($file);
+        $content = file_get_contents($file);
+        unlink($file);
+
+        $response = new Response($content);
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Content-Length', (string) $size);
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $asset->getFilename() . '.zip"');
+
+        return $response;
     }
 }

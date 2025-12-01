@@ -25,6 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @internal
@@ -72,7 +74,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $items   = $searchResult->getItems();
 
-        return array_map(
+        $rows = array_map(
             fn ($item) => new GdprDataRow([
                 'type' => $item->getType(),
                 'id' => $item->getId(),
@@ -81,6 +83,12 @@ final readonly class DataObjectProvider implements DataProviderInterface
             ], $columns),
             $items
         );
+
+        return [
+                'totalSubItems' => $searchResult->getTotalItems(),
+                'rows'          => $rows,
+            ];
+
     }
 
     private function applySearchOptions(QueryInterface $query, FilterParameter $options): void
@@ -108,7 +116,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getSingleItemForDownload(int $id): array
+    public function getSingleItemForDownload(int $id): Response
     {
         try {
             $object = DataObject::getById((int)$id);
@@ -136,7 +144,9 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $this->objectExporter->doExportObject($object, $export);
 
-        return $export;
+        return new JsonResponse(
+            $export
+        );
     }
 
     public function getName(): string

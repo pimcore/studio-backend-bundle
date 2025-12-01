@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Db;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @internal
@@ -77,7 +79,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $columns = $this->getAvailableColumns();
 
-        return array_map(
+        $rows = array_map(
             fn ($user) => new GdprDataRow(
                 [
                     'id' => $user->getId(),
@@ -90,7 +92,12 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                 $columns
             ),
             $users
-        );
+        );    
+
+        return [
+                'totalSubItems' => $listing->getTotalCount(),
+                'rows'          => $rows,
+            ];
     }
 
     private function applySearchOptions(Listing $listing, FilterParameter $options): void
@@ -118,29 +125,22 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getSingleItemForDownload(int $id): array
+    public function getSingleItemForDownload(int $id): Response
     {
-        $listing = new Listing();
-        $listing->setCondition('id = ?', [$id]);
-        $listing->setLimit(1);
+        $user = User::getById($id);
 
-        $users = $listing->getUsers();
-
-        if (empty($users)) {
+        if (!$user) {
             throw new NotFoundException('Pimcore User', $id);
         }
 
-        $user = $users[0];
+        $userData = $user->getObjectVars();
 
-        return [
-                'id'        => $user->getId(),
-                'name'      => $user->getName(),
-                'firstname' => $user->getFirstname(),
-                'lastname'  => $user->getLastname(),
-                'email'     => $user->getEmail(),
-                'versions'  => $this->getVersionDataForUser($user),
-                'usageLog'  => $this->getUsageLogDataForUser($user),
-            ];
+        unset($userData['password']);
+
+        $userData['versions'] = $this->getVersionDataForUser($user);
+        $userData['usageLog'] = $this->getUsageLogDataForUser($user);
+
+        return new JsonResponse($userData);
     }
 
     protected function getVersionDataForUser(User\AbstractUser $user): array

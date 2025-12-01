@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
+use Symfony\Component\HttpFoundation\Response;
 use Pimcore\Model\Asset;
 
 /**
@@ -20,8 +21,5 @@ use Pimcore\Model\Asset;
  */
 interface AssetExporterInterface
 {
-    /**
-     * @return array<string, mixed>
-     */
-    public function doexportAsset(Asset $theAsset): array;
+    public function doExportData(Asset $asset): Response;
 }

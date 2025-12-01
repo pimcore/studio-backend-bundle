@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporterInterfa
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Symfony\Component\HttpFoundation\Response;
 use Pimcore\Model\Asset;
 
 /**
@@ -71,7 +72,7 @@ final readonly class AssetsProvider implements DataProviderInterface
 
         $items   = $searchResult->getItems();
 
-        return array_map(
+        $rows = array_map(
             fn ($item) => new GdprDataRow([
                 'type' => $item->getType(),
                 'id' => $item->getId(),
@@ -80,6 +81,11 @@ final readonly class AssetsProvider implements DataProviderInterface
             ], $columns),
             $items
         );
+
+        return [
+                'totalSubItems' => $searchResult->getTotalItems(),
+                'rows'          => $rows,
+            ];
     }
 
     private function applySearchOptions(QueryInterface $query, FilterParameter $options): void
@@ -107,7 +113,7 @@ final readonly class AssetsProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function getSingleItemForDownload(int $id): array
+    public function getSingleItemForDownload(int $id): Response
     {
         try {
             $asset = Asset::getById((int)$id);
@@ -116,7 +122,7 @@ final readonly class AssetsProvider implements DataProviderInterface
             throw new NotFoundException('Asset Not Found', $id);
         }
 
-        return $this->assetExporter->doexportAsset($asset);
+        return $this->assetExporter->doExportData($asset);
 
     }
 
