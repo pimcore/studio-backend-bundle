@@ -39,6 +39,8 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
 use function is_array;
+use function is_object;
+use function is_scalar;
 use function sprintf;
 
 /**
@@ -119,13 +121,14 @@ final class AdvancedColumnResolver implements
         foreach ($this->values as $value) {
             if ($this->isStringConvertible($value->getValue())) {
                 $returnValue[] = $value->getValue();
+
                 continue;
             }
 
             try {
                 $returnValue[] = json_encode($value->getValue(), JSON_THROW_ON_ERROR);
             } catch (JsonException) {
-                $returnValue[] = "Unable to export value";
+                $returnValue[] = 'Unable to export value';
             }
         }
 
@@ -150,7 +153,6 @@ final class AdvancedColumnResolver implements
 
         return false;
     }
-
 
     /**
      * @throws Exception
@@ -180,7 +182,6 @@ final class AdvancedColumnResolver implements
             }
         }
     }
-
 
     /**
      * @throws Exception

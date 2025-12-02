@@ -94,6 +94,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
         );
 
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
+
         try {
             $dataObjectData = [
                 $dataObject->getId() => $this->gridService->getGridValuesForElement(
