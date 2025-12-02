@@ -110,7 +110,8 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
                         $columnCollection,
                         ElementTypes::TYPE_OBJECT,
                         $dataObjectId,
-                        true
+                        true,
+                        $user
                     ),
                 ];
 

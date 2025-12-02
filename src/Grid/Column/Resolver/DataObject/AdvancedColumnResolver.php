@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
+use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
@@ -34,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use function array_key_exists;
 use function is_array;
 use function sprintf;
@@ -41,7 +44,10 @@ use function sprintf;
 /**
  * @internal
  */
-final class AdvancedColumnResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface
+final class AdvancedColumnResolver implements
+    ColumnResolverInterface,
+    CoreElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use FieldDefinitionTrait;
     use LocalizedValueTrait;
@@ -55,6 +61,8 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
      * @var array <string, TransformerInterface>
      */
     private array $transformers = [];
+
+    private ?UserInterface $user = null;
 
     public function __construct(
         private readonly TransformerLoaderInterface $transformerLoader,
@@ -80,44 +88,9 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
-        $this->values = [];
-        if (!$element instanceof Concrete) {
-            throw new InvalidArgumentException('Element must be a concrete object');
-        }
+        $this->doResolve($column, $element);
 
-        foreach ($column->getAdvancedColumnConfig()->getColumns() as $advancedColumn) {
-            if ($advancedColumn instanceof SimpleFieldConfig) {
-                $this->resolveField($advancedColumn, $column, $element);
-            }
-
-            if ($advancedColumn instanceof RelationFieldConfig) {
-                $this->resolveRelationField($advancedColumn, $column, $element);
-            }
-
-            if ($advancedColumn instanceof StaticTextConfig) {
-                $this->values[] = new AdvancedValue(
-                    type: 'string',
-                    value: $advancedColumn->getText(),
-                    fieldName: $column->getKey()
-                );
-            }
-
-        }
-
-        try {
-            $this->applyTransformers($column->getAdvancedColumnConfig()->getTransformers());
-        } catch (TransformerException $exception) {
-            $this->values = [
-                new AdvancedValue(
-                    type: 'error',
-                    value: sprintf(
-                        'Error applying transformer: %s',
-                        $exception->getMessage(),
-                    ),
-                    fieldName: $column->getKey()
-                ),
-            ];
-        }
+        $this->doApplyTransformers($column);
 
         return new ColumnData(
             key: $column->getKey(),
@@ -130,18 +103,101 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
     /**
      * @throws Exception
      */
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
+    {
+        $this->user = $user;
+
+        /*
+         * If no transformers are configured, call export resolver directly
+         * Otherwise, call core resolver and apply transformers afterwards
+         */
+        $this->doResolve($column, $element, empty($column->getAdvancedColumnConfig()->getTransformers()));
+
+        $this->doApplyTransformers($column);
+
+        $returnValue = [];
+        foreach ($this->values as $value) {
+            if ($this->isStringConvertible($value->getValue())) {
+                $returnValue[] = $value->getValue();
+                continue;
+            }
+
+            try {
+                $returnValue[] = json_encode($value->getValue(), JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                $returnValue[] = "Unable to export value";
+            }
+        }
+
+        return new ColumnData(
+            key: $column->getKey(),
+            locale: $column->getLocale(),
+            value: implode('|', $returnValue),
+            fieldType: 'advanced'
+        );
+
+    }
+
+    private function isStringConvertible(mixed $value): bool
+    {
+        if (is_scalar($value)) {
+            return true;
+        }
+
+        if (is_object($value) && method_exists($value, '__toString')) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @throws Exception
+     */
+    private function doResolve(Column $column, ElementInterface $element, bool $export = false): void
+    {
+        $this->values = [];
+        if (!$element instanceof Concrete) {
+            throw new InvalidArgumentException('Element must be a concrete object');
+        }
+
+        foreach ($column->getAdvancedColumnConfig()->getColumns() as $advancedColumn) {
+            if ($advancedColumn instanceof SimpleFieldConfig) {
+                $this->resolveField($advancedColumn, $column, $element, $export);
+            }
+
+            if ($advancedColumn instanceof RelationFieldConfig) {
+                $this->resolveRelationField($advancedColumn, $column, $element, $export);
+            }
+
+            if ($advancedColumn instanceof StaticTextConfig) {
+                $this->values[] = new AdvancedValue(
+                    type: 'string',
+                    value: $advancedColumn->getText(),
+                    fieldName: $column->getKey()
+                );
+            }
+        }
+    }
+
+
+    /**
+     * @throws Exception
+     */
     private function resolveField(
         SimpleFieldConfig|RelationFieldConfig $fieldConfig,
         Column $column,
-        Concrete $element
+        Concrete $element,
+        bool $export = false
     ): void {
-        $resolverType = $this->resolverTypeGuesser->guessType($fieldConfig->getField(), $element->getClassId());
+        $resolverType = $this->resolverTypeGuesser->guessType(
+            $fieldConfig->getField(),
+            $element->getClassId(),
+            $this->user
+        );
 
         $resolver = $this->gridService->getColumnResolvers()[$resolverType];
-
-        if (!$resolver instanceof CoreElementColumnResolverInterface) {
-            return;
-        }
 
         $subColumn = new Column(
             key: $fieldConfig->getField(),
@@ -151,7 +207,18 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             config: $column->getConfig()
         );
 
-        $data = $resolver->resolveForCoreElement($subColumn, $element);
+        $data = null;
+        if ($resolver instanceof CoreElementColumnResolverInterface && !$export) {
+            $data = $resolver->resolveForCoreElement($subColumn, $element);
+        }
+
+        if ($resolver instanceof ExportResolverInterface && $export) {
+            $data = $resolver->resolveForExport($subColumn, $element, $this->user);
+        }
+
+        if (!$data) {
+            return;
+        }
 
         $this->values[] = new AdvancedValue(
             type: $data->getFieldType(),
@@ -166,7 +233,8 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
     private function resolveRelationField(
         RelationFieldConfig $relationFieldConfig,
         Column $column,
-        Concrete $element
+        Concrete $element,
+        bool $export = false
     ): void {
         $relation = $this->getLocalizedValueFromKey(
             $relationFieldConfig->getRelation(),
@@ -180,7 +248,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
                     continue;
                 }
 
-                $this->resolveField($relationFieldConfig, $column, $relationElement);
+                $this->resolveField($relationFieldConfig, $column, $relationElement, $export);
 
             }
 
@@ -191,7 +259,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             return;
         }
 
-        $this->resolveField($relationFieldConfig, $column, $relation);
+        $this->resolveField($relationFieldConfig, $column, $relation, $export);
     }
 
     /**
@@ -204,6 +272,24 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         }
 
         return $this->transformers;
+    }
+
+    private function doApplyTransformers(Column $column): void
+    {
+        try {
+            $this->applyTransformers($column->getAdvancedColumnConfig()->getTransformers());
+        } catch (TransformerException $exception) {
+            $this->values = [
+                new AdvancedValue(
+                    type: 'error',
+                    value: sprintf(
+                        'Error applying transformer: %s',
+                        $exception->getMessage(),
+                    ),
+                    fieldName: $column->getKey()
+                ),
+            ];
+        }
     }
 
     /**
