@@ -12,10 +12,12 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
+use Pimcore\Model\UserInterface;
+
 /**
  * @internal
  */
 interface ResolverTypeGuesserInterface
 {
-    public function guessType(string $key, string $classId): string;
+    public function guessType(string $key, string $classId, ?UserInterface $user = null): string;
 }

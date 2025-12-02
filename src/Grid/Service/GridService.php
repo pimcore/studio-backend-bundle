@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -170,7 +171,8 @@ final class GridService implements GridServiceInterface
         ?StudioElementInterface $element,
         string $elementType,
         int $elementId,
-        bool $isExport = false
+        bool $isExport = false,
+        ?UserInterface $user = null,
     ): array {
         $data = [];
 
@@ -188,8 +190,8 @@ final class GridService implements GridServiceInterface
             $resolver = $this->getColumnResolvers()[$column->getType()];
 
             $columnData = match (true) {
-                $databaseElement && $isExport && $resolver instanceof ExportResolverInterface =>
-                    $resolver->resolveForExport($column, $databaseElement),
+                $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
+                    $resolver->resolveForExport($column, $databaseElement, $user),
                 $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
                     $resolver->resolveForCoreElement($column, $databaseElement),
                 $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
@@ -222,10 +224,18 @@ final class GridService implements GridServiceInterface
         ColumnCollection $columnCollection,
         string $elementType,
         int $elementId,
-        bool $isExport = false
+        bool $isExport = false,
+        ?UserInterface $user = null,
     ): array {
 
-        $data = $this->getGridDataForElement($columnCollection, null, $elementType, $elementId, $isExport);
+        $data = $this->getGridDataForElement(
+            $columnCollection,
+            null,
+            $elementType,
+            $elementId,
+            $isExport,
+            $user
+        );
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -252,7 +262,12 @@ final class GridService implements GridServiceInterface
     ): ColumnCollection {
         $exportableColumns = [];
         foreach ($config as $column) {
-            $columnConfig = $this->findColumnConfiguration($column['key'], $columnsDefinitions);
+            $key = $column['key'];
+            if ($column['type'] === 'dataobject.advanced') {
+                $key = 'advanced';
+            }
+
+            $columnConfig = $this->findColumnConfiguration($key, $columnsDefinitions);
             if (!$columnConfig || !$columnConfig->isExportable()) {
                 continue;
             }

@@ -106,7 +106,8 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
                         $columnCollection,
                         ElementTypes::TYPE_ASSET,
                         $assetId,
-                        true
+                        true,
+                        $user
                     ),
                 ];
 

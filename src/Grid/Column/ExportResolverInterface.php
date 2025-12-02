@@ -16,8 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 interface ExportResolverInterface
 {
-    public function resolveForExport(Column $column, ElementInterface $element): ColumnData;
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData;
 }

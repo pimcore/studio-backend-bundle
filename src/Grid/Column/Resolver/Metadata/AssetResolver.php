@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -41,7 +42,7 @@ final class AssetResolver implements
     use LocalizedValueTrait;
     use CoreLocalizedValueTrait;
 
-    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
     {
         $asset = $this->getCoreLocalizedValue($column, $element);
 
