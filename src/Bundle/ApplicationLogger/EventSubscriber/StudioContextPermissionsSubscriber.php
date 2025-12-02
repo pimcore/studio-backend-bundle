@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\ContextPermissionData;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\ContextPermissionGroups;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -37,6 +38,6 @@ final readonly class StudioContextPermissionsSubscriber implements EventSubscrib
 
     public function addContextPermissions(): void
     {
-        $this->permissionsService->add(new ContextPermissionData('applicationlog', 'extras'));
+        $this->permissionsService->add(new ContextPermissionData('applicationLogger', ContextPermissionGroups::SYSTEM->value));
     }
 }
