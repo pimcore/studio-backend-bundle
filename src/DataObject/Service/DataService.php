@@ -237,7 +237,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     public function getExportFieldValue(
-        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $dataObject,
+        Concrete $dataObject,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
@@ -245,6 +245,10 @@ final readonly class DataService implements DataServiceInterface
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataExportInterface) {
             return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
+        }
+
+        if ($contextData && $contextData->getContextObject()) {
+            $dataObject = $contextData->getContextObject();
         }
 
         return $fieldDefinition->getForCsvExport(

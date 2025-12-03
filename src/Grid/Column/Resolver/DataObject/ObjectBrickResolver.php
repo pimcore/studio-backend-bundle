@@ -142,6 +142,7 @@ final class ObjectBrickResolver implements
             }
 
             $context = new FieldContextData(
+                contextObject: $brick,
                 legacyParameters: ['context' => [
                     'containerType' => 'objectbrick',
                     'containerKey' => $objectBrickKey->getBrickName(),
@@ -150,7 +151,7 @@ final class ObjectBrickResolver implements
             );
 
             $value = $this->dataService->getExportFieldValue(
-                $brick,
+                $element,
                 $fieldDefinition,
                 $objectBrickKey->getField(),
                 $context

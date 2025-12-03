@@ -23,7 +23,7 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as ObjectbrickAbstrac
 interface DataExportInterface
 {
     public function getExportData(
-        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $object,
+        Concrete $object,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null

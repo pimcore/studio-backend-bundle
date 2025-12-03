@@ -81,7 +81,7 @@ interface DataServiceInterface
     public function getExportObjectData(Concrete $dataObject, ColumnCollection $columnCollection): array;
 
     public function getExportFieldValue(
-        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $dataObject,
+        Concrete $dataObject,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null

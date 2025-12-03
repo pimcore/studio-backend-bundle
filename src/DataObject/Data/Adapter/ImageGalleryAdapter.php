@@ -135,7 +135,7 @@ final readonly class ImageGalleryAdapter implements
      * @throws Exception
      */
     public function getExportData(
-        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $object,
+        Concrete $object,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
