@@ -131,13 +131,13 @@ final class ObjectBrickResolver implements
             $fieldDefinition = $brickClass->getFieldDefinition($objectBrickKey->getAttribute());
 
             $brickContainer = $element->get($objectBrickKey->getField());
-            if(!$brickContainer) {
+            if (!$brickContainer) {
                 return $this->getColumnData($column, null, $fieldDefinition->getFieldType());
             }
 
             $brick = $brickContainer->get($objectBrickKey->getBrickName());
 
-            if(!$brick) {
+            if (!$brick) {
                 return $this->getColumnData($column, null, $fieldDefinition->getFieldType());
             }
 
@@ -158,11 +158,10 @@ final class ObjectBrickResolver implements
 
             return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
 
-        }catch (Exception ) {
+        } catch (Exception) {
             return $this->getColumnData($column, null, $column->getType());
         }
     }
-
 
     public function getType(): string
     {
