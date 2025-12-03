@@ -27,6 +27,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Hotspotimage;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ImageGallery;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ImageGallery as ImageGalleryData;
+use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldcollectionAbstractData;
+use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as ObjectbrickAbstractData;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
@@ -132,7 +135,7 @@ final readonly class ImageGalleryAdapter implements
      * @throws Exception
      */
     public function getExportData(
-        Concrete $object,
+        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $object,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null

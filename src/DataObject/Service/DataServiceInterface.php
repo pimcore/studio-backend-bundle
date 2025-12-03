@@ -24,6 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldcollectionAbstractData;
+use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as ObjectbrickAbstractData;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModal;
 
@@ -78,7 +81,7 @@ interface DataServiceInterface
     public function getExportObjectData(Concrete $dataObject, ColumnCollection $columnCollection): array;
 
     public function getExportFieldValue(
-        Concrete $dataObject,
+        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $dataObject,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null

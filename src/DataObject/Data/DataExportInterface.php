@@ -16,11 +16,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldcollectionAbstractData;
+use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as ObjectbrickAbstractData;
 
 interface DataExportInterface
 {
     public function getExportData(
-        Concrete $object,
+        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $object,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null

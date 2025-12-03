@@ -36,6 +36,9 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EqualComparisonInterface;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldcollectionAbstractData;
+use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as ObjectbrickAbstractData;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModel;
 use Pimcore\Normalizer\NormalizerInterface;
@@ -234,7 +237,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     public function getExportFieldValue(
-        Concrete $dataObject,
+        Concrete|Localizedfield|ObjectbrickAbstractData|FieldcollectionAbstractData $dataObject,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
