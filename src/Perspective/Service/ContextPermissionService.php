@@ -24,81 +24,84 @@ use function sprintf;
  */
 final class ContextPermissionService implements ContextPermissionsServiceInterface
 {
-    private array $extraPermissions = [
-        'emails' => true,
-        'gdpr_data_extractor' => true,
-        'glossary' => true,
-        'hidden' => false,
-        'maintenance' => true,
-        'notesEvents' => true,
-        'recycle_bin' => true,
-        'systemTools_hidden' => false,
-        'systemTools_requirements' => true,
-        'translations' => true,
-    ];
-
-    private array $filePermissions = [
-        'about' => true,
-        'close_all' => true,
-        'dashboards' => true,
-        'help' => true,
+    private array $quickAccessPermissions = [
         'hidden' => false,
         'open_asset' => true,
         'open_document' => true,
         'open_object' => true,
-        'perspectives' => true,
-        'schedule' => true,
-        'searchReplace' => true,
-        'see_mode' => true,
+        'recycle_bin' => true,
     ];
 
-    private array $searchPermissions = [
-        'assets' => true,
-        'documents' => true,
+    private array $dataManagementPermissions = [
         'hidden' => false,
-        'objects' => true,
-        'quickSearch' => true,
+        'notesEvents' => true,
+        'gdprDataExtractor' => true,
+        'searchReplaceAssignments' => true,
+        'predefinedProperties' => true,
+        'tagConfiguration' => true,
+        'dataModel_bulkExport' => true,
+        'dataModel_bulkImport' => true,
+        'dataModel_classes' => true,
+        'dataModel_classificationStore' => true,
+        'dataModel_fieldCollections' => true,
+        'dataModel_hidden' => false,
+        'dataModel_objectBricks' => true,
+        'dataModel_quantityValue' => true,
     ];
 
-    private array $settingsPermissions = [
-        'adminTranslations' => true,
-        'appearance' => true,
+    private array $experienceEcommercePermissions = [
+        'hidden' => false,
+        'emails' => true,
+        'documentTypes' => true,
+        'websiteSettings' => true,
+    ];
+
+    private array $assetManagementPermissions = [
+        'hidden' => false,
+        'assetThumbnails' => true,
+        'videoThumbnails' => true,
+        'predefinedAssetMetadata' => true,
+    ];
+
+    private array $translationsPermissions = [
+        'hidden' => false,
+        'translations' => true,
+    ];
+
+    private array $systemPermissions = [
+        'hidden' => false,
+        'appearanceBranding' => true,
+        'users_hidden' => false,
+        'users_roles' => true,
+        'users_users' => true,
+        'perspectiveEditor' => true,
+        'widgetEditor' => true,
+        'maintenanceMode' => true,
         'cache_clearAll' => true,
         'cache_clearData' => true,
         'cache_clearOutput' => true,
         'cache_clearSymfony' => true,
         'cache_clearTemp' => true,
         'cache_hidden' => false,
-        'customReports' => true,
-        'documentTypes' => true,
+        'systemSettings' => true,
+        'about' => true,
+    ];
+
+    private array $searchPermissions = [
         'hidden' => false,
-        'object_bulkExport' => true,
-        'object_bulkImport' => true,
-        'object_classes' => true,
-        'object_classificationstore' => true,
-        'object_field_collections' => true,
-        'object_hidden' => false,
-        'object_objectbricks' => true,
-        'object_quantityValue' => true,
-        'predefinedMetadata' => true,
-        'predefinedProperties' => true,
-        'system' => true,
-        'tagConfiguration' => true,
-        'thumbnails' => true,
-        'users_hidden' => false,
-        'users_roles' => true,
-        'users_users' => true,
-        'website' => true,
     ];
 
     private array $contextPermissions = [];
 
     public function __construct()
     {
-        $this->contextPermissions[ContextPermissionGroups::EXTRAS->value] = $this->extraPermissions;
-        $this->contextPermissions[ContextPermissionGroups::FILE->value] = $this->filePermissions;
+        $this->contextPermissions[ContextPermissionGroups::QUICK_ACCESS->value] = $this->quickAccessPermissions;
+        $this->contextPermissions[ContextPermissionGroups::DATA_MANAGEMENT->value] = $this->dataManagementPermissions;
+        $this->contextPermissions[ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value] = $this->experienceEcommercePermissions;
+        $this->contextPermissions[ContextPermissionGroups::ASSET_MANAGEMENT->value] = $this->assetManagementPermissions;
+        $this->contextPermissions[ContextPermissionGroups::TRANSLATIONS->value] = $this->translationsPermissions;
+        $this->contextPermissions[ContextPermissionGroups::SYSTEM->value] = $this->systemPermissions;
         $this->contextPermissions[ContextPermissionGroups::SEARCH->value] = $this->searchPermissions;
-        $this->contextPermissions[ContextPermissionGroups::SETTINGS->value] = $this->settingsPermissions;
     }
 
     public function add(ContextPermissionData $contextPermissionData): void
