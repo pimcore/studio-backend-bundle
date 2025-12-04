@@ -34,6 +34,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use function array_key_exists;
 use function is_int;
 use function sprintf;
@@ -108,7 +109,7 @@ final class ClassificationStoreResolver implements
         return $returnData;
     }
 
-    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
     {
         if (!$element instanceof Concrete) {
             throw new InvalidArgumentException('Element must be a concrete object');

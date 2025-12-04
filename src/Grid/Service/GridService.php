@@ -208,8 +208,8 @@ final class GridService implements GridServiceInterface
             $resolver = $this->getColumnResolvers()[$column->getType()];
 
             $columnData = match (true) {
-                $databaseElement && $isExport && $resolver instanceof ExportResolverInterface =>
-                    $resolver->resolveForExport($column, $databaseElement),
+                $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
+                    $resolver->resolveForExport($column, $databaseElement, $user),
                 $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
                     $resolver->resolveForCoreElement($column, $databaseElement),
                 $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
@@ -272,7 +272,12 @@ final class GridService implements GridServiceInterface
     ): ColumnCollection {
         $exportableColumns = [];
         foreach ($config as $column) {
-            $columnConfig = $this->findColumnConfiguration($column['key'], $columnsDefinitions);
+            $key = $column['key'];
+            if ($column['type'] === 'dataobject.advanced') {
+                $key = 'advanced';
+            }
+
+            $columnConfig = $this->findColumnConfiguration($key, $columnsDefinitions);
             if (!$columnConfig || !$columnConfig->isExportable()) {
                 continue;
             }

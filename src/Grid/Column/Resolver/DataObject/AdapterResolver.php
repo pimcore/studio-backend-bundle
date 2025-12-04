@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -59,7 +60,7 @@ final class AdapterResolver implements
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
-    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
     {
         if (!$element instanceof Concrete) {
             throw new InvalidArgumentException('Element must be a concrete object');

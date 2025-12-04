@@ -16,6 +16,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -42,10 +43,13 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
     ) {
     }
 
-    public function guessType(string $key, string $classId): string
+    public function guessType(string $key, string $classId, ?UserInterface $user = null): string
     {
+        if ($user === null) {
+            $user = $this->securityService->getCurrentUser();
+        }
 
-        $columnConfigurations = $this->getCollumnConfigurations($classId);
+        $columnConfigurations = $this->getColumnConfigurations($classId, $user);
 
         return $this->findType($key, $classId, $columnConfigurations);
     }
@@ -53,7 +57,7 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
     /**
      * @return ColumnConfiguration[]
      */
-    private function getCollumnConfigurations(string $classId): array
+    private function getColumnConfigurations(string $classId, UserInterface $user): array
     {
         if (isset($this->columnConfigurationCache[$classId])) {
             return $this->columnConfigurationCache[$classId];
@@ -62,7 +66,7 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
         $colConfiguration = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $classId,
             0,
-            $this->securityService->getCurrentUser()
+            $user
         );
 
         $this->columnConfigurationCache[$classId] = $colConfiguration;

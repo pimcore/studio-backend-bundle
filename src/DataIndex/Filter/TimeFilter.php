@@ -24,10 +24,9 @@ use function is_array;
 /**
  * @internal
  */
-final class DatetimeFilter implements FilterInterface
+final class TimeFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
-    use DateTimeTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -35,40 +34,44 @@ final class DatetimeFilter implements FilterInterface
             return $query;
         }
 
-        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_DATETIME->value) as $column) {
+        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_TIME->value) as $column) {
             $query = $this->applyDatetimeFilter($column, $query);
         }
 
         return $query;
     }
 
-    private function applyDatetimeFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
-    {
+    private function applyDatetimeFilter(
+        ColumnFilter $column,
+        QueryInterface $query,
+    ): QueryInterface {
 
         if (!is_array($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for this filter must be an array');
         }
 
-        $this->setFilterValue($column->getFilterValue());
-
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['from'], $filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon(), $this->getToAsCarbon());
+            $query->filterTime(
+                $column->getKey(),
+                $filterValue['from'],
+                $filterValue['to']
+            );
 
             return $query;
         }
 
         if (isset($filterValue['on'])) {
-            $query->filterDatetime($column->getKey(), null, null, $this->getOnAsCarbon());
+            $query->filterTime($column->getKey(), null, null, $filterValue['on']);
         }
 
         if (isset($filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), null, $this->getToAsCarbon());
+            $query->filterTime($column->getKey(), null, $filterValue['to']);
         }
 
         if (isset($filterValue['from'])) {
-            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon());
+            $query->filterTime($column->getKey(), $filterValue['from']);
         }
 
         return $query;

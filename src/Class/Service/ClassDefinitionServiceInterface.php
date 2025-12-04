@@ -32,6 +32,9 @@ interface ClassDefinitionServiceInterface
      */
     public function getClassDefinition(string $dataObjectClass): ClassDefinition;
 
+    /**
+     * @throws NotFoundException
+     */
     public function getClassDefinitionIdsInsideFolder(
         int $folderId
     ): array;
