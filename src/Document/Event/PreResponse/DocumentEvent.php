@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\CustomAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class DocumentEvent extends AbstractPreResponseEvent
@@ -32,5 +33,15 @@ final class DocumentEvent extends AbstractPreResponseEvent
     public function getDocument(): Document
     {
         return $this->document;
+    }
+
+    public function getCustomAttributes(): CustomAttributes
+    {
+        return $this->document->getCustomAttributes();
+    }
+
+    public function setCustomAttributes(CustomAttributes $customAttributes): void
+    {
+        $this->document->setCustomAttributes($customAttributes);
     }
 }
