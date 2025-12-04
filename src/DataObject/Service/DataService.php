@@ -244,6 +244,10 @@ final readonly class DataService implements DataServiceInterface
             return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
         }
 
+        if ($contextData && $contextData->getContextObject()) {
+            $dataObject = $contextData->getContextObject();
+        }
+
         return $fieldDefinition->getForCsvExport(
             $dataObject,
             $contextData ? $contextData->getLegacyParameters() : []
