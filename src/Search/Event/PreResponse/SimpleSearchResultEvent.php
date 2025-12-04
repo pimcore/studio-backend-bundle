@@ -31,7 +31,7 @@ final class SimpleSearchResultEvent extends AbstractPreResponseEvent
         return $this->result;
     }
 
-    public function getCustomAttributes(): ?CustomAttributes
+    public function getCustomAttributes(): CustomAttributes
     {
         return $this->result->getCustomAttributes();
     }
