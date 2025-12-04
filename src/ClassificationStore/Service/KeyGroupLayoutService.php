@@ -89,7 +89,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             }
         }
 
-        $key = $this->keyGroupRelationRepository->getByKeyId($keyId, $groupId);
+        $key = $this->keyGroupRelationRepository->getByKeyGroupId($keyId, $groupId);
         $definition = $this->getLayoutDefinition($key, $layoutParameter->getFieldName(), $object);
 
         return new KeyLayout(

@@ -42,5 +42,5 @@ interface KeyGroupRelationRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function getByKeyId(int $keyId, int $groupId): KeyGroupRelation;
+    public function getByKeyGroupId(int $keyId, int $groupId): KeyGroupRelation;
 }
