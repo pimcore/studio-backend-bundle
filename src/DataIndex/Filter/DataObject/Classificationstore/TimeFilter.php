@@ -53,7 +53,7 @@ final class TimeFilter implements FilterInterface
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_TIME->value) as $column) {
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
-            $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
+            $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId(), $filterValue->getGroupId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             /** @var DataObjectQueryInterface $query */
             $query = $this->applyTimeFilter($column, $query, $key, $group, $filterValue);

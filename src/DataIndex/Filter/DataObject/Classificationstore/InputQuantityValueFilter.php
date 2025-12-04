@@ -54,7 +54,7 @@ final class InputQuantityValueFilter implements FilterInterface
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
 
-            $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId());
+            $key = $this->keyGroupRelationRepository->getByKeyId($filterValue->getKeyId(), $filterValue->getGroupId());
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             $value = $filterValue->getValue();
 
