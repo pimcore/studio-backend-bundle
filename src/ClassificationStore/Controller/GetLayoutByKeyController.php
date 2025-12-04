@@ -55,13 +55,13 @@ final class GetLayoutByKeyController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        path: '/classification-store/layout-by-key/{keyId}',
+        path: '/classification-store/layout-by-key/{keyId}/{groupId}',
         name: 'pimcore_studio_api_classification_store_get_layout_by_key',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/classification-store/layout-by-key/{keyId}',
+        path: self::PREFIX . '/classification-store/layout-by-key/{keyId}/{groupId}',
         operationId: 'classification_store_get_layout_by_key',
         description: 'classification_store_get_layout_by_key_description',
         summary: 'classification_store_get_layout_by_key_summary',
@@ -80,6 +80,10 @@ final class GetLayoutByKeyController extends AbstractApiController
         type: 'Key ID',
         name: 'keyId',
     )]
+    #[PathIdParameter(
+        type: 'Group ID',
+        name: 'groupId',
+    )]
     #[TextFieldParameter(
         name: 'fieldName',
         description: 'Field Name',
@@ -94,9 +98,10 @@ final class GetLayoutByKeyController extends AbstractApiController
     public function getLayoutByKey(
         #[MapQueryString] LayoutParameter $layoutParameter,
         int $keyId,
+        int $groupId
     ): JsonResponse {
         return $this->jsonResponse(
-            $this->keyGroupLayoutService->getKeyLayout($layoutParameter, $keyId)
+            $this->keyGroupLayoutService->getKeyLayout($layoutParameter, $keyId, $groupId)
         );
     }
 }

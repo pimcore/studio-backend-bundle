@@ -38,5 +38,6 @@ interface KeyGroupLayoutServiceInterface
     public function getKeyLayout(
         LayoutParameter $layoutParameter,
         int $keyId,
+        int $groupId
     ): KeyLayout;
 }
