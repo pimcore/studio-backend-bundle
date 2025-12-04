@@ -50,7 +50,10 @@ final class DateFilter implements FilterInterface
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_DATE->value) as $column) {
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
-            $key = $this->keyGroupRelationRepository->getByKeyGroupId($filterValue->getKeyId(), $filterValue->getGroupId());
+            $key = $this->keyGroupRelationRepository->getByKeyGroupId(
+                $filterValue->getKeyId(),
+                $filterValue->getGroupId()
+            );
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             /** @var DataObjectQueryInterface $query */
             $query = $this->applyClassificationStoreDateFilter($column, $query, $key, $group, $filterValue, true);

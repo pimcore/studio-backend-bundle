@@ -53,7 +53,10 @@ final class SelectFilter implements FilterInterface
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
 
-            $key = $this->keyGroupRelationRepository->getByKeyGroupId($filterValue->getKeyId(), $filterValue->getGroupId());
+            $key = $this->keyGroupRelationRepository->getByKeyGroupId(
+                $filterValue->getKeyId(),
+                $filterValue->getGroupId()
+            );
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
 
             if (!is_array($filterValue->getValue())) {

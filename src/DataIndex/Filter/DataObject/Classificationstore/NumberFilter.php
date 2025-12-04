@@ -66,7 +66,10 @@ final class NumberFilter implements FilterInterface
             $this->addFilterToQuery(
                 $query,
                 $column,
-                $this->keyGroupRelationRepository->getByKeyGroupId($filterValue->getKeyId(), $filterValue->getGroupId()),
+                $this->keyGroupRelationRepository->getByKeyGroupId(
+                    $filterValue->getKeyId(),
+                    $filterValue->getGroupId()
+                ),
                 $this->groupConfigRepository->getById($filterValue->getGroupId()),
                 $mode,
                 $isValue,
