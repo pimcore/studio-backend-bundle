@@ -130,8 +130,7 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
             $item->restore();
         } catch (Exception $e) {
             throw new EnvironmentException($e->getMessage());
-        }
-        finally {
+        } finally {
             $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
             $this->synchronousProcessing->disable();
         }
