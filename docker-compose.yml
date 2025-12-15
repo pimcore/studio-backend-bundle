@@ -4,6 +4,7 @@ services:
         image: pimcore/pimcore:php8.3-debug-latest
         environment:
             PHP_IDE_CONFIG: serverName=localhost
+        working_dir: /var/cli
         volumes:
             - .:/var/cli/
             - ./.docker/30-xdebug.ini:/usr/local/etc/php/conf.d/30-xdebug.ini
