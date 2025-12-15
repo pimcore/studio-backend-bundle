@@ -268,7 +268,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         array $predefinedColumns,
         bool $search = false,
         bool $grid = false,
-        string $classId = null
+        ?string $classId = null
     ): DetailedConfiguration {
         $defaultColumns = [];
         $classDefinition = null;
