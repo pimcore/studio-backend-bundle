@@ -280,7 +280,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             }
         }
 
-
         foreach ($predefinedColumns as $predefinedColumn) {
             $filteredColumns =
                 array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
