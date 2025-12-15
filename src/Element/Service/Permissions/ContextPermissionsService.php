@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Model\ContextPermissionData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateElementTypeTrait;
+use function sprintf;
 
 /**
  * @internal
@@ -96,7 +97,8 @@ final class ContextPermissionsService implements ContextPermissionsServiceInterf
 
     private array $elementContextPermissions = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->elementContextPermissions[ElementTypes::TYPE_ASSET] = $this->assetContextPermissions;
         $this->elementContextPermissions[ElementTypes::TYPE_DATA_OBJECT] = $this->dataObjectContextPermissions;
         $this->elementContextPermissions[ElementTypes::TYPE_DOCUMENT] = $this->documentContextPermissions;
