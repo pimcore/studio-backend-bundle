@@ -47,19 +47,18 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
 
     public function getClassDefinitionCollection(
         bool $creatableOnly = false
-    ): array
-    {
+    ): array {
         $hydrated = [];
         $cds = $this->classDefinitionRepository->getClassDefinitions();
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($cds as $definition) {
-            if(
+            if (
                 $creatableOnly &&
                 !$currentUser->isAllowed(
                     $definition->getId(),
                     UserPermissions::CLASS_DEFINITION->value
                 )
-            ){
+            ) {
                 continue;
             }
             $hydratedDefinition = $this->classDefinitionListHydrator->hydrate($definition);
@@ -108,4 +107,3 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         return $hydratedClassDefinitions;
     }
 }
-
