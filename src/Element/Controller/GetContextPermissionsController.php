@@ -15,8 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Element\Attribute\Response\Content\OneOfContextPermissionsJson;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Attribute\Response\Content\ContextPermissionsJson;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -38,7 +38,7 @@ final class GetContextPermissionsController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ElementServiceInterface $elementService
+        private readonly ContextPermissionsServiceInterface $contextPermissionService
     ) {
         parent::__construct($serializer);
     }
@@ -58,7 +58,7 @@ final class GetContextPermissionsController extends AbstractApiController
     #[ElementTypeParameter]
     #[SuccessResponse(
         description: 'element_get_context_permissions_success_response',
-        content: new OneOfContextPermissionsJson()
+        content: new ContextPermissionsJson()
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
@@ -67,6 +67,6 @@ final class GetContextPermissionsController extends AbstractApiController
     public function getElementContextPermissions(string $elementType): JsonResponse
     {
 
-        return $this->jsonResponse($this->elementService->getElementContextPermissions($elementType));
+        return $this->jsonResponse($this->contextPermissionService->list($elementType));
     }
 }

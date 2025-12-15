@@ -13,57 +13,133 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDocumentContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\ContextPermissionData;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateElementTypeTrait;
 
 /**
  * @internal
  */
-final readonly class ContextPermissionsService implements ContextPermissionServiceInterface
+final class ContextPermissionsService implements ContextPermissionsServiceInterface
 {
-    public function __construct(
-        private AssetContextPermissionHydratorInterface $assetHydrator,
-        private DataObjectContextPermissionHydratorInterface $dataObjectHydrator,
-        private DocumentContextPermissionHydratorInterface $documentHydrator,
-    ) {
+    use ValidateElementTypeTrait;
+
+    private array $assetContextPermissions = [
+        'hideAdd' => false,
+        'addUpload' => true,
+        'uploadNewVersion' => true,
+        'addUploadZip' => true,
+        'download' => true,
+        'downloadZip' => true,
+        'addFolder' => true,
+        'copy' => true,
+        'cut' => true,
+        'delete' => true,
+        'lock' => true,
+        'lockAndPropagate' => true,
+        'paste' => true,
+        'pasteCut' => true,
+        'refresh' => true,
+        'rename' => true,
+        'searchAndMove' => true,
+        'unlock' => true,
+        'unlockAndPropagate' => true,
+    ];
+
+    private array $dataObjectContextPermissions = [
+        'add' => true,
+        'addFolder' => true,
+        'changeChildrenSortBy' => true,
+        'copy' => true,
+        'cut' => true,
+        'delete' => true,
+        'lock' => true,
+        'lockAndPropagate' => true,
+        'paste' => true,
+        'publish' => true,
+        'refresh' => true,
+        'rename' => true,
+        'searchAndMove' => true,
+        'unlock' => true,
+        'unlockAndPropagate' => true,
+        'unpublish' => true,
+    ];
+
+    private array $documentContextPermissions = [
+        'add' => true,
+        'addEmail' => true,
+        'addFolder' => true,
+        'addHardlink' => true,
+        'addLink' => true,
+        'addSnippet' => true,
+        'convert' => true,
+        'copy' => true,
+        'cut' => true,
+        'delete' => true,
+        'editSite' => true,
+        'lock' => true,
+        'lockAndPropagate' => true,
+        'open' => true,
+        'paste' => true,
+        'pasteCut' => true,
+        'publish' => true,
+        'refresh' => true,
+        'removeSite' => true,
+        'rename' => true,
+        'searchAndMove' => true,
+        'unlock' => true,
+        'unlockAndPropagate' => true,
+        'unpublish' => true,
+        'useAsSite' => true,
+    ];
+
+    private array $elementContextPermissions = [];
+
+    public function __construct() {
+        $this->elementContextPermissions[ElementTypes::TYPE_ASSET] = $this->assetContextPermissions;
+        $this->elementContextPermissions[ElementTypes::TYPE_DATA_OBJECT] = $this->dataObjectContextPermissions;
+        $this->elementContextPermissions[ElementTypes::TYPE_DOCUMENT] = $this->documentContextPermissions;
+    }
+
+    public function add(ContextPermissionData $contextPermissionData): void
+    {
+        $this->elementContextPermissions[$contextPermissionData->getElementType()][$contextPermissionData->getKey()] =
+            $contextPermissionData->getDefaultValue();
+    }
+
+    public function getDefaultValue(string $key, string $elementType): bool
+    {
+        $this->validateStudioTypes($elementType);
+        if (!isset($this->elementContextPermissions[$elementType][$key])) {
+            throw new InvalidArgumentException(
+                sprintf('Context permission with key "%s" does not exist', $key)
+            );
+        }
+
+        return $this->elementContextPermissions[$elementType][$key];
     }
 
     /**
-     * @throws InvalidElementTypeException
+     * {@inheritdoc}
      */
-    public function setElementContextPermissions(
-        string $elementType,
-        array $permissionData
-    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions {
-        return match ($elementType) {
-            ElementTypes::TYPE_ASSET => $this->assetHydrator->hydrate($permissionData),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectHydrator->hydrate($permissionData),
-            ElementTypes::TYPE_DOCUMENT => $this->documentHydrator->hydrate($permissionData),
-            default => throw new InvalidElementTypeException($elementType),
-        };
+    public function list(string $elementType): array
+    {
+        $this->validateStudioTypes($elementType);
+
+        $elementPermissions = $this->elementContextPermissions[$elementType] ?? [];
+        ksort($elementPermissions);
+
+        return $elementPermissions;
     }
 
     /**
-     * @throws InvalidElementTypeException
+     * {@inheritdoc}
      */
-    public function saveElementContextPermissions(
-        string $elementType,
-        array $permissionData
-    ): SaveAssetContextPermissions|SaveDataObjectContextPermissions|SaveDocumentContextPermissions {
-        return match ($elementType) {
-            ElementTypes::TYPE_ASSET => $this->assetHydrator->hydrateSavePermissions($permissionData),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectHydrator->hydrateSavePermissions($permissionData),
-            ElementTypes::TYPE_DOCUMENT => $this->documentHydrator->hydrateSavePermissions($permissionData),
-            default => throw new InvalidElementTypeException($elementType),
-        };
+    public function remove(string $key, string $elementType): void
+    {
+        $this->validateStudioTypes($elementType);
+
+        unset($this->elementContextPermissions[$elementType][$key]);
     }
 }
