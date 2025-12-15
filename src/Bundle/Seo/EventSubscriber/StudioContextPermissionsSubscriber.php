@@ -38,6 +38,11 @@ final readonly class StudioContextPermissionsSubscriber implements EventSubscrib
 
     public function addContextPermissions(): void
     {
-        $this->permissionsService->add(new ContextPermissionData('redirects', ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value));
+        $this->permissionsService->add(
+            new ContextPermissionData(
+                'redirects',
+                ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value
+            )
+        );
     }
 }

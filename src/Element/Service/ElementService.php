@@ -16,15 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResolve\ElementResolveEvent;
-use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementContextPermissionsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementSubtypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -141,27 +136,6 @@ final readonly class ElementService implements ElementServiceInterface
         $this->eventDispatcher->dispatch(new ElementSubtypeEvent($subtype), ElementSubtypeEvent::EVENT_NAME);
 
         return $subtype;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getElementContextPermissions(
-        string $elementType
-    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions {
-        $permissions = match ($elementType) {
-            ElementTypes::TYPE_ASSET => new AssetContextPermissions(),
-            ElementTypes::TYPE_DATA_OBJECT => new DataObjectContextPermissions(),
-            ElementTypes::TYPE_DOCUMENT => new DocumentContextPermissions(),
-            default => throw new InvalidElementTypeException($elementType),
-        };
-
-        $this->eventDispatcher->dispatch(
-            new ElementContextPermissionsEvent($permissions),
-            ElementContextPermissionsEvent::EVENT_NAME
-        );
-
-        return $permissions;
     }
 
     /**

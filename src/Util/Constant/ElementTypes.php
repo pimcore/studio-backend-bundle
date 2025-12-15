@@ -43,4 +43,10 @@ final readonly class ElementTypes
         self::TYPE_ASSET,
         self::TYPE_DOCUMENT,
     ];
+
+    public const array ALLOWED_STUDIO_TYPES = [
+        self::TYPE_DATA_OBJECT,
+        self::TYPE_ASSET,
+        self::TYPE_DOCUMENT,
+    ];
 }

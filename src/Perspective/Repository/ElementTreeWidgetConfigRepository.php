@@ -15,15 +15,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -39,6 +40,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function __construct(
         private readonly IconServiceInterface $iconService,
         private readonly NormalizerInterface $normalizer,
+        private readonly TreeContextPermissionsServiceInterface $contextPermissionService,
         private readonly WidgetValidationServiceInterface $validationService,
         private readonly array $widgetConfigurations,
         private readonly array $storageConfig,
@@ -66,7 +68,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
             $widgetData['id'],
             $widgetData['name'],
             $this->iconService->getIconForValue(),
-            new SaveDataObjectContextPermissions(),
+            $this->contextPermissionService->list(ElementTypes::TYPE_DATA_OBJECT, []),
         );
 
         $this->saveConfigData($config);
