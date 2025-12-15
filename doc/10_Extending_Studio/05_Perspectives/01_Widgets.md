@@ -243,6 +243,82 @@ final class MyCustomWidget extends WidgetConfig
 
 Repository and Hydrator will be automatically registered and used by the Pimcore Studio Backend service to handle the widget configuration by defined type.
 
+## How to add a custom element tree context menu permission
+
+To add a custom element tree context menu permission to the Pimcore Studio Backend, you need to implement your custom event subscriber and inject the `imcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsServiceInterface` service.:
+
+### 1. Define your subscriber service
+
+```yaml
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  App\EventSubscriber\ElementTreeContextPermissionsSubscriber: ~
+```
+
+### 2. (Optional) Conditionally add your subscriber
+
+If the Studio is not a required bundle, but you still want to add the permissions to it once it is enabled, you can follow the example below:
+
+- Add your service to the separate configuration YAML file, for example `pimcore_studio_backend.yaml`.
+- In your bundle extension class, e.g. `AppExtension` add following to the [prepend](https://symfony.com/doc/current/components/dependency_injection/compilation.html#prepending-configuration-passed-to-the-extension) method:
+
+```php
+public function prepend(ContainerBuilder $container): void
+{
+    if ($container->hasExtension('pimcore_studio_backend')) {
+        $loader = new YamlFileLoader(
+            $container,
+            new FileLocator(__DIR__ . '/../../config')
+        );
+        
+        // Load your custom configuration file where you registered your Event Subscriber
+        // In our example this is located in the `config` directory of your bundle
+        $loader->load('pimcore_studio_backend.yaml');
+    }
+}
+```
+
+### 3. Implement your subscriber
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\EventSubscriber;
+
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\ContextPermissionData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsServiceInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+
+final readonly class ElementTreeContextPermissionsSubscriber implements EventSubscriberInterface
+{
+    public function __construct(
+        private ContextPermissionsServiceInterface $permissionsService,
+    ) {
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::CONTROLLER => 'addDocumentContextPermissions',
+        ];
+    }
+
+    public function addDocumentContextPermissions(): void
+    {
+        $this->permissionsService->add(
+            new ContextPermissionData('addMyBundleContextAction', ElementTypes::TYPE_DOCUMENT, false // default value)
+        );
+    }
+}
+```
+
 ### Example Widget Configuration Yaml
 
 ```yaml

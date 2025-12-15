@@ -15,9 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions as APermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions as DOPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions as DPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
@@ -48,13 +45,26 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         #[Property(
             description: 'Context Permissions',
             type: 'object',
-            oneOf: [
-                new Schema(APermissions::class),
-                new Schema(DOPermissions::class),
-                new Schema(DPermissions::class),
+            example: [
+                'add' => true,
+                'addFolder' => true,
+                'changeChildrenSortBy' => true,
+                'copy' => true,
+                'cut' => true,
+                'delete' => true,
+                'lock' => true,
+                'lockAndPropagate' => true,
+                'paste' => true,
+                'publish' => true,
+                'refresh' => true,
+                'rename' => true,
+                'searchAndMove' => true,
+                'unlock' => true,
+                'unlockAndPropagate' => true,
+                'unpublish' => true,
             ]
         )]
-        private readonly APermissions|DOPermissions|DPermissions $contextPermissions,
+        private readonly array $contextPermissions,
         ElementIcon $icon,
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
@@ -110,7 +120,7 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         return $this->pageSize;
     }
 
-    public function getContextPermissions(): DPermissions|APermissions|DOPermissions
+    public function getContextPermissions(): array
     {
         return $this->contextPermissions;
     }
