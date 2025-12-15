@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositor
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\Folder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -38,16 +40,28 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
         private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator,
         private ElementServiceInterface $elementService,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService
     ) {
     }
 
-    public function getClassDefinitionCollection(): array
+    public function getClassDefinitionCollection(
+        bool $creatableOnly = false
+    ): array
     {
         $hydrated = [];
         $cds = $this->classDefinitionRepository->getClassDefinitions();
-
+        $currentUser = $this->securityService->getCurrentUser();
         foreach ($cds as $definition) {
+            if(
+                $creatableOnly &&
+                !$currentUser->isAllowed(
+                    $definition->getId(),
+                    UserPermissions::CLASS_DEFINITION->value
+                )
+            ){
+                continue;
+            }
             $hydratedDefinition = $this->classDefinitionListHydrator->hydrate($definition);
 
             $this->eventDispatcher->dispatch(
@@ -94,3 +108,4 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         return $hydratedClassDefinitions;
     }
 }
+

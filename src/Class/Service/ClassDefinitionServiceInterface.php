@@ -25,7 +25,9 @@ interface ClassDefinitionServiceInterface
     /**
      * @return ClassDefinitionList[]
      */
-    public function getClassDefinitionCollection(): array;
+    public function getClassDefinitionCollection(
+        bool $creatableOnly = false
+    ): array;
 
     /**
      * @throws NotFoundException

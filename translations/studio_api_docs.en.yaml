@@ -1445,3 +1445,7 @@ element_usage_replace_description: |
   <strong>Note:</strong> If no elements are passed, all elements will be replaced.
 element_usage_replace_summary: Replace all references to an element with another element
 element_usage_replace_success_response: Id of the created job run
+class_definition_collection_creatable: Get creatable class definitions.
+class_definition_collection_creatable_description: Get collection of all class definitions that can be created.
+class_definition_collection_creatable_summary: Get collection of all class definitions that can be created.
+class_definition_collection_creatable_success_response: List of class definitions that can be created.
