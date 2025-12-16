@@ -98,7 +98,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
                     $columnCollection,
                     ElementTypes::TYPE_ASSET,
                     $asset->getId(),
-                    true
+                    true,
+                    $user
                 ),
             ];
 

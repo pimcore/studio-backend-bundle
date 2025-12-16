@@ -45,7 +45,7 @@ final class AssetEvent extends AbstractPreResponseEvent
         return $this->asset;
     }
 
-    public function getCustomAttributes(): ?CustomAttributes
+    public function getCustomAttributes(): CustomAttributes
     {
         return $this->asset->getCustomAttributes();
     }

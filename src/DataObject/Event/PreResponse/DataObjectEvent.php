@@ -35,7 +35,7 @@ final class DataObjectEvent extends AbstractPreResponseEvent
         return $this->dataObject;
     }
 
-    public function getCustomAttributes(): ?CustomAttributes
+    public function getCustomAttributes(): CustomAttributes
     {
         return $this->dataObject->getCustomAttributes();
     }

@@ -92,6 +92,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
             1,
             $user
         );
+
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         try {
@@ -100,7 +101,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
                     $columnCollection,
                     ElementTypes::TYPE_OBJECT,
                     $dataObject->getId(),
-                    true
+                    true,
+                    $user
                 ),
             ];
 

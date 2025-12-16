@@ -120,6 +120,10 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
+            if ($definition->invisible) {
+                continue;
+            }
+
             if ($definition instanceof Classificationstore && $definition->localized) {
                 $localized = true;
             }

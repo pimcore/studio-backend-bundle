@@ -15,9 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions as APermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions as DOPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDocumentContextPermissions as DPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
@@ -52,13 +49,26 @@ final readonly class SaveElementTreeWidgetConfig
         #[Property(
             description: 'Context Permissions',
             type: 'object',
-            oneOf: [
-                new Schema(APermissions::class),
-                new Schema(DOPermissions::class),
-                new Schema(DPermissions::class),
+            example: [
+                'add' => true,
+                'addFolder' => true,
+                'changeChildrenSortBy' => true,
+                'copy' => true,
+                'cut' => true,
+                'delete' => true,
+                'lock' => true,
+                'lockAndPropagate' => true,
+                'paste' => true,
+                'publish' => true,
+                'refresh' => true,
+                'rename' => true,
+                'searchAndMove' => true,
+                'unlock' => true,
+                'unlockAndPropagate' => true,
+                'unpublish' => true,
             ]
         )]
-        private APermissions|DOPermissions|DPermissions $contextPermissions,
+        private array $contextPermissions,
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private string $elementType = ElementTypes::TYPE_DATA_OBJECT,
         #[Property(description: 'Root Folder', type: 'string', example: '/Product Data/Cars')]
@@ -89,7 +99,7 @@ final readonly class SaveElementTreeWidgetConfig
         return $this->icon;
     }
 
-    public function getContextPermissions(): DPermissions|APermissions|DOPermissions
+    public function getContextPermissions(): array
     {
         return $this->contextPermissions;
     }

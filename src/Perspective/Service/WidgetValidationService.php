@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Throwable;
@@ -33,7 +33,7 @@ use function sprintf;
 final readonly class WidgetValidationService implements WidgetValidationServiceInterface
 {
     public function __construct(
-        private ContextPermissionServiceInterface $contextPermissionService,
+        private TreeContextPermissionsServiceInterface $contextPermissionService,
         private ElementServiceInterface $elementService,
         private IconServiceInterface $iconService,
         private SecurityServiceInterface $securityService,
@@ -61,7 +61,7 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 $widgetData['id'],
                 $widgetData['name'],
                 $this->iconService->getIconForValue($widgetData['icon']),
-                $this->contextPermissionService->saveElementContextPermissions(
+                $this->contextPermissionService->updatePermissions(
                     $widgetData['elementType'],
                     $widgetData['contextPermissions']
                 ),
