@@ -38,7 +38,7 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getClassDefinition(string $dataObjectClass): ClassDefinitionSchema;
+    public function getClassDefinitionByName(string $dataObjectClass): ClassDefinitionSchema;
 
     /**
      * @throws NotFoundException
