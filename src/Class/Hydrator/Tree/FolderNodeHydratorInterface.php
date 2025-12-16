@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNodeFolde
  */
 interface FolderNodeHydratorInterface
 {
-
     /**
      * @param ClassDefinitionTreeNode[] $children
      */

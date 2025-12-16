@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\FolderNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\NodeHydratorInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use function count;
 
 /**
  * @internal
@@ -112,6 +113,7 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
         foreach ($groups as $groupName => $groupData) {
             if ($groupData['type'] === 'without-group' && count($groupData['classes']) === 1) {
                 $hydrated[] = $this->nodeHydrator->hydrate($groupData['classes'][0]);
+
                 continue;
             }
 

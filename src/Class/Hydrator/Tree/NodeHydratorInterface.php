@@ -21,6 +21,5 @@ use Pimcore\Model\DataObject\ClassDefinition;
  */
 interface NodeHydratorInterface
 {
-
     public function hydrate(ClassDefinition $class): ClassDefinitionTreeNode;
 }

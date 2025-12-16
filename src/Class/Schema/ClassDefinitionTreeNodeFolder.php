@@ -45,7 +45,8 @@ final class ClassDefinitionTreeNodeFolder extends ClassDefinitionList
     /**
      * @return ClassDefinitionTreeNode[]
      */
-    public function getChildren(): array {
+    public function getChildren(): array
+    {
         return $this->children;
     }
 }
