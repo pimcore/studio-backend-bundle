@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -38,7 +38,7 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getClassDefinition(string $dataObjectClass): ClassDefinition;
+    public function getClassDefinition(string $dataObjectClass): ClassDefinitionSchema;
 
     /**
      * @throws NotFoundException
