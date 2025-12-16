@@ -93,7 +93,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         return $allowedDefinitions;
     }
 
-    public function getClassDefinition(string $dataObjectClass): ClassDefinition
+    public function getClassDefinitionByName(string $dataObjectClass): ClassDefinition
     {
         $cd = $this->classDefinitionHydrator->hydrate(
             $this->classDefinitionRepository->getClassDefinition($dataObjectClass)
