@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\DataObject\Folder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -45,22 +46,14 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     ) {
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getClassDefinitionCollection(
         bool $creatableOnly = false
     ): array {
         $hydrated = [];
-        $cds = $this->classDefinitionRepository->getClassDefinitions();
-        $currentUser = $this->securityService->getCurrentUser();
-        foreach ($cds as $definition) {
-            if (
-                $creatableOnly &&
-                !$currentUser->isAllowed(
-                    $definition->getId(),
-                    UserPermissions::CLASS_DEFINITION->value
-                )
-            ) {
-                continue;
-            }
+        foreach ($this->getClassDefinitions($creatableOnly) as $definition) {
             $hydratedDefinition = $this->classDefinitionListHydrator->hydrate($definition);
 
             $this->eventDispatcher->dispatch(
@@ -71,6 +64,34 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         }
 
         return $hydrated;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitions(bool $creatableOnly = false): array
+    {
+        $cds = $this->classDefinitionRepository->getClassDefinitions();
+        if (!$creatableOnly) {
+            return $cds;
+        }
+
+        $currentUser = $this->securityService->getCurrentUser();
+        $allowedDefinitions = [];
+        foreach ($cds as $definition) {
+            if (
+                !$currentUser->isAllowed(
+                    $definition->getId(),
+                    UserPermissions::CLASS_DEFINITION->value
+                )
+            ) {
+                continue;
+            }
+
+            $allowedDefinitions[] = $definition;
+        }
+
+        return $allowedDefinitions;
     }
 
     public function getClassDefinition(string $dataObjectClass): ClassDefinition
