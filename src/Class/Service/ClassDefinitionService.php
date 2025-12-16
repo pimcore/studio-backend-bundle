@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositor
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\Folder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -38,16 +40,19 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
         private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator,
         private ElementServiceInterface $elementService,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService
     ) {
     }
 
-    public function getClassDefinitionCollection(): array
-    {
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionCollection(
+        bool $creatableOnly = false
+    ): array {
         $hydrated = [];
-        $cds = $this->classDefinitionRepository->getClassDefinitions();
-
-        foreach ($cds as $definition) {
+        foreach ($this->getClassDefinitions($creatableOnly) as $definition) {
             $hydratedDefinition = $this->classDefinitionListHydrator->hydrate($definition);
 
             $this->eventDispatcher->dispatch(
@@ -60,7 +65,35 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         return $hydrated;
     }
 
-    public function getClassDefinition(string $dataObjectClass): ClassDefinition
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitions(bool $creatableOnly = false): array
+    {
+        $cds = $this->classDefinitionRepository->getClassDefinitions();
+        if (!$creatableOnly) {
+            return $cds;
+        }
+
+        $currentUser = $this->securityService->getCurrentUser();
+        $allowedDefinitions = [];
+        foreach ($cds as $definition) {
+            if (
+                !$currentUser->isAllowed(
+                    $definition->getId(),
+                    UserPermissions::CLASS_DEFINITION->value
+                )
+            ) {
+                continue;
+            }
+
+            $allowedDefinitions[] = $definition;
+        }
+
+        return $allowedDefinitions;
+    }
+
+    public function getClassDefinitionByName(string $dataObjectClass): ClassDefinition
     {
         $cd = $this->classDefinitionHydrator->hydrate(
             $this->classDefinitionRepository->getClassDefinition($dataObjectClass)

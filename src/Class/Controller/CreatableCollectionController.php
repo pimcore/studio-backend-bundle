@@ -14,66 +14,62 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use function count;
 
-final class GetController extends AbstractApiController
+final class CreatableCollectionController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+        private readonly ClassDefinitionServiceInterface $classDefinitionService
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotFoundException
-     */
     #[Route(
-        '/class/definition/{dataObjectClass}',
-        name: 'pimcore_studio_api_class_definition_get',
-        requirements: ['dataObjectClass' => '^(?!configuration-view(/|$)).+'],
+        '/class/collection/creatable',
+        name: 'pimcore_studio_api_classes_collection_creatable',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/class/definition/{dataObjectClass}',
-        operationId: 'class_definition_get',
-        description: 'class_definition_get_description',
-        summary: 'class_definition_get_summary',
+        path: self::PREFIX . '/class/collection/creatable',
+        operationId: 'class_definition_collection_creatable',
+        description: 'class_definition_collection_creatable_description',
+        summary: 'class_definition_collection_creatable_summary',
         tags: [Tags::ClassDefinition->value],
     )]
-    #[StringParameter(
-        name: 'dataObjectClass',
-        example: 'CAR',
-        description: 'class_definition_get_data_object_class',
-        required: true
-    )]
     #[SuccessResponse(
-        description: 'class_definition_get_success_response',
-        content: new JsonContent(ref: ClassDefinition::class)
+        description: 'class_definition_collection_creatable_success_response',
+        content: new CollectionJson(new GenericCollection(ClassDefinitionList::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getClassDefinition(string $dataObjectClass): JsonResponse
+    public function listClasses(): JsonResponse
     {
-        return $this->jsonResponse(
-            $this->classDefinitionService->getClassDefinitionByName($dataObjectClass)
+        $items = $this->classDefinitionService->getClassDefinitionCollection(true);
+
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $items,
+            count($items)
         );
     }
 }
