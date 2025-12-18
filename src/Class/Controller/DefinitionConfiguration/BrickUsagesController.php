@@ -35,8 +35,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class BrickUsagesController extends AbstractApiController
 {
-
     private const string ROUTE = '/class/definition/configuration-view/detail/{id}/bricks';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ClassDefinitionServiceInterface $classDefinitionService,

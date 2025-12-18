@@ -35,8 +35,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class LayoutController extends AbstractApiController
 {
-
     private const string ROUTE = '/class/definition/configuration-view/detail/{id}/layout';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly LayoutServiceInterface $layoutService,

@@ -95,7 +95,6 @@ final readonly class LayoutService implements LayoutServiceInterface
         return $this->hydrateLayout($layout);
     }
 
-
     /**
      * {@inheritdoc}
      */
@@ -108,7 +107,7 @@ final readonly class LayoutService implements LayoutServiceInterface
             throw new NotFoundException(type: 'class layout for class definition', id: $classId);
         }
 
-       return $this->hydrateLayout($layout);
+        return $this->hydrateLayout($layout);
     }
 
     /**
