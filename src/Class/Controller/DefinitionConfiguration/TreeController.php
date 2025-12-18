@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\DefinitionConfiguration;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Response\Property\AnyOfClassDefinitionNodes;

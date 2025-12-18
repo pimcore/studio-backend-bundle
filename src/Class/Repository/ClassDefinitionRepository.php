@@ -38,6 +38,26 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         return $classesList->load();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionById(string $id): ClassDefinition
+    {
+        $exception = null;
+        $cd = null;
+
+        try {
+            $cd = $this->classDefinitionResolver->getById($id);
+        } catch (Exception $e) {
+            $exception = $e;
+        }
+        if (!$cd || $exception) {
+            throw new NotFoundException(type: 'class definition', id: $id, previous: $exception);
+        }
+
+        return $cd;
+    }
+
     public function getClassDefinition(string $dataObjectClass): ClassDefinition
     {
         $exception = null;

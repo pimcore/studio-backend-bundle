@@ -33,7 +33,7 @@ use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
  */
 readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 {
-    const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
+    private const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
 
     public function __construct(
         private ClassDefinitionServiceResolverInterface $classDefinitionServiceResolver,

@@ -29,5 +29,10 @@ interface ClassDefinitionRepositoryInterface
     /**
      * @throws NotFoundException
      */
+    public function getClassDefinitionById(string $id): ClassDefinition;
+
+    /**
+     * @throws NotFoundException
+     */
     public function getClassDefinition(string $dataObjectClass): ClassDefinition;
 }

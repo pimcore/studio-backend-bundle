@@ -43,7 +43,15 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getClassDefinitionIdsInsideFolder(
-        int $folderId
-    ): array;
+    public function getClassDefinitionById(string $id): ClassDefinitionSchema;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionBricks(string $id): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionIdsInsideFolder(int $folderId): array;
 }

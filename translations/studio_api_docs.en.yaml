@@ -569,6 +569,7 @@ error_invalid_argument: Invalid argument
 error_inconsistent_asset_type: Inconsistent asset binary type
 error_widget_name_missing: Widget name have to be provided
 error_config_name_invalid: Configuration name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
+error_uid_used: Unique identifier is already used
 error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
@@ -1273,12 +1274,24 @@ class_definition_collection_success_response: List of class definitions
 class_definition_get: Get class definition
 class_definition_get_description: Get class definition for the given data object class
 class_definition_get_summary: Get class definition for data object class
+class_definition_get_by_id_description: Get class definition data by ID
+class_definition_get_by_id_success_response: Class definition data
+class_definition_get_by_id_summary: Get class definition data by ID
+class_definition_get_bricks_usages_description: |
+  Get usage data of object bricks for the given class definition ID <strong>{id}</strong> <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition.
+class_definition_get_bricks_usages_summary: Get object bricks usage data for the class definition
+class_definition_get_bricks_usages_success_response: Object bricks usage data
 class_definition_get_data_object_class: Data object class
 class_definition_get_success_response: Class definition
 class_definition_get_tree_description: |
   Get class definition tree for all classes. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
 class_definition_get_tree_summary: Get class definition tree data
 class_definition_get_tree_success_response: Class definition data for the tree view
+class_definition_get_layout_by_id_description: |
+  Get layout definition for the given class definition ID <strong>{id}</strong>
+class_definition_get_layout_by_id_success_response: Layout definition data
+class_definition_get_layout_by_id_summary: Get layout definitions for the class definition
 class_custom_layout_collection: Get custom layout collection
 class_custom_layout_collection_description: Get custom layout collection for the given data object class.
 class_custom_layout_collection_summary: Get custom layout collection for data object class
