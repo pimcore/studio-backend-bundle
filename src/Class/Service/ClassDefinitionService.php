@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
@@ -21,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydrato
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -28,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
