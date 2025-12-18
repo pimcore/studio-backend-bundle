@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface;
@@ -22,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface as SecurityLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -48,6 +48,7 @@ final readonly class LayoutService implements LayoutServiceInterface
     use WorkflowLayoutTrait;
 
     public function __construct(
+        private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private CustomLayoutRepositoryInterface $customLayoutRepository,
         private DataObjectServiceInterface $dataObjectService,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
@@ -60,7 +61,7 @@ final readonly class LayoutService implements LayoutServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     * {@inheritdoc}
      */
     public function getDataObjectLayout(int $id, ?string $layoutId = null): Layout
     {
@@ -91,10 +92,22 @@ final readonly class LayoutService implements LayoutServiceInterface
             throw new NotFoundException(type: 'class layout for data object', id: $id);
         }
 
-        $hydratedLayout = $this->hydrator->hydrateLayout($layout);
-        $this->eventDispatcher->dispatch(new LayoutEvent($hydratedLayout), LayoutEvent::EVENT_NAME);
+        return $this->hydrateLayout($layout);
+    }
 
-        return $hydratedLayout;
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassLayout(string $classId): Layout
+    {
+        $class = $this->classDefinitionRepository->getClassDefinitionById($classId);
+        $layout = $class->getLayoutDefinitions();
+        $this->dataObjectServiceResolver->enrichLayoutDefinition($layout);
+        if (!$layout instanceof Panel) {
+            throw new NotFoundException(type: 'class layout for class definition', id: $classId);
+        }
+
+        return $this->hydrateLayout($layout);
     }
 
     /**
@@ -146,5 +159,13 @@ final readonly class LayoutService implements LayoutServiceInterface
         $workflows = $this->workflowDetailsService->getElementWorkflows($element, $user);
 
         return $this->getLastLayoutId($workflows);
+    }
+
+    private function hydrateLayout(Panel $layout): Layout
+    {
+        $hydratedLayout = $this->hydrator->hydrateLayout($layout);
+        $this->eventDispatcher->dispatch(new LayoutEvent($hydratedLayout), LayoutEvent::EVENT_NAME);
+
+        return $hydratedLayout;
     }
 }

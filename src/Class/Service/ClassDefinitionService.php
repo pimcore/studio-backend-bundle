@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
@@ -21,12 +22,15 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydrato
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -93,19 +97,27 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         return $allowedDefinitions;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getClassDefinitionByName(string $dataObjectClass): ClassDefinition
     {
-        $cd = $this->classDefinitionHydrator->hydrate(
-            $this->classDefinitionRepository->getClassDefinition($dataObjectClass)
-        );
-        $this->eventDispatcher->dispatch(
-            new ClassDefinitionEvent($cd),
-            ClassDefinitionEvent::EVENT_NAME
-        );
 
-        return $cd;
+        return $this->hydrateClassDefinition($this->classDefinitionRepository->getClassDefinition($dataObjectClass));
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionById(string $id): ClassDefinition
+    {
+
+        return $this->hydrateClassDefinition($this->classDefinitionRepository->getClassDefinitionById($id));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getClassDefinitionIdsInsideFolder(
         int $folderId
     ): array {
@@ -125,5 +137,42 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         }
 
         return $hydratedClassDefinitions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionBricks(string $id): array
+    {
+        $class = $this->classDefinitionRepository->getClassDefinitionById($id);
+        $objectBrickList = new ObjectBrickListing();
+        $brickDefinitions = $objectBrickList->load();
+        $hydratedBricks = [];
+        foreach ($brickDefinitions as $brickDefinition) {
+            $brickClasses = $brickDefinition->getClassDefinitions();
+            foreach ($brickClasses as $brickClass) {
+                if ($class->getName() === $brickClass['classname']) {
+                    $brickData = new ClassDefinitionBrickData($brickDefinition->getKey(), $brickClass['fieldname']);
+                    $this->eventDispatcher->dispatch(
+                        new ClassDefinitionBrickEvent($brickData),
+                        ClassDefinitionBrickEvent::EVENT_NAME
+                    );
+                    $hydratedBricks[] = $brickData;
+                }
+            }
+        }
+
+        return $hydratedBricks;
+    }
+
+    private function hydrateClassDefinition(CoreClassDefinition $classDefinition): ClassDefinition
+    {
+        $cd = $this->classDefinitionHydrator->hydrate($classDefinition);
+        $this->eventDispatcher->dispatch(
+            new ClassDefinitionEvent($cd),
+            ClassDefinitionEvent::EVENT_NAME
+        );
+
+        return $cd;
     }
 }
