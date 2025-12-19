@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function sprintf;

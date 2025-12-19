@@ -111,6 +111,7 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
     public function create(CreateClassDefinitionParameters $parameters): ClassDefinition
     {
         $name = $this->sanitizeName($parameters->getName());
+
         try {
             $class = $this->classDefinitionResolver->getById($parameters->getUid());
         } catch (Exception) {
@@ -123,6 +124,7 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
                 errorKey: HttpResponseErrorKeys::UID_ALREADY_EXISTS->value
             );
         }
+
         try {
             $classDefinition = $this->classDefinitionResolver->create(
                 [
@@ -180,5 +182,4 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
 
         return preg_replace('/^\d+/', '', $name);
     }
-
 }

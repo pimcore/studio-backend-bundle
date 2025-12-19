@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
 
+use InvalidArgumentException;
+
 /**
  * @internal
  */
@@ -23,7 +25,7 @@ final readonly class CreateClassDefinitionParameters
         private string $uid
     ) {
         if (trim($name) === '' || trim($uid) === '') {
-            throw new \InvalidArgumentException('Class name and UID cannot be empty.');
+            throw new InvalidArgumentException('Class name and UID cannot be empty.');
         }
     }
 

@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
@@ -31,7 +30,6 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
  */
 interface ClassDefinitionServiceInterface
 {
-
     /**
      * @throws ElementExistsException|ElementSavingFailedException|UserNotFoundException|NotWriteableException
      */

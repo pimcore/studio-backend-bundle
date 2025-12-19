@@ -44,7 +44,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ImportController extends AbstractApiController
 {
     private const string ROUTE = '/class/definition/configuration-view/detail/{id}/import';
-    
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ClassDefinitionServiceInterface $classDefinitionService

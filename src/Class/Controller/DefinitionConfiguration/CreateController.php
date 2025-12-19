@@ -42,7 +42,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class CreateController extends AbstractApiController
 {
     private const string ROUTE = '/class/definition/configuration-view/detail/create';
-    
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ClassDefinitionServiceInterface $classDefinitionService
