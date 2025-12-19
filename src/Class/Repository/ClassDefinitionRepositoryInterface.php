@@ -13,7 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
@@ -35,4 +41,21 @@ interface ClassDefinitionRepositoryInterface
      * @throws NotFoundException
      */
     public function getClassDefinition(string $dataObjectClass): ClassDefinition;
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function delete(ClassDefinition $classDefinition): void;
+
+    /**
+     * @throws ElementExistsException|ElementSavingFailedException|UserNotFoundException|NotWriteableException
+     */
+    public function create(CreateClassDefinitionParameters $parameters): ClassDefinition;
+
+    public function exportAsJson(ClassDefinition $classDefinition): string;
+
+    /**
+     * @throws InvalidArgumentException|ElementSavingFailedException|NotWriteableException
+     */
+    public function importFromJson(ClassDefinition $classDefinition, string $json): ClassDefinition;
 }
