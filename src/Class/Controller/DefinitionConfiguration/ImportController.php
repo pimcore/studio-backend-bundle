@@ -11,19 +11,19 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\DefinitionConfiguration;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -43,74 +43,64 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ImportController extends AbstractApiController
 {
+    private const string ROUTE = '/class/definition/configuration-view/detail/{id}/import';
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomLayoutServiceInterface $customLayoutService
+        private readonly ClassDefinitionServiceInterface $classDefinitionService
+
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws NotFoundException
-     * @throws EnvironmentException
-     * @throws NotWriteableException
-     * @throws JsonEncodingException
-     * @throws InvalidArgumentException
+     * @throws ElementSavingFailedException|EnvironmentException|InvalidArgumentException
+     * @throws NotFoundException|NotWriteableException
      */
-    #[Route(
-        '/class/custom-layout/import/{customLayoutId}',
-        name: 'pimcore_studio_api_class_custom_layout_import',
-        methods: ['POST']
-    )]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_definition_import', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/class/custom-layout/import/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_import',
-        description: 'pimcore_studio_api_class_custom_layout_import_description',
-        summary: 'pimcore_studio_api_class_custom_layout_import_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'class_definition_import',
+        description: 'class_definition_import_description',
+        summary: 'class_definition_import_summary',
         tags: [Tags::ClassDefinition->value]
     )]
-    #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_import_success_response',
-        content: new JsonContent(ref: CustomLayout::class, type: 'object')
-    )]
     #[StringParameter(
-        name: 'customLayoutId',
-        example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_import_layout_id',
+        name: 'id',
+        example: 'CAR',
+        description: 'Class definition unique identifier',
         required: true
     )]
     #[MultipartFormDataRequestBody(
         [
             new Property(
                 property: 'file',
-                description: 'Import file to upload',
+                description: 'Import file with JSON encoded class definition configuration',
                 type: 'string',
                 format: 'binary'
             ),
         ],
         ['file']
     )]
+    #[SuccessResponse(
+        description: 'class_definition_import_success_response',
+        content: new JsonContent(ref: CustomLayout::class, type: 'object')
+    )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
-        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function importCustomLayout(
-        string $customLayoutId,
-        Request $request
-    ): JsonResponse {
+    public function importClassDefinition(string $id, Request $request): JsonResponse
+    {
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
             throw new EnvironmentException('Invalid file found in the request');
         }
 
-        return new JsonResponse(
-            $this->customLayoutService->importCustomLayoutActionFromJson(
-                $customLayoutId,
-                $file->getContent()
-            )
+        return $this->jsonResponse(
+            $this->classDefinitionService->importCustomLayoutActionFromJson($id, $file->getContent())
         );
     }
 }

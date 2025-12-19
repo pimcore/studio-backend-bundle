@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutCollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
@@ -26,12 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInter
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use function in_array;
 
 /**
@@ -140,7 +140,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         );
     }
 
-    public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse
+    public function exportCustomLayoutAsJson(string $customLayoutId): Response
     {
         $customLayout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
         $json = $this->customLayoutRepository->exportCustomLayoutAsJson($customLayout);
@@ -173,6 +173,17 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
             ->setName('main_admin')
             ->setId('-1')
             ->setDefault(false);
+    }
+
+    public function getExistingLayoutNames(string $classId): array
+    {
+        $existingNames = [];
+        $layouts = $this->customLayoutRepository->getCustomLayoutsByClass($classId);
+        foreach ($layouts as $layout) {
+            $existingNames[] = $layout->getName();
+        }
+
+        return $existingNames;
     }
 
     private function hydrateLayout(CoreLayout $layout): CustomLayout

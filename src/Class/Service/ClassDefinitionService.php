@@ -20,11 +20,13 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -32,6 +34,7 @@ use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -43,10 +46,56 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionHydratorInterface $classDefinitionHydrator,
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
         private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator,
+        private DownloadServiceInterface $downloadService,
         private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService
     ) {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createClassDefinition(CreateClassDefinitionParameters $parameters): ClassDefinition
+    {
+        return $this->hydrateClassDefinition(
+            $this->classDefinitionRepository->create($parameters)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteClassDefinition(string $id): void
+    {
+        $this->classDefinitionRepository->delete(
+            $this->classDefinitionRepository->getClassDefinitionById($id)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exportClassDefinition(string $id): Response
+    {
+        $classDefinition = $this->classDefinitionRepository->getClassDefinitionById($id);
+        $json = $this->classDefinitionRepository->exportAsJson($classDefinition);
+
+        return $this->downloadService->downloadJSON(
+            $json,
+            'class_' . $classDefinition->getName() . '_export.json'
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importCustomLayoutActionFromJson(string $id, string $json): ClassDefinition
+    {
+        $classDefinition = $this->classDefinitionRepository->getClassDefinitionById($id);
+        $classDefinition = $this->classDefinitionRepository->importFromJson($classDefinition, $json);
+
+        return $this->hydrateClassDefinition($classDefinition);
     }
 
     /**

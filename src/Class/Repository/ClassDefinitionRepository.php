@@ -15,17 +15,30 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
+use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
 /**
  * @internal
  */
 readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInterface
 {
+    private const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Class Definition';
+
     public function __construct(
-        private ClassDefinitionResolverInterface $classDefinitionResolver
+        private ClassDefinitionServiceResolverInterface $classDefinitionServiceResolver,
+        private ClassDefinitionResolverInterface $classDefinitionResolver,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -78,5 +91,95 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         }
 
         return $cd;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(ClassDefinition $classDefinition): void
+    {
+        try {
+            $classDefinition->delete();
+        } catch (DefinitionWriteException) {
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create(CreateClassDefinitionParameters $parameters): ClassDefinition
+    {
+        $name = $this->sanitizeName($parameters->getName());
+
+        try {
+            $class = $this->classDefinitionResolver->getById($parameters->getUid());
+        } catch (Exception) {
+            $class = null;
+        }
+
+        if ($class !== null) {
+            throw new ElementExistsException(
+                error: 'Class definition already exists',
+                errorKey: HttpResponseErrorKeys::UID_ALREADY_EXISTS->value
+            );
+        }
+
+        try {
+            $classDefinition = $this->classDefinitionResolver->create(
+                [
+                    'name' => $name,
+                    'userOwner' => $this->securityService->getCurrentUser()->getId(),
+                ]
+            );
+            $classDefinition->setId($parameters->getUid());
+            $classDefinition->save();
+
+            return $classDefinition;
+        } catch (DefinitionWriteException) {
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException(null, $e->getMessage(), $e);
+        }
+    }
+
+    public function exportAsJson(ClassDefinition $classDefinition): string
+    {
+        return $this->classDefinitionServiceResolver->generateClassDefinitionJson($classDefinition);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importFromJson(ClassDefinition $classDefinition, string $json): ClassDefinition
+    {
+        try {
+            $success = $this->classDefinitionServiceResolver->importClassDefinitionFromJson(
+                $classDefinition,
+                $json,
+                true,
+                true
+            );
+        } catch (DefinitionWriteException) {
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        }
+
+        if (!$success) {
+            throw new ElementSavingFailedException(
+                null,
+                'Failed to import class definition from JSON'
+            );
+        }
+
+        return $classDefinition;
+    }
+
+    private function sanitizeName(string $name): string
+    {
+        $name = preg_replace('/\W+/', '', $name);
+
+        return preg_replace('/^\d+/', '', $name);
     }
 }

@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -81,7 +81,7 @@ interface CustomLayoutServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse;
+    public function exportCustomLayoutAsJson(string $customLayoutId): Response;
 
     /**
      * @throws NotFoundException|NotWriteableException|JsonEncodingException|InvalidArgumentException

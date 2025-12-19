@@ -11,22 +11,31 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema;
 
-use InvalidArgumentException;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class CreateClassDefinitionParameters
+#[Schema(
+    schema: 'CreateClassDefinition',
+    title: 'Schema used to create class definitions',
+    required: [
+        'name',
+        'uid',
+    ],
+    type: 'object'
+)]
+final readonly class CreateClassDefinition
 {
     public function __construct(
+        #[Property(description: 'Name', type: 'string', example: 'My Class Definition')]
         private string $name,
-        private string $uid
+        #[Property(description: 'Class definition unique ID', type: 'string', example: 'my_class_definition_uid')]
+        private string $uid,
     ) {
-        if (trim($name) === '' || trim($uid) === '') {
-            throw new InvalidArgumentException('Class name and UID cannot be empty.');
-        }
     }
 
     public function getName(): string
