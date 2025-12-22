@@ -82,6 +82,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.class_definition`
 - `pre_response.class_definition.collection`
 - `pre_response.class_definition.folder.collection`
+- `pre_response.class_definition.identifier_data`
 - `pre_response.class_definition.object_brick_data`
 - `pre_response.classification_store.collection`
 - `pre_response.classification_store.group`
@@ -89,6 +90,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.classification_store.key_group_relation`
 - `pre_response.custom_layout`
 - `pre_response.custom_layout.collection`
+- `pre_response.custom_layout.identifier_data`
 - `pre_response.custom_report_chart_data`
 - `pre_response.custom_report_report`
 - `pre_response.custom_report_tree_config_node`
