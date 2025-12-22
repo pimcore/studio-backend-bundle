@@ -1299,6 +1299,10 @@ class_definition_get_bricks_usages_summary: Get object bricks usage data for the
 class_definition_get_bricks_usages_success_response: Object bricks usage data
 class_definition_get_data_object_class: Data object class
 class_definition_get_success_response: Class definition
+class_definition_get_identifier_data_description: |
+  Get identifier data for new class. Results consist of suggested unique ID and existing class IDs.
+class_definition_get_identifier_data_summary: Get identifier data for new class
+class_definition_get_identifier_data_success_response: Suggested unique ID and existing class IDs
 class_definition_get_tree_description: |
   Get class definition tree for all classes. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
 class_definition_get_tree_summary: Get class definition tree data
@@ -1323,6 +1327,12 @@ class_custom_layout_editor_collection_description: |
   The <strong>{objectId}</strong> must be an ID of an existing object.
 class_custom_layout_editor_collection_summary: Get custom layout collection for the data object
 class_custom_layout_editor_collection_success_response: List of custom layouts for the given data object id
+class_custom_layout_get_identifier_data_description: |
+  Get identifier data for new custom layout. <br>
+  Results consist of suggested unique ID, existing layout IDs and existing layout names for provided <strong>{classDefinitionId}</strong>. <br>
+  The <strong>{classDefinitionId}</strong> must be an ID of an existing class definition.
+class_custom_layout_get_identifier_data_summary: Get identifier data for new custom layout
+class_custom_layout_get_identifier_data_success_response: Identifier data for new custom layout as JSON
 pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
