@@ -25,4 +25,3 @@ interface ClassDefinitionIdHydratorInterface
      */
     public function hydrate(string $suggestedId, array $existingIds): ClassDefinitionIdentifierData;
 }
-

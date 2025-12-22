@@ -26,4 +26,3 @@ interface CustomLayoutIdHydratorInterface
      */
     public function hydrate(string $suggestedId, array $existingIds, array $existingNames): CustomLayoutIdentifierData;
 }
-

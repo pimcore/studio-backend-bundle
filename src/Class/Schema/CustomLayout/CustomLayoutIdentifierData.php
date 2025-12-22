@@ -74,4 +74,3 @@ final class CustomLayoutIdentifierData implements AdditionalAttributesInterface
         return $this->existingNames;
     }
 }
-

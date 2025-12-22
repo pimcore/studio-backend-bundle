@@ -30,4 +30,3 @@ final class CustomLayoutIdentifierDataEvent extends AbstractPreResponseEvent
         return $this->identifierData;
     }
 }
-

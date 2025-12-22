@@ -28,4 +28,3 @@ final readonly class ClassDefinitionIdHydrator implements ClassDefinitionIdHydra
         );
     }
 }
-
