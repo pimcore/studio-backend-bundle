@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -51,6 +53,12 @@ interface ClassDefinitionRepositoryInterface
      * @throws ElementExistsException|ElementSavingFailedException|UserNotFoundException|NotWriteableException
      */
     public function create(CreateClassDefinitionParameters $parameters): ClassDefinition;
+
+    /**
+     * @throws ConflictException|InvalidArgumentException
+     * @throws ElementSavingFailedException|NotWriteableException|UserNotFoundException
+     */
+    public function update(ClassDefinition $classDefinition, UpdateParameters $updateParameters): ClassDefinition;
 
     public function exportAsJson(ClassDefinition $classDefinition): string;
 

@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutColl
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
@@ -130,7 +130,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     public function updateCustomLayout(
         string $customLayoutId,
-        CustomLayoutUpdateParameters $customLayoutParameters
+        UpdateParameters $customLayoutParameters
     ): CustomLayout {
         return $this->hydrateLayout(
             $this->customLayoutRepository->updateCustomLayout(

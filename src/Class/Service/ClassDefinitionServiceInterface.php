@@ -14,16 +14,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
  * @internal
@@ -34,6 +36,12 @@ interface ClassDefinitionServiceInterface
      * @throws ElementExistsException|ElementSavingFailedException|UserNotFoundException|NotWriteableException
      */
     public function createClassDefinition(CreateClassDefinitionParameters $parameters): ClassDefinitionSchema;
+
+    /**
+     * @throws ConflictException|InvalidArgumentException|ElementSavingFailedException
+     * @throws NotFoundException|NotWriteableException|UserNotFoundException
+     */
+    public function updateClassDefinition(string $id, UpdateParameters $updateParameters): ClassDefinitionSchema;
 
     /**
      * @throws NotFoundException|NotWriteableException

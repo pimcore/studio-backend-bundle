@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInt
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
@@ -60,6 +61,19 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     {
         return $this->hydrateClassDefinition(
             $this->classDefinitionRepository->create($parameters)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateClassDefinition(string $id, UpdateParameters $updateParameters): ClassDefinition
+    {
+        return $this->hydrateClassDefinition(
+            $this->classDefinitionRepository->update(
+                $this->classDefinitionRepository->getClassDefinitionById($id),
+                $updateParameters
+            )
         );
     }
 
