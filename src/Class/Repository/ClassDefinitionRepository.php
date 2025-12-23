@@ -17,6 +17,8 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -143,6 +145,40 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function update(ClassDefinition $classDefinition, UpdateParameters $updateParameters): ClassDefinition
+    {
+        try {
+            $config = $updateParameters->getConfiguration();
+            $values = $updateParameters->getValues();
+
+            $this->validateModificationDate($classDefinition, $values);
+            $values = $this->handleClassNameChange($classDefinition, $values);
+            $values = $this->sanitizeCompositeIndices($values);
+            $values = $this->removeProtectedFields($values);
+            $config = $this->prepareLayoutConfiguration($config);
+
+            $classDefinition->setValues($values);
+
+            $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray($config, true);
+            $classDefinition->setLayoutDefinitions($layout);
+            $classDefinition->setUserModification($this->securityService->getCurrentUser()->getId());
+            $classDefinition->setModificationDate(time());
+
+            $this->updatePropertyVisibility($classDefinition, $values);
+
+            $classDefinition->save();
+
+            return $classDefinition;
+        } catch (DefinitionWriteException) {
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        }
+    }
+
     public function exportAsJson(ClassDefinition $classDefinition): string
     {
         return $this->classDefinitionServiceResolver->generateClassDefinitionJson($classDefinition);
@@ -181,5 +217,112 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         $name = preg_replace('/\W+/', '', $name);
 
         return preg_replace('/^\d+/', '', $name);
+    }
+
+    /**
+     * @throws ConflictException
+     */
+    private function validateModificationDate(ClassDefinition $classDefinition, array $values): void
+    {
+        if ($classDefinition->getModificationDate() !== $values['modificationDate']) {
+            throw new ConflictException(
+                'The class was modified during editing, please reload the class and make your changes again'
+            );
+        }
+    }
+
+    /**
+     * @throws ElementExistsException
+     */
+    private function handleClassNameChange(ClassDefinition $classDefinition, array $values): array
+    {
+        if ($classDefinition->getName() === $values['name']) {
+            return $values;
+        }
+
+        try {
+            $existingClass = $this->getClassDefinition($values['name']);
+            if ($existingClass->getId() !== $classDefinition->getId()) {
+                throw new ElementExistsException(
+                    error: sprintf('Another class with name %s already exists', $values['name']),
+                    errorKey: HttpResponseErrorKeys::ELEMENT_EXISTS->value
+                );
+            }
+        } catch (NotFoundException) {
+            $values['name'] = $this->sanitizeName($values['name']);
+            $classDefinition->rename($values['name']);
+        }
+
+        return $values;
+    }
+
+    private function sanitizeCompositeIndices(array $values): array
+    {
+        if (!isset($values['compositeIndices']) || !$values['compositeIndices']) {
+            return $values;
+        }
+
+        foreach ($values['compositeIndices'] as $index => $compositeIndex) {
+            $sanitizedKey = preg_replace('/[^a-za-z0-9_\-+]/', '', $compositeIndex['index_key']);
+            if ($compositeIndex['index_key'] !== $sanitizedKey) {
+                $values['compositeIndices'][$index]['index_key'] = $sanitizedKey;
+            }
+        }
+
+        return $values;
+    }
+
+    private function removeProtectedFields(array $values): array
+    {
+        unset(
+            $values['creationDate'],
+            $values['userOwner'],
+            $values['layoutDefinitions'],
+            $values['fieldDefinitions']
+        );
+
+        return $values;
+    }
+
+    private function prepareLayoutConfiguration(array $config): array
+    {
+        $config['datatype'] = 'layout';
+        $config['fieldtype'] = 'panel';
+        $config['name'] = 'pimcore_root';
+
+        return $config;
+    }
+
+    private function updatePropertyVisibility(ClassDefinition $classDefinition, array $values): void
+    {
+        $propertyVisibility = $this->extractPropertyVisibility($values);
+
+        if (!empty($propertyVisibility)) {
+            $classDefinition->setPropertyVisibility($propertyVisibility);
+        }
+    }
+
+    private function extractPropertyVisibility(array $values): array
+    {
+        $propertyVisibility = [];
+
+        foreach ($values as $key => $value) {
+            if (false === stripos($key, "propertyVisibility")) {
+                continue;
+            }
+
+            if (preg_match("/\.grid\./i", $key)) {
+                $sanitizeKey = preg_replace("/propertyVisibility\.grid\./i", '', $key);
+                $propertyVisibility['grid'][$sanitizeKey] = (bool)$value;
+                continue;
+            }
+
+            if (preg_match("/\.search\./i", $key)) {
+                $sanitizeKey = preg_replace("/propertyVisibility\.search\./i", '', $key);
+                $propertyVisibility['search'][$sanitizeKey] = (bool) $value;
+            }
+        }
+
+        return $propertyVisibility;
     }
 }

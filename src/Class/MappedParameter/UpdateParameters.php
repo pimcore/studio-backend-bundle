@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
 /**
  * @internal
  */
-final readonly class CustomLayoutUpdateParameters
+final readonly class UpdateParameters
 {
     public function __construct(
         private array $configuration,
