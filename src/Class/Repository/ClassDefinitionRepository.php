@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
+use function sprintf;
 
 /**
  * @internal
@@ -307,13 +308,14 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         $propertyVisibility = [];
 
         foreach ($values as $key => $value) {
-            if (false === stripos($key, "propertyVisibility")) {
+            if (false === stripos($key, 'propertyVisibility')) {
                 continue;
             }
 
             if (preg_match("/\.grid\./i", $key)) {
                 $sanitizeKey = preg_replace("/propertyVisibility\.grid\./i", '', $key);
                 $propertyVisibility['grid'][$sanitizeKey] = (bool)$value;
+
                 continue;
             }
 

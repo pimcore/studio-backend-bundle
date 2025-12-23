@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Symfony\Component\HttpFoundation\Response;
+
 /**
  * @internal
  */
