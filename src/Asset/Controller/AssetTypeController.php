@@ -72,4 +72,3 @@ final class AssetTypeController extends AbstractApiController
         );
     }
 }
-

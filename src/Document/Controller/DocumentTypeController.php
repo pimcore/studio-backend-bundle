@@ -72,4 +72,3 @@ final class DocumentTypeController extends AbstractApiController
         );
     }
 }
-

@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_array;
 use function sprintf;
 
 /**

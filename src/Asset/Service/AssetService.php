@@ -53,6 +53,7 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceIn
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_array;
 
 /**
  * @internal
