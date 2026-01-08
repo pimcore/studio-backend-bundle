@@ -15,13 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetType;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -42,7 +42,7 @@ final class AssetTypeController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AssetServiceInterface $assetService,
+        private readonly ElementServiceInterface $elementConfigService,
     ) {
         parent::__construct($serializer);
     }
@@ -63,7 +63,7 @@ final class AssetTypeController extends AbstractApiController
     #[DefaultResponses([HttpResponseCodes::UNAUTHORIZED])]
     public function getAssetTypes(): JsonResponse
     {
-        $assetTypes = $this->assetService->getAssetTypes();
+        $assetTypes = $this->elementConfigService->getAssetTypes();
 
         return $this->getPaginatedCollection(
             $this->serializer,

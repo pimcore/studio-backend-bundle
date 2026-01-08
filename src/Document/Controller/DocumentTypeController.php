@@ -16,12 +16,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentType;
-use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -42,7 +42,7 @@ final class DocumentTypeController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly DocumentServiceInterface $documentService,
+        private readonly ElementServiceInterface $elementConfigService,
     ) {
         parent::__construct($serializer);
     }
@@ -63,7 +63,7 @@ final class DocumentTypeController extends AbstractApiController
     #[DefaultResponses([HttpResponseCodes::UNAUTHORIZED])]
     public function getDocumentTypes(): JsonResponse
     {
-        $documentTypes = $this->documentService->getDocumentTypes();
+        $documentTypes = $this->elementConfigService->getDocumentTypes();
 
         return $this->getPaginatedCollection(
             $this->serializer,

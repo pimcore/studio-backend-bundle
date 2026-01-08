@@ -14,13 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -53,7 +50,6 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceIn
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function is_array;
 
 /**
  * @internal
@@ -66,7 +62,6 @@ final readonly class AssetService implements AssetServiceInterface
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private AssetServiceResolverInterface $assetServiceResolver,
-        private ConfigResolverInterface $configResolver,
         private EventDispatcherInterface $eventDispatcher,
         private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
@@ -234,21 +229,6 @@ final readonly class AssetService implements AssetServiceInterface
         }
 
         return $asset;
-    }
-
-    public function getAssetTypes(): array
-    {
-        $assetTypes = [];
-        $assetsConfig = $this->configResolver->getSystemConfiguration('assets');
-        if (isset($assetsConfig['type_definitions']['map']) && is_array($assetsConfig['type_definitions']['map'])) {
-            foreach ($assetsConfig['type_definitions']['map'] as $key => $definition) {
-                $assetType = new AssetType($key);
-                $this->eventDispatcher->dispatch(new AssetTypeEvent($assetType), AssetTypeEvent::EVENT_NAME);
-                $assetTypes[] = $assetType;
-            }
-        }
-
-        return $assetTypes;
     }
 
     public function getUniqueAssetName(string $targetPath, string $filename): string
