@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentTypeEv
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentType;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_array;
 
 /**
  * @internal
