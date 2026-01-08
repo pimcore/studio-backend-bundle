@@ -106,12 +106,20 @@ asset_get_text_data_by_id_description: |
   Retrieves the text data in UTF8 representation of the asset based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset.
 asset_get_text_data_by_id_success_response: Successfully retrieved UTF8 encoded text data of asset
 asset_get_text_data_by_id_summary: Get asset data in text UTF8 representation by ID
+asset_get_types_description: |
+  Retrieves all available asset types in the system.
+asset_get_types_success_response: Successfully retrieved all available asset types
+asset_get_types_summary: Get all asset types
 asset_get_tree_description: |
   Listing of all assets and asset folders in the system. <br>
   Returns only data which are relevant for the tree <br>
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 asset_get_tree_success_response: Paginated assets with total count as header param as JSON
 asset_get_tree_summary: Get all asset data for the tree
+asset_get_video_types_description: |
+  Retrieves all available video types in the system.
+asset_get_video_types_success_response: Successfully retrieved all available video types
+asset_get_video_types_summary: Get all video types
 asset_image_create_thumbnail_description: |
   Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
@@ -407,6 +415,10 @@ document_get_translations_description: |
   Get all existing translations of the document with the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document.
 document_get_translations_success_response: Get all existing translations
 document_get_translations_summary: Get all existing translations of the document
+document_get_types_description: |
+  Retrieves all available document types in the system.
+document_get_types_success_response: Successfully retrieved all available document types
+document_get_types_summary: Get all available document types
 document_get_tree_description: |
   Listing of all documents and document folders in the system. <br>
   Returns only data which are relevant for the tree <br>
@@ -1303,6 +1315,11 @@ class_definition_get_identifier_data_description: |
   Get identifier data for new class. Results consist of suggested unique ID and existing class IDs.
 class_definition_get_identifier_data_summary: Get identifier data for new class
 class_definition_get_identifier_data_success_response: Suggested unique ID and existing class IDs
+class_definition_get_text_layout_preview_description: |
+  Get text layout preview for the given class definition based on the provided request data. <br>
+  The <strong>{className}</strong> must be a name of an existing class definition.
+class_definition_get_text_layout_preview_summary: Get text layout preview for the class definition
+class_definition_get_text_layout_preview_success_response: Text layout preview as HTML
 class_definition_get_tree_description: |
   Get class definition tree for all classes. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
 class_definition_get_tree_summary: Get class definition tree data
@@ -1339,6 +1356,10 @@ class_custom_layout_get_identifier_data_description: |
   The <strong>{classDefinitionId}</strong> must be an ID of an existing class definition.
 class_custom_layout_get_identifier_data_summary: Get identifier data for new custom layout
 class_custom_layout_get_identifier_data_success_response: Identifier data for new custom layout as JSON
+class_select_option_get_tree_description: |
+  Get select options tree data. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
+class_select_option_get_tree_summary: Get select options tree data
+class_select_option_get_tree_success_response: Select options data for the tree view
 pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id

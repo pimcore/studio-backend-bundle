@@ -26,6 +26,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\IdentifierServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\IdentifierService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptionService
+
   Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeService
 
@@ -80,3 +83,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\FolderNodeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\FolderNodeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\TreeItemHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\TreeItemHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\TreeFolderHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\TreeFolderHydrator

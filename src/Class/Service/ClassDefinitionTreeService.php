@@ -13,9 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionTreeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\FolderNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\NodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNodeFolder;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
 /**
@@ -25,6 +29,7 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
 {
     public function __construct(
         private ClassDefinitionServiceInterface $classDefinitionService,
+        private EventDispatcherInterface $eventDispatcher,
         private FolderNodeHydratorInterface $folderNodeHydrator,
         private NodeHydratorInterface $nodeHydrator
     ) {
@@ -47,7 +52,7 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
         $hydrated = [];
         foreach ($groups as $groupData) {
             foreach ($groupData['classes'] as $class) {
-                $node = $this->nodeHydrator->hydrate($class);
+                $node = $this->hydrateClassNode($class);
                 $hydrated[] = $node;
             }
         }
@@ -112,19 +117,41 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
         $hydrated = [];
         foreach ($groups as $groupName => $groupData) {
             if ($groupData['type'] === 'without-group' && count($groupData['classes']) === 1) {
-                $hydrated[] = $this->nodeHydrator->hydrate($groupData['classes'][0]);
+                $hydrated[] = $this->hydrateClassNode($groupData['classes'][0]);
 
                 continue;
             }
 
             $children = [];
             foreach ($groupData['classes'] as $class) {
-                $children[] = $this->nodeHydrator->hydrate($class);
+                $children[] = $this->hydrateClassNode($class);
             }
 
-            $hydrated[] = $this->folderNodeHydrator->hydrate($groupName, $children);
+            $hydrated[] = $this->hydrateFolderNode($groupName, $children);
         }
 
         return $hydrated;
+    }
+
+    private function hydrateClassNode(ClassDefinition $class): ClassDefinitionTreeNode
+    {
+        $treeNode = $this->nodeHydrator->hydrate($class);
+        $this->eventDispatcher->dispatch(
+            new ClassDefinitionTreeEvent($treeNode),
+            ClassDefinitionTreeEvent::EVENT_NAME
+        );
+
+        return $treeNode;
+    }
+
+    private function hydrateFolderNode(string $name, array $children): ClassDefinitionTreeNodeFolder
+    {
+        $treeNode = $this->folderNodeHydrator->hydrate($name, $children);
+        $this->eventDispatcher->dispatch(
+            new ClassDefinitionTreeEvent($treeNode),
+            ClassDefinitionTreeEvent::EVENT_NAME
+        );
+
+        return $treeNode;
     }
 }

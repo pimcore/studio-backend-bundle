@@ -11,21 +11,17 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video\VideoType;
 
 /**
  * @internal
  */
-final readonly class ClassDefinitionTreeParameter
+interface VideoServiceInterface
 {
-    public function __construct(
-        private bool $withGroup = true
-    ) {
-
-    }
-
-    public function isWithGroup(): bool
-    {
-        return $this->withGroup;
-    }
+    /**
+     * @return VideoType[]
+     */
+    public function getVideoTypes(): array;
 }

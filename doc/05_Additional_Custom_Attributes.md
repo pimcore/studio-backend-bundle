@@ -74,7 +74,9 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.asset_custom_metadata`
 - `pre_response.asset_custom_settings`
 - `pre_response.asset_predefined_metadata`
+- `pre_response.asset_type`
 - `pre_response.asset_version`
+- `pre_response.asset.video_type`
 - `pre_response.bundle_application_logger.list`
 - `pre_response.bundle_seo.redirect.import_stats`
 - `pre_response.bundle_seo.redirect.list`
@@ -84,6 +86,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.class_definition.folder.collection`
 - `pre_response.class_definition.identifier_data`
 - `pre_response.class_definition.object_brick_data`
+- `pre_response.class_definition.tree`
 - `pre_response.classification_store.collection`
 - `pre_response.classification_store.group`
 - `pre_response.classification_store.group_layout`
@@ -104,6 +107,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.data_object_version`
 - `pre_response.dependency`
 - `pre_response.document`
+- `pre_response.document_type`
 - `pre_response.document.doc_type`
 - `pre_response.document.doc_type.type`
 - `pre_response.document.get_translations`
@@ -143,6 +147,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
 - `pre_response.schedule`
+- `pre_response.select_option.tree`
 - `pre_response.settings.active_bundle`
 - `pre_response.simple_search.preview`
 - `pre_response.simple_search.result`
