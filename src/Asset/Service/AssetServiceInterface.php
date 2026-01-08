@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -99,6 +100,11 @@ interface AssetServiceInterface
         UserInterface $user,
         string $path,
     ): AssetModel;
+
+    /**
+     * @return AssetType[]
+     */
+    public function getAssetTypes(): array;
 
     public function getUniqueAssetName(string $targetPath, string $filename): string;
 

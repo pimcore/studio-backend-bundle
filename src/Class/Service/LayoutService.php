@@ -13,14 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CompactLayoutCollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\TextLayoutPreviewParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\LayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
+use Pimcore\Model\DataObject\ClassDefinition\Layout\Text;
+use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -29,8 +39,10 @@ final readonly class LayoutService implements LayoutServiceInterface
 {
     public function __construct(
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
+        private DataObjectServiceInterface $dataObjectService,
         private CompactLayoutHydratorInterface $compactLayoutHydrator,
         private CustomLayoutRepositoryInterface $customLayoutRepository,
+        private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -65,6 +77,24 @@ final readonly class LayoutService implements LayoutServiceInterface
         return $compactLayouts;
     }
 
+    public function getTextLayoutPreview(TextLayoutPreviewParameters $parameters): string
+    {
+        $object = $this->getPreviewObject($parameters);
+        $textLayout = new Text();
+        $textLayout->setName('textLayoutPreview' . $parameters->getClassName());
+        $textLayout = $this->setPreviewRendering($textLayout, $parameters);
+        if ($parameters->getHtml() !== null) {
+            $textLayout->setHtml($parameters->getHtml());
+        }
+
+        try {
+            return $textLayout->enrichLayoutDefinition($object, ['data' => $parameters->getRenderingData()])->getHtml();
+
+        } catch (Exception $e) {
+            throw new EnvironmentException($e->getMessage());
+        }
+    }
+
     private function hydrateCompactLayout(
         ClassDefinition $classDefinition,
         ?CustomLayout $layout = null
@@ -76,5 +106,43 @@ final readonly class LayoutService implements LayoutServiceInterface
         );
 
         return $compactLayout;
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function getPreviewObject(TextLayoutPreviewParameters $parameters): ?Concrete
+    {
+        if ($parameters->getPath() !== '' && $parameters->getPath() !== null) {
+            $object = $this->dataObjectService->getDataObjectElementByPath(
+                $this->securityService->getCurrentUser(),
+                $parameters->getPath()
+            );
+
+            if (!$object instanceof Concrete) {
+                return null;
+            }
+
+            return $object;
+        }
+
+        $this->classDefinitionRepository->getClassDefinition($parameters->getClassName());
+        $className = '\\Pimcore\\Model\\DataObject\\' . $parameters->getClassName();
+
+        return new $className();
+    }
+
+    private function setPreviewRendering(Text $textLayout, TextLayoutPreviewParameters $parameters): Text
+    {
+        $renderingClass = $parameters->getRenderingClass();
+        $renderingData = $parameters->getRenderingData() ?? '';
+        if ($renderingClass === null || $renderingClass === '') {
+            return $textLayout;
+        }
+
+        $textLayout->setRenderingClass($renderingClass);
+        $textLayout->setRenderingData($renderingData);
+
+        return $textLayout;
     }
 }

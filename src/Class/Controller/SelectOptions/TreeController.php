@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\DefinitionConfiguration;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\SelectOptions;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Response\Property\AnyOfClassDefinitionNodes;
+use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Response\Property\AnyOfSelectOptionNodes;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\TreeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -40,33 +40,33 @@ final class TreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const string ROUTE = '/class/definition/configuration-view/tree';
+    private const string ROUTE = '/class/select-option/tree';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionTreeServiceInterface $treeService,
+        private readonly SelectOptionServiceInterface $optionService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_classes_tree', methods: ['GET'])]
-    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_select_option_tree', methods: ['GET'])]
+    #[IsGranted(UserPermissions::SELECT_OPTIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'class_definition_get_tree',
-        description: 'class_definition_get_tree_description',
-        summary: 'class_definition_get_tree_summary',
+        operationId: 'class_select_option_get_tree',
+        description: 'class_select_option_get_tree_description',
+        summary: 'class_select_option_get_tree_summary',
         tags: [Tags::ClassDefinition->value]
     )]
     #[BoolParameter('withGroup', description: 'Whether to group the results.', example: true)]
     #[SuccessResponse(
-        description: 'class_definition_get_tree_success_response',
-        content: new CollectionJson(new AnyOfClassDefinitionNodes())
+        description: 'class_select_option_get_tree_success_response',
+        content: new CollectionJson(new AnyOfSelectOptionNodes())
     )]
     #[DefaultResponses([HttpResponseCodes::UNAUTHORIZED])]
-    public function getClassDefinitionTree(#[MapQueryString] TreeParameter $parameters): JsonResponse
+    public function getTree(#[MapQueryString] TreeParameter $parameters): JsonResponse
     {
-        $definitions = $this->treeService->getTree($parameters->isWithGroup());
+        $definitions = $this->optionService->getTree($parameters->isWithGroup());
 
         return $this->getPaginatedCollection(
             $this->serializer,

@@ -11,14 +11,13 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\DefinitionConfiguration;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Response\Property\AnyOfClassDefinitionNodes;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\TreeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetType;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -27,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -36,42 +34,42 @@ use function count;
 /**
  * @internal
  */
-final class TreeController extends AbstractApiController
+final class AssetTypeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const string ROUTE = '/class/definition/configuration-view/tree';
+    private const string ROUTE = '/assets/types';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionTreeServiceInterface $treeService,
+        private readonly AssetServiceInterface $assetService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_classes_tree', methods: ['GET'])]
-    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_assets_type', methods: ['GET'])]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'class_definition_get_tree',
-        description: 'class_definition_get_tree_description',
-        summary: 'class_definition_get_tree_summary',
-        tags: [Tags::ClassDefinition->value]
+        operationId: 'asset_get_types',
+        description: 'asset_get_types_description',
+        summary: 'asset_get_types_summary',
+        tags: [Tags::Assets->value]
     )]
-    #[BoolParameter('withGroup', description: 'Whether to group the results.', example: true)]
     #[SuccessResponse(
-        description: 'class_definition_get_tree_success_response',
-        content: new CollectionJson(new AnyOfClassDefinitionNodes())
+        description: 'asset_get_types_success_response',
+        content: new CollectionJson(new GenericCollection(AssetType::class))
     )]
     #[DefaultResponses([HttpResponseCodes::UNAUTHORIZED])]
-    public function getClassDefinitionTree(#[MapQueryString] TreeParameter $parameters): JsonResponse
+    public function getAssetTypes(): JsonResponse
     {
-        $definitions = $this->treeService->getTree($parameters->isWithGroup());
+        $assetTypes = $this->assetService->getAssetTypes();
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $definitions,
-            count($definitions)
+            $assetTypes,
+            count($assetTypes)
         );
     }
 }
+

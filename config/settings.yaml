@@ -32,6 +32,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\ActiveBundleHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\ActiveBundleHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydrator
+
   #
   # Providers
   #

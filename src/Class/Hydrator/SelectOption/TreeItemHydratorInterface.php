@@ -11,21 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption;
+
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionTree;
+use Pimcore\Model\DataObject\SelectOptions\Config;
 
 /**
  * @internal
  */
-final readonly class ClassDefinitionTreeParameter
+interface TreeItemHydratorInterface
 {
-    public function __construct(
-        private bool $withGroup = true
-    ) {
-
-    }
-
-    public function isWithGroup(): bool
-    {
-        return $this->withGroup;
-    }
+    public function hydrate(Config $config): SelectOptionTree;
 }

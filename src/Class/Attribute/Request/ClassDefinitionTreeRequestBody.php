@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\ClassDefinitionTreeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\TreeParameter;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ClassDefinitionTreeRequestBody extends RequestBody
@@ -25,7 +25,7 @@ final class ClassDefinitionTreeRequestBody extends RequestBody
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: ClassDefinitionTreeParameter::class)
+            content: new JsonContent(ref: TreeParameter::class)
         );
     }
 }

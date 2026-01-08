@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
@@ -20,9 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
+use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -49,6 +52,7 @@ final readonly class DocumentService implements DocumentServiceInterface
 
     public function __construct(
         private CreateServiceInterface $createService,
+        private ConfigResolverInterface $configResolver,
         private DataServiceInterface $dataService,
         private DocumentSearchServiceInterface $documentSearchService,
         private DocumentServiceResolverInterface $documentServiceResolver,
@@ -158,6 +162,21 @@ final readonly class DocumentService implements DocumentServiceInterface
         }
 
         return $document;
+    }
+
+    public function getDocumentTypes(): array
+    {
+        $types = [];
+        $config = $this->configResolver->getSystemConfiguration('documents');
+        if (isset($config['type_definitions']['map']) && is_array($config['type_definitions']['map'])) {
+            foreach ($config['type_definitions']['map'] as $key => $definition) {
+                $type = new DocumentType($key);
+                $this->eventDispatcher->dispatch(new DocumentTypeEvent($type), DocumentTypeEvent::EVENT_NAME);
+                $types[] = $type;
+            }
+        }
+
+        return $types;
     }
 
     /**
