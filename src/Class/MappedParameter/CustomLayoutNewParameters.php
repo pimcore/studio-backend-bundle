@@ -20,7 +20,7 @@ final readonly class CustomLayoutNewParameters
 {
     public function __construct(
         private string $name,
-        private int $classId
+        private string $classId
     ) {
 
     }
@@ -30,7 +30,7 @@ final readonly class CustomLayoutNewParameters
         return $this->name;
     }
 
-    public function getClassId(): int
+    public function getClassId(): string
     {
         return $this->classId;
     }

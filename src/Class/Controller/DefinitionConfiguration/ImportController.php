@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\DefinitionConfigur
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -85,7 +86,7 @@ final class ImportController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'class_definition_import_success_response',
-        content: new JsonContent(ref: CustomLayout::class, type: 'object')
+        content: new JsonContent(ref: ClassDefinition::class, type: 'object')
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
@@ -100,7 +101,7 @@ final class ImportController extends AbstractApiController
         }
 
         return $this->jsonResponse(
-            $this->classDefinitionService->importCustomLayoutActionFromJson($id, $file->getContent())
+            $this->classDefinitionService->importClassDefinitionFromJson($id, $file->getContent())
         );
     }
 }

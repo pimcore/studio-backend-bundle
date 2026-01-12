@@ -104,7 +104,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     /**
      * {@inheritdoc}
      */
-    public function importCustomLayoutActionFromJson(string $id, string $json): ClassDefinition
+    public function importClassDefinitionFromJson(string $id, string $json): ClassDefinition
     {
         $classDefinition = $this->classDefinitionRepository->getClassDefinitionById($id);
         $classDefinition = $this->classDefinitionRepository->importFromJson($classDefinition, $json);
