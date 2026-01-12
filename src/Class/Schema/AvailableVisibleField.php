@@ -39,4 +39,3 @@ final class AvailableVisibleField implements AdditionalAttributesInterface
         return $this->key;
     }
 }
-

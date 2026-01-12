@@ -25,4 +25,3 @@ final readonly class AvailableVisibleFieldHydrator implements AvailableVisibleFi
         return new AvailableVisibleField($fieldKey);
     }
 }
-

@@ -21,6 +21,7 @@ use Pimcore\Localization\LocaleServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function sprintf;
+use function strlen;
 
 /**
  * @internal

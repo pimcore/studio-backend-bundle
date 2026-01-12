@@ -34,4 +34,3 @@ final class AvailableVisibleFieldEvent extends AbstractPreResponseEvent
         return $this->availableVisibleField;
     }
 }
-

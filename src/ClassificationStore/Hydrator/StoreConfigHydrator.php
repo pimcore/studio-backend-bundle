@@ -26,4 +26,3 @@ final readonly class StoreConfigHydrator implements StoreConfigHydratorInterface
         return new StoreConfig($storeConfig->getId(), $storeConfig->getName());
     }
 }
-

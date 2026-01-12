@@ -23,4 +23,3 @@ interface FieldCollectionConfigHydratorInterface
 {
     public function hydrate(Definition $definition): FieldCollectionConfig;
 }
-

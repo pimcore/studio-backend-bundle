@@ -46,4 +46,3 @@ final readonly class FieldCollectionService implements FieldCollectionServiceInt
         return new Collection(count($fieldCollections), $fieldCollections);
     }
 }
-

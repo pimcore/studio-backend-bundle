@@ -22,4 +22,3 @@ interface CountryHydratorInterface
 {
     public function hydrate(string $name, string $code): Country;
 }
-

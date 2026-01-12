@@ -88,4 +88,3 @@ final class AvailableVisibleFieldsController extends AbstractApiController
         );
     }
 }
-

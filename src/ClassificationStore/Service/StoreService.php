@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRe
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\StoreConfig;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;

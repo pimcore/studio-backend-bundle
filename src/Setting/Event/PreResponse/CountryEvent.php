@@ -34,4 +34,3 @@ final class CountryEvent extends AbstractPreResponseEvent
         return $this->country;
     }
 }
-

@@ -34,4 +34,3 @@ final class StoreConfigEvent extends AbstractPreResponseEvent
         return $this->storeConfig;
     }
 }
-

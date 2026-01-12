@@ -34,4 +34,3 @@ final class ConfigEvent extends AbstractPreResponseEvent
         return $this->fieldCollectionConfig;
     }
 }
-

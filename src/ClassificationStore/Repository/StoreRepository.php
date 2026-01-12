@@ -20,7 +20,6 @@ use Pimcore\Model\DataObject\Classificationstore\StoreConfig\Listing;
  */
 final class StoreRepository implements StoreRepositoryInterface
 {
-
     /**
      * {@inheritdoc}
      */

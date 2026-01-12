@@ -25,4 +25,3 @@ final readonly class CountryHydrator implements CountryHydratorInterface
         return new Country($name, $code);
     }
 }
-

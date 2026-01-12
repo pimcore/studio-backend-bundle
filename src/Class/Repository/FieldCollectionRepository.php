@@ -25,4 +25,3 @@ final readonly class FieldCollectionRepository implements FieldCollectionReposit
         return (new Definition\Listing())->load();
     }
 }
-

@@ -23,4 +23,3 @@ interface StoreConfigHydratorInterface
 {
     public function hydrate(PimcoreStoreConfig $storeConfig): StoreConfig;
 }
-

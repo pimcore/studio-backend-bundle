@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\AvailableVisibleFieldEvent;
@@ -15,6 +25,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @internal
@@ -125,6 +136,7 @@ final readonly class ClassService implements ClassServiceInterface
                     $firstIteration,
                     $commonFields
                 );
+
                 continue;
             }
 
@@ -163,7 +175,7 @@ final readonly class ClassService implements ClassServiceInterface
     {
         return array_filter(
             $commonFields,
-            static fn(string $fieldKey): bool => in_array($fieldKey, $currentFieldNames, true),
+            static fn (string $fieldKey): bool => in_array($fieldKey, $currentFieldNames, true),
             ARRAY_FILTER_USE_KEY
         );
     }

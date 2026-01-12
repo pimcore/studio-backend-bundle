@@ -22,4 +22,3 @@ interface FieldCollectionServiceInterface
 {
     public function listFieldCollections(): Collection;
 }
-

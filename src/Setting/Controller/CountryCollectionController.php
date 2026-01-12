@@ -75,4 +75,3 @@ final class CountryCollectionController extends AbstractApiController
         );
     }
 }
-

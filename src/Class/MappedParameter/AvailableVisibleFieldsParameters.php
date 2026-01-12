@@ -39,8 +39,7 @@ final readonly class AvailableVisibleFieldsParameters
 
         return array_filter(
             array_map('trim', explode(',', $this->classNames)),
-            static fn(string $className): bool => !empty($className)
+            static fn (string $className): bool => !empty($className)
         );
     }
 }
-

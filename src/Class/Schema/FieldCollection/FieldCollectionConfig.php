@@ -49,4 +49,3 @@ final class FieldCollectionConfig implements AdditionalAttributesInterface
         return $this->title;
     }
 }
-

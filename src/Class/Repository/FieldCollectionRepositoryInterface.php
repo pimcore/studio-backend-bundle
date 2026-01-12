@@ -25,4 +25,3 @@ interface FieldCollectionRepositoryInterface
      */
     public function listFieldCollections(): array;
 }
-

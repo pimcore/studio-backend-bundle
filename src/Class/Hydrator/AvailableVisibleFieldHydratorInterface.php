@@ -22,4 +22,3 @@ interface AvailableVisibleFieldHydratorInterface
 {
     public function hydrate(string $fieldKey): AvailableVisibleField;
 }
-

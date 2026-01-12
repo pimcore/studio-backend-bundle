@@ -29,4 +29,3 @@ final readonly class FieldCollectionConfigHydrator implements FieldCollectionCon
         );
     }
 }
-

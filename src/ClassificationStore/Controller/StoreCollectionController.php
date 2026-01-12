@@ -74,4 +74,3 @@ final class StoreCollectionController extends AbstractApiController
         );
     }
 }
-
