@@ -293,6 +293,18 @@ class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
 class_all_layout_collection_summary: Get all available class layouts
+class_get_available_visible_fields_description: |
+  Get available visible fields for the specified data object classes. <br>
+  Returns system columns and common fields across all provided class names. <br>
+  The <strong>{classNames}</strong> must be a comma separated list of existing data object class names.
+class_get_available_visible_fields_summary: Get available visible fields for classes
+class_get_available_visible_fields_success_response: Successfully retrieved available visible fields
+class_get_selected_visible_fields_description: |
+  Get selected visible fields for the specified data object class and relation field. <br>
+  The <strong>{classId}</strong> must be an ID of existing data object class. <br>
+  The <strong>{relationField}</strong> must be the name of an existing relation field in the specified class.
+class_get_selected_visible_fields_summary: Get selected visible fields for a class relation field
+class_get_selected_visible_fields_success_response: Successfully retrieved selected visible fields
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
@@ -858,6 +870,11 @@ system_settings_get_description: |
   System settings are public and need no login.
 system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
+settings_country_collection_description: |
+  Get all available countries in the system. <br>
+  Returns a list of countries with their codes and names
+settings_country_collection_summary: Get all available countries
+settings_country_collection_success_response: List of available countries
 simple_search_preview_get_description: |
   Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -1166,6 +1183,10 @@ user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
 user_get_image_summary: Get user profile image
 user_get_image_success_response: User profile image
+class_field_collection_collection_description: |
+  Get all available field collection configurations in the system
+class_field_collection_collection_summary: Get all field collection configurations
+class_field_collection_collection_success_response: List of field collection configurations
 class_field_collection_object_layout_description: |
   Get all layouts from the field collection for an given object
 class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
@@ -1405,6 +1426,9 @@ tag_classification_store: Classification store operations
 classification_store_get_collections_description: Get all classification store collections for given fieldName
 classification_store_get_collections_summary: Get all classification store collections for given fieldName
 classification_store_get_collections_response: List of classification store collections
+classification_store_get_config_collection_description: Get all available classification stores
+classification_store_get_config_collection_summary: Get all classification store configurations
+classification_store_get_config_collection_success_response: List of classification store configurations
 classification_store_get_groups_description: Get all classification store groups for given fieldName
 classification_store_get_groups_summary: Get all classification store groups for given fieldName
 classification_store_get_groups_response: List of classification store groups
