@@ -11,25 +11,14 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Country;
 
 /**
  * @internal
  */
-interface SettingsServiceInterface
+interface CountryHydratorInterface
 {
-    public function getSettings(): array;
-
-    /**
-     * @throws InvalidElementTypeException
-     */
-    public function getTreePageSize(string $elementType): int;
-
-    /**
-     * @return Country[]
-     */
-    public function getAvailableCountries(): array;
+    public function hydrate(string $name, string $code): Country;
 }

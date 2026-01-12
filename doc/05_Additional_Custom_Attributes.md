@@ -82,12 +82,14 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.bundle_seo.redirect.list`
 - `pre_response.bundle_seo.redirect.status`
 - `pre_response.class_definition`
+- `pre_response.class_definition.visible_field`
 - `pre_response.class_definition.collection`
 - `pre_response.class_definition.folder.collection`
 - `pre_response.class_definition.identifier_data`
 - `pre_response.class_definition.object_brick_data`
 - `pre_response.class_definition.tree`
 - `pre_response.classification_store.collection`
+- `pre_response.classification_store.config_collection`
 - `pre_response.classification_store.group`
 - `pre_response.classification_store.group_layout`
 - `pre_response.classification_store.key_group_relation`
@@ -127,6 +129,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.element_property`
 - `pre_response.element_subtype`
 - `pre_response.execution_engine.list_running_job_runs`
+- `pre_response.field_collection.config`
 - `pre_response.field_collection.layout_definition`
 - `pre_response.grid_column_configuration`
 - `pre_response.grid_column_data`
@@ -149,6 +152,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.schedule`
 - `pre_response.select_option.tree`
 - `pre_response.settings.active_bundle`
+- `pre_response.settings.available_country`
 - `pre_response.simple_search.preview`
 - `pre_response.simple_search.result`
 - `pre_response.simple_user`
