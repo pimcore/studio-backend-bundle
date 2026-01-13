@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -69,8 +71,8 @@ final class ExportController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'gdpr_export_success_response',
-        content: [new MediaType('*/*')],
-        headers: [new ContentDisposition('attachment')]
+        content: [new MediaType(MimeTypes::GENERIC->value)],
+        headers: [new ContentDisposition(HttpResponseHeaders::ATTACHMENT_TYPE->value)]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
