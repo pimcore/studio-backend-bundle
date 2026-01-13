@@ -19,7 +19,13 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'Branding',
     title: 'Branding',
-    required: ['login_screen_invert_colors', 'color_login_screen', 'color_admin_interface', 'color_admin_interface_background', 'login_screen_custom_image'],
+    required: [
+        'login_screen_invert_colors',
+        'color_login_screen',
+        'color_admin_interface',
+        'color_admin_interface_background',
+        'login_screen_custom_image'
+    ],
     type: 'object'
 )]
 final readonly class Branding
@@ -33,7 +39,11 @@ final readonly class Branding
         private string $color_admin_interface,
         #[Property(description: 'Background color for admin interface', type: 'string', example: '#FFFFFF')]
         private string $color_admin_interface_background,
-        #[Property(description: 'Custom image for login screen', type: 'string', example: '/bundles/pimcoreadmin/img/login-screen.jpg')]
+        #[Property(
+            description: 'Custom image for login screen',
+            type: 'string',
+            example: '/bundles/pimcoreadmin/img/login-screen.jpg')
+        ]
         private string $login_screen_custom_image,
     ) {
     }
