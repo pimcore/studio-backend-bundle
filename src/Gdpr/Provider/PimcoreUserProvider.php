@@ -33,7 +33,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     public function __construct(
         private string $logsDir,
         private SecurityServiceInterface $securityService,
-        private array $gdprConfig = []
+        array $gdprConfig = []
     ) {
 
     }

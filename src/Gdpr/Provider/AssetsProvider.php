@@ -38,7 +38,7 @@ final readonly class AssetsProvider implements DataProviderInterface
         private AssetQueryProviderInterface $query,
         private AssetSearchServiceInterface $searchService,
         private AssetExporterInterface $assetExporter,
-        private array $gdprConfig = []
+        array $gdprConfig = []
     ) {
         $this->assetConfig = $gdprConfig['assets'] ?? [];
     }
