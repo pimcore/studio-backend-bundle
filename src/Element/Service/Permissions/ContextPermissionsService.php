@@ -27,7 +27,6 @@ final class ContextPermissionsService implements ContextPermissionsServiceInterf
     use ValidateElementTypeTrait;
 
     private array $assetContextPermissions = [
-        'hideAdd' => false,
         'addUpload' => true,
         'uploadNewVersion' => true,
         'addUploadZip' => true,
@@ -49,8 +48,9 @@ final class ContextPermissionsService implements ContextPermissionsServiceInterf
     ];
 
     private array $dataObjectContextPermissions = [
-        'add' => true,
+        'addObject' => true,
         'addFolder' => true,
+        'addVariant' => true,
         'changeChildrenSortBy' => true,
         'copy' => true,
         'cut' => true,
@@ -68,11 +68,11 @@ final class ContextPermissionsService implements ContextPermissionsServiceInterf
     ];
 
     private array $documentContextPermissions = [
-        'add' => true,
         'addEmail' => true,
         'addFolder' => true,
         'addHardlink' => true,
         'addLink' => true,
+        'addPage' => true,
         'addSnippet' => true,
         'convert' => true,
         'copy' => true,
