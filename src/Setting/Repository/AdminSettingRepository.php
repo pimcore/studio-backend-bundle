@@ -65,7 +65,7 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
             'disable_tree_preview' => $values['assets']['disable_tree_preview'],
         ];
 
-        $repository->saveConfig(self::CONFIG_ID, $data, function ($key, $data) {
+        $repository->saveConfig(self::CONFIG_ID, $data, function ($data) {
             return [
                 'pimcore_admin' => $data,
             ];
