@@ -47,15 +47,12 @@ final class GetDataProviderController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotFoundException
-     */
     #[Route(
         '/gdpr/providers',
         name: 'pimcore_studio_api_gdpr_providers',
         methods: ['GET'])]
     #[IsGranted(UserPermissions::GDPR->value)]
-    #[GET(
+    #[Get(
         path: self::PREFIX . '/gdpr/providers',
         operationId: 'gdpr_list_providers',
         description: 'gdpr_list_providers_description',
@@ -70,7 +67,6 @@ final class GetDataProviderController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
-        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getProvidersList(): JsonResponse
     {

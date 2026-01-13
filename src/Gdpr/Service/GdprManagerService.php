@@ -18,11 +18,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchParameters;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
@@ -49,9 +49,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
     public function getAvailableProviders(): Collection
     {
         $providers = $this->sortProviders($this->loader->getDataProviders());
@@ -59,36 +57,29 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $this->getDataProviderCollection($providers);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function search(GdprStructuredSearchParameters $request): GdprSearchResultCollection
+    public function search(CollectionFilterParameter $parameters, string $providerType): GdprSearchResultCollection
     {
         $allResults = [];
 
-        foreach ($request->getProviders() as $providerKey) {
-            $provider = $this->loader->resolve($providerKey);
+        $providerClass = $this->loader->resolve($providerType);
 
-            $this->checkProviderPermission($provider);
+        $this->checkProviderPermission($providerClass);
 
-            $results = $provider->findData($request->getSearchTerms(), $request->getFilters());
+        $results = $providerClass->findData($parameters->getFilters());
 
-            if (!empty($results->getItems())) {
-                $allResults[] = new GdprSearchResult(
-                    providerKey: $providerKey,
-                    results: $results->getItems(),
-                    totalSubItems: $results->getTotalItems()
-                );
-            }
+        if (!empty($results->getItems())) {
+            $allResults[] = new GdprSearchResult(
+                providerKey: $providerType,
+                results: $results->getItems(),
+                totalSubItems: $results->getTotalItems()
+            );
         }
 
         return $this->getSearchResultCollection($allResults);
 
     }
 
-    /**
-     * {@inheritdoc}
-     */
+
     public function getExportData(int $id, string $providerKey): Response
     {
         $provider = $this->loader->resolve($providerKey);

@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
@@ -33,40 +32,52 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class AssetsProvider implements DataProviderInterface
 {
+    private array $assetConfig;
     public function __construct(
         private AssetQueryProviderInterface $query,
         private AssetSearchServiceInterface $searchService,
-        private AssetExporterInterface $assetExporter
+        private AssetExporterInterface $assetExporter,
+        private array $gdprConfig = []
     ) {
+        $this->assetConfig = $gdprConfig['assets'] ?? [];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, FilterParameter $options): Collection
+    public function findData(FilterParameter $filter): Collection
     {
         $query = $this->query->createAssetQuery();
 
         $query->excludeFolders();
 
-        if ($terms->getId() !== null) {
-            $query->filterInteger('id', $terms->getId());
+        $idFilter = $filter->getSimpleColumnFilterByType('id');
+        if ($idFilter !== null) {
+            $query->filterInteger('id', (int)$idFilter->getFilterValue());
         }
 
-        $texts = [
-            $terms->getFirstname(),
-            $terms->getLastname(),
-            $terms->getEmail(),
-        ];
+        $textFilterTypes = ['firstname', 'lastname', 'email'];
+        $searchTerms = [];
 
-        foreach ($texts as $value) {
-            $value = trim((string)$value);
+        foreach ($textFilterTypes as $filterType) {
+            $textFilter = $filter->getSimpleColumnFilterByType($filterType);
+            if ($textFilter === null) {
+                continue;
+            }
+
+            $value = trim((string)$textFilter->getFilterValue());
             if ($value !== '') {
-                $query->filterFullText($value);
+                $searchTerms[] = $value;
             }
         }
 
-        $this->applySearchOptions($query, $options);
+        if ($searchTerms !== []) {
+            $query->filterMultiMatch(implode(' ', $searchTerms), [], 'cross_fields', 'and');
+        }
+
+        $query->filterMultiSelect('type', $this->assetConfig['types']);
+
+        $this->applySearchOptions($query, $filter);
 
         $searchResult = $this->searchService->searchAssets($query);
 
@@ -80,6 +91,7 @@ final readonly class AssetsProvider implements DataProviderInterface
                 'id' => $item->getId(),
                 'fullPath' => $item->getFullPath(),
                 'subType' => $item->getMimeType(),
+                '__gdprIsDeletable' => true,
             ], $columns),
             $items
         );
@@ -117,7 +129,7 @@ final readonly class AssetsProvider implements DataProviderInterface
      */
     public function getSingleItemForDownload(int $id): Response
     {
-        $asset = Asset::getById((int)$id);
+        $asset = Asset::getById($id);
 
         if (!$asset) {
             throw new NotFoundException('Asset Not Found', $id);
@@ -159,6 +171,7 @@ final readonly class AssetsProvider implements DataProviderInterface
             new GdprDataColumn('id', 'ID'),
             new GdprDataColumn('fullPath', 'Full Path'),
             new GdprDataColumn('subType', 'Type'),
+            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
         ];
     }
 }

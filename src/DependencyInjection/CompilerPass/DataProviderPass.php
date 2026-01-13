@@ -27,6 +27,8 @@ final readonly class DataProviderPass implements CompilerPassInterface
 {
     use MustImplementInterfaceTrait;
 
+    private const string GDPR_CONFIG_PARAMETER = 'pimcore_studio_backend.gdpr_data_extractor';
+
     /**
      * @throws MustImplementInterfaceException
      */
@@ -39,8 +41,13 @@ final readonly class DataProviderPass implements CompilerPassInterface
             ]
         );
 
-        foreach ($taggedServices as $environmentType) {
-            $this->checkInterface($environmentType, DataProviderInterface::class);
+        $gdprConfig = $container->getParameter(self::GDPR_CONFIG_PARAMETER);
+
+        foreach ($taggedServices as $dataProviderId) {
+            $this->checkInterface($dataProviderId, DataProviderInterface::class);
+
+            $definition = $container->getDefinition($dataProviderId);
+            $definition->setArgument('$gdprConfig', $gdprConfig);
         }
     }
 }

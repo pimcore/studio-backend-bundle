@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 interface DataProviderInterface
 {
-    public function findData(SearchTerms $terms, FilterParameter $options): Collection;
+    public function findData(FilterParameter $filter): Collection;
 
     public function getDeleteSwaggerOperationId(): string;
 

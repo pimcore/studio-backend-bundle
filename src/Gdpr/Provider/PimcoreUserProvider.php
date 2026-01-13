@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -33,7 +32,8 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 {
     public function __construct(
         private string $logsDir,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private array $gdprConfig = []
     ) {
 
     }
@@ -41,39 +41,43 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, FilterParameter $options): Collection
+    public function findData(FilterParameter $filter): Collection
     {
         $listing = new Listing();
 
-        if ($terms->getId() !== null) {
+        $idFilter = $filter->getSimpleColumnFilterByType('id');
+        if ($idFilter !== null) {
             $listing->addConditionParam(
                 'id = :id',
-                ['id' => $terms->getId()]
+                ['id' => $idFilter->getFilterValue()]
             );
         }
 
-        if ($terms->getFirstname() !== null) {
+        $firstnameFilter = $filter->getSimpleColumnFilterByType('firstname');
+        if ($firstnameFilter !== null) {
             $listing->addConditionParam(
                 'firstname LIKE :firstname',
-                ['firstname' => '%' . $terms->getFirstname() . '%']
+                ['firstname' => '%' . $firstnameFilter->getFilterValue() . '%']
             );
         }
 
-        if ($terms->getLastname() !== null) {
+        $lastnameFilter = $filter->getSimpleColumnFilterByType('lastname');
+        if ($lastnameFilter !== null) {
             $listing->addConditionParam(
                 'lastname LIKE :lastname',
-                ['lastname' => '%' . $terms->getLastname() . '%']
+                ['lastname' => '%' . $lastnameFilter->getFilterValue() . '%']
             );
         }
 
-        if ($terms->getEmail() !== null) {
+        $emailFilter = $filter->getSimpleColumnFilterByType('email');
+        if ($emailFilter !== null) {
             $listing->addConditionParam(
                 'email LIKE :email',
-                ['email' => '%' . $terms->getEmail() . '%']
+                ['email' => '%' . $emailFilter->getFilterValue() . '%']
             );
         }
 
-        $this->applySearchOptions($listing, $options);
+        $this->applySearchOptions($listing, $filter);
 
         $users = $listing->getUsers();
 

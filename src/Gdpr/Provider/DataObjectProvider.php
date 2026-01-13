@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
@@ -33,40 +32,50 @@ use Pimcore\Model\DataObject\Concrete;
  */
 final readonly class DataObjectProvider implements DataProviderInterface
 {
+    private array $dataObjectConfig;
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,
-        private ObjectExporterInterface $objectExporter
+        private ObjectExporterInterface $objectExporter,
+        private array $gdprConfig = []
     ) {
+        $this->dataObjectConfig = $gdprConfig['dataObjects'] ?? [];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms, FilterParameter $options): Collection
+    public function findData(FilterParameter $filter): Collection
     {
         $query = $this->query->createDataObjectQuery();
 
         $query->excludeFolders();
 
-        if ($terms->getId() !== null) {
-            $query->filterInteger('id', $terms->getId());
+        $idFilter = $filter->getSimpleColumnFilterByType('id');
+        if ($idFilter !== null) {
+            $query->filterInteger('id', (int)$idFilter->getFilterValue());
         }
 
-        $texts = [
-            $terms->getFirstname(),
-            $terms->getLastname(),
-            $terms->getEmail(),
-        ];
+        $textFilterTypes = ['firstname', 'lastname', 'email'];
+        $searchTerms = [];
 
-        foreach ($texts as $value) {
-            $value = trim((string)$value);
+        foreach ($textFilterTypes as $filterType) {
+            $textFilter = $filter->getSimpleColumnFilterByType($filterType);
+            if ($textFilter === null) {
+                continue;
+            }
+
+            $value = trim((string)$textFilter->getFilterValue());
             if ($value !== '') {
-                $query->filterFullText($value);
+                $searchTerms[] = $value;
             }
         }
 
-        $this->applySearchOptions($query, $options);
+        if ($searchTerms !== []) {
+            $query->filterMultiMatch(implode(' ', $searchTerms), [], 'cross_fields', 'and');
+        }
+
+        $this->applySearchOptions($query, $filter);
 
         $searchResult = $this->searchService->searchDataObjects($query);
 
@@ -79,7 +88,9 @@ final readonly class DataObjectProvider implements DataProviderInterface
                 'type' => $item->getType(),
                 'id' => $item->getId(),
                 'fullPath' => $item->getFullPath(),
-                'className' => ($item instanceof Concrete) ? $item->getClassName() : null,
+                'className' => $item->getClassName(),
+                '__gdprIsDeletable' =>
+                    $this->dataObjectConfig['classes'][$item->getClassName()]['allowDelete'] ?? false,
             ], $columns),
             $items
         );
@@ -180,6 +191,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
             new GdprDataColumn('id', 'ID'),
             new GdprDataColumn('fullPath', 'Full Path'),
             new GdprDataColumn('className', 'Class Name'),
+            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
         ];
     }
 }

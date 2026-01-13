@@ -180,6 +180,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
         ]);
 
+        $container->setParameter(
+            'pimcore_studio_backend.gdpr_data_extractor',
+            $config['gdpr_data_extractor']
+        );
+
         $this->populateTwigSandboxExtension($config, $container);
     }
 
