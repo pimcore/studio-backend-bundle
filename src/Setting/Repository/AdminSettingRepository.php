@@ -24,9 +24,13 @@ use Pimcore\Helper\SystemConfig;
 final class AdminSettingRepository implements AdminSettingRepositoryInterface
 {
     private const string CONFIG_ID = 'admin_system_settings';
+
     private const string BRANDING = 'branding';
+
     private const string ASSETS = 'assets';
+
     private const string SCOPE = 'pimcore_admin_system_settings';
+
     private const string CACHE_KEY = 'pimcore_admin_system_settings_config';
 
     private ?LocationAwareConfigRepository $locationAwareConfigRepository = null;

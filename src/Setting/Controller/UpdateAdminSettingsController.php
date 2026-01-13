@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
 
+use Exception;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -43,7 +44,7 @@ final class UpdateAdminSettingsController extends AbstractApiController
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_admin_settings_update', methods: ['POST'])]
     #[IsGranted(UserPermissions::SYSTEM_APPEARANCE_SETTINGS->value)]
