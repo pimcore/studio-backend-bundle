@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Country;
 
 /**
  * @internal
@@ -26,4 +27,9 @@ interface SettingsServiceInterface
      * @throws InvalidElementTypeException
      */
     public function getTreePageSize(string $elementType): int;
+
+    /**
+     * @return Country[]
+     */
+    public function getAvailableCountries(): array;
 }

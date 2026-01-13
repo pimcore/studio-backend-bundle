@@ -44,6 +44,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\VideoServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\VideoService
+
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneService
 

@@ -25,4 +25,9 @@ interface LayoutServiceInterface
      * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     public function getDataObjectLayout(int $id, ?string $layoutId = null): Layout;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassLayout(string $classId): Layout;
 }

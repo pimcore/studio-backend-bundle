@@ -45,6 +45,7 @@ final class GetController extends AbstractApiController
     #[Route(
         '/class/definition/{dataObjectClass}',
         name: 'pimcore_studio_api_class_definition_get',
+        requirements: ['dataObjectClass' => '^(?!configuration-view(/|$)).+'],
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
@@ -72,7 +73,7 @@ final class GetController extends AbstractApiController
     public function getClassDefinition(string $dataObjectClass): JsonResponse
     {
         return $this->jsonResponse(
-            $this->classDefinitionService->getClassDefinition($dataObjectClass)
+            $this->classDefinitionService->getClassDefinitionByName($dataObjectClass)
         );
     }
 }

@@ -11,27 +11,20 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
+
+use Pimcore\Model\DataObject\Classificationstore\StoreConfig\Listing;
 
 /**
  * @internal
  */
-final readonly class CustomLayoutUpdateParameters
+final class StoreRepository implements StoreRepositoryInterface
 {
-    public function __construct(
-        private array $configuration,
-        private array $values
-    ) {
-
-    }
-
-    public function getConfiguration(): array
+    /**
+     * {@inheritdoc}
+     */
+    public function listStores(): array
     {
-        return $this->configuration;
-    }
-
-    public function getValues(): array
-    {
-        return $this->values;
+        return (new Listing())->load();
     }
 }

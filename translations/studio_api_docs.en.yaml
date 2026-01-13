@@ -106,12 +106,20 @@ asset_get_text_data_by_id_description: |
   Retrieves the text data in UTF8 representation of the asset based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset.
 asset_get_text_data_by_id_success_response: Successfully retrieved UTF8 encoded text data of asset
 asset_get_text_data_by_id_summary: Get asset data in text UTF8 representation by ID
+asset_get_types_description: |
+  Retrieves all available asset types in the system.
+asset_get_types_success_response: Successfully retrieved all available asset types
+asset_get_types_summary: Get all asset types
 asset_get_tree_description: |
   Listing of all assets and asset folders in the system. <br>
   Returns only data which are relevant for the tree <br>
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 asset_get_tree_success_response: Paginated assets with total count as header param as JSON
 asset_get_tree_summary: Get all asset data for the tree
+asset_get_video_types_description: |
+  Retrieves all available video types in the system.
+asset_get_video_types_success_response: Successfully retrieved all available video types
+asset_get_video_types_summary: Get all video types
 asset_image_create_thumbnail_description: |
   Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
@@ -285,6 +293,18 @@ class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
 class_all_layout_collection_summary: Get all available class layouts
+class_get_available_visible_fields_description: |
+  Get available visible fields for the specified data object classes. <br>
+  Returns system columns and common fields across all provided class names. <br>
+  The <strong>{classNames}</strong> must be a comma separated list of existing data object class names.
+class_get_available_visible_fields_summary: Get available visible fields for classes
+class_get_available_visible_fields_success_response: Successfully retrieved available visible fields
+class_get_selected_visible_fields_description: |
+  Get selected visible fields for the specified data object class and relation field. <br>
+  The <strong>{classId}</strong> must be an ID of existing data object class. <br>
+  The <strong>{relationField}</strong> must be the name of an existing relation field in the specified class.
+class_get_selected_visible_fields_summary: Get selected visible fields for a class relation field
+class_get_selected_visible_fields_success_response: Successfully retrieved selected visible fields
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
@@ -407,6 +427,10 @@ document_get_translations_description: |
   Get all existing translations of the document with the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document.
 document_get_translations_success_response: Get all existing translations
 document_get_translations_summary: Get all existing translations of the document
+document_get_types_description: |
+  Retrieves all available document types in the system.
+document_get_types_success_response: Successfully retrieved all available document types
+document_get_types_summary: Get all available document types
 document_get_tree_description: |
   Listing of all documents and document folders in the system. <br>
   Returns only data which are relevant for the tree <br>
@@ -569,6 +593,7 @@ error_invalid_argument: Invalid argument
 error_inconsistent_asset_type: Inconsistent asset binary type
 error_widget_name_missing: Widget name have to be provided
 error_config_name_invalid: Configuration name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
+error_uid_used: Unique identifier is already used
 error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
@@ -845,6 +870,11 @@ system_settings_get_description: |
   System settings are public and need no login.
 system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
+settings_country_collection_description: |
+  Get all available countries in the system. <br>
+  Returns a list of countries with their codes and names
+settings_country_collection_summary: Get all available countries
+settings_country_collection_success_response: List of available countries
 simple_search_preview_get_description: |
   Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -1153,6 +1183,10 @@ user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
 user_get_image_summary: Get user profile image
 user_get_image_success_response: User profile image
+class_field_collection_collection_description: |
+  Get all available field collection configurations in the system
+class_field_collection_collection_summary: Get all field collection configurations
+class_field_collection_collection_success_response: List of field collection configurations
 class_field_collection_object_layout_description: |
   Get all layouts from the field collection for an given object
 class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
@@ -1270,11 +1304,62 @@ tag_export_description: Export
 class_definition_collection_description: Get collection of all class definitions
 class_definition_collection_summary: Get class definitions collection
 class_definition_collection_success_response: List of class definitions
+class_definition_create_description: |
+  Create a new class definition configuration with the given <strong>{name}</strong> and unique ID <strong>{uid}</strong> <br>
+  The <strong>{uid}</strong> must be unique and not already exist.
+class_definition_create_success_response: Successfully created class definition configuration
+class_definition_create_summary: Create a new class definition configuration
+class_definition_delete_description: |
+  Delete a class definition configuration with the given <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition.
+class_definition_delete_success_response: Successfully deleted class definition configuration
+class_definition_delete_summary: Delete a class definition configuration
+class_definition_export_description: |
+  Export a class definition configuration as JSON for the given <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition.
+class_definition_export_success_response: Exported class definition configuration as JSON
+class_definition_export_summary: Export a class definition configuration as JSON
 class_definition_get: Get class definition
 class_definition_get_description: Get class definition for the given data object class
 class_definition_get_summary: Get class definition for data object class
+class_definition_get_by_id_description: Get class definition data by ID
+class_definition_get_by_id_success_response: Class definition data
+class_definition_get_by_id_summary: Get class definition data by ID
+class_definition_get_bricks_usages_description: |
+  Get usage data of object bricks for the given class definition ID <strong>{id}</strong> <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition.
+class_definition_get_bricks_usages_summary: Get object bricks usage data for the class definition
+class_definition_get_bricks_usages_success_response: Object bricks usage data
 class_definition_get_data_object_class: Data object class
 class_definition_get_success_response: Class definition
+class_definition_get_identifier_data_description: |
+  Get identifier data for new class. Results consist of suggested unique ID and existing class IDs.
+class_definition_get_identifier_data_summary: Get identifier data for new class
+class_definition_get_identifier_data_success_response: Suggested unique ID and existing class IDs
+class_definition_get_text_layout_preview_description: |
+  Get text layout preview for the given class definition based on the provided request data. <br>
+  The <strong>{className}</strong> must be a name of an existing class definition.
+class_definition_get_text_layout_preview_summary: Get text layout preview for the class definition
+class_definition_get_text_layout_preview_success_response: Text layout preview as HTML
+class_definition_get_tree_description: |
+  Get class definition tree for all classes. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
+class_definition_get_tree_summary: Get class definition tree data
+class_definition_get_tree_success_response: Class definition data for the tree view
+class_definition_import_description: |
+  Import a class definition configuration from a previously exported JSON file for the given class definition <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition.
+class_definition_import_success_response: Successfully imported class definition configuration
+class_definition_import_summary: Import a class definition configuration from JSON file
+class_definition_get_layout_by_id_description: |
+  Get layout definition for the given class definition ID <strong>{id}</strong>
+class_definition_get_layout_by_id_success_response: Layout definition data
+class_definition_get_layout_by_id_summary: Get layout definitions for the class definition
+class_definition_update_description: |
+  Update an existing class definition configuration with the given <strong>{id}</strong> and parameters. <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+class_definition_update_success_response: Successfully updated class definition configuration
+class_definition_update_summary: Update class definition configuration by given ID
 class_custom_layout_collection: Get custom layout collection
 class_custom_layout_collection_description: Get custom layout collection for the given data object class.
 class_custom_layout_collection_summary: Get custom layout collection for data object class
@@ -1285,7 +1370,17 @@ class_custom_layout_editor_collection_description: |
   Get custom layout collection based on the <strong>{objectId}</strong> and current user permissions. <br>
   The <strong>{objectId}</strong> must be an ID of an existing object.
 class_custom_layout_editor_collection_summary: Get custom layout collection for the data object
-class_custom_layout_editor_collection_success_response: List of custom layouts for the given data object id
+class_custom_layout_editor_collection_success_response: List of custom layouts for the given data object ID
+class_custom_layout_get_identifier_data_description: |
+  Get identifier data for new custom layout. <br>
+  Results consist of suggested unique ID, existing layout IDs and existing layout names for provided <strong>{classDefinitionId}</strong>. <br>
+  The <strong>{classDefinitionId}</strong> must be an ID of an existing class definition.
+class_custom_layout_get_identifier_data_summary: Get identifier data for new custom layout
+class_custom_layout_get_identifier_data_success_response: Identifier data for new custom layout as JSON
+class_select_option_get_tree_description: |
+  Get select options tree data. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
+class_select_option_get_tree_summary: Get select options tree data
+class_select_option_get_tree_success_response: Select options data for the tree view
 pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
@@ -1302,8 +1397,11 @@ pimcore_studio_api_class_custom_layout_create_summary: Create custom layout
 pimcore_studio_api_class_custom_layout_create_success_response: Custom layout created
 pimcore_studio_api_class_custom_layout_create_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_update: Update custom layout by given id
-pimcore_studio_api_class_custom_layout_update_description: Update custom layout by given id
-pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_description: |
+  Update custom layout by the given <strong>{customLayoutId}</strong> and parameters. <br>
+  The <strong>{customLayoutId}</strong> must be an ID of an existing custom layout. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given ID
 pimcore_studio_api_class_custom_layout_update_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_update_success_response: Custom layout updated
 pimcore_studio_api_class_custom_layout_export: Export custom layout by given id
@@ -1311,11 +1409,10 @@ pimcore_studio_api_class_custom_layout_export_description: Export custom layout 
 pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
 pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
-pimcore_studio_api_class_custom_layout_import: Import custom layout
-pimcore_studio_api_class_custom_layout_import_description: Import custom layout using a previously exported JSON.
-pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
-pimcore_studio_api_class_custom_layout_import_success_response: Http status code
-pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout
+class_custom_layout_import_description: Import custom layout using a previously exported JSON.
+class_custom_layout_import_summary: Import custom layout
+class_custom_layout_import_success_response: Successfully imported custom layout configuration
+class_custom_layout_import_layout_id: Id of custom layout
 pimcore_studio_api_classes_folder_collection: Get list of all data object classes in a folder
 ping_action_description: Ping action to check if the API is reachable
 ping_action_summary: Ping action
@@ -1328,6 +1425,9 @@ tag_classification_store: Classification store operations
 classification_store_get_collections_description: Get all classification store collections for given fieldName
 classification_store_get_collections_summary: Get all classification store collections for given fieldName
 classification_store_get_collections_response: List of classification store collections
+classification_store_get_config_collection_description: Get all available classification stores
+classification_store_get_config_collection_summary: Get all classification store configurations
+classification_store_get_config_collection_success_response: List of classification store configurations
 classification_store_get_groups_description: Get all classification store groups for given fieldName
 classification_store_get_groups_summary: Get all classification store groups for given fieldName
 classification_store_get_groups_response: List of classification store groups
@@ -1445,3 +1545,7 @@ element_usage_replace_description: |
   <strong>Note:</strong> If no elements are passed, all elements will be replaced.
 element_usage_replace_summary: Replace all references to an element with another element
 element_usage_replace_success_response: Id of the created job run
+class_definition_collection_creatable: Get creatable class definitions.
+class_definition_collection_creatable_description: Get collection of all class definitions that can be created.
+class_definition_collection_creatable_summary: Get collection of all class definitions that can be created.
+class_definition_collection_creatable_success_response: List of class definitions that can be created.

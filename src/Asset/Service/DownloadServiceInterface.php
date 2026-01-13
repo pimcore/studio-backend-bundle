@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedExce
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -98,9 +97,4 @@ interface DownloadServiceInterface
         Asset $image,
         string $thumbnailName
     ): BinaryFileResponse;
-
-    public function downloadJSON(
-        string $json,
-        string $filename
-    ): JsonResponse;
 }

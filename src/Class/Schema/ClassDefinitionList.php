@@ -19,9 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     schema: 'ClassDefinitionList',
     title: 'Class Definition List Item',
@@ -34,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     ],
     type: 'object'
 )]
-final class ClassDefinitionList implements AdditionalAttributesInterface
+class ClassDefinitionList implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 

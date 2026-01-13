@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request\CustomLayoutUpdateRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -81,7 +81,7 @@ final class UpdateController extends AbstractApiController
     ])]
     public function updateCustomLayout(
         string $customLayoutId,
-        #[MapRequestPayload] CustomLayoutUpdateParameters $parameters
+        #[MapRequestPayload] UpdateParameters $parameters
     ): Response {
 
         return $this->jsonResponse(
