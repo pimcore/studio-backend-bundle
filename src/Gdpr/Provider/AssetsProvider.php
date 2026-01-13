@@ -33,6 +33,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class AssetsProvider implements DataProviderInterface
 {
     private array $assetConfig;
+
     public function __construct(
         private AssetQueryProviderInterface $query,
         private AssetSearchServiceInterface $searchService,

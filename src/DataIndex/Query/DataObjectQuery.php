@@ -221,8 +221,7 @@ final class DataObjectQuery implements DataObjectQueryInterface
         array $fields = [],
         string $type = 'best_fields',
         string $operator = 'or'
-    ): QueryInterface
-    {
+    ): QueryInterface {
         $this->search->addModifier(new MultiMatchSearch($searchTerm, $fields, $type, $operator));
 
         return $this;

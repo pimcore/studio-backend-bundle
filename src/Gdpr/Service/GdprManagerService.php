@@ -49,7 +49,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     ) {
     }
 
-
     public function getAvailableProviders(): Collection
     {
         $providers = $this->sortProviders($this->loader->getDataProviders());
@@ -78,7 +77,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $this->getSearchResultCollection($allResults);
 
     }
-
 
     public function getExportData(int $id, string $providerKey): Response
     {

@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\Concrete;
 final readonly class DataObjectProvider implements DataProviderInterface
 {
     private array $dataObjectConfig;
+
     public function __construct(
         private DataObjectQueryProviderInterface $query,
         private DataObjectSearchServiceInterface $searchService,

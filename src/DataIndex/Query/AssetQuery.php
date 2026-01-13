@@ -226,13 +226,11 @@ final class AssetQuery implements AssetQueryInterface
         array $fields = [],
         string $type = 'best_fields',
         string $operator = 'or'
-    ): QueryInterface
-    {
+    ): QueryInterface {
         $this->search->addModifier(new MultiMatchSearch($searchTerm, $fields, $type, $operator));
 
         return $this;
     }
-
 
     public function filterNumber(
         string $fieldName,
