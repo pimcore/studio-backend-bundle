@@ -1409,11 +1409,10 @@ pimcore_studio_api_class_custom_layout_export_description: Export custom layout 
 pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
 pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
-pimcore_studio_api_class_custom_layout_import: Import custom layout
-pimcore_studio_api_class_custom_layout_import_description: Import custom layout using a previously exported JSON.
-pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
-pimcore_studio_api_class_custom_layout_import_success_response: Http status code
-pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout
+class_custom_layout_import_description: Import custom layout using a previously exported JSON.
+class_custom_layout_import_summary: Import custom layout
+class_custom_layout_import_success_response: Successfully imported custom layout configuration
+class_custom_layout_import_layout_id: Id of custom layout
 pimcore_studio_api_classes_folder_collection: Get list of all data object classes in a folder
 ping_action_description: Ping action to check if the API is reachable
 ping_action_summary: Ping action

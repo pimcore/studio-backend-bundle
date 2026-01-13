@@ -59,25 +59,21 @@ final class ImportController extends AbstractApiController
      */
     #[Route(
         '/class/custom-layout/import/{customLayoutId}',
-        name: 'pimcore_studio_api_class_custom_layout_import',
+        name: 'class_custom_layout_import',
         methods: ['POST']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::PREFIX . '/class/custom-layout/import/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_import',
-        description: 'pimcore_studio_api_class_custom_layout_import_description',
-        summary: 'pimcore_studio_api_class_custom_layout_import_summary',
+        operationId: 'class_custom_layout_import',
+        description: 'class_custom_layout_import_description',
+        summary: 'class_custom_layout_import_summary',
         tags: [Tags::ClassDefinition->value]
-    )]
-    #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_import_success_response',
-        content: new JsonContent(ref: CustomLayout::class, type: 'object')
     )]
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_import_layout_id',
+        description: 'class_custom_layout_import_layout_id',
         required: true
     )]
     #[MultipartFormDataRequestBody(
@@ -91,22 +87,24 @@ final class ImportController extends AbstractApiController
         ],
         ['file']
     )]
+    #[SuccessResponse(
+        description: 'class_custom_layout_import_success_response',
+        content: new JsonContent(ref: CustomLayout::class, type: 'object')
+    )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function importCustomLayout(
-        string $customLayoutId,
-        Request $request
-    ): JsonResponse {
+    public function importCustomLayout(string $customLayoutId, Request $request): JsonResponse
+    {
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
             throw new EnvironmentException('Invalid file found in the request');
         }
 
-        return new JsonResponse(
+        return $this->jsonResponse(
             $this->customLayoutService->importCustomLayoutActionFromJson(
                 $customLayoutId,
                 $file->getContent()

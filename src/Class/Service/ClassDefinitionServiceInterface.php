@@ -56,7 +56,7 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws InvalidArgumentException|ElementSavingFailedException|NotFoundException|NotWriteableException
      */
-    public function importCustomLayoutActionFromJson(string $id, string $json): ClassDefinitionSchema;
+    public function importClassDefinitionFromJson(string $id, string $json): ClassDefinitionSchema;
 
     /**
      * @return ClassDefinitionList[]
