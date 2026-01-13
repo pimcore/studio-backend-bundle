@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -72,6 +73,13 @@ final class CollectionConfigurationController extends AbstractApiController
     ])]
     public function getConfigCollection(
     ): JsonResponse {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                UserPermissions::PERSPECTIVE_EDITOR->value,
+                UserPermissions::USER_MANAGEMENT->value,
+            ])
+        );
 
         $items = $this->perspectiveService->listConfigurations();
 

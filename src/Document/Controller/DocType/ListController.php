@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJ
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -73,6 +74,14 @@ final class ListController extends AbstractApiController
     ])]
     public function getDocTypeList(#[MapQueryString] TypeParameter $parameter = new TypeParameter()): JsonResponse
     {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                UserPermissions::DOCUMENTS->value,
+                UserPermissions::USER_MANAGEMENT->value,
+            ])
+        );
+
         return $this->jsonResponse(['items' => $this->docTypeService->listDocTypes($parameter->getType())]);
     }
 }
