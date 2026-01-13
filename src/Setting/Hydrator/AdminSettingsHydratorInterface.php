@@ -22,5 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
 interface AdminSettingsHydratorInterface
 {
     public function hydrate(array $data): AdminSettings;
+
     public function dehydrate(UpdateAdminSettings $adminSettings): array;
 }

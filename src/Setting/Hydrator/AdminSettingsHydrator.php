@@ -61,7 +61,7 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
             'assets' => [
                 'hide_edit_image' => $assets->getHideEditImage(),
                 'disable_tree_preview' => $assets->getDisableTreePreview(),
-            ]
+            ],
         ];
     }
 }
