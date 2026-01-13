@@ -48,9 +48,40 @@ Instead of handling deletion logic inside the provider, you simply **point** to 
 2.  This returns the unique **Operation ID** that handles deleting specific type of item.
 3.  When the user confirms, the frontend calls that API endpoint using the item's ID.
 
+## Configuration
+
+The GDPR Data Extractor can be configured. The following options are available:
+
+```yaml
+pimcore_studio_backend:
+    gdpr_data_extractor:
+        dataObjects:
+            classes:
+                # Configure which classes should be considered
+                # Array key is the class name
+                Person:
+                    allowDelete: true  # Allow delete of objects directly in preview grid (default: false)
+                Customer:
+                    allowDelete: false
+        assets:
+            types:
+                # Configure which asset types should be considered
+                - image
+                - document
+                - video
+```
+
+### Configuration Options
+
+| Option                                                            | Type    | Default | Description                                                                                                |
+|-------------------------------------------------------------------|---------|---------|------------------------------------------------------------------------------------------------------------|
+| `gdpr_data_extractor.dataObjects.classes`                         | array   | `[]`    | Configure which Data Object classes should be considered for GDPR search. The array key is the class name. |
+| `gdpr_data_extractor.dataObjects.classes.<ClassName>.allowDelete` | boolean | `false` | Allow deletion of objects directly in the preview grid.                                                    |
+| `gdpr_data_extractor.assets.types`                                | array   | `[]`    | Configure which asset types should be considered for GDPR search (e.g., `image`, `document`, `video`).     |
+
 ## Example Data Provider
 
-Example below shows some of the important functions with their implementations
+The example below shows some of the important functions with their implementations
 
 ```php
 

@@ -13,18 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Symfony\Component\HttpFoundation\Response;
 
 interface DataProviderInterface
 {
-    /**
-     * @return GdprDataRow[]
-     */
-    public function findData(SearchTerms $terms): array;
+    public function findData(FilterParameter $filter): Collection;
 
     public function getDeleteSwaggerOperationId(): string;
 
@@ -46,7 +43,6 @@ interface DataProviderInterface
 
     /**
      * @throws NotFoundException
-     * @throws ForbiddenException
      */
-    public function getSingleItemForDownload(int $id): array|object;
+    public function getSingleItemForDownload(int $id): array|Response;
 }

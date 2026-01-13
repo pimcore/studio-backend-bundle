@@ -53,6 +53,13 @@ interface QueryInterface
 
     public function filterFullText(string $value): self;
 
+    public function filterMultiMatch(
+        string $searchTerm,
+        array $fields = [],
+        string $type = 'best_fields',
+        string $operator = 'or'
+    ): self;
+
     public function orderByField(string $fieldName, SortDirection $direction): self;
 
     public function wildcardSearch(

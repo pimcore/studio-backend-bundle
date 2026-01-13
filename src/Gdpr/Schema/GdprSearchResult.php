@@ -37,14 +37,21 @@ final readonly class GdprSearchResult
             type: 'string',
             example: 'data_objects'
         )]
-        private readonly string $providerKey,
+        private string $providerKey,
 
         #[Property(
             description: 'The list of results found by this provider',
             type: 'array',
             items: new Items(ref: GdprDataRow::class)
         )]
-        private readonly array $results,
+        private array $results,
+
+        #[Property(
+            description: 'The total number of sub-items for each data providers',
+            type: 'integer',
+            example: 5
+        )]
+        private int $totalSubItems,
     ) {
     }
 
@@ -59,5 +66,10 @@ final readonly class GdprSearchResult
     public function getResults(): array
     {
         return $this->results;
+    }
+
+    public function getTotalSubItems(): int
+    {
+        return $this->totalSubItems;
     }
 }
