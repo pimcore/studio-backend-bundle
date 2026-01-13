@@ -53,3 +53,12 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepository
+    arguments:
+      $adminConfig: '%pimcore_admin.config%'

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Assets;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Branding;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
 
 /**
  * @internal
@@ -42,5 +43,25 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
             $assets,
             $data['writeable'] ?? false,
         );
+    }
+
+    public function dehydrate(UpdateAdminSettings $adminSettings): array
+    {
+        $branding = $adminSettings->getBranding();
+        $assets = $adminSettings->getAssets();
+
+        return [
+            'branding' => [
+                'login_screen_invert_colors' => $branding->getLoginScreenInvertColors(),
+                'color_login_screen' => $branding->getColorLoginScreen(),
+                'color_admin_interface' => $branding->getColorAdminInterface(),
+                'color_admin_interface_background' => $branding->getColorAdminInterfaceBackground(),
+                'login_screen_custom_image' => $branding->getLoginScreenCustomImage(),
+            ],
+            'assets' => [
+                'hide_edit_image' => $assets->getHideEditImage(),
+                'disable_tree_preview' => $assets->getDisableTreePreview(),
+            ]
+        ];
     }
 }

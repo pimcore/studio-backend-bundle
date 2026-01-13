@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -11,16 +12,21 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Attribute\Request;
 
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
+use Attribute;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
 
-/**
- * @internal
- */
-interface AdminSettingsHydratorInterface
+#[Attribute(Attribute::TARGET_METHOD)]
+final class UpdateAdminSettingsRequestBody extends RequestBody
 {
-    public function hydrate(array $data): AdminSettings;
-    public function dehydrate(UpdateAdminSettings $adminSettings): array;
+    public function __construct()
+    {
+        parent::__construct(
+            required: true,
+            content: new JsonContent(ref: UpdateAdminSettings::class)
+        );
+    }
 }

@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
-use Pimcore\Bundle\AdminBundle\System\AdminConfig;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\AdminSettingsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
 
 /**
  * @internal
@@ -23,15 +24,20 @@ use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
 final readonly class AdminSettingsService implements AdminSettingsServiceInterface
 {
     public function __construct(
-        private AdminConfig $adminConfig,
+        private AdminSettingRepositoryInterface $adminSettingRepository,
         private AdminSettingsHydratorInterface $adminSettingsHydrator,
     ) {
     }
 
     public function getAdminSettings(): AdminSettings
     {
-        $settings = $this->adminConfig->getAdminSystemSettingsConfig();
+        $config = $this->adminSettingRepository->getAdminSystemSettingsConfig();
+        return $this->adminSettingsHydrator->hydrate($config);
+    }
 
-        return $this->adminSettingsHydrator->hydrate($settings);
+    public function updateAdminSettings(UpdateAdminSettings $updateAdminSettings): void
+    {
+        $dehydratedData = $this->adminSettingsHydrator->dehydrate($updateAdminSettings);
+        $this->adminSettingRepository->saveAdminSystemSettingsConfig($dehydratedData);
     }
 }

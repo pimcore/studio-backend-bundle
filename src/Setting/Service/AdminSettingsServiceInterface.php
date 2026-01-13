@@ -13,12 +13,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
 
 /**
  * @internal
  */
 interface AdminSettingsServiceInterface
 {
+    /**
+     * @throws Exception
+     */
     public function getAdminSettings(): AdminSettings;
+
+    /**
+     * @throws Exception
+     */
+    public function updateAdminSettings(UpdateAdminSettings $updateAdminSettings): void;
 }

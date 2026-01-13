@@ -11,16 +11,22 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
+use Exception;
 
 /**
  * @internal
  */
-interface AdminSettingsHydratorInterface
+interface AdminSettingRepositoryInterface
 {
-    public function hydrate(array $data): AdminSettings;
-    public function dehydrate(UpdateAdminSettings $adminSettings): array;
+    /**
+     * @throws Exception
+     */
+    public function getAdminSystemSettingsConfig(): array;
+
+    /**
+     * @throws Exception
+     */
+    public function saveAdminSystemSettingsConfig(array $values): void;
 }

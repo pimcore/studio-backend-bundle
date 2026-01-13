@@ -875,6 +875,11 @@ admin_settings_get_description: |
   Includes branding and asset configuration options.
 admin_settings_get_success_response: Admin system settings data
 admin_settings_get_summary: Get admin appearance settings
+admin_settings_update_description: |
+  Update admin appearance system settings. <br>
+  Allows updating branding and asset configuration options.
+admin_settings_update_success_response: Admin system settings updated successfully
+admin_settings_update_summary: Update admin appearance settings
 settings_country_collection_description: |
   Get all available countries in the system. <br>
   Returns a list of countries with their codes and names
