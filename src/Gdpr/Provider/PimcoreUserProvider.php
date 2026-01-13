@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
@@ -33,6 +34,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     public function __construct(
         private string $logsDir,
         private SecurityServiceInterface $securityService,
+        private UserResolverInterface $userResolver,
         array $gdprConfig = []
     ) {
 
@@ -131,7 +133,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
      */
     public function getSingleItemForDownload(int $id): array
     {
-        $user = User::getById($id);
+        $user = $this->userResolver->getById($id);
 
         if (!$user) {
             throw new NotFoundException('Pimcore User', $id);
