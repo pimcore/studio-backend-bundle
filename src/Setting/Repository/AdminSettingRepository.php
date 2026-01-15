@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
 
 use Exception;
-use Pimcore\Cache\RuntimeCache;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Helper\SystemConfigResolverInterface;
 use Pimcore\Config\LocationAwareConfigRepository;
-use Pimcore\Helper\SystemConfig;
 
 /**
  * @internal
@@ -37,17 +37,19 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
 
     public function __construct(
         private readonly array $adminConfig,
+        private readonly RuntimeCacheResolverInterface $cacheResolver,
+        private SystemConfigResolverInterface $systemConfigResolver
     ) {
     }
 
     public function getAdminSystemSettingsConfig(): array
     {
-        if (RuntimeCache::isRegistered(self::CACHE_KEY)) {
-            return RuntimeCache::get(self::CACHE_KEY);
+        if ($this->cacheResolver->isRegistered(self::CACHE_KEY)) {
+            return $this->cacheResolver->get(self::CACHE_KEY);
         }
 
         $config = $this->get();
-        RuntimeCache::set(self::CACHE_KEY, $config);
+        $this->cacheResolver->set(self::CACHE_KEY, $config);
 
         return $config;
     }
@@ -100,7 +102,7 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
     {
         $repository = $this->getRepository();
 
-        $data = SystemConfig::getConfigDataByKey($repository, self::CONFIG_ID);
+        $data = $this->systemConfigResolver->getConfigDataByKey($repository, self::CONFIG_ID);
         $loadType = $repository->getReadTargets()[0] ?? null;
 
         // If the read target is settings-store and no data is found there,
