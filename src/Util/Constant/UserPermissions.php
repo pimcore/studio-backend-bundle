@@ -50,4 +50,5 @@ enum UserPermissions: string
     case WIDGET_EDITOR = 'studio_perspective_widget_editor';
     case SELECT_OPTIONS = 'selectoptions';
     case CLASS_DEFINITION = 'classes';
+    case SYSTEM_APPEARANCE_SETTINGS = 'system_appearance_settings';
 }

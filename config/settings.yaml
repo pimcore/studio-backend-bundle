@@ -28,6 +28,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementService
 
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsService
+
   #
   # Hydrators
   #
@@ -38,6 +41,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\AdminSettingsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\AdminSettingsHydrator
+
   #
   # Providers
   #
@@ -47,3 +53,12 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepository
+    arguments:
+      $adminConfig: '%pimcore_admin.config%'
