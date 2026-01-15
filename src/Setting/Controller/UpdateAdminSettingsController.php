@@ -34,7 +34,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UpdateAdminSettingsController extends AbstractApiController
 {
-    private const string ROUTE = '/settings/admin';
+    private const string ROUTE = '/settings/admin/save';
 
     public function __construct(
         SerializerInterface $serializer,

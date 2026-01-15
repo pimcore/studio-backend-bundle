@@ -30,6 +30,7 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
             $data['branding']['color_login_screen'] ?? '',
             $data['branding']['color_admin_interface'] ?? '',
             $data['branding']['color_admin_interface_background'] ?? '',
+            $data['branding']['login_screen_custom_background_image'] ?? '',
             $data['branding']['login_screen_custom_image'] ?? '',
         );
 
@@ -52,11 +53,22 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
 
         return [
             'branding' => [
-                'login_screen_invert_colors' => $branding->getLoginScreenInvertColors(),
+                'login_screen_invert_colors' => $branding->isLoginScreenInvertColors(),
                 'color_login_screen' => $branding->getColorLoginScreen(),
                 'color_admin_interface' => $branding->getColorAdminInterface(),
                 'color_admin_interface_background' => $branding->getColorAdminInterfaceBackground(),
-                'login_screen_custom_image' => $branding->getLoginScreenCustomImage(),
+                'login_screen_custom_image' =>
+                    str_replace(
+                        '%',
+                        '%%',
+                        $branding->getLoginScreenCustomImage()
+                    ),
+                'login_screen_custom_background_image' =>
+                    str_replace(
+                        '%',
+                        '%%',
+                        $branding->getLoginScreenCustomBackgroundImage()
+                    ),
             ],
             'assets' => [
                 'hide_edit_image' => $assets->getHideEditImage(),

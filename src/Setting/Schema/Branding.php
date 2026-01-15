@@ -32,44 +32,55 @@ final readonly class Branding
 {
     public function __construct(
         #[Property(description: 'Invert colors on login screen', type: 'boolean', example: false)]
-        private bool $login_screen_invert_colors,
+        private bool $loginScreenInvertColors,
         #[Property(description: 'Color for login screen', type: 'string', example: '#3C3F41')]
-        private string $color_login_screen,
+        private string $colorLoginScreen,
         #[Property(description: 'Color for admin interface', type: 'string', example: '#3C3F41')]
-        private string $color_admin_interface,
+        private string $colorAdminInterface,
         #[Property(description: 'Background color for admin interface', type: 'string', example: '#FFFFFF')]
-        private string $color_admin_interface_background,
+        private string $colorAdminInterfaceBackground,
         #[Property(
             description: 'Custom image for login screen',
             type: 'string',
-            example: '/bundles/pimcoreadmin/img/login-screen.jpg')
+            example: '/Sample Content/Logo/login_background.png')
         ]
-        private string $login_screen_custom_image,
+        private string $loginScreenCustomBackgroundImage,
+        #[Property(
+            description: 'Custom image for login screen',
+            type: 'string',
+            example: '/Sample Content/Logo/login_logo.png')
+        ]
+        private string $loginScreenCustomImage,
     ) {
     }
 
-    public function getLoginScreenInvertColors(): bool
+    public function isLoginScreenInvertColors(): bool
     {
-        return $this->login_screen_invert_colors;
+        return $this->loginScreenInvertColors;
     }
 
     public function getColorLoginScreen(): string
     {
-        return $this->color_login_screen;
+        return $this->colorLoginScreen;
     }
 
     public function getColorAdminInterface(): string
     {
-        return $this->color_admin_interface;
+        return $this->colorAdminInterface;
     }
 
     public function getColorAdminInterfaceBackground(): string
     {
-        return $this->color_admin_interface_background;
+        return $this->colorAdminInterfaceBackground;
+    }
+
+    public function getLoginScreenCustomBackgroundImage(): string
+    {
+        return $this->loginScreenCustomBackgroundImage;
     }
 
     public function getLoginScreenCustomImage(): string
     {
-        return $this->login_screen_custom_image;
+        return $this->loginScreenCustomImage;
     }
 }
