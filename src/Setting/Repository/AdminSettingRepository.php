@@ -29,16 +29,16 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
 
     private const string ASSETS = 'assets';
 
-    private const string SCOPE = 'pimcore_admin_system_settings';
+    private const string SCOPE = 'pimcore_studio_admin_system_settings';
 
-    private const string CACHE_KEY = 'pimcore_admin_system_settings_config';
+    private const string CACHE_KEY = 'pimcore_studio_admin_system_settings_config';
 
     private ?LocationAwareConfigRepository $locationAwareConfigRepository = null;
 
     public function __construct(
         private readonly array $adminConfig,
         private readonly RuntimeCacheResolverInterface $cacheResolver,
-        private SystemConfigResolverInterface $systemConfigResolver
+        private readonly SystemConfigResolverInterface $systemConfigResolver
     ) {
     }
 
@@ -58,20 +58,7 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
     {
         $repository = $this->getRepository();
 
-        $data[self::BRANDING] = [
-            'login_screen_invert_colors' => $values['branding']['login_screen_invert_colors'],
-            'color_login_screen' => $values['branding']['color_login_screen'],
-            'color_admin_interface' => $values['branding']['color_admin_interface'],
-            'color_admin_interface_background' => $values['branding']['color_admin_interface_background'],
-            'login_screen_custom_image' => str_replace('%', '%%', $values['branding']['login_screen_custom_image']),
-        ];
-
-        $data[self::ASSETS] = [
-            'hide_edit_image' => $values['assets']['hide_edit_image'],
-            'disable_tree_preview' => $values['assets']['disable_tree_preview'],
-        ];
-
-        $repository->saveConfig(self::CONFIG_ID, $data, function ($data) {
+        $repository->saveConfig(self::CONFIG_ID, $values, function ($data) {
             return [
                 'pimcore_admin' => $data,
             ];
