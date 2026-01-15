@@ -2,6 +2,16 @@
 
 declare(strict_types=1);
 
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
@@ -29,5 +39,4 @@ final class Version20260115100546 extends AbstractMigration
             AND jr.executionContext IN ('studio_stop_on_error', 'studio_continue_on_error')
         ");
     }
-    
 }
