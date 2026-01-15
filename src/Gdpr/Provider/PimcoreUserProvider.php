@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * This source file is available under the terms of the
@@ -12,10 +13,13 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Db;
@@ -29,7 +33,9 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 {
     public function __construct(
         private string $logsDir,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private UserResolverInterface $userResolver,
+        array $gdprConfig = []
     ) {
 
     }
@@ -37,43 +43,49 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     /**
      * {@inheritdoc}
      */
-    public function findData(SearchTerms $terms): array
+    public function findData(FilterParameter $filter): Collection
     {
         $listing = new Listing();
 
-        if ($terms->id !== null) {
+        $idFilter = $filter->getSimpleColumnFilterByType('id');
+        if ($idFilter !== null) {
             $listing->addConditionParam(
                 'id = :id',
-                ['id' => $terms->id]
+                ['id' => $idFilter->getFilterValue()]
             );
         }
 
-        if ($terms->firstname !== null) {
+        $firstnameFilter = $filter->getSimpleColumnFilterByType('firstname');
+        if ($firstnameFilter !== null) {
             $listing->addConditionParam(
                 'firstname LIKE :firstname',
-                ['firstname' => '%' . $terms->firstname . '%']
+                ['firstname' => '%' . $firstnameFilter->getFilterValue() . '%']
             );
         }
 
-        if ($terms->lastname !== null) {
+        $lastnameFilter = $filter->getSimpleColumnFilterByType('lastname');
+        if ($lastnameFilter !== null) {
             $listing->addConditionParam(
                 'lastname LIKE :lastname',
-                ['lastname' => '%' . $terms->lastname . '%']
+                ['lastname' => '%' . $lastnameFilter->getFilterValue() . '%']
             );
         }
 
-        if ($terms->email !== null) {
+        $emailFilter = $filter->getSimpleColumnFilterByType('email');
+        if ($emailFilter !== null) {
             $listing->addConditionParam(
                 'email LIKE :email',
-                ['email' => '%' . $terms->email . '%']
+                ['email' => '%' . $emailFilter->getFilterValue() . '%']
             );
         }
+
+        $this->applySearchOptions($listing, $filter);
 
         $users = $listing->getUsers();
 
         $columns = $this->getAvailableColumns();
 
-        return array_map(
+        $rows = array_map(
             fn ($user) => new GdprDataRow(
                 [
                     'id' => $user->getId(),
@@ -87,6 +99,28 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
             ),
             $users
         );
+
+        return new Collection(
+            totalItems: $listing->getTotalCount(),
+            items: $rows
+        );
+    }
+
+    private function applySearchOptions(Listing $listing, FilterParameter $options): void
+    {
+        $listing->setOffset($options->getStart());
+        $listing->setLimit($options->getPageSize());
+
+        $sortFilter = $options->getSortFilter();
+
+        if ($sortFilter->getKey() && $sortFilter->getDirection()) {
+            $listing->setOrderKey($sortFilter->getKey());
+            $listing->setOrder(
+                strtolower($sortFilter->getDirection()) === SortDirection::DESC->value
+                    ? SortDirection::DESC->value
+                    : SortDirection::ASC->value
+            );
+        }
     }
 
     public function getDeleteSwaggerOperationId(): string
@@ -99,27 +133,20 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
      */
     public function getSingleItemForDownload(int $id): array
     {
-        $listing = new Listing();
-        $listing->setCondition('id = ?', [$id]);
-        $listing->setLimit(1);
+        $user = $this->userResolver->getById($id);
 
-        $users = $listing->getUsers();
-
-        if (empty($users)) {
+        if (!$user) {
             throw new NotFoundException('Pimcore User', $id);
         }
 
-        $user = $users[0];
+        $userData = $user->getObjectVars();
 
-        return [
-                'id'        => $user->getId(),
-                'name'      => $user->getName(),
-                'firstname' => $user->getFirstname(),
-                'lastname'  => $user->getLastname(),
-                'email'     => $user->getEmail(),
-                'versions'  => $this->getVersionDataForUser($user),
-                'usageLog'  => $this->getUsageLogDataForUser($user),
-            ];
+        unset($userData['password']);
+
+        $userData['versions'] = $this->getVersionDataForUser($user);
+        $userData['usageLog'] = $this->getUsageLogDataForUser($user);
+
+        return $userData;
     }
 
     protected function getVersionDataForUser(User\AbstractUser $user): array

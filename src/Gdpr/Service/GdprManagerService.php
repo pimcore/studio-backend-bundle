@@ -18,16 +18,17 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -48,9 +49,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAvailableProviders(): Collection
     {
         $providers = $this->sortProviders($this->loader->getDataProviders());
@@ -58,36 +56,29 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $this->getDataProviderCollection($providers);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function search(GdprStructuredSearchRequest $request): GdprSearchResultCollection
+    public function search(CollectionFilterParameter $parameters, string $providerType): GdprSearchResultCollection
     {
         $allResults = [];
 
-        foreach ($request->providers as $providerKey) {
-            $provider = $this->loader->resolve($providerKey);
+        $providerClass = $this->loader->resolve($providerType);
 
-            $this->checkProviderPermission($provider);
+        $this->checkProviderPermission($providerClass);
 
-            $results = $provider->findData($request->searchTerms);
+        $results = $providerClass->findData($parameters->getFilters());
 
-            if (!empty($results)) {
-                $allResults[] = new GdprSearchResult(
-                    providerKey: $providerKey,
-                    results: $results
-                );
-            }
+        if (!empty($results->getItems())) {
+            $allResults[] = new GdprSearchResult(
+                providerKey: $providerType,
+                results: $results->getItems(),
+                totalSubItems: $results->getTotalItems()
+            );
         }
 
         return $this->getSearchResultCollection($allResults);
 
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse
+    public function getExportData(int $id, string $providerKey): Response
     {
         $provider = $this->loader->resolve($providerKey);
 
@@ -131,7 +122,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
      */
     private function getSearchResultCollection(array $results): GdprSearchResultCollection
     {
-        $collection = new GdprSearchResultCollection($results);
+        $collection = new GdprSearchResultCollection($results, count($results));
 
         $this->eventDispatcher->dispatch(
             new GdprSearchResultEvent($collection),
@@ -141,8 +132,14 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $collection;
     }
 
-    private function createExportResponse(mixed $data, string $providerKey, int $id): StreamedResponse
+    private function createExportResponse(mixed $data, string $providerKey, int $id): Response
     {
+        // If $data is a Response (e.g., assets export), return it directly.
+        // Otherwise, assume $data is an array and encode it as pretty JSON for download.
+        if ($data instanceof Response) {
+            return $data;
+        }
+
         try {
             $jsonData = json_encode($data, JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT);
         } catch (JsonException $e) {

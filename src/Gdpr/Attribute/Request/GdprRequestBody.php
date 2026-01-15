@@ -18,6 +18,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Property\FilterProperty;
 
 /**
  * @internal
@@ -49,6 +50,8 @@ final class GdprRequestBody extends RequestBody
                         description: 'The object containing the search values.',
                         type: 'object'
                     ),
+
+                    new FilterProperty(),
                 ],
                 type: 'object',
             ),

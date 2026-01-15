@@ -1,2 +1,6 @@
 parameters:
 	ignoreErrors:
+		-
+			message: "#^Constructor of class Pimcore\\\\Bundle\\\\StudioBackendBundle\\\\Gdpr\\\\Provider\\\\PimcoreUserProvider has an unused parameter \\$gdprConfig\\.$#"
+			count: 1
+			path: src/Gdpr/Provider/PimcoreUserProvider.php

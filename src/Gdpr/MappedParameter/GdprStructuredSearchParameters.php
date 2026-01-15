@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -23,7 +24,7 @@ use Symfony\Component\Validator\Constraints\Valid;
 /**
  * @internal
  */
-final readonly class GdprStructuredSearchRequest
+final readonly class GdprStructuredSearchParameters
 {
     /**
      * @param string[] $providers
@@ -31,11 +32,32 @@ final readonly class GdprStructuredSearchRequest
     public function __construct(
         #[NotBlank]
         #[All(new Type('string'))]
-        public array $providers,
+        private array $providers,
 
         #[Valid]
         #[NotNull]
-        public SearchTerms $searchTerms
+        private SearchTerms $searchTerms,
+
+        #[Valid]
+        private FilterParameter $filters
     ) {
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getProviders(): array
+    {
+        return $this->providers;
+    }
+
+    public function getSearchTerms(): SearchTerms
+    {
+        return $this->searchTerms;
+    }
+
+    public function getFilters(): FilterParameter
+    {
+        return $this->filters;
     }
 }
