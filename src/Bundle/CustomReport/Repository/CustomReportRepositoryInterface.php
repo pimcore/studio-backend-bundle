@@ -43,7 +43,7 @@ interface CustomReportRepositoryInterface
     /**
      * @throws NotWriteableException
      */
-    public function update(Config $config, CustomReportUpdate $parameters): Config;
+    public function update(Config $config): Config;
 
     /**
      * @throws NotWriteableException

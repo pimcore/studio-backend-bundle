@@ -115,7 +115,8 @@ final readonly class CustomReportService implements CustomReportServiceInterface
     public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails
     {
         $customReport = $this->getCustomReportByName($name);
-        $config = $this->customReportRepository->update($customReport, $parameters);
+        $this->customReportHydrator->dehydrateReportDetails($customReport, $parameters);
+        $config = $this->customReportRepository->update($customReport);
 
         return $this->customReportHydrator->extractReportDetails($config);
     }

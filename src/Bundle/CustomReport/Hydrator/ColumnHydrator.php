@@ -61,7 +61,7 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
                 is_int($width) ? $width : null,
                 $column['displayType'] ?? null,
                 $column['filterType'] ?? null,
-                $column['filterDrilldown'] ?? null,
+                $column['filter_drilldown'] ?? null,
                 $metadata && $metadata->isDisableOrderBy(),
                 $metadata && $metadata->isDisableFilterable(),
                 $metadata && $metadata->isDisableDropdownFilterable(),
@@ -70,6 +70,28 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
         }
 
         return $columnConfig;
+    }
+
+    public function dehydrateColumnConfiguration(array $columnConfigurations): array
+    {
+        $dehydrated = [];
+        foreach ($columnConfigurations as $configuration) {
+            $dehydrated[] = [
+                'name' => $configuration['name'],
+                'display' => $configuration['display'],
+                'export' => $configuration['export'],
+                'order' => $configuration['order'],
+                'label' => $configuration['label'],
+                'action' => $configuration['action'],
+                'id' => $configuration['id'],
+                'width' => $configuration['width'],
+                'displayType' => $configuration['displayType'],
+                'filterType' => $configuration['filterType'],
+                'filter_drilldown' => $configuration['filterDrilldown'],
+            ];
+        }
+
+        return $dehydrated;
     }
 
     private function getMetadataMap(Config $report): array

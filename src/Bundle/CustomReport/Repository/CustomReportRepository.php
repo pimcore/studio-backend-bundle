@@ -33,7 +33,6 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
     use JsonHelperTrait;
 
     public function __construct(
-        private readonly AdapterServiceInterface $adapterService,
         private readonly SecurityServiceInterface $securityService,
         private readonly CustomReportResolverInterface $customReportResolver
     ) {
@@ -106,7 +105,7 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function update(Config $config, CustomReportUpdate $parameters): Config
+    public function update(Config $config): Config
     {
         if (!$config->isWriteable()) {
             throw new NotWriteableException(
@@ -114,27 +113,6 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
                 'Cannot create new custom report configuration: repository is not writeable.',
             );
         }
-
-        $adapter = $this->adapterService->getAdapter($config);
-
-        $config->setSql($parameters->getSql());
-        $config->setColumnConfiguration($parameters->getColumnConfigurations());
-        $config->setDataSourceConfig($parameters->getDataSourceConfig());
-        $config->setNiceName($parameters->getNiceName());
-        $config->setGroup($parameters->getGroup());
-        $config->setGroupIconClass($parameters->getGroupIconClass());
-        $config->setIconClass($parameters->getIconClass());
-        $config->setMenuShortcut($parameters->getMenuShortcut());
-        $config->setReportClass($parameters->getReportClass());
-        $config->setChartType($parameters->getChartType());
-        $config->setPieColumn($parameters->getPieColumn());
-        $config->setPieLabelColumn($parameters->getPieLabelColumn());
-        $config->setXAxis($parameters->getXAxis());
-        $config->setYAxis($parameters->getYAxis());
-        $config->setShareGlobally($parameters->getSharedGlobally());
-        $config->setSharedUserNames($parameters->getSharedUserNames());
-        $config->setSharedRoleNames($parameters->getSharedRoleNames());
-        $config->setPagination($adapter->getPagination());
 
         $config->save();
 

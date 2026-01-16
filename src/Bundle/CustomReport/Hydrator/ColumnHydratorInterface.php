@@ -25,4 +25,6 @@ interface ColumnHydratorInterface
     public function hydrateColumnInfo(ColumnInformation $information): CustomReportColumnInformation;
 
     public function getCustomReportColumnConfiguration(Config $report): array;
+
+    public function dehydrateColumnConfiguration(array $columnConfigurations): array;
 }
