@@ -60,7 +60,7 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
                 $column['id'] ?? '',
                 is_int($width) ? $width : null,
                 $column['displayType'] ?? null,
-                $column['filterType'] ?? null,
+                $column['filter'] ?? null,
                 $column['filter_drilldown'] ?? null,
                 $metadata && $metadata->isDisableOrderBy(),
                 $metadata && $metadata->isDisableFilterable(),
@@ -86,7 +86,7 @@ final readonly class ColumnHydrator implements ColumnHydratorInterface
                 'id' => $configuration['id'],
                 'width' => $configuration['width'],
                 'displayType' => $configuration['displayType'],
-                'filterType' => $configuration['filterType'],
+                'filter' => $configuration['filterType'],
                 'filter_drilldown' => $configuration['filterDrilldown'],
             ];
         }
