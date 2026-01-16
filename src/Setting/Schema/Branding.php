@@ -20,11 +20,12 @@ use OpenApi\Attributes\Schema;
     schema: 'Branding',
     title: 'Branding',
     required: [
-        'login_screen_invert_colors',
-        'color_login_screen',
-        'color_admin_interface',
-        'color_admin_interface_background',
-        'login_screen_custom_image',
+        'loginScreenInvertColors',
+        'colorLoginScreen',
+        'colorAdminInterface',
+        'colorAdminInterfaceBackground',
+        'loginScreenCustomImage',
+        'loginScreenCustomBackgroundImage',
     ],
     type: 'object'
 )]

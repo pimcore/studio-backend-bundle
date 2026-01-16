@@ -46,7 +46,8 @@ final class GdprSearchResultCollection implements AdditionalAttributesInterface
 
         #[Property(
             description: 'Total number of items across all pages',
-            type: 'integer'
+            type: 'integer',
+            example: 5
         )]
         private readonly int $totalItems,
     ) {
