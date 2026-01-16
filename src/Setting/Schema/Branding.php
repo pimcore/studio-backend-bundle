@@ -25,7 +25,7 @@ use OpenApi\Attributes\Schema;
         'colorAdminInterface',
         'colorAdminInterfaceBackground',
         'loginScreenCustomImage',
-        'loginScreenCustomBackgroundImage'
+        'loginScreenCustomBackgroundImage',
     ],
     type: 'object'
 )]
