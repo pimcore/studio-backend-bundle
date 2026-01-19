@@ -13,9 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -23,19 +33,60 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 interface ClassDefinitionServiceInterface
 {
     /**
+     * @throws ElementExistsException|ElementSavingFailedException|UserNotFoundException|NotWriteableException
+     */
+    public function createClassDefinition(CreateClassDefinitionParameters $parameters): ClassDefinitionSchema;
+
+    /**
+     * @throws ConflictException|InvalidArgumentException|ElementSavingFailedException
+     * @throws NotFoundException|NotWriteableException|UserNotFoundException
+     */
+    public function updateClassDefinition(string $id, UpdateParameters $updateParameters): ClassDefinitionSchema;
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function deleteClassDefinition(string $id): void;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function exportClassDefinition(string $id): Response;
+
+    /**
+     * @throws InvalidArgumentException|ElementSavingFailedException|NotFoundException|NotWriteableException
+     */
+    public function importClassDefinitionFromJson(string $id, string $json): ClassDefinitionSchema;
+
+    /**
      * @return ClassDefinitionList[]
      */
-    public function getClassDefinitionCollection(): array;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getClassDefinition(string $dataObjectClass): ClassDefinition;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getClassDefinitionIdsInsideFolder(
-        int $folderId
+    public function getClassDefinitionCollection(
+        bool $creatableOnly = false
     ): array;
+
+    /**
+     * @return ClassDefinition[]
+     */
+    public function getClassDefinitions(bool $creatableOnly = false): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionByName(string $dataObjectClass): ClassDefinitionSchema;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionById(string $id): ClassDefinitionSchema;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionBricks(string $id): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionIdsInsideFolder(int $folderId): array;
 }

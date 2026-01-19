@@ -25,3 +25,16 @@ services:
         tags: ["pimcore.studio_backend.gdpr_data_provider"]
         arguments:
             $logsDir: "%kernel.logs_dir%"
+
+    Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataObjectProvider:
+        tags: ["pimcore.studio_backend.gdpr_data_provider"]
+
+    Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\AssetsProvider:
+        tags: ["pimcore.studio_backend.gdpr_data_provider"]
+
+    # --- Legacy Code from the admin-ui-classic-bundle ---
+    Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporter
+
+    Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporterInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporter

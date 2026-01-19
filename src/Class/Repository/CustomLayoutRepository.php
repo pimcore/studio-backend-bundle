@@ -18,7 +18,7 @@ use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\CustomLayout\CustomLayoutResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -33,7 +33,7 @@ use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
  */
 readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 {
-    const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
+    private const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
 
     public function __construct(
         private ClassDefinitionServiceResolverInterface $classDefinitionServiceResolver,
@@ -122,7 +122,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 
     public function updateCustomLayout(
         CustomLayout $customLayout,
-        CustomLayoutUpdateParameters $customLayoutParameters
+        UpdateParameters $customLayoutParameters
     ): CustomLayout {
         try {
             $config = $customLayoutParameters->getConfiguration();

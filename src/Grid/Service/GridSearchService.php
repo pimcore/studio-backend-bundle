@@ -61,7 +61,7 @@ final readonly class GridSearchService implements GridSearchServiceInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getDocumentSearchGrid(SearchGridParameter $searchParameter): Collection
     {

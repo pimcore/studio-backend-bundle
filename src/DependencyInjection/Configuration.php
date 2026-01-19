@@ -78,6 +78,7 @@ class Configuration implements ConfigurationInterface
         $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
+        $this->addGdprDataExtractorNode($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
@@ -656,5 +657,46 @@ class Configuration implements ConfigurationInterface
                     ->cannotBeEmpty()
                 ->end()
             ->end();
+    }
+
+    private function addGdprDataExtractorNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('gdpr_data_extractor')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('dataObjects')
+                        ->addDefaultsIfNotSet()
+                        ->info('Settings for DataObjects DataProvider')
+                        ->children()
+                            ->arrayNode('classes')
+                                ->info('Configure which classes should be considered, array key is class name')
+                                ->useAttributeAsKey('name')
+                                ->defaultValue([])
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->booleanNode('allowDelete')
+                                            ->info('Allow delete of objects directly in preview grid.')
+                                            ->defaultFalse()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('assets')
+                        ->addDefaultsIfNotSet()
+                        ->info('Settings for Assets DataProvider')
+                        ->children()
+                            ->arrayNode('types')
+                                ->info('Configure which asset types should be considered')
+                                ->scalarPrototype()->end()
+                                ->defaultValue([])
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 }

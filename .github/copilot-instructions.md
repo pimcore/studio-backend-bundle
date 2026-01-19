@@ -44,13 +44,33 @@ php 8.4 features are not used in this project. codeception is used for testing.
  - Use the `translations/` directory for translation files.
  - Use the `doc/` directory for documentation files.
 
+## Domain Structure (src/<Domain>/)
+
+Each domain in `src/` follows this directory structure:
+
+| Directory | Description | Requires Interface |
+|-----------|-------------|-------------------|
+| `Controller/` | Symfony controllers - each controller should only call one Service | No |
+| `Service/` | All business logic services | Yes (`<Name>ServiceInterface`) |
+| `Event/` | Pre-response events | No |
+| `Hydrator/` | Hydrators to map Pimcore objects to Studio API schemas | Yes (`<Name>HydratorInterface`) |
+| `MappedParameter/` | Symfony DTOs to map request parameters | No |
+| `Schema/` | OpenAPI schema classes used for responses | No |
+| `Attribute/` | Custom OpenAPI attributes | No |
+
+### Interface Naming Conventions
+
+ - Services: `<Name>ServiceInterface` (e.g., `AssetServiceInterface`)
+ - Hydrators: `<Name>HydratorInterface` (e.g., `AssetHydratorInterface`)
+
 ## Testing
 
  - Use Codeception for testing.
  - Follow the Codeception documentation for writing tests.
  - Write unit tests for new functionality. Use mocks and stubs where applicable.
  - Use `codeception.dist.yml` for Codeception configuration.
- - Run tests using `vendor/bin/codecept run` command.
+ - Run tests using `docker compose exec php-studio-backend-bundle vendor/bin/codecept run Unit` command.
+ - When docker is not running, run `docker compose up -d php-studio-backend-bundle` to start the container.
 
 ## Documentation
 

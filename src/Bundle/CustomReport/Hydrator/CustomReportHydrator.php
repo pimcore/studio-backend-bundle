@@ -19,6 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 
 /**
  * @internal
@@ -27,6 +29,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
 {
     public function __construct(
         private ColumnHydratorInterface $columnHydrator,
+        private readonly AdapterServiceInterface $adapterService
     ) {
     }
 
@@ -92,5 +95,37 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $drillDownData['name'] ?? '',
             $drillDownData['value'] ?? ''
         );
+    }
+
+    public function dehydrateReportDetails(
+        Config $config,
+        CustomReportUpdate $customReportUpdate
+    ): Config {
+        $adapter = $this->adapterService->getAdapter($config);
+
+        $config->setSql($customReportUpdate->getSql());
+        $config->setColumnConfiguration(
+            $this->columnHydrator->dehydrateColumnConfiguration(
+                $customReportUpdate->getColumnConfigurations()
+            )
+        );
+        $config->setDataSourceConfig($customReportUpdate->getDataSourceConfig());
+        $config->setNiceName($customReportUpdate->getNiceName());
+        $config->setGroup($customReportUpdate->getGroup());
+        $config->setGroupIconClass($customReportUpdate->getGroupIconClass());
+        $config->setIconClass($customReportUpdate->getIconClass());
+        $config->setMenuShortcut($customReportUpdate->getMenuShortcut());
+        $config->setReportClass($customReportUpdate->getReportClass());
+        $config->setChartType($customReportUpdate->getChartType());
+        $config->setPieColumn($customReportUpdate->getPieColumn());
+        $config->setPieLabelColumn($customReportUpdate->getPieLabelColumn());
+        $config->setXAxis($customReportUpdate->getXAxis());
+        $config->setYAxis($customReportUpdate->getYAxis());
+        $config->setShareGlobally($customReportUpdate->getSharedGlobally());
+        $config->setSharedUserNames($customReportUpdate->getSharedUserNames());
+        $config->setSharedRoleNames($customReportUpdate->getSharedRoleNames());
+        $config->setPagination($adapter->getPagination());
+
+        return $config;
     }
 }

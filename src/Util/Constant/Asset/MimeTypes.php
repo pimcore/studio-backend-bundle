@@ -33,4 +33,5 @@ enum MimeTypes: string
     case ZIP = 'application/zip';
     case JSON = 'application/json';
     case XLSX = 'application/xlsx';
+    case GENERIC = '*/*';
 }

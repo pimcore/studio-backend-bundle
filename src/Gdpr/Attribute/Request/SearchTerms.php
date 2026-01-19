@@ -29,21 +29,41 @@ use Symfony\Component\Validator\Constraints\Type;
 final readonly class SearchTerms
 {
     public function __construct(
-        #[Property(description: 'The ID to search for.', type: 'string', nullable: true)]
-        #[Type('string')]
-        public ?string $id = null,
+        #[Property(
+            description: 'The ID to search for.',
+            type: 'int',
+            nullable: true,
+            example: 3
+        )]
+        #[Type('int')]
+        private ?int $id = null,
 
-        #[Property(description: 'The first name to search for.', type: 'string', nullable: true)]
+        #[Property(
+            description: 'The first name to search for.',
+            type: 'string',
+            nullable: true,
+            example: 'John'
+        )]
         #[Type('string')]
-        public ?string $firstname = null,
+        private ?string $firstname = null,
 
-        #[Property(description: 'The last name to search for.', type: 'string', nullable: true)]
+        #[Property(
+            description: 'The last name to search for.',
+            type: 'string',
+            nullable: true,
+            example: 'Doe'
+        )]
         #[Type('string')]
-        public ?string $lastname = null,
+        private ?string $lastname = null,
 
-        #[Property(description: 'The email address to search for.', type: 'string', nullable: true)]
+        #[Property(
+            description: 'The email address to search for.',
+            type: 'string',
+            nullable: true,
+            example: 'john.doe@example.com'
+        )]
         #[Type('string')]
-        public ?string $email = null,
+        private ?string $email = null,
     ) {
         if ($this->id === null &&
             $this->firstname === null &&
@@ -54,7 +74,7 @@ final readonly class SearchTerms
         }
     }
 
-    public function getId(): ?string
+    public function getId(): ?int
     {
         return $this->id;
     }

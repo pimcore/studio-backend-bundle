@@ -32,6 +32,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Path
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\FullTextSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\MultiMatchSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
@@ -186,6 +187,17 @@ final class DocumentQuery implements DocumentQueryInterface
     public function filterFullText(string $value): QueryInterface
     {
         $this->search->addModifier(new FullTextSearch($value));
+
+        return $this;
+    }
+
+    public function filterMultiMatch(
+        string $searchTerm,
+        array $fields = [],
+        string $type = 'best_fields',
+        string $operator = 'or'
+    ): QueryInterface {
+        $this->search->addModifier(new MultiMatchSearch($searchTerm, $fields, $type, $operator));
 
         return $this;
     }

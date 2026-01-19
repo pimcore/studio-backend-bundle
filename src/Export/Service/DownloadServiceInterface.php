@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -43,4 +44,6 @@ interface DownloadServiceInterface
         string $folderName,
         string $fileName
     ): void;
+
+    public function downloadJSON(string $json, string $filename): Response;
 }

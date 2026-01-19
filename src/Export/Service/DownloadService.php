@@ -21,8 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function sprintf;
 
@@ -108,6 +111,21 @@ final readonly class DownloadService implements DownloadServiceInterface
                 ),
             );
         }
+    }
+
+    public function downloadJSON(string $json, string $filename): Response
+    {
+        $response = new Response($json);
+        $response->headers->set(
+            HttpResponseHeaders::HEADER_CONTENT_TYPE->value,
+            MimeTypes::JSON->value
+        );
+        $response->headers->set(
+            HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
+            'attachment; filename="' . $filename .'"'
+        );
+
+        return $response;
     }
 
     /**

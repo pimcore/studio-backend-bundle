@@ -16,17 +16,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\GdprRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultProperty;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -37,6 +40,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class SearchDataProviderController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly GdprManagerServiceInterface $gdprManagerService,
@@ -54,14 +59,27 @@ final class SearchDataProviderController extends AbstractApiController
         name: 'pimcore_studio_api_gdpr_search',
         methods: ['POST'])]
     #[IsGranted(UserPermissions::GDPR->value)]
-    #[POST(
+    #[Post(
         path: self::PREFIX . '/gdpr/search',
         operationId: 'gdpr_search_data',
         description: 'gdpr_search_data_description',
         summary: 'gdpr_search_data_summary',
         tags: [Tags::GDPR->value]
     )]
-    #[GdprRequestBody]
+    #[CollectionRequestBody(
+        columnFiltersExample: '[' .
+        '{"type":"firstname", "filterValue": "John"},' .
+        '{"type":"lastname", "filterValue": "Doe"},' .
+        '{"type":"email", "filterValue": "john.doe@mail.com"},'.
+        '{"type":"id", "filterValue": 1}'
+        . ']',
+        sortFilterExample: '{"key":"id", "direction":"ASC"}'
+    )]
+    #[TextFieldParameter(
+        name: 'provider',
+        description: 'Define the data provider to search in.',
+        example: 'assets'
+    )]
     #[SuccessResponse(
         description: 'gdpr_search_data_success_response',
         content: new CollectionJson(
@@ -77,11 +95,16 @@ final class SearchDataProviderController extends AbstractApiController
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function searchData(
-        #[MapRequestPayload] GdprStructuredSearchRequest $request
+        #[MapRequestPayload] CollectionFilterParameter $parameters,
+        #[MapQueryParameter] string $provider
     ): JsonResponse {
 
-        $collection = $this->gdprManagerService->search($request);
+        $collection = $this->gdprManagerService->search($parameters, $provider);
 
-        return $this->jsonResponse($collection);
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $collection->getItems(),
+            $collection->getTotalItems()
+        );
     }
 }

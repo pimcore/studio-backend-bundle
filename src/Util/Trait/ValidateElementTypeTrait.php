@@ -44,4 +44,14 @@ trait ValidateElementTypeTrait
             throw new InvalidElementTypeException($elementType);
         }
     }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    private function validateStudioTypes(string $elementType): void
+    {
+        if (!in_array($elementType, ElementTypes::ALLOWED_STUDIO_TYPES, true)) {
+            throw new InvalidElementTypeException($elementType);
+        }
+    }
 }

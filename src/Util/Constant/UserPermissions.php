@@ -48,4 +48,7 @@ enum UserPermissions: string
     case USER_PASSWORD = 'USER_PASSWORD';
     case WEBSITE_SETTINGS = 'website_settings';
     case WIDGET_EDITOR = 'studio_perspective_widget_editor';
+    case SELECT_OPTIONS = 'selectoptions';
+    case CLASS_DEFINITION = 'classes';
+    case SYSTEM_APPEARANCE_SETTINGS = 'system_appearance_settings';
 }

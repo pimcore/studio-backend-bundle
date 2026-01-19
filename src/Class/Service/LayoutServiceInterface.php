@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\TextLayoutPreviewParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\LayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
@@ -24,4 +27,9 @@ interface LayoutServiceInterface
      * @return LayoutCompact[]
      */
     public function getAllLayoutsCollection(): array;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function getTextLayoutPreview(TextLayoutPreviewParameters $parameters): string;
 }

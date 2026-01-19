@@ -15,9 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -28,6 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
+/**
+ * @internal
+ */
 interface ElementServiceInterface
 {
     /**
@@ -81,13 +81,6 @@ interface ElementServiceInterface
      * @throws NotFoundException|ForbiddenException|UserNotFoundException
      */
     public function getElementSubtype(ElementParameters $parameters): Subtype;
-
-    /**
-     * @throws InvalidElementTypeException
-     */
-    public function getElementContextPermissions(
-        string $elementType
-    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions;
 
     /**
      * @throws InvalidElementTypeException|NotFoundException|SearchException

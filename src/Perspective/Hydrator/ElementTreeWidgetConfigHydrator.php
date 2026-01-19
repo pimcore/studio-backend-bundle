@@ -16,10 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
@@ -33,7 +33,7 @@ use Psr\Log\LoggerInterface;
 final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydratorInterface
 {
     public function __construct(
-        private ContextPermissionServiceInterface $contextPermissionService,
+        private TreeContextPermissionsServiceInterface $contextPermissionService,
         private ElementDataServiceInterface $elementDataService,
         private ElementServiceInterface $elementService,
         private IconServiceInterface $iconService,
@@ -52,10 +52,7 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
         return new ElementTreeWidgetConfig(
             $widgetData['id'],
             $widgetData['name'],
-            $this->contextPermissionService->setElementContextPermissions(
-                $widgetData['elementType'],
-                $widgetData['contextPermissions']
-            ),
+            $this->contextPermissionService->list($widgetData['elementType'], $widgetData['contextPermissions']),
             $this->iconService->getIconForValue($widgetData['icon']),
             $widgetData['elementType'],
             $this->getRootFolder($widgetData),
