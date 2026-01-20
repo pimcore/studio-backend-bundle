@@ -77,7 +77,7 @@ final class SelectedVisibleFieldsController extends AbstractApiController
     #[QueryStringParameter(
         name: 'relationField',
         example: 'myRelationField',
-        description: 'Relation field name for which the selected fields should be retrieved.',
+        description: 'Relation field name for which the selected fields should be retrieved as dot notation.',
         required: false,
     )]
     #[SuccessResponse(

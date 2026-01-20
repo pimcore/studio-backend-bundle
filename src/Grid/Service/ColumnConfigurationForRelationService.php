@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException as ApiParseException;
+use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
@@ -31,7 +34,8 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 {
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
-        private ColumnConfigurationServiceInterface $columnConfigurationService
+        private ColumnConfigurationServiceInterface $columnConfigurationService,
+        private DotNotationParserInterface $dotNotationParser
     ) {
     }
 
@@ -49,16 +53,10 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             throw new InvalidArgumentException(sprintf('Class with ID %s not found', $classId));
         }
 
-        $fieldDefinition = $class->getFieldDefinition($relationField);
-
-        if (!$fieldDefinition) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'Field %s not found in class %s',
-                    $relationField,
-                    $classId
-                )
-            );
+        try {
+            $fieldDefinition = $this->dotNotationParser->parseByClassId($classId, $relationField)->getFieldDefinition();
+        } catch (ParseException $exception) {
+            throw new ApiParseException($exception->getMessage());
         }
 
         if ($fieldDefinition instanceof AdvancedManyToManyObjectRelation) {
@@ -94,17 +92,13 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
     ): array {
         $classes = $fieldDefinition->getClasses();
         $availableConfigurationsForRelation = [];
-        if (count($classes) > 1) {
-            $availableConfigurationsForRelation = $this->columnConfigurationService
-                ->getSystemDataObjectColumnConfiguration();
-        }
 
-        if (count($classes) === 1) {
+        foreach ($classes as $class) {
             $classId = $this->classDefinitionResolver->getByName(
-                $classes[0]['classes'],
+                $class['classes'],
             )->getId();
 
-            $availableConfigurationsForRelation = $this->columnConfigurationService
+            $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
                 ->getAvailableDataObjectColumnConfiguration(
                     $classId,
                     0,
@@ -130,7 +124,7 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             $fieldDefinition->getAllowedClassId()
         )->getId();
 
-        $availableConfigurationsForRelation = $this->columnConfigurationService
+        $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
             ->getAvailableDataObjectColumnConfiguration(
                 $classId,
                 0,
@@ -155,23 +149,50 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
     /**
      * @param string[] $allowedFields
-     * @param ColumnConfiguration[] $allConfigurations
+     * @param array<string, ColumnConfiguration[]> $allConfigurations
      *
      * @return ColumnConfiguration[]
      */
     private function findConfigurations(array $allowedFields, array $allConfigurations): array
     {
-        $configurations = [];
-        foreach ($allowedFields as $allowedField) {
-            foreach ($allConfigurations as $configuration) {
-                if ($configuration->getKey() === $allowedField) {
-                    $configurations[] = $configuration;
+        $groupedByKey = [];
 
-                    break;
+        foreach ($allConfigurations as $configurations) {
+            foreach ($configurations as $config) {
+                if (in_array($config->getKey(), $allowedFields, true)) {
+                    $groupedByKey[$config->getKey()][] = $config;
                 }
             }
         }
 
-        return $configurations;
+        return $this->pickUniqueConfigPerKeyIfSameFrontendType($groupedByKey);
+    }
+
+    /**
+     * @param array<string, ColumnConfiguration[]> $configurations
+     * @return ColumnConfiguration[]
+     */
+    function pickUniqueConfigPerKeyIfSameFrontendType(array $configurations): array
+    {
+        $result = [];
+
+        foreach ($configurations as $key => $configs) {
+            if ($configs === []) {
+                continue;
+            }
+
+            $frontendTypes = array_map(
+                static fn($c) => $c->getFrontendType(),
+                $configs
+            );
+
+            $unique = array_values(array_unique($frontendTypes));
+
+            if (count($unique) === 1) {
+                $result[$key] = $configs[0]; // or reset($configs)
+            }
+        }
+
+        return $result;
     }
 }
