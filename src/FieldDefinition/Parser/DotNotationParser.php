@@ -60,7 +60,9 @@ final class DotNotationParser implements DotNotationParserInterface
      */
     public function parseByClassId(string $classId, string $dotNotation): FieldDefinitionWrapper
     {
-        $this->fieldDefinitions = $this->classDefinitionRepository->getClassDefinitionById($classId)->getFieldDefinitions();
+        $this->fieldDefinitions = $this->classDefinitionRepository->getClassDefinitionById(
+            $classId
+        )->getFieldDefinitions();
 
         return $this->doParse($dotNotation);
     }
