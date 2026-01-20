@@ -16,14 +16,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException as ApiParseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\UserInterface;
 use function count;
+use function in_array;
 use function is_string;
 use function sprintf;
 
@@ -170,9 +171,10 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
     /**
      * @param array<string, ColumnConfiguration[]> $configurations
+     *
      * @return ColumnConfiguration[]
      */
-    function pickUniqueConfigPerKeyIfSameFrontendType(array $configurations): array
+    public function pickUniqueConfigPerKeyIfSameFrontendType(array $configurations): array
     {
         $result = [];
 
@@ -182,7 +184,7 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             }
 
             $frontendTypes = array_map(
-                static fn($c) => $c->getFrontendType(),
+                static fn ($c) => $c->getFrontendType(),
                 $configs
             );
 

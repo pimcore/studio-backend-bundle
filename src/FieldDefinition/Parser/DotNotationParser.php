@@ -54,7 +54,6 @@ final class DotNotationParser implements DotNotationParserInterface
         return $this->doParse($dotNotation);
     }
 
-
     /**
      * @throws ParseException
      * @throws Exception
@@ -88,7 +87,6 @@ final class DotNotationParser implements DotNotationParserInterface
 
         return $fd;
     }
-
 
     /**
      * @return array<string, ResolverInterface>
