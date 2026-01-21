@@ -16,10 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
 use Exception;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Attribute\Request\UpdateAdminSettingsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -55,7 +55,7 @@ final class UpdateAdminSettingsController extends AbstractApiController
         summary: 'admin_settings_update_summary',
         tags: [Tags::Settings->name]
     )]
-    #[UpdateAdminSettingsRequestBody]
+    #[ReferenceRequestBody(UpdateAdminSettings::class)]
     #[SuccessResponse(
         description: 'admin_settings_update_success_response',
     )]

@@ -15,17 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 
 #[Schema(
     schema: 'Branding',
     title: 'Branding',
     required: [
-        'loginScreenInvertColors',
-        'colorLoginScreen',
-        'colorAdminInterface',
+        'backgroundShade',
+        'brandColor',
         'colorAdminInterfaceBackground',
-        'loginScreenCustomImage',
         'loginScreenCustomBackgroundImage',
+        'loginScreenCustomImage'
     ],
     type: 'object'
 )]
@@ -39,17 +39,17 @@ final readonly class Branding
         #[Property(description: 'Background color for admin interface', type: 'string', example: '#FFFFFF')]
         private string $colorAdminInterfaceBackground,
         #[Property(
+            ref: RelatedElementData::class,
             description: 'Custom image for login screen',
-            type: 'string',
-            example: '/Sample Content/Logo/login_background.png')
-        ]
-        private string $loginScreenCustomBackgroundImage,
+            type: 'object'
+        )]
+        private ?RelatedElementData $loginScreenCustomBackgroundImage = null,
         #[Property(
+            ref: RelatedElementData::class,
             description: 'Custom image for login screen',
-            type: 'string',
-            example: '/Sample Content/Logo/login_logo.png')
-        ]
-        private string $loginScreenCustomImage,
+            type: 'object'
+        )]
+        private ?RelatedElementData $loginScreenCustomImage = null,
     ) {
 
     }
@@ -59,12 +59,12 @@ final readonly class Branding
         return $this->colorAdminInterfaceBackground;
     }
 
-    public function getLoginScreenCustomBackgroundImage(): string
+    public function getLoginScreenCustomBackgroundImage(): ?RelatedElementData
     {
         return $this->loginScreenCustomBackgroundImage;
     }
 
-    public function getLoginScreenCustomImage(): string
+    public function getLoginScreenCustomImage(): ?RelatedElementData
     {
         return $this->loginScreenCustomImage;
     }
