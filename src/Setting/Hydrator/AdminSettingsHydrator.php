@@ -40,7 +40,6 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
         $branding = new Branding(
             $data['branding']['background_shade'] ?? '',
             $data['branding']['brand_color'] ?? '',
-            $data['branding']['color_admin_interface_background'] ?? '',
             $this->getRelatedElementData(
                 $data['branding']['login_screen_custom_background_image'] ?? null
             ),
@@ -70,7 +69,6 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
             'branding' => [
                 'background_shade' => $branding->getBackGroundShade(),
                 'brand_color' => $branding->getBrandColor(),
-                'color_admin_interface_background' => $branding->getColorAdminInterfaceBackground(),
                 'login_screen_custom_image' => $this->getRelatedElementDataAsArray(
                     $branding->getLoginScreenCustomImage()
                 ),
