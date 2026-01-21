@@ -61,4 +61,4 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepository
     arguments:
-      $adminConfig: '%pimcore_admin.config%'
+      $adminConfig: '%pimcore_studio_backend_admin.config%'

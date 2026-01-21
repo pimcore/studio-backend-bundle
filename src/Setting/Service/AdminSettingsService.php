@@ -31,14 +31,13 @@ final readonly class AdminSettingsService implements AdminSettingsServiceInterfa
 
     public function getAdminSettings(): AdminSettings
     {
-        $config = $this->adminSettingRepository->getAdminSystemSettingsConfig();
-
+        $config = $this->adminSettingRepository->getConfiguration();
         return $this->adminSettingsHydrator->hydrate($config);
     }
 
     public function updateAdminSettings(UpdateAdminSettings $updateAdminSettings): void
     {
         $dehydratedData = $this->adminSettingsHydrator->dehydrate($updateAdminSettings);
-        $this->adminSettingRepository->saveAdminSystemSettingsConfig($dehydratedData);
+        $this->adminSettingRepository->saveConfiguration($dehydratedData);
     }
 }
