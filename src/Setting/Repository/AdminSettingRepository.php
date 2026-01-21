@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Config\LocationAwareConfigRepository;
+use function sprintf;
 
 /**
  * @internal

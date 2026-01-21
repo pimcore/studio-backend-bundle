@@ -52,6 +52,7 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
+     *
      * @throws InvalidHostException
      */
     public function getConfigTreeBuilder(): TreeBuilder
@@ -94,7 +95,7 @@ class Configuration implements ConfigurationInterface
                 self::PERSPECTIVES_NODE =>
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
                 self::ADMIN_SETTINGS_NODE =>
-                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . AdminSettingRepository::SCOPE
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . AdminSettingRepository::SCOPE,
             ],
             ['read_target']
         );
