@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -30,11 +29,6 @@ interface DataProviderInterface
     public function getKey(): string;
 
     public function getSortPriority(): int;
-
-    /**
-     * @return GdprDataColumn[]
-     */
-    public function getAvailableColumns(): array;
 
     /**
      * @return string[] (e.g., ['users', 'objects'])

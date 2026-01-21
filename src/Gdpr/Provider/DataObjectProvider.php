@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchService
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -80,8 +79,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $searchResult = $this->searchService->searchDataObjects($query);
 
-        $columns = $this->getAvailableColumns();
-
         $items   = $searchResult->getItems();
 
         $rows = array_map(
@@ -92,7 +89,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
                 'className' => $item->getClassName(),
                 '__gdprIsDeletable' =>
                     $this->dataObjectConfig['classes'][$item->getClassName()]['allowDelete'] ?? false,
-            ], $columns),
+            ]),
             $items
         );
 
@@ -180,19 +177,5 @@ final readonly class DataObjectProvider implements DataProviderInterface
     public function getRequiredPermissions(): array
     {
         return [UserPermissions::DATA_OBJECTS->value];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAvailableColumns(): array
-    {
-        return [
-            new GdprDataColumn('type', 'Type'),
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('fullPath', 'Full Path'),
-            new GdprDataColumn('className', 'Class Name'),
-            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
-        ];
     }
 }

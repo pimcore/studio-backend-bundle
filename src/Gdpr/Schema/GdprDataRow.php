@@ -15,9 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use function array_key_exists;
-use function sprintf;
 
 #[Schema(
     title: 'GDPR Data Row',
@@ -29,22 +26,11 @@ final readonly class GdprDataRow
 {
     /**
      * @param array<string, mixed> $data
-     * @param GdprDataColumn[] $availableColumns
      */
     public function __construct(
         #[Property(description: 'Data row values', type: 'object')]
-        private array $data,
-        array $availableColumns
+        private array $data
     ) {
-        foreach ($availableColumns as $column) {
-            $columnName = $column->getKey();
-            if (!array_key_exists($columnName, $data)) {
-                throw new InvalidArgumentException(sprintf(
-                    'Missing required column "%s"',
-                    $columnName
-                ));
-            }
-        }
     }
 
     public function getData(): array

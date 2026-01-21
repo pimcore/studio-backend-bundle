@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -25,16 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'GDPR Data Provider',
     description: 'GDPR Data Extractor search source(e.g., "Data Objects", "Pimcore user").',
-    required: ['key', 'label', 'columns'],
+    required: ['key', 'label', 'deleteOperationId'],
     type: 'object',
 )]
 final class GdprDataProvider implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
-    /**
-     * @param array<string, GdprDataColumn> $columns
-     */
     public function __construct(
         #[Property(
             description: 'Unique key of the provider',
@@ -56,13 +52,6 @@ final class GdprDataProvider implements AdditionalAttributesInterface
             example: 'user_delete_by_id'
         )]
         private readonly string $deleteOperationId,
-
-        #[Property(
-            description: 'List of column definitions for the result grid',
-            type: 'array',
-            items: new Items(ref: GdprDataColumn::class)
-        )]
-        private readonly array $columns,
     ) {
     }
 
@@ -79,13 +68,5 @@ final class GdprDataProvider implements AdditionalAttributesInterface
     public function getDeleteOperationId(): string
     {
         return $this->deleteOperationId;
-    }
-
-    /**
-     * @return GdprDataColumn[]
-     */
-    public function getColumns(): array
-    {
-        return $this->columns;
     }
 }

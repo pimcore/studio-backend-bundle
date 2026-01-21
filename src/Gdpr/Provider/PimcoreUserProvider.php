@@ -17,7 +17,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -83,8 +82,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $users = $listing->getUsers();
 
-        $columns = $this->getAvailableColumns();
-
         $rows = array_map(
             fn ($user) => new GdprDataRow(
                 [
@@ -94,8 +91,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                     'lastname' => $user->getLastname(),
                     'email' => $user->getEmail(),
                      '__gdprIsDeletable' => $user->getId() != $this->securityService->getCurrentUser()->getId(),
-                ],
-                $columns
+                ]
             ),
             $users
         );
@@ -223,20 +219,5 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     public function getRequiredPermissions(): array
     {
         return [UserPermissions::PIMCORE_USER->value];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAvailableColumns(): array
-    {
-        return [
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('name', 'Username'),
-            new GdprDataColumn('firstname', 'First Name'),
-            new GdprDataColumn('lastname', 'Last Name'),
-            new GdprDataColumn('email', 'Email'),
-            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
-        ];
     }
 }
