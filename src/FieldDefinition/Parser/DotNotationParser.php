@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\ResolverInterface;
@@ -28,6 +29,7 @@ final class DotNotationParser implements DotNotationParserInterface
 {
     public function __construct(
         private readonly ResolverLoaderInterface $resolverLoader,
+        private readonly ClassDefinitionRepositoryInterface $classDefinitionRepository
     ) {
     }
 
@@ -47,9 +49,27 @@ final class DotNotationParser implements DotNotationParserInterface
      */
     public function parse(Concrete $concreteObject, string $dotNotation): FieldDefinitionWrapper
     {
-        $parts = explode('.', $dotNotation);
         $this->fieldDefinitions = $concreteObject->getClass()->getFieldDefinitions();
 
+        return $this->doParse($dotNotation);
+    }
+
+    /**
+     * @throws ParseException
+     * @throws Exception
+     */
+    public function parseByClassId(string $classId, string $dotNotation): FieldDefinitionWrapper
+    {
+        $this->fieldDefinitions = $this->classDefinitionRepository->getClassDefinitionById(
+            $classId
+        )->getFieldDefinitions();
+
+        return $this->doParse($dotNotation);
+    }
+
+    private function doParse(string $dotNotation): FieldDefinitionWrapper
+    {
+        $parts = explode('.', $dotNotation);
         $resolvers = $this->getResolvers();
 
         $fd = null;
