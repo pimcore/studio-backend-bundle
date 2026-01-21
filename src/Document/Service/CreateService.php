@@ -106,12 +106,18 @@ final readonly class CreateService implements CreateServiceInterface
 
     private function addBaseData(UserInterface $user, DocumentAddParameters $parameters): array
     {
-        return [
+        $baseData = [
             'userOwner' => $user->getId(),
             'published' => false,
             'type' => $parameters->getType(),
             'key' => $this->serviceResolver->getValidKey($parameters->getKey(), ElementTypes::TYPE_DOCUMENT),
         ];
+
+        if ($parameters->getTemplate() !== null) {
+            $baseData['template'] = $parameters->getTemplate();
+        }
+
+        return $baseData;
     }
 
     private function addDocTypeData(
