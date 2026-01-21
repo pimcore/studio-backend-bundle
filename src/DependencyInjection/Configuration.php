@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepository;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
@@ -41,6 +42,8 @@ class Configuration implements ConfigurationInterface
 
     public const string PERSPECTIVES_NODE = 'studio_perspectives';
 
+    public const string ADMIN_SETTINGS_NODE = 'admin_settings';
+
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
@@ -49,6 +52,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidHostException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -79,13 +84,18 @@ class Configuration implements ConfigurationInterface
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
         $this->addGdprDataExtractorNode($rootNode);
+        $this->addAdminSettingsNode($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
             [
-                self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
-                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+                self::TREE_WIDGETS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
+                self::PERSPECTIVES_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+                self::ADMIN_SETTINGS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . AdminSettingRepository::SCOPE,
             ],
             ['read_target']
         );
@@ -698,5 +708,51 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+    private function addAdminSettingsNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::ADMIN_SETTINGS_NODE)
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('branding')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('background_shade')
+                                ->defaultValue('')
+                            ->end()
+                            ->scalarNode('brand_color')
+                                ->defaultValue('')
+                            ->end()
+                            ->scalarNode('color_admin_interface_background')
+                                ->defaultValue('')
+                            ->end()
+                            ->arrayNode('login_screen_custom_background_image')
+                                ->children()
+                                    ->scalarNode('id')->end()
+                                    ->scalarNode('type')->end()
+                                ->end()
+                            ->end()
+                            ->arrayNode('login_screen_custom_image')
+                                ->children()
+                                    ->scalarNode('id')->end()
+                                    ->scalarNode('type')->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('assets')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->booleanNode('hide_edit_image')
+                                ->defaultFalse()
+                            ->end()
+                            ->booleanNode('disable_tree_preview')
+                                ->defaultFalse()
+                            ->end()
+                        ->end()
+            ->end()
+            ->end();
     }
 }

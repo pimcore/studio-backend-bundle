@@ -14,53 +14,46 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Helper\SystemConfigResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Config\LocationAwareConfigRepository;
+use function sprintf;
 
 /**
  * @internal
  */
 final class AdminSettingRepository implements AdminSettingRepositoryInterface
 {
-    private const string CONFIG_ID = 'admin_system_settings';
-
-    private const string BRANDING = 'branding';
-
-    private const string ASSETS = 'assets';
-
-    private const string SCOPE = 'pimcore_studio_admin_system_settings';
-
-    private const string CACHE_KEY = 'pimcore_studio_admin_system_settings_config';
+    public const string SCOPE = 'studio_backend_admin_settings';
 
     private ?LocationAwareConfigRepository $locationAwareConfigRepository = null;
 
     public function __construct(
         private readonly array $adminConfig,
-        private readonly RuntimeCacheResolverInterface $cacheResolver,
-        private readonly SystemConfigResolverInterface $systemConfigResolver
+        private readonly array $storageConfig
     ) {
     }
 
-    public function getAdminSystemSettingsConfig(): array
+    public function getConfiguration(): array
     {
-        if ($this->cacheResolver->isRegistered(self::CACHE_KEY)) {
-            return $this->cacheResolver->get(self::CACHE_KEY);
-        }
+        [$configData, $dataSource] = $this->loadConfig();
+        $configData['isWriteable'] = $this->isRepositoryWritable(
+            $dataSource
+        );
 
-        $config = $this->get();
-        $this->cacheResolver->set(self::CACHE_KEY, $config);
-
-        return $config;
+        return $configData;
     }
 
-    public function saveAdminSystemSettingsConfig(array $values): void
+    public function saveConfiguration(array $values): void
     {
         $repository = $this->getRepository();
 
-        $repository->saveConfig(self::CONFIG_ID, $values, function ($data) {
+        $repository->saveConfig(Configuration::ADMIN_SETTINGS_NODE, $values, function ($key, $data) {
             return [
-                'pimcore_admin' => $data,
+                Configuration::ROOT_NODE => [
+                        $key => $data,
+                ],
             ];
         });
     }
@@ -68,14 +61,10 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
     private function getRepository(): LocationAwareConfigRepository
     {
         if (!$this->locationAwareConfigRepository) {
-            $config[self::CONFIG_ID][self::BRANDING] = $this->adminConfig[self::BRANDING];
-            $config[self::CONFIG_ID][self::ASSETS] = $this->adminConfig[self::ASSETS];
-            $storageConfig = $this->adminConfig['config_location'][self::CONFIG_ID];
-
             $this->locationAwareConfigRepository = new LocationAwareConfigRepository(
-                $config,
+                $this->adminConfig,
                 self::SCOPE,
-                $storageConfig
+                $this->storageConfig
             );
         }
 
@@ -83,23 +72,35 @@ final class AdminSettingRepository implements AdminSettingRepositoryInterface
     }
 
     /**
+     * @throws NotFoundException
      * @throws Exception
      */
-    private function get(): array
+    private function loadConfig(): array
     {
-        $repository = $this->getRepository();
+        $data = $this->getRepository()->loadConfigByKey(Configuration::ADMIN_SETTINGS_NODE);
+        $loadType = $this->getRepository()->getReadTargets()[0] ?? null;
 
-        $data = $this->systemConfigResolver->getConfigDataByKey($repository, self::CONFIG_ID);
-        $loadType = $repository->getReadTargets()[0] ?? null;
-
-        // If the read target is settings-store and no data is found there,
-        // load the data from the container config
-        if (!$data && $loadType === $repository::LOCATION_SETTINGS_STORE) {
-            $data[self::BRANDING] = $this->adminConfig[self::BRANDING];
-            $data[self::ASSETS] = $this->adminConfig[self::ASSETS];
-            $data['writeable'] = $repository->isWriteable();
+        if (!$data && $loadType === LocationAwareConfigRepository::LOCATION_SETTINGS_STORE) {
+            $data = $this->adminConfig;
+            $data['writeable'] = $this->isRepositoryWritable();
         }
 
         return $data;
+    }
+
+    /**
+     * @throws NotWriteableException
+     */
+    private function isRepositoryWritable(
+        ?string $dataSource = null,
+        string $message = 'Could not export the admin settings configuration: %s'
+    ): bool {
+        try {
+            return $this->getRepository()->isWriteable(Configuration::ADMIN_SETTINGS_NODE, $dataSource);
+        } catch (Exception $exception) {
+            $message = sprintf($message, $exception->getMessage());
+
+            throw new NotWriteableException('Admin settings', $message, $exception);
+        }
     }
 }

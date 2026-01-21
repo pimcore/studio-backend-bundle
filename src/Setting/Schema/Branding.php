@@ -15,59 +15,43 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 
 #[Schema(
     schema: 'Branding',
     title: 'Branding',
     required: [
-        'loginScreenInvertColors',
-        'colorLoginScreen',
-        'colorAdminInterface',
+        'backgroundShade',
+        'brandColor',
         'colorAdminInterfaceBackground',
-        'loginScreenCustomImage',
         'loginScreenCustomBackgroundImage',
+        'loginScreenCustomImage',
     ],
     type: 'object'
 )]
 final readonly class Branding
 {
     public function __construct(
-        #[Property(description: 'Invert colors on login screen', type: 'boolean', example: false)]
-        private bool $loginScreenInvertColors,
-        #[Property(description: 'Color for login screen', type: 'string', example: '#3C3F41')]
-        private string $colorLoginScreen,
-        #[Property(description: 'Color for admin interface', type: 'string', example: '#3C3F41')]
-        private string $colorAdminInterface,
+        #[Property(description: 'Background shade', type: 'string', example: '#CCCCCC')]
+        private string $backgroundShade,
+        #[Property(description: 'Brand color', type: 'string', example: '#FFCC00')]
+        private string $brandColor,
         #[Property(description: 'Background color for admin interface', type: 'string', example: '#FFFFFF')]
         private string $colorAdminInterfaceBackground,
         #[Property(
+            ref: RelatedElementData::class,
             description: 'Custom image for login screen',
-            type: 'string',
-            example: '/Sample Content/Logo/login_background.png')
-        ]
-        private string $loginScreenCustomBackgroundImage,
+            type: 'object'
+        )]
+        private ?RelatedElementData $loginScreenCustomBackgroundImage = null,
         #[Property(
+            ref: RelatedElementData::class,
             description: 'Custom image for login screen',
-            type: 'string',
-            example: '/Sample Content/Logo/login_logo.png')
-        ]
-        private string $loginScreenCustomImage,
+            type: 'object'
+        )]
+        private ?RelatedElementData $loginScreenCustomImage = null,
     ) {
-    }
 
-    public function isLoginScreenInvertColors(): bool
-    {
-        return $this->loginScreenInvertColors;
-    }
-
-    public function getColorLoginScreen(): string
-    {
-        return $this->colorLoginScreen;
-    }
-
-    public function getColorAdminInterface(): string
-    {
-        return $this->colorAdminInterface;
     }
 
     public function getColorAdminInterfaceBackground(): string
@@ -75,13 +59,23 @@ final readonly class Branding
         return $this->colorAdminInterfaceBackground;
     }
 
-    public function getLoginScreenCustomBackgroundImage(): string
+    public function getLoginScreenCustomBackgroundImage(): ?RelatedElementData
     {
         return $this->loginScreenCustomBackgroundImage;
     }
 
-    public function getLoginScreenCustomImage(): string
+    public function getLoginScreenCustomImage(): ?RelatedElementData
     {
         return $this->loginScreenCustomImage;
+    }
+
+    public function getBackGroundShade(): string
+    {
+        return $this->backgroundShade;
+    }
+
+    public function getBrandColor(): string
+    {
+        return $this->brandColor;
     }
 }

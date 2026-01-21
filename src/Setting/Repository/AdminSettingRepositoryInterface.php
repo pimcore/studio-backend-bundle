@@ -23,10 +23,10 @@ interface AdminSettingRepositoryInterface
     /**
      * @throws Exception
      */
-    public function getAdminSystemSettingsConfig(): array;
+    public function getConfiguration(): array;
 
     /**
      * @throws Exception
      */
-    public function saveAdminSystemSettingsConfig(array $values): void;
+    public function saveConfiguration(array $values): void;
 }

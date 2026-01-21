@@ -13,25 +13,40 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Assets;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Branding;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 
 /**
  * @internal
  */
 final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInterface
 {
+    use ElementProviderTrait;
+
+    public function __construct(
+        private ElementDataServiceInterface $elementDataService,
+        private ServiceResolverInterface $serviceResolver
+    ) {
+    }
+
     public function hydrate(array $data): AdminSettings
     {
         $branding = new Branding(
-            $data['branding']['login_screen_invert_colors'] ?? false,
-            $data['branding']['color_login_screen'] ?? '',
-            $data['branding']['color_admin_interface'] ?? '',
+            $data['branding']['background_shade'] ?? '',
+            $data['branding']['brand_color'] ?? '',
             $data['branding']['color_admin_interface_background'] ?? '',
-            $data['branding']['login_screen_custom_background_image'] ?? '',
-            $data['branding']['login_screen_custom_image'] ?? '',
+            $this->getRelatedElementData(
+                $data['branding']['login_screen_custom_background_image'] ?? null
+            ),
+            $this->getRelatedElementData(
+                $data['branding']['login_screen_custom_image'] ?? null
+            )
         );
 
         $assets = new Assets(
@@ -42,7 +57,7 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
         return new AdminSettings(
             $branding,
             $assets,
-            $data['writeable'] ?? false,
+            $data['isWriteable'] ?? false,
         );
     }
 
@@ -53,27 +68,47 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
 
         return [
             'branding' => [
-                'login_screen_invert_colors' => $branding->isLoginScreenInvertColors(),
-                'color_login_screen' => $branding->getColorLoginScreen(),
-                'color_admin_interface' => $branding->getColorAdminInterface(),
+                'background_shade' => $branding->getBackGroundShade(),
+                'brand_color' => $branding->getBrandColor(),
                 'color_admin_interface_background' => $branding->getColorAdminInterfaceBackground(),
-                'login_screen_custom_image' =>
-                    str_replace(
-                        '%',
-                        '%%',
-                        $branding->getLoginScreenCustomImage()
-                    ),
-                'login_screen_custom_background_image' =>
-                    str_replace(
-                        '%',
-                        '%%',
-                        $branding->getLoginScreenCustomBackgroundImage()
-                    ),
+                'login_screen_custom_image' => $this->getRelatedElementDataAsArray(
+                    $branding->getLoginScreenCustomImage()
+                ),
+                'login_screen_custom_background_image' => $this->getRelatedElementDataAsArray(
+                    $branding->getLoginScreenCustomBackgroundImage()
+                ),
             ],
             'assets' => [
                 'hide_edit_image' => $assets->getHideEditImage(),
                 'disable_tree_preview' => $assets->getDisableTreePreview(),
             ],
         ];
+    }
+
+    private function getRelatedElementDataAsArray(?RelatedElementData $relatedElementData): ?array
+    {
+        if ($relatedElementData === null) {
+            return null;
+        }
+
+        return [
+            'type' => $relatedElementData->getType(),
+            'id' => $relatedElementData->getId(),
+        ];
+    }
+
+    private function getRelatedElementData(?array $elementData): ?RelatedElementData
+    {
+        if ($elementData === null || !isset($elementData['type'], $elementData['id'])) {
+            return null;
+        }
+
+        return $this->elementDataService->getRelatedElementData(
+            $this->getElement(
+                $this->serviceResolver,
+                $elementData['type'],
+                $elementData['id']
+            )
+        );
     }
 }
