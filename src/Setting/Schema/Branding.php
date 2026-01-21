@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
         'brandColor',
         'colorAdminInterfaceBackground',
         'loginScreenCustomBackgroundImage',
-        'loginScreenCustomImage'
+        'loginScreenCustomImage',
     ],
     type: 'object'
 )]
