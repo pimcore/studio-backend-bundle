@@ -82,7 +82,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $users = $listing->getUsers();
 
-
         $rows = array_map(
             fn ($user) => new GdprDataRow(
                 [
