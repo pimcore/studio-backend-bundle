@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Helper\SystemConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Config\LocationAwareConfigRepository;
+use function sprintf;
 
 /**
  * @internal

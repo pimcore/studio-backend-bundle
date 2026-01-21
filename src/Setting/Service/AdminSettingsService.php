@@ -32,6 +32,7 @@ final readonly class AdminSettingsService implements AdminSettingsServiceInterfa
     public function getAdminSettings(): AdminSettings
     {
         $config = $this->adminSettingRepository->getConfiguration();
+
         return $this->adminSettingsHydrator->hydrate($config);
     }
 

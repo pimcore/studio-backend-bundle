@@ -189,7 +189,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(AdminSettingRepositoryInterface::class);
         $definition->setArguments([
             '$adminConfig' => [
-                Configuration::ADMIN_SETTINGS_NODE => $config[Configuration::ADMIN_SETTINGS_NODE]
+                Configuration::ADMIN_SETTINGS_NODE => $config[Configuration::ADMIN_SETTINGS_NODE],
             ],
             '$storageConfig' => $config['config_location'][Configuration::ADMIN_SETTINGS_NODE],
         ]);
