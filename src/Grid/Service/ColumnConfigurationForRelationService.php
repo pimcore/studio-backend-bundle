@@ -191,7 +191,7 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             $unique = array_values(array_unique($frontendTypes));
 
             if (count($unique) === 1) {
-                $result[$key] = $configs[0]; // or reset($configs)
+                $result[$key] = $configs[0];
             }
         }
 
