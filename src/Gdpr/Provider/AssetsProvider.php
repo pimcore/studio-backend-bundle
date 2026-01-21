@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInter
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -82,8 +81,6 @@ final readonly class AssetsProvider implements DataProviderInterface
 
         $searchResult = $this->searchService->searchAssets($query);
 
-        $columns = $this->getAvailableColumns();
-
         $items   = $searchResult->getItems();
 
         $rows = array_map(
@@ -93,7 +90,7 @@ final readonly class AssetsProvider implements DataProviderInterface
                 'fullPath' => $item->getFullPath(),
                 'subType' => $item->getMimeType(),
                 '__gdprIsDeletable' => true,
-            ], $columns),
+            ]),
             $items
         );
 
@@ -160,19 +157,5 @@ final readonly class AssetsProvider implements DataProviderInterface
     public function getRequiredPermissions(): array
     {
         return [UserPermissions::ASSETS->value];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAvailableColumns(): array
-    {
-        return [
-            new GdprDataColumn('type', 'Type'),
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('fullPath', 'Full Path'),
-            new GdprDataColumn('subType', 'Type'),
-            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
-        ];
     }
 }
