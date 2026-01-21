@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
     required: [
         'backgroundShade',
         'brandColor',
-        'colorAdminInterfaceBackground',
         'loginScreenCustomBackgroundImage',
         'loginScreenCustomImage',
     ],
@@ -36,8 +35,6 @@ final readonly class Branding
         private string $backgroundShade,
         #[Property(description: 'Brand color', type: 'string', example: '#FFCC00')]
         private string $brandColor,
-        #[Property(description: 'Background color for admin interface', type: 'string', example: '#FFFFFF')]
-        private string $colorAdminInterfaceBackground,
         #[Property(
             ref: RelatedElementData::class,
             description: 'Custom image for login screen',
@@ -52,11 +49,6 @@ final readonly class Branding
         private ?RelatedElementData $loginScreenCustomImage = null,
     ) {
 
-    }
-
-    public function getColorAdminInterfaceBackground(): string
-    {
-        return $this->colorAdminInterfaceBackground;
     }
 
     public function getLoginScreenCustomBackgroundImage(): ?RelatedElementData
