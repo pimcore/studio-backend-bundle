@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Helper\SystemConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -26,10 +24,6 @@ use Pimcore\Config\LocationAwareConfigRepository;
  */
 final class AdminSettingRepository implements AdminSettingRepositoryInterface
 {
-    private const string BRANDING = 'branding';
-
-    private const string ASSETS = 'assets';
-
     public const string SCOPE = 'studio_backend_admin_settings';
 
     private ?LocationAwareConfigRepository $locationAwareConfigRepository = null;
