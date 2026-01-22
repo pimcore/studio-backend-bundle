@@ -215,7 +215,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
      */
     private function handleCustomLayoutPermissions(array $layouts, UserInterface $user, array $allowedLayouts): array
     {
-        if ($user->isAdmin()) {
+        if (empty($allowedLayouts) || $user->isAdmin()) {
             return $layouts;
         }
 
@@ -242,7 +242,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
             return $hydratedLayouts;
         }
 
-        if (in_array('0', $allowedLayouts, true)) {
+        if (empty($allowedLayouts) || in_array('0', $allowedLayouts, true)) {
             array_unshift($hydratedLayouts, $this->getMainLayout());
         }
 
