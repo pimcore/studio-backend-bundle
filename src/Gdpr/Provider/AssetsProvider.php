@@ -75,7 +75,9 @@ final readonly class AssetsProvider implements DataProviderInterface
             $query->filterMultiMatch(implode(' ', $searchTerms), [], 'cross_fields', 'and');
         }
 
-        $query->filterMultiSelect('type', $this->assetConfig['types']);
+        if ($this->assetConfig['types']) {
+            $query->filterMultiSelect('type', $this->assetConfig['types']);
+        }
 
         $this->applySearchOptions($query, $filter);
 

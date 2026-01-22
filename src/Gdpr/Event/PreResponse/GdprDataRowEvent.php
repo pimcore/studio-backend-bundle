@@ -14,19 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 
-final class GdprSearchResultEvent extends AbstractPreResponseEvent
+final class GdprDataRowEvent extends AbstractPreResponseEvent
 {
-    public const string EVENT_NAME = 'pre_response.gdpr_search_result';
+    public const string EVENT_NAME = 'pre_response.gdpr_data_row';
 
-    public function __construct(private readonly GdprSearchResultCollection $collection)
+    public function __construct(private readonly GdprDataRow $row)
     {
-        parent::__construct($this->collection);
+        parent::__construct($this->row);
     }
 
-    public function getCollection(): GdprSearchResultCollection
+    public function getDataRow(): GdprDataRow
     {
-        return $this->collection;
+        return $this->row;
     }
 }
