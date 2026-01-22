@@ -52,7 +52,7 @@ final class GetController extends AbstractApiController
         operationId: 'admin_settings_get',
         description: 'admin_settings_get_description',
         summary: 'admin_settings_get_summary',
-        tags: [Tags::Settings->name]
+        tags: [Tags::SettingsAdmin->value]
     )]
     #[SuccessResponse(
         description: 'admin_settings_get_success_response',

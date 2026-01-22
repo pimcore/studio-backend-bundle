@@ -53,7 +53,7 @@ final class SaveController extends AbstractApiController
         operationId: 'admin_settings_update',
         description: 'admin_settings_update_description',
         summary: 'admin_settings_update_summary',
-        tags: [Tags::Settings->name]
+        tags: [Tags::SettingsAdmin->value]
     )]
     #[ReferenceRequestBody(UpdateSettings::class)]
     #[SuccessResponse(
