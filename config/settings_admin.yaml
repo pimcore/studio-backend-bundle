@@ -19,6 +19,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\SettingsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\SettingsService
 
+  Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\ThumbnailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\ThumbnailService
+
   #
   # Hydrators
   #
