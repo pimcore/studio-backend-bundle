@@ -11,18 +11,18 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Controller;
 
+use Exception;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\SettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -31,19 +31,20 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetAdminSettingsController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
-    private const ROUTE = '/settings/admin';
+    private const string ROUTE = '/settings/admin';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AdminSettingsServiceInterface $adminSettingsService,
+        private readonly SettingsServiceInterface $adminSettingsService,
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws Exception
+     */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_admin_settings', methods: ['GET'])]
     #[IsGranted(UserPermissions::SYSTEM_APPEARANCE_SETTINGS->value)]
     #[Get(
@@ -55,7 +56,7 @@ final class GetAdminSettingsController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'admin_settings_get_success_response',
-        content: new JsonContent(ref: AdminSettings::class)
+        content: new JsonContent(ref: Settings::class)
     )]
     #[DefaultResponses]
     public function getAdminSettings(): JsonResponse

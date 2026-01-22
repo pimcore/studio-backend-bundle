@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Controller;
 
 use Exception;
 use OpenApi\Attributes\Post;
@@ -20,8 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceReques
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\UpdateSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\SettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -32,13 +32,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateAdminSettingsController extends AbstractApiController
+final class SaveController extends AbstractApiController
 {
     private const string ROUTE = '/settings/admin/save';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AdminSettingsServiceInterface $adminSettingsService
+        private readonly SettingsServiceInterface $adminSettingsService
     ) {
         parent::__construct($serializer);
     }
@@ -55,13 +55,13 @@ final class UpdateAdminSettingsController extends AbstractApiController
         summary: 'admin_settings_update_summary',
         tags: [Tags::Settings->name]
     )]
-    #[ReferenceRequestBody(UpdateAdminSettings::class)]
+    #[ReferenceRequestBody(UpdateSettings::class)]
     #[SuccessResponse(
         description: 'admin_settings_update_success_response',
     )]
     #[DefaultResponses]
     public function updateAdminSettings(
-        #[MapRequestPayload] UpdateAdminSettings $parameters
+        #[MapRequestPayload] UpdateSettings $parameters
     ): Response {
         $this->adminSettingsService->updateAdminSettings($parameters);
 

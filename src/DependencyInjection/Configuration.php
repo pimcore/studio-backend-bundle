@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepository;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
@@ -95,7 +95,7 @@ class Configuration implements ConfigurationInterface
                 self::PERSPECTIVES_NODE =>
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
                 self::ADMIN_SETTINGS_NODE =>
-                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . AdminSettingRepository::SCOPE,
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . SettingRepository::SCOPE,
             ],
             ['read_target']
         );

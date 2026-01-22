@@ -36,7 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetC
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
@@ -186,7 +186,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $config['gdpr_data_extractor']
         );
 
-        $definition = $container->getDefinition(AdminSettingRepositoryInterface::class);
+        $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([
             '$adminConfig' => [
                 Configuration::ADMIN_SETTINGS_NODE => $config[Configuration::ADMIN_SETTINGS_NODE],
