@@ -43,10 +43,10 @@ final readonly class Branding
         private ?RelatedElementData $loginScreenCustomBackgroundImage = null,
         #[Property(
             ref: RelatedElementData::class,
-            description: 'Custom image for login screen',
+            description: 'Custom logo',
             type: 'object'
         )]
-        private ?RelatedElementData $loginScreenCustomImage = null,
+        private ?RelatedElementData $customLogo = null,
     ) {
 
     }
@@ -56,9 +56,9 @@ final readonly class Branding
         return $this->loginScreenCustomBackgroundImage;
     }
 
-    public function getLoginScreenCustomImage(): ?RelatedElementData
+    public function getCustomLogo(): ?RelatedElementData
     {
-        return $this->loginScreenCustomImage;
+        return $this->customLogo;
     }
 
     public function getBackGroundShade(): string

@@ -731,7 +731,7 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('type')->end()
                                 ->end()
                             ->end()
-                            ->arrayNode('login_screen_custom_image')
+                            ->arrayNode('custom_logo')
                                 ->children()
                                     ->scalarNode('id')->end()
                                     ->scalarNode('type')->end()

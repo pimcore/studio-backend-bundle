@@ -44,7 +44,7 @@ final readonly class SettingsHydrator implements SettingsHydratorInterface
                 $data['branding']['login_screen_custom_background_image'] ?? null
             ),
             $this->getRelatedElementData(
-                $data['branding']['login_screen_custom_image'] ?? null
+                $data['branding']['custom_logo'] ?? null
             )
         );
 
@@ -69,8 +69,8 @@ final readonly class SettingsHydrator implements SettingsHydratorInterface
             'branding' => [
                 'background_shade' => $branding->getBackGroundShade(),
                 'brand_color' => $branding->getBrandColor(),
-                'login_screen_custom_image' => $this->getRelatedElementDataAsArray(
-                    $branding->getLoginScreenCustomImage()
+                'custom_logo' => $this->getRelatedElementDataAsArray(
+                    $branding->getCustomLogo()
                 ),
                 'login_screen_custom_background_image' => $this->getRelatedElementDataAsArray(
                     $branding->getLoginScreenCustomBackgroundImage()
