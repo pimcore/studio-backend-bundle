@@ -114,4 +114,3 @@ final readonly class SentMailProvider implements DataProviderInterface
         return [UserPermissions::EMAILS->value];
     }
 }
-
