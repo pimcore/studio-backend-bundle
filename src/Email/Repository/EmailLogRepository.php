@@ -64,7 +64,7 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
         $filterTerm = $this->buildFilterTerm($filter);
         if ($filterTerm !== null) {
             $condition =
-                'MATCH (`from`,`to`,`cc`,`bcc`,`subject`,`params`) 
+                'MATCH (`from`,`to`,`cc`,`bcc`,`subject`,`params`)
                 AGAINST (' . $listing->quote($filterTerm) . ' IN BOOLEAN MODE)';
             $listing->setCondition($condition);
         }
