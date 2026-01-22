@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'GDPR Data Row',
@@ -22,14 +24,15 @@ use OpenApi\Attributes\Schema;
     required: ['data'],
     type: 'object',
 )]
-final readonly class GdprDataRow
+final class GdprDataRow implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
     /**
      * @param array<string, mixed> $data
      */
     public function __construct(
         #[Property(description: 'Data row values', type: 'object')]
-        private array $data
+        private readonly array $data
     ) {
     }
 

@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,10 +33,11 @@ interface GdprManagerServiceInterface
 
     /**
      * Searches for data in the specified providers.
+     * @returns Collection<GdprDataRow>
      *
      * @throws ForbiddenException|NotFoundException
      */
-    public function search(CollectionFilterParameter $parameters, string $provider): GdprSearchResultCollection;
+    public function search(CollectionFilterParameter $parameters, string $provider): Collection;
 
     /**
      * @throws ForbiddenException

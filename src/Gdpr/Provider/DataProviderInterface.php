@@ -15,11 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\Response;
 
 interface DataProviderInterface
 {
+    /**
+     * @return Collection<GdprDataRow>
+     */
     public function findData(FilterParameter $filter): Collection;
 
     public function getDeleteSwaggerOperationId(): string;

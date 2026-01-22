@@ -17,11 +17,9 @@ use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprSearchResultEvent;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataRowEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -56,25 +54,22 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $this->getDataProviderCollection($providers);
     }
 
-    public function search(CollectionFilterParameter $parameters, string $providerType): GdprSearchResultCollection
+    public function search(CollectionFilterParameter $parameters, string $providerType): Collection
     {
-        $allResults = [];
-
         $providerClass = $this->loader->resolve($providerType);
 
         $this->checkProviderPermission($providerClass);
 
         $results = $providerClass->findData($parameters->getFilters());
 
-        if (!empty($results->getItems())) {
-            $allResults[] = new GdprSearchResult(
-                providerKey: $providerType,
-                results: $results->getItems(),
-                totalSubItems: $results->getTotalItems()
+        foreach ($results->getItems() as $item) {
+            $this->eventDispatcher->dispatch(
+                new GdprDataRowEvent($item),
+                GdprDataRowEvent::EVENT_NAME
             );
         }
 
-        return $this->getSearchResultCollection($allResults);
+        return $results;
 
     }
 
@@ -114,21 +109,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         }
 
         return new Collection(count($items), $items);
-    }
-
-    /**
-     * @param array<GdprSearchResult> $results
-     */
-    private function getSearchResultCollection(array $results): GdprSearchResultCollection
-    {
-        $collection = new GdprSearchResultCollection($results, count($results));
-
-        $this->eventDispatcher->dispatch(
-            new GdprSearchResultEvent($collection),
-            GdprSearchResultEvent::EVENT_NAME
-        );
-
-        return $collection;
     }
 
     private function createExportResponse(mixed $data, string $providerKey, int $id): Response
