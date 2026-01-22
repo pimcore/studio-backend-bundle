@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\EmailLogResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Model\Tool\Email\Log\Listing;
@@ -41,6 +43,92 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
         $listing->setOffset(($parameters->getPage() - 1) * $limit);
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
         $listing->setOrder('DESC');
+
+        return $listing;
+    }
+
+    /**
+     * Filters for firstname, lastname, email, id globally in all E-Mail Log entries.
+     */
+    public function getFilteredListing(FilterParameter $filter): Listing
+    {
+        $listing = new Listing();
+
+        $idFilter = $filter->getSimpleColumnFilterByType('id');
+        if ($idFilter !== null) {
+            $listing->setCondition('id = :id', ['id' => (int)$idFilter->getFilterValue()]);
+
+            return $this->applySearchOptions($listing, $filter);
+        }
+
+        $filterTerm = $this->buildFilterTerm($filter);
+        if ($filterTerm !== null) {
+            $condition = 'MATCH (`from`,`to`,`cc`,`bcc`,`subject`,`params`) AGAINST (' . $listing->quote($filterTerm) . ' IN BOOLEAN MODE)';
+            $listing->setCondition($condition);
+        }
+
+        return $this->applySearchOptions($listing, $filter);
+    }
+
+    private function buildFilterTerm(FilterParameter $filter): ?string
+    {
+        $searchTerms = [];
+
+        $textFilterTypes = ['firstname', 'lastname', 'email'];
+        foreach ($textFilterTypes as $filterType) {
+            $textFilter = $filter->getSimpleColumnFilterByType($filterType);
+            if ($textFilter === null) {
+                continue;
+            }
+
+            $value = trim((string)$textFilter->getFilterValue());
+            if ($value === '') {
+                continue;
+            }
+
+            $value = str_replace('%', '*', $value);
+            $value = htmlspecialchars($value, ENT_QUOTES);
+
+            if (str_contains($value, '@')) {
+                $parts = explode(' ', $value);
+                $parts = array_map(
+                    static fn (string $part): string => str_contains($part, '@') ? '"' . $part . '"' : $part,
+                    $parts
+                );
+                $value = implode(' ', $parts);
+            }
+
+            if (str_starts_with($value, '@')) {
+                $value = substr($value, 1);
+            }
+
+            $searchTerms[] = $value;
+        }
+
+        if ($searchTerms === []) {
+            return null;
+        }
+
+        return implode(' ', $searchTerms);
+    }
+
+    private function applySearchOptions(Listing $listing, FilterParameter $filter): Listing
+    {
+        $listing->setLimit($filter->getPageSize());
+        $listing->setOffset($filter->getStart());
+
+        $sortFilter = $filter->getSortFilter();
+        if ($sortFilter->getKey() && $sortFilter->getDirection()) {
+            $listing->setOrderKey($sortFilter->getKey());
+            $listing->setOrder(
+                strtolower($sortFilter->getDirection()) === SortDirection::DESC->value
+                    ? SortDirection::DESC->value
+                    : SortDirection::ASC->value
+            );
+        } else {
+            $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
+            $listing->setOrder('DESC');
+        }
 
         return $listing;
     }
