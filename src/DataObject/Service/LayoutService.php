@@ -142,7 +142,10 @@ final readonly class LayoutService implements LayoutServiceInterface
     ): CoreLayout {
         if (!$user->isAdmin()) {
             $allowedLayouts = $this->securityLayoutService->getUserAllowedLayoutsByClass($dataObject, $user);
-            if ($layoutId === '-1' || !in_array($layoutId, $allowedLayouts, true)) {
+            if (
+                $layoutId === '-1' ||
+                (!empty($allowedLayouts) && !in_array($layoutId, $allowedLayouts, true))
+            ) {
                 throw new ForbiddenException('Layout not allowed for this user');
             }
         }
