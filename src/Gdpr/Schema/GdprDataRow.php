@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 final class GdprDataRow implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
+
     /**
      * @param array<string, mixed> $data
      */

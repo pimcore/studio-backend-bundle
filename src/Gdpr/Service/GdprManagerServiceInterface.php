@@ -33,6 +33,7 @@ interface GdprManagerServiceInterface
 
     /**
      * Searches for data in the specified providers.
+     *
      * @returns Collection<GdprDataRow>
      *
      * @throws ForbiddenException|NotFoundException
