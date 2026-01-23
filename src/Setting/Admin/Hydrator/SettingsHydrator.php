@@ -16,9 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Assets;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Branding;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\UpdateSettings;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 
