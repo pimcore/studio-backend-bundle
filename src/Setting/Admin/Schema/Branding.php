@@ -61,7 +61,7 @@ final readonly class Branding
         return $this->customLogo;
     }
 
-    public function getBackGroundShade(): string
+    public function getBackgroundShade(): string
     {
         return $this->backgroundShade;
     }

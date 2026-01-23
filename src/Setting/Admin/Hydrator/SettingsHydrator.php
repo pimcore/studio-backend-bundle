@@ -67,7 +67,7 @@ final readonly class SettingsHydrator implements SettingsHydratorInterface
 
         return [
             'branding' => [
-                'background_shade' => $branding->getBackGroundShade(),
+                'background_shade' => $branding->getBackgroundShade(),
                 'brand_color' => $branding->getBrandColor(),
                 'custom_logo' => $this->getRelatedElementDataAsArray(
                     $branding->getCustomLogo()
