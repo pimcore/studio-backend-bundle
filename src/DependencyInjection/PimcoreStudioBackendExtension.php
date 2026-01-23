@@ -75,7 +75,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $files = glob(__DIR__ . '/../../config/*.yaml');
         foreach ($files as $file) {
             $fileName = basename($file);
-            if (str_starts_with($fileName, 'bundle_')) {
+            if ($fileName === 'rate_limiter.yaml' || str_starts_with($fileName, 'bundle_')) {
                 continue;
             }
             $loader->load($fileName);
@@ -213,6 +213,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         if ($container->hasExtension('pimcore_seo')) {
             $loader->load('bundle_seo.yaml');
         }
+        $loader->load('rate_limiter.yaml');
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
