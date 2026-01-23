@@ -24,6 +24,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use function in_array;
+use function is_string;
 
 /**
  * @internal
@@ -44,7 +45,7 @@ final class PublicAuthorizationVoter extends Voter
     private const array SUPPORTED_SUBJECTS = [
         self::TRANSLATION_SUBJECT,
         self::RESET_PASSWORD_SUBJECT,
-        self::SETTINGS_ADMIN_THUMBNAIL
+        self::SETTINGS_ADMIN_THUMBNAIL,
     ];
 
     public function __construct(

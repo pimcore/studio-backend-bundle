@@ -25,7 +25,7 @@ final readonly class SettingsService implements SettingsServiceInterface
 {
     public function __construct(
         private SettingRepositoryInterface $adminSettingRepository,
-        private SettingsHydratorInterface  $adminSettingsHydrator,
+        private SettingsHydratorInterface $adminSettingsHydrator,
     ) {
     }
 

@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\ThumbnailPaths;
-
 
 /**
  * @internal

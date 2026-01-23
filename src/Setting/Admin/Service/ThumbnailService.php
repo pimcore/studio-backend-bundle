@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositor
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\ThumbnailPaths;
 use Pimcore\Model\Asset\Image;
 
-
 /**
  * @internal
  */
@@ -43,7 +42,8 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     /**
      * @throws Exception
      */
-    public function getThumbnails(): ThumbnailPaths {
+    public function getThumbnails(): ThumbnailPaths
+    {
 
         $adminConfig = $this->settingsHydrator->hydrate(
             $this->settingRepository->getConfiguration()
@@ -62,7 +62,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
                 $customLogo,
                 586,
                 206
-            ) ,
+            ),
             $this->getThumbnailPath(
                 $backgroundImage,
                 586,
@@ -77,7 +77,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         int $height = 105
     ): ?string {
 
-        if( $assetData === null ) {
+        if ($assetData === null) {
             return null;
         }
 

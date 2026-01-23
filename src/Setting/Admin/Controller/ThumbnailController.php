@@ -63,8 +63,7 @@ final class ThumbnailController extends AbstractApiController
     ])]
     public function settingsAdminThumbnail(
         ?string $settingsAdminThumbnail = 'settingsAdminThumbnail'
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(
             $this->thumbnailService->getThumbnails()
         );
