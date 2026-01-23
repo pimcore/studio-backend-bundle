@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ThumbnailServiceInterface as AssetThumbnailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator\SettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\ThumbnailPaths;
@@ -33,8 +32,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 {
     public function __construct(
         private AssetThumbnailServiceInterface $assetThumbnailService,
-        private AssetServiceInterface $assetService,
-        private SecurityServiceInterface $securityService,
+        private AssetResolverInterface $assetResolver,
         private SettingsHydratorInterface $settingsHydrator,
         private SettingRepositoryInterface $settingRepository
     ) {
@@ -81,11 +79,8 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             return null;
         }
 
-        $assetId = $assetData->getId();
-
-        $asset = $this->assetService->getAssetElement(
-            $this->securityService->getCurrentUser(),
-            $assetId
+        $asset = $this->assetResolver->getById(
+            $assetData->getId()
         );
 
         if (!$asset instanceof Image) {

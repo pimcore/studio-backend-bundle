@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\ThumbnailPaths;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\ThumbnailServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -37,7 +38,8 @@ final class ThumbnailController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ThumbnailServiceInterface $thumbnailService
+        private readonly ThumbnailServiceInterface $thumbnailService,
+        private readonly RateLimiterInterface $rateLimiter
     ) {
         parent::__construct($serializer);
     }
@@ -65,6 +67,8 @@ final class ThumbnailController extends AbstractApiController
         ?string $settingsAdminThumbnail = 'settingsAdminThumbnail'
     ): JsonResponse
     {
+        $this->rateLimiter->check();
+
         return $this->jsonResponse(
             $this->thumbnailService->getThumbnails()
         );
