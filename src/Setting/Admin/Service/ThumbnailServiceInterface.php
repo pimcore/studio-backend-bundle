@@ -11,17 +11,14 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\ThumbnailPaths;
 
 /**
  * @internal
  */
-interface AdminSettingsHydratorInterface
+interface ThumbnailServiceInterface
 {
-    public function hydrate(array $data): AdminSettings;
-
-    public function dehydrate(UpdateAdminSettings $adminSettings): array;
+    public function getThumbnails(): ThumbnailPaths;
 }

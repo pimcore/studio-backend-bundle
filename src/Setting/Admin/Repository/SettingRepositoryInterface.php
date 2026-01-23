@@ -11,14 +11,14 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository;
 
 use Exception;
 
 /**
  * @internal
  */
-interface AdminSettingRepositoryInterface
+interface SettingRepositoryInterface
 {
     /**
      * @throws Exception

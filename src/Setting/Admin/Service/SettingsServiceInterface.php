@@ -11,24 +11,24 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\UpdateSettings;
 
 /**
  * @internal
  */
-interface AdminSettingsServiceInterface
+interface SettingsServiceInterface
 {
     /**
      * @throws Exception
      */
-    public function getAdminSettings(): AdminSettings;
+    public function getAdminSettings(): Settings;
 
     /**
      * @throws Exception
      */
-    public function updateAdminSettings(UpdateAdminSettings $updateAdminSettings): void;
+    public function updateAdminSettings(UpdateSettings $updateAdminSettings): void;
 }

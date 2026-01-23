@@ -11,21 +11,21 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Assets;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Branding;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Assets;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Branding;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\UpdateSettings;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 
 /**
  * @internal
  */
-final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInterface
+final readonly class SettingsHydrator implements SettingsHydratorInterface
 {
     use ElementProviderTrait;
 
@@ -35,7 +35,7 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
     ) {
     }
 
-    public function hydrate(array $data): AdminSettings
+    public function hydrate(array $data): Settings
     {
         $branding = new Branding(
             $data['branding']['background_shade'] ?? '',
@@ -44,7 +44,7 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
                 $data['branding']['login_screen_custom_background_image'] ?? null
             ),
             $this->getRelatedElementData(
-                $data['branding']['login_screen_custom_image'] ?? null
+                $data['branding']['custom_logo'] ?? null
             )
         );
 
@@ -53,24 +53,24 @@ final readonly class AdminSettingsHydrator implements AdminSettingsHydratorInter
             $data['assets']['disable_tree_preview'] ?? false,
         );
 
-        return new AdminSettings(
+        return new Settings(
             $branding,
             $assets,
             $data['isWriteable'] ?? false,
         );
     }
 
-    public function dehydrate(UpdateAdminSettings $adminSettings): array
+    public function dehydrate(UpdateSettings $adminSettings): array
     {
         $branding = $adminSettings->getBranding();
         $assets = $adminSettings->getAssets();
 
         return [
             'branding' => [
-                'background_shade' => $branding->getBackGroundShade(),
+                'background_shade' => $branding->getBackgroundShade(),
                 'brand_color' => $branding->getBrandColor(),
-                'login_screen_custom_image' => $this->getRelatedElementDataAsArray(
-                    $branding->getLoginScreenCustomImage()
+                'custom_logo' => $this->getRelatedElementDataAsArray(
+                    $branding->getCustomLogo()
                 ),
                 'login_screen_custom_background_image' => $this->getRelatedElementDataAsArray(
                     $branding->getLoginScreenCustomBackgroundImage()

@@ -11,32 +11,32 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\AdminSettingsHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\AdminSettings;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\UpdateAdminSettings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator\SettingsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\UpdateSettings;
 
 /**
  * @internal
  */
-final readonly class AdminSettingsService implements AdminSettingsServiceInterface
+final readonly class SettingsService implements SettingsServiceInterface
 {
     public function __construct(
-        private AdminSettingRepositoryInterface $adminSettingRepository,
-        private AdminSettingsHydratorInterface $adminSettingsHydrator,
+        private SettingRepositoryInterface $adminSettingRepository,
+        private SettingsHydratorInterface $adminSettingsHydrator,
     ) {
     }
 
-    public function getAdminSettings(): AdminSettings
+    public function getAdminSettings(): Settings
     {
         $config = $this->adminSettingRepository->getConfiguration();
 
         return $this->adminSettingsHydrator->hydrate($config);
     }
 
-    public function updateAdminSettings(UpdateAdminSettings $updateAdminSettings): void
+    public function updateAdminSettings(UpdateSettings $updateAdminSettings): void
     {
         $dehydratedData = $this->adminSettingsHydrator->dehydrate($updateAdminSettings);
         $this->adminSettingRepository->saveConfiguration($dehydratedData);

@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -43,10 +43,10 @@ final readonly class Branding
         private ?RelatedElementData $loginScreenCustomBackgroundImage = null,
         #[Property(
             ref: RelatedElementData::class,
-            description: 'Custom image for login screen',
+            description: 'Custom logo',
             type: 'object'
         )]
-        private ?RelatedElementData $loginScreenCustomImage = null,
+        private ?RelatedElementData $customLogo = null,
     ) {
 
     }
@@ -56,12 +56,12 @@ final readonly class Branding
         return $this->loginScreenCustomBackgroundImage;
     }
 
-    public function getLoginScreenCustomImage(): ?RelatedElementData
+    public function getCustomLogo(): ?RelatedElementData
     {
-        return $this->loginScreenCustomImage;
+        return $this->customLogo;
     }
 
-    public function getBackGroundShade(): string
+    public function getBackgroundShade(): string
     {
         return $this->backgroundShade;
     }

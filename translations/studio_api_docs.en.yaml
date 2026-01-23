@@ -1559,3 +1559,5 @@ class_definition_collection_creatable: Get creatable class definitions.
 class_definition_collection_creatable_description: Get collection of all class definitions that can be created.
 class_definition_collection_creatable_summary: Get collection of all class definitions that can be created.
 class_definition_collection_creatable_success_response: List of class definitions that can be created.
+setting_admin_thumbnail_summary: Get thumbnail for images in admin settings
+setting_admin_thumbnail: Get thumbnail for images in admin settings

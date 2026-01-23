@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
@@ -23,7 +23,7 @@ use function sprintf;
 /**
  * @internal
  */
-final class AdminSettingRepository implements AdminSettingRepositoryInterface
+final class SettingRepository implements SettingRepositoryInterface
 {
     public const string SCOPE = 'studio_backend_admin_settings';
 
