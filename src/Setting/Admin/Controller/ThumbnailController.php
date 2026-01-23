@@ -67,6 +67,7 @@ final class ThumbnailController extends AbstractApiController
         ?string $settingsAdminThumbnail = 'settingsAdminThumbnail'
     ): JsonResponse {
         $this->rateLimiter->check();
+
         return $this->jsonResponse(
             $this->thumbnailService->getThumbnails()
         );
