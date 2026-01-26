@@ -78,9 +78,10 @@ final class ObjectBrickResolver implements
         $fieldDefinition = $this->getFieldDefinition($objectBrickKey->getField(), $classDefinition);
 
         $value = $this->dataService->getNormalizedValue(
-            $this->getLocalizedValueFromKey($objectBrickKey->getField(), $column->getLocale(), $element),
+            $this->getLocalizedValueFromKey($objectBrickKey->getField(), null, $element),
             $fieldDefinition
         );
+
 
         $objectBrickFieldType = $this->objectBrickService->findObjectBrickField(
             $objectBrickKey->getBrickName(),
@@ -98,21 +99,28 @@ final class ObjectBrickResolver implements
         $inheritanceData = null;
         if ($classDefinition->getAllowInherit() && $fieldDefinition->supportsInheritance()) {
             try {
-                $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $objectBrickKey);
+                $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $objectBrickKey, $column);
             } catch (NotFoundException) {
                 // inheritance data not found (field not set in parent id)
             }
         }
 
         try {
-            $value = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
+            $returnValue = null;
+            if ($column->getLocale()) {
+                $returnValue = $value[$objectBrickKey->getBrickName()]['localizedfields'][$objectBrickKey->getAttribute()][$column->getLocale()];
+            }
+
+            if (!$column->getLocale()) {
+                $returnValue = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
+            }
         } catch (Exception) {
             $value = null;
         }
 
         return $this->getColumnData(
             $column,
-            $value,
+            $returnValue,
             $objectBrickFieldType,
             $inheritanceData
         );
@@ -137,6 +145,11 @@ final class ObjectBrickResolver implements
 
             $brick = $brickContainer->get($objectBrickKey->getBrickName());
 
+            if ($column->getLocale()) {
+                $brick = $brick->get('localizedfields');
+            }
+
+
             if (!$brick) {
                 return $this->getColumnData($column, null, $fieldDefinition->getFieldType());
             }
@@ -147,7 +160,9 @@ final class ObjectBrickResolver implements
                     'containerType' => 'objectbrick',
                     'containerKey' => $objectBrickKey->getBrickName(),
                     'fieldname' => $objectBrickKey->getAttribute(),
-                ]]
+                ],
+                'language' => $column->getLocale()
+            ]
             );
 
             $value = $this->dataService->getExportFieldValue(
@@ -194,7 +209,7 @@ final class ObjectBrickResolver implements
     /**
      * @throws NotFoundException
      */
-    private function getInheritanceData(Concrete $element, Data $fieldDefinition, ObjectBrickKey $key): InheritanceData
+    private function getInheritanceData(Concrete $element, Data $fieldDefinition, ObjectBrickKey $key, Column $column): InheritanceData
     {
         $inheritanceDataCollection = $this->dataObjectServiceResolver->useInheritedValues(
             false,
@@ -204,7 +219,14 @@ final class ObjectBrickResolver implements
         );
 
         try {
-            $inheritanceData = $inheritanceDataCollection[$key->getBrickName()][$key->getAttribute()];
+            $inheritanceData = null;
+            if ($column->getLocale()) {
+                $inheritanceData = $inheritanceDataCollection[$key->getBrickName()]['localizedfields'][$key->getAttribute()][$column->getLocale()];
+            }
+
+            if (!$column->getLocale()) {
+                $inheritanceData = $inheritanceDataCollection[$key->getBrickName()][$key->getAttribute()];
+            }
 
             if (!$inheritanceData instanceof InheritanceData) {
                 throw new Exception();

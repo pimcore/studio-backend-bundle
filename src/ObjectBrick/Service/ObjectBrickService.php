@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 
 /**
@@ -28,16 +30,24 @@ final class ObjectBrickService implements ObjectBrickServiceInterface
     ) {
     }
 
-    public function getDataFields(Layout $layout): array
+    /**
+     * @return ColumnFieldDefinition[]
+     */
+    public function getDataFields(Localizedfields|Layout $layout, bool $localized = false): array
     {
         $dataFields = [];
         foreach ($layout->getChildren() as $child) {
             if ($child instanceof Layout) {
-                $dataFields = [...$dataFields, ...$this->getDataFields($child)];
+                $dataFields = [...$dataFields, ...$this->getDataFields($child, $localized)];
+            }
+
+            if ($child instanceof Localizedfields) {
+                $dataFields = [...$dataFields, ...$this->getDataFields($child, true)];
+                continue;
             }
 
             if ($child instanceof Data) {
-                $dataFields = [...$dataFields, $child];
+                $dataFields = [...$dataFields, new ColumnFieldDefinition($child, [], $localized),];
             }
         }
 
@@ -51,8 +61,8 @@ final class ObjectBrickService implements ObjectBrickServiceInterface
         $fieldDefinition = $this->getDataFields($objectBrickDefinition->getLayoutDefinitions());
 
         foreach ($fieldDefinition as $dataField) {
-            if ($dataField->getName() === $field) {
-                return $dataField;
+            if ($dataField->getFieldDefinition()->getName() === $field) {
+                return $dataField->getFieldDefinition();
             }
         }
 
