@@ -33,8 +33,7 @@ final readonly class RateLimiter implements RateLimiterInterface
      */
     public function check(
         RateLimiterFactory $rateLimiterFactory,
-    ): void
-    {
+    ): void {
         $request = $this->getCurrentRequest($this->requestStack);
 
         $limiter = $rateLimiterFactory->create($request->getClientIp());
