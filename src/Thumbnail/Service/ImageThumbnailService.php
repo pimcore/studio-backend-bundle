@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailFolder;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal

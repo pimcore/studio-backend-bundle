@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
     required: [
         'name', 'description', 'group', 'format', 'quality', 'highResolution',
         'preserveColor', 'forceProcessICCProfiles', 'preserveMetaData', 'rasterizeSVG',
-        'useCropBox', 'downloadable', 'modificationDate', 'creationDate', 'filenameSuffix', 'preserveAnimation'
+        'useCropBox', 'downloadable', 'modificationDate', 'creationDate', 'filenameSuffix', 'preserveAnimation',
     ],
     type: 'object'
 )]

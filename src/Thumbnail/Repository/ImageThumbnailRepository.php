@@ -35,6 +35,7 @@ final readonly class ImageThumbnailRepository implements ImageThumbnailRepositor
         $thumbnailListing->setFilter(function (Config $config) {
             return $config->isDownloadable();
         });
+
         return $thumbnailListing->getThumbnails();
     }
 

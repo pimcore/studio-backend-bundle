@@ -44,8 +44,8 @@ final class ImageThumbnailConfigDetail implements AdditionalAttributesInterface
                             'width' => 1920,
                             'height' => 600,
                             'positioning' => 'center',
-                            'forceResize' => true
-                        ]
+                            'forceResize' => true,
+                        ],
                     ],
                 ],
             ]

@@ -50,7 +50,7 @@ final readonly class UpdateThumbnailConfig
                 'default' => [
                     [
                         'method' => 'scaleByWidth',
-                        'arguments' => ['width' => 1140, 'forceResize' => false]
+                        'arguments' => ['width' => 1140, 'forceResize' => false],
                     ],
                 ],
             ]
@@ -59,7 +59,7 @@ final readonly class UpdateThumbnailConfig
         #[Property(
             description: 'Media configurations order',
             type: 'object',
-            example: ['default' => 0, "(max-width: 940px)" =>1]
+            example: ['default' => 0, '(max-width: 940px)' =>1]
         )]
         private array $mediaOrder,
     ) {
