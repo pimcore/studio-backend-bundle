@@ -82,7 +82,6 @@ final class ObjectBrickResolver implements
             $fieldDefinition
         );
 
-
         $objectBrickFieldType = $this->objectBrickService->findObjectBrickField(
             $objectBrickKey->getBrickName(),
             $objectBrickKey->getAttribute(),
@@ -149,7 +148,6 @@ final class ObjectBrickResolver implements
                 $brick = $brick->get('localizedfields');
             }
 
-
             if (!$brick) {
                 return $this->getColumnData($column, null, $fieldDefinition->getFieldType());
             }
@@ -161,7 +159,7 @@ final class ObjectBrickResolver implements
                     'containerKey' => $objectBrickKey->getBrickName(),
                     'fieldname' => $objectBrickKey->getAttribute(),
                 ],
-                'language' => $column->getLocale()
+                'language' => $column->getLocale(),
             ]
             );
 

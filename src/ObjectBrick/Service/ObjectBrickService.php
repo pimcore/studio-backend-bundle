@@ -43,11 +43,12 @@ final class ObjectBrickService implements ObjectBrickServiceInterface
 
             if ($child instanceof Localizedfields) {
                 $dataFields = [...$dataFields, ...$this->getDataFields($child, true)];
+
                 continue;
             }
 
             if ($child instanceof Data) {
-                $dataFields = [...$dataFields, new ColumnFieldDefinition($child, [], $localized),];
+                $dataFields = [...$dataFields, new ColumnFieldDefinition($child, [], $localized), ];
             }
         }
 
