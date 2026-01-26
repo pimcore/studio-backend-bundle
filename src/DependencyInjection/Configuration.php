@@ -579,7 +579,9 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('classes')
                             ->defaultValue([])
                             ->beforeNormalization()
-                                ->ifString()->then(function ($v) { return [$v]; })
+                                ->ifString()->then(function ($v) {
+                                    return [$v];
+                                })
                             ->end()
                             ->scalarPrototype()->end()
                         ->end()
