@@ -22,11 +22,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\Attribute\Request\ResetPasswordRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -38,7 +40,9 @@ final class ResetPasswordController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserLoginServiceInterface $loginService
+        private readonly UserLoginServiceInterface $loginService,
+        private readonly RateLimiterInterface $rateLimiter,
+        private readonly RateLimiterFactory $resetPasswordLimiter,
     ) {
         parent::__construct($serializer);
     }
@@ -61,6 +65,7 @@ final class ResetPasswordController extends AbstractApiController
     ])]
     public function resetPassword(#[MapRequestPayload] ResetPassword $resetPassword): Response
     {
+        $this->rateLimiter->check($this->resetPasswordLimiter);
         $this->loginService->resetPassword($resetPassword);
 
         return new Response();

@@ -1,0 +1,6 @@
+framework:
+  rate_limiter:
+    setting_admin_thumbnail:
+      policy: 'fixed_window'
+      limit: 5
+      interval: '5 minutes'
