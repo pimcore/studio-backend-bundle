@@ -48,7 +48,10 @@ final readonly class UpdateThumbnailConfig
             type: 'object',
             example: [
                 'default' => [
-                    ['width' => 1140, 'forceResize' => false, 'type' => 'scaleByWidth'],
+                    [
+                        'method' => 'scaleByWidth',
+                        'arguments' => ['width' => 1140, 'forceResize' => false]
+                    ],
                 ],
             ]
         )]

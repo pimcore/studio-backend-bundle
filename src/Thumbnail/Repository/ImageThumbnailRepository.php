@@ -120,10 +120,10 @@ final readonly class ImageThumbnailRepository implements ImageThumbnailRepositor
             }
 
             foreach ($items as $item) {
-                $type = $item['type'];
-                unset($item['type']);
+                $method = $item['method'];
+                unset($item['method']);
 
-                $config->addItem($type, $item, htmlspecialchars($mediaName));
+                $config->addItem($method, $item['arguments'], htmlspecialchars($mediaName));
             }
         }
 
