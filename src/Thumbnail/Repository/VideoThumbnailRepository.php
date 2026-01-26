@@ -17,54 +17,32 @@ use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\ThumbnailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
-use Pimcore\Model\Asset\Image\Thumbnail\Config;
-use Pimcore\Model\Asset\Image\Thumbnail\Config\Listing as ImageThumbnailListing;
+use Pimcore\Model\Asset\Video\Thumbnail\Config;
 use Pimcore\Model\Asset\Video\Thumbnail\Config\Listing as VideoThumbnailListing;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
-final class ThumbnailRepository implements ThumbnailRepositoryInterface
+final readonly class VideoThumbnailRepository implements VideoThumbnailRepositoryInterface
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
-    public function listVideoThumbnails(
-    ): ThumbnailCollection {
+    public function listVideoThumbnails(): ThumbnailCollection
+    {
         $thumbnailListing = new VideoThumbnailListing();
         $thumbnails = $thumbnailListing->getThumbnails();
 
-        return $this->getThumbnailCollection(
-            $thumbnails,
-            [
-                new Thumbnail(
-                    Thumbnails::DEFAULT_THUMBNAIL_ID->value,
-                    Thumbnails::DEFAULT_THUMBNAIL_TEXT->value
-                ),
-            ]
-        );
-    }
+        $items = [
+            new Thumbnail(
+                Thumbnails::DEFAULT_THUMBNAIL_ID->value,
+                Thumbnails::DEFAULT_THUMBNAIL_TEXT->value
+            ),
+        ];
 
-    public function listImageThumbnails(
-    ): ThumbnailCollection {
-        $thumbnailListing = new ImageThumbnailListing();
-        $thumbnailListing->setFilter(function (Config $config) {
-            return $config->isDownloadable();
-        });
-        $thumbnails = $thumbnailListing->getThumbnails();
-
-        return $this->getThumbnailCollection(
-            $thumbnails
-        );
-    }
-
-    private function getThumbnailCollection(
-        array $thumbnails,
-        array $items = []
-    ): ThumbnailCollection {
         /** @var Config $thumbnailConfig */
         foreach ($thumbnails as $thumbnailConfig) {
             $thumbnail = new Thumbnail(
@@ -80,8 +58,6 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
             $items[] = $thumbnail;
         }
 
-        return new ThumbnailCollection(
-            $items
-        );
+        return new ThumbnailCollection($items);
     }
 }
