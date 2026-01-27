@@ -42,7 +42,8 @@ final readonly class FieldContextData
         return $this->language;
     }
 
-    public function getContextObject(): FieldCollectionData|BlockData|AbstractData|Classificationstore|Localizedfield|Concrete|null
+    public function getContextObject():
+    FieldCollectionData|BlockData|AbstractData|Classificationstore|Localizedfield|Concrete|null
     {
         return $this->contextObject;
     }
