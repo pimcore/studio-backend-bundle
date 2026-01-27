@@ -106,12 +106,15 @@ final class ObjectBrickResolver implements
 
         try {
             $returnValue = null;
+            $brickName = $objectBrickKey->getBrickName();
+            $attribute = $objectBrickKey->getAttribute();
+
             if ($column->getLocale()) {
-                $returnValue = $value[$objectBrickKey->getBrickName()]['localizedfields'][$objectBrickKey->getAttribute()][$column->getLocale()];
+                $returnValue = $value[$brickName]['localizedfields'][$attribute][$column->getLocale()];
             }
 
             if (!$column->getLocale()) {
-                $returnValue = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
+                $returnValue = $value[$brickName][$attribute];
             }
         } catch (Exception) {
             $value = null;
@@ -222,12 +225,16 @@ final class ObjectBrickResolver implements
 
         try {
             $inheritanceData = null;
-            if ($column->getLocale()) {
-                $inheritanceData = $inheritanceDataCollection[$key->getBrickName()]['localizedfields'][$key->getAttribute()][$column->getLocale()];
+            $brickName = $key->getBrickName();
+            $attribute = $key->getAttribute();
+            $locale = $column->getLocale();
+
+            if ($locale) {
+                $inheritanceData = $inheritanceDataCollection[$brickName]['localizedfields'][$attribute][$locale];
             }
 
-            if (!$column->getLocale()) {
-                $inheritanceData = $inheritanceDataCollection[$key->getBrickName()][$key->getAttribute()];
+            if (!$locale) {
+                $inheritanceData = $inheritanceDataCollection[$brickName][$attribute];
             }
 
             if (!$inheritanceData instanceof InheritanceData) {
