@@ -129,13 +129,13 @@ final class ObjectBrickCollector implements
 
             try {
                 $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                    new ColumnFieldDefinition($dataField, $grouping, false),
+                    new ColumnFieldDefinition($dataField->getFieldDefinition(), $grouping, $dataField->isLocalized()),
                     'dataobject.objectbrick',
-                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
+                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getFieldDefinition()->getName(),
                     [
                         'field' => $fieldname,
                         'objectBrick' => $objectBrick->getKey(),
-                        'attribute' => $dataField->getName(),
+                        'attribute' => $dataField->getFieldDefinition()->getName(),
                     ]
                 );
             } catch (InvalidArgumentException $exception) {
