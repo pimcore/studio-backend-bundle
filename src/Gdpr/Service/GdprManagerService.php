@@ -96,8 +96,7 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         foreach ($providers as $key => $provider) {
             $item = new GdprDataProvider(
                 key: $key,
-                label: $provider->getName(),
-                deleteOperationId: $provider->getDeleteSwaggerOperationId()
+                label: $provider->getName()
             );
 
             $this->eventDispatcher->dispatch(

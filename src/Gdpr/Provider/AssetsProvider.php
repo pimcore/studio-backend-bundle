@@ -119,11 +119,6 @@ final readonly class AssetsProvider implements DataProviderInterface
 
     }
 
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'pimcore_studio_api_assets_batch_delete';
-    }
-
     /**
      * {@inheritdoc}
      */

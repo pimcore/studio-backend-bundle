@@ -45,6 +45,8 @@ final readonly class SentMailProvider implements DataProviderInterface
                 'bcc' => $entry->getBcc(),
                 'sentDate' => $entry->getSentDate(),
                 'subject' => $entry->getSubject(),
+                'hasHtmlLog' => $entry->getEmailLogExistsHtml() === 1,
+                'hasTextLog' => $entry->getEmailLogExistsText() === 1,
                 '__gdprIsDeletable' => true,
             ]),
             $listing->load()
@@ -54,11 +56,6 @@ final readonly class SentMailProvider implements DataProviderInterface
             totalItems: $listing->getTotalCount(),
             items: $rows
         );
-    }
-
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'pimcore_studio_api_emails_list_delete';
     }
 
     /**

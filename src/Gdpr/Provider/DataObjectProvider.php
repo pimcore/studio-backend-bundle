@@ -117,11 +117,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     }
 
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'data_object_batch_delete';
-    }
-
     /**
      * {@inheritdoc}
      */

@@ -26,8 +26,6 @@ interface DataProviderInterface
      */
     public function findData(FilterParameter $filter): Collection;
 
-    public function getDeleteSwaggerOperationId(): string;
-
     public function getName(): string;
 
     public function getKey(): string;
