@@ -56,10 +56,6 @@ final readonly class SentMailProvider implements DataProviderInterface
         );
     }
 
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'pimcore_studio_api_emails_list_delete';
-    }
 
     /**
      * @throws NotFoundException
