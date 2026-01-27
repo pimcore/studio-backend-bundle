@@ -107,7 +107,11 @@ final class ObjectBrickResolver implements
         try {
             $returnValue = null;
             if ($column->getLocale()) {
-                $returnValue = $value[$objectBrickKey->getBrickName()]['localizedfields'][$objectBrickKey->getAttribute()][$column->getLocale()];
+                $returnValue = $value
+                [$objectBrickKey->getBrickName()]
+                ['localizedfields']
+                [$objectBrickKey->getAttribute()]
+                [$column->getLocale()];
             }
 
             if (!$column->getLocale()) {
@@ -207,7 +211,13 @@ final class ObjectBrickResolver implements
     /**
      * @throws NotFoundException
      */
-    private function getInheritanceData(Concrete $element, Data $fieldDefinition, ObjectBrickKey $key, Column $column): InheritanceData
+    private function getInheritanceData(
+        Concrete $element,
+        Data $fieldDefinition,
+        ObjectBrickKey
+        $key,
+        Column $column
+    ): InheritanceData
     {
         $inheritanceDataCollection = $this->dataObjectServiceResolver->useInheritedValues(
             false,
@@ -219,7 +229,11 @@ final class ObjectBrickResolver implements
         try {
             $inheritanceData = null;
             if ($column->getLocale()) {
-                $inheritanceData = $inheritanceDataCollection[$key->getBrickName()]['localizedfields'][$key->getAttribute()][$column->getLocale()];
+                $inheritanceData = $inheritanceDataCollection
+                [$key->getBrickName()]
+                ['localizedfields']
+                [$key->getAttribute()]
+                [$column->getLocale()];
             }
 
             if (!$column->getLocale()) {
