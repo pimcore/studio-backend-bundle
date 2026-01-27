@@ -119,7 +119,6 @@ final readonly class AssetsProvider implements DataProviderInterface
 
     }
 
-
     /**
      * {@inheritdoc}
      */

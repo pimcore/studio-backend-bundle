@@ -58,7 +58,6 @@ final readonly class SentMailProvider implements DataProviderInterface
         );
     }
 
-
     /**
      * @throws NotFoundException
      */

@@ -26,7 +26,6 @@ interface DataProviderInterface
      */
     public function findData(FilterParameter $filter): Collection;
 
-
     public function getName(): string;
 
     public function getKey(): string;

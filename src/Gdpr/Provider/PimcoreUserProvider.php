@@ -119,7 +119,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         }
     }
 
-
     /**
      * {@inheritdoc}
      */

@@ -117,7 +117,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     }
 
-
     /**
      * {@inheritdoc}
      */
