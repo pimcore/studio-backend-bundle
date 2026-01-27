@@ -29,8 +29,7 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 final readonly class FieldContextData
 {
     public function __construct(
-        private AbstractData|BlockData|FieldCollectionData|Classificationstore|Localizedfield|Concrete|null
-            $contextObject = null,
+        private AbstractData|BlockData|FieldCollectionData|Classificationstore|Localizedfield|Concrete|null $contextObject = null,
         private ?string $language = null,
         private ?int $classificationStoreGroupId = null,
         private ?int $classificationStoreKeyId = null,
