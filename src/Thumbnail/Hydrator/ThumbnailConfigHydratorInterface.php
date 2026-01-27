@@ -11,18 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailConfig;
+use Pimcore\Model\Asset\Image\Thumbnail\Config;
 
 /**
  * @internal
  */
-interface ThumbnailRepositoryInterface
+interface ThumbnailConfigHydratorInterface
 {
-    public function listVideoThumbnails(
-    ): ThumbnailCollection;
-
-    public function listImageThumbnails(
-    ): ThumbnailCollection;
+    public function hydrate(Config $configuration, string $icon): ThumbnailConfig;
 }

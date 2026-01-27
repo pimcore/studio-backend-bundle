@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller\Video;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attribute\Response\Content\ThumbnailsJson;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\VideoThumbnailRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -32,13 +32,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class VideoCollectionController extends AbstractApiController
+final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ThumbnailRepositoryInterface $repository,
+        private readonly VideoThumbnailRepositoryInterface $repository,
     ) {
         parent::__construct($serializer);
     }
