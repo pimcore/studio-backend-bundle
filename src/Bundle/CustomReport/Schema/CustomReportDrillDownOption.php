@@ -36,28 +36,30 @@ final class CustomReportDrillDownOption implements AdditionalAttributesInterface
             anyOf: [
                 new Schema(type: 'string'),
                 new Schema(type: 'integer'),
+                new Schema(type: 'float')
             ]
         )]
-        private readonly int|string $name,
+        private readonly int|string|float $name,
         #[Property(
             description: 'value',
             example: 'Full-Size',
             anyOf: [
                 new Schema(type: 'string'),
                 new Schema(type: 'integer'),
+                new Schema(type: 'float')
             ]
         )]
-        private readonly null|string|int $value,
+        private readonly null|string|int|float $value,
     ) {
 
     }
 
-    public function getName(): string|int
+    public function getName(): string|int|float
     {
         return $this->name;
     }
 
-    public function getValue(): null|string|int
+    public function getValue(): null|string|int|float
     {
         return $this->value;
     }
