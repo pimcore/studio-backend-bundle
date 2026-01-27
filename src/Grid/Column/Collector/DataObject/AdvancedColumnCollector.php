@@ -224,8 +224,8 @@ final class AdvancedColumnCollector implements
 
             foreach ($objectBrickItems as $objectBrickItem) {
                 $fields[] = new SimpleField(
-                    name: $objectBrickItem->getTitle(),
-                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getName()
+                    name: $objectBrickItem->getFieldDefinition()->getTitle(),
+                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getFieldDefinition()->getName()
                 );
             }
         }

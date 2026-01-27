@@ -119,11 +119,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         }
     }
 
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'user_delete_by_id';
-    }
-
     /**
      * {@inheritdoc}
      */

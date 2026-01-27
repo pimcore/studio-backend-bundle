@@ -976,6 +976,28 @@ thumbnail_image_get_collection_description: |
   The thumbnails have to be defined as downloadable in order to be listed in the collection.
 thumbnail_image_get_collection_success_response: All downloadable image thumbnails
 thumbnail_image_get_collection_summary: Get collection of thumbnails for images
+thumbnail_image_get_tree_description: |
+  Get image thumbnail configuration tree with thumbnails organized by groups. <br>
+  Thumbnails without a group are listed directly, while grouped thumbnails are organized into folder nodes.
+thumbnail_image_get_tree_success_response: Image thumbnail configuration tree as JSON
+thumbnail_image_get_tree_summary: Get image thumbnails tree
+thumbnail_image_get_by_name_description: |
+  Get a specific image thumbnail configuration by its name including settings and media transformations.
+thumbnail_image_get_by_name_success_response: Image thumbnail configuration as JSON
+thumbnail_image_get_by_name_summary: Get image thumbnail configuration
+thumbnail_image_delete_description: |
+  Delete a specific image thumbnail configuration by its name.
+thumbnail_image_delete_success_response: Image thumbnail configuration successfully deleted
+thumbnail_image_delete_summary: Delete image thumbnail configuration
+thumbnail_image_update_description: |
+  Update a specific image thumbnail configuration by its name with new settings and media transformations.
+thumbnail_image_update_success_response: Updated image thumbnail configuration as JSON
+thumbnail_image_update_summary: Update image thumbnail configuration
+thumbnail_image_create_description: |
+  Create a new image thumbnail configuration with the specified name. <br>
+  The name must be unique and not already used by an existing thumbnail configuration.
+thumbnail_image_create_success_response: Created image thumbnail configuration as JSON
+thumbnail_image_create_summary: Create a new image thumbnail configuration
 thumbnail_video_get_collection_description: |
   Get collection of all thumbnails for videos.
 thumbnail_video_get_collection_success_response: All video thumbnails

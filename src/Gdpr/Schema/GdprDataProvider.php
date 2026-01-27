@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'GDPR Data Provider',
     description: 'GDPR Data Extractor search source(e.g., "Data Objects", "Pimcore user").',
-    required: ['key', 'label', 'deleteOperationId'],
+    required: ['key', 'label'],
     type: 'object',
 )]
 final class GdprDataProvider implements AdditionalAttributesInterface
@@ -45,13 +45,6 @@ final class GdprDataProvider implements AdditionalAttributesInterface
             example: 'Data Objects'
         )]
         private readonly string $label,
-
-        #[Property(
-            description: 'The Operation ID to call when deleting an item.',
-            type: 'string',
-            example: 'user_delete_by_id'
-        )]
-        private readonly string $deleteOperationId,
     ) {
     }
 
@@ -63,10 +56,5 @@ final class GdprDataProvider implements AdditionalAttributesInterface
     public function getLabel(): string
     {
         return $this->label;
-    }
-
-    public function getDeleteOperationId(): string
-    {
-        return $this->deleteOperationId;
     }
 }
