@@ -45,6 +45,8 @@ final readonly class SentMailProvider implements DataProviderInterface
                 'bcc' => $entry->getBcc(),
                 'sentDate' => $entry->getSentDate(),
                 'subject' => $entry->getSubject(),
+                'hasHtmlLog' => $entry->getEmailLogExistsHtml() === 1,
+                'hasTextLog' => $entry->getEmailLogExistsText() === 1,
                 '__gdprIsDeletable' => true,
             ]),
             $listing->load()
