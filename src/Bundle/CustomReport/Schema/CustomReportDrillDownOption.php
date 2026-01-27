@@ -36,7 +36,7 @@ final class CustomReportDrillDownOption implements AdditionalAttributesInterface
             anyOf: [
                 new Schema(type: 'string'),
                 new Schema(type: 'integer'),
-                new Schema(type: 'float')
+                new Schema(type: 'float'),
             ]
         )]
         private readonly int|string|float $name,
@@ -46,7 +46,7 @@ final class CustomReportDrillDownOption implements AdditionalAttributesInterface
             anyOf: [
                 new Schema(type: 'string'),
                 new Schema(type: 'integer'),
-                new Schema(type: 'float')
+                new Schema(type: 'float'),
             ]
         )]
         private readonly null|string|int|float $value,
