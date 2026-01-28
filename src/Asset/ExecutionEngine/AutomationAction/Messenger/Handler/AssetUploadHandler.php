@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function dirname;
 
@@ -38,6 +39,7 @@ final class AssetUploadHandler extends AbstractHandler
     public function __construct(
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly UploadServiceInterface $uploadService,
     ) {
         parent::__construct();
@@ -98,6 +100,6 @@ final class AssetUploadHandler extends AbstractHandler
             ));
         }
 
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

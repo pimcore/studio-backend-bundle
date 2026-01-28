@@ -22,15 +22,15 @@ final class UserTopicServiceTest extends Unit
     {
         $service = new UserTopicService();
 
-        $this->assertSame('studio/user/1', $service->getUserTopic(1));
-        $this->assertSame('studio/user/42', $service->getUserTopic(42));
-        $this->assertSame('studio/user/999', $service->getUserTopic(999));
+        $this->assertSame('studio-backend-default/user/1', $service->getUserTopic(1));
+        $this->assertSame('studio-backend-default/user/42', $service->getUserTopic(42));
+        $this->assertSame('studio-backend-default/user/999', $service->getUserTopic(999));
     }
 
     public function testGetWildcardTopic(): void
     {
         $service = new UserTopicService();
 
-        $this->assertSame('studio/user/*', $service->getWildcardTopic());
+        $this->assertSame('*', $service->getWildcardTopic());
     }
 }

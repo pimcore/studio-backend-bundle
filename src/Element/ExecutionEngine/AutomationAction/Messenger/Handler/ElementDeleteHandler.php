@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -39,7 +40,8 @@ final class ElementDeleteHandler extends AbstractHandler
         private readonly ElementDeleteServiceInterface $elementDeleteService,
         private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
-        private readonly UserResolverInterface $userResolver
+        private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
     ) {
         parent::__construct();
     }
@@ -78,7 +80,7 @@ final class ElementDeleteHandler extends AbstractHandler
         if ($element->getId() === $parentElement->getId()) {
             try {
                 $this->elementDeleteService->deleteParentElement($element, $user);
-                $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+                $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
             } catch (Exception $exception) {
                 $this->abort($this->getAbortData(
                     Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
@@ -106,7 +108,7 @@ final class ElementDeleteHandler extends AbstractHandler
             ));
         }
 
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
     }
 
     protected function configureStep(): void

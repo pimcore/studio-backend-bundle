@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -35,6 +35,7 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
         private EventSubscriberServiceInterface $eventSubscriberService,
         private JobRunRepositoryInterface $jobRunRepository,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
         private UploadServiceInterface $uploadService,
     ) {
 
@@ -59,7 +60,7 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
 
         match ($state) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Topics::STUDIO->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
