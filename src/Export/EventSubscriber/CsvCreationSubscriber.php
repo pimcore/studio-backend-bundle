@@ -63,7 +63,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
-               $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 $event
             ),
             JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
