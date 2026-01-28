@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
+/**
+ * @internal
+ */
 interface UserTopicServiceInterface
 {
     public function getUserTopic(int $userId): string;
