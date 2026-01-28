@@ -89,7 +89,12 @@ final class PatchFolderHandler extends AbstractHandler
         );
 
         if (empty($elementIds)) {
-            $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $this->getJobStep($message)->getName()
+            );
 
             return;
         }

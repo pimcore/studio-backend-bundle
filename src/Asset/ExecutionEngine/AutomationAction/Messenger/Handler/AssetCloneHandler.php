@@ -90,6 +90,11 @@ final class AssetCloneHandler extends AbstractHandler
 
         $this->cloneService->cloneElement($source, $parent, $user);
 
-        $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $this->userTopicService,
+            $jobRun,
+            $this->getJobStep($message)->getName()
+        );
     }
 }

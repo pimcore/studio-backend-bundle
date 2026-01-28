@@ -100,6 +100,11 @@ final class AssetUploadHandler extends AbstractHandler
             ));
         }
 
-        $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $this->userTopicService,
+            $jobRun,
+            $this->getJobStep($message)->getName()
+        );
     }
 }

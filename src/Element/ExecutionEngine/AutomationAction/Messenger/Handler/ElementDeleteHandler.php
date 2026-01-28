@@ -80,7 +80,12 @@ final class ElementDeleteHandler extends AbstractHandler
         if ($element->getId() === $parentElement->getId()) {
             try {
                 $this->elementDeleteService->deleteParentElement($element, $user);
-                $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
+                $this->updateProgress(
+                    $this->publishService,
+                    $this->userTopicService,
+                    $jobRun,
+                    $this->getJobStep($message)->getName()
+                );
             } catch (Exception $exception) {
                 $this->abort($this->getAbortData(
                     Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
@@ -108,7 +113,12 @@ final class ElementDeleteHandler extends AbstractHandler
             ));
         }
 
-        $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $this->userTopicService,
+            $jobRun,
+            $this->getJobStep($message)->getName()
+        );
     }
 
     protected function configureStep(): void
