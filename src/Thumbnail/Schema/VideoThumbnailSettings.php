@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
     title: 'Video Thumbnail Settings',
     required: [
         'name', 'description', 'group', 'videoBitrate', 'audioBitrate',
-        'modificationDate', 'creationDate', 'filenameSuffix'
+        'modificationDate', 'creationDate', 'filenameSuffix',
     ],
     type: 'object'
 )]

@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageConfig;
@@ -85,8 +84,7 @@ final readonly class ThumbnailConfigRepository implements ThumbnailConfigReposit
     private function updateConfig(
         ImageConfig|VideoConfig $config,
         UpdateThumbnailConfig $parameters
-    ): ImageConfig|VideoConfig
-    {
+    ): ImageConfig|VideoConfig {
         $this->checkIfWriteable($config);
         $this->applySettings($config, $parameters);
         $config->resetItems();

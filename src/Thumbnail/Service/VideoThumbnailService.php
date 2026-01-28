@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\VideoThumbnailConfigDeta
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
 use Pimcore\Model\Asset\Video\Thumbnail\Config;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal

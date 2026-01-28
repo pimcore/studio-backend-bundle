@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageConfig;
@@ -25,7 +24,6 @@ use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoConfig;
  */
 interface ThumbnailConfigRepositoryInterface
 {
-
     public function imageConfigExists(string $name): bool;
 
     public function videoConfigExists(string $name): bool;
