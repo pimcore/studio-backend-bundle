@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Setting\MappedParameter\UpdateSettingsPar
 use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\Exception\ConfigWriteException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -45,6 +46,7 @@ final class UpdateController extends AbstractApiController
 
     /**
      * @throws ElementSavingFailedException|FieldValidationFailedException
+     * @throws ConfigWriteException
      */
     #[Route('/settings', name: 'pimcore_studio_api_update_settings', methods: ['PUT'])]
     #[IsGranted(UserPermissions::SYSTEM_SETTINGS->value)]

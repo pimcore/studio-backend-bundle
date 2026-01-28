@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
 /**
  * @internal
  */
-interface SettingsProviderInterface
+interface UpdateSettingProviderLoaderInterface
 {
-    public function getSettings(): array;
+    public function loadUpdateSettingProviders(): array;
 }

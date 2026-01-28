@@ -46,6 +46,7 @@ final readonly class SettingsService implements SettingsServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private LocaleServiceInterface $localeService,
         private SettingProviderLoaderInterface $settingProviderLoader,
+        private UpdateSettingProviderLoaderInterface $updateSettingProviderLoader,
         private SystemSettingsConfig $systemSettingsConfig
     ) {
     }
@@ -103,7 +104,7 @@ final readonly class SettingsService implements SettingsServiceInterface
     public function updateSettings(array $data): void
     {
         $preparedData = [];
-        foreach ($this->settingProviderLoader->loadSettingProviders() as $settingProvider) {
+        foreach ($this->updateSettingProviderLoader->loadUpdateSettingProviders() as $settingProvider) {
             $preparedData = [
                 ... $data,
                 ... $settingProvider->prepareSettingsForUpdate($data),
@@ -112,5 +113,7 @@ final readonly class SettingsService implements SettingsServiceInterface
 
         $this->systemSettingsConfig->save($preparedData);
 
+        //Todo stop workers
+        //TOdo clear cache
     }
 }

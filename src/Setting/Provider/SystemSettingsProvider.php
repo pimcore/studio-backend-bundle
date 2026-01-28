@@ -25,7 +25,7 @@ use function ini_get;
  * @internal
  */
 #[AutoconfigureTag('pimcore.studio_backend.settings_provider')]
-final readonly class SystemSettingsProvider implements SettingsProviderInterface
+final readonly class SystemSettingsProvider implements SettingsProviderInterface, UpdateSettingsProviderInterface
 {
     private array $systemSettings;
 

@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 /**
  * @internal
  */
-interface SettingsProviderInterface
+interface UpdateSettingsProviderInterface
 {
-    public function getSettings(): array;
+    public function prepareSettingsForUpdate(array $data): array;
 }

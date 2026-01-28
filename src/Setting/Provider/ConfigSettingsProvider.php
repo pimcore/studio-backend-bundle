@@ -38,9 +38,4 @@ final readonly class ConfigSettingsProvider implements SettingsProviderInterface
             'maps' => $this->config['maps'],
         ];
     }
-
-    public function prepareSettingsForUpdate(array $data): array
-    {
-        return $data;
-    }
 }
