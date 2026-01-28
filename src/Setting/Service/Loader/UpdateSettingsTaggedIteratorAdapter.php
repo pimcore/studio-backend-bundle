@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader;
 
-use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Service\UpdateSettingProviderLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
