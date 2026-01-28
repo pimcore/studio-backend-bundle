@@ -13,25 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
-use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Event\PreResponse\CountryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Cache\Symfony\CacheClearer;
 use Pimcore\Localization\LocaleServiceInterface;
-use Pimcore\Model\Exception\ConfigWriteException;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
 use function array_key_exists;
-use function implode;
-use function in_array;
-use function is_array;
 use function sprintf;
-use function str_starts_with;
 use function strlen;
 
 /**

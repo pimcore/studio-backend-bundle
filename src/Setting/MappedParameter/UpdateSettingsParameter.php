@@ -33,6 +33,6 @@ final readonly class UpdateSettingsParameter
             'objects' => $this->objects,
             'assets' => $this->assets,
             'documents' => $this->documents,
-        ], static fn($value) => $value !== null);
+        ], static fn ($value) => $value !== null);
     }
 }

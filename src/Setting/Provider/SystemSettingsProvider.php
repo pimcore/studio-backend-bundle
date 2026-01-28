@@ -59,12 +59,13 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'environment' => $this->configResolver->getEnvironment(),
         ];
     }
+
     public function prepareSettingsForUpdate(array $data): array
     {
         $preparedData = [];
         $languages = $data['general']['valid_languages'] ?? [];
 
-        foreach($languages as $language) {
+        foreach ($languages as $language) {
             $preparedData['general.fallbackLanguages.' . $language] =
                 $data['general']['fallback_languages'][$language] ?? '';
 
