@@ -45,6 +45,9 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'requiredLanguages' => $this->systemSettings['general']['required_languages'] ??
                 $this->systemSettings['general']['valid_languages'],
             'validLanguages' => $this->systemSettings['general']['valid_languages'],
+            'fallbackLanguages' => $this->systemSettings['general']['fallback_languages'],
+            'defaultLanguage' => $this->systemSettings['general']['default_language'] ?? '',
+            'language' => $this->systemSettings['general']['language'] ?? '',
             'availableAdminLanguages' => $this->adminResolver->getLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
