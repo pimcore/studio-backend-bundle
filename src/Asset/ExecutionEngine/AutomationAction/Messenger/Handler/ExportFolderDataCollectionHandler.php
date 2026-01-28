@@ -92,7 +92,8 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
             $this->updateProgress(
                 $this->publishService,
                 $this->userTopicService,
-                $jobRun, $this->getJobStep($message)->getName()
+                $jobRun,
+                $this->getJobStep($message)->getName()
             );
 
             return;
@@ -144,7 +145,8 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
         $this->updateProgress(
             $this->publishService,
             $this->userTopicService,
-            $jobRun, $this->getJobStep($message)->getName()
+            $jobRun,
+            $this->getJobStep($message)->getName()
         );
     }
 
