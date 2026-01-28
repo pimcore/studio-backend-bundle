@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberSe
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -34,7 +34,8 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
-        private ExportServiceInterface $csvExportService
+        private ExportServiceInterface $csvExportService,
+        private UserTopicServiceInterface $userTopicService
     ) {
 
     }
@@ -62,7 +63,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
-                Topics::STUDIO->value,
+               $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 $event
             ),
             JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
