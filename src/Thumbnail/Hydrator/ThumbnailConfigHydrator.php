@@ -16,14 +16,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailConfig;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
-use Pimcore\Model\Asset\Image\Thumbnail\Config;
+use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
+use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 
 /**
  * @internal
  */
 final readonly class ThumbnailConfigHydrator implements ThumbnailConfigHydratorInterface
 {
-    public function hydrate(Config $configuration, string $icon): ThumbnailConfig
+    public function hydrate(ImageThumbnailConfig|VideoThumbnailConfig $configuration, string $icon): ThumbnailConfig
     {
         return new ThumbnailConfig(
             id: $configuration->getName(),

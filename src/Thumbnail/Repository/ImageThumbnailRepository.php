@@ -14,9 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\Asset\Image\Thumbnail\Config\Listing as ImageThumbnailListing;
@@ -26,8 +24,13 @@ use Pimcore\Model\Asset\Image\Thumbnail\Config\Listing as ImageThumbnailListing;
  */
 final readonly class ImageThumbnailRepository implements ImageThumbnailRepositoryInterface
 {
+    public function __construct(
+        private ThumbnailConfigRepositoryInterface $thumbnailConfigRepository,
+    ) {
+    }
+
     /**
-     * @return Config[]
+     * {@inheritdoc}
      */
     public function listImageThumbnails(): array
     {
@@ -70,19 +73,13 @@ final readonly class ImageThumbnailRepository implements ImageThumbnailRepositor
 
     public function exists(string $name): bool
     {
-        try {
-            $this->getByName($name);
-        } catch (NotFoundException) {
-            return false;
-        }
-
-        return true;
+        return $this->thumbnailConfigRepository->imageConfigExists($name);
     }
 
     public function add(string $name): Config
     {
         $config = new Config();
-        $this->checkIfWriteable($config);
+        $this->thumbnailConfigRepository->checkIfWriteable($config);
         $config->setName($name);
         $config->save();
 
@@ -91,46 +88,7 @@ final readonly class ImageThumbnailRepository implements ImageThumbnailRepositor
 
     public function update(Config $config, UpdateThumbnailConfig $parameters): Config
     {
-        $this->checkIfWriteable($config);
-        foreach ($parameters->getSettings() as $key => $value) {
-            if ($key === 'name') {
-                continue;
-            }
-
-            $setter = 'set' . ucfirst($key);
-            if (method_exists($config, $setter)) {
-                $config->$setter($value);
-            }
-        }
-
-        $config->resetItems();
-
-        $mediaData = $parameters->getMedias();
-        $mediaOrder = $parameters->getMediaOrder();
-        uksort($mediaData, static function ($a, $b) use ($mediaOrder) {
-            if ($a === 'default') {
-                return -1;
-            }
-
-            return ($mediaOrder[$a] < $mediaOrder[$b]) ? -1 : 1;
-        });
-
-        foreach ($mediaData as $mediaName => $items) {
-            if (preg_match('/["<>]/', $mediaName)) {
-                throw new InvalidArgumentException('Invalid media query name');
-            }
-
-            foreach ($items as $item) {
-                $method = $item['method'];
-                unset($item['method']);
-
-                $config->addItem($method, $item['arguments'], htmlspecialchars($mediaName));
-            }
-        }
-
-        $config->save();
-
-        return $config;
+        return $this->thumbnailConfigRepository->updateImageConfig($config, $parameters);
     }
 
     /**
@@ -139,20 +97,7 @@ final readonly class ImageThumbnailRepository implements ImageThumbnailRepositor
     public function delete(string $name): void
     {
         $config = $this->getByName($name);
-        $this->checkIfWriteable($config);
+        $this->thumbnailConfigRepository->checkIfWriteable($config);
         $config->delete();
-    }
-
-    /**
-     * @throws NotWriteableException
-     */
-    private function checkIfWriteable(Config $config): void
-    {
-        if (!$config->isWriteable()) {
-            throw new NotWriteableException(
-                'thumbnail',
-                'The thumbnail configuration "' . $config->getName() . '" is not writeable.'
-            );
-        }
     }
 }

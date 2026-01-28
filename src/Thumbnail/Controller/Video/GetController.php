@@ -14,16 +14,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller\Video;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attribute\Response\Content\ThumbnailsJson;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\VideoThumbnailConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -32,45 +33,45 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
+    private const string ROUTE = '/thumbnails/video/config/{name}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly VideoThumbnailServiceInterface $service,
+        private readonly VideoThumbnailServiceInterface $videoThumbnailService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws UserNotFoundException
+     * @throws NotFoundException
      */
-    #[Route('/thumbnails/video', name: 'pimcore_studio_api_thumbnails_video', methods: ['GET'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_thumbnails_video_get_by_name', methods: ['GET'])]
     #[IsGranted(UserPermissions::THUMBNAILS->value)]
     #[Get(
-        path: self::PREFIX . '/thumbnails/video',
-        operationId: 'thumbnail_video_get_collection',
-        description: 'thumbnail_video_get_collection_description',
-        summary: 'thumbnail_video_get_collection_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'thumbnail_video_get_by_name',
+        description: 'thumbnail_video_get_by_name_description',
+        summary: 'thumbnail_video_get_by_name_summary',
         tags: [Tags::AssetThumbnails->value]
     )]
+    #[StringParameter(
+        name: 'name',
+        example: 'content',
+        description: 'Video thumbnail configuration name',
+        required: true
+    )]
     #[SuccessResponse(
-        description: 'thumbnail_video_get_collection_success_response',
-        content: new ThumbnailsJson()
+        description: 'thumbnail_video_get_by_name_success_response',
+        content: new JsonContent(ref: VideoThumbnailConfigDetail::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED
     ])]
-    public function getVideoThumbnails(): JsonResponse
+    public function getThumbnailByName(string $name): JsonResponse
     {
-        $collection = $this->service->listThumbnails();
-
-        return $this->jsonResponse(
-            [
-                'items' => $collection->getItems(),
-            ]
-        );
+        return $this->jsonResponse($this->videoThumbnailService->getThumbnail($name));
     }
 }

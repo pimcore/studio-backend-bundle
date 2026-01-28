@@ -24,6 +24,9 @@ use Pimcore\Model\Asset\Image\Thumbnail\Config;
  */
 interface ImageThumbnailRepositoryInterface
 {
+    /**
+     * @return Config[]
+     */
     public function listImageThumbnails(): array;
 
     /**
@@ -39,7 +42,7 @@ interface ImageThumbnailRepositoryInterface
     public function exists(string $name): bool;
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws NotWriteableException
      */
     public function add(string $name): Config;
 
@@ -50,7 +53,6 @@ interface ImageThumbnailRepositoryInterface
 
     /**
      *  @throws NotFoundException|NotWriteableException
-     * /
      */
     public function delete(string $name): void;
 }

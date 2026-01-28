@@ -13,18 +13,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller\Video;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attribute\Response\Content\ThumbnailsJson;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\CreateThumbnailConfig;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\VideoThumbnailConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -32,45 +36,43 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class CreateController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
+    private const string ROUTE = '/thumbnails/video/config';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly VideoThumbnailServiceInterface $service,
+        private readonly VideoThumbnailServiceInterface $videoThumbnailService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws UserNotFoundException
+     * @throws ElementExistsException|NotWriteableException
      */
-    #[Route('/thumbnails/video', name: 'pimcore_studio_api_thumbnails_video', methods: ['GET'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_thumbnails_video_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::THUMBNAILS->value)]
-    #[Get(
-        path: self::PREFIX . '/thumbnails/video',
-        operationId: 'thumbnail_video_get_collection',
-        description: 'thumbnail_video_get_collection_description',
-        summary: 'thumbnail_video_get_collection_summary',
+    #[Post(
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'thumbnail_video_create',
+        description: 'thumbnail_video_create_description',
+        summary: 'thumbnail_video_create_summary',
         tags: [Tags::AssetThumbnails->value]
     )]
+    #[ReferenceRequestBody(CreateThumbnailConfig::class)]
     #[SuccessResponse(
-        description: 'thumbnail_video_get_collection_success_response',
-        content: new ThumbnailsJson()
+        description: 'thumbnail_video_create_success_response',
+        content: new JsonContent(ref: VideoThumbnailConfigDetail::class, type: 'object')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::CONFLICT,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getVideoThumbnails(): JsonResponse
+    public function createThumbnail(#[MapRequestPayload] CreateThumbnailConfig $parameters): JsonResponse
     {
-        $collection = $this->service->listThumbnails();
-
         return $this->jsonResponse(
-            [
-                'items' => $collection->getItems(),
-            ]
+            $this->videoThumbnailService->addThumbnail($parameters->getName())
         );
     }
 }

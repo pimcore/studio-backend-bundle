@@ -161,6 +161,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.thumbnail.image_config_detail`
 - `pre_response.thumbnail.image_folder`
 - `pre_response.thumbnail.video_config`
+- `pre_response.thumbnail.video_config_detail`
 - `pre_response.thumbnail.video_folder`
 - `pre_response.translations`
 - `pre_response.translations.import.csv-settings`
