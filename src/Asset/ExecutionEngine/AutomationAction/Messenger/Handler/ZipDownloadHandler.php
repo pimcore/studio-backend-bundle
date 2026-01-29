@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -40,6 +41,7 @@ final class ZipDownloadHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly ZipServiceInterface $zipService
     ) {
         parent::__construct();
@@ -106,6 +108,7 @@ final class ZipDownloadHandler extends AbstractHandler
 
             $this->updateProgress(
                 $this->publishService,
+                $this->userTopicService,
                 $jobRun,
                 $this->getJobStep($message)->getName(),
                 $assetCount + 1
@@ -122,6 +125,7 @@ final class ZipDownloadHandler extends AbstractHandler
 
         $this->updateProgress(
             $this->publishService,
+            $this->userTopicService,
             $jobRun,
             $this->getJobStep($message)->getName(),
             $assetCount + 1

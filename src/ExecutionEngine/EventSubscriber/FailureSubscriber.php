@@ -20,7 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInter
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use function in_array;
 
@@ -32,7 +32,8 @@ final readonly class FailureSubscriber implements EventSubscriberInterface
     public function __construct(
         private PublishServiceInterface $publishService,
         private JobRunErrorLogRepositoryInterface $jobRunErrorLogRepository,
-        private JobRunRepositoryInterface $jobRunRepository
+        private JobRunRepositoryInterface $jobRunRepository,
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -67,7 +68,7 @@ final readonly class FailureSubscriber implements EventSubscriberInterface
             );
 
             $this->publishService->publish(
-                Topics::STUDIO->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $jobRunId,
                     $event->getJobName(),

@@ -51,4 +51,5 @@ enum UserPermissions: string
     case SELECT_OPTIONS = 'selectoptions';
     case CLASS_DEFINITION = 'classes';
     case SYSTEM_APPEARANCE_SETTINGS = 'system_appearance_settings';
+    case SYSTEM_SETTINGS = 'system_settings';
 }

@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\SendNotificationParameters;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface;
 
@@ -34,7 +34,8 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
     public function __construct(
         private JobRunErrorLogRepositoryInterface $jobRunErrorLogRepository,
         private PublishServiceInterface $publishService,
-        private SendNotificationServiceInterface $sendNotificationService
+        private SendNotificationServiceInterface $sendNotificationService,
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -85,7 +86,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
         }
 
         $this->publishService->publish(
-            Topics::STUDIO->value,
+            $this->userTopicService->getUserTopic($ownerId),
             new Finished(
                 $jobRunId,
                 $jobName,
