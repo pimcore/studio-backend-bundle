@@ -13,13 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Cache\Service\CacheClearerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Event\PreResponse\CountryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Helper\StopMessengerWorkersTrait;
 use Pimcore\Localization\LocaleServiceInterface;
+use Pimcore\Model\Exception\ConfigWriteException;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpKernel\Event\TerminateEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 use function array_key_exists;
 use function sprintf;
 use function strlen;
@@ -30,6 +36,7 @@ use function strlen;
 final readonly class SettingsService implements SettingsServiceInterface
 {
     use ElementProviderTrait;
+    use StopMessengerWorkersTrait;
 
     public function __construct(
         private CountryHydratorInterface $countryHydrator,
@@ -37,7 +44,8 @@ final readonly class SettingsService implements SettingsServiceInterface
         private LocaleServiceInterface $localeService,
         private SettingProviderLoaderInterface $settingProviderLoader,
         private UpdateSettingProviderLoaderInterface $updateSettingProviderLoader,
-        private SystemSettingsConfig $systemSettingsConfig
+        private SystemSettingsConfig $systemSettingsConfig,
+        private CacheClearerServiceInterface $cacheClearerService,
     ) {
     }
 
@@ -91,6 +99,10 @@ final readonly class SettingsService implements SettingsServiceInterface
         return $availableCountries;
     }
 
+    /**
+     * @throws ConfigWriteException
+     * @throws Exception
+     */
     public function updateSettings(array $data): void
     {
         $preparedData = [];
@@ -103,7 +115,8 @@ final readonly class SettingsService implements SettingsServiceInterface
 
         $this->systemSettingsConfig->save($preparedData);
 
-        //Todo stop workers
-        //TOdo clear cache
+        $this->cacheClearerService->clearSymfonyCache();
+        $this->stopMessengerWorkers();
+        $this->cacheClearerService->clearPimcoreCache();
     }
 }

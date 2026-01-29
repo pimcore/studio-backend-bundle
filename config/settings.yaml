@@ -15,7 +15,6 @@ services:
   #
   # Services
   #
-
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
 
