@@ -34,6 +34,9 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlService
 
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicService
+
     Symfony\Component\Mercure\Jwt\TokenFactoryInterface:
         class: Symfony\Component\Mercure\Jwt\LcobucciFactory
         arguments:
@@ -45,5 +48,7 @@ services:
       #
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\StudioTopicProvider: ~
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\UserTopicProvider: ~
 
 

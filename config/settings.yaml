@@ -15,9 +15,11 @@ services:
   #
   # Services
   #
-
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\UpdateSettingProviderLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\UpdateSettingsTaggedIteratorAdapter
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
@@ -49,4 +51,7 @@ services:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
-    tags: [ 'pimcore.studio_backend.settings_provider' ]
+    tags: [
+      'pimcore.studio_backend.settings_provider',
+      'pimcore.studio_backend.update_settings_provider'
+    ]

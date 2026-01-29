@@ -1620,3 +1620,14 @@ class_definition_collection_creatable_summary: Get collection of all class defin
 class_definition_collection_creatable_success_response: List of class definitions that can be created.
 setting_admin_thumbnail_summary: Get thumbnail for images in admin settings
 setting_admin_thumbnail: Get thumbnail for images in admin settings
+settings_update_description: |
+  Update system settings. <br>
+  This endpoint allows you to update various system configuration parameters including: <br>
+  <ul>
+    <li><strong>general</strong>: Language settings (valid languages, fallback languages, required languages, default language), domain configuration, and translation debugging</li>
+    <li><strong>objects</strong>: Object versioning settings (days and steps to keep)</li>
+    <li><strong>assets</strong>: Asset versioning settings (days and steps to keep)</li>
+    <li><strong>documents</strong>: Document versioning settings and localized error pages</li>
+  </ul>
+  <strong>Note:</strong> Only the settings provided in the request body will be updated.
+settings_update_summary: Update system settings

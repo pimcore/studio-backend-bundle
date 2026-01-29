@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberSe
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -30,6 +30,7 @@ final readonly class BatchOperationSubscriber implements EventSubscriberInterfac
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -51,7 +52,7 @@ final readonly class BatchOperationSubscriber implements EventSubscriberInterfac
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Topics::STUDIO->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

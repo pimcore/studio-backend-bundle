@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -34,6 +34,7 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
         private StorageServiceInterface $storageService,
+        private UserTopicServiceInterface $userTopicService,
         private ZipServiceInterface $zipService
     ) {
 
@@ -60,7 +61,7 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
-                Topics::STUDIO->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 $event
             ),
             JobRunStates::FAILED->value => $this->storageService->cleanUpLocalFile(

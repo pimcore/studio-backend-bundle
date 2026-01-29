@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use function count;
 
 /**
@@ -38,6 +38,7 @@ trait HandlerProgressTrait
 
     private function updateProgress(
         PublishServiceInterface $publishService,
+        UserTopicServiceInterface $userTopicService,
         JobRun $jobRun,
         string $jobStepName,
         int $stepElements = 1
@@ -58,7 +59,7 @@ trait HandlerProgressTrait
         }
 
         $publishService->publish(
-            Topics::STUDIO->value,
+            $userTopicService->getUserTopic($jobRun->getOwnerId()),
             new Progress(
                 $progress,
                 // $currentStep + 1 because the current step is 0-based
