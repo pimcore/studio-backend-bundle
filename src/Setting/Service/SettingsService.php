@@ -24,8 +24,6 @@ use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\Exception\ConfigWriteException;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpKernel\Event\TerminateEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 use function array_key_exists;
 use function sprintf;
 use function strlen;
