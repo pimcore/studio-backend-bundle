@@ -12,6 +12,9 @@ services:
         arguments:
             $bundle: "@=service('kernel').getBundle('PimcoreStudioBackendBundle')"
 
+    Pimcore\Bundle\StudioBackendBundle\Cache\Service\CacheClearerServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Cache\Service\CacheClearerService
+
 
 
 

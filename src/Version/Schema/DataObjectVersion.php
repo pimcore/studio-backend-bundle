@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -66,6 +68,8 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
         private array $objectData = [],
         #[Property(description: 'Allow variants', type: 'bool', example: false)]
         private ?bool $allowVariants = null,
+        #[Property(description: 'Properties', type: 'array', items: new Items(ref: ElementProperty::class))]
+        private array $properties = [],
     ) {
         parent::__construct(
             $id,
@@ -135,5 +139,15 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
     public function setAllowVariants(bool $allowVariants): void
     {
         $this->allowVariants = $allowVariants;
+    }
+
+    public function getProperties(): array
+    {
+        return $this->properties;
+    }
+
+    public function setProperties(array $properties): void
+    {
+        $this->properties = $properties;
     }
 }
