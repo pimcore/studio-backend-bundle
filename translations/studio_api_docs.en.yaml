@@ -885,6 +885,18 @@ settings_country_collection_description: |
   Returns a list of countries with their codes and names
 settings_country_collection_summary: Get all available countries
 settings_country_collection_success_response: List of available countries
+settings_image_adapter_check_description: |
+  Check what image adapter is used. <br>
+  Returns <strong>true</strong> if Imagick extension is used for image processing. <br>
+  Returns <strong>false</strong> if the GD library fallback is used, which provides lower quality image processing.
+settings_image_adapter_check_summary: Check image adapter
+settings_image_adapter_check_success_response: Image adapter availability
+settings_video_adapter_check_description: |
+  Check if the video adapter is valid. <br> 
+  Returns <strong>true</strong> if FFmpeg is properly configured for video processing. <br>
+  Returns <strong>false</strong> if video processing is not available due to missing PHP CLI binary or FFmpeg binary configuration.
+settings_video_adapter_check_summary: Check video adapter validity
+settings_video_adapter_check_success_response: Video adapter validity status
 simple_search_preview_get_description: |
   Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -1002,6 +1014,31 @@ thumbnail_video_get_collection_description: |
   Get collection of all thumbnails for videos.
 thumbnail_video_get_collection_success_response: All video thumbnails
 thumbnail_video_get_collection_summary: Get collection of thumbnails for videos
+thumbnail_video_get_tree_description: |
+  Retrieves a tree structure of all video thumbnail configurations. <br>
+  Thumbnails are grouped by their group property.
+thumbnail_video_get_tree_summary: Get video thumbnail configuration tree
+thumbnail_video_get_tree_success_response: Successfully retrieved video thumbnail configuration tree
+thumbnail_video_get_by_name_description: |
+  Retrieves a specific video thumbnail configuration based on the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing video thumbnail configuration.
+thumbnail_video_get_by_name_summary: Get video thumbnail configuration by name
+thumbnail_video_get_by_name_success_response: Successfully retrieved video thumbnail configuration details
+thumbnail_video_delete_description: |
+  Deletes a specific video thumbnail configuration based on the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing video thumbnail configuration.
+thumbnail_video_delete_summary: Delete video thumbnail configuration by name
+thumbnail_video_delete_success_response: Successfully deleted video thumbnail configuration
+thumbnail_video_create_description: |
+  Creates a new video thumbnail configuration with the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be unique.
+thumbnail_video_create_summary: Create a new video thumbnail configuration
+thumbnail_video_create_success_response: Successfully created video thumbnail configuration
+thumbnail_video_update_description: |
+  Updates a specific video thumbnail configuration based on the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing video thumbnail configuration.
+thumbnail_video_update_summary: Update video thumbnail configuration by name
+thumbnail_video_update_success_response: Successfully updated video thumbnail configuration
 translation_create_description: | 
   Add new translation entries for given translation key
 translation_create_success_response: Successfully created translations
@@ -1583,3 +1620,14 @@ class_definition_collection_creatable_summary: Get collection of all class defin
 class_definition_collection_creatable_success_response: List of class definitions that can be created.
 setting_admin_thumbnail_summary: Get thumbnail for images in admin settings
 setting_admin_thumbnail: Get thumbnail for images in admin settings
+settings_update_description: |
+  Update system settings. <br>
+  This endpoint allows you to update various system configuration parameters including: <br>
+  <ul>
+    <li><strong>general</strong>: Language settings (valid languages, fallback languages, required languages, default language), domain configuration, and translation debugging</li>
+    <li><strong>objects</strong>: Object versioning settings (days and steps to keep)</li>
+    <li><strong>assets</strong>: Asset versioning settings (days and steps to keep)</li>
+    <li><strong>documents</strong>: Document versioning settings and localized error pages</li>
+  </ul>
+  <strong>Note:</strong> Only the settings provided in the request body will be updated.
+settings_update_summary: Update system settings

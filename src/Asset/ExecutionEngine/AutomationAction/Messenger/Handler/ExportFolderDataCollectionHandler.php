@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterfac
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
@@ -43,6 +44,7 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
         private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly GridServiceInterface $gridService,
         private readonly GridSearchInterface $gridSearch
     ) {
@@ -87,7 +89,12 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
         );
 
         if (count($assets) === 0) {
-            $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $this->getJobStep($message)->getName()
+            );
 
             return;
         }
@@ -135,7 +142,12 @@ final class ExportFolderDataCollectionHandler extends AbstractHandler
             );
         }
 
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $this->userTopicService,
+            $jobRun,
+            $this->getJobStep($message)->getName()
+        );
     }
 
     protected function configureStep(): void

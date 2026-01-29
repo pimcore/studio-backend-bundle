@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgres
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -46,6 +47,7 @@ final class PatchFolderHandler extends AbstractHandler
         private readonly ElementServiceInterface $elementService,
         private readonly PatchServiceInterface $patchService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly GridSearchInterface $gridSearch,
     ) {
         parent::__construct();
@@ -87,7 +89,12 @@ final class PatchFolderHandler extends AbstractHandler
         );
 
         if (empty($elementIds)) {
-            $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $this->getJobStep($message)->getName()
+            );
 
             return;
         }
@@ -122,6 +129,7 @@ final class PatchFolderHandler extends AbstractHandler
 
             $this->updateProgress(
                 $this->publishService,
+                $this->userTopicService,
                 $jobRun,
                 $this->getJobStep($message)->getName(),
                 $elementCount

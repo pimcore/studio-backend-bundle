@@ -19,14 +19,10 @@ use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\Image\ThumbnailConfigEven
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\Image\ThumbnailFolderEvent;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\ThumbnailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Image\ConfigDetailHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\ThumbnailConfigHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\ThumbnailFolderHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ImageThumbnailRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ImageThumbnailConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailConfig;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailFolder;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -42,8 +38,7 @@ final readonly class ImageThumbnailService implements ImageThumbnailServiceInter
     public function __construct(
         private ConfigDetailHydratorInterface $configDetailHydrator,
         private ImageThumbnailRepositoryInterface $imageThumbnailRepository,
-        private ThumbnailConfigHydratorInterface $thumbnailConfigHydrator,
-        private ThumbnailFolderHydratorInterface $thumbnailFolderHydrator,
+        private ThumbnailConfigServiceInterface $thumbnailConfigService,
         private EventDispatcherInterface $eventDispatcher
     ) {
     }
@@ -65,9 +60,13 @@ final readonly class ImageThumbnailService implements ImageThumbnailServiceInter
     public function getTree(): array
     {
         $configurations = $this->imageThumbnailRepository->listImageThumbnailConfigs();
-        $groupedThumbnails = $this->groupThumbnails($configurations);
+        $groupedThumbnails = $this->thumbnailConfigService->groupThumbnails(
+            $configurations,
+            self::ICON,
+            ThumbnailConfigEvent::class
+        );
 
-        return $this->buildTree($groupedThumbnails);
+        return $this->thumbnailConfigService->buildTree($groupedThumbnails, ThumbnailFolderEvent::class);
     }
 
     /**
@@ -114,46 +113,6 @@ final readonly class ImageThumbnailService implements ImageThumbnailServiceInter
         return $this->hydrateThumbnailConfigDetail($configuration);
     }
 
-    /**
-     * @param Config[] $configurations
-     */
-    private function groupThumbnails(array $configurations): array
-    {
-        $groups = [];
-        $ungrouped = [];
-
-        foreach ($configurations as $configuration) {
-            $group = $configuration->getGroup();
-
-            if (!$group) {
-                $ungrouped[] = $this->hydrateThumbnailConfig($configuration);
-
-                continue;
-            }
-
-            if (!isset($groups[$group])) {
-                $groups[$group] = [];
-            }
-
-            $groups[$group][] = $this->hydrateThumbnailConfig($configuration);
-        }
-
-        return ['groups' => $groups, 'ungrouped' => $ungrouped];
-    }
-
-    private function buildTree(array $groupedThumbnails): array
-    {
-        $tree = $groupedThumbnails['ungrouped'];
-
-        foreach ($groupedThumbnails['groups'] as $groupName => $children) {
-            $tree[] = $this->hydrateFolderNode($groupName, $children);
-        }
-
-        usort($tree, static fn ($a, $b) => strcasecmp($a->getName(), $b->getName()));
-
-        return $tree;
-    }
-
     private function hydrateListItem(Config $config): Thumbnail
     {
         $thumbnail = new Thumbnail($config->getName(), $config->getName());
@@ -176,29 +135,5 @@ final readonly class ImageThumbnailService implements ImageThumbnailServiceInter
         );
 
         return $thumbnailConfig;
-    }
-
-    private function hydrateThumbnailConfig(Config $configuration): ThumbnailConfig
-    {
-        $thumbnailConfig = $this->thumbnailConfigHydrator->hydrate($configuration, self::ICON);
-
-        $this->eventDispatcher->dispatch(
-            new ThumbnailConfigEvent($thumbnailConfig),
-            ThumbnailConfigEvent::EVENT_NAME
-        );
-
-        return $thumbnailConfig;
-    }
-
-    private function hydrateFolderNode(string $name, array $children): ThumbnailFolder
-    {
-        $thumbnailFolder = $this->thumbnailFolderHydrator->hydrate($name, $children);
-
-        $this->eventDispatcher->dispatch(
-            new ThumbnailFolderEvent($thumbnailFolder),
-            ThumbnailFolderEvent::EVENT_NAME
-        );
-
-        return $thumbnailFolder;
     }
 }

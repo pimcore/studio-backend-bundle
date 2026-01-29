@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Schema\Country;
+use Pimcore\Model\Exception\ConfigWriteException;
 
 /**
  * @internal
@@ -32,4 +33,9 @@ interface SettingsServiceInterface
      * @return Country[]
      */
     public function getAvailableCountries(): array;
+
+    /**
+     * @throws ConfigWriteException
+     */
+    public function updateSettings(array $data): void;
 }

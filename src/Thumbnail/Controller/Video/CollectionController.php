@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attribute\Response\Content\ThumbnailsJson;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\VideoThumbnailRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -38,7 +38,7 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly VideoThumbnailRepositoryInterface $repository,
+        private readonly VideoThumbnailServiceInterface $service,
     ) {
         parent::__construct($serializer);
     }
@@ -65,7 +65,7 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getVideoThumbnails(): JsonResponse
     {
-        $collection = $this->repository->listVideoThumbnails();
+        $collection = $this->service->listThumbnails();
 
         return $this->jsonResponse(
             [
