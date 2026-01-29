@@ -15,6 +15,9 @@ services:
   # Repositories
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailConfigRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailConfigRepository
+
   Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ImageThumbnailRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ImageThumbnailRepository
 
@@ -34,10 +37,19 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Image\ConfigDetailHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Image\ConfigDetailHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Video\ConfigDetailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Video\ConfigDetailHydrator
+
   #
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ThumbnailConfigServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ThumbnailConfigService
+
   Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ImageThumbnailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ImageThumbnailService
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailService
 

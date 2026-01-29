@@ -14,40 +14,32 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
-use Pimcore\Model\Asset\Video\Thumbnail\Config;
+use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageConfig;
+use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoConfig;
 
 /**
  * @internal
  */
-interface VideoThumbnailRepositoryInterface
+interface ThumbnailConfigRepositoryInterface
 {
-    /**
-     * @return Config[]
-     */
-    public function listVideoThumbnailConfigs(): array;
+    public function imageConfigExists(string $name): bool;
 
-    /**
-     * @throws NotFoundException
-     */
-    public function getByName(string $name): Config;
-
-    public function exists(string $name): bool;
-
-    /**
-     * @throws NotWriteableException
-     */
-    public function add(string $name): Config;
+    public function videoConfigExists(string $name): bool;
 
     /**
      * @throws InvalidArgumentException|NotWriteableException
      */
-    public function update(Config $config, UpdateThumbnailConfig $parameters): Config;
+    public function updateImageConfig(ImageConfig $config, UpdateThumbnailConfig $parameters): ImageConfig;
 
     /**
-     *  @throws NotFoundException|NotWriteableException
+     * @throws InvalidArgumentException|NotWriteableException
      */
-    public function delete(string $name): void;
+    public function updateVideoConfig(VideoConfig $config, UpdateThumbnailConfig $parameters): VideoConfig;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function checkIfWriteable(ImageConfig|VideoConfig $config): void;
 }

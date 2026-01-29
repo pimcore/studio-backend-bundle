@@ -15,11 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller\Video;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attribute\Response\Content\ThumbnailsJson;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\OpenApi\Attribute\Response\Property\AnyOfThumbnailConfigNodes;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -28,49 +28,46 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use function count;
 
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class TreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
+    private const string ROUTE = '/thumbnails/video/tree';
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly VideoThumbnailServiceInterface $service,
+        private readonly VideoThumbnailServiceInterface $videoThumbnailService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws UserNotFoundException
-     */
-    #[Route('/thumbnails/video', name: 'pimcore_studio_api_thumbnails_video', methods: ['GET'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_thumbnails_video_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::THUMBNAILS->value)]
     #[Get(
-        path: self::PREFIX . '/thumbnails/video',
-        operationId: 'thumbnail_video_get_collection',
-        description: 'thumbnail_video_get_collection_description',
-        summary: 'thumbnail_video_get_collection_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'thumbnail_video_get_tree',
+        description: 'thumbnail_video_get_tree_description',
+        summary: 'thumbnail_video_get_tree_summary',
         tags: [Tags::AssetThumbnails->value]
     )]
     #[SuccessResponse(
-        description: 'thumbnail_video_get_collection_success_response',
-        content: new ThumbnailsJson()
+        description: 'thumbnail_video_get_tree_success_response',
+        content: new CollectionJson(new AnyOfThumbnailConfigNodes())
     )]
-    #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
-    ])]
-    public function getVideoThumbnails(): JsonResponse
+    #[DefaultResponses([HttpResponseCodes::UNAUTHORIZED])]
+    public function getTree(): JsonResponse
     {
-        $collection = $this->service->listThumbnails();
+        $tree = $this->videoThumbnailService->getTree();
 
-        return $this->jsonResponse(
-            [
-                'items' => $collection->getItems(),
-            ]
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $tree,
+            count($tree)
         );
     }
 }

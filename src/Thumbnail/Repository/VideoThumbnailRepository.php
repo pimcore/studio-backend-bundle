@@ -13,13 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\ThumbnailEvent;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\UpdateThumbnailConfig;
 use Pimcore\Model\Asset\Video\Thumbnail\Config;
 use Pimcore\Model\Asset\Video\Thumbnail\Config\Listing as VideoThumbnailListing;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -27,37 +25,72 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class VideoThumbnailRepository implements VideoThumbnailRepositoryInterface
 {
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
+        private ThumbnailConfigRepositoryInterface $thumbnailConfigRepository
     ) {
     }
 
-    public function listVideoThumbnails(): ThumbnailCollection
+    /**
+     * {@inheritdoc}
+     */
+    public function listVideoThumbnailConfigs(): array
     {
-        $thumbnailListing = new VideoThumbnailListing();
-        $thumbnails = $thumbnailListing->getThumbnails();
+        return (new VideoThumbnailListing())->getThumbnails();
+    }
 
-        $items = [
-            new Thumbnail(
-                Thumbnails::DEFAULT_THUMBNAIL_ID->value,
-                Thumbnails::DEFAULT_THUMBNAIL_TEXT->value
-            ),
-        ];
+    /**
+     * {@inheritdoc}
+     */
+    public function getByName(string $name): Config
+    {
+        $exception = null;
+        $config = null;
 
-        /** @var Config $thumbnailConfig */
-        foreach ($thumbnails as $thumbnailConfig) {
-            $thumbnail = new Thumbnail(
-                $thumbnailConfig->getName(),
-                $thumbnailConfig->getName()
-            );
-
-            $this->eventDispatcher->dispatch(
-                new ThumbnailEvent($thumbnail),
-                ThumbnailEvent::EVENT_NAME
-            );
-
-            $items[] = $thumbnail;
+        try {
+            $config = Config::getByName($name);
+        } catch (Exception $e) {
+            $exception = $e;
         }
 
-        return new ThumbnailCollection($items);
+        if (!$config || $exception) {
+            throw new NotFoundException(type: 'video thumbnail configuration', id: $name, previous: $exception);
+        }
+
+        return $config;
+    }
+
+    public function exists(string $name): bool
+    {
+        return $this->thumbnailConfigRepository->videoConfigExists($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function add(string $name): Config
+    {
+        $config = new Config();
+        $this->thumbnailConfigRepository->checkIfWriteable($config);
+        $config->setName($name);
+        $config->save();
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(Config $config, UpdateThumbnailConfig $parameters): Config
+    {
+        return $this->thumbnailConfigRepository->updateVideoConfig($config, $parameters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(string $name): void
+    {
+        $config = $this->getByName($name);
+        $this->thumbnailConfigRepository->checkIfWriteable($config);
+        $config->delete();
     }
 }
