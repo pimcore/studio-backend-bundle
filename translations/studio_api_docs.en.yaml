@@ -885,6 +885,18 @@ settings_country_collection_description: |
   Returns a list of countries with their codes and names
 settings_country_collection_summary: Get all available countries
 settings_country_collection_success_response: List of available countries
+settings_image_adapter_check_description: |
+  Check what image adapter is used. <br>
+  Returns <strong>true</strong> if Imagick extension is used for image processing. <br>
+  Returns <strong>false</strong> if the GD library fallback is used, which provides lower quality image processing.
+settings_image_adapter_check_summary: Check image adapter
+settings_image_adapter_check_success_response: Image adapter availability
+settings_video_adapter_check_description: |
+  Check if the video adapter is valid. <br> 
+  Returns <strong>true</strong> if FFmpeg is properly configured for video processing. <br>
+  Returns <strong>false</strong> if video processing is not available due to missing PHP CLI binary or FFmpeg binary configuration.
+settings_video_adapter_check_summary: Check video adapter validity
+settings_video_adapter_check_success_response: Video adapter validity status
 simple_search_preview_get_description: |
   Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
