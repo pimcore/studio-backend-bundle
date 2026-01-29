@@ -39,7 +39,7 @@ final readonly class CacheClearerService implements CacheClearerServiceInterface
 
     public function clearPimcoreCache(): void
     {
-        $this->eventDispatcher->addListener(KernelEvents::TERMINATE, function (TerminateEvent $event) {
+        $this->eventDispatcher->addListener(KernelEvents::TERMINATE, function () {
             // we need to clear the cache with a delay, because the cache is used by messenger:stop-workers
             // to send the stop signal to all worker processes
             sleep(2);
