@@ -26,7 +26,7 @@ In order that the grid can work with a custom column you have to implement the f
   It is also possible to implement both interfaces. But `CoreElementColumnResolverInterface` has a higher priority than `StudioElementColumnResolverInterface`.
 - Column Collector with the `ColumnCollectorInterface` and tag it with `pimcore.studio_backend.column_collector`
 
-Once everything is implemented column will show up in the available columns in the grid configuration e.g. via `/studio/api/assets/grid/available-configuration`
+Once everything is implemented column will show up in the available columns in the grid configuration e.g. via `/pimcore-studio/api/assets/grid/available-configuration`
 On more infos on how to use the columns see the [Grid](../03_Grid.md)
 
 ### Example Column Definition
