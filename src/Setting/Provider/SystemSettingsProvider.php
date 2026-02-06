@@ -52,6 +52,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'objects' => $this->systemSettings['objects'] ?? [],
             'assets' => $this->systemSettings['assets'] ?? [],
             'errorPages' => $this->systemSettings['error_pages'] ?? [],
+            'email' => $this->systemSettings['email'] ?? [],
             'availableAdminLanguages' => $this->adminResolver->getLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
