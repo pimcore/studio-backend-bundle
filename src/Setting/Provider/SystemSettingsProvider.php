@@ -48,7 +48,6 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'fallbackLanguages' => $this->systemSettings['general']['fallback_languages'],
             'defaultLanguage' => $this->systemSettings['general']['default_language'] ?? '',
             'language' => $this->systemSettings['general']['language'] ?? '',
-            'main_domain' => $this->systemSettings['general']['domain'],
             'documents' => $this->systemSettings['documents'] ?? [],
             'objects' => $this->systemSettings['objects'] ?? [],
             'assets' => $this->systemSettings['assets'] ?? [],
