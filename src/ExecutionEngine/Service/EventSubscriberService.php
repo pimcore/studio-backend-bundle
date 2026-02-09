@@ -34,7 +34,6 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
     public function __construct(
         private JobRunErrorLogRepositoryInterface $jobRunErrorLogRepository,
         private PublishServiceInterface $publishService,
-        private SendNotificationServiceInterface $sendNotificationService,
         private UserTopicServiceInterface $userTopicService,
     ) {
 
@@ -55,13 +54,6 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
             $event->getJobName(),
             $event->getJobRunOwnerId(),
             $event->getNewState()
-        );
-
-        $payload = $this->publishService->getJsonData($finished);
-        $parameters = new SendNotificationParameters(
-            $event->getJobRunOwnerId(),
-            $topic,
-            $topic
         );
         $this->publishService->publish(
             $topic,
