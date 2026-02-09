@@ -63,11 +63,6 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
             $topic,
             $topic
         );
-        $this->sendNotificationService->sendNotification(
-            $parameters,
-            null,
-            $payload
-        );
         $this->publishService->publish(
             $topic,
             $finished
