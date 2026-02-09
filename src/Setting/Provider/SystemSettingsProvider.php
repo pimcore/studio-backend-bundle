@@ -17,6 +17,10 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function ini_get;
@@ -27,6 +31,8 @@ use function ini_get;
 #[AutoconfigureTag('pimcore.studio_backend.settings_provider')]
 final readonly class SystemSettingsProvider implements SettingsProviderInterface, UpdateSettingsProviderInterface
 {
+    use ElementProviderTrait;
+
     private array $systemSettings;
 
     public function __construct(
@@ -34,7 +40,9 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         private AdminResolverInterface $adminResolver,
         private ToolResolverInterface $toolResolver,
         private VersionResolverInterface $versionResolver,
-        private ConfigResolver $configResolver
+        private ConfigResolver $configResolver,
+        private ServiceResolverInterface $serviceResolver,
+        private ElementDataServiceInterface $elementDataService
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
@@ -48,6 +56,12 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'fallbackLanguages' => $this->systemSettings['general']['fallback_languages'],
             'defaultLanguage' => $this->systemSettings['general']['default_language'] ?? '',
             'language' => $this->systemSettings['general']['language'] ?? '',
+            'documents' => $this->getDocumentSettings(),
+            'objects' => $this->systemSettings['objects'] ?? [],
+            'assets' => $this->systemSettings['assets'] ?? [],
+            'errorPages' => $this->systemSettings['error_pages'] ?? [],
+            'redirectToMainDomain' => $this->systemSettings['redirect_to_maindomain'] ?? false,
+            'email' => $this->systemSettings['email'] ?? [],
             'availableAdminLanguages' => $this->adminResolver->getLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
@@ -108,5 +122,45 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         $uploadMb = min($maxUpload, $maxPost) ?: $maxUpload;
 
         return (int)$uploadMb;
+    }
+
+    private function getDocumentSettings(): array
+    {
+        $documents = $this->systemSettings['documents'] ?? [];
+        if (empty($documents)) {
+            return [];
+        }
+
+        $errorPage = $this->getErrorDocument($documents['error_pages']['default']);
+        if ($errorPage) {
+            $documents['error_pages']['default'] = $this->elementDataService->getRelatedElementData(
+                $errorPage
+            );
+        }
+
+        foreach ($documents['error_pages']['localized'] as $language => $errorPage) {
+            $element = $this->getErrorDocument($documents['error_pages']['localized'][$language]);
+            if (!$element) {
+                continue;
+            }
+            $documents['error_pages']['localized'][$language] = $this->elementDataService->getRelatedElementData(
+                $element
+            );
+        }
+
+        return $documents;
+    }
+
+    private function getErrorDocument(?string $path): ?ElementInterface
+    {
+        if (!$path) {
+            return null;
+        }
+
+        return $this->getElementByPath(
+            $this->serviceResolver,
+            'document',
+            $path
+        );
     }
 }
