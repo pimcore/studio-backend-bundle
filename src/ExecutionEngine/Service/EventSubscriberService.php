@@ -23,8 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\SendNotificationParameters;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface;
 
 /**
  * @internal
