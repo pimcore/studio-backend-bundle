@@ -127,12 +127,12 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
     private function getDocumentSettings(): array
     {
         $documents = $this->systemSettings['documents'] ?? [];
-        if(empty($documents)) {
+        if (empty($documents)) {
             return [];
         }
 
         $errorPage = $this->getErrorDocument($documents['error_pages']['default']);
-        if($errorPage) {
+        if ($errorPage) {
             $documents['error_pages']['default'] = $this->elementDataService->getRelatedElementData(
                 $errorPage
             );
@@ -140,7 +140,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
         foreach ($documents['error_pages']['localized'] as $language => $errorPage) {
             $element = $this->getErrorDocument($documents['error_pages']['localized'][$language]);
-            if(!$element) {
+            if (!$element) {
                 continue;
             }
             $documents['error_pages']['localized'][$language] = $this->elementDataService->getRelatedElementData(
@@ -151,10 +151,12 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         return $documents;
     }
 
-    private function getErrorDocument(?string $path): ?ElementInterface {
-        if(!$path) {
+    private function getErrorDocument(?string $path): ?ElementInterface
+    {
+        if (!$path) {
             return null;
         }
+
         return $this->getElementByPath(
             $this->serviceResolver,
             'document',
