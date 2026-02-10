@@ -228,4 +228,3 @@ final class RelationFilterTest extends Unit
         $filter->apply($parameterMock, $queryMock);
     }
 }
-

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
+use function in_array;
 use function is_array;
 
 /**
@@ -78,4 +79,3 @@ final class RelationFilter implements FilterInterface
         return $query->filterMultiSelect($fieldKey, $ids);
     }
 }
-
