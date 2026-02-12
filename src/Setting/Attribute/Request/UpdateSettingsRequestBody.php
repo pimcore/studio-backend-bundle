@@ -168,6 +168,25 @@ final class UpdateSettingsRequestBody extends RequestBody
                         ],
                         type: 'object',
                     ),
+                    new Property(
+                        property: 'email',
+                        properties: [
+                            new Property(
+                                property: 'debug',
+                                properties: [
+                                    new Property(
+                                        property: 'email_addresses',
+                                        description: 'Debug email addresses',
+                                        type: 'array',
+                                        items: new Items(type: 'string'),
+                                        example: ['debug@example.com']
+                                    ),
+                                ],
+                                type: 'object',
+                            ),
+                        ],
+                        type: 'object',
+                    ),
                 ],
                 type: 'object',
             ),
