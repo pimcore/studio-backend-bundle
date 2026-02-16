@@ -101,6 +101,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         $preparedData['general.redirect_to_maindomain'] = $data['general']['redirect_to_maindomain'];
         $preparedData['general.defaultLanguage'] = $data['general']['default_language'];
         $preparedData['general.debug_admin_translations'] = $data['general']['debug_admin_translations'];
+        $preparedData['email.debug.emailAddresses'] = implode(',', $data['email']['debug']['email_addresses'] ?? []);
 
         return $preparedData;
     }

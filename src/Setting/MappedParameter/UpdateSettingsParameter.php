@@ -23,6 +23,7 @@ final readonly class UpdateSettingsParameter
         private ?array $objects = null,
         private ?array $assets = null,
         private ?array $documents = null,
+        private ?array $email = null,
     ) {
     }
 
@@ -33,6 +34,7 @@ final readonly class UpdateSettingsParameter
             'objects' => $this->objects,
             'assets' => $this->assets,
             'documents' => $this->documents,
+            'email' => $this->email,
         ], static fn ($value) => $value !== null);
     }
 }
