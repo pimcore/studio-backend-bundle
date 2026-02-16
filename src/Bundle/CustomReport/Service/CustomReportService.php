@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportCl
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
@@ -114,7 +115,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
      */
     public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails
     {
-        $customReport = $this->getCustomReportByName($name);
+        $customReport = $this->getAllowedReport($name);
         $this->customReportHydrator->dehydrateReportDetails($customReport, $parameters);
         $config = $this->customReportRepository->update($customReport);
 
@@ -155,7 +156,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
 
     public function getChartData(ChartDataParameter $parameters): Collection
     {
-        $reportConfig = $this->getCustomReportByName($parameters->getName());
+        $reportConfig = $this->getAllowedReport($parameters->getName());
         $data = $this->adapterService->getData($reportConfig, $parameters);
         $dataEntries = $data['data'] ?? [];
         $hydratedData = [];
@@ -175,7 +176,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
 
     public function getCustomReportDetails(string $reportName): CustomReportDetails
     {
-        $config = $this->getCustomReportByName($reportName);
+        $config = $this->getAllowedReport($reportName);
         $reportDetails = $this->customReportHydrator->extractReportDetails($config);
 
         $this->eventDispatcher->dispatch(
@@ -286,5 +287,19 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         }
 
         return $filters;
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function getAllowedReport(string $reportName): Config
+    {
+        $report = $this->customReportRepository->loadByNameForCurrentUser($reportName);
+
+        if ($report === null) {
+            throw new ForbiddenException('User does not have access to this report');
+        }
+
+        return $report;
     }
 }
