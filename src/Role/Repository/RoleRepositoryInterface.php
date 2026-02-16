@@ -74,6 +74,7 @@ interface RoleRepositoryInterface
 
     /**
      * @param string[] $names
+     *
      * @return int[]
      */
     public function getRoleIdsByNames(array $names): array;

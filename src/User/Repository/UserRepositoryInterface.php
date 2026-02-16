@@ -71,6 +71,7 @@ interface UserRepositoryInterface
 
     /**
      * @param string[] $names
+     *
      * @return UserInterface[]
      */
     public function getUsersByNames(array $names): array;

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
+use function count;
 use function sprintf;
 
 /**
