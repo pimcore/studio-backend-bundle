@@ -84,6 +84,23 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function loadByNameForCurrentUser(string $name): ?Config
+    {
+        $report = $this->loadByName($name);
+        $allowedReports = $this->loadForCurrentUser();
+
+        foreach ($allowedReports as $allowedReport) {
+            if ($allowedReport->getName() === $report->getName()) {
+                return $report;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function create(string $name): Config
     {
         $config = new Config();
