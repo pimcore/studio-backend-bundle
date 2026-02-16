@@ -71,4 +71,10 @@ interface RoleRepositoryInterface
      * @throws DatabaseException
      */
     public function updateRole(UserRoleInterface $role): void;
+
+    /**
+     * @param string[] $names
+     * @return int[]
+     */
+    public function getRoleIdsByNames(array $names): array;
 }

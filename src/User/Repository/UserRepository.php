@@ -191,4 +191,21 @@ final readonly class UserRepository implements UserRepositoryInterface
             throw new  DatabaseException(sprintf('Error while searching for users: %s', $e->getMessage()));
         }
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsersByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $listing = new UserListing();
+        $placeholders = implode(',', array_fill(0, count($names), '?'));
+        $listing->setCondition('name IN (' . $placeholders . ')', $names);
+        $listing->load();
+
+        return $listing->getUsers();
+    }
 }
