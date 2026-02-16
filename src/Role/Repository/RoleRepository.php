@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
 use Pimcore\Model\User\UserRoleInterface;
+use function count;
 use function in_array;
 use function sprintf;
 
@@ -158,5 +159,25 @@ final class RoleRepository implements RoleRepositoryInterface
                 )
             );
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoleIdsByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $listing = new Listing();
+        $placeholders = implode(',', array_fill(0, count($names), '?'));
+        $listing->setCondition('name IN (' . $placeholders . ') AND type = ?', [...$names, 'role']);
+        $listing->load();
+
+        return array_map(
+            static fn ($role): int => $role->getId(),
+            $listing->getRoles()
+        );
     }
 }
