@@ -81,7 +81,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
         foreach ($languages as $language) {
             $preparedData['general.fallbackLanguages.' . $language] =
-                $data['general']['fallback_languages'][$language] ?? '';
+                implode(',', $data['general']['fallback_languages'][$language]) ?? '';
 
             $preparedData['documents.error_pages.localized.' . $language] =
                 $data['documents']['error_pages']['localized'][$language] ?? '';
@@ -96,7 +96,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         $preparedData['documents.error_pages.default'] = $data['documents']['error_pages']['default'];
         $preparedData['general.validLanguages'] = implode(',', $languages);
         $preparedData['general.fallbackLanguages'] = $data['general']['fallback_languages'];
-        $preparedData['general.requiredLanguages'] = implode($data['general']['required_languages']);
+        $preparedData['general.requiredLanguages'] = implode(',', $data['general']['required_languages']);
         $preparedData['general.domain'] = $data['general']['domain'];
         $preparedData['general.redirect_to_maindomain'] = $data['general']['redirect_to_maindomain'];
         $preparedData['general.defaultLanguage'] = $data['general']['default_language'];
