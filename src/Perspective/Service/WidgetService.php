@@ -78,7 +78,7 @@ final readonly class WidgetService implements WidgetServiceInterface
         $this->widgetValidationService->validateWidgetType($widgetType);
         $configData = $widgetData->getData();
 
-        $configData['name'] = $this->getValidConfigName($configData);
+        $configData['name'] = $this->getValidConfigDisplayName($configData);
         $configData['id'] = $this->getValidConfigId($this->uuidFactory);
 
         return $this->loadRepositoryByType($widgetType)->createConfiguration($configData);
@@ -94,7 +94,7 @@ final readonly class WidgetService implements WidgetServiceInterface
         $repository->getConfiguration($widgetId);
 
         $configData = $widgetData->getData();
-        $configData['name'] = $this->getValidConfigName($configData);
+        $configData['name'] = $this->getValidConfigDisplayName($configData);
         $configData['id'] = $widgetId;
         $repository->updateConfiguration($configData);
     }
