@@ -1450,34 +1450,34 @@ class_select_option_get_tree_description: |
   Get select options tree data. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
 class_select_option_get_tree_summary: Get select options tree data
 class_select_option_get_tree_success_response: Select options data for the tree view
-pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
-pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
-pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
-pimcore_studio_api_class_custom_layout_get_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_get_success_response: Custom layout data
-pimcore_studio_api_class_custom_layout_delete: Delete custom layout by given id
-pimcore_studio_api_class_custom_layout_delete_description: Delete custom layout by given id
-pimcore_studio_api_class_custom_layout_delete_summary: Delete custom layout by given id
-pimcore_studio_api_class_custom_layout_delete_success_response: Custom layout deleted
-pimcore_studio_api_class_custom_layout_delete_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_create: Create custom layout
-pimcore_studio_api_class_custom_layout_create_description: Create custom layout
-pimcore_studio_api_class_custom_layout_create_summary: Create custom layout
-pimcore_studio_api_class_custom_layout_create_success_response: Custom layout created
-pimcore_studio_api_class_custom_layout_create_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_update: Update custom layout by given id
-pimcore_studio_api_class_custom_layout_update_description: |
+class_custom_layout_get: Get custom layout by given id
+class_custom_layout_get_description: Get custom layout by given id
+class_custom_layout_get_summary: Get custom layout by given id
+class_custom_layout_get_layout_id: Id of custom layout
+class_custom_layout_get_success_response: Custom layout data
+class_custom_layout_delete: Delete custom layout by given id
+class_custom_layout_delete_description: Delete custom layout by given id
+class_custom_layout_delete_summary: Delete custom layout by given id
+class_custom_layout_delete_success_response: Custom layout deleted
+class_custom_layout_delete_layout_id: Id of custom layout
+class_custom_layout_create: Create custom layout
+class_custom_layout_create_description: Create custom layout
+class_custom_layout_create_summary: Create custom layout
+class_custom_layout_create_success_response: Custom layout created
+class_custom_layout_create_layout_id: Id of custom layout
+class_custom_layout_update: Update custom layout by given id
+class_custom_layout_update_description: |
   Update custom layout by the given <strong>{customLayoutId}</strong> and parameters. <br>
   The <strong>{customLayoutId}</strong> must be an ID of an existing custom layout. <br>
   Please note that <strong>all fields<strong> have to be provided.
-pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given ID
-pimcore_studio_api_class_custom_layout_update_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_update_success_response: Custom layout updated
-pimcore_studio_api_class_custom_layout_export: Export custom layout by given id
-pimcore_studio_api_class_custom_layout_export_description: Export custom layout by given id as JSON
-pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
-pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
+class_custom_layout_update_summary: Update custom layout by given ID
+class_custom_layout_update_layout_id: Id of custom layout
+class_custom_layout_update_success_response: Custom layout updated
+class_custom_layout_export: Export custom layout by given id
+class_custom_layout_export_description: Export custom layout by given id as JSON
+class_custom_layout_export_summary: Export custom layout by given id as JSON
+class_custom_layout_export_layout_id: Id of custom layout
+class_custom_layout_export_success_response: Custom layout data as JSON
 class_custom_layout_import_description: Import custom layout using a previously exported JSON.
 class_custom_layout_import_summary: Import custom layout
 class_custom_layout_import_success_response: Successfully imported custom layout configuration
