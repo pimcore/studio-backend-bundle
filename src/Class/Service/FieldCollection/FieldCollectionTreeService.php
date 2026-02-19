@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollect
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionTreeNodeFolder;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @internal
