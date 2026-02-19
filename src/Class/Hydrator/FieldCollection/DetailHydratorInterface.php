@@ -11,21 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionDetail;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\DataObject\Fieldcollection\Definition;
 
 /**
  * @internal
  */
-interface FieldCollectionServiceInterface
+interface DetailHydratorInterface
 {
-    public function listFieldCollections(): Collection;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getFieldCollectionByKey(string $key): FieldCollectionDetail;
+    public function hydrate(Definition $definition): FieldCollectionDetail;
 }

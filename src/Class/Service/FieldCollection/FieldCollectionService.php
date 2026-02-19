@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\ConfigEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\DetailEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\DetailHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollectionConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionDetail;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -28,6 +31,7 @@ final readonly class FieldCollectionService implements FieldCollectionServiceInt
     public function __construct(
         private FieldCollectionRepositoryInterface $fieldCollectionRepository,
         private FieldCollectionConfigHydratorInterface $fieldCollectionConfigHydrator,
+        private DetailHydratorInterface $detailHydrator,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -44,5 +48,17 @@ final readonly class FieldCollectionService implements FieldCollectionServiceInt
         }
 
         return new Collection(count($fieldCollections), $fieldCollections);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFieldCollectionByKey(string $key): FieldCollectionDetail
+    {
+        $definition = $this->fieldCollectionRepository->getFieldCollectionByKey($key);
+        $detail = $this->detailHydrator->hydrate($definition);
+        $this->eventDispatcher->dispatch(new DetailEvent($detail), DetailEvent::EVENT_NAME);
+
+        return $detail;
     }
 }

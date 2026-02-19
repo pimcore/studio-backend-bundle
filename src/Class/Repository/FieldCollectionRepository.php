@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
 
 /**
@@ -23,5 +24,16 @@ final readonly class FieldCollectionRepository implements FieldCollectionReposit
     public function listFieldCollections(): array
     {
         return (new Definition\Listing())->load();
+    }
+
+    public function getFieldCollectionByKey(string $key): Definition
+    {
+        $definition = Definition::getByKey($key);
+
+        if (!$definition) {
+            throw new NotFoundException('Field Collection', $key, 'key');
+        }
+
+        return $definition;
     }
 }

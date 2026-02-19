@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
@@ -29,4 +31,9 @@ interface LayoutDefinitionServiceInterface
      * @return LayoutDefinition[]
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array;
+
+    /**
+     * @throws NotFoundException|EnvironmentException
+     */
+    public function getLayoutDefinitionByKey(string $key): ConfigLayoutDefinition;
 }

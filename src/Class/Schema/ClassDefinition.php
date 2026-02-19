@@ -150,7 +150,7 @@ final class ClassDefinition implements AdditionalAttributesInterface
         return $this->id;
     }
 
-    public function isWriteable(): bool
+    public function getIsWriteable(): bool
     {
         return $this->isWriteable;
     }

@@ -1252,6 +1252,21 @@ user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
 user_get_image_summary: Get user profile image
 user_get_image_success_response: User profile image
+class_field_collection_get_by_key_description: |
+  Retrieves a specific field collection definition based on the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_get_by_key_summary: Get field collection by key
+class_field_collection_get_by_key_success_response: Field collection detail data
+class_field_collection_get_layout_by_key_description: |
+  Retrieves the layout definition for a specific field collection based on the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_get_layout_by_key_summary: Get field collection layout definition by key
+class_field_collection_get_layout_by_key_success_response: Field collection layout definition data
+class_field_collection_get_tree_description: |
+  Get the field collection tree with grouped folders. <br>
+  Optionally filter by allowed types using a comma-separated list via the <strong>{allowedTypes}</strong> query parameter.
+class_field_collection_get_tree_summary: Get field collection tree
+class_field_collection_get_tree_success_response: Field collection tree with nodes and folders
 class_field_collection_collection_description: |
   Get all available field collection configurations in the system
 class_field_collection_collection_summary: Get all field collection configurations

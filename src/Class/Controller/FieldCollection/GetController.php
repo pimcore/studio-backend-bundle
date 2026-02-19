@@ -14,17 +14,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\FieldCollection;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionConfig;
+use OpenApi\Attributes\JsonContent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionDetail;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\FieldCollectionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -33,48 +33,47 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
-    private const string ROUTE = '/class/field-collection/collection';
+    private const string ROUTE = '/class/field-collection/{key}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly FieldCollectionServiceInterface $fieldCollectionService
+        private readonly FieldCollectionServiceInterface $fieldCollectionService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route(
-        self::ROUTE,
-        name: 'pimcore_studio_api_class_field_collection_collection',
-        methods: ['GET'],
-        priority: 10
-    )]
+    /**
+     * @throws NotFoundException
+     */
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_field_collection_get_by_key', methods: ['GET'])]
     #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'class_field_collection_collection',
-        description: 'class_field_collection_collection_description',
-        summary: 'class_field_collection_collection_summary',
+        operationId: 'class_field_collection_get_by_key',
+        description: 'class_field_collection_get_by_key_description',
+        summary: 'class_field_collection_get_by_key_summary',
         tags: [Tags::ClassDefinition->value],
     )]
+    #[StringParameter(
+        name: 'key',
+        example: 'MyFieldCollection',
+        description: 'Field collection unique key',
+        required: true
+    )]
     #[SuccessResponse(
-        description: 'class_field_collection_collection_success_response',
-        content: new CollectionJson(new GenericCollection(FieldCollectionConfig::class))
+        description: 'class_field_collection_get_by_key_success_response',
+        content: new JsonContent(ref: FieldCollectionDetail::class)
     )]
     #[DefaultResponses([
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getFieldCollectionCollection(): JsonResponse
+    public function getFieldCollectionByKey(string $key): JsonResponse
     {
-        $collection = $this->fieldCollectionService->listFieldCollections();
-
-        return $this->getPaginatedCollection(
-            $this->serializer,
-            $collection->getItems(),
-            $collection->getTotalItems()
+        return $this->jsonResponse(
+            $this->fieldCollectionService->getFieldCollectionByKey($key)
         );
     }
 }
