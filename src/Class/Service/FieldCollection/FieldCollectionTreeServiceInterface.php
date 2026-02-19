@@ -13,19 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionDetail;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionTreeNodeFolder;
 
 /**
  * @internal
  */
-interface FieldCollectionServiceInterface
+interface FieldCollectionTreeServiceInterface
 {
-    public function listFieldCollections(): Collection;
-
     /**
-     * @throws NotFoundException
+     * @param string[]|null $allowedTypes
+     *
+     * @return FieldCollectionTreeNode[]|FieldCollectionTreeNodeFolder[]
      */
-    public function getFieldCollectionByKey(string $key): FieldCollectionDetail;
+    public function getTree(?array $allowedTypes = null): array;
 }

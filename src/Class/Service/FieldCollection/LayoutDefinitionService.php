@@ -18,9 +18,13 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
@@ -40,6 +44,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
+        private readonly FieldCollectionRepositoryInterface $fieldCollectionRepository,
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {
@@ -70,6 +75,30 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         }
 
         return $layoutDefinitions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutDefinitionByKey(string $key): ConfigLayoutDefinition
+    {
+        $definition = $this->fieldCollectionRepository->getFieldCollectionByKey($key);
+        $layout = $definition->getLayoutDefinitions();
+
+        if ($layout === null) {
+            throw new EnvironmentException(
+                sprintf('Layout definition for field collection "%s" is not available', $key)
+            );
+        }
+
+        $configLayoutDefinition = $this->layoutDefinitionHydrator->hydrateConfigLayoutDefinition($layout);
+
+        $this->eventDispatcher->dispatch(
+            new ConfigLayoutDefinitionEvent($configLayoutDefinition),
+            ConfigLayoutDefinitionEvent::EVENT_NAME
+        );
+
+        return $configLayoutDefinition;
     }
 
     /**

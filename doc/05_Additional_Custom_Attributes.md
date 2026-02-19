@@ -130,7 +130,10 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.element_subtype`
 - `pre_response.execution_engine.list_running_job_runs`
 - `pre_response.field_collection.config`
+- `pre_response.field_collection.config_layout_definition`
+- `pre_response.field_collection.detail`
 - `pre_response.field_collection.layout_definition`
+- `pre_response.field_collection.tree`
 - `pre_response.grid_column_configuration`
 - `pre_response.grid_column_data`
 - `pre_response.grid_configuration`

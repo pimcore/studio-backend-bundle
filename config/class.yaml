@@ -17,6 +17,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\FieldCollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\FieldCollectionService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\FieldCollectionTreeServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\FieldCollectionTreeService
+
   Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionService
 
@@ -68,6 +71,15 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\TreeNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\TreeNodeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\TreeFolderNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\TreeFolderNodeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\DetailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\DetailHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydrator
