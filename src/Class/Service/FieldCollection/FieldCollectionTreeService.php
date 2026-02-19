@@ -96,20 +96,36 @@ final readonly class FieldCollectionTreeService implements FieldCollectionTreeSe
 
         foreach ($sortable as $entry) {
             if ($entry['type'] === 'node') {
-                $node = $this->treeNodeHydrator->hydrate($entry['data']);
-            } else {
-                $children = array_map(
-                    fn (Definition $definition): FieldCollectionTreeNode => $this->treeNodeHydrator->hydrate($definition),
-                    $entry['data']
-                );
-                $node = $this->treeFolderNodeHydrator->hydrate($entry['sortKey'], $children);
+                $result[] = $this->hydrateNode($entry['data']);
+
+                continue;
             }
 
-            $this->dispatchTreeEvent($node);
-            $result[] = $node;
+            $result[] = $this->hydrateFolderNode($entry['sortKey'], $entry['data']);
         }
 
         return $result;
+    }
+
+    private function hydrateNode(Definition $definition): FieldCollectionTreeNode
+    {
+        $node = $this->treeNodeHydrator->hydrate($definition);
+        $this->dispatchTreeEvent($node);
+
+        return $node;
+    }
+
+    private function hydrateFolderNode(string $groupName, array $definitions): FieldCollectionTreeNodeFolder
+    {
+        $children = array_map(
+            fn (Definition $definition): FieldCollectionTreeNode => $this->treeNodeHydrator->hydrate($definition),
+            $definitions
+        );
+
+        $node = $this->treeFolderNodeHydrator->hydrate($groupName, $children);
+        $this->dispatchTreeEvent($node);
+
+        return $node;
     }
 
     private function dispatchTreeEvent(FieldCollectionTreeNode|FieldCollectionTreeNodeFolder $node): void
