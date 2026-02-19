@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
 
 /**
@@ -24,6 +22,4 @@ use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefini
 interface LayoutDefinitionHydratorInterface
 {
     public function hydrate(FieldCollectionDefinition $data): LayoutDefinition;
-
-    public function hydrateConfigLayoutDefinition(Layout $layout): ConfigLayoutDefinition;
 }
