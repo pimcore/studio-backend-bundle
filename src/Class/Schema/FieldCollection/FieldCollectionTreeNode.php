@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'FieldCollectionTreeNode',
     title: 'Field Collection Tree Node Item',
-    required: ['id', 'name', 'icon', 'group'],
+    required: ['key', 'name', 'icon', 'group'],
     type: 'object'
 )]
 final class FieldCollectionTreeNode implements AdditionalAttributesInterface
@@ -30,8 +30,8 @@ final class FieldCollectionTreeNode implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Id of field collection', type: 'string', example: 'myCollection')]
-        private readonly string $id,
+        #[Property(description: 'Key of field collection', type: 'string', example: 'myCollection')]
+        private readonly string $key,
         #[Property(description: 'Name', type: 'string', example: 'My Collection')]
         private readonly string $name,
         #[Property(description: 'icon', type: ElementIcon::class)]
@@ -41,9 +41,9 @@ final class FieldCollectionTreeNode implements AdditionalAttributesInterface
     ) {
     }
 
-    public function getId(): string
+    public function getKey(): string
     {
-        return $this->id;
+        return $this->key;
     }
 
     public function getName(): string

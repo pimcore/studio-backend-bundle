@@ -134,6 +134,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.field_collection.detail`
 - `pre_response.field_collection.layout_definition`
 - `pre_response.field_collection.tree`
+- `pre_response.field_collection.usage_data`
 - `pre_response.grid_column_configuration`
 - `pre_response.grid_column_data`
 - `pre_response.grid_configuration`
