@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
+use function in_array;
 use function sprintf;
 use function strtolower;
 
