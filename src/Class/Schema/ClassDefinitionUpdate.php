@@ -65,13 +65,9 @@ final readonly class ClassDefinitionUpdate
             description: 'Values for class definition object itself',
             type: 'object',
             example: [
-                'id' => 'some_class_id',
                 'name' => 'MyClass',
                 'title' => 'My class title',
                 'description' => 'Description of my class',
-                'modificationDate' => 1765874636,
-                'userOwner' => 1,
-                'userModification' => 1,
                 'parentClass' => '',
                 'implementsInterfaces' => '',
                 'listingParentClass' => '',

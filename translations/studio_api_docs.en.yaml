@@ -1275,6 +1275,37 @@ class_field_collection_object_layout_description: |
   Get all layouts from the field collection for an given object
 class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
 class_field_collection_object_layout_success_response: List of layouts
+class_field_collection_create_description: |
+  Create a new empty field collection definition with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be unique and not already exist (case-insensitive). <br>
+class_field_collection_create_summary: Create a new field collection definition
+class_field_collection_create_success_response: Successfully created field collection definition
+class_field_collection_update_description: |
+  Update an existing field collection definition with the given <strong>{key}</strong> and parameters. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition. <br>
+  The <strong>{values}</strong> and <strong>{configuration}</strong> fields are required.
+class_field_collection_update_summary: Update field collection definition by given key
+class_field_collection_update_success_response: Successfully updated field collection definition
+class_field_collection_delete_description: |
+  Delete a field collection definition with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_delete_summary: Delete a field collection definition
+class_field_collection_delete_success_response: Successfully deleted field collection definition
+class_field_collection_export_description: |
+  Export a field collection definition as JSON for the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_export_summary: Export a field collection definition as JSON
+class_field_collection_export_success_response: Exported field collection definition as JSON
+class_field_collection_import_description: |
+  Import a field collection definition from a previously exported JSON file for the given field collection <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_import_summary: Import a field collection definition from JSON file
+class_field_collection_import_success_response: Successfully imported field collection definition
+class_field_collection_get_usages_description: |
+  Get usage data showing which classes and fields use the field collection with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_get_usages_summary: Get field collection usage data
+class_field_collection_get_usages_success_response: Field collection usage data
 class_object_brick_object_layout_description: |
   Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_summary: Get all layouts from the object bricks for an given object

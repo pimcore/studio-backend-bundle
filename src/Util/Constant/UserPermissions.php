@@ -27,6 +27,7 @@ enum UserPermissions: string
     case DOCUMENT_TYPES = 'document_types';
     case ELEMENT_TYPE_PERMISSION  = 'ELEMENT_TYPE_PERMISSION';
     case EMAILS = 'emails';
+    case FIELD_COLLECTIONS = 'fieldcollections';
     case GDPR = 'gdpr_data_extractor';
     case NOTES_EVENTS = 'notes_events';
     case NOTIFICATIONS = 'notifications';

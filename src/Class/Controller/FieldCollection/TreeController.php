@@ -50,7 +50,7 @@ final class TreeController extends AbstractApiController
     }
 
     #[Route(self::ROUTE, name: 'pimcore_studio_api_class_field_collection_tree', methods: ['GET'], priority: 10)]
-    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
+    #[IsGranted(UserPermissions::FIELD_COLLECTIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_field_collection_get_tree',
