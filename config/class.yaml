@@ -26,6 +26,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickService
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickTreeServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickTreeService
+
   Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionService
 
@@ -53,6 +59,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepository
 
   Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepository
@@ -83,6 +92,21 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\DetailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\DetailHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\TreeNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\TreeNodeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\TreeFolderNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\TreeFolderNodeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\ObjectBrickConfigHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\ObjectBrickConfigHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydrator

@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\ObjectBrick;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\ObjectBrickDetail;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
@@ -31,13 +31,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class LayoutDefinitionController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
-    private const string ROUTE = '/class/field-collection/{key}/layout';
+    private const string ROUTE = '/class/object-brick/{key}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly LayoutDefinitionServiceInterface $layoutDefinitionService,
+        private readonly ObjectBrickServiceInterface $objectBrickService,
     ) {
         parent::__construct($serializer);
     }
@@ -45,32 +45,32 @@ final class LayoutDefinitionController extends AbstractApiController
     /**
      * @throws NotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_field_collection_get_layout_by_key', methods: ['GET'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_object_brick_get_by_key', methods: ['GET'])]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'class_field_collection_get_layout_by_key',
-        description: 'class_field_collection_get_layout_by_key_description',
-        summary: 'class_field_collection_get_layout_by_key_summary',
+        operationId: 'class_object_brick_get_by_key',
+        description: 'class_object_brick_get_by_key_description',
+        summary: 'class_object_brick_get_by_key_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
         name: 'key',
-        example: 'MyFieldCollection',
-        description: 'Field collection unique key',
+        example: 'MyObjectBrick',
+        description: 'Object brick unique key',
         required: true
     )]
     #[SuccessResponse(
-        description: 'class_field_collection_get_layout_by_key_success_response',
-        content: new JsonContent(ref: ConfigLayoutDefinition::class)
+        description: 'class_object_brick_get_by_key_success_response',
+        content: new JsonContent(ref: ObjectBrickDetail::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getLayoutDefinitionByKey(string $key): JsonResponse
+    public function getObjectBrickByKey(string $key): JsonResponse
     {
         return $this->jsonResponse(
-            $this->layoutDefinitionService->getLayoutDefinitionByKey($key)
+            $this->objectBrickService->getObjectBrickByKey($key)
         );
     }
 }

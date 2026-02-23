@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    schema: 'FieldCollectionConfigLayoutDefinition',
-    title: 'Field Collection Config Layout Definition',
+    schema: 'ConfigLayoutDefinition',
+    title: 'Config Layout Definition',
     required: [
         'name',
         'type',

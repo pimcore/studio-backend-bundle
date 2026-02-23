@@ -1310,6 +1310,23 @@ class_object_brick_object_layout_description: |
   Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_summary: Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_success_response: List of layouts
+class_object_brick_get_tree_description: |
+  Get the object brick tree with grouped folders.
+class_object_brick_get_tree_summary: Get object brick tree
+class_object_brick_get_tree_success_response: Object brick tree with nodes and folders
+class_object_brick_collection_description: |
+  Get a collection of all available object brick definitions.
+class_object_brick_collection_summary: Get all object brick definitions
+class_object_brick_collection_success_response: Collection of object brick definitions
+class_object_brick_get_by_key_description: |
+  Get a single object brick definition by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_get_by_key_summary: Get object brick definition by key
+class_object_brick_get_by_key_success_response: Object brick definition detail
+class_object_brick_get_layout_by_key_description: |
+  Get the layout definition for the object brick with the given <strong>{key}</strong>.
+class_object_brick_get_layout_by_key_summary: Get object brick layout definition by key
+class_object_brick_get_layout_by_key_success_response: Object brick layout definition
 unit_quantity_value_list_description: |
   List of available quantity value units
 unit_quantity_value_list_summary: List of available quantity value units

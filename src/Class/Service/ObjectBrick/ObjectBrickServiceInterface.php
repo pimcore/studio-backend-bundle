@@ -13,26 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick;
 
-use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\ObjectBrickDetail;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
  */
-interface LayoutDefinitionServiceInterface
+interface ObjectBrickServiceInterface
 {
-    /**
-     * @throws InvalidElementTypeException|NotFoundException|Exception
-     *
-     * @return LayoutDefinition[]
-     */
-    public function getLayoutDefinitionsForObject(int $dataObjectId): array;
+    public function listObjectBricks(): Collection;
 
     /**
      * @throws NotFoundException
      */
-    public function getLayoutDefinitionByKey(string $key): ConfigLayoutDefinition;
+    public function getObjectBrickByKey(string $key): ObjectBrickDetail;
 }
