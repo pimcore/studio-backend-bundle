@@ -11,15 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\ObjectBrickDetail;
+use Pimcore\Model\DataObject\Objectbrick\Definition;
 
 /**
  * @internal
  */
-interface LayoutDefinitionHydratorInterface
+interface DetailHydratorInterface
 {
-    public function hydrate(FieldCollectionDefinition $data): LayoutDefinition;
+    public function hydrate(Definition $definition): ObjectBrickDetail;
 }

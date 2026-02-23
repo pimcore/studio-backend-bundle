@@ -20,13 +20,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\ConfigLayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Pimcore\Model\DataObject\Concrete;
@@ -46,6 +47,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly DefinitionResolverInterface $definitionResolver,
         private readonly FieldCollectionRepositoryInterface $fieldCollectionRepository,
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
+        private readonly ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -85,13 +87,11 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         $definition = $this->fieldCollectionRepository->getFieldCollectionByKey($key);
         $layout = $definition->getLayoutDefinitions();
 
-        if ($layout === null) {
-            throw new EnvironmentException(
-                sprintf('Layout definition for field collection "%s" is not available', $key)
-            );
+        if (!$layout instanceof Panel) {
+            throw new NotFoundException('layout for fieldcollection', $key);
         }
 
-        $configLayoutDefinition = $this->layoutDefinitionHydrator->hydrateConfigLayoutDefinition($layout);
+        $configLayoutDefinition = $this->configLayoutDefinitionHydrator->hydrate($layout);
 
         $this->eventDispatcher->dispatch(
             new ConfigLayoutDefinitionEvent($configLayoutDefinition),

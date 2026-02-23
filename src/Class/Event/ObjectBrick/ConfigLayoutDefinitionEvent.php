@@ -11,14 +11,14 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class ConfigLayoutDefinitionEvent extends AbstractPreResponseEvent
 {
-    public const string EVENT_NAME = 'pre_response.field_collection.config_layout_definition';
+    public const string EVENT_NAME = 'pre_response.objectBrick.config_layout_definition';
 
     public function __construct(
         private readonly ConfigLayoutDefinition $configLayoutDefinition,

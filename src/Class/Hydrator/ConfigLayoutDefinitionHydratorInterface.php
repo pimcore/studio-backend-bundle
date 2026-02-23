@@ -11,15 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 
 /**
  * @internal
  */
-interface LayoutDefinitionHydratorInterface
+interface ConfigLayoutDefinitionHydratorInterface
 {
-    public function hydrate(FieldCollectionDefinition $data): LayoutDefinition;
+    public function hydrate(Panel $layout): ConfigLayoutDefinition;
 }

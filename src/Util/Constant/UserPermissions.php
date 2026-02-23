@@ -33,6 +33,7 @@ enum UserPermissions: string
     case NOTIFICATIONS = 'notifications';
     case NOTIFICATIONS_SEND = 'notifications_send';
     case OBJECTS_SORT_METHOD = 'objects_sort_method';
+    case OBJECT_BRICKS = 'objectbricks';
     case PERSPECTIVE_EDITOR = 'studio_perspective_editor';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
