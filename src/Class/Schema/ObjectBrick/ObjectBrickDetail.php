@@ -86,7 +86,7 @@ final class ObjectBrickDetail implements AdditionalAttributesInterface
                 ],
                 type: 'object'
             ),
-            example: [["classname" => "fieldTest", "fieldname" => "myBrickField"]]
+            example: [['classname' => 'fieldTest', 'fieldname' => 'myBrickField']]
         )]
         private readonly array $classDefinitions,
     ) {
