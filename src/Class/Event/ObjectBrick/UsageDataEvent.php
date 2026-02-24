@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class UsageDataEvent extends AbstractPreResponseEvent
 {
-    public const string EVENT_NAME = 'pre_response.object_brick.usage_data';
+    public const string EVENT_NAME = 'pre_response.objectBrick.usage_data';
 
     public function __construct(
         private readonly ObjectBrickUsageData $usageData
