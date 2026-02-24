@@ -149,6 +149,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.objectBrick.detail`
 - `pre_response.objectBrick.layout_definition`
 - `pre_response.objectBrick.tree`
+- `pre_response.objectBrick.usage_data`
 - `pre_response.perspective.config.get`
 - `pre_response.perspective.widget.config.get`
 - `pre_response.perspective.widget.type`
