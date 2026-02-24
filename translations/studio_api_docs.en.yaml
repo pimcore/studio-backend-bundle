@@ -1327,6 +1327,36 @@ class_object_brick_get_layout_by_key_description: |
   Get the layout definition for the object brick with the given <strong>{key}</strong>.
 class_object_brick_get_layout_by_key_summary: Get object brick layout definition by key
 class_object_brick_get_layout_by_key_success_response: Object brick layout definition
+class_object_brick_create_description: |
+  Create a new object brick definition with the provided <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be unique and not already exist.
+class_object_brick_create_summary: Create a new object brick definition
+class_object_brick_create_success_response: Created object brick definition detail
+class_object_brick_update_description: |
+  Update an existing object brick definition by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_update_summary: Update an object brick definition by key
+class_object_brick_update_success_response: Updated object brick definition detail
+class_object_brick_delete_description: |
+  Delete an existing object brick definition by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_delete_summary: Delete an object brick definition by key
+class_object_brick_delete_success_response: Successfully deleted object brick definition
+class_object_brick_export_description: |
+  Export an existing object brick definition as JSON by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_export_summary: Export an object brick definition as JSON
+class_object_brick_export_success_response: JSON export of the object brick definition
+class_object_brick_import_description: |
+  Import an object brick definition from a JSON file for the object brick with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_import_summary: Import an object brick definition from JSON
+class_object_brick_import_success_response: Imported object brick definition detail
+class_object_brick_get_usages_description: |
+  Get the usages of an object brick definition by its unique <strong>{key}</strong>. <br>
+  Returns all classes and fields that reference this object brick.
+class_object_brick_get_usages_summary: Get usages of an object brick definition
+class_object_brick_get_usages_success_response: List of classes and fields using the object brick
 unit_quantity_value_list_description: |
   List of available quantity value units
 unit_quantity_value_list_summary: List of available quantity value units
