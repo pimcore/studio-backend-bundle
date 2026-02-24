@@ -30,10 +30,10 @@ use Pimcore\Model\DataObject\Objectbrick\Definition;
 use function array_map;
 use function array_unique;
 use function array_values;
-use function serialize;
+use function in_array;
+use function is_array;
 use function sprintf;
 use function strtolower;
-use function unserialize;
 
 /**
  * @internal
