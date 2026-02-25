@@ -28,7 +28,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class FieldsByTypeService implements FieldsByTypeServiceInterface
 {
     private const int ROOT_FOLDER_ID = 1;
+
     private const string OBJECT_BRICK_TYPE = 'objectbricks';
+
     private const string OBJECT_BRICK_COLUMN_TYPE = 'dataobject.objectbrick';
 
     public function __construct(

@@ -29,8 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
-use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
+use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use function sprintf;
 
 /**

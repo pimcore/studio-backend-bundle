@@ -28,6 +28,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
+use function array_key_exists;
 use function array_map;
 use function array_unique;
 use function array_values;
