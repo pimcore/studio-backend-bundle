@@ -53,6 +53,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\LayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\LayoutService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldsByTypeServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldsByTypeService
+
   #
   # Repositories
   #
@@ -107,6 +110,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\ObjectBrickConfigHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\ObjectBrickConfigHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldByTypeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldByTypeHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CompactLayoutHydrator

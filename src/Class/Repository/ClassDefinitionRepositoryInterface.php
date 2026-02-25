@@ -35,6 +35,11 @@ interface ClassDefinitionRepositoryInterface
     public function getClassDefinitions(): array;
 
     /**
+     * @return ClassDefinition[]
+     */
+    public function getClassDefinitionsWithObjectBricks(): array;
+
+    /**
      * @throws NotFoundException
      */
     public function getClassDefinitionById(string $id): ClassDefinition;
@@ -59,6 +64,11 @@ interface ClassDefinitionRepositoryInterface
      * @throws ElementSavingFailedException|NotWriteableException|UserNotFoundException
      */
     public function update(ClassDefinition $classDefinition, UpdateParameters $updateParameters): ClassDefinition;
+
+    /**
+     * @return array<array{key: string, fieldname: string}>
+     */
+    public function getObjectBricksByClassName(string $className): array;
 
     public function exportAsJson(ClassDefinition $classDefinition): string;
 

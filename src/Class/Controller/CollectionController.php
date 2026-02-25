@@ -68,6 +68,7 @@ final class CollectionController extends AbstractApiController
             new PermissionsToCheck([
                 UserPermissions::CLASS_DEFINITION->value,
                 UserPermissions::DATA_OBJECTS->value,
+                UserPermissions::OBJECT_BRICKS->value,
                 UserPermissions::USER_MANAGEMENT->value,
             ])
         );

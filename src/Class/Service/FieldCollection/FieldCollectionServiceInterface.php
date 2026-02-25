@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -55,7 +55,7 @@ interface FieldCollectionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function exportFieldCollection(string $key): Response;
+    public function exportFieldCollection(string $key): JsonExport;
 
     /**
      * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException

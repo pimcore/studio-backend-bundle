@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickServ
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -50,7 +51,7 @@ final class CreateController extends AbstractApiController
     }
 
     /**
-     * @throws ElementExistsException|ElementSavingFailedException|NotWriteableException
+     * @throws ElementExistsException|ElementSavingFailedException|InvalidArgumentException|NotWriteableException
      */
     #[Route(
         self::ROUTE,

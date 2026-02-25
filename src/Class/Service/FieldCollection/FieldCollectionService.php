@@ -23,11 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\FieldCollectionDetail;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollectionUsageData;
-use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\Response;
 use function count;
 
 /**
@@ -39,7 +38,6 @@ final readonly class FieldCollectionService implements FieldCollectionServiceInt
         private FieldCollectionRepositoryInterface $fieldCollectionRepository,
         private FieldCollectionConfigHydratorInterface $fieldCollectionConfigHydrator,
         private DetailHydratorInterface $detailHydrator,
-        private DownloadServiceInterface $downloadService,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -102,12 +100,12 @@ final readonly class FieldCollectionService implements FieldCollectionServiceInt
     /**
      * {@inheritdoc}
      */
-    public function exportFieldCollection(string $key): Response
+    public function exportFieldCollection(string $key): JsonExport
     {
         $definition = $this->fieldCollectionRepository->getFieldCollectionByKey($key);
         $json = $this->fieldCollectionRepository->exportAsJson($definition);
 
-        return $this->downloadService->downloadJSON(
+        return new JsonExport(
             $json,
             'fieldcollection_' . $definition->getKey() . '_export.json'
         );

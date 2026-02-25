@@ -60,7 +60,7 @@ final readonly class LayoutDefinitionService implements LayoutDefinitionServiceI
         $dataObject = $this->dataObjectResolver->getById($dataObjectId);
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
-                sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))
+                sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)
             );
         }
 

@@ -38,7 +38,7 @@ interface ObjectBrickRepositoryInterface
     public function getObjectBrickByKey(string $key): Definition;
 
     /**
-     * @throws ElementExistsException|ElementSavingFailedException|NotWriteableException
+     * @throws ElementExistsException|ElementSavingFailedException|InvalidArgumentException|NotWriteableException
      */
     public function create(CreateObjectBrickParameters $parameters): Definition;
 

@@ -299,6 +299,12 @@ class_get_available_visible_fields_description: |
   The <strong>{classNames}</strong> must be a comma separated list of existing data object class names.
 class_get_available_visible_fields_summary: Get available visible fields for classes
 class_get_available_visible_fields_success_response: Successfully retrieved available visible fields
+class_get_fields_by_type_description: |
+  Get class definition fields filtered by one or more field types. <br>
+  The <strong>{classId}</strong> must be an ID of an existing data object class. <br>
+  The <strong>{type}</strong> must be a comma-separated list of field types, e.g. <strong>manyToOneRelation,objectbricks</strong>.
+class_get_fields_by_type_summary: Get class definition fields by type
+class_get_fields_by_type_success_response: Successfully retrieved class definition fields for the requested types
 class_get_selected_visible_fields_description: |
   Get selected visible fields for the specified data object class and relation field. <br>
   The <strong>{classId}</strong> must be an ID of existing data object class. <br>
@@ -1357,6 +1363,41 @@ class_object_brick_get_usages_description: |
   Returns all classes and fields that reference this object brick.
 class_object_brick_get_usages_summary: Get usages of an object brick definition
 class_object_brick_get_usages_success_response: List of classes and fields using the object brick
+class_object_brick_classes_description: |
+  Get a collection of class definitions that have at least one ObjectBricks field definition.
+class_object_brick_classes_summary: Get class definitions with ObjectBricks fields
+class_object_brick_classes_success_response: Collection of class definitions with ObjectBricks fields
+class_object_brick_custom_layout_get_description: |
+  Get a custom layout for a specific object brick by brick key and custom layout ID.
+class_object_brick_custom_layout_get_summary: Get object brick custom layout
+class_object_brick_custom_layout_get_key: Object brick key
+class_object_brick_custom_layout_get_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_get_success_response: Object brick custom layout data
+class_object_brick_custom_layout_update_description: |
+  Update a custom layout for a specific object brick. If the brick layout does not exist yet, it will be
+  auto-created from the base custom layout and then updated with the provided data.
+class_object_brick_custom_layout_update_summary: Update object brick custom layout
+class_object_brick_custom_layout_update_key: Object brick key
+class_object_brick_custom_layout_update_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_update_success_response: Updated object brick custom layout
+class_object_brick_custom_layout_delete_description: |
+  Delete a custom layout for a specific object brick by brick key and custom layout ID.
+class_object_brick_custom_layout_delete_summary: Delete object brick custom layout
+class_object_brick_custom_layout_delete_key: Object brick key
+class_object_brick_custom_layout_delete_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_delete_success_response: Object brick custom layout deleted
+class_object_brick_custom_layout_export_description: |
+  Export a custom layout for a specific object brick as JSON file download.
+class_object_brick_custom_layout_export_summary: Export object brick custom layout as JSON
+class_object_brick_custom_layout_export_key: Object brick key
+class_object_brick_custom_layout_export_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_export_success_response: Object brick custom layout data as JSON
+class_object_brick_custom_layout_import_description: |
+  Import a custom layout for a specific object brick from a previously exported JSON file.
+class_object_brick_custom_layout_import_summary: Import object brick custom layout from JSON
+class_object_brick_custom_layout_import_key: Object brick key
+class_object_brick_custom_layout_import_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_import_success_response: Successfully imported object brick custom layout
 unit_quantity_value_list_description: |
   List of available quantity value units
 unit_quantity_value_list_summary: List of available quantity value units

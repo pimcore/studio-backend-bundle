@@ -113,7 +113,7 @@ final readonly class IdentifierService implements IdentifierServiceInterface
     private function getExistingCustomLayoutNames(string $classDefinitionId): array
     {
         $existingNames = [];
-        $allLayouts = $this->customLayoutRepository->getCustomLayoutsByClass($classDefinitionId);
+        $allLayouts = $this->customLayoutRepository->getCustomLayoutsByClass([$classDefinitionId]);
         foreach ($allLayouts as $layout) {
             $existingNames[] = $layout->getName();
         }

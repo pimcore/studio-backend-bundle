@@ -27,7 +27,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
+use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use function sprintf;
 
@@ -52,6 +54,43 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         $classesList->setOrder('asc');
 
         return $classesList->load();
+    }
+
+    public function getClassDefinitionsWithObjectBricks(): array
+    {
+        $result = [];
+
+        foreach ($this->getClassDefinitions() as $class) {
+            foreach ($class->getFieldDefinitions() as $fieldDefinition) {
+                if ($fieldDefinition instanceof Objectbricks) {
+                    $result[] = $class;
+
+                    break;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function getObjectBricksByClassName(string $className): array
+    {
+        $objectBrickList = new ObjectBrickListing();
+        $brickDefinitions = $objectBrickList->load();
+        $result = [];
+
+        foreach ($brickDefinitions as $brickDefinition) {
+            foreach ($brickDefinition->getClassDefinitions() as $brickClass) {
+                if ($className === $brickClass['classname']) {
+                    $result[] = [
+                        'key' => $brickDefinition->getKey(),
+                        'fieldname' => $brickClass['fieldname'],
+                    ];
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
