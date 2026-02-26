@@ -35,6 +35,7 @@ enum UserPermissions: string
     case OBJECTS_SORT_METHOD = 'objects_sort_method';
     case OBJECT_BRICKS = 'objectbricks';
     case PERSPECTIVE_EDITOR = 'studio_perspective_editor';
+    case QUANTITY_VALUE_UNITS = 'quantityValueUnits';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';

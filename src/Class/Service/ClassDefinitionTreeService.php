@@ -82,7 +82,7 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
             $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);
             $this->eventDispatcher->dispatch(
                 new ClassDefinitionFolderListEvent($class),
-                ClassDefinitionEvent::EVENT_NAME
+                ClassDefinitionFolderListEvent::EVENT_NAME
             );
             $hydratedClassDefinitions[] = $class;
         }
