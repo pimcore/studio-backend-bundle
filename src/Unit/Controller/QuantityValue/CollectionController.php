@@ -49,7 +49,12 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_unit_quantity_value_units_collection', methods: ['POST'], priority: 10)]
+    #[Route(
+        self::ROUTE,
+        name: 'pimcore_studio_api_unit_quantity_value_units_collection',
+        methods: ['POST'],
+        priority: 10
+    )]
     #[IsGranted(UserPermissions::QUANTITY_VALUE_UNITS->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,

@@ -75,7 +75,7 @@ final readonly class LayoutService implements LayoutServiceInterface
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
-                sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)
+                sprintf('DataObject id (%s) is not a concrete object', $dataObject->getId())
             );
         }
 
