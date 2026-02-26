@@ -17,6 +17,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\FieldCollectionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -41,6 +42,7 @@ final class ExportController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly FieldCollectionServiceInterface $fieldCollectionService,
+        private readonly DownloadServiceInterface $downloadService,
     ) {
         parent::__construct($serializer);
     }
@@ -78,6 +80,11 @@ final class ExportController extends AbstractApiController
     ])]
     public function exportFieldCollection(string $key): Response
     {
-        return $this->fieldCollectionService->exportFieldCollection($key);
+        $export = $this->fieldCollectionService->exportFieldCollection($key);
+
+        return $this->downloadService->downloadJSON(
+            $export->getJson(),
+            $export->getFileName()
+        );
     }
 }

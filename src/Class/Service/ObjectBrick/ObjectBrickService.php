@@ -23,11 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\ObjectBrickDetail;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrickUsageData;
-use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\Response;
 use function count;
 
 /**
@@ -39,7 +38,6 @@ final readonly class ObjectBrickService implements ObjectBrickServiceInterface
         private ObjectBrickRepositoryInterface $objectBrickRepository,
         private ObjectBrickConfigHydratorInterface $objectBrickConfigHydrator,
         private DetailHydratorInterface $detailHydrator,
-        private DownloadServiceInterface $downloadService,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -102,12 +100,12 @@ final readonly class ObjectBrickService implements ObjectBrickServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function exportObjectBrick(string $key): Response
+    public function exportObjectBrick(string $key): JsonExport
     {
         $definition = $this->objectBrickRepository->getObjectBrickByKey($key);
         $json = $this->objectBrickRepository->exportAsJson($definition);
 
-        return $this->downloadService->downloadJSON(
+        return new JsonExport(
             $json,
             'objectbrick_' . $definition->getKey() . '_export.json'
         );

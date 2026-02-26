@@ -11,20 +11,17 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\Folder;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\ObjectBrick;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder\ClassDefinitionFolderItem;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -37,53 +34,48 @@ use function count;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class ClassesController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
+    private const string ROUTE = '/class/object-brick/classes';
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionTreeServiceInterface $classDefinitionTreeService,
-
+        private readonly ClassDefinitionServiceInterface $classDefinitionService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotFoundException
-     */
     #[Route(
-        '/class/folder/{folderId}',
-        name: 'pimcore_studio_api_classes_folder_collection',
-        requirements: ['folderId' => '\d+'],
-        methods: ['GET']
+        self::ROUTE,
+        name: 'pimcore_studio_api_class_object_brick_classes',
+        methods: ['GET'],
+        priority: 10
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::OBJECT_BRICKS->value)]
     #[Get(
-        path: self::PREFIX . '/class/folder/{folderId}',
-        operationId: 'class_definition_folder_collection',
-        description: 'class_definition_folder_collection_description',
-        summary: 'class_definition_folder_collection_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'class_object_brick_classes',
+        description: 'class_object_brick_classes_description',
+        summary: 'class_object_brick_classes_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[SuccessResponse(
-        description: 'class_definition_folder_collection_success_response',
-        content: new CollectionJson(new GenericCollection(ClassDefinitionFolderItem::class))
+        description: 'class_object_brick_classes_success_response',
+        content: new CollectionJson(new GenericCollection(ClassDefinitionList::class))
     )]
-    #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'folderId')]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getFolderClassList(
-        int $folderId
-    ): JsonResponse {
-        $collection = $this->classDefinitionTreeService->getClassDefinitionIdsInsideFolder($folderId);
+    public function getClassesWithObjectBricks(): JsonResponse
+    {
+        $items = $this->classDefinitionService->getClassDefinitionsWithObjectBricks();
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $collection,
-            count($collection)
+            $items,
+            count($items)
         );
     }
 }

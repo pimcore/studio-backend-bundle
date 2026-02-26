@@ -24,8 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Model\DataObject\ClassDefinition;
-use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 
 /**
  * @internal
@@ -51,7 +50,7 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function exportClassDefinition(string $id): Response;
+    public function exportClassDefinition(string $id): JsonExport;
 
     /**
      * @throws InvalidArgumentException|ElementSavingFailedException|NotFoundException|NotWriteableException
@@ -66,9 +65,9 @@ interface ClassDefinitionServiceInterface
     ): array;
 
     /**
-     * @return ClassDefinition[]
+     * @return ClassDefinitionList[]
      */
-    public function getClassDefinitions(bool $creatableOnly = false): array;
+    public function getClassDefinitionsWithObjectBricks(): array;
 
     /**
      * @throws NotFoundException
@@ -84,9 +83,4 @@ interface ClassDefinitionServiceInterface
      * @throws NotFoundException
      */
     public function getClassDefinitionBricks(string $id): array;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getClassDefinitionIdsInsideFolder(int $folderId): array;
 }

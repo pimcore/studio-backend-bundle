@@ -69,7 +69,9 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         UserInterface $user
     ): array {
         if (($classId === null && $folderId !== null) || ($classId !== null && $folderId === null)) {
-            throw new InvalidArgumentException('Either both classId and folderId must be set or both must be null');
+            throw new InvalidArgumentException(
+                'Either both classId and folderId must be set or both must be null'
+            );
         }
 
         if ($classId === null && $folderId === null) {

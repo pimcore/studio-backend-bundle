@@ -11,13 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\ObjectBrick;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\ObjectBrick\CustomLayout;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\ObjectBrickServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -37,12 +36,11 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ExportController extends AbstractApiController
 {
-    private const string ROUTE = '/class/object-brick/{key}/export';
+    private const string ROUTE = '/class/object-brick/{key}/custom-layout/{customLayoutId}/export';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ObjectBrickServiceInterface $objectBrickService,
-        private readonly DownloadServiceInterface $downloadService,
+        private readonly CustomLayoutServiceInterface $customLayoutService,
     ) {
         parent::__construct($serializer);
     }
@@ -50,41 +48,38 @@ final class ExportController extends AbstractApiController
     /**
      * @throws NotFoundException
      */
-    #[Route(
-        self::ROUTE,
-        name: 'pimcore_studio_api_class_object_brick_export',
-        methods: ['GET']
-    )]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_object_brick_custom_layout_export', methods: ['GET'])]
     #[IsGranted(UserPermissions::OBJECT_BRICKS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'class_object_brick_export',
-        description: 'class_object_brick_export_description',
-        summary: 'class_object_brick_export_summary',
+        operationId: 'class_object_brick_custom_layout_export',
+        description: 'class_object_brick_custom_layout_export_description',
+        summary: 'class_object_brick_custom_layout_export_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
         name: 'key',
-        example: 'MyObjectBrick',
-        description: 'Object brick unique key',
+        example: 'SaleInformation',
+        description: 'class_object_brick_custom_layout_export_key',
+        required: true
+    )]
+    #[StringParameter(
+        name: 'customLayoutId',
+        example: 'CarTodo',
+        description: 'class_object_brick_custom_layout_export_layout_id',
         required: true
     )]
     #[SuccessResponse(
-        description: 'class_object_brick_export_success_response',
+        description: 'class_object_brick_custom_layout_export_success_response',
         content: [new MediaType(MimeTypes::JSON->value)],
-        headers: [new ContentDisposition(fileName: 'objectbrick_MyObjectBrick_export.json')]
+        headers: [new ContentDisposition(fileName: 'custom_definition_export.json')]
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function exportObjectBrick(string $key): Response
+    public function exportBrickCustomLayout(string $key, string $customLayoutId): Response
     {
-        $export = $this->objectBrickService->exportObjectBrick($key);
-
-        return $this->downloadService->downloadJSON(
-            $export->getJson(),
-            $export->getFileName()
-        );
+        return $this->customLayoutService->exportBrickCustomLayoutAsJson($key, $customLayoutId);
     }
 }

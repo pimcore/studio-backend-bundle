@@ -11,24 +11,24 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\Folder;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder\ClassDefinitionFolderItem;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\FieldsByTypeParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldByType;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldsByTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -37,53 +37,57 @@ use function count;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class FieldsByTypeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
+    private const string ROUTE = '/class/definition/fields-by-type';
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionTreeServiceInterface $classDefinitionTreeService,
-
+        private readonly FieldsByTypeServiceInterface $fieldsByTypeService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotFoundException
-     */
     #[Route(
-        '/class/folder/{folderId}',
-        name: 'pimcore_studio_api_classes_folder_collection',
-        requirements: ['folderId' => '\d+'],
+        self::ROUTE,
+        name: 'pimcore_studio_api_class_fields_by_type',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
-        path: self::PREFIX . '/class/folder/{folderId}',
-        operationId: 'class_definition_folder_collection',
-        description: 'class_definition_folder_collection_description',
-        summary: 'class_definition_folder_collection_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'class_get_fields_by_type',
+        description: 'class_get_fields_by_type_description',
+        summary: 'class_get_fields_by_type_summary',
         tags: [Tags::ClassDefinition->value],
     )]
-    #[SuccessResponse(
-        description: 'class_definition_folder_collection_success_response',
-        content: new CollectionJson(new GenericCollection(ClassDefinitionFolderItem::class))
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'The class ID to retrieve fields for.',
+        required: true
     )]
-    #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'folderId')]
+    #[StringParameter(
+        name: 'type',
+        example: 'manyToOneRelation,objectbricks',
+        description: 'Comma-separated list of field types to filter by.',
+        required: true
+    )]
+    #[SuccessResponse(
+        description: 'class_get_fields_by_type_success_response',
+        content: new CollectionJson(new GenericCollection(FieldByType::class))
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getFolderClassList(
-        int $folderId
+    public function getFieldsByType(
+        #[MapQueryString] FieldsByTypeParameters $parameters
     ): JsonResponse {
-        $collection = $this->classDefinitionTreeService->getClassDefinitionIdsInsideFolder($folderId);
+        $fields = $this->fieldsByTypeService->getFieldsByType($parameters);
 
-        return $this->getPaginatedCollection(
-            $this->serializer,
-            $collection,
-            count($collection)
-        );
+        return $this->getPaginatedCollection($this->serializer, $fields, count($fields));
     }
 }

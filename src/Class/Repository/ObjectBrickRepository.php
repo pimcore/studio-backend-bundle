@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Exception;
+use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateObjectBrickParameters;
@@ -27,6 +28,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
+use function array_key_exists;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -82,6 +84,7 @@ final readonly class ObjectBrickRepository implements ObjectBrickRepositoryInter
     public function create(CreateObjectBrickParameters $parameters): Definition
     {
         $key = $parameters->getKey();
+        $this->validateKey($key);
         $existingNames = $this->listObjectBrickNames();
 
         foreach ($existingNames as $existingName) {
@@ -171,6 +174,8 @@ final readonly class ObjectBrickRepository implements ObjectBrickRepositoryInter
      */
     public function importFromJson(Definition $definition, string $json): Definition
     {
+        $this->validateJson($json);
+
         try {
             $success = $this->classDefinitionServiceResolver->importObjectBrickFromJson(
                 $definition,
@@ -222,5 +227,42 @@ final readonly class ObjectBrickRepository implements ObjectBrickRepositoryInter
     private function listObjectBrickNames(): array
     {
         return (new Definition\Listing())->loadNames();
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateKey(string $key): void
+    {
+        if ($key === '') {
+            throw new InvalidArgumentException('Object brick key must not be empty');
+        }
+
+        if (!preg_match('/^[a-zA-Z][a-zA-Z0-9]*$/', $key)) {
+            throw new InvalidArgumentException(
+                'Object brick key must start with a letter and contain only alphanumeric characters'
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateJson(string $json): void
+    {
+        try {
+            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException(
+                'Import file does not contain valid JSON: ' . $e->getMessage(),
+                $e,
+            );
+        }
+
+        if (!is_array($data) || !array_key_exists('classDefinitions', $data)) {
+            throw new InvalidArgumentException(
+                'Invalid import file: missing required key "classDefinitions"'
+            );
+        }
     }
 }

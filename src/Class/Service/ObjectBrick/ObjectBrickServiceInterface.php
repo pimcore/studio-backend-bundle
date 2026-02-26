@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -38,7 +38,7 @@ interface ObjectBrickServiceInterface
     public function getObjectBrickByKey(string $key): ObjectBrickDetail;
 
     /**
-     * @throws ElementExistsException|ElementSavingFailedException|NotWriteableException
+     * @throws ElementExistsException|ElementSavingFailedException|InvalidArgumentException|NotWriteableException
      */
     public function createObjectBrick(CreateObjectBrickParameters $parameters): ObjectBrickDetail;
 
@@ -55,7 +55,7 @@ interface ObjectBrickServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function exportObjectBrick(string $key): Response;
+    public function exportObjectBrick(string $key): JsonExport;
 
     /**
      * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException

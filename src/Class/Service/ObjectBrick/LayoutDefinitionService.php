@@ -32,7 +32,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function get_class;
 use function sprintf;
 
 /**
@@ -60,7 +59,7 @@ final readonly class LayoutDefinitionService implements LayoutDefinitionServiceI
         $dataObject = $this->dataObjectResolver->getById($dataObjectId);
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
-                sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))
+                sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)
             );
         }
 
