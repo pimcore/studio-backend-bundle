@@ -14,21 +14,25 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Unit\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\QuantityValue\UnitResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Unit\Event\PreResponse\QuantityValueConversionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Event\PreResponse\QuantityValueUnitEvent;
-use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertAllUnitsParameter;
-use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertUnitParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Hydrator\QuantityValueHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\CreateUnitParameters;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\UnitParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\UpdateUnitParameters;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Repository\QuantityValueRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValue;
-use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValues;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\QuantityValueUnit;
-use Pimcore\Model\DataObject\Data\QuantityValue;
+use Pimcore\Model\DataObject\QuantityValue\Service as QuantityValueModelService;
 use Pimcore\Model\DataObject\QuantityValue\Unit;
-use Pimcore\Model\DataObject\QuantityValue\UnitConversionService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
+use function mb_strlen;
 use function sprintf;
 
 /**
@@ -36,16 +40,20 @@ use function sprintf;
  */
 final readonly class QuantityValueService implements QuantityValueServiceInterface
 {
+    private const int MAX_UNIT_ID_LENGTH = 50;
+
     public function __construct(
+        private DownloadServiceInterface $downloadService,
         private EventDispatcherInterface $eventDispatcher,
+        private FilterMapperServiceInterface $filterMapper,
+        private QuantityValueHydratorInterface $hydrator,
+        private QuantityValueModelService $quantityValueModelService,
         private QuantityValueRepositoryInterface $quantityValueRepository,
-        private UnitConversionService $unitConversionService,
-        private UnitResolverInterface $unitResolver,
     ) {
     }
 
     /**
-     * @return QuantityValueUnit[]
+     * {@inheritdoc}
      */
     public function listUnits(): array
     {
@@ -53,104 +61,173 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
         $units = [];
 
         foreach ($listing as $unit) {
-            $quantityValueUnit = new QuantityValueUnit(
-                $unit->getId(),
-                $unit->getAbbreviation(),
-                $unit->getGroup(),
-                $unit->getLongname(),
-                $unit->getBaseunit() ? $unit->getBaseunit()->getId() : null,
-                $unit->getReference(),
-                $unit->getFactor(),
-                $unit->getConversionOffset(),
-                $unit->getConverter()
-            );
-
-            $this->eventDispatcher->dispatch(
-                new QuantityValueUnitEvent($quantityValueUnit),
-                QuantityValueUnitEvent::EVENT_NAME
-            );
-
-            $units[] = $quantityValueUnit;
+            $units[] = $this->getHydratedUnit($unit);
         }
 
         return $units;
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * {@inheritdoc}
      */
-    public function convertUnit(ConvertUnitParameter $parameters): float|int
+    public function listUnitCollection(CollectionFilterParameter $parameters): Collection
     {
-        return $this->getConvertedValue(
-            $this->getUnit($parameters->getFromUnitId()),
-            $this->getUnit($parameters->getToUnitId()),
-            $parameters->getValue()
+        $listing = $this->quantityValueRepository->getUnitListing(
+            $this->filterMapper->getFilterParameters($parameters)
+        );
+        $units = $listing->getUnits();
+        $list = [];
+
+        foreach ($units as $unit) {
+            $list[] = $this->getHydratedUnit($unit);
+        }
+
+        return new Collection(
+            $listing->getTotalCount(),
+            $list
         );
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * {@inheritdoc}
      */
-    public function convertAllUnits(ConvertAllUnitsParameter $parameters): ConvertedQuantityValues
+    public function createUnit(CreateUnitParameters $parameters): QuantityValueUnit
     {
-        $fromUnit = $this->getUnit($parameters->getFromUnitId());
-        $baseUnit = $fromUnit->getBaseunit() ?? $fromUnit;
-        $toUnits = $this->quantityValueRepository->getUnitListByBaseUnit($baseUnit->getId(), $fromUnit->getId());
+        $id = $parameters->getId();
 
-        $convertedValues = [];
-        foreach ($toUnits as $toUnit) {
-            $convertedValue = $this->getConvertedValue($fromUnit, $toUnit, $parameters->getValue());
-            $convertedValues[] = new ConvertedQuantityValue(
-                $toUnit->getAbbreviation(),
-                $toUnit->getLongname(),
-                round($convertedValue, 4)
+        if (mb_strlen($id) > self::MAX_UNIT_ID_LENGTH) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Unit ID must not exceed %d characters, provided ID has %d characters.',
+                    self::MAX_UNIT_ID_LENGTH,
+                    mb_strlen($id)
+                )
             );
         }
 
-        $collection = new ConvertedQuantityValues(
-            $parameters->getValue(),
-            $parameters->getFromUnitId(),
-            $convertedValues
-        );
+        if ($this->quantityValueRepository->unitExists($id)) {
+            throw new InvalidArgumentException(
+                sprintf('Unit with ID "%s" already exists.', $id)
+            );
+        }
 
-        $this->eventDispatcher->dispatch(
-            new QuantityValueConversionEvent($collection),
-            QuantityValueConversionEvent::EVENT_NAME
-        );
+        $unit = new Unit();
+        $unit->setId($id);
+        $this->applyUnitParameters($unit, $parameters);
 
-        return $collection;
+        try {
+            $unit->save();
+        } catch (Exception $e) {
+            throw new EnvironmentException(
+                sprintf('Failed to create unit: %s', $e->getMessage())
+            );
+        }
+
+        return $this->getHydratedUnit($unit);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateUnit(string $id, UpdateUnitParameters $parameters): QuantityValueUnit
+    {
+        $unit = $this->getUnit($id);
+
+        $this->applyUnitParameters($unit, $parameters);
+
+        try {
+            $unit->save();
+        } catch (Exception $e) {
+            throw new EnvironmentException(
+                sprintf('Failed to update unit: %s', $e->getMessage())
+            );
+        }
+
+        return $this->getHydratedUnit($unit);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteUnit(string $id): void
+    {
+        $unit = $this->getUnit($id);
+
+        try {
+            $unit->delete();
+        } catch (Exception $e) {
+            throw new EnvironmentException(
+                sprintf('Failed to delete unit: %s', $e->getMessage())
+            );
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importUnits(string $json): void
+    {
+        $success = $this->quantityValueModelService->importDefinitionFromJson($json);
+
+        if (!$success) {
+            throw new EnvironmentException('Failed to import quantity value unit definitions.');
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exportUnits(): Response
+    {
+        $json = $this->quantityValueModelService->generateDefinitionJson();
+
+        if ($json === false) {
+            throw new EnvironmentException('Failed to export quantity value unit definitions.');
+        }
+
+        return $this->downloadService->downloadJSON($json, 'quantityvalue_unit_export.json');
     }
 
     /**
      * @throws NotFoundException
      */
-    private function getUnit(string $unitId): Unit
+    private function getUnit(string $id): Unit
     {
-        $unit = $this->unitResolver->getById($unitId);
+        $unit = $this->quantityValueRepository->getUnitById($id);
 
         if ($unit === null) {
-            throw new NotFoundException('Unit', $unitId);
+            throw new NotFoundException('Unit', $id);
         }
 
         return $unit;
     }
 
-    /**
-     * @throws DatabaseException
-     */
-    private function getConvertedValue(Unit $fromUnit, Unit $toUnit, float|int $value): float|int
+    private function getHydratedUnit(Unit $unit): QuantityValueUnit
     {
-        try {
-            $convertedValue = $this->unitConversionService->convert(
-                new QuantityValue($value, $fromUnit),
-                $toUnit
-            );
-        } catch (Exception $exception) {
-            throw new DatabaseException(
-                sprintf('Could not convert unit "%s" to "%s": %s', $fromUnit, $toUnit, $exception->getMessage())
-            );
-        }
+        $hydrated = $this->hydrator->hydrateUnit($unit);
 
-        return $convertedValue->getValue();
+        $this->eventDispatcher->dispatch(
+            new QuantityValueUnitEvent($hydrated),
+            QuantityValueUnitEvent::EVENT_NAME
+        );
+
+        return $hydrated;
+    }
+
+    private function applyUnitParameters(Unit $unit, UnitParametersInterface $parameters): void
+    {
+        $unit->setAbbreviation($parameters->getAbbreviation());
+        $unit->setLongname($parameters->getLongname());
+        $unit->setGroup($parameters->getGroup());
+        $unit->setReference($parameters->getReference());
+        $unit->setFactor($parameters->getFactor());
+        $unit->setConversionOffset($parameters->getConversionOffset());
+        $unit->setConverter($parameters->getConverter());
+
+        $baseunit = $parameters->getBaseunit();
+        if ($baseunit === '-1') {
+            $baseunit = null;
+        }
+        $unit->setBaseunit($baseunit);
     }
 }

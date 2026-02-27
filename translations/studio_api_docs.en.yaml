@@ -1411,6 +1411,34 @@ unit_quantity_value_convert_all_description: |
   Units have to have <strong>{fromUnitId}</strong> defined as base unit to be considered for conversion.
 unit_quantity_value_convert_all_summary: Convert quantity value from one unit to all other related units
 unit_quantity_value_convert_all_success_response: Converted quantity value
+unit_quantity_value_units_collection_description: |
+  Get a paginated and filterable collection of quantity value units.
+unit_quantity_value_units_collection_summary: Get quantity value unit collection
+unit_quantity_value_units_collection_success_response: Paginated collection of quantity value units
+unit_quantity_value_units_create_description: |
+  Create a new quantity value unit. The unit ID must be unique and not exceed 50 characters.
+unit_quantity_value_units_create_summary: Create a new quantity value unit
+unit_quantity_value_units_create_success_response: Created quantity value unit
+unit_quantity_value_units_update_description: |
+  Update an existing quantity value unit by its ID. <br>
+  The unit with the given ID must already exist. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+unit_quantity_value_units_update_summary: Update a quantity value unit
+unit_quantity_value_units_update_param_id: ID of the unit to update
+unit_quantity_value_units_update_success_response: Updated quantity value unit
+unit_quantity_value_units_delete_description: |
+  Delete a quantity value unit by its ID.
+unit_quantity_value_units_delete_summary: Delete a quantity value unit
+unit_quantity_value_units_delete_param_id: ID of the unit to delete
+unit_quantity_value_units_delete_success_response: Successfully deleted quantity value unit
+unit_quantity_value_units_import_description: |
+  Import quantity value unit definitions from a JSON file. Existing units with the same ID will be skipped.
+unit_quantity_value_units_import_summary: Import quantity value units from JSON
+unit_quantity_value_units_import_success_response: Successfully imported quantity value units
+unit_quantity_value_units_export_description: |
+  Export all quantity value unit definitions as JSON.
+unit_quantity_value_units_export_summary: Export quantity value units as JSON
+unit_quantity_value_units_export_success_response: JSON export of quantity value units
 data_object_get_select_options_description: |
   Get all dynamic select options for data objects for given field
 data_object_get_select_options_summary: Get all dynamic select options for data objects

@@ -15,8 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Unit\Controller\QuantityValue;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -24,10 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Parameter\Query\ValueParameter;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Response\ConvertedValueJson;
 use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertUnitParameter;
-use Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Service\ConversionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -39,19 +36,13 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ConvertController extends AbstractApiController
 {
-    use ElementProviderTrait;
-
     public function __construct(
         SerializerInterface $serializer,
-        private readonly QuantityValueServiceInterface $quantityValueService
-
+        private readonly ConversionServiceInterface $conversionService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws DatabaseException|NotFoundException
-     */
     #[Route(
         '/unit/quantity-value/convert',
         name: 'pimcore_studio_api_unit_quantity_value_convert',
@@ -87,6 +78,6 @@ final class ConvertController extends AbstractApiController
     ])]
     public function convert(#[MapQueryString] ConvertUnitParameter $parameters): JsonResponse
     {
-        return $this->jsonResponse(['data' => $this->quantityValueService->convertUnit($parameters)]);
+        return $this->jsonResponse(['data' => $this->conversionService->convertUnit($parameters)]);
     }
 }
