@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionTree;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionTreeFolder;
@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionTre
 /**
  * @internal
  */
-interface SelectOptionServiceInterface
+interface TreeServiceInterface
 {
     /**
      * @return SelectOptionTree[]|SelectOptionTreeFolder[]

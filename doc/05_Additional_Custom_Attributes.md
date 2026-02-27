@@ -160,7 +160,9 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
 - `pre_response.schedule`
+- `pre_response.select_option.detail`
 - `pre_response.select_option.tree`
+- `pre_response.select_option.usage_item`
 - `pre_response.settings.active_bundle`
 - `pre_response.settings.available_country`
 - `pre_response.simple_search.preview`

@@ -11,27 +11,28 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\SelectOption\TreeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\TreeFolderHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\TreeItemHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\SelectOptionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionTree;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionTreeFolder;
 use Pimcore\Model\DataObject\SelectOptions\Config;
-use Pimcore\Model\DataObject\SelectOptions\Config\Listing;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
 /**
  * @internal
  */
-final readonly class SelectOptionService implements SelectOptionServiceInterface
+final readonly class TreeService implements TreeServiceInterface
 {
     public function __construct(
+        private SelectOptionRepositoryInterface $selectOptionRepository,
         private EventDispatcherInterface $eventDispatcher,
         private TreeItemHydratorInterface $nodeHydrator,
-        private TreeFolderHydratorInterface $folderNodeHydrator
+        private TreeFolderHydratorInterface $folderNodeHydrator,
     ) {
     }
 
@@ -40,7 +41,7 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
      */
     public function getTree(bool $grouped = false): array
     {
-        $selectOptionConfigs = new Listing();
+        $selectOptionConfigs = $this->selectOptionRepository->listSelectOptions();
 
         if ($grouped === false) {
             return $this->getUngroupedTree($selectOptionConfigs);
@@ -56,11 +57,13 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
         return $this->getGroupedNodes($groups);
     }
 
-    private function getUngroupedTree(Listing $configs): array
+    /**
+     * @param Config[] $configs
+     */
+    private function getUngroupedTree(array $configs): array
     {
         $hydrated = [];
 
-        /** @var Config $config */
         foreach ($configs as $config) {
             $hydrated[] = $this->hydrateConfig($config);
         }
@@ -68,11 +71,13 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
         return $hydrated;
     }
 
-    private function getGroups(Listing $configs): array
+    /**
+     * @param Config[] $configs
+     */
+    private function getGroups(array $configs): array
     {
         $groups = [];
 
-        /** @var Config $config */
         foreach ($configs as $config) {
             [$groupName, $type] = $this->resolveGroupInfo($config);
 
@@ -103,8 +108,11 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
 
     private function sortGroups(array $groups): array
     {
-        $types = array_column($groups, 'type');
-        array_multisort($types, SORT_DESC, array_keys($groups), SORT_ASC, $groups);
+        uksort($groups, static function (string $a, string $b) use ($groups): int {
+            $typeComparison = $groups[$b]['type'] <=> $groups[$a]['type'];
+
+            return $typeComparison !== 0 ? $typeComparison : $a <=> $b;
+        });
 
         return $groups;
     }
