@@ -18,6 +18,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueService
 
+  Pimcore\Bundle\StudioBackendBundle\Unit\Service\ConversionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Unit\Service\ConversionService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Unit\Hydrator\QuantityValueHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Unit\Hydrator\QuantityValueHydrator
+
   #
   # Repositories
   #

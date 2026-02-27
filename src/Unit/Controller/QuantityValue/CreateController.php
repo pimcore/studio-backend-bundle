@@ -13,17 +13,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Unit\Controller\QuantityValue;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Response\QuantityValueUnitsJson;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\CreateUnitParameters;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\QuantityValueUnit;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -31,9 +34,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UnitListController extends AbstractApiController
+final class CreateController extends AbstractApiController
 {
-    use ElementProviderTrait;
+    private const string ROUTE = '/unit/quantity-value/units';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -42,28 +45,26 @@ final class UnitListController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route(
-        '/unit/quantity-value/unit-list',
-        name: 'pimcore_studio_api_unit_quantity_value_list',
-        methods: ['GET']
-    )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
-    #[Get(
-        path: self::PREFIX . '/unit/quantity-value/unit-list',
-        operationId: 'unit_quantity_value_list',
-        description: 'unit_quantity_value_list_description',
-        summary: 'unit_quantity_value_list_summary',
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_unit_quantity_value_units_create', methods: ['POST'])]
+    #[IsGranted(UserPermissions::QUANTITY_VALUE_UNITS->value)]
+    #[Post(
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'unit_quantity_value_units_create',
+        description: 'unit_quantity_value_units_create_description',
+        summary: 'unit_quantity_value_units_create_summary',
         tags: [Tags::Units->value]
     )]
+    #[ReferenceRequestBody(CreateUnitParameters::class)]
     #[SuccessResponse(
-        description: 'unit_quantity_value_list_success_response',
-        content: new QuantityValueUnitsJson()
+        description: 'unit_quantity_value_units_create_success_response',
+        content: new JsonContent(ref: QuantityValueUnit::class, type: 'object')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function listUnits(): JsonResponse
+    public function createUnit(#[MapRequestPayload] CreateUnitParameters $parameters): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->quantityValueService->listUnits()]);
+        return $this->jsonResponse($this->quantityValueService->createUnit($parameters));
     }
 }
