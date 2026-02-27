@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\DataObject\SelectOptions\Config;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_array;
 use function sprintf;
 
 /**
