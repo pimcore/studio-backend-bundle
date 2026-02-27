@@ -33,7 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'implementsInterfaces',
         'selectOptions',
         'enumName',
-        'isWriteable'
+        'isWriteable',
     ],
     type: 'object'
 )]

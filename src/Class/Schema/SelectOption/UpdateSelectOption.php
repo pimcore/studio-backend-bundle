@@ -28,7 +28,7 @@ use OpenApi\Attributes\Schema;
         'adminOnly',
         'useTraits',
         'implementsInterfaces',
-        'selectOptions'
+        'selectOptions',
     ],
     type: 'object'
 )]
