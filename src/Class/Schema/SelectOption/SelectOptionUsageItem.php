@@ -32,7 +32,7 @@ final class SelectOptionUsageItem implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Name of the class or definition using the select options', type: 'string', example: 'Class Product')]
+        #[Property(description: 'Name of the class using the select options', type: 'string', example: 'Car')]
         private readonly string $class,
         #[Property(description: 'Name of the field using the select options', type: 'string', example: 'status')]
         private readonly string $field,

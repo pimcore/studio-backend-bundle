@@ -25,7 +25,16 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'SelectOptionDetail',
     title: 'Select Option Detail',
-    required: ['id', 'group', 'adminOnly', 'useTraits', 'implementsInterfaces', 'selectOptions', 'enumName', 'isWriteable'],
+    required: [
+        'id',
+        'group',
+        'adminOnly',
+        'useTraits',
+        'implementsInterfaces',
+        'selectOptions',
+        'enumName',
+        'isWriteable'
+    ],
     type: 'object'
 )]
 final class SelectOptionDetail implements AdditionalAttributesInterface
@@ -37,7 +46,7 @@ final class SelectOptionDetail implements AdditionalAttributesInterface
         private readonly string $id,
         #[Property(description: 'Group name', type: 'string', example: 'system', nullable: true)]
         private readonly ?string $group,
-        #[Property(description: 'Whether this configuration is restricted to admin users', type: 'boolean', example: false)]
+        #[Property(description: 'Whether this configuration is restricted to admin', type: 'boolean', example: false)]
         private readonly bool $adminOnly,
         #[Property(description: 'PHP traits to use', type: 'string', example: '')]
         private readonly string $useTraits,
@@ -50,7 +59,11 @@ final class SelectOptionDetail implements AdditionalAttributesInterface
         )]
         /** @var SelectOptionData[] */
         private readonly array $selectOptions,
-        #[Property(description: 'Fully qualified enum name', type: 'string', example: 'Pimcore\\Model\\DataObject\\SelectOptions\\EventStatus')]
+        #[Property(
+            description: 'Fully qualified enum name',
+            type: 'string',
+            example: 'Pimcore\\Model\\DataObject\\SelectOptions\\EventStatus'
+        )]
         private readonly string $enumName,
         #[Property(description: 'Whether the configuration is writeable', type: 'boolean', example: true)]
         private readonly bool $isWriteable,

@@ -23,6 +23,13 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'UpdateSelectOption',
     title: 'Schema used to update select option configurations',
+    required: [
+        'group',
+        'adminOnly',
+        'useTraits',
+        'implementsInterfaces',
+        'selectOptions'
+    ],
     type: 'object'
 )]
 final readonly class UpdateSelectOption
@@ -30,7 +37,7 @@ final readonly class UpdateSelectOption
     public function __construct(
         #[Property(description: 'Group name', type: 'string', example: 'system', nullable: true)]
         private ?string $group = null,
-        #[Property(description: 'Whether this configuration is restricted to admin users', type: 'boolean', example: false)]
+        #[Property(description: 'Whether this configuration is restricted to admin', type: 'boolean', example: false)]
         private bool $adminOnly = false,
         #[Property(description: 'PHP traits to use', type: 'string', example: '')]
         private string $useTraits = '',
@@ -44,5 +51,30 @@ final readonly class UpdateSelectOption
         )]
         private ?array $selectOptions = null,
     ) {
+    }
+
+    public function getGroup(): ?string
+    {
+        return $this->group;
+    }
+
+    public function isAdminOnly(): bool
+    {
+        return $this->adminOnly;
+    }
+
+    public function getUseTraits(): string
+    {
+        return $this->useTraits;
+    }
+
+    public function getImplementsInterfaces(): string
+    {
+        return $this->implementsInterfaces;
+    }
+
+    public function getSelectOptions(): ?array
+    {
+        return $this->selectOptions;
     }
 }
