@@ -17,7 +17,6 @@ use Exception;
 use InvalidArgumentException;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
@@ -37,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetC
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
@@ -62,6 +62,7 @@ use function sprintf;
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
     private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+
     private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
 
     /**

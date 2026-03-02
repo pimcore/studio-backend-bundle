@@ -25,6 +25,7 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use function in_array;
 
 /**
  * Authenticates MCP requests via Personal Access Tokens (config-based).
@@ -38,7 +39,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 class PatAuthenticator extends AbstractAuthenticator
 {
     private const string AUTH_HEADER = 'Authorization';
+
     private const string BEARER_PREFIX = 'Bearer ';
+
     private const int BEARER_PREFIX_LENGTH = 7;
 
     /**
