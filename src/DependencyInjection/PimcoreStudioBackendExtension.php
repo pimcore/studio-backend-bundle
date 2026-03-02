@@ -17,6 +17,7 @@ use Exception;
 use InvalidArgumentException;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
@@ -61,6 +62,7 @@ use function sprintf;
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
     private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+    private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
 
     /**
      * {@inheritdoc}
@@ -193,6 +195,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         ]);
 
         $this->populateTwigSandboxExtension($config, $container);
+
+        // MCP authentication token map
+        $mcpTokenMap = $config['mcp']['authentication']['tokens'] ?? [];
+        $container->setParameter('pimcore_studio_backend.mcp.token_map', $mcpTokenMap);
+
+        $definition = $container->getDefinition(PatAuthenticator::class);
+        $definition->setArgument('$tokenMap', $mcpTokenMap);
     }
 
     /**
@@ -230,6 +239,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         }
 
         $container->setParameter('pimcore_studio_backend.url_prefix', $urlPrefix);
+
+        // Default MCP token map (overwritten in load() with actual config)
+        if (!$container->hasParameter('pimcore_studio_backend.mcp.token_map')) {
+            $container->setParameter('pimcore_studio_backend.mcp.token_map', []);
+        }
+
+        // MCP firewall settings (separate firewall for /pimcore-mcp/ routes)
+        if (!$container->hasParameter('pimcore_studio_backend.mcp_firewall_settings')) {
+            $container->setParameter('pimcore_studio_backend.mcp_firewall_settings', [
+                'pattern' => self::MCP_FIREWALL_PATTERN,
+                'user_checker' => 'Pimcore\Security\User\UserChecker',
+                'provider' => 'pimcore_studio_backend',
+                'stateless' => true,
+                'custom_authenticators' => [
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator',
+                ],
+            ]);
+        }
 
         foreach ($containerConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
