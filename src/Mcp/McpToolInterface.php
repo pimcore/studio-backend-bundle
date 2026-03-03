@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
  * This source file is available under the terms of the
  * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
