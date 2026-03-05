@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataProviderEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Event\PreResponse\GdprDataRowEvent;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
@@ -54,13 +55,15 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
         return $this->getDataProviderCollection($providers);
     }
 
-    public function search(CollectionFilterParameter $parameters, string $providerType): Collection
+    public function search(CollectionFilterParameter $parameters, string $provider): Collection
     {
-        $providerClass = $this->loader->resolve($providerType);
+        $providerClass = $this->loader->resolve($provider);
 
         $this->checkProviderPermission($providerClass);
 
-        $results = $providerClass->findData($parameters->getFilters());
+        $results = $providerClass->findData(
+            $parameters->getFilters() ?? new FilterParameter()
+        );
 
         foreach ($results->getItems() as $item) {
             $this->eventDispatcher->dispatch(
