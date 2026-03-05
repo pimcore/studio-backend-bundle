@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionTreeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
@@ -82,7 +81,7 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
             $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);
             $this->eventDispatcher->dispatch(
                 new ClassDefinitionFolderListEvent($class),
-                ClassDefinitionEvent::EVENT_NAME
+                ClassDefinitionFolderListEvent::EVENT_NAME
             );
             $hydratedClassDefinitions[] = $class;
         }

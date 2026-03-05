@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\SelectOptions;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Response\Property\AnyOfSelectOptionNodes;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\TreeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\SelectOptions\TreeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -44,12 +44,12 @@ final class TreeController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SelectOptionServiceInterface $optionService,
+        private readonly TreeServiceInterface $optionService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_select_option_tree', methods: ['GET'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_class_select_option_tree', methods: ['GET'], priority: 10)]
     #[IsGranted(UserPermissions::SELECT_OPTIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
