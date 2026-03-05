@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'Classification Store Configuration Key Detail',
     required: [
         'id', 'name', 'storeId', 'type', 'enabled', 'description',
-        'definition', 'creationDate', 'modificationDate'
+        'definition', 'creationDate', 'modificationDate',
     ],
     type: 'object'
 )]

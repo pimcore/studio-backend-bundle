@@ -66,7 +66,7 @@ final readonly class KeyUpdate
                 'defaultUnit' => null,
                 'defaultValueGenerator' => '',
                 'validUnits' => [
-                    'kg'
+                    'kg',
                 ],
                 'autoConvert' => false,
                 'decimalSize' => null,

@@ -15,10 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait;
 
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
  * Requires the using class to have a property: GroupRepositoryInterface $groupConfigurationRepository

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Config
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionRelationDetail;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
+use function sprintf;
 
 /**
  * @internal

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
-use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
@@ -134,6 +134,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         if ($type !== null) {
             $config->setType($type);
         }
+
         try {
             if ($definition !== null) {
                 $config->setDefinition(json_encode($definition, JSON_THROW_ON_ERROR));
