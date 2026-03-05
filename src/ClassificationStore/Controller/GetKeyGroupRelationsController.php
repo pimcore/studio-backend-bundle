@@ -78,8 +78,8 @@ final class GetKeyGroupRelationsController extends AbstractApiController
         namePrefix: 'store',
     )]
     #[TextFieldParameter(
-        description: 'Class ID',
         name: 'classId',
+        description: 'Class ID',
         required: false,
         example: 'AP'
     )]

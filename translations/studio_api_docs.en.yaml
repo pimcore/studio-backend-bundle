@@ -1646,6 +1646,90 @@ classification_store_get_layout_by_key_response: Layout definition
 classification_store_get_layout_by_collection_description: Get Layout definition for given collection
 classification_store_get_layout_by_collection_summary: Get Layout definition for given collection
 classification_store_get_layout_by_collection_response: Layout definition
+classification_store_configuration_store_create_description: Create a new classification store configuration
+classification_store_configuration_store_create_summary: Create a new store
+classification_store_configuration_store_create_success_response: Created store configuration
+classification_store_configuration_store_update_description: Update an existing classification store configuration by ID
+classification_store_configuration_store_update_summary: Update a store
+classification_store_configuration_store_update_success_response: Updated store configuration
+classification_store_configuration_store_tree_description: Get all classification store configurations as a flat tree list
+classification_store_configuration_store_tree_summary: Get store tree
+classification_store_configuration_store_tree_success_response: List of store tree nodes
+classification_store_configuration_group_collection_description: |
+    Get a paginated list of classification store group configurations.
+    You can specify filters, sorting and pagination in the request body.
+classification_store_configuration_group_collection_summary: List group configurations
+classification_store_configuration_group_collection_success_response: Paginated list of group configurations
+classification_store_configuration_group_create_description: Create a new classification store group configuration within a store
+classification_store_configuration_group_create_summary: Create a new group
+classification_store_configuration_group_create_success_response: Created group configuration
+classification_store_configuration_group_update_description: Update an existing classification store group configuration by ID
+classification_store_configuration_group_update_summary: Update a group
+classification_store_configuration_group_update_success_response: Updated group configuration
+classification_store_configuration_group_delete_description: Delete a classification store group configuration by ID
+classification_store_configuration_group_delete_summary: Delete a group
+classification_store_configuration_group_delete_success_response: Successfully deleted group configuration
+classification_store_configuration_key_collection_description: |
+  Get a paginated list of classification store key configurations.
+  Supports filtering, sorting, and pagination via the collection request body.
+classification_store_configuration_key_collection_summary: List key configurations
+classification_store_configuration_key_collection_success_response: Paginated list of key configurations
+classification_store_configuration_key_create_description: Create a new classification store key configuration within a store
+classification_store_configuration_key_create_summary: Create a new key
+classification_store_configuration_key_create_success_response: Created key configuration
+classification_store_configuration_key_update_description: Update an existing classification store key configuration by ID
+classification_store_configuration_key_update_summary: Update a key
+classification_store_configuration_key_update_success_response: Updated key configuration
+classification_store_configuration_key_delete_description: |
+  Soft-delete a classification store key configuration by ID.
+  The key is not permanently removed but disabled (enabled is set to false).
+classification_store_configuration_key_delete_summary: Disable a key (soft-delete)
+classification_store_configuration_key_delete_success_response: Successfully disabled key configuration
+classification_store_configuration_collection_collection_description: |
+  Get a paginated list of classification store collection configurations.
+  Supports filtering, sorting, and pagination via the collection filter parameter.
+classification_store_configuration_collection_collection_summary: List collection configurations
+classification_store_configuration_collection_collection_success_response: Paginated list of collection configurations
+classification_store_configuration_collection_create_description: Create a new classification store collection configuration with a name and store ID
+classification_store_configuration_collection_create_summary: Create a collection
+classification_store_configuration_collection_create_success_response: Created collection configuration
+classification_store_configuration_collection_update_description: Update an existing classification store collection configuration by ID
+classification_store_configuration_collection_update_summary: Update a collection
+classification_store_configuration_collection_update_success_response: Updated collection configuration
+classification_store_configuration_collection_delete_description: |
+  Delete a classification store collection configuration by ID.
+  This also removes all associated collection-group relations.
+classification_store_configuration_collection_delete_summary: Delete a collection
+classification_store_configuration_collection_delete_success_response: Successfully deleted collection configuration
+classification_store_configuration_collection_relation_collection_description: |
+  List collection-group relations for a given collection ID.
+  Supports filtering, sorting, and pagination via the collection filter parameter.
+  The colId query parameter is required.
+classification_store_configuration_collection_relation_collection_summary: List collection-group relations
+classification_store_configuration_collection_relation_collection_success_response: Paginated list of collection-group relations
+classification_store_configuration_collection_relation_create_description: Create or update a collection-group relation with collection ID, group ID, and optional sorter
+classification_store_configuration_collection_relation_create_summary: Create or update a collection-group relation
+classification_store_configuration_collection_relation_create_success_response: Created or updated collection-group relation
+classification_store_configuration_collection_relation_delete_description: Delete a collection-group relation by collection ID and group ID
+classification_store_configuration_collection_relation_delete_summary: Delete a collection-group relation
+classification_store_configuration_collection_relation_delete_success_response: Successfully deleted collection-group relation
+classification_store_configuration_key_group_relation_collection_description: |
+  List key-group relations for a given group ID.
+  Supports filtering, sorting, and pagination via the collection filter parameter.
+  The groupId query parameter is required. Returns key details with layout definition.
+classification_store_configuration_key_group_relation_collection_summary: List key-group relations
+classification_store_configuration_key_group_relation_collection_success_response: Paginated list of key-group relations
+classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag
+classification_store_configuration_key_group_relation_create_summary: Create or update a key-group relation
+classification_store_configuration_key_group_relation_create_success_response: Created or updated key-group relation
+classification_store_configuration_key_group_relation_delete_description: Delete a key-group relation by key ID and group ID
+classification_store_configuration_key_group_relation_delete_summary: Delete a key-group relation
+classification_store_configuration_key_group_relation_delete_success_response: Successfully deleted key-group relation
+classification_store_configuration_get_page_description: |
+  Calculate the page number where a specific item (key or group) is located within a paginated listing.
+  Useful for navigating directly to the page containing a specific item.
+classification_store_configuration_get_page_summary: Get page number for a specific item
+classification_store_configuration_get_page_success_response: Page number where the item is located
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_summary: Get a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_success_response: Preview of an Advanced Column Grid for a given Data Object.

@@ -91,6 +91,14 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.class_field_by_type`
 - `pre_response.classification_store.collection`
 - `pre_response.classification_store.config_collection`
+- `pre_response.classification_store.configuration.collection`
+- `pre_response.classification_store.configuration.collection_relation`
+- `pre_response.classification_store.configuration.get_page`
+- `pre_response.classification_store.configuration.group`
+- `pre_response.classification_store.configuration.key`
+- `pre_response.classification_store.configuration.key_group_relation`
+- `pre_response.classification_store.configuration.store`
+- `pre_response.classification_store.configuration.store_tree_node`
 - `pre_response.classification_store.group`
 - `pre_response.classification_store.group_layout`
 - `pre_response.classification_store.key_group_relation`
