@@ -105,7 +105,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $relation,
             $keyName,
             $keyDescription,
-            $this->resolveGroupName($relation->getGroupId()),
+            $this->resolveGroupName($relation->getGroupId(), $this->groupConfigurationRepository),
         );
         $this->eventDispatcher->dispatch(
             new KeyGroupRelationDetailEvent($detail),

@@ -19,21 +19,17 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
 /**
- * Requires the using class to have a property: GroupRepositoryInterface $groupConfigurationRepository
- *
  * @internal
- *
- * @property GroupRepositoryInterface $groupConfigurationRepository
  */
 trait GroupInfoResolverTrait
 {
     /**
      * @return array{0: ?string, 1: ?string} [groupName, groupDescription]
      */
-    private function resolveGroupInfo(int $groupId): array
+    private function resolveGroupInfo(int $groupId, GroupRepositoryInterface $repository): array
     {
         try {
-            $groupConfig = $this->groupConfigurationRepository->getById($groupId);
+            $groupConfig = $repository->getById($groupId);
 
             return [$groupConfig->getName(), $groupConfig->getDescription()];
         } catch (NotFoundException) {
@@ -41,10 +37,10 @@ trait GroupInfoResolverTrait
         }
     }
 
-    private function resolveGroupName(int $groupId): ?string
+    private function resolveGroupName(int $groupId, GroupRepositoryInterface $repository): ?string
     {
         try {
-            return $this->groupConfigurationRepository->getById($groupId)->getName();
+            return $repository->getById($groupId)->getName();
         } catch (NotFoundException) {
             return null;
         }

@@ -57,7 +57,10 @@ final readonly class CollectionRelationService implements CollectionRelationServ
         $items = [];
 
         foreach ($relations as $relation) {
-            [$groupName, $groupDescription] = $this->resolveGroupInfo($relation->getGroupId());
+            [$groupName, $groupDescription] = $this->resolveGroupInfo(
+                $relation->getGroupId(),
+                $this->groupConfigurationRepository
+            );
             $items[] = $this->getHydratedCollectionRelationDetail($relation, $groupName, $groupDescription);
         }
 
@@ -79,7 +82,10 @@ final readonly class CollectionRelationService implements CollectionRelationServ
             $parameters->getSorter()
         );
 
-        [$groupName, $groupDescription] = $this->resolveGroupInfo($relation->getGroupId());
+        [$groupName, $groupDescription] = $this->resolveGroupInfo(
+            $relation->getGroupId(),
+            $this->groupConfigurationRepository
+        );
 
         return $this->getHydratedCollectionRelationDetail($relation, $groupName, $groupDescription);
     }
