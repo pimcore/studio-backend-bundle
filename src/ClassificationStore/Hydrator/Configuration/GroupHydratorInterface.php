@@ -11,17 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration;
 
-use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupDetail;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 
 /**
  * @internal
  */
-interface StoreRepositoryInterface
+interface GroupHydratorInterface
 {
-    /**
-     * @return StoreConfig[]
-     */
-    public function listStores(): array;
+    public function hydrateGroupDetail(GroupConfig $groupConfig): GroupDetail;
 }
