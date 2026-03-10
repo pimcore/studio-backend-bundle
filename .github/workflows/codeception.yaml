@@ -30,7 +30,7 @@ jobs:
           with:
             repository: pimcore/workflows-collection-public
             ref: main
-            path: reusable-workflows
+            path: main
 
         - name: Parse PHP versions from composer.json
           id: parse-php-versions
