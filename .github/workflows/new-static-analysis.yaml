@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pimcore/workflows-collection-public
-          ref: reusable-workflows
+          ref: main
           path: reusable-workflows
 
       - name: Parse PHP versions from composer.json
