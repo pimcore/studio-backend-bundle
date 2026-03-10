@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Util;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+
 /**
  * @internal
  */
@@ -46,6 +48,16 @@ enum ClassDefinitionType: string
             self::ClassDefinition => 'class',
             self::CustomLayout => 'custom_views',
             self::ObjectBrick => 'objectbricks',
+        };
+    }
+
+    public function permission(): string
+    {
+        return match ($this) {
+            self::FieldCollection => UserPermissions::FIELD_COLLECTIONS->value,
+            self::ClassDefinition,
+            self::CustomLayout => UserPermissions::CLASS_DEFINITION->value,
+            self::ObjectBrick => UserPermissions::OBJECT_BRICKS->value,
         };
     }
 }

@@ -33,14 +33,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use function is_array;
 use function json_encode;
 use function sprintf;
 
@@ -49,13 +47,6 @@ use function sprintf;
  */
 final readonly class BulkImportService implements BulkImportServiceInterface
 {
-    private const array PERMISSION_MAP = [
-        ClassDefinitionType::FieldCollection->value => UserPermissions::FIELD_COLLECTIONS->value,
-        ClassDefinitionType::ClassDefinition->value => UserPermissions::CLASS_DEFINITION->value,
-        ClassDefinitionType::CustomLayout->value => UserPermissions::CLASS_DEFINITION->value,
-        ClassDefinitionType::ObjectBrick->value => UserPermissions::OBJECT_BRICKS->value,
-    ];
-
     public function __construct(
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -92,7 +83,7 @@ final readonly class BulkImportService implements BulkImportServiceInterface
         array $exportEntry,
         UserInterface $user,
     ): void {
-        if (!$user->isAllowed(self::PERMISSION_MAP[$type->value])) {
+        if (!$user->isAllowed($type->permission())) {
             throw new EnvironmentException(
                 sprintf('Access denied for importing %s "%s"', $type->value, $name)
             );
@@ -130,39 +121,57 @@ final readonly class BulkImportService implements BulkImportServiceInterface
                 continue;
             }
 
-            foreach ($dataForType as $exportEntry) {
-                if (!is_array($exportEntry)) {
-                    continue;
-                }
-
-                $name = $this->bulkImportDataResolver->resolveEntryName($type, $exportEntry);
-                if ($name === null) {
-                    continue;
-                }
-
-                $displayName = $name;
-                if ($type === ClassDefinitionType::CustomLayout) {
-                    $className = $exportEntry['className'] ?? '';
-                    if ($className !== '') {
-                        $displayName = $className . ' / ' . $name;
-                    }
-                }
-
-                $item = $this->bulkExportHydrator->hydrateAvailableItem(
-                    $type->value,
-                    $name,
-                    $displayName,
-                    $type->icon()
-                );
-                $this->eventDispatcher->dispatch(
-                    new BulkExportAvailableItemEvent($item),
-                    BulkExportAvailableItemEvent::EVENT_NAME
-                );
-                $items[] = $item;
-            }
+            array_push($items, ...$this->collectItemsForType($type, $dataForType));
         }
 
         return $items;
+    }
+
+    /**
+     * @return BulkExportAvailableItem[]
+     */
+    private function collectItemsForType(ClassDefinitionType $type, array $dataForType): array
+    {
+        $items = [];
+
+        foreach ($dataForType as $exportEntry) {
+            if (!is_array($exportEntry)) {
+                continue;
+            }
+
+            $name = $this->bulkImportDataResolver->resolveEntryName($type, $exportEntry);
+            if ($name === null) {
+                continue;
+            }
+
+            $item = $this->bulkExportHydrator->hydrateAvailableItem(
+                $type->value,
+                $name,
+                $this->resolveDisplayName($type, $name, $exportEntry),
+                $type->icon()
+            );
+            $this->eventDispatcher->dispatch(
+                new BulkExportAvailableItemEvent($item),
+                BulkExportAvailableItemEvent::EVENT_NAME
+            );
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    private function resolveDisplayName(
+        ClassDefinitionType $type,
+        string $name,
+        array $exportEntry,
+    ): string {
+        if ($type !== ClassDefinitionType::CustomLayout) {
+            return $name;
+        }
+
+        $className = $exportEntry['className'] ?? '';
+
+        return $className !== '' ? $className . ' / ' . $name : $name;
     }
 
     private function prepareImportJson(array $exportEntry): string
@@ -236,7 +245,6 @@ final readonly class BulkImportService implements BulkImportServiceInterface
                 'userOwner' => $user->getId(),
                 'classId' => $classId,
             ]);
-
             try {
                 $layout->save();
             } catch (Exception $e) {
@@ -250,7 +258,6 @@ final readonly class BulkImportService implements BulkImportServiceInterface
         }
 
         $json = $this->prepareImportJson($exportEntry);
-
         try {
             $this->customLayoutRepository->importCustomLayoutFromJson($layout, $json);
         } catch (JsonEncodingException $e) {

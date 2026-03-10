@@ -28,12 +28,15 @@ interface BulkExportServiceInterface
     /**
      * @return BulkExportAvailableItem[]
      *
-     * @throws EnvironmentException|UserNotFoundException
+     * @throws EnvironmentException
+     * @throws UserNotFoundException
      */
     public function getAvailableItems(): array;
 
     /**
-     * @throws EnvironmentException|NotFoundException|UserNotFoundException
+     * @throws EnvironmentException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
      */
     public function exportItems(BulkExportParameters $parameters): JsonExport;
 }

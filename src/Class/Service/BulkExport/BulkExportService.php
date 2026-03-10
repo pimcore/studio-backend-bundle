@@ -23,12 +23,12 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositor
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\BulkExport\BulkExportAvailableItem;
 use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function is_string;
@@ -56,94 +56,118 @@ final readonly class BulkExportService implements BulkExportServiceInterface
      */
     public function getAvailableItems(): array
     {
-        $items = [];
         $user = $this->securityService->getCurrentUser();
+        $items = [];
 
-        if ($user->isAllowed(UserPermissions::FIELD_COLLECTIONS->value)) {
-            foreach ($this->fieldCollectionRepository->listFieldCollections() as $definition) {
-                $item = $this->bulkExportHydrator->hydrateAvailableItem(
-                    ClassDefinitionType::FieldCollection->value,
-                    $definition->getKey(),
-                    $definition->getKey(),
-                    ClassDefinitionType::FieldCollection->icon()
-                );
-                $this->eventDispatcher->dispatch(
-                    new BulkExportAvailableItemEvent($item),
-                    BulkExportAvailableItemEvent::EVENT_NAME
-                );
-                $items[] = $item;
+        foreach (ClassDefinitionType::cases() as $type) {
+            if (!$user->isAllowed($type->permission())) {
+                continue;
             }
-        }
 
-        if ($user->isAllowed(UserPermissions::CLASS_DEFINITION->value)) {
-            foreach ($this->classDefinitionRepository->getClassDefinitionsSortedById() as $definition) {
-                $item = $this->bulkExportHydrator->hydrateAvailableItem(
-                    ClassDefinitionType::ClassDefinition->value,
-                    $definition->getName(),
-                    $definition->getName(),
-                    ClassDefinitionType::ClassDefinition->icon()
-                );
-                $this->eventDispatcher->dispatch(
-                    new BulkExportAvailableItemEvent($item),
-                    BulkExportAvailableItemEvent::EVENT_NAME
-                );
-                $items[] = $item;
-            }
-        }
-
-        if ($user->isAllowed(UserPermissions::CLASS_DEFINITION->value)) {
-            foreach ($this->customLayoutRepository->getAllCustomLayoutsIncludingBricks() as $layout) {
-                if (!$layout instanceof CustomLayout) {
-                    continue;
-                }
-
-                $className = '';
-                if ($layout->getClassId()) {
-                    try {
-                        $classDefinition = $this->classDefinitionRepository->getClassDefinitionById(
-                            $layout->getClassId()
-                        );
-                        $className = $classDefinition->getName();
-                    } catch (NotFoundException) {
-                        // class isn't found, leave className empty
-                    }
-                }
-
-                $displayName = $className !== ''
-                    ? $className . ' / ' . $layout->getName()
-                    : $layout->getName();
-
-                $item = $this->bulkExportHydrator->hydrateAvailableItem(
-                    ClassDefinitionType::CustomLayout->value,
-                    (string) $layout->getId(),
-                    $displayName,
-                    ClassDefinitionType::CustomLayout->icon()
-                );
-                $this->eventDispatcher->dispatch(
-                    new BulkExportAvailableItemEvent($item),
-                    BulkExportAvailableItemEvent::EVENT_NAME
-                );
-                $items[] = $item;
-            }
-        }
-
-        if ($user->isAllowed(UserPermissions::OBJECT_BRICKS->value)) {
-            foreach ($this->objectBrickRepository->listObjectBricks() as $definition) {
-                $item = $this->bulkExportHydrator->hydrateAvailableItem(
-                    ClassDefinitionType::ObjectBrick->value,
-                    $definition->getKey(),
-                    $definition->getKey(),
-                    ClassDefinitionType::ObjectBrick->icon()
-                );
-                $this->eventDispatcher->dispatch(
-                    new BulkExportAvailableItemEvent($item),
-                    BulkExportAvailableItemEvent::EVENT_NAME
-                );
-                $items[] = $item;
-            }
+            array_push($items, ...$this->collectItemsForType($type));
         }
 
         return $items;
+    }
+
+    /**
+     * @return BulkExportAvailableItem[]
+     */
+    private function collectItemsForType(ClassDefinitionType $type): array
+    {
+        $items = [];
+
+        foreach ($this->getDefinitionsForType($type) as [$name, $displayName]) {
+            $item = $this->bulkExportHydrator->hydrateAvailableItem(
+                $type->value,
+                $name,
+                $displayName,
+                $type->icon()
+            );
+            $this->eventDispatcher->dispatch(
+                new BulkExportAvailableItemEvent($item),
+                BulkExportAvailableItemEvent::EVENT_NAME
+            );
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string}>
+     */
+    private function getDefinitionsForType(ClassDefinitionType $type): iterable
+    {
+        return match ($type) {
+            ClassDefinitionType::FieldCollection => $this->getFieldCollectionDefinitions(),
+            ClassDefinitionType::ClassDefinition => $this->getClassDefinitions(),
+            ClassDefinitionType::CustomLayout => $this->getCustomLayoutDefinitions(),
+            ClassDefinitionType::ObjectBrick => $this->getObjectBrickDefinitions(),
+        };
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string}>
+     */
+    private function getFieldCollectionDefinitions(): iterable
+    {
+        foreach ($this->fieldCollectionRepository->listFieldCollections() as $definition) {
+            yield [$definition->getKey(), $definition->getKey()];
+        }
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string}>
+     */
+    private function getClassDefinitions(): iterable
+    {
+        foreach ($this->classDefinitionRepository->getClassDefinitionsSortedById() as $definition) {
+            yield [$definition->getName(), $definition->getName()];
+        }
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string}>
+     */
+    private function getCustomLayoutDefinitions(): iterable
+    {
+        foreach ($this->customLayoutRepository->getAllCustomLayoutsIncludingBricks() as $layout) {
+            if (!$layout instanceof CustomLayout) {
+                continue;
+            }
+
+            yield [(string) $layout->getId(), $this->resolveCustomLayoutDisplayName($layout)];
+        }
+    }
+
+    /**
+     * @return iterable<array{0: string, 1: string}>
+     */
+    private function getObjectBrickDefinitions(): iterable
+    {
+        foreach ($this->objectBrickRepository->listObjectBricks() as $definition) {
+            yield [$definition->getKey(), $definition->getKey()];
+        }
+    }
+
+    private function resolveCustomLayoutDisplayName(CustomLayout $layout): string
+    {
+        $className = '';
+        if ($layout->getClassId()) {
+            try {
+                $classDefinition = $this->classDefinitionRepository->getClassDefinitionById(
+                    $layout->getClassId()
+                );
+                $className = $classDefinition->getName();
+            } catch (NotFoundException) {
+                // class isn't found, leave className empty
+            }
+        }
+
+        return $className !== ''
+            ? $className . ' / ' . $layout->getName()
+            : $layout->getName();
     }
 
     /**
@@ -213,7 +237,7 @@ final readonly class BulkExportService implements BulkExportServiceInterface
         mixed $user,
         array &$exportData
     ): void {
-        if (!$user->isAllowed(UserPermissions::FIELD_COLLECTIONS->value)) {
+        if (!$user->isAllowed(ClassDefinitionType::FieldCollection->permission())) {
             return;
         }
 
@@ -229,7 +253,7 @@ final readonly class BulkExportService implements BulkExportServiceInterface
         mixed $user,
         array &$exportData
     ): void {
-        if (!$user->isAllowed(UserPermissions::CLASS_DEFINITION->value)) {
+        if (!$user->isAllowed(ClassDefinitionType::ClassDefinition->permission())) {
             return;
         }
 
@@ -245,7 +269,7 @@ final readonly class BulkExportService implements BulkExportServiceInterface
         mixed $user,
         array &$exportData
     ): void {
-        if (!$user->isAllowed(UserPermissions::CLASS_DEFINITION->value)) {
+        if (!$user->isAllowed(ClassDefinitionType::CustomLayout->permission())) {
             return;
         }
 
@@ -276,7 +300,7 @@ final readonly class BulkExportService implements BulkExportServiceInterface
         mixed $user,
         array &$exportData
     ): void {
-        if (!$user->isAllowed(UserPermissions::OBJECT_BRICKS->value)) {
+        if (!$user->isAllowed(ClassDefinitionType::ObjectBrick->permission())) {
             return;
         }
 
