@@ -56,6 +56,15 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         return $classesList->load();
     }
 
+    public function getClassDefinitionsSortedById(): array
+    {
+        $classesList = new Listing();
+        $classesList->setOrderKey('id');
+        $classesList->setOrder('asc');
+
+        return $classesList->load();
+    }
+
     public function getClassDefinitionsWithObjectBricks(): array
     {
         $result = [];
