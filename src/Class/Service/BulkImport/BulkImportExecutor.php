@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport;
 
+use const JSON_THROW_ON_ERROR;
 use Exception;
 use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\CustomLayout\CustomLayoutResolverInterface;
@@ -32,7 +33,6 @@ use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefini
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\UserInterface;
 use function json_encode;
-use const JSON_THROW_ON_ERROR;
 use function sprintf;
 
 /**
@@ -151,6 +151,7 @@ final readonly class BulkImportExecutor implements BulkImportExecutorInterface
                 'userOwner' => $user->getId(),
                 'classId' => $classId,
             ]);
+
             try {
                 $layout->save();
             } catch (Exception $e) {
@@ -167,6 +168,7 @@ final readonly class BulkImportExecutor implements BulkImportExecutorInterface
         }
 
         $json = $this->prepareImportJson($exportEntry);
+
         try {
             $this->customLayoutRepository->importCustomLayoutFromJson($layout, $json);
         } catch (JsonEncodingException $e) {

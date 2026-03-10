@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\BulkImport\BulkImportPrepare
 use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use function is_array;
 
 /**
  * @internal
