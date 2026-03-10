@@ -11,17 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption;
 
-use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\SelectOption\SelectOptionDetail;
+use Pimcore\Model\DataObject\SelectOptions\Config;
 
 /**
  * @internal
  */
-interface StoreRepositoryInterface
+interface DetailHydratorInterface
 {
-    /**
-     * @return StoreConfig[]
-     */
-    public function listStores(): array;
+    public function hydrate(Config $config, bool $isWriteable): SelectOptionDetail;
 }

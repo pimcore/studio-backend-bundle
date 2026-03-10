@@ -25,6 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'groupId',
         'keyName',
         'groupName',
+        'keyDescription',
+        'groupDescription',
     ],
     type: 'object'
 )]

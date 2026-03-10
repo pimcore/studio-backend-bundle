@@ -94,6 +94,14 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.class_field_by_type`
 - `pre_response.classification_store.collection`
 - `pre_response.classification_store.config_collection`
+- `pre_response.classification_store.configuration.collection`
+- `pre_response.classification_store.configuration.collection_relation`
+- `pre_response.classification_store.configuration.get_page`
+- `pre_response.classification_store.configuration.group`
+- `pre_response.classification_store.configuration.key`
+- `pre_response.classification_store.configuration.key_group_relation`
+- `pre_response.classification_store.configuration.store`
+- `pre_response.classification_store.configuration.store_tree_node`
 - `pre_response.classification_store.group`
 - `pre_response.classification_store.group_layout`
 - `pre_response.classification_store.key_group_relation`
@@ -163,7 +171,9 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
 - `pre_response.schedule`
+- `pre_response.select_option.detail`
 - `pre_response.select_option.tree`
+- `pre_response.select_option.usage_item`
 - `pre_response.settings.active_bundle`
 - `pre_response.settings.available_country`
 - `pre_response.simple_search.preview`

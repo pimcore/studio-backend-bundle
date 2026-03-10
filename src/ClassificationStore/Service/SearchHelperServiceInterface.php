@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing as CollectionConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 
 /**
  * @internal
@@ -22,6 +24,13 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupCon
 interface SearchHelperServiceInterface
 {
     public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, string $searchTerm): void;
+
+    public function applyKeySearchFilter(KeyConfigListing $listing, string $searchTerm): void;
+
+    public function applyKeyGroupRelationSearchFilter(
+        KeyGroupRelationListing $listing,
+        string $searchTerm,
+    ): void;
 
     public function getTranslatedSearchFilterTerms(string $searchTerm): array;
 }

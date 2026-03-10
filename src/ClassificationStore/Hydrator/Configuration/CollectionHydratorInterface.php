@@ -11,20 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration;
 
-use Pimcore\Model\DataObject\Classificationstore\StoreConfig\Listing;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionDetail;
+use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 
 /**
  * @internal
  */
-final class StoreRepository implements StoreRepositoryInterface
+interface CollectionHydratorInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function listStores(): array
-    {
-        return (new Listing())->load();
-    }
+    public function hydrateCollectionDetail(CollectionConfig $collectionConfig): CollectionDetail;
 }
