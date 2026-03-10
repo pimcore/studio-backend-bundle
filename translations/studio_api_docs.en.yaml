@@ -293,6 +293,34 @@ class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
 class_all_layout_collection_summary: Get all available class layouts
+class_bulk_export_available_description: |
+    Get all available definitions (field collections, classes, custom layouts, object bricks) that can be exported, filtered by user permissions.
+class_bulk_export_available_success_response: List of available exportable items
+class_bulk_export_available_summary: Get available items for bulk export
+class_bulk_export_description: |
+    Export multiple definitions (field collections, classes, custom layouts, object bricks) as a single JSON file. <br>
+    Items are grouped by type in the exported file.
+class_bulk_export_success_response: Bulk export JSON file download
+class_bulk_export_summary: Bulk export class definitions
+class_bulk_import_description: |
+    Import selected definitions asynchronously from a previously prepared bulk import file identified by <strong>{fileId}</strong>. <br>
+    The <strong>{fileId}</strong> must be obtained from the prepare import endpoint. <br>
+    Items are imported in dependency order (field collections, classes, custom layouts, object bricks). <br>
+    Import is processed asynchronously via the execution engine. The response contains a <strong>{jobRunId}</strong> to track progress.
+class_bulk_import_created_response: Successfully created jobRun for bulk import
+class_bulk_import_summary: Bulk import class definitions asynchronously
+class_bulk_import_prepare_description: |
+    Upload a bulk export JSON file to analyze its contents and prepare for import. <br>
+    Returns a file identifier and a list of importable items found in the file. <br>
+    Use the returned <strong>{fileId}</strong> with the bulk import endpoint to perform the actual import.
+class_bulk_import_prepare_success_response: File identifier and list of importable items
+class_bulk_import_prepare_summary: Prepare a bulk import from an uploaded file
+class_bulk_import_delete_file_description: |
+    Delete a previously prepared bulk import file identified by <strong>{fileId}</strong>. <br>
+    The <strong>{fileId}</strong> must be obtained from the prepare import endpoint. <br>
+    Returns 404 if the file does not exist or has already been cleaned up.
+class_bulk_import_delete_file_success_response: Successfully deleted bulk import file
+class_bulk_import_delete_file_summary: Delete a prepared bulk import file
 class_get_available_visible_fields_description: |
   Get available visible fields for the specified data object classes. <br>
   Returns system columns and common fields across all provided class names. <br>

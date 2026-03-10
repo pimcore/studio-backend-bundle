@@ -37,6 +37,11 @@ interface CustomLayoutRepositoryInterface
     public function getAllCustomLayouts(): array;
 
     /**
+     * @return CustomLayout[]
+     */
+    public function getAllCustomLayoutsIncludingBricks(): array;
+
+    /**
      * @throws NotFoundException
      */
     public function getCustomLayout(string $customLayoutId): CustomLayout;

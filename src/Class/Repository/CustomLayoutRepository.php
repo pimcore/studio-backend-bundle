@@ -69,6 +69,17 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         return $customLayoutListing->load();
     }
 
+    public function getAllCustomLayoutsIncludingBricks(): array
+    {
+        $customLayoutListing = new Listing();
+
+        $customLayoutListing->setOrder(function (CustomLayout $a, CustomLayout $b) {
+            return strcmp($a->getName(), $b->getName());
+        });
+
+        return $customLayoutListing->load();
+    }
+
     public function getCustomLayout(string $customLayoutId): CustomLayout
     {
         $cl = null;
@@ -166,16 +177,19 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     {
         try {
             $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-            $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
-                $data['layoutDefinitions'],
-                true
-            );
-            $customLayout->setLayoutDefinitions($layout);
+            if (is_array($data['layoutDefinitions'])) {
+                $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
+                    $data['layoutDefinitions'],
+                    true
+                );
+                $customLayout->setLayoutDefinitions($layout);
+            }
+
             $name = $data['name'] ?? '';
             if ($name !== '') {
                 $customLayout->setName($name);
             }
-            $customLayout->setDescription($data['description']);
+            $customLayout->setDescription($data['description'] ?? '');
             $customLayout->save();
 
             return $customLayout;

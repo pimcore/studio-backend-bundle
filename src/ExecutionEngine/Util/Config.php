@@ -44,4 +44,5 @@ enum Config: string
     case RECYCLE_BIN_DELETE_FAILED = 'studio_ee_recycle_bin_delete_failed';
     case RECYCLE_BIN_RESTORE_FAILED = 'studio_ee_recycle_bin_restore_failed';
     case ELEMENT_REPLACE_ASSIGNMENT_FAILED = 'studio_ee_element_replace_assignment_failed';
+    case BULK_IMPORT_FAILED_MESSAGE = 'studio_ee_bulk_import_failed';
 }

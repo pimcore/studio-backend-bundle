@@ -37,6 +37,11 @@ interface ClassDefinitionRepositoryInterface
     /**
      * @return ClassDefinition[]
      */
+    public function getClassDefinitionsSortedById(): array;
+
+    /**
+     * @return ClassDefinition[]
+     */
     public function getClassDefinitionsWithObjectBricks(): array;
 
     /**
