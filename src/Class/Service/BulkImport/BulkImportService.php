@@ -39,6 +39,7 @@ use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use function is_array;
 use function json_encode;
 use function sprintf;
 
@@ -245,6 +246,7 @@ final readonly class BulkImportService implements BulkImportServiceInterface
                 'userOwner' => $user->getId(),
                 'classId' => $classId,
             ]);
+
             try {
                 $layout->save();
             } catch (Exception $e) {
@@ -258,6 +260,7 @@ final readonly class BulkImportService implements BulkImportServiceInterface
         }
 
         $json = $this->prepareImportJson($exportEntry);
+
         try {
             $this->customLayoutRepository->importCustomLayoutFromJson($layout, $json);
         } catch (JsonEncodingException $e) {
