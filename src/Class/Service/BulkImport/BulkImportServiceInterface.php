@@ -14,10 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\BulkImport\BulkImportPrepareResponse;
-use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
-use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -30,14 +28,4 @@ interface BulkImportServiceInterface
      * @throws EnvironmentException
      */
     public function prepareImport(UploadedFile $file): BulkImportPrepareResponse;
-
-    /**
-     * @throws EnvironmentException
-     */
-    public function importSingleItem(
-        ClassDefinitionType $type,
-        string $name,
-        array $exportEntry,
-        UserInterface $user,
-    ): void;
 }

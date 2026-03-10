@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportDataResolver;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportFileServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportExecutorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
@@ -39,7 +39,7 @@ final class BulkImportHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
-        private readonly BulkImportServiceInterface $bulkImportService,
+        private readonly BulkImportExecutorInterface $bulkImportExecutor,
         private readonly BulkImportFileServiceInterface $bulkImportFileService,
         private readonly BulkImportDataResolver $bulkImportDataResolver,
         private readonly UserResolverInterface $userResolver,
@@ -118,7 +118,7 @@ final class BulkImportHandler extends AbstractHandler
 
         foreach ($filtered['items'] as $filteredItem) {
             try {
-                $this->bulkImportService->importSingleItem(
+                $this->bulkImportExecutor->importSingleItem(
                     $importType,
                     $filteredItem['name'],
                     $filteredItem['entry'],

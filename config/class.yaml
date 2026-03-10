@@ -68,6 +68,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportExecutorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportExecutor
+
   Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportDataResolver: ~
 
   Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportJobServiceInterface:
