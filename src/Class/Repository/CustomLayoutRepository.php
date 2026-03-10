@@ -28,6 +28,7 @@ use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use function in_array;
+use function is_array;
 
 /**
  * @internal

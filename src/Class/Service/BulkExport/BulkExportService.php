@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkExport;
 
+use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\BulkExport\BulkExportAvailableItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\BulkExport\BulkExportHydratorInterface;
@@ -29,10 +31,9 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_string;
 use function json_decode;
 use function json_encode;
-use const JSON_PRETTY_PRINT;
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @internal

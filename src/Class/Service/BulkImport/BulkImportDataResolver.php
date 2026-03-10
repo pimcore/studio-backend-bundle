@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
+use function count;
+use function is_array;
 
 /**
  * @internal
@@ -78,6 +80,7 @@ final readonly class BulkImportDataResolver
                 $itemKey = $type->value . '::' . $name;
                 if (isset($requestedItems[$itemKey])) {
                     $types[$type->value] = true;
+
                     break;
                 }
             }

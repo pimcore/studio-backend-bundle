@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport;
 
+use const JSON_THROW_ON_ERROR;
 use Exception;
 use JsonException;
 use League\Flysystem\FilesystemException;
@@ -23,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use function json_decode;
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @internal
