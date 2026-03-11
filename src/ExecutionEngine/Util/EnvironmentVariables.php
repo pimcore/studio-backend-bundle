@@ -29,4 +29,6 @@ enum EnvironmentVariables: string
     case LANGUAGE = 'language';
     case CLONE_DATA = 'cloneData';
     case TAG_IDS = 'tagIds';
+    case BULK_IMPORT_FILE_ID = 'bulkImportFileId';
+    case BULK_IMPORT_ITEMS = 'bulkImportItems';
 }

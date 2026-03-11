@@ -59,6 +59,23 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldsByTypeServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldsByTypeService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkExport\BulkExportServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkExport\BulkExportService
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportFileServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportFileService
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportService
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportExecutorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportExecutor
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportDataResolver: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportJobServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportJobService
+
   #
   # Repositories
   #
@@ -155,3 +172,19 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\DetailHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\SelectOption\DetailHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\BulkExport\BulkExportHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\BulkExport\BulkExportHydrator
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Messenger\Handler\BulkImportHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Messenger\Handler\BulkImportCleanupHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Class\EventSubscriber\BulkImportSubscriber: ~
