@@ -39,7 +39,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
-use function array_key_exists;
 
 /**
  * @internal
@@ -258,10 +257,6 @@ final class AdvancedColumnCollector implements
         $fields = [];
         $classIds = [];
         foreach ($classes as $class) {
-            if (!array_key_exists('classes', $class)) {
-                continue;
-            }
-
             $classDefinition = $this->classDefinitionResolver->getByName($class['classes']);
 
             $classIds[] = $classDefinition->getId();

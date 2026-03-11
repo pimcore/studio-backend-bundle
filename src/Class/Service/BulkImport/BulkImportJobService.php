@@ -23,13 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\BulkImportParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -75,9 +73,6 @@ final readonly class BulkImportJobService implements BulkImportJobServiceInterfa
         }
 
         $user = $this->securityService->getCurrentUser();
-        if (!$user instanceof UserInterface) {
-            throw new EnvironmentException('Could not resolve current user');
-        }
 
         $steps = [];
         foreach (ClassDefinitionType::importOrder() as $type) {

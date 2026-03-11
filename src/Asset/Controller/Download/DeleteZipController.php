@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -43,7 +42,7 @@ final class DeleteZipController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException
+     * @throws NotFoundException
      */
     #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -58,7 +57,6 @@ final class DeleteZipController extends AbstractApiController
     #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteAssetsZip(int $jobRunId): Response

@@ -136,7 +136,6 @@ final readonly class LinkAdapter implements SetterDataInterface, SettingsNormali
     private function isInternalTypeKeySet(array $settingsData): bool
     {
         return isset($settingsData[self::INTERNAL_TYPE_KEY]) &&
-        $settingsData[self::INTERNAL_TYPE_KEY] !== null &&
         $settingsData[self::INTERNAL_TYPE_KEY] !== '';
     }
 

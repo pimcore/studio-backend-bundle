@@ -133,10 +133,6 @@ final readonly class BulkExportService implements BulkExportServiceInterface
     private function getCustomLayoutDefinitions(): iterable
     {
         foreach ($this->customLayoutRepository->getAllCustomLayoutsIncludingBricks() as $layout) {
-            if (!$layout instanceof CustomLayout) {
-                continue;
-            }
-
             yield [(string) $layout->getId(), $this->resolveCustomLayoutDisplayName($layout)];
         }
     }

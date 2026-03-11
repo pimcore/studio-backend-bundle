@@ -182,7 +182,7 @@ final readonly class UserRepository implements UserRepositoryInterface
             $userListing->load();
 
             foreach ($userListing->getUsers() as $user) {
-                if ($user instanceof UserInterface && $user->getName() !== 'system') {
+                if ($user->getName() !== 'system') {
                     $list[] = $user;
                 }
             }

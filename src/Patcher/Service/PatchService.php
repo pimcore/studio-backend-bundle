@@ -90,7 +90,7 @@ final readonly class PatchService implements PatchServiceInterface
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
-    ): ?int {
+    ): int {
         $classId = $patchFolderParameter->getClassId();
         if ($elementType === ElementTypes::TYPE_OBJECT && $classId === null) {
             throw new InvalidArgumentException('Class ID must be provided for object folder patching');
