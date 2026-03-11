@@ -44,7 +44,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_delete_perspectives_config', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]

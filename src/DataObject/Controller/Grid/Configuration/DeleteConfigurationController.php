@@ -45,7 +45,7 @@ final class DeleteConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     #[Route(
         '/data-object/grid/configuration/{configurationId}',

@@ -46,7 +46,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotWriteableException|NotFoundException|UserNotFoundException
+     * @throws DatabaseException|NotWriteableException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_doc_type_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::DOCUMENT_TYPES->value)]

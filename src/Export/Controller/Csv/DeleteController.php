@@ -42,7 +42,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|NotFoundException
      */
     #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_delete_csv', methods: ['DELETE'])]
     #[Delete(
@@ -56,7 +56,6 @@ final class DeleteController extends AbstractApiController
     #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteCsv(int $jobRunId): Response

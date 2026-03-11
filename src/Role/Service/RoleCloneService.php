@@ -29,8 +29,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final class RoleCloneService implements RoleCloneServiceInterface
 {
+    /** @phpstan-ignore property.unusedType */
     private ?Role $roleToClone;
 
+    /** @phpstan-ignore property.unusedType */
     private ?Role $role;
 
     public function __construct(

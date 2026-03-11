@@ -62,10 +62,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
-        $loginUrl = null;
-        if ($resetPassword->getResetPasswordUrl() !== null) {
-            $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
-        }
+        $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
 
         try {
             $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);

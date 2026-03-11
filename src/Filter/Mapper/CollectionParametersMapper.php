@@ -62,13 +62,8 @@ final class CollectionParametersMapper implements FilterMapperInterface
 
     private function addPagingFromFilters(FilterParameter $filters, array $columnFilters): array
     {
-        if ($filters->getPage() !== null) {
-            $columnFilters[] = $this->addPageColumn($filters->getPage());
-        }
-
-        if ($filters->getPageSize() !== null) {
-            $columnFilters[] = $this->addPageSizeColumn($filters->getPageSize());
-        }
+        $columnFilters[] = $this->addPageColumn($filters->getPage());
+        $columnFilters[] = $this->addPageSizeColumn($filters->getPageSize());
 
         return $columnFilters;
     }

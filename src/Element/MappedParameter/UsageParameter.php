@@ -20,9 +20,6 @@ use JsonException;
  */
 final readonly class UsageParameter
 {
-    /**
-     * @throws JsonException
-     */
     public function __construct(
         private int $page = 1,
         private int $pageSize = 50,

@@ -258,10 +258,6 @@ final class AdvancedColumnCollector implements
         $fields = [];
         $classIds = [];
         foreach ($classes as $class) {
-            if (!array_key_exists('classes', $class)) {
-                continue;
-            }
-
             $classDefinition = $this->classDefinitionResolver->getByName($class['classes']);
 
             $classIds[] = $classDefinition->getId();

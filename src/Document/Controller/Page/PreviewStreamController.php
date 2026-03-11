@@ -59,7 +59,6 @@ final class PreviewStreamController extends AbstractApiController
      * @throws EnvironmentException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws InvalidThumbnailException
      * @throws UserNotFoundException
      */
     #[Route(

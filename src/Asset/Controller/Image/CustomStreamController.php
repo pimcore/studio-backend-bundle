@@ -64,7 +64,6 @@ final class CustomStreamController extends AbstractApiController
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws ThumbnailResizingFailedException
      * @throws UserNotFoundException
      */
     #[Route(

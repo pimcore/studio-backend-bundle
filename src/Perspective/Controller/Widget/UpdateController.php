@@ -53,7 +53,6 @@ final class UpdateController extends AbstractApiController
      * @throws ElementSavingFailedException
      * @throws InvalidArgumentException
      * @throws NotFoundException
-     * @throws NotWriteableException
      * @throws ValidationFailedException
      */
     #[Route(

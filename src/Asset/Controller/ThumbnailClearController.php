@@ -44,9 +44,6 @@ final class ThumbnailClearController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws UserNotFoundException
-     */
     #[Route(
         path: '/assets/{id}/thumbnail/clear',
         name: 'pimcore_studio_api_clear_thumbnail',

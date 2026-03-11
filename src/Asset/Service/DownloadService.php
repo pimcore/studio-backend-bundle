@@ -52,7 +52,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
+     * @throws ElementStreamResourceNotFoundException
      */
     public function downloadAsset(
         Asset $asset

@@ -63,7 +63,6 @@ final class ThumbnailStreamController extends AbstractApiController
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws SearchException
      * @throws UserNotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_stream_document_thumbnail', methods: ['GET'])]

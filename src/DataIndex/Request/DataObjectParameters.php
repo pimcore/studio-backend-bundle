@@ -64,9 +64,9 @@ final readonly class DataObjectParameters extends ElementParameters implements
     }
 
     /**
-     * @return string[]|null
+     * @return string[]
      */
-    public function getClassIdsArray(): ?array
+    public function getClassIdsArray(): array
     {
         return $this->classIdsArray;
     }

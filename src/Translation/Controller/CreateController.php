@@ -45,7 +45,7 @@ final class CreateController extends AbstractApiController
     }
 
     /**
-     * @throws ForbiddenException|ElementExistsException|UserNotFoundException
+     * @throws ElementExistsException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_create', methods: ['POST'])]
     #[Post(

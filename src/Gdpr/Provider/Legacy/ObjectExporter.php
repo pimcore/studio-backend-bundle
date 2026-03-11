@@ -31,6 +31,8 @@ final readonly class ObjectExporter implements ObjectExporterInterface
 {
     /**
      * {@inheritdoc}
+     *
+     * @phpstan-ignore parameterByRef.type
      */
     public function doExportObject(Concrete $object, array &$result = []): void
     {
@@ -45,8 +47,7 @@ final readonly class ObjectExporter implements ObjectExporterInterface
             } elseif ($fd instanceof Data\Objectbricks && $value instanceof Objectbrick) {
                 self::doExportBrick($result, $value);
             } else {
-                if ($fd instanceof NormalizerInterface
-                    && $fd instanceof DataObject\ClassDefinition\Data) {
+                if ($fd instanceof NormalizerInterface) {
                     $marshalledValue = $fd->normalize($value);
                     $result[$fd->getName()] = $marshalledValue;
                 }
@@ -69,8 +70,7 @@ final readonly class ObjectExporter implements ObjectExporterInterface
                 foreach ($fDefs as $fd) {
                     $getter = 'get' . ucfirst($fd->getName());
                     $value = $brickValue->$getter();
-                    if ($fd instanceof NormalizerInterface
-                        && $fd instanceof DataObject\ClassDefinition\Data) {
+                    if ($fd instanceof NormalizerInterface) {
                         $marshalledValue = $fd->normalize($value);
                         $resultContainer[$brickType][$fd->getName()] = $marshalledValue;
                     }
@@ -97,8 +97,7 @@ final readonly class ObjectExporter implements ObjectExporterInterface
                 $getter = 'get' . ucfirst($fd->getName());
                 $value = $item->$getter();
 
-                if ($fd instanceof NormalizerInterface
-                    && $fd instanceof DataObject\ClassDefinition\Data) {
+                if ($fd instanceof NormalizerInterface) {
                     $marshalledValue = $fd->normalize($value);
                     $itemValues[$fd->getName()] = $marshalledValue;
                 }

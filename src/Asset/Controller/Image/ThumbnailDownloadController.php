@@ -55,7 +55,6 @@ final class ThumbnailDownloadController extends AbstractApiController
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws SearchException
      * @throws UserNotFoundException
      */
     #[Route(

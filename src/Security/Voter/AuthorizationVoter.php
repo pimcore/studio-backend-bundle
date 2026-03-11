@@ -33,9 +33,6 @@ final class AuthorizationVoter extends Voter
         return $attribute === self::SUPPORTED_ATTRIBUTE;
     }
 
-    /**
-     * @throws NoRequestException|NotAuthorizedException
-     */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         if ($attribute !== self::SUPPORTED_ATTRIBUTE) {

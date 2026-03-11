@@ -43,7 +43,7 @@ final class DeleteRoleController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException|DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
     #[Route('/role/{id}', name: 'pimcore_studio_api_role_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
