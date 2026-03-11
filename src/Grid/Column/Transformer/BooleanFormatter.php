@@ -25,7 +25,6 @@ use function sprintf;
  */
 final class BooleanFormatter implements TransformerInterface
 {
-
     public function transform(array $value, array $config): array
     {
         if (!isset($config['trueLabel']) || !is_string($config['trueLabel'])) {
