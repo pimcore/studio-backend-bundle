@@ -40,6 +40,12 @@ services:
   #Authenticators
   Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\AdminTokenAuthenticator: ~
 
+  Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator:
+    arguments:
+      $tokenMap: '%pimcore_studio_backend.mcp.token_map%'
+
   Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService
 

@@ -85,6 +85,7 @@ class Configuration implements ConfigurationInterface
         $this->addDefaultFromEmail($rootNode);
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
+        $this->addMcpNode($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
@@ -659,6 +660,33 @@ class Configuration implements ConfigurationInterface
             );
 
         return $node;
+    }
+
+    private function addMcpNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('mcp')
+                ->addDefaultsIfNotSet()
+                ->info('MCP (Model Context Protocol) server configuration (experimental)')
+                ->children()
+                    ->arrayNode('authentication')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->arrayNode('tokens')
+                                ->info(
+                                    'Map of Pimcore username to bearer token list. '
+                                    . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
+                                )
+                                ->useAttributeAsKey('username')
+                                ->arrayPrototype()
+                                    ->scalarPrototype()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
