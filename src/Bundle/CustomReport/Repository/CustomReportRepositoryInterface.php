@@ -52,7 +52,7 @@ interface CustomReportRepositoryInterface
     /**
      * @throws NotWriteableException
      */
-    public function clone(Config $existingConfig, string $newName): Config;
+    public function cloneConfig(Config $existingConfig, string $newName): Config;
 
     /**
      * @throws NotWriteableException
