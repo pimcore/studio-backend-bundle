@@ -30,8 +30,6 @@ final readonly class ObjectExporter implements ObjectExporterInterface
 {
     /**
      * {@inheritdoc}
-     *
-     * @phpstan-ignore parameterByRef.type
      */
     public function doExportObject(Concrete $object, array &$result = []): void
     {
@@ -42,13 +40,13 @@ final readonly class ObjectExporter implements ObjectExporterInterface
             $value = $object->$getter();
 
             if ($fd instanceof Data\Fieldcollections && $value instanceof Fieldcollection) {
-                self::doExportFieldcollection($result, $value);
+                $this->doExportFieldcollection($result, $value); // @phpstan-ignore parameterByRef.type
             } elseif ($fd instanceof Data\Objectbricks && $value instanceof Objectbrick) {
-                self::doExportBrick($result, $value);
+                $this->doExportBrick($result, $value); // @phpstan-ignore parameterByRef.type
             } else {
                 if ($fd instanceof NormalizerInterface) {
                     $marshalledValue = $fd->normalize($value);
-                    $result[$fd->getName()] = $marshalledValue;
+                    $result[$fd->getName()] = $marshalledValue; // @phpstan-ignore parameterByRef.type
                 }
             }
         }
