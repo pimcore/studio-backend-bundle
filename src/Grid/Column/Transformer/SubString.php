@@ -54,7 +54,7 @@ final class SubString implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
-            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
+            $fieldName = $val->getFieldName();
 
             if (!is_string($data)) {
                 $results[] = new AdvancedValue($val->getType(), $data, $fieldName);

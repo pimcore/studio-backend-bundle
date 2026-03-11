@@ -25,6 +25,7 @@ use function sprintf;
  */
 final class BooleanFormatter implements TransformerInterface
 {
+
     public function transform(array $value, array $config): array
     {
         if (!isset($config['trueLabel']) || !is_string($config['trueLabel'])) {
@@ -53,7 +54,7 @@ final class BooleanFormatter implements TransformerInterface
 
         foreach ($value as $val) {
             $data = $val->getValue();
-            $fieldName = $val->getFieldName() ?? ($config['columnKey'] ?? $this->getKey());
+            $fieldName = $val->getFieldName();
 
             if (!is_bool($data)) {
                 $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
