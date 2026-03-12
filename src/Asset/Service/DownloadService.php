@@ -252,6 +252,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     {
         $lifetime = 300;
         $date = new DateTime('now');
+
         try {
             $date->add(new DateInterval('PT' . $lifetime . 'S'));
         } catch (Exception) {
