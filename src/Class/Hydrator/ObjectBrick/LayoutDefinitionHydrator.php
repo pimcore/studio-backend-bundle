@@ -31,7 +31,7 @@ final class LayoutDefinitionHydrator implements LayoutDefinitionHydratorInterfac
             $layout->getName(),
             $layout->getType(),
             $layout->getRegion(),
-            $layout->getTitle(),
+            $data->getTitle(),
             $layout->getWidth(),
             $layout->getHeight(),
             $layout->getCollapsible(),
