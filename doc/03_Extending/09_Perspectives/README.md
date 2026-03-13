@@ -1,6 +1,6 @@
 # Extending Perspectives
 
-Perspectives allow to create different views in the backend UI and even customize the standard perspective. They are using widgets to create unique views for the Pimcore Studio.
+Perspectives allow to create different views in Pimcore Studio and even customize the standard perspective. They are using widgets to create unique views for the Pimcore Studio.
 
 You can define:
 
@@ -10,7 +10,7 @@ You can define:
 
 ## How to add a custom context menu permissions
 
-To add a custom context menu permission to the Pimcore Studio Backend, you need to implement your custom event subscriber and inject the `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface` service.:
+To add a custom context menu permission to the Pimcore Studio Backend, you need to implement your custom event subscriber and inject the `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface` service:
 
 ### 1. Define your subscriber service
 

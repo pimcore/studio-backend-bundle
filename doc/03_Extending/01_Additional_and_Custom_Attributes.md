@@ -11,10 +11,10 @@ If you want to add custom attributes to another schema, you need to implement th
 You need to register a subscriber to that specific schema where you can add the additional data.
 
 Every schema implements its own event that you can subscribe to.
-Every event implements the `AbstractPreResponseEvent` which allows to add the actual data, but also makes it possible to get the actual Schema out of the event with a type safe getter.
+Every event implements the `AbstractPreResponseEvent` which allows to add the actual data, but also makes it possible to get the actual Schema out of the event with a type-safe getter.
 
 ## Listen to the event
-For an example see [Extending Events](./10_Extending_Studio/08_Events.md). 
+For an example see [Extending Events](./11_Extending_via_Events.md). 
 
 #### Example Event
 ```php

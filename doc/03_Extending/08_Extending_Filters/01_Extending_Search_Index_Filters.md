@@ -17,7 +17,7 @@ For a full list of the available search modifiers, please refer to the [Generic 
 <?php
 declare(strict_types=1);
 
-namespace App\MyBundle\Filter;;
+namespace App\MyBundle\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;

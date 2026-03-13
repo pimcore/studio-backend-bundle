@@ -9,7 +9,7 @@ Messages are dispatched via `pimcore_generic_execution_engine` transport. Please
 
 The Generic Execution Engine is a powerful tool to execute actions in the background. It is based on the Symfony Messenger component, to learn more about it, please visit the [Generic Execution Engine documentation](https://github.com/pimcore/pimcore/tree/11.x/doc/19_Development_Tools_and_Details/08_Generic_Execution_Engine).
 
-There are several actions, which currently take benefits of Execution Engine:
+There are several actions, which currently benefit from the Execution Engine:
 
 ### Asset ZIP Upload
 When uploading a ZIP file containing assets, the ZIP file is extracted and the assets are created in the background.
@@ -28,11 +28,11 @@ pimcore_studio_backend:
 ```
 
 ### Element CSV Export
-Elements like Assets and Data Objects can be exported based on the provided grid configuration as a CSV file. The export is done in the background and can be downloaded after its finished.
+Elements like Assets and Data Objects can be exported based on the provided grid configuration as a CSV file. The export is done in the background and can be downloaded after it's finished.
 There are some configuration options available for the CSV export, which can be configured in the `config.yaml` file.
 
 ### Element XLSX Export
-Elements like Assets and Data Objects can be exported based on the provided grid configuration as a XLSX file. The export is done in the background and can be downloaded after its finished.
+Elements like Assets and Data Objects can be exported based on the provided grid configuration as a XLSX file. The export is done in the background and can be downloaded after it's finished.
 
 ```yaml
 pimcore_studio_backend:
@@ -49,7 +49,7 @@ Assets, Documents, Data Objects and folders can be deleted in the background. Th
 
 ### Elements Recycle Bin
 Before deleting elements, they and the respective children are moved to the recycle bin. This is done in the background while using the Generic Execution Engine.
-by default, recycle bin in only used for elements with less than 100 children. This can be configured in the `config.yaml` file.
+by default, recycle bin is only used for elements with less than 100 children. This can be configured in the `config.yaml` file.
 
 ```yaml
 pimcore_studio_backend:
@@ -57,7 +57,7 @@ pimcore_studio_backend:
 ```
 
 ### Elements Patching
-Patching of multiple elements is executed with the help of Generic Execution Engine in the background. This is useful when using a bulk patches on a large number of elements.
+Patching of multiple elements is executed with the help of Generic Execution Engine in the background. This is useful when using bulk patches on a large number of elements.
 
 ### Elements Rewrite References
 When cloning elements, the references to other elements can be rewritten. When this is desired, the action is executed in the background. This is useful when cloning a large number of elements or large trees.

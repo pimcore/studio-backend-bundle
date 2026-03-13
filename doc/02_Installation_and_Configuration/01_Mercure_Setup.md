@@ -142,10 +142,10 @@ routed correctly to the Mercure instance.
 Also, keep in mind, that communication needs to be HTTPS. Thus, it might be useful to place the Mercure server behind a reverse
 proxy of the actual webserver (who handles the certificates).
 
-Beware that the development ui is not working when using a reverse proxy. (See open ticket https://github.com/dunglas/mercure/issues/951)
+Beware that the development UI is not working when using a reverse proxy. (See open ticket https://github.com/dunglas/mercure/issues/951)
 
 #### Apache Reverse Proxy
-For apache for example enable `http_proxy` in apache and add the following reverse proxy in your apache config:
+For Apache, for example, enable `http_proxy` in apache and add the following reverse proxy in your apache config:
 ```
    ProxyPass /hub/ http://localhost:3000/
    ProxyPassReverse /hub/ http://localhost:3000/
@@ -160,7 +160,7 @@ For Nginx use following configuration:
 ```
 
 ### Development UI
-The development ui can be helpful to develop new features. It is possible to subscribe and publish messages.
+The development UI can be helpful to develop new features. It is possible to subscribe and publish messages.
 
 With the configuration below, the development ui is available at `http://localhost:8080/.well-known/mercure/ui/`.
 

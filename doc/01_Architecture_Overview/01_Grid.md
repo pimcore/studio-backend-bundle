@@ -7,7 +7,7 @@ A column is a single column in the grid. It has a name, type and a locale. It is
 in addition, it has a configuration which can be used to configure the column, like the direction of the sorting
 
 ## ColumnConfiguration
-A column configuration represents how the column should behave, for example if it should be sort-able or editable. 
+A column configuration represents how the column should behave, for example if it should be sortable or editable. 
 For the column to be exportable please make sure that it can be represented as a string.
 
 ## ColumnData
@@ -52,7 +52,7 @@ Available filters are:
 |         classificationstore.date         | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
 |       classificationstore.datetime       |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
 |         classificationstore.time         |              object (12:45)              |          `from`, `to`, or `on`          |      true      |
-|    classificationstore.quantity_value    |              sting, integer              | `from`, `to`, `is`, `setting`, `unitId` |      true      |
+|    classificationstore.quantity_value    |              string, integer              | `from`, `to`, `is`, `setting`, `unitId` |      true      |
 | classificationstore.input_quantity_value |                  string                  |    `unitId`(string), `value`(string)    |      true      |
 |        classificationstore.select        |                  array                   |                                         |      true      |
 |       classificationstore.boolean        |                  array                   |        `true`, `false` or `null`        |      true      |
@@ -124,7 +124,7 @@ Filter by Number:
 ```
 
 Classification Store Basic Filter Value:
-The filter value of a Classification Store looks a bit difrent. All Filter need to have a groupId and keyId
+The filter value of a Classification Store looks a bit different. All filters need to have a groupId and keyId
 ```json
 ...
 "columnFilters" [
@@ -166,7 +166,7 @@ Advanced columns are a special type of column that can be used to display data i
 - `relationField` - a relation field in the object
 - `staticText` - a static text that is not related to the object
 
-Let's take a look at the `simpleField` type. The `simpleField` call the getter method of the object. You just have to pass the `field`.
+Let's take a look at the `simpleField` type. The `simpleField` calls the getter method of the object. You just have to pass the `field`.
 ```json
 ...
 "columns": [
@@ -335,7 +335,7 @@ Available configurations:
             "transformers": [
                 {
                   "key": "combine",
-                  "congfig": {
+                  "config": {
                     "glue": " - "
                   }
                 }

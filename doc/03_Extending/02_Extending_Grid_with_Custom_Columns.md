@@ -22,12 +22,12 @@ In order that the grid can work with a custom column you have to implement the f
 - Column Definition with the `ColumnDefinitionInterface` and tag it with `pimcore.studio_backend.column_definition`
 - Column Resolver with the `ColumnResolverInterface` and tag it with `pimcore.studio_backend.column_resolver`
 
-  You must implement the `CoreElementColumnResolverInterface` or `StudioElementColumnResolverInterface` depending on it the data is coming from the or the studio (GDI).
+  You must implement the `CoreElementColumnResolverInterface` or `StudioElementColumnResolverInterface` depending on whether the data is coming from the core or from Studio (GDI).
   It is also possible to implement both interfaces. But `CoreElementColumnResolverInterface` has a higher priority than `StudioElementColumnResolverInterface`.
 - Column Collector with the `ColumnCollectorInterface` and tag it with `pimcore.studio_backend.column_collector`
 
 Once everything is implemented column will show up in the available columns in the grid configuration e.g. via `/pimcore-studio/api/assets/grid/available-configuration`
-On more infos on how to use the columns see the [Grid](../03_Grid.md)
+For more information on how to use columns, see the [Grid](../01_Architecture_Overview/01_Grid.md)
 
 ### Example Column Definition
 

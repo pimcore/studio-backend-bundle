@@ -22,7 +22,7 @@ To add a custom endpoint to the Pimcore Studio Backend you need to implement it 
   - You can also add some DefaultResponses
   - Add query params or request payload if necessary. You can check out the existing parameters here: -- TODO ADD PAGE WITH PARAMETERS --
   - If you need specific parameters, payloads or responses you can extend OpenApi Schemas, Properties, Responses, etc.
-  - How to extend OpenApi Schemas, Properties, Responses, etc. is described [here](02_OpenApi.md)
+  - How to extend OpenApi Schemas, Properties, Responses, etc. is described [here](./06_Extending_OpenApi.md)
 - Implement your endpoint logic in the standard symfony way
   - We try to leverage symfony functionality as much as possible for parameters with `#[MapQueryString]` or `#[MapRequestPayload]` attributes
 
@@ -113,5 +113,5 @@ final class CollectionController extends AbstractApiController
 
 ### Available classes for simplification
 
-[Collection](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Response/Collection.php) Predefined repsonse object for collections with the total item count and the items 
+[Collection](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Response/Collection.php) Predefined response object for collections with the total item count and the items 
 [HttpResponseCodes](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Util/Constant/HttpResponseCodes.php) Predefined http response codes

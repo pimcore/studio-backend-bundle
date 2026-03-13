@@ -145,7 +145,7 @@ final readonly class MyCustomAdapter implements SetterDataInterface, SettingsNor
 }
 ```
 
-Its important that your custom settings data model implements the `SettingsDataInterface` interface,
+It's important that your custom settings data model implements the `SettingsDataInterface` interface,
 which is used by the `normalizeSettings` method.
 
 ```php
@@ -176,7 +176,7 @@ final readonly class CustomSettingsData implements SettingsDataInterface
 }
 ```
 
-Its important that your custom editable data model implements the `EditableDataInterface` interface,
+It's important that your custom editable data model implements the `EditableDataInterface` interface,
 which is used by the `normalizeEditableData` method.
 
 ```php

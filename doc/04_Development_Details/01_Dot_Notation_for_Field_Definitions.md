@@ -1,6 +1,6 @@
 # Dot Notation for Field Definitions
 
-Studio provides a Dot Notation to resolve the field defintion of an object. 
+Studio provides a Dot Notation to resolve the field definition of an object. 
 
 Here are some examples for the Car Object:
 - `carClass` Get the Standard fields.

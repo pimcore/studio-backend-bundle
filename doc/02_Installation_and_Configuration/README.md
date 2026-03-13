@@ -2,7 +2,7 @@
 
 ## Bundle Installation
 
-To install the Studio Backend Bundle, follow the four steps below:
+To install the Studio Backend Bundle, follow the five steps below:
 
 1) Make sure prerequisites are met:
 
@@ -81,10 +81,10 @@ Mercure hub and configure the bundle to use it.
 For Mercure setup instruction, see [https://mercure.rocks/docs/hub/install](https://mercure.rocks/docs/hub/install).
 
 The simplest way to set up Mercure is using the docker image and set up a reverse proxy on our webserver to prevent CSP issues.
-For details, more aspects and some Q&A see the [Mercure Setup page](./02_Mercure_Setup.md).
+For details, more aspects and some Q&A see the [Mercure Setup page](./01_Mercure_Setup.md).
 
 ### JWT Key
-A valid JWT key is necessary for proper Mercure communication. Currently, the bundle uses same key for subscriber and publisher.
+A valid JWT key is necessary for proper Mercure communication. Currently, the bundle uses the same key for subscriber and publisher.
 Use your preferred password generator to create a secure and valid JWT key, which is used by the application to encrypt JWT tokens and payloads.
 The key needs to be minimum 256 bits long which is 32 characters.
 

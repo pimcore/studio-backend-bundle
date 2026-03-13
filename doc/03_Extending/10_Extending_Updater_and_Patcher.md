@@ -18,7 +18,7 @@ Let's assume you want to update the parent of an asset and the payload you send 
 }
 ```
 
-The `The UpdateService` will load all tagged adapters and call the `update` method if the element type is supported which is defined in the adapter itself
+The `UpdateService` will load all tagged adapters and call the `update` method if the element type is supported which is defined in the adapter itself
 The adapters will then check if the index key is in the payload and updates the object.
 
 ## Example Update Adapter

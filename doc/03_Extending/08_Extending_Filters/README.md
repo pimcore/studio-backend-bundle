@@ -126,8 +126,8 @@ final readonly class LikeFilter implements FilterInterface
 
 ## Search Index Filters
 For assets, data objects and documents we are using OpenSearch or ElasticSearch (based on your Generic Data Index configuration) to index the data and to provide a fast search.
-For more details on how to implement these filters see the [Search Index Filters](04_Filters/01_Search_Index_Filters.md).
+For more details on how to implement these filters see the [Search Index Filters](./01_Extending_Search_Index_Filters.md).
 
 ## Listing Filters
 For the classic approach of using listings, the Listing Filters are used.
-For more details on how to implement the Listing filters see the [Listing_FILTER](04_Filters/02_Listing_Filters.md).
+For more details on how to implement the Listing filters see the [Listing Filters](./02_Extending_Listing_Filters.md).
