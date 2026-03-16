@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
@@ -33,6 +34,7 @@ final class RefreshJobHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
+        private readonly UserTopicServiceInterface $userTopicService,
     ) {
         parent::__construct();
     }
@@ -54,6 +56,11 @@ final class RefreshJobHandler extends AbstractHandler
 
         $jobRun->setTotalElements($selectedElementCount);
 
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $this->userTopicService,
+            $jobRun,
+            $this->getJobStep($message)->getName()
+        );
     }
 }
