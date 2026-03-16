@@ -18,7 +18,7 @@ use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\CustomLayout\CustomLayoutResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -27,13 +27,15 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
+use function in_array;
+use function is_array;
 
 /**
  * @internal
  */
 readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 {
-    const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
+    private const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
 
     public function __construct(
         private ClassDefinitionServiceResolverInterface $classDefinitionServiceResolver,
@@ -42,12 +44,12 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     ) {
     }
 
-    public function getCustomLayoutsByClass(string $dataObjectClassId): array
+    public function getCustomLayoutsByClass(array $dataObjectClassIds): array
     {
         $customLayoutListing = new Listing();
         $customLayoutListing->setFilter(
             fn (CustomLayout $layout) =>
-                $layout->getClassId() === $dataObjectClassId &&
+                in_array($layout->getClassId(), $dataObjectClassIds, true) &&
                 !str_contains($layout->getId(), '.brick.')
         );
 
@@ -60,6 +62,17 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         $customLayoutListing->setFilter(
             fn (CustomLayout $layout) => !str_contains($layout->getId(), '.brick.')
         );
+
+        $customLayoutListing->setOrder(function (CustomLayout $a, CustomLayout $b) {
+            return strcmp($a->getName(), $b->getName());
+        });
+
+        return $customLayoutListing->load();
+    }
+
+    public function getAllCustomLayoutsIncludingBricks(): array
+    {
+        $customLayoutListing = new Listing();
 
         $customLayoutListing->setOrder(function (CustomLayout $a, CustomLayout $b) {
             return strcmp($a->getName(), $b->getName());
@@ -122,7 +135,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 
     public function updateCustomLayout(
         CustomLayout $customLayout,
-        CustomLayoutUpdateParameters $customLayoutParameters
+        UpdateParameters $customLayoutParameters
     ): CustomLayout {
         try {
             $config = $customLayoutParameters->getConfiguration();
@@ -137,6 +150,12 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
                 true
             );
             $customLayout->setLayoutDefinitions($layout);
+            if (empty($values)) {
+                $customLayout->save();
+
+                return $customLayout;
+            }
+
             $customLayout->setName($values['name']);
             $customLayout->setDescription($values['description'] ?? '');
             $customLayout->setDefault($values['default'] ?? false);
@@ -159,16 +178,19 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     {
         try {
             $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-            $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
-                $data['layoutDefinitions'],
-                true
-            );
-            $customLayout->setLayoutDefinitions($layout);
+            if (is_array($data['layoutDefinitions'])) {
+                $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
+                    $data['layoutDefinitions'],
+                    true
+                );
+                $customLayout->setLayoutDefinitions($layout);
+            }
+
             $name = $data['name'] ?? '';
             if ($name !== '') {
                 $customLayout->setName($name);
             }
-            $customLayout->setDescription($data['description']);
+            $customLayout->setDescription($data['description'] ?? '');
             $customLayout->save();
 
             return $customLayout;
@@ -179,5 +201,38 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }
+    }
+
+    public function createBrickCustomLayout(string $compositeId, CustomLayout $baseLayout): CustomLayout
+    {
+        $parts = explode('.brick.', $compositeId);
+        $brickKey = $parts[1] ?? $compositeId;
+
+        try {
+            $customLayout = $this->customLayoutResolver->create(
+                [
+                    'id' => $compositeId,
+                    'name' => $baseLayout->getName() . ' ' . $brickKey,
+                    'userOwner' => $this->securityService->getCurrentUser()->getId(),
+                    'classId' => $baseLayout->getClassId(),
+                ]
+            );
+            $customLayout->save();
+
+            return $customLayout;
+        } catch (DefinitionWriteException) {
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
+        }
+    }
+
+    public function getBrickLayoutsByBaseId(string $baseLayoutId): array
+    {
+        $prefix = $baseLayoutId . '.brick.';
+        $listing = new Listing();
+        $listing->setFilter(
+            fn (CustomLayout $layout) => str_starts_with($layout->getId(), $prefix)
+        );
+
+        return $listing->load();
     }
 }

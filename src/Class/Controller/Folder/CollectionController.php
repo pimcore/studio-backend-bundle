@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\Folder;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder\ClassDefinitionFolderItem;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -43,7 +43,7 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+        private readonly ClassDefinitionTreeServiceInterface $classDefinitionTreeService,
 
     ) {
         parent::__construct($serializer);
@@ -78,7 +78,7 @@ final class CollectionController extends AbstractApiController
     public function getFolderClassList(
         int $folderId
     ): JsonResponse {
-        $collection = $this->classDefinitionService->getClassDefinitionIdsInsideFolder($folderId);
+        $collection = $this->classDefinitionTreeService->getClassDefinitionIdsInsideFolder($folderId);
 
         return $this->getPaginatedCollection(
             $this->serializer,

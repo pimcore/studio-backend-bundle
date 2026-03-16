@@ -17,7 +17,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing as CollectionConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\Translation;
 
 /**
@@ -44,6 +48,34 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
         }
 
         $list->addConditionParam('(' . implode(' OR ', $conditions) . ')', $preparedSearchTerms);
+    }
+
+    public function applyKeySearchFilter(KeyConfigListing $listing, string $searchTerm): void
+    {
+        $listing->addConditionParam(
+            '(name LIKE ? OR description LIKE ?)',
+            ['%' . $searchTerm . '%', '%' . $searchTerm . '%']
+        );
+    }
+
+    public function applyKeyGroupRelationSearchFilter(
+        KeyGroupRelationListing $listing,
+        string $searchTerm,
+    ): void {
+        $searchTerms = $this->getTranslatedSearchFilterTerms($searchTerm);
+        $searchFilterConditions = [];
+
+        foreach ($searchTerms as $term) {
+            $searchFilterConditions[] =
+                KeyConfigDao::TABLE_NAME_KEYS . '.name LIKE ' . $listing->quote('%' . $term . '%')
+                . ' OR '
+                . GroupConfigDao::TABLE_NAME_GROUPS . '.name LIKE ' . $listing->quote('%' . $term . '%')
+                . ' OR '
+                . KeyConfigDao::TABLE_NAME_KEYS . '.description LIKE ' . $listing->quote('%' . $term . '%');
+        }
+
+        $listing->setResolveGroupName(true);
+        $listing->addConditionParam('(' . implode(' OR ', $searchFilterConditions) . ')');
     }
 
     public function getTranslatedSearchFilterTerms(string $searchTerm): array

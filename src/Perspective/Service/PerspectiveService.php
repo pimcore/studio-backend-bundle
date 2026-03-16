@@ -136,7 +136,7 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
         } catch (Exception|ExceptionInterface $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
-        $perspective['name'] = $this->getValidConfigName($perspective);
+        $perspective['name'] = $this->getValidConfigDisplayName($perspective);
 
         return $perspective;
     }

@@ -15,9 +15,11 @@ services:
   #
   # Services
   #
-
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\UpdateSettingProviderLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\UpdateSettingsTaggedIteratorAdapter
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
@@ -25,12 +27,21 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\BundlesServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\BundlesService
 
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementService
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\ThumbnailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\ThumbnailService
+
   #
   # Hydrators
   #
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\ActiveBundleHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\ActiveBundleHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydrator
 
   #
   # Providers
@@ -40,4 +51,7 @@ services:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
-    tags: [ 'pimcore.studio_backend.settings_provider' ]
+    tags: [
+      'pimcore.studio_backend.settings_provider',
+      'pimcore.studio_backend.update_settings_provider'
+    ]

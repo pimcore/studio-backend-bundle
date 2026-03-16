@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 
 /**
@@ -22,9 +24,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout;
 interface ObjectBrickServiceInterface
 {
     /**
-     * @return Data[]
+     * @return ColumnFieldDefinition[]
      */
-    public function getDataFields(Layout $layout): array;
+    public function getDataFields(Localizedfields|Layout $layout): array;
 
     public function findObjectBrickField(string $name, string $field): Data;
 }

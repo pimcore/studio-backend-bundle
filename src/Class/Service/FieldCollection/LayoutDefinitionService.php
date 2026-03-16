@@ -18,16 +18,20 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
+use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function get_class;
 use function sprintf;
 
 /**
@@ -40,7 +44,9 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
+        private readonly FieldCollectionRepositoryInterface $fieldCollectionRepository,
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
+        private readonly ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -56,7 +62,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
-                sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))
+                sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)
             );
         }
 
@@ -70,6 +76,28 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         }
 
         return $layoutDefinitions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutDefinitionByKey(string $key): ConfigLayoutDefinition
+    {
+        $definition = $this->fieldCollectionRepository->getFieldCollectionByKey($key);
+        $layout = $definition->getLayoutDefinitions();
+
+        if (!$layout instanceof Panel) {
+            throw new NotFoundException('layout for fieldcollection', $key);
+        }
+
+        $configLayoutDefinition = $this->configLayoutDefinitionHydrator->hydrate($layout);
+
+        $this->eventDispatcher->dispatch(
+            new ConfigLayoutDefinitionEvent($configLayoutDefinition),
+            ConfigLayoutDefinitionEvent::EVENT_NAME
+        );
+
+        return $configLayoutDefinition;
     }
 
     /**

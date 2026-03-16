@@ -13,10 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
@@ -39,7 +37,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
-use function array_key_exists;
 
 /**
  * @internal
@@ -56,7 +53,7 @@ final class AdvancedColumnCollector implements
 
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly ClassDefinitionRepositoryInterface $classRepository,
         private readonly TransformerLoaderInterface $transformerLoader,
         private readonly DefinitionResolverInterface $objectBrickdefinitionResolver,
         private readonly ObjectBrickServiceInterface $objectBrickService,
@@ -224,8 +221,8 @@ final class AdvancedColumnCollector implements
 
             foreach ($objectBrickItems as $objectBrickItem) {
                 $fields[] = new SimpleField(
-                    name: $objectBrickItem->getTitle(),
-                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getName()
+                    name: $objectBrickItem->getFieldDefinition()->getTitle(),
+                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getFieldDefinition()->getName()
                 );
             }
         }
@@ -258,11 +255,7 @@ final class AdvancedColumnCollector implements
         $fields = [];
         $classIds = [];
         foreach ($classes as $class) {
-            if (!array_key_exists('classes', $class)) {
-                continue;
-            }
-
-            $classDefinition = $this->classDefinitionResolver->getByName($class['classes']);
+            $classDefinition = $this->classRepository->getClassDefinition($class['classes']);
 
             $classIds[] = $classDefinition->getId();
 
@@ -285,15 +278,7 @@ final class AdvancedColumnCollector implements
      */
     private function buildFieldForClassName(string $className): array
     {
-        try {
-            $definitionOfTheRelation = $this->classDefinitionResolver->getByName($className);
-        } catch (Exception $e) {
-            throw new NotFoundException('Class definition', $className);
-        }
-
-        if ($definitionOfTheRelation === null) {
-            throw new NotFoundException('Class definition', $className);
-        }
+        $definitionOfTheRelation = $this->classRepository->getClassDefinition($className);
 
         $filteredLayoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $definitionOfTheRelation->getId(),

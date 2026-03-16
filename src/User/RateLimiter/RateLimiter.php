@@ -24,7 +24,6 @@ final readonly class RateLimiter implements RateLimiterInterface
     use RequestTrait;
 
     public function __construct(
-        private RateLimiterFactory $resetPasswordLimiter,
         private RequestStack $requestStack,
     ) {
     }
@@ -32,11 +31,12 @@ final readonly class RateLimiter implements RateLimiterInterface
     /**
      * @throws RateLimitException
      */
-    public function check(): void
-    {
+    public function check(
+        RateLimiterFactory $rateLimiterFactory,
+    ): void {
         $request = $this->getCurrentRequest($this->requestStack);
 
-        $limiter = $this->resetPasswordLimiter->create($request->getClientIp());
+        $limiter = $rateLimiterFactory->create($request->getClientIp());
 
         try {
             $limiter->consume()->ensureAccepted();

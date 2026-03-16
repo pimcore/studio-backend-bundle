@@ -20,7 +20,6 @@ This flow happens when a user opens the GDPR Data Extractor page and clicks "Sea
     -   `getAvailableColumns()`: To build the columns for the search results grid.
     -   `getRequiredPermissions()`: One or more permissions required by user to access the data provider information
     -   `findData()`: Find the data in the particular provider using the searched terms
-    -   `getDeleteSwaggerOperationId()`: The Operation ID to call to delete item
 
 2.  **When the user clicks "Search":**
     -   The system first calls your `getRequiredPermissions()` method to check if the current user is allowed to use your provider.
@@ -38,19 +37,41 @@ This flow happens when a user has already searched and clicks the "Export" butto
 
 ---
 
-### For Deleting an Item
 
-This flow happens when a user clicks "Delete" on a result row.
+## Configuration
 
-Instead of handling deletion logic inside the provider, you simply **point** to the correct API endpoint.
+The GDPR Data Extractor can be configured. The following options are available:
 
-1.  You implement `getDeleteSwaggerOperationId()`.
-2.  This returns the unique **Operation ID** that handles deleting specific type of item.
-3.  When the user confirms, the frontend calls that API endpoint using the item's ID.
+```yaml
+pimcore_studio_backend:
+    gdpr_data_extractor:
+        dataObjects:
+            classes:
+                # Configure which classes should be considered
+                # Array key is the class name
+                Person:
+                    allowDelete: true  # Allow delete of objects directly in preview grid (default: false)
+                Customer:
+                    allowDelete: false
+        assets:
+            types:
+                # Configure which asset types should be considered
+                - image
+                - document
+                - video
+```
+
+### Configuration Options
+
+| Option                                                            | Type    | Default | Description                                                                                                |
+|-------------------------------------------------------------------|---------|---------|------------------------------------------------------------------------------------------------------------|
+| `gdpr_data_extractor.dataObjects.classes`                         | array   | `[]`    | Configure which Data Object classes should be considered for GDPR search. The array key is the class name. |
+| `gdpr_data_extractor.dataObjects.classes.<ClassName>.allowDelete` | boolean | `false` | Allow deletion of objects directly in the preview grid.                                                    |
+| `gdpr_data_extractor.assets.types`                                | array   | `[]`    | Configure which asset types should be considered for GDPR search (e.g., `image`, `document`, `video`).     |
 
 ## Example Data Provider
 
-Example below shows some of the important functions with their implementations
+The example below shows some of the important functions with their implementations
 
 ```php
 
@@ -93,10 +114,6 @@ final class UserCreatedDataProvider implements DataProviderInterface
        //Find user data using input $terms
 
         //return $results;
-    }
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'data_provider_delete_by_operation_id';
     }
 
     public function getSingleItemForDownload(int $id): array|object

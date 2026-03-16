@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -52,19 +52,19 @@ final class ExportController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/class/custom-layout/export/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_export',
-        description: 'pimcore_studio_api_class_custom_layout_export_description',
-        summary: 'pimcore_studio_api_class_custom_layout_export_summary',
+        operationId: 'class_custom_layout_export',
+        description: 'class_custom_layout_export_description',
+        summary: 'class_custom_layout_export_summary',
         tags: [Tags::ClassDefinition->value]
     )]
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_export_layout_id',
+        description: 'class_custom_layout_export_layout_id',
         required: true
     )]
     #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_export_success_response',
+        description: 'class_custom_layout_export_success_response',
         content: [new MediaType(MimeTypes::JSON->value)],
         headers: [new ContentDisposition(fileName: 'custom_definition_CarToDo_export.json')]
     )]
@@ -72,7 +72,7 @@ final class ExportController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function exportCustomLayout(string $customLayoutId): JsonResponse
+    public function exportCustomLayout(string $customLayoutId): Response
     {
         return $this->customLayoutService->exportCustomLayoutAsJson($customLayoutId);
     }

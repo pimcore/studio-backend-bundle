@@ -13,18 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
-use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\DataObject\Folder;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -36,18 +37,135 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ClassDefinitionHydratorInterface $classDefinitionHydrator,
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
-        private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator,
-        private ElementServiceInterface $elementService,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
-    public function getClassDefinitionCollection(): array
+    /**
+     * {@inheritdoc}
+     */
+    public function createClassDefinition(CreateClassDefinitionParameters $parameters): ClassDefinition
+    {
+        return $this->hydrateClassDefinition(
+            $this->classDefinitionRepository->create($parameters)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateClassDefinition(string $id, UpdateParameters $updateParameters): ClassDefinition
+    {
+        return $this->hydrateClassDefinition(
+            $this->classDefinitionRepository->update(
+                $this->classDefinitionRepository->getClassDefinitionById($id),
+                $updateParameters
+            )
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteClassDefinition(string $id): void
+    {
+        $this->classDefinitionRepository->delete(
+            $this->classDefinitionRepository->getClassDefinitionById($id)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exportClassDefinition(string $id): JsonExport
+    {
+        $classDefinition = $this->classDefinitionRepository->getClassDefinitionById($id);
+        $json = $this->classDefinitionRepository->exportAsJson($classDefinition);
+
+        return new JsonExport(
+            $json,
+            'class_' . $classDefinition->getName() . '_export.json'
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importClassDefinitionFromJson(string $id, string $json): ClassDefinition
+    {
+        $classDefinition = $this->classDefinitionRepository->getClassDefinitionById($id);
+        $classDefinition = $this->classDefinitionRepository->importFromJson($classDefinition, $json);
+
+        return $this->hydrateClassDefinition($classDefinition);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionCollection(
+        bool $creatableOnly = false
+    ): array {
+        return $this->hydrateClassDefinitionList($this->getClassDefinitions($creatableOnly));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionsWithObjectBricks(): array
+    {
+        return $this->hydrateClassDefinitionList(
+            $this->classDefinitionRepository->getClassDefinitionsWithObjectBricks()
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionByName(string $dataObjectClass): ClassDefinition
+    {
+
+        return $this->hydrateClassDefinition($this->classDefinitionRepository->getClassDefinition($dataObjectClass));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionById(string $id): ClassDefinition
+    {
+
+        return $this->hydrateClassDefinition($this->classDefinitionRepository->getClassDefinitionById($id));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionBricks(string $id): array
+    {
+        $class = $this->classDefinitionRepository->getClassDefinitionById($id);
+        $bricks = $this->classDefinitionRepository->getObjectBricksByClassName($class->getName());
+        $hydratedBricks = [];
+
+        foreach ($bricks as $brick) {
+            $brickData = $this->classDefinitionHydrator->hydrateBrickData($brick['key'], $brick['fieldname']);
+            $this->eventDispatcher->dispatch(
+                new ClassDefinitionBrickEvent($brickData),
+                ClassDefinitionBrickEvent::EVENT_NAME
+            );
+            $hydratedBricks[] = $brickData;
+        }
+
+        return $hydratedBricks;
+    }
+
+    /**
+     * @param CoreClassDefinition[] $classDefinitions
+     */
+    private function hydrateClassDefinitionList(array $classDefinitions): array
     {
         $hydrated = [];
-        $cds = $this->classDefinitionRepository->getClassDefinitions();
 
-        foreach ($cds as $definition) {
+        foreach ($classDefinitions as $definition) {
             $hydratedDefinition = $this->classDefinitionListHydrator->hydrate($definition);
 
             $this->eventDispatcher->dispatch(
@@ -60,37 +178,39 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         return $hydrated;
     }
 
-    public function getClassDefinition(string $dataObjectClass): ClassDefinition
+    private function getClassDefinitions(bool $creatableOnly = false): array
     {
-        $cd = $this->classDefinitionHydrator->hydrate(
-            $this->classDefinitionRepository->getClassDefinition($dataObjectClass)
-        );
+        $cds = $this->classDefinitionRepository->getClassDefinitions();
+        if (!$creatableOnly) {
+            return $cds;
+        }
+
+        $currentUser = $this->securityService->getCurrentUser();
+        $allowedDefinitions = [];
+        foreach ($cds as $definition) {
+            if (
+                !$currentUser->isAllowed(
+                    $definition->getId(),
+                    UserPermissions::CLASS_DEFINITION->value
+                )
+            ) {
+                continue;
+            }
+
+            $allowedDefinitions[] = $definition;
+        }
+
+        return $allowedDefinitions;
+    }
+
+    private function hydrateClassDefinition(CoreClassDefinition $classDefinition): ClassDefinition
+    {
+        $cd = $this->classDefinitionHydrator->hydrate($classDefinition);
         $this->eventDispatcher->dispatch(
             new ClassDefinitionEvent($cd),
             ClassDefinitionEvent::EVENT_NAME
         );
 
         return $cd;
-    }
-
-    public function getClassDefinitionIdsInsideFolder(
-        int $folderId
-    ): array {
-        $hydratedClassDefinitions = [];
-        $folder = $this->elementService->getElementById(ElementTypes::TYPE_DATA_OBJECT, $folderId);
-        if (!$folder instanceof Folder) {
-            throw new NotFoundException(ElementTypes::TYPE_DATA_OBJECT . ' Folder', $folderId);
-        }
-
-        foreach ($folder->getDao()->getClasses() as $classDefinition) {
-            $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);
-            $this->eventDispatcher->dispatch(
-                new ClassDefinitionFolderListEvent($class),
-                ClassDefinitionEvent::EVENT_NAME
-            );
-            $hydratedClassDefinitions[] = $class;
-        }
-
-        return $hydratedClassDefinitions;
     }
 }

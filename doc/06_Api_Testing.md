@@ -24,7 +24,7 @@ sudo chmod +x boot-test-env.sh
 For debuging purposes docker exposes some ports to the host machine. You can access the following services:
 
 - Pimcore Admin UI: `http://localhost:6001/admin`
-- Pimcore API: `http://localhost:6002/studio/api/docs`
+- Pimcore API: `http://localhost:6002/pimcore-studio/api/docs`
 - Pimcore Database: `localhost:6006`
 - Opensearch Dashboard: `http://localhost:6004/`
 
@@ -34,7 +34,7 @@ To run the Postman API tests you need to have Postman installed on your machine.
 1. Open Postman
 2. Import the all the collection `tests/Api/*.json`
 3. Create a new environment with the following variables:
-    - `host`: `http://localhost:6001/studio/api`
+    - `host`: `http://localhost:6001/pimcore-studio/api`
 4. Run the collection ether by clicking on the `Run` button or by running the following command in the terminal:
 ```bash
 postman login --with-api-key "your_postman_api_key"

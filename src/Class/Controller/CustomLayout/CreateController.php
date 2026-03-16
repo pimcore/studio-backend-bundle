@@ -38,6 +38,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CreateController extends AbstractApiController
 {
+    private const ROUTE = '/class/custom-layout/{customLayoutId}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly CustomLayoutServiceInterface $customLayoutService
@@ -49,24 +51,24 @@ final class CreateController extends AbstractApiController
     /**
      * @throws NotWriteableException
      */
-    #[Route('/class/{customLayoutId}', name: 'pimcore_studio_api_class_custom_layout_create', methods: ['POST'])]
+    #[Route(self::ROUTE, name: 'class_custom_layout_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/class/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_create',
-        description: 'pimcore_studio_api_class_custom_layout_create_description',
-        summary: 'pimcore_studio_api_class_custom_layout_create_summary',
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'class_custom_layout_create',
+        description: 'class_custom_layout_create_description',
+        summary: 'class_custom_layout_create_summary',
         tags: [Tags::ClassDefinition->value]
     )]
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_create_layout_id',
+        description: 'class_custom_layout_create_layout_id',
         required: true
     )]
     #[CustomLayoutNewRequestBody]
     #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_create_success_response',
+        description: 'class_custom_layout_create_success_response',
         content: new JsonContent(ref: CustomLayout::class, type: 'object')
     )]
     #[DefaultResponses([

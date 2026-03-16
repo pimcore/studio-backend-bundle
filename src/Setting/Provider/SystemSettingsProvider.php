@@ -17,6 +17,10 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function ini_get;
@@ -25,8 +29,10 @@ use function ini_get;
  * @internal
  */
 #[AutoconfigureTag('pimcore.studio_backend.settings_provider')]
-final readonly class SystemSettingsProvider implements SettingsProviderInterface
+final readonly class SystemSettingsProvider implements SettingsProviderInterface, UpdateSettingsProviderInterface
 {
+    use ElementProviderTrait;
+
     private array $systemSettings;
 
     public function __construct(
@@ -34,7 +40,9 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         private AdminResolverInterface $adminResolver,
         private ToolResolverInterface $toolResolver,
         private VersionResolverInterface $versionResolver,
-        private ConfigResolver $configResolver
+        private ConfigResolver $configResolver,
+        private ServiceResolverInterface $serviceResolver,
+        private ElementDataServiceInterface $elementDataService
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
@@ -45,6 +53,15 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'requiredLanguages' => $this->systemSettings['general']['required_languages'] ??
                 $this->systemSettings['general']['valid_languages'],
             'validLanguages' => $this->systemSettings['general']['valid_languages'],
+            'fallbackLanguages' => $this->systemSettings['general']['fallback_languages'],
+            'defaultLanguage' => $this->systemSettings['general']['default_language'] ?? '',
+            'language' => $this->systemSettings['general']['language'] ?? '',
+            'documents' => $this->getDocumentSettings(),
+            'objects' => $this->systemSettings['objects'] ?? [],
+            'assets' => $this->systemSettings['assets'] ?? [],
+            'errorPages' => $this->systemSettings['error_pages'] ?? [],
+            'redirectToMainDomain' => $this->systemSettings['redirect_to_maindomain'] ?? false,
+            'email' => $this->systemSettings['email'] ?? [],
             'availableAdminLanguages' => $this->adminResolver->getLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
@@ -55,6 +72,38 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'version' => $this->versionResolver->getVersion(),
             'environment' => $this->configResolver->getEnvironment(),
         ];
+    }
+
+    public function prepareSettingsForUpdate(array $data): array
+    {
+        $preparedData = [];
+        $languages = $data['general']['valid_languages'] ?? [];
+
+        foreach ($languages as $language) {
+            $preparedData['general.fallbackLanguages.' . $language] =
+                implode(',', $data['general']['fallback_languages'][$language]);
+
+            $preparedData['documents.error_pages.localized.' . $language] =
+                $data['documents']['error_pages']['localized'][$language]['fullPath'] ?? '';
+        }
+
+        $preparedData['objects.versions.days'] = $data['objects']['versions']['days'];
+        $preparedData['objects.versions.steps'] = $data['objects']['versions']['steps'];
+        $preparedData['assets.versions.days'] = $data['assets']['versions']['days'];
+        $preparedData['assets.versions.steps'] = $data['assets']['versions']['steps'];
+        $preparedData['documents.versions.days'] = $data['documents']['versions']['days'];
+        $preparedData['documents.versions.steps'] = $data['documents']['versions']['steps'];
+        $preparedData['documents.error_pages.default'] = $data['documents']['error_pages']['default']['fullPath'] ?? '';
+        $preparedData['general.validLanguages'] = implode(',', $languages);
+        $preparedData['general.fallbackLanguages'] = $data['general']['fallback_languages'];
+        $preparedData['general.requiredLanguages'] = implode(',', $data['general']['required_languages']);
+        $preparedData['general.domain'] = $data['general']['domain'];
+        $preparedData['general.redirect_to_maindomain'] = $data['general']['redirect_to_maindomain'];
+        $preparedData['general.defaultLanguage'] = $data['general']['default_language'];
+        $preparedData['general.debug_admin_translations'] = $data['general']['debug_admin_translations'];
+        $preparedData['email.debug.emailAddresses'] = implode(',', $data['email']['debug']['email_addresses'] ?? []);
+
+        return $preparedData;
     }
 
     private function getSessionLifeTime(): int
@@ -74,5 +123,45 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         $uploadMb = min($maxUpload, $maxPost) ?: $maxUpload;
 
         return (int)$uploadMb;
+    }
+
+    private function getDocumentSettings(): array
+    {
+        $documents = $this->systemSettings['documents'] ?? [];
+        if (empty($documents)) {
+            return [];
+        }
+
+        $errorPage = $this->getErrorDocument($documents['error_pages']['default']);
+        if ($errorPage) {
+            $documents['error_pages']['default'] = $this->elementDataService->getRelatedElementData(
+                $errorPage
+            );
+        }
+
+        foreach ($documents['error_pages']['localized'] as $language => $errorPage) {
+            $element = $this->getErrorDocument($documents['error_pages']['localized'][$language]);
+            if (!$element) {
+                continue;
+            }
+            $documents['error_pages']['localized'][$language] = $this->elementDataService->getRelatedElementData(
+                $element
+            );
+        }
+
+        return $documents;
+    }
+
+    private function getErrorDocument(?string $path): ?ElementInterface
+    {
+        if (!$path) {
+            return null;
+        }
+
+        return $this->getElementByPath(
+            $this->serviceResolver,
+            'document',
+            $path
+        );
     }
 }

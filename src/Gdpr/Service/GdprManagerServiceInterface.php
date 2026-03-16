@@ -15,11 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\MappedParameter\GdprStructuredSearchRequest;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataProvider;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultCollection;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -34,13 +34,15 @@ interface GdprManagerServiceInterface
     /**
      * Searches for data in the specified providers.
      *
-     * @throws ForbiddenException
+     * @returns Collection<GdprDataRow>
+     *
+     * @throws ForbiddenException|NotFoundException
      */
-    public function search(GdprStructuredSearchRequest $request): GdprSearchResultCollection;
+    public function search(CollectionFilterParameter $parameters, string $provider): Collection;
 
     /**
      * @throws ForbiddenException
      * @throws NotFoundException
      */
-    public function getExportDataAsJson(int $id, string $providerKey): StreamedResponse;
+    public function getExportData(int $id, string $providerKey): Response;
 }

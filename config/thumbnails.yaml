@@ -11,5 +11,45 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailRepository
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailConfigRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailConfigRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ImageThumbnailRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ImageThumbnailRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\VideoThumbnailRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\VideoThumbnailRepository
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\ThumbnailConfigHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\ThumbnailConfigHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\ThumbnailFolderHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\ThumbnailFolderHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Image\ConfigDetailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Image\ConfigDetailHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Video\ConfigDetailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Hydrator\Video\ConfigDetailHydrator
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ThumbnailConfigServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ThumbnailConfigService
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ImageThumbnailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\ImageThumbnailService
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Service\VideoThumbnailService
+

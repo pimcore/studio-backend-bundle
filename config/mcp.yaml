@@ -1,0 +1,30 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # PSR-17 Factory (implements ResponseFactoryInterface + StreamFactoryInterface)
+    pimcore_studio_backend.mcp.psr17_factory:
+        class: Http\Discovery\Psr17Factory
+        autowire: false
+        autoconfigure: false
+
+    Psr\Http\Message\ResponseFactoryInterface:
+        alias: pimcore_studio_backend.mcp.psr17_factory
+
+    Psr\Http\Message\StreamFactoryInterface:
+        alias: pimcore_studio_backend.mcp.psr17_factory
+
+    # PSR-7 / Symfony HTTP bridge factories
+    Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory:
+        autoconfigure: false
+
+    Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory:
+        autoconfigure: false
+
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+        alias: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
+
+    Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
+        alias: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory

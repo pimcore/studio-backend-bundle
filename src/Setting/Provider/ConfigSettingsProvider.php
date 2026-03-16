@@ -37,6 +37,5 @@ final readonly class ConfigSettingsProvider implements SettingsProviderInterface
             'timezone' => $this->config['general']['timezone'] ?: date_default_timezone_get(),
             'maps' => $this->config['maps'],
         ];
-
     }
 }

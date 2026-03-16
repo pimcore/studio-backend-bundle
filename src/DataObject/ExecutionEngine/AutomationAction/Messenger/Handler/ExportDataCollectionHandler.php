@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvExportHandlerSetupTr
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
@@ -40,6 +41,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly PublishServiceInterface $publishService,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly UserResolverInterface $userResolver,
         private readonly GridServiceInterface $gridService
     ) {
@@ -101,6 +103,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
             $this->updateProgress(
                 $this->publishService,
+                $this->userTopicService,
                 $jobRun,
                 $this->getJobStep($message)->getName(),
                 $totalObjects

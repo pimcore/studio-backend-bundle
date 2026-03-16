@@ -1,14 +1,20 @@
 parameters:
     level: 6
     reportUnmatchedIgnoredErrors: false
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
     paths:
         - src
     bootstrapFiles:
         - phpstan-bootstrap.php
     excludePaths:
         - src/Tests/*
+    ignoreErrors:
+            -
+                identifier: missingType.generics
+            -
+                identifier: missingType.iterableValue
+            -
+                message: '#Call to method (arrayNode|append|integerNode|scalarNode|booleanNode|enumNode|variableNode)\(\) on an unknown class#'
+                path: src/DependencyInjection/Configuration.php
 
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon

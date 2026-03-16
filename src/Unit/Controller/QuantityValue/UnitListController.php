@@ -37,8 +37,7 @@ final class UnitListController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly QuantityValueServiceInterface $quantityValueService
-
+        private readonly QuantityValueServiceInterface $quantityValueService,
     ) {
         parent::__construct($serializer);
     }

@@ -45,7 +45,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementLocationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementLocationService
 
-  Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface:
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsService
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface:
@@ -77,15 +77,6 @@ services:
   #
   # Hydrator
   #
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydrator

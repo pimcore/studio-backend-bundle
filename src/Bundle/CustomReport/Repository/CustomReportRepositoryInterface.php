@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\User;
@@ -36,6 +35,11 @@ interface CustomReportRepositoryInterface
     public function loadByName(string $name): Config;
 
     /**
+     * @throws NotFoundException
+     */
+    public function loadByNameForCurrentUser(string $name): ?Config;
+
+    /**
      * @throws NotWriteableException
      */
     public function create(string $name): Config;
@@ -43,12 +47,12 @@ interface CustomReportRepositoryInterface
     /**
      * @throws NotWriteableException
      */
-    public function update(Config $config, CustomReportUpdate $parameters): Config;
+    public function update(Config $config): Config;
 
     /**
      * @throws NotWriteableException
      */
-    public function clone(Config $existingConfig, string $newName): Config;
+    public function cloneConfig(Config $existingConfig, string $newName): Config;
 
     /**
      * @throws NotWriteableException

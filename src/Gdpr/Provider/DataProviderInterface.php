@@ -13,20 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Attribute\Request\SearchTerms;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Symfony\Component\HttpFoundation\Response;
 
 interface DataProviderInterface
 {
     /**
-     * @return GdprDataRow[]
+     * @return Collection<GdprDataRow>
      */
-    public function findData(SearchTerms $terms): array;
-
-    public function getDeleteSwaggerOperationId(): string;
+    public function findData(FilterParameter $filter): Collection;
 
     public function getName(): string;
 
@@ -35,18 +33,12 @@ interface DataProviderInterface
     public function getSortPriority(): int;
 
     /**
-     * @return GdprDataColumn[]
-     */
-    public function getAvailableColumns(): array;
-
-    /**
      * @return string[] (e.g., ['users', 'objects'])
      */
     public function getRequiredPermissions(): array;
 
     /**
      * @throws NotFoundException
-     * @throws ForbiddenException
      */
-    public function getSingleItemForDownload(int $id): array|object;
+    public function getSingleItemForDownload(int $id): array|Response;
 }

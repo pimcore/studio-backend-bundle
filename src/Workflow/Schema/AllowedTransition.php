@@ -79,7 +79,7 @@ final readonly class AllowedTransition
         return $this->unsavedChangesBehaviour;
     }
 
-    public function getNotes(): ?array
+    public function getNotes(): array
     {
         return $this->notes;
     }

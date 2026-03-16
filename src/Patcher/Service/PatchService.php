@@ -196,7 +196,7 @@ final readonly class PatchService implements PatchServiceInterface
         return match ($action) {
             PatcherActions::ADD->value => $this->handleAddition($existingMap, $newData, $dataKey),
             PatcherActions::REMOVE->value => $this->handleRemoval($existingMap, $newData, $dataKey),
-            default => $fieldData
+            default => $newData
         };
     }
 

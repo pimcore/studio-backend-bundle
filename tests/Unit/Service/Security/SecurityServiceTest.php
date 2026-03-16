@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\User as PimcoreUser;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 final class SecurityServiceTest extends Unit
 {
@@ -78,7 +79,8 @@ final class SecurityServiceTest extends Unit
     ): SecurityServiceInterface {
         return new SecurityService(
             $this->mockElementPermissionService($hasPermission),
-            $this->mockAuthenticationResolver($withUser)
+            $this->mockAuthenticationResolver($withUser),
+            $this->mockTokenStorage()
         );
     }
 
@@ -97,5 +99,10 @@ final class SecurityServiceTest extends Unit
         return $this->makeEmpty(AuthenticationResolverInterface::class, [
             'authenticateSession' => $withUser ? $user : null,
         ]);
+    }
+
+    private function mockTokenStorage(): TokenStorageInterface
+    {
+        return $this->makeEmpty(TokenStorageInterface::class);
     }
 }

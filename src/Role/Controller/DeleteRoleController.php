@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -43,7 +42,7 @@ final class DeleteRoleController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException|DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
     #[Route('/role/{id}', name: 'pimcore_studio_api_role_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]

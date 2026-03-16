@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
@@ -46,6 +47,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
         private readonly ElementUsageServiceInterface $elementUsageService,
         private readonly UserResolverInterface $userResolver,
         private readonly PublishServiceInterface $publishService,
+        private readonly UserTopicServiceInterface $userTopicService,
     ) {
         parent::__construct();
     }
@@ -98,6 +100,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
             if ($elementCount > 0) {
                 $this->updateProgress(
                     $this->publishService,
+                    $this->userTopicService,
                     $jobRun,
                     $this->getJobStep($message)->getName(),
                     $elementCount
@@ -105,6 +108,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
             } else {
                 $this->updateProgress(
                     $this->publishService,
+                    $this->userTopicService,
                     $jobRun,
                     $this->getJobStep($message)->getName()
                 );

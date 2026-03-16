@@ -113,7 +113,7 @@ final readonly class CustomReportUpdate
         return $this->sql;
     }
 
-    public function getDataSourceConfig(): ?array
+    public function getDataSourceConfig(): array
     {
         return $this->dataSourceConfig;
     }

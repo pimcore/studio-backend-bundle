@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
@@ -41,6 +42,8 @@ class Configuration implements ConfigurationInterface
 
     public const string PERSPECTIVES_NODE = 'studio_perspectives';
 
+    public const string ADMIN_SETTINGS_NODE = 'admin_settings';
+
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
@@ -49,6 +52,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidHostException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -78,13 +83,20 @@ class Configuration implements ConfigurationInterface
         $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
+        $this->addGdprDataExtractorNode($rootNode);
+        $this->addAdminSettingsNode($rootNode);
+        $this->addMcpNode($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
             [
-                self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
-                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+                self::TREE_WIDGETS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
+                self::PERSPECTIVES_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+                self::ADMIN_SETTINGS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . SettingRepository::SCOPE,
             ],
             ['read_target']
         );
@@ -568,7 +580,9 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('classes')
                             ->defaultValue([])
                             ->beforeNormalization()
-                                ->ifString()->then(function ($v) { return [$v]; })
+                                ->ifString()->then(function ($v) {
+                                    return [$v];
+                                })
                             ->end()
                             ->scalarPrototype()->end()
                         ->end()
@@ -648,6 +662,33 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
+    private function addMcpNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('mcp')
+                ->addDefaultsIfNotSet()
+                ->info('MCP (Model Context Protocol) server configuration (experimental)')
+                ->children()
+                    ->arrayNode('authentication')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->arrayNode('tokens')
+                                ->info(
+                                    'Map of Pimcore username to bearer token list. '
+                                    . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
+                                )
+                                ->useAttributeAsKey('username')
+                                ->arrayPrototype()
+                                    ->scalarPrototype()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -655,6 +696,90 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue('studio-admin@pimcore.com')
                     ->cannotBeEmpty()
                 ->end()
+            ->end();
+    }
+
+    private function addGdprDataExtractorNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('gdpr_data_extractor')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('dataObjects')
+                        ->addDefaultsIfNotSet()
+                        ->info('Settings for DataObjects DataProvider')
+                        ->children()
+                            ->arrayNode('classes')
+                                ->info('Configure which classes should be considered, array key is class name')
+                                ->useAttributeAsKey('name')
+                                ->defaultValue([])
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->booleanNode('allowDelete')
+                                            ->info('Allow delete of objects directly in preview grid.')
+                                            ->defaultFalse()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('assets')
+                        ->addDefaultsIfNotSet()
+                        ->info('Settings for Assets DataProvider')
+                        ->children()
+                            ->arrayNode('types')
+                                ->info('Configure which asset types should be considered')
+                                ->scalarPrototype()->end()
+                                ->defaultValue([])
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    private function addAdminSettingsNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::ADMIN_SETTINGS_NODE)
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('branding')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('background_shade')
+                                ->defaultValue('')
+                            ->end()
+                            ->scalarNode('brand_color')
+                                ->defaultValue('')
+                            ->end()
+                            ->arrayNode('login_screen_custom_background_image')
+                                ->children()
+                                    ->scalarNode('id')->end()
+                                    ->scalarNode('type')->end()
+                                ->end()
+                            ->end()
+                            ->arrayNode('custom_logo')
+                                ->children()
+                                    ->scalarNode('id')->end()
+                                    ->scalarNode('type')->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('assets')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->booleanNode('hide_edit_image')
+                                ->defaultFalse()
+                            ->end()
+                            ->booleanNode('disable_tree_preview')
+                                ->defaultFalse()
+                            ->end()
+                        ->end()
+            ->end()
             ->end();
     }
 }

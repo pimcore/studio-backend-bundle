@@ -76,10 +76,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 
         $autoFormatConfigs = $thumbnailConfig->getAutoFormatThumbnailConfigs();
         if ($autoFormatConfigs && $thumbnailConfig->getFormat() === strtoupper(FormatTypes::SOURCE)) {
-            $config = current($autoFormatConfigs);
-            if ($config !== false) {
-                $thumbnailConfig = $config;
-            }
+            $thumbnailConfig = current($autoFormatConfigs);
         }
 
         $format = $thumbnailConfig->getFormat();
@@ -106,7 +103,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         $thumbnailConfig = $this->getImageThumbnailConfig($image->getId(), $parameters);
         $thumbnail = $image->getThumbnail($thumbnailConfig);
         $dpi = $parameters->getDpi();
-        if ($dpi && $thumbnailConfig->getFormat() === MimeTypes::JPEG->value) {
+        if ($dpi && strtolower($thumbnailConfig->getFormat()) === strtolower(MimeTypes::JPEG->value)) {
             $this->resizeThumbnailFile($thumbnail, $dpi);
         }
 

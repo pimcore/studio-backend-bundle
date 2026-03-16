@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use DateInterval;
+use DateTime;
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
@@ -22,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeExcep
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\FormatTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
@@ -33,7 +35,6 @@ use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
 use function in_array;
@@ -54,7 +55,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
+     * @throws ElementStreamResourceNotFoundException
      */
     public function downloadAsset(
         Asset $asset
@@ -73,10 +74,13 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidElementTypeException($image->getType());
         }
 
-        return $this->thumbnailService->getBinaryResponseFromThumbnail(
+        $response = $this->thumbnailService->getBinaryResponseFromThumbnail(
             $this->thumbnailService->getThumbnailFromConfiguration($image, $parameters),
             $image
         );
+        $this->addThumbnailCacheHeaders($response);
+
+        return $response;
     }
 
     /**
@@ -193,10 +197,13 @@ final readonly class DownloadService implements DownloadServiceInterface
             dpi: $configuration['dpi'] ?? null
         );
 
-        return $this->thumbnailService->getBinaryResponseFromThumbnail(
+        $response = $this->thumbnailService->getBinaryResponseFromThumbnail(
             $this->thumbnailService->getThumbnailFromConfiguration($image, $parameters),
             $image
         );
+        $this->addThumbnailCacheHeaders($response);
+
+        return $response;
     }
 
     /**
@@ -215,25 +222,6 @@ final readonly class DownloadService implements DownloadServiceInterface
             $image,
             false
         );
-    }
-
-    public function downloadJSON(
-        string $json,
-        string $filename
-    ): JsonResponse {
-        $response = new JsonResponse(
-            $json
-        );
-        $response->headers->set(
-            HttpResponseHeaders::HEADER_CONTENT_TYPE->value,
-            MimeTypes::JSON->value
-        );
-        $response->headers->set(
-            HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
-            'attachment; filename="' . $filename .'"'
-        );
-
-        return $response;
     }
 
     /**
@@ -258,5 +246,22 @@ final readonly class DownloadService implements DownloadServiceInterface
         }
 
         return $this->getStreamedResponse($thumbnail, $attachmentType);
+    }
+
+    private function addThumbnailCacheHeaders(BinaryFileResponse $response): void
+    {
+        $lifetime = 300;
+        $date = new DateTime('now');
+
+        try {
+            $date->add(new DateInterval('PT' . $lifetime . 'S'));
+        } catch (Exception) {
+            return;
+        }
+
+        $response->setMaxAge($lifetime);
+        $response->setPublic();
+        $response->setExpires($date);
+        $response->headers->set('Pragma', '');
     }
 }

@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -46,7 +45,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotWriteableException|NotFoundException|UserNotFoundException
+     * @throws DatabaseException|NotWriteableException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_doc_type_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::DOCUMENT_TYPES->value)]

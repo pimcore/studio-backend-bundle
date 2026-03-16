@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\ExportCreationHandlerSetupTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -38,6 +39,7 @@ final class CsvCreationHandler extends AbstractHandler
     public function __construct(
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly ExportServiceInterface $csvExportService,
 
     ) {
@@ -97,6 +99,11 @@ final class CsvCreationHandler extends AbstractHandler
             ));
         }
 
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $this->userTopicService,
+            $jobRun,
+            $this->getJobStep($message)->getName()
+        );
     }
 }

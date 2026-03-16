@@ -18,30 +18,36 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\LayoutDefinitionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
+use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function get_class;
 use function sprintf;
 
 /**
  * @internal
  */
-final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
+final readonly class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
     public function __construct(
-        private readonly DataObjectResolverInterface $dataObjectResolver,
-        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
-        private readonly DefinitionResolverInterface $definitionResolver,
-        private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
-        private readonly EventDispatcherInterface $eventDispatcher,
+        private DataObjectResolverInterface $dataObjectResolver,
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private ClassDefinitionResolverInterface $classDefinitionResolver,
+        private DefinitionResolverInterface $definitionResolver,
+        private LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
+        private ObjectBrickRepositoryInterface $objectBrickRepository,
+        private ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -53,7 +59,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         $dataObject = $this->dataObjectResolver->getById($dataObjectId);
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
-                sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))
+                sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)
             );
         }
 
@@ -62,17 +68,38 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
             throw new NotFoundException(type: 'class for data object', id: $dataObjectId);
         }
 
-        $this->collectFieldCollectionTypes($classDef);
+        $objectBrickTypes = $this->collectObjectBrickTypes($classDef);
 
         $layoutDefinitions = [];
-        foreach ($this->collectFieldCollectionTypes($classDef) as $field => $types) {
+        foreach ($objectBrickTypes as $field => $types) {
             foreach ($types as $type) {
                 $layoutDefinitions[] = $this->getLayoutDefinitionByType($type, $field, $dataObject);
             }
         }
 
         return $layoutDefinitions;
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getLayoutDefinitionByKey(string $key): ConfigLayoutDefinition
+    {
+        $definition = $this->objectBrickRepository->getObjectBrickByKey($key);
+        $layout = $definition->getLayoutDefinitions();
+
+        if (!$layout instanceof Panel) {
+            throw new NotFoundException('layout for objectbrick', $key);
+        }
+
+        $configLayoutDefinition = $this->configLayoutDefinitionHydrator->hydrate($layout);
+
+        $this->eventDispatcher->dispatch(
+            new ConfigLayoutDefinitionEvent($configLayoutDefinition),
+            ConfigLayoutDefinitionEvent::EVENT_NAME
+        );
+
+        return $configLayoutDefinition;
     }
 
     /**
@@ -106,7 +133,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         return $layoutDefinition;
     }
 
-    private function collectFieldCollectionTypes(ClassDefinitionInterface $classDefinition): array
+    private function collectObjectBrickTypes(ClassDefinitionInterface $classDefinition): array
     {
         $objectBrickTypes = [];
         foreach ($classDefinition->getFieldDefinitions() as $fieldDefinition) {

@@ -13,13 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Unit\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Model\DataObject\QuantityValue\Unit;
+use Pimcore\Model\DataObject\QuantityValue\Unit\Listing;
 
 /**
  * @internal
  */
 interface QuantityValueRepositoryInterface
 {
+    public function getUnitById(string $id): ?Unit;
+
+    public function unitExists(string $id): bool;
+
     /**
      * @return Unit[]
      */
@@ -29,4 +35,6 @@ interface QuantityValueRepositoryInterface
      * @return Unit[]
      */
     public function getUnitListByBaseUnit(string $baseUnitId, string $fromUnitId): array;
+
+    public function getUnitListing(FilterParameter $parameters): Listing;
 }

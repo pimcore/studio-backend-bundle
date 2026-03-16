@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id',
         'name',
+        'description',
+        'groups',
     ],
     type: 'object'
 )]

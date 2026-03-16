@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Model\Tool\Email\Log\Listing;
@@ -27,6 +28,8 @@ interface EmailLogRepositoryInterface
         CollectionParameters $parameters,
         ?string $email = null,
     ): Listing;
+
+    public function getFilteredListing(FilterParameter $filter): Listing;
 
     /**
      * @throws NotFoundException

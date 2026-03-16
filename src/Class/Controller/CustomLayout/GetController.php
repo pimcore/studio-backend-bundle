@@ -50,19 +50,19 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_get',
-        description: 'pimcore_studio_api_class_custom_layout_get_description',
-        summary: 'pimcore_studio_api_class_custom_layout_get_summary',
+        operationId: 'class_custom_layout_get',
+        description: 'class_custom_layout_get_description',
+        summary: 'class_custom_layout_get_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_get_layout_id',
+        description: 'class_custom_layout_get_layout_id',
         required: true
     )]
     #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_get_success_response',
+        description: 'class_custom_layout_get_success_response',
         content: new JsonContent(ref: CustomLayout::class)
     )]
     #[DefaultResponses([
