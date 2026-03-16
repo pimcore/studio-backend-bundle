@@ -81,8 +81,8 @@ final class ObjectBrickDetail implements AdditionalAttributesInterface
             type: 'array',
             items: new Items(
                 properties: [
-                    new Property(property: 'classname', type: 'string', example: 'Product'),
-                    new Property(property: 'fieldname', type: 'string', example: 'myBrickField'),
+                    new Property(property: 'classname', description: 'Name of the class', type: 'string', example: 'Product'),
+                    new Property(property: 'fieldname', description: 'Name of the field', type: 'string', example: 'myBrickField'),
                 ],
                 type: 'object'
             ),

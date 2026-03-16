@@ -34,8 +34,8 @@ final readonly class BulkExportParameters
             type: 'array',
             items: new Items(
                 properties: [
-                    new Property(property: 'type', type: 'string', example: 'class'),
-                    new Property(property: 'name', type: 'string', example: 'Car'),
+                    new Property(property: 'type', description: 'Type of the item', type: 'string', example: 'class'),
+                    new Property(property: 'name', description: 'Name of the item', type: 'string', example: 'Car'),
                 ],
                 type: 'object'
             )
