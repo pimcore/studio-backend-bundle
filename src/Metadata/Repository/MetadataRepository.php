@@ -34,6 +34,8 @@ use function sprintf;
  */
 final readonly class MetadataRepository implements MetadataRepositoryInterface
 {
+    private const string EXCEPTION_SUBJECT = 'Predefined Metadata';
+
     public function __construct(private PredefinedResolverInterface $predefinedResolver)
     {
     }
@@ -78,7 +80,7 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
     {
         $predefined = $this->predefinedResolver->getById($id);
         if (!$predefined) {
-            throw new NotFoundException('Predefined Metadata', $id);
+            throw new NotFoundException(self::EXCEPTION_SUBJECT, $id);
         }
 
         return $predefined;
@@ -87,7 +89,7 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
     public function createPredefinedMetadata(): Predefined
     {
         if (!(new Predefined())->isWriteable()) {
-            throw new NotWriteableException('Predefined Metadata');
+            throw new NotWriteableException(self::EXCEPTION_SUBJECT);
         }
 
         $metadata = $this->predefinedResolver->create();
@@ -105,7 +107,7 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
         $predefined = $this->getPredefinedMetadataById($id);
 
         if (!$predefined->isWriteable()) {
-            throw new NotWriteableException('Predefined Metadata');
+            throw new NotWriteableException(self::EXCEPTION_SUBJECT);
         }
 
         $this->checkForDuplicate(
@@ -135,7 +137,7 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
         $predefined = $this->getPredefinedMetadataById($id);
 
         if (!$predefined->isWriteable()) {
-            throw new NotWriteableException('Predefined Metadata');
+            throw new NotWriteableException(self::EXCEPTION_SUBJECT);
         }
 
         $predefined->delete();
