@@ -90,7 +90,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                     'firstname' => $user->getFirstname(),
                     'lastname' => $user->getLastname(),
                     'email' => $user->getEmail(),
-                     '__gdprIsDeletable' => $user->getId() != $this->securityService->getCurrentUser()->getId(),
+                     '__gdprIsDeletable' => $user->getId() !== $this->securityService->getCurrentUser()->getId(),
                 ]
             ),
             $users
@@ -171,7 +171,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         if ($handle) {
             while (!feof($handle)) {
                 $buffer = fgets($handle);
-                if ($buffer && strpos($buffer, $pattern) !== false) {
+                if ($buffer && str_contains($buffer, $pattern)) {
                     $matches[] = $buffer;
                 }
             }
@@ -185,7 +185,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         if ($handle) {
             while (!feof($handle)) {
                 $buffer = fgets($handle);
-                if ($buffer && strpos($buffer, $pattern) !== false) {
+                if ($buffer && str_contains($buffer, $pattern)) {
                     $matches[] = $buffer;
                 }
             }
