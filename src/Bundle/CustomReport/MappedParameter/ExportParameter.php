@@ -22,6 +22,7 @@ final readonly class ExportParameter extends ChartDataParameter
 {
     public function __construct(
         string $name,
+        ?array $fields = null,
         FiltersParameter $filters = new FiltersParameter(),
         ?string $sortBy = null,
         ?string $sortOrder = null,
@@ -32,6 +33,7 @@ final readonly class ExportParameter extends ChartDataParameter
     ) {
         parent::__construct(
             name: $name,
+            fields: $fields,
             filters: $filters,
             sortBy: $sortBy,
             sortOrder: $sortOrder,
@@ -44,6 +46,7 @@ final readonly class ExportParameter extends ChartDataParameter
     {
         return new self(
             name: $data['name'],
+            fields: $data['fields'],
             filters: new FiltersParameter(
                 $data['filters']['columnFilters'],
                 $data['filters']['drillDownFilters']

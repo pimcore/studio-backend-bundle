@@ -55,12 +55,13 @@ final class CsvCollectionHandler extends AbstractHandler
         $name = '';
 
         try {
-            $exportParameter = ExportParameter::fromArray(
-                $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value)
-            );
-            $name = $exportParameter->getName();
-            $reportConfig = $this->customReportService->getCustomReportByName($name);
+
+            $stepData = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value);
+            $reportConfig = $this->customReportService->getCustomReportByName($stepData['name']);
             $exportFields = $this->customReportService->getFieldsForExport($reportConfig);
+            $stepData['fields'] = $exportFields;
+            $exportParameter = ExportParameter::fromArray($stepData);
+
             $reportData = $this->customReportAdapterService->getData(
                 $reportConfig,
                 $exportParameter
