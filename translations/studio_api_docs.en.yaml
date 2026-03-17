@@ -715,9 +715,34 @@ logout_summary: Logout and invalidate current session for active user.
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
-metadata_get_collection_description: Get predefined metadata collection with basic filter options
-metadata_get_collection_success_response: Predefined metadata collection
-metadata_get_collection_summary: Get predefined metadata collection
+metadata_asset_get_collection_description: |
+    Get predefined metadata entries filtered by asset type, sub-type and group.
+    Returns metadata definitions applicable to a specific asset type.
+metadata_asset_get_collection_param_group: Filter by metadata group. Use 'default' to match entries with no group assigned.
+metadata_asset_get_collection_param_sub_type: Filter by asset sub-type (e.g. image, video).
+metadata_asset_get_collection_success_response: Filtered predefined metadata entries for the specified asset type
+metadata_asset_get_collection_summary: Get predefined metadata for assets by type
+metadata_get_collection_description: |
+  Get predefined metadata collection with optional search, column filtering, and sorting.
+  Supports <strong>searchTerm</strong> for global text search across all fields,
+  <strong>columnFilters</strong> for per-column filtering (like/equals), and
+  <strong>sortFilter</strong> for sorting by any filterable column.
+metadata_get_collection_success_response: Predefined metadata collection with total item count
+metadata_get_collection_summary: Get predefined metadata collection with filtering and sorting
+metadata_predefined_create_description: |
+    Create a new predefined metadata entry with default values.
+    The entry can be configured afterwards using the update endpoint.
+metadata_predefined_create_success_response: Newly created predefined metadata entry
+metadata_predefined_create_summary: Create a new predefined metadata entry
+metadata_predefined_delete_description: |
+    Delete the predefined metadata entry with the given <strong>{id}</strong>.
+metadata_predefined_delete_success_response: Successfully deleted predefined metadata entry
+metadata_predefined_delete_summary: Delete predefined metadata entry by id
+metadata_predefined_update_description: |
+    Update the predefined metadata entry with the given <strong>{id}</strong>.
+    All provided fields will be updated on the existing entry.
+metadata_predefined_update_success_response: Updated predefined metadata entry
+metadata_predefined_update_summary: Update predefined metadata entry by id
 note_delete_by_id_description: |
   Delete the note with the given <strong>{id}</strong>
 note_delete_by_id_success_response: Successfully deleted note

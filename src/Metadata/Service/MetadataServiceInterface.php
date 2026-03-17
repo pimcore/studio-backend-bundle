@@ -14,10 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -34,8 +38,36 @@ interface MetadataServiceInterface
      */
     public function getCustomMetadata(int $id): array;
 
+    public function getPredefinedMetadata(MetadataParameters $parameters): Collection;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function createPredefinedMetadata(): PredefinedMetadata;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getPredefinedMetadataById(string $id): PredefinedMetadata;
+
+    /**
+     * @throws NotFoundException
+     * @throws NotWriteableException
+     * @throws ApiInvalidArgumentException
+     */
+    public function updatePredefinedMetadata(string $id, UpdatePredefinedMetadata $metadata): PredefinedMetadata;
+
+    /**
+     * @throws NotFoundException
+     * @throws NotWriteableException
+     */
+    public function deletePredefinedMetadata(string $id): void;
+
     /**
      * @return array<int, PredefinedMetadata>
      */
-    public function getPredefinedMetadata(MetadataParameters $parameters): array;
+    public function getAssetPredefinedMetadata(
+        ?string $subType,
+        ?string $group,
+    ): array;
 }
