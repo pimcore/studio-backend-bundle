@@ -15,49 +15,36 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
+/**
+ * @internal
+ */
 #[Schema(
-    title: 'PredefinedMetadata',
-    required: ['id', 'name', 'type', 'creationDate', 'modificationDate', 'isWriteable'],
+    schema: 'UpdatePredefinedMetadata',
+    title: 'Update Predefined Metadata',
+    required: ['name', 'description', 'type', 'targetSubType', 'data', 'config', 'language', 'group'],
     type: 'object'
 )]
-final class PredefinedMetadata implements AdditionalAttributesInterface
+final readonly class UpdatePredefinedMetadata
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
-        #[Property(description: 'Id', type: 'string', example: '1')]
-        private readonly string $id,
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
-        private readonly string $name,
+        private string $name,
         #[Property(description: 'Description', type: 'string', example: 'A predefined metadata')]
-        private readonly ?string $description,
+        private ?string $description,
         #[Property(description: 'Type', type: 'string', example: 'input')]
-        private readonly string $type,
-        #[Property(description: 'Target sub type', type: 'string', example: 'input')]
-        private readonly ?string $targetSubType,
+        private string $type,
+        #[Property(description: 'Target sub type', type: 'string', example: 'image')]
+        private ?string $targetSubType,
         #[Property(description: 'Data', type: 'mixed', example: 'data')]
-        private readonly mixed $data,
+        private mixed $data,
         #[Property(description: 'Config', type: 'string', example: 'config')]
-        private readonly ?string $config,
+        private ?string $config,
         #[Property(description: 'Language', type: 'string', example: 'en')]
-        private readonly ?string $language,
+        private ?string $language,
         #[Property(description: 'Group', type: 'string', example: 'group')]
-        private readonly ?string $group,
-        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
-        private readonly int $creationDate,
-        #[Property(description: 'Modfication Date', type: 'integer', example: 1634025600)]
-        private readonly int $modificationDate,
-        #[Property(description: 'Writable', type: 'bool', example: false)]
-        private readonly bool $isWriteable = false,
+        private ?string $group,
     ) {
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 
     public function getName(): string
@@ -98,20 +85,5 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
     public function getGroup(): ?string
     {
         return $this->group;
-    }
-
-    public function getCreationDate(): int
-    {
-        return $this->creationDate;
-    }
-
-    public function getModificationDate(): int
-    {
-        return $this->modificationDate;
-    }
-
-    public function isWriteable(): bool
-    {
-        return $this->isWriteable;
     }
 }

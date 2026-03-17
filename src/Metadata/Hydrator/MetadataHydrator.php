@@ -47,7 +47,7 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
             $predefined->getName(),
             $predefined->getDescription(),
             $predefined->getType(),
-            $predefined->getTargetSubType(),
+            $predefined->getTargetSubtype(),
             $this->resolveDefinitionData(
                 $predefined->getData(),
                 $predefined->getType(),
