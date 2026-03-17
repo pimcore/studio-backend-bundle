@@ -15,6 +15,10 @@ pimcore:
             - studio
 
 pimcore_studio_backend:
+    mercure_settings:
+        hub_url_client: '%env(default::MERCURE_URL)%'
+        hub_url_server: '%env(default::MERCURE_SERVER_URL)%'
+        jwt_key: '%env(MERCURE_JWT_KEY)%'
     open_api_scan_paths:
         - "%kernel.project_dir%/vendor/pimcore/studio-backend-bundle/src"
     asset_default_formats:
