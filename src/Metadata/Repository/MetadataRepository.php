@@ -25,6 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Util\Constant\FilterableFields;
 use Pimcore\Model\Metadata\Predefined;
 use Pimcore\Model\Metadata\Predefined\Listing;
+use function array_key_exists;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
