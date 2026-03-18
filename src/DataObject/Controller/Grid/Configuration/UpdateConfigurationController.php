@@ -38,6 +38,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UpdateConfigurationController extends AbstractApiController
 {
+    private const string ROUTE = '/data-object/grid/configuration/update/{configurationId}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UpdateConfigurationServiceInterface $gridSaveConfigurationService
@@ -49,13 +51,13 @@ final class UpdateConfigurationController extends AbstractApiController
      * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
     #[Route(
-        '/data-object/grid/configuration/update/{configurationId}',
+        self::ROUTE,
         name: 'pimcore_studio_api_update_data_object_grid_configuration',
         methods: ['PUT'],
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Put(
-        path: self::PREFIX . '/data-object/grid/configuration/update/{configurationId}',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'data_object_update_grid_configuration',
         description: 'data_object_update_grid_configuration_description',
         summary: 'data_object_update_grid_configuration_summary',
