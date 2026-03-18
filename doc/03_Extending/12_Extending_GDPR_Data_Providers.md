@@ -6,7 +6,8 @@ New providers can be created by implementing the `Pimcore\Bundle\StudioBackendBu
 
 ## How does it work
 
-As a developer, you only need to register it with the `pimcore.studio_backend.gdpr_data_provider` tag and implement the `DataProviderInterface`. The Pimcore system will automatically find your provider and use in Searching and Exporting.
+As a developer, you only need to register it with the `pimcore.studio_backend.gdpr_data_provider` tag and implement the `DataProviderInterface`.
+The Pimcore system will automatically find your provider and use it for searching and exporting.
 
 ### For Searching
 
@@ -14,26 +15,31 @@ This flow happens when a user opens the GDPR Data Extractor page and clicks "Sea
 
 1.  **To build the page:** The user needs to create these methods on their newly created provider:
 
-    -   `getName()`: To get the human-friendly name for the provider list.
+    -   `getName()`: To get the human-friendly name for the provider tab.
     -   `getKey()`: To get the unique ID.
     -   `getSortPriority()`: To decide where to place your provider in the list.
-    -   `getAvailableColumns()`: To build the columns for the search results grid.
-    -   `getRequiredPermissions()`: One or more permissions required by user to access the data provider information
-    -   `findData()`: Find the data in the particular provider using the searched terms
+    -   `getRequiredPermissions()`: One or more permissions required by user to access the data provider information.
+    -   `findData()`: Find the data in the particular provider using the searched terms.
 
 2.  **When the user clicks "Search":**
     -   The system first calls your `getRequiredPermissions()` method to check if the current user is allowed to use your provider.
-    -   If permission is granted, the system calls your `findData()` method, passing the user's search terms.
-    -   The result you return from `findData()` is then displayed directly in the results grid.
+    -   If permission is granted, the system calls your `findData()` method, passing the user's search terms as a `FilterParameter`.
+    -   The `Collection` you return from `findData()` is then displayed in the results grid.
+
+> **Note:** The columns displayed in the search results grid are defined on the **frontend** side
+> (in the tab component using TanStack Table's `createColumnHelper`). The backend only returns
+> data rows via `GdprDataRow` — each row contains a key-value map that the frontend maps to columns.
+> See the [GDPR Data Extractor documentation](https://docs.pimcore.com/platform/Pimcore/Content_Management_Features/GDPR_Data_Extractor)
+> for the frontend implementation details.
 
 ### For Exporting (Direct Download)
 
 This flow happens when a user has already searched and clicks the "Export" button on a single item in your results grid.
 
 1.  **When the user clicks "Export" on an item:**
-    -   The system again checks your `getRequiredPermission()` method.
+    -   The system again checks your `getRequiredPermissions()` method.
     -   If permission is granted, the system calls your `getSingleItemForDownload(int $id)` method, passing the ID of the item the user wants to export.
-    -   The `array` or `object` you return from `getSingleItemForDownload()` is then automatically converted by the system into a **downloadable file** for the user.
+    -   The `array` or `Response` you return from `getSingleItemForDownload()` is then automatically converted by the system into a **downloadable file** for the user.
 
 ---
 
@@ -71,20 +77,32 @@ pimcore_studio_backend:
 
 ## Example Data Provider
 
-The example below shows some of the important functions with their implementations
+The example below shows a minimal provider implementation. The constructor **must** accept
+an `array $gdprConfig = []` parameter — a compiler pass injects the
+`pimcore_studio_backend.gdpr_data_extractor` configuration into every tagged provider.
 
 ```php
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Symfony\Component\HttpFoundation\Response;
 
-final class UserCreatedDataProvider implements DataProviderInterface
+final class MyDataProvider implements DataProviderInterface
 {
+    public function __construct(
+        array $gdprConfig = []
+    ) {
+    }
+
     public function getKey(): string
     {
-        return 'key_value';
+        return 'my_data_provider';
     }
 
     public function getName(): string
     {
-        return 'Data Provider Name';
+        return 'My Data Provider';
     }
 
     public function getSortPriority(): int
@@ -101,25 +119,29 @@ final class UserCreatedDataProvider implements DataProviderInterface
         return ['permission 1', 'permission 2'];//example : UserPermissions::USERS->value
     }
 
-    public function getAvailableColumns(): array
+    public function findData(FilterParameter $filter): Collection
     {
-        return [
-            new GdprDataColumn('column1', 'Column 1 Value'),
-            new GdprDataColumn('column2', 'Column 2 Value'),
-        ];
+        // Search your data source using $filter->getSearchTerm(), etc.
+
+        return new Collection(
+            totalItems: 1,
+            items: [
+                new GdprDataRow([
+                    'id' => 123,
+                    'name' => 'John Doe',
+                    'email' => 'john@example.com',
+                ])
+            ]
+        );
     }
 
-    public function findData(?SearchTerms $terms): array
+    public function getSingleItemForDownload(int $id): array|Response
     {
-       //Find user data using input $terms
-
-        //return $results;
-    }
-
-    public function getSingleItemForDownload(int $id): array|object
-    {
-     //   return single Item of a Data Provider
+        // Return the data for a single item to be exported as JSON
+        return ['id' => $id, 'name' => 'John Doe', 'email' => 'john@example.com'];
     }
 }
-
 ```
+
+A complete working example (including the frontend tab component) is available in the
+[Studio Example Bundle](https://github.com/pimcore/studio-example-bundle/tree/main/assets/js/src/examples/gdpr-data-extractor).
