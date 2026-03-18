@@ -388,7 +388,7 @@ data_object_replace_content_success_response: Successfully replaced content of d
 data_object_replace_content_summary: Replace content of a data object
 data_object_get_grid_configuration_description: |
   Get data object saved grid configuration by <strong>{folderId}</strong> <strong>{classId}</strong> if a configuration-id is set, otherwise get the default configuration will be returned.
-data_object_get_grid_configuration__success_response: Data Object grid configuration
+data_object_get_grid_configuration_success_response: Data Object grid configuration
 data_object_get_grid_configuration_summary: Get data object grid configuration for a specific folder and class-id
 data_object_get_search_configuration_description: Get data object search configuration
 data_object_get_search_configuration_summary: Get data object search configuration
@@ -1254,6 +1254,10 @@ asset_set_grid_configuration_as_favorite_description: |
     Set asset grid configuration as favorite for the current user for a specific folder
 asset_set_grid_configuration_as_favorite_success_response: Asset grid configuration set as favorite successfully
 asset_set_grid_configuration_as_favorite_summary: Set asset grid configuration as favorite for a specific folder
+asset_remove_grid_configuration_as_favorite_description: |
+    Remove asset grid configuration as favorite for the current user for a specific folder
+asset_remove_grid_configuration_as_favorite_success_response: Asset grid configuration removed as favorite successfully
+asset_remove_grid_configuration_as_favorite_summary: Remove asset grid configuration as favorite for a specific folder
 asset_get_available_grid_list_configurations_description: |
     Get all saved grid configurations for assets of the given folder for the current user
 asset_get_available_grid_list_configurations_success_response: List of saved grid configurations for the given folder
@@ -1305,6 +1309,10 @@ data_object_set_grid_configuration_as_favorite_description: |
   Set data object grid configuration as favorite for the current user for a specific folder
 data_object_set_grid_configuration_as_favorite_success_response: Data Object grid configuration set as favorite successfully
 data_object_set_grid_configuration_as_favorite_summary: Set data object grid configuration as favorite for a specific folder
+data_object_remove_grid_configuration_as_favorite_description: |
+  Remove data object grid configuration as favorite for the current user for a specific folder
+data_object_remove_grid_configuration_as_favorite_success_response: Data Object grid configuration removed as favorite successfully
+data_object_remove_grid_configuration_as_favorite_summary: Remove data object grid configuration as favorite for a specific folder
 data_object_delete_grid_configuration_by_configurationId_description: |
   Delete grid configuration for a given configuration ID <strong>{configurationId}</strong>
 data_object_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a given configuration ID

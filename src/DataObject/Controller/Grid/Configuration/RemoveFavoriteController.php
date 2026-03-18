@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid\Configuration;
 
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -33,9 +33,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class SetAsFavoriteController extends AbstractApiController
+final class RemoveFavoriteController extends AbstractApiController
 {
-    private const string ROUTE = '/data-object/grid/configuration/set-as-favorite/{configurationId}/{folderId}';
+    private const string ROUTE = '/data-object/grid/configuration/remove-favorite/{configurationId}/{folderId}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -49,15 +49,15 @@ final class SetAsFavoriteController extends AbstractApiController
      */
     #[Route(
         self::ROUTE,
-        name: 'pimcore_studio_api_data_object_set_grid_configuration_as_favorite',
-        methods: ['POST'],
+        name: 'pimcore_studio_api_data_object_remove_grid_configuration_as_favorite',
+        methods: ['DELETE'],
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
-    #[Post(
+    #[Delete(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'data_object_set_grid_configuration_as_favorite',
-        description: 'data_object_set_grid_configuration_as_favorite_description',
-        summary: 'data_object_set_grid_configuration_as_favorite_summary',
+        operationId: 'data_object_remove_grid_configuration_as_favorite',
+        description: 'data_object_remove_grid_configuration_as_favorite_description',
+        summary: 'data_object_remove_grid_configuration_as_favorite_summary',
         tags: [Tags::DataObjectsGrid->value]
     )]
     #[IdParameter(
@@ -69,18 +69,18 @@ final class SetAsFavoriteController extends AbstractApiController
         name: 'folderId'
     )]
     #[SuccessResponse(
-        description: 'data_object_set_grid_configuration_as_favorite_success_response'
+        description: 'data_object_remove_grid_configuration_as_favorite_success_response'
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function setDataObjectGridConfigurationAsFavorite(
+    public function removeDataObjectGridConfigurationAsFavorite(
         int $configurationId,
         int $folderId
     ): Response {
-        $this->updateConfigurationService->setDataObjectGridConfigurationAsFavorite($configurationId, $folderId);
+        $this->updateConfigurationService->removeDataObjectGridConfigurationAsFavorite($configurationId, $folderId);
 
         return new Response();
     }
