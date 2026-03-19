@@ -131,25 +131,29 @@ Additionally, you can configure the cookie parameters like:
 ```yaml
 pimcore_studio_backend:
     mercure_settings:
-        jwt_key: '<your-256-bit-secret-min-32-chars>'
+        jwt_key: '%env(MERCURE_JWT_KEY)%'
         # Optional configuration
 
         # The url to the mercure hub for the (frontend) client.
         # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub".
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
-        hub_url_client: 'https://your-app-domain.com/hub'
+        hub_url_client: '%env(default::MERCURE_URL)%'
 
         # The url to the mercure hub for the server. 
         # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
         # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub/.well-known/mercure".
-        hub_url_server: 'http://mercure/.well-known/mercure'
+        hub_url_server: '%env(default::MERCURE_SERVER_URL)%'
         cookie_lifetime: 3600
         cookie_same_site: 'strict'
 ```
 
-You need to configure the full URL including protocol, port and path to Mercure here.
-For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
-If these settings are not set, URLs will be generated based on Pimcore host and default paths.
+Starting with Pimcore 2026.1, the recommended approach is to use environment variables for Mercure
+settings. Set `MERCURE_JWT_KEY`, `MERCURE_URL`, and `MERCURE_SERVER_URL` in your `.env` or
+`.env.local` file and reference them via `%env(...)%` as shown above. The `default::` processor
+makes the URL settings optional — if the env vars are not set, the bundle auto-detects URLs based on
+the current Pimcore host.
+
+For the full Mercure setup details, see [Mercure Setup](./02_Mercure_Setup.md).
 
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  

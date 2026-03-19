@@ -79,6 +79,38 @@ Add Mercure to your docker compose file and make sure to add the configuration f
 
 Configure Pimcore application with JWT key as well as the client side and server side URLs for Mercure.
 
+Starting with Pimcore 2026.1, Mercure settings can be configured via environment variables. This is
+the recommended approach as it keeps secrets out of configuration files and integrates with the
+Pimcore installer's env var system.
+
+Set the following environment variables (e.g. in your `.env` or `.env.local` file):
+
+```dotenv
+MERCURE_JWT_KEY='<your-256-bit-secret-min-32-chars>'
+MERCURE_URL='https://your-app-domain.com/hub'
+MERCURE_SERVER_URL='http://mercure/.well-known/mercure'
+```
+
+Then reference them in your configuration:
+
+```yaml
+pimcore_studio_backend:
+    mercure_settings:
+        jwt_key: '%env(MERCURE_JWT_KEY)%'
+        hub_url_client: '%env(default::MERCURE_URL)%'
+        hub_url_server: '%env(default::MERCURE_SERVER_URL)%'
+```
+
+The `default::` env processor makes `hub_url_client` and `hub_url_server` optional — if not set,
+the bundle falls back to auto-detected URLs based on the current Pimcore host.
+
+`MERCURE_JWT_KEY` is required and has no default.
+
+> **Note:** You can still use hardcoded values directly in the YAML config as before — env vars are
+> the recommended approach but not mandatory.
+
+**Previous approach (still supported):**
+
 ```yaml
 pimcore_studio_backend:
     mercure_settings:
