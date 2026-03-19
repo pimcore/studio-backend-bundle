@@ -7,7 +7,8 @@ The idea is that every filter knows for which type it is responsible and can be 
 
 
 ## How does it work
-Every filter type has its own filter service class which loads all the tagged services and iterates over them and calls the `apply` method.
+Every filter type has its own filter service class which loads all the tagged services and iterates over them and calls 
+the `apply` method.
 The filter itself is responsible for the logic and if the filter is applied.
 The input parameters can be different depending on the filter type.
 Keep in mind that for the listing filters only supported filters are loaded based on the listing itself.
@@ -125,7 +126,8 @@ final readonly class LikeFilter implements FilterInterface
 
 
 ## Search Index Filters
-For assets, data objects and documents we are using OpenSearch or ElasticSearch (based on your Generic Data Index configuration) to index the data and to provide a fast search.
+For assets, data objects and documents we are using OpenSearch or ElasticSearch (based on your Generic Data Index 
+configuration) to index the data and to provide a fast search.
 For more details on how to implement these filters see the [Search Index Filters](./01_Extending_Search_Index_Filters.md).
 
 ## Listing Filters

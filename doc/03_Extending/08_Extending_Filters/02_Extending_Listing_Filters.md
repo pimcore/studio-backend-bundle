@@ -7,6 +7,7 @@ In order to add a new Filter, you need to implement the `Pimcore\Bundle\StudioBa
 
 ## AbstractListing vs CallableListingInterface
 Unfortunately not all listings are the same. 
-If you encounter a listing that only allows you to use the method `setFilter` you have to do all the filtering in one filter like e.g. the properties filter.
+If you encounter a listing that only allows you to use the method `setFilter` you have to do all the filtering in one 
+filter like e.g. the properties filter.
 For AbstractListings you can use the method `addConditionParam` to chain the filters.
 Make sure that you do not override the filters of the listing by using `setCondition`.

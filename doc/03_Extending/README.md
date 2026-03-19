@@ -1,9 +1,18 @@
+---
+title: Extending Pimcore Studio Backend
+description: Extension points for the Studio Backend API layer - endpoints, events, filters, grid columns, and adapters.
+---
+
 # Extending Pimcore Studio Backend
 
-Pimcore Studio Backend Bundle can be extended to add custom endpoints, filters, grid customizations and more. 
-Most of the customizations can be done by implementing interfaces and registering the services with the according tags.
+This chapter covers extension points specific to the Studio Backend API layer.
+For an overview of all Pimcore extension points across core, backend, and frontend layers,
+see [Extending Pimcore](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/README.md).
 
-To add your custom implementations to the API docs you need to add the following configuration to your `config.yaml`:
+Pimcore Studio Backend Bundle can be extended to add custom endpoints, filters, grid customizations and more.
+Most customizations require implementing interfaces and registering the services with the according tags.
+
+To add your custom implementations to the API docs, add the following configuration to your `config.yaml`:
 
 ```yaml
 pimcore_studio_backend:
@@ -11,7 +20,8 @@ pimcore_studio_backend:
         - "%kernel.project_dir%/vendor/<namespace>/<bundle-name>/src"
 ```
 
-This ensures that Swagger can scan your routes for the OpenApi documentation. Keep in mind that the paths are relative to the project directory.
+This ensures that Swagger can scan your routes for the OpenAPI documentation. Keep in mind that the paths
+are relative to the project directory.
 
 The main topics that can be extended are:
 - [Additional and Custom Attributes](./01_Additional_and_Custom_Attributes.md)

@@ -1,6 +1,7 @@
 # Extending Perspectives
 
-Perspectives allow to create different views in Pimcore Studio and even customize the standard perspective. They are using widgets to create unique views for the Pimcore Studio.
+Perspectives allow to create different views in Pimcore Studio and even customize the standard perspective. 
+They are using widgets to create unique views for the Pimcore Studio.
 
 You can define:
 
@@ -10,7 +11,8 @@ You can define:
 
 ## How to add a custom context menu permissions
 
-To add a custom context menu permission to the Pimcore Studio Backend, you need to implement your custom event subscriber and inject the `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface` service:
+To add a custom context menu permission to the Pimcore Studio Backend, you need to implement your custom event 
+subscriber and inject the `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface` service:
 
 ### 1. Define your subscriber service
 
@@ -26,7 +28,8 @@ services:
 
 ### 2. (Optional) Conditionally add your subscriber
 
-If the Studio is not a required bundle, but you still want to add the permissions to it once its enabled, you can follow the example below:
+If the Studio is not a required bundle, but you still want to add the permissions to it once its enabled, you can 
+follow the example below:
 
 - Add your service to the separate configuration yaml file, for example `pimcore_studio_backend.yaml`.
 - In your bundle extension class, e.g. `AppExtension` add following to the [prepend](https://symfony.com/doc/current/components/dependency_injection/compilation.html#prepending-configuration-passed-to-the-extension) method:

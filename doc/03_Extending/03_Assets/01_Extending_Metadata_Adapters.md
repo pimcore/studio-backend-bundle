@@ -1,8 +1,10 @@
 # Extending metadata adapters
 
-Asset metadata adapters are used to process metadata values before they are, e.g., saved to the database or displayed in the user interface.
+Asset metadata adapters are used to process metadata values before they are, e.g., saved to the database or displayed 
+in the user interface.
 
-Each metadata field is mapped to the corresponding adapter by its type. This allows you to modify the metadata values in a flexible way.
+Each metadata field is mapped to the corresponding adapter by its type. This allows you to modify the metadata values 
+in a flexible way.
 
 ## How to add a custom metadata adapter
 
