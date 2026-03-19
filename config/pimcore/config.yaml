@@ -90,7 +90,7 @@ pimcore_studio_backend:
         types:
             asset: ['content', 'seo', 'warning', 'notice']
             document: ['content', 'seo', 'warning', 'notice']
-            data-object: ['content', 'seo', 'warning', 'notice']
+            data_object: ['content', 'seo', 'warning', 'notice']
 
     widget_types:
         - 'element_tree'

@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapperInterface;
 use Pimcore\Config\LocationAwareConfigRepository;
 use function sprintf;
 
@@ -28,6 +29,7 @@ use function sprintf;
 final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryInterface
 {
     public function __construct(
+        private readonly ConfigKeyMapperInterface $configKeyMapper,
         private readonly array $perspectiveConfigurations,
         private readonly array $storageConfig,
         private readonly array $defaultPerspective
@@ -46,6 +48,7 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
         }
 
         [$configData, $dataSource] = $this->loadConfig($perspectiveId);
+        $configData = $this->configKeyMapper->mapKeysForApp($configData);
         $configData['isWriteable'] = $this->isRepositoryWritable($perspectiveId, $dataSource);
         $configData['id'] = $perspectiveId;
 
@@ -60,15 +63,20 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
         $this->isRepositoryWritable(message: 'Could not save the perspective configuration: %s');
 
         try {
-            $this->getRepository()->saveConfig($perspectiveId, $perspectiveData, function ($key, $data) {
-                return [
-                    Configuration::ROOT_NODE => [
-                        Configuration::PERSPECTIVES_NODE => [
-                            $key => $data,
+            $snakeCaseData = $this->configKeyMapper->mapKeysForConfig($perspectiveData);
+            $this->getRepository()->saveConfig(
+                $perspectiveId,
+                $snakeCaseData,
+                function ($key, $data) {
+                    return [
+                        Configuration::ROOT_NODE => [
+                            Configuration::PERSPECTIVES_NODE => [
+                                $key => $data,
+                            ],
                         ],
-                    ],
-                ];
-            });
+                    ];
+                }
+            );
         } catch (Exception $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }

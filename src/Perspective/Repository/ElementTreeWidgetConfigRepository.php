@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedI
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -38,6 +39,7 @@ use function sprintf;
 final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryInterface
 {
     public function __construct(
+        private readonly ConfigKeyMapperInterface $configKeyMapper,
         private readonly IconServiceInterface $iconService,
         private readonly NormalizerInterface $normalizer,
         private readonly TreeContextPermissionsServiceInterface $contextPermissionService,
@@ -91,6 +93,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function getConfiguration(string $widgetId): array
     {
         [$configData, $dataSource] = $this->loadConfig($widgetId);
+        $configData = $this->configKeyMapper->mapKeysForApp($configData);
         $configData['isWriteable'] = $this->isRepositoryWritable($widgetId, $dataSource);
         $configData['id'] = $widgetId;
 
@@ -111,15 +114,20 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         $this->isRepositoryWritable(message: 'Could not save the widget configuration: %s');
 
         try {
-            $this->getRepository()->saveConfig($widgetConfiguration->getId(), $widgetData, function ($key, $data) {
-                return [
-                    Configuration::ROOT_NODE => [
-                        Configuration::TREE_WIDGETS_NODE => [
-                            $key => $data,
+            $snakeCaseData = $this->configKeyMapper->mapKeysForConfig($widgetData);
+            $this->getRepository()->saveConfig(
+                $widgetConfiguration->getId(),
+                $snakeCaseData,
+                function ($key, $data) {
+                    return [
+                        Configuration::ROOT_NODE => [
+                            Configuration::TREE_WIDGETS_NODE => [
+                                $key => $data,
+                            ],
                         ],
-                    ],
-                ];
-            });
+                    ];
+                }
+            );
         } catch (Exception $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
