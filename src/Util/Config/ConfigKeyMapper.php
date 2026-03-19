@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Config;
 
+use function is_array;
+
 /**
  * @internal
  */
