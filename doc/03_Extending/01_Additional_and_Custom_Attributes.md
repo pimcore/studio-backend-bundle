@@ -57,6 +57,63 @@ final class AssetEvent extends AbstractPreResponseEvent
 }
 ```
 
+### Custom Icons & Tooltips
+
+A common use of custom attributes is overriding the icon and tooltip shown in the element tree and editor tabs. The following subscriber sets a custom icon and tooltip for all Data Objects of class "Car":
+
+> **Note:** The tree and editor/detail endpoints fire separate events. To customize icons in both the tree **and** editor tabs, subscribe to both `pre_response.data_object` (tree) and `pre_response.data_object_detail` (editor). See the [Custom Icons & Tooltips extension guide](https://github.com/pimcore/pimcore/blob/2025.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/10_Custom_Icons_and_Tooltips.md) for a complete example.
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\EventSubscriber;
+
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEvent;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+class CarTreeStyleSubscriber implements EventSubscriberInterface
+{
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            DataObjectEvent::EVENT_NAME => 'handleDataObject',
+        ];
+    }
+
+    public function handleDataObject(DataObjectEvent $event): void
+    {
+        $dataObject = $event->getDataObject();
+
+        if ($dataObject->getClassName() !== 'Car') {
+            return;
+        }
+
+        $customAttributes = $event->getCustomAttributes();
+
+        // Named icon from the Studio icon set
+        $customAttributes->setIcon(
+            new ElementIcon(ElementIconTypes::NAME->value, 'car')
+        );
+
+        // Or use a path to a custom SVG:
+        // $customAttributes->setIcon(
+        //     new ElementIcon(ElementIconTypes::PATH->value, '/static/images/icons/car.svg')
+        // );
+
+        $customAttributes->setTooltip(
+            '<b>' . htmlspecialchars($dataObject->getKey()) . '</b><br>ID: ' . $dataObject->getId()
+        );
+
+        $event->setCustomAttributes($customAttributes);
+    }
+}
+```
+
+For more details and frontend customization options, see the [Custom Icons & Tooltips extension guide](https://github.com/pimcore/pimcore/blob/2025.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/10_Custom_Icons_and_Tooltips.md).
+
 ### List of custom attributes
 
 - `icon` - The custom icon that should be displayed in the tree.
