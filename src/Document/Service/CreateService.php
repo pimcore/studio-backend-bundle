@@ -33,6 +33,7 @@ use Pimcore\Model\Document\Service;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
