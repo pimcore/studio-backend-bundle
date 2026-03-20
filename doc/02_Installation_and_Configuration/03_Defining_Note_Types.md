@@ -1,9 +1,9 @@
 ---
-title: Extending Notes
+title: Defining Note Types
 description: Add custom note types for assets, documents, and data objects.
 ---
 
-# Extending Notes
+# Defining Note Types
 
 Notes to log changes or events on elements independently of the versioning. You can get more general information about notes [here](https://pimcore.com/docs/platform/Pimcore/Tools_and_Features/Notes_and_Events/)
 

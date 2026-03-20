@@ -21,7 +21,7 @@ a type-safe getter for the underlying schema object.
 
 ## Subscribing to Events
 
-For the subscriber pattern, see [Extending via Events](./11_Extending_via_Events.md).
+For the subscriber pattern, see [Extending via Events](./01_Extending_via_Events.md).
 
 ### Example: PreResponse Event Structure
 ```php

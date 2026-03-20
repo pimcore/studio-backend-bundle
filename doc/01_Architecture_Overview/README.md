@@ -38,7 +38,7 @@ use OpenAPI `#[Schema]` and `#[Property]` attributes to generate the Swagger doc
 
 **PreResponse events** fire after hydration but before serialization, letting subscribers add
 custom attributes or modify the response. See
-[Additional and Custom Attributes](../03_Extending/01_Additional_and_Custom_Attributes.md)
+[Additional and Custom Attributes](../03_Extending/02_Additional_and_Custom_Attributes.md)
 for the full event list.
 
 ## Authentication and Security

@@ -36,9 +36,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Model\DataObject\MyCustomObject;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-// Each metadata adapter must be tagged with the `pimcore.studio_backend.metadata_adapter` tag
-// It is possible to use the `AdapterLoader::METADATA_ADAPTER_TAG` enum for this purpose
-// The adapter must implement at least the `MetaDataAdapterInterface` interface in order to be recognized by the system
+// Tag with `pimcore.studio_backend.metadata_adapter` (use the AdapterLoader enum).
+// The adapter must implement at least `MetaDataAdapterInterface` so the system discovers it.
 #[AutoconfigureTag(AdapterLoader::METADATA_ADAPTER_TAG->value)]
 final readonly class MyCustomAdapter implements 
     MetaDataAdapterInterface,
@@ -51,10 +50,8 @@ final readonly class MyCustomAdapter implements
     ) {
     }
     
-    // Let's assume that the `myCustom` metadata value is returning a specific object.
-    // However, we want to return just some specific properties of this object.
-    // We can therefore normalize the value to an array and return only the required properties.
-    public function normalize(mixed $value, string $type): ?int
+    // Normalize the `myCustom` metadata value to an array with only the required properties.
+    public function normalize(mixed $value, string $type): mixed
     {
         if (!$value instanceof MyCustomObject) {
             return null;
@@ -102,12 +99,12 @@ pimcore_studio_backend:
 ```
 
 Important interfaces:
-- `Pimcore\Bundle\StudioBackendBundle\Metadata\Data\MetaDataAdapterInterface` - The main marker interface that must be implemented by the adapter.
-- `Pimcore\Bundle\StudioBackendBundle\Metadata\Data\DataNormalizerInterface` - The interface that needs to be implemented if the adapter should be able to normalize the metadata value.
-- `Pimcore\Bundle\StudioBackendBundle\Metadata\Data\DataDenormalizerInterface` - The interface that needs to be implemented if the adapter should be able to denormalize the metadata value.
+- `Pimcore\Bundle\StudioBackendBundle\Metadata\Data\MetaDataAdapterInterface` - Main marker interface. Every adapter must implement this.
+- `Pimcore\Bundle\StudioBackendBundle\Metadata\Data\DataNormalizerInterface` - Implement to normalize the metadata value for API responses.
+- `Pimcore\Bundle\StudioBackendBundle\Metadata\Data\DataDenormalizerInterface` - Implement to denormalize incoming metadata values before saving.
 
 :::info
 
-Each adapter has to be tagged with the `pimcore.studio_backend.metadata_adapter` tag in order to be recognized by the system.
+Tag each adapter with `pimcore.studio_backend.metadata_adapter` so the system discovers it.
 
 :::

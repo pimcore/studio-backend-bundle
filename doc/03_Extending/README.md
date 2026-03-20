@@ -22,18 +22,29 @@ pimcore_studio_backend:
 
 ## Extension Points
 
-- [Additional and Custom Attributes](./01_Additional_and_Custom_Attributes.md)
-- [Custom Grid Columns](./02_Extending_Grid_with_Custom_Columns.md)
-- [Asset Metadata Adapters](./03_Assets/01_Extending_Metadata_Adapters.md)
-- [Custom Endpoints](./04_Extending_Endpoints.md)
-- [Field Definition Adapters](./05_Data_Objects/01_Field_Definition_Adapters.md)
-- [OpenAPI Schemas](./06_Extending_OpenApi.md)
+### Foundational Patterns
+
+- [Events](./01_Extending_via_Events.md)
+- [Additional and Custom Attributes](./02_Additional_and_Custom_Attributes.md)
+- [Custom Endpoints](./03_Extending_Endpoints.md)
+- [OpenAPI Schemas](./04_Extending_OpenApi.md)
+
+### Element-Specific Extensions
+
+- [Asset Metadata Adapters](./05_Assets/01_Extending_Metadata_Adapters.md)
+- [Field Definition Adapters](./06_Data_Objects/01_Field_Definition_Adapters.md)
 - [Custom Document Types](./07_Documents/01_Custom_Document_Types.md)
-- [Filters](./08_Extending_Filters/README.md)
-  - [Search Index Filters](./08_Extending_Filters/01_Extending_Search_Index_Filters.md)
-  - [Listing Filters](./08_Extending_Filters/02_Extending_Listing_Filters.md)
-- [Perspectives and Widgets](./09_Perspectives/README.md)
-  - [Custom Widget Types](./09_Perspectives/01_Extending_Widgets.md)
+
+### Cross-Cutting Concerns
+
+- [Custom Grid Columns](./08_Extending_Grid_with_Custom_Columns.md)
+- [Filters](./09_Extending_Filters/README.md)
+  - [Search Index Filters](./09_Extending_Filters/01_Extending_Search_Index_Filters.md)
+  - [Listing Filters](./09_Extending_Filters/02_Extending_Listing_Filters.md)
 - [Update and Patch Adapters](./10_Extending_Updater_and_Patcher.md)
-- [Events](./11_Extending_via_Events.md)
+
+### UI and Specialized
+
+- [Perspectives and Widgets](./11_Perspectives/README.md)
+  - [Custom Widget Types](./11_Perspectives/01_Extending_Widgets.md)
 - [GDPR Data Providers](./12_Extending_GDPR_Data_Providers.md)

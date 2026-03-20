@@ -58,9 +58,9 @@ final class PageFilter implements FilterInterface
 ``` 
 
 ### Column Filters with Payload
-This approach should unify how the filtering is done within the system and to have a consistent payload over all endpoints.
+This approach unifies filtering across all endpoints with a consistent payload.
 
-The key difference here is that the payload is mapped via `#[MapRequestPayload]` into the request object. The request object contains the FilterParameter class, that holds all the filter data.
+The payload maps via `#[MapRequestPayload]` into the request object, which contains the `FilterParameter` class holding all filter data.
 The `FilterParameter` has methods to return all the filters by type. It can also only return the first filter by type.
 In the apply method, you can check if the filter is applicable to request the specific type of the FilterParameter.
 
@@ -128,10 +128,10 @@ final readonly class LikeFilter implements FilterInterface
 
 
 ## Search Index Filters
-For assets, data objects and documents we are using OpenSearch or ElasticSearch (based on your Generic Data Index 
-configuration) to index the data and to provide a fast search.
-For more details on how to implement these filters see the [Search Index Filters](./01_Extending_Search_Index_Filters.md).
+Assets, data objects, and documents use OpenSearch or Elasticsearch (depending on your Generic Data Index
+configuration) for indexing and search.
+See [Search Index Filters](./01_Extending_Search_Index_Filters.md) for implementation details.
 
 ## Listing Filters
-For the classic approach of using listings, the Listing Filters are used.
-For more details on how to implement the Listing filters see the [Listing Filters](./02_Extending_Listing_Filters.md).
+Listing filters apply to the classic listing approach.
+See [Listing Filters](./02_Extending_Listing_Filters.md) for implementation details.

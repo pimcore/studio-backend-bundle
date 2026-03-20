@@ -43,9 +43,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Model\Document\MyCustomType;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-// Each document type adapter must be tagged with the `pimcore.studio_backend.document_type_adapter` tag
-// It is possible to use the `AdapterLoader::DOCUMENT_TYPE_ADAPTER_TAG` enum for this purpose
-// The adapter must implement at least the `SetterDataInterface` interface in order to be recognized by the system
+// Tag with `pimcore.studio_backend.document_type_adapter` (use the AdapterLoader enum).
+// The adapter must implement at least `SetterDataInterface` so the system discovers it.
 #[AutoconfigureTag(AdapterLoader::DOCUMENT_TYPE_ADAPTER_TAG->value)]
 final readonly class MyCustomAdapter implements SetterDataInterface, SettingsNormalizerInterface
 {
@@ -54,7 +53,7 @@ final readonly class MyCustomAdapter implements SetterDataInterface, SettingsNor
     ) {
     }
     
-    // We can use this method to process and modify any data before they are stored in the document.
+    // Process and modify data before saving to the document.
     public function setData(Document $document, array $data, UserInterface $user): void
     {
         if (!$document instanceof MyCustomType) {
@@ -97,7 +96,7 @@ final readonly class MyCustomAdapter implements SetterDataInterface, SettingsNor
         $document->setValues($settings);
     }
 
-    // This method is used to normalize the settings data of the document before they are returned in detail endpoint.
+    // Normalizes the document settings data before returning it in the detail endpoint.
     public function normalizeSettings(Document $document): ?SettingsDataInterface
     {
         if (!$document instanceof MyCustomType) {
@@ -111,7 +110,7 @@ final readonly class MyCustomAdapter implements SetterDataInterface, SettingsNor
     }
 
 
-    // This method is used to normalize the editable data of the document before they are returned in detail endpoint.
+    // Normalizes the editable data before returning it in the detail endpoint.
     public function normalizeEditableData(Document $document): ?EditableDataNormalizerInterface
     {
         if (!$document instanceof MyCustomType) {
@@ -221,12 +220,12 @@ pimcore_studio_backend:
 ```
 
 Important interfaces:
-- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface` - The mandatory interface that must be implemented by the adapter.
-- `Pimcore\Bundle\StudioBackendBundle\Document\Data\EditableDataNormalizerInterface` - The interface that needs to be implemented if the adapter should be able to normalize editable data.
-- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface` - The interface that needs to be implemented if the adapter should be able to normalize document settings data.
-- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SetInitialDataInterface` - Marker interface that needs to be implemented by the adapter if it there is a need to adapt this initial data on document creation.
-- `Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\EditableDataInterface` - Marker interface that needs to be implemented by custom editable data model. This interface is returned by the `normalizeEditableData` method of the `EditableNormalizerInterface`.
-- `Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface` - Marker interface that needs to be implemented by custom settings data model. This interface is returned by the `normalizeSettings` method of the `SettingsNormalizerInterface`.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface` - Mandatory. Every adapter must implement this.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\EditableDataNormalizerInterface` - Implement to normalize editable data for API responses.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface` - Implement to normalize document settings data for API responses.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\SetInitialDataInterface` - Implement to customize initial data on document creation.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\EditableDataInterface` - Your custom editable data model must implement this. Returned by `normalizeEditableData` of `EditableNormalizerInterface`.
+- `Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface` - Your custom settings data model must implement this. Returned by `normalizeSettings` of `SettingsNormalizerInterface`.
 
 - Important data keys:
 - `editableData` - The key for the detail data of the document (e.g., editable fields of your document).

@@ -21,7 +21,7 @@ All endpoints must include OpenAPI documentation so they appear in the Swagger U
    Include at least one response annotation. Use `#[DefaultResponses]` for standard error responses.
    For query parameters, use `#[MapQueryString]`; for request bodies, use `#[MapRequestPayload]`.
 
-5. **Add custom OpenAPI schemas** if needed. See [Extending OpenAPI](./06_Extending_OpenApi.md)
+5. **Add custom OpenAPI schemas** if needed. See [Extending OpenAPI](./04_Extending_OpenApi.md)
    for creating reusable attribute classes.
 
 We try to leverage symfony functionality as much as possible for parameters with `#[MapQueryString]` or 
@@ -114,5 +114,5 @@ final class CollectionController extends AbstractApiController
 
 ### Available classes for simplification
 
-[Collection](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Response/Collection.php) Predefined response object for collections with the total item count and the items 
-[HttpResponseCodes](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Util/Constant/HttpResponseCodes.php) Predefined http response codes
+- [Collection](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Response/Collection.php) - Predefined response object for collections with the total item count and items.
+- [HttpResponseCodes](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Util/Constant/HttpResponseCodes.php) - Predefined HTTP response codes.

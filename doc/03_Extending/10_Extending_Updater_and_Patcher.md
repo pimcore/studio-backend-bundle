@@ -96,7 +96,7 @@ final readonly class ParentIdAdapter implements PatchAdapterInterface
 
     public function getIndexKey(): string
     {
-        'parentId';
+        return 'parentId';
     }
 
     public function supportedElementTypes(): array

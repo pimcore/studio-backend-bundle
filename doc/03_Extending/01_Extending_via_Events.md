@@ -61,7 +61,7 @@ PreResponse events fire before the API returns a response. Use them to add addit
 or set custom attributes (icons, tooltips, CSS classes) on response schemas.
 
 For the full list of available events, see
-[Additional and Custom Attributes](./01_Additional_and_Custom_Attributes.md).
+[Additional and Custom Attributes](./02_Additional_and_Custom_Attributes.md).
 
 ### Example: Custom Attributes on Asset Response
 
