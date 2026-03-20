@@ -31,14 +31,22 @@ class FormatedPath implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Object Reference', type: 'string', example: 'object_11')]
-        private readonly string $objectReference,
-        #[Property(description: 'Formated Path', type: 'string', example: 'nice/path')]
+        #[Property(
+            description: 'Object Reference',
+            example: 'object_11',
+            oneOf: [new Schema(type: 'string'), new Schema(type: 'integer')]
+        )]
+        private readonly int|string $objectReference,
+        #[Property(
+            description: 'Formated Path',
+            example: 'nice/path',
+            oneOf: [new Schema(type: 'string'), new Schema(type: 'integer')]
+        )]
         private readonly int|string $formatedPath,
     ) {
     }
 
-    public function getObjectReference(): string
+    public function getObjectReference(): int|string
     {
         return $this->objectReference;
     }
