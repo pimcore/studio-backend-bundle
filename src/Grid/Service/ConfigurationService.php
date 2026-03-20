@@ -161,7 +161,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
         }
 
-        $configuration =  $this->configurationRepository->getById($configurationId);
+        $configuration = $this->configurationRepository->getById($configurationId);
         $user = $this->securityService->getCurrentUser();
 
         if ($configuration->getClassId() !== $classId) {
@@ -363,10 +363,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $filteredConfigurations = [];
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($configurations as $configuration) {
-            if (
-                $configuration->isShareGlobal() ||
-                $this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)
-            ) {
+            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser))
+            {
                 $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
 
                 $this->dispatchConfigurationEvent($hydratedConfiguration);
