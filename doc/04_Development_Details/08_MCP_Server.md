@@ -1,3 +1,8 @@
+---
+title: MCP Server Infrastructure
+description: Shared infrastructure for Model Context Protocol servers including firewall, authentication, and PSR-7 bridge.
+---
+
 # MCP Server Infrastructure (Experimental)
 
 Pimcore Studio Backend provides shared infrastructure for [Model Context Protocol](https://modelcontextprotocol.io/) (MCP)
@@ -9,8 +14,8 @@ system supporting both internal agent use and external MCP clients.
 ### The `pimcore_mcp` Firewall
 
 All MCP endpoints use the URL prefix `/pimcore-mcp/` and are protected by a dedicated Symfony firewall (`pimcore_mcp`). This
-firewall is **stateless** — each request authenticates independently, with no session migration or security token persistence.
-It is separate from the `pimcore_studio` firewall to provide security isolation — MCP authentication cannot leak to Studio
+firewall is **stateless**  - each request authenticates independently, with no session migration or security token persistence.
+It is separate from the `pimcore_studio` firewall to provide security isolation  - MCP authentication cannot leak to Studio
 Backend API routes and vice versa.
 
 The firewall supports two authenticators tried in order:
@@ -95,7 +100,7 @@ loads the Pimcore `User`, validates it is active, and creates a `SelfValidatingP
 
 ### How Permissions Work
 
-PATs grant full access as the mapped Pimcore user. There are no MCP-specific scopes — fine-grained restrictions use existing
+PATs grant full access as the mapped Pimcore user. There are no MCP-specific scopes  - fine-grained restrictions use existing
 Pimcore workspace and user permissions. If a user cannot edit a data object via the admin UI, they cannot edit it via MCP
 tools either.
 
@@ -122,7 +127,7 @@ security:
         - { path: ^/pimcore-mcp/, roles: ROLE_PIMCORE_USER }
 ```
 
-No manual firewall configuration beyond this is needed — the parameter contains the full firewall definition including the
+No manual firewall configuration beyond this is needed  - the parameter contains the full firewall definition including the
 authenticator chain, user provider, and stateless flag.
 
 ## Implementing an MCP Server in a Bundle

@@ -1,17 +1,19 @@
+---
+title: Filters
+description: Overview of search index filters and listing filters.
+---
+
 # Extending Filters
 
-Currently, there are two different filters systems implemented. The Search Index Filters and the Listing Filters.
-The main difference lies in the implementation of the adapters and the tag.
+The Studio Backend has two filter systems: **Search Index Filters** (for OpenSearch/Elasticsearch
+via Generic Data Index) and **Listing Filters** (for classic Pimcore listings). Each filter
+knows which type it handles and applies only in the matching context.
 
-The idea is that every filter knows for which type it is responsible and can be used in the according context.
+## How Filters Work
 
-
-## How does it work
-Every filter type has its own filter service class which loads all the tagged services and iterates over them and calls 
-the `apply` method.
-The filter itself is responsible for the logic and if the filter is applied.
-The input parameters can be different depending on the filter type.
-Keep in mind that for the listing filters only supported filters are loaded based on the listing itself.
+Each filter system has a filter service that loads all tagged filter services and calls `apply()`
+on each one. The filter itself decides whether to act based on the parameters it receives.
+For listing filters, only filters that support the specific listing type are loaded.
 
 ### Query Filters with Mapped Parameters
 In this example, the query parameters are mapped via `#[MapQueryString]` into the request object, which is then used in the filter itself.
@@ -80,7 +82,7 @@ The `key` is the key of the column you want to filter by.
 The `type` is the type of the filter you want to apply.  
 The `filterValue` is the value you want to filter by.  
 
-Note that every query parameter could also be mapped to a payload. In this case a mapper can be implemented [#LINK TO MAPPER]
+Query parameters can also be mapped to a payload using a custom mapper.
 
 ```php
 <?php

@@ -1,13 +1,17 @@
+---
+title: Dot Notation for Field Definitions
+description: How nested field paths are represented in API requests and responses.
+---
+
 # Dot Notation for Field Definitions
 
-Studio provides a Dot Notation to resolve the field definition of an object. 
-
-Here are some examples for the Car Object:
+The Studio Backend uses dot notation to resolve field definitions within complex data object
+structures. Examples using the Car object:
 - `carClass` Get the Standard fields.
 - `localizedfields.name` Get Localized Fields
 - `attributes.Bodywork.numberOfDoors` Get Field from a Brick
 
-Here are some complex examples using the News Object:
+More complex examples using the News object:
 - `content.NewsCars.relatedCars` Get Field from Field Collection
 - `content.NewsCars.localizedfields.title` Get Localized Field from Field Collection
 - `content.NewsLinks.links.link` Get Field from a Block in a Field Collection

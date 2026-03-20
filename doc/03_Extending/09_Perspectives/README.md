@@ -1,3 +1,8 @@
+---
+title: Perspectives
+description: Configure perspectives and context menu permissions.
+---
+
 # Extending Perspectives
 
 Perspectives allow to create different views in Pimcore Studio and even customize the standard perspective. 

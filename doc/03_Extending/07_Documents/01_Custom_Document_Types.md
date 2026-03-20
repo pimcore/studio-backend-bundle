@@ -1,22 +1,20 @@
-# Custom document types
+---
+title: Custom Document Types
+description: Register document type adapters for save/load and API responses.
+---
 
-There are by default six document types in Pimcore Studio:
-- Email
-- Folder
-- Hardlink
-- Link
-- Page
-- Snippet
+# Custom Document Types
 
-## Custom document type adapters
+Pimcore Studio includes six built-in document types: Email, Folder, Hardlink, Link, Page, and Snippet.
 
-Document type adapters are used to process the document detail data before they are, e.g., saved to the database or displayed in the user interface.
+## Document Type Adapters
 
-Each custom document type has to be mapped to the corresponding adapter by its type.
+Document type adapters process document detail data during save/load and API response serialization.
+Each custom document type maps to an adapter by its type string.
 
-## How to add a custom document type adapter
+## Adding a Custom Adapter
 
-The following example shows how to implement a custom adapter for the `myCustom` document type.
+The example below implements an adapter for the `myCustom` document type.
 
 ### 1. Register your adapter
 

@@ -1,11 +1,19 @@
+---
+title: Extending via Events
+description: Hook into Studio Backend API responses and element resolution via Symfony events.
+---
+
 # Extending via Events
 
-The Pimcore Studio Backend provides a lot of events to hook into the system and extend the functionality. The events are dispatched via the Symfony event dispatcher and can be used to add custom logic to the system.
+The Studio Backend dispatches events via the Symfony EventDispatcher at key points in the API
+response pipeline. Use these to modify responses, add custom data, or alter element resolution.
 
-## Events
-`pre_resolve.element_resolve` - This event is dispatched for the `pimcore_studio_api_elements_resolve` route to modify the resolve behavior of elements.
+## ElementResolveEvent
 
-### Pre Resolve Event Example
+The `pre_resolve.element_resolve` event fires on the element resolve endpoint
+(`pimcore_studio_api_elements_resolve`). Use it to modify how elements are looked up by search term.
+
+### Example: Resolve by Custom Field
 ```php
 <?php
 declare(strict_types=1);
@@ -47,11 +55,15 @@ final readonly class DataObjectSearchModifierSubscriber implements EventSubscrib
 ```
 
 
-#### Custom Attributes Example
-This subscriber adds an additional `isImage` attribute to an object of Image instance and adds a custom attribute to the schema.
+## PreResponse Events
 
-These custom attributes would be used to display a custom key in the tree and add a custom CSS class to an element.
+PreResponse events fire before the API returns a response. Use them to add additional attributes
+or set custom attributes (icons, tooltips, CSS classes) on response schemas.
 
+For the full list of available events, see
+[Additional and Custom Attributes](./01_Additional_and_Custom_Attributes.md).
+
+### Example: Custom Attributes on Asset Response
 
 ```php
 <?php

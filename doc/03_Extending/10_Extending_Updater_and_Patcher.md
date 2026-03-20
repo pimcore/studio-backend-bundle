@@ -1,25 +1,35 @@
+---
+title: Extending Updater and Patcher
+description: Add custom update and patch adapters for element save operations.
+---
+
 # Extending Updater and Patcher
 
-Updating and patching elements should be done via the update and patch endpoints.
-The payload of the endpoints are very flexible and can be sent partially.
+The update and patch endpoints accept flexible, partial payloads for modifying elements.
+Add custom adapters by implementing the respective interface and tagging the service.
 
-Update adapters and patch adapters can be added via their respective interfaces and tagged with `pimcore.studio_backend.update_adapter` or `pimcore.studio_backend.patch_adapter`.
+| Adapter | Interface | Tag | Purpose |
+|---------|-----------|-----|---------|
+| Update | `UpdateAdapterInterface` | `pimcore.studio_backend.update_adapter` | Single element updates |
+| Patch | `PatchAdapterInterface` | `pimcore.studio_backend.patch_adapter` | Bulk updates |
 
-The updater is used for single element updates.
-The patcher can be used for bulk updates.
-Be aware if you have some kind of listings in your payload, like properties, if you use the updater you have to send the whole list and not only parts of it.
-E.g. if you want to delete a property you have to send all properties except the one you want to delete in the updater payload.
+:::warning
+The updater expects complete lists for array properties. For example, to remove a property, send all
+properties *except* the one to delete. The patcher handles partial updates.
+:::
 
-## How does it work
-Let's assume you want to update the parent of an asset and the payload you send looks like the following:
+## How It Works
+
+When an update request arrives (e.g. `{"parentId": 69}`), the `UpdateService` loads all tagged
+adapters and calls `update()` on each adapter that supports the element type. Each adapter checks
+whether its index key exists in the payload and applies the change.
+
+Example payload:
 ```json
 {
     "parentId": 69
 }
 ```
-
-The `UpdateService` will load all tagged adapters and call the `update` method if the element type is supported which is defined in the adapter itself
-The adapters will then check if the index key is in the payload and updates the object.
 
 ## Example Update Adapter
 

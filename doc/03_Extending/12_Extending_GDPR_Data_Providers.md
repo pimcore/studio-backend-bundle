@@ -1,19 +1,25 @@
+---
+title: GDPR Data Providers
+description: Register custom data providers for GDPR data extraction.
+---
+
 # Extending GDPR Data Providers
 
-The GDPR Data Provider system provides a centralized interface to find and export personal data from any part of your Pimcore application. You can add new data sources (like Data Objects, Assets, Users, or any custom entity) by creating your own provider.
+The GDPR Data Provider system offers a centralized interface to find and export personal data
+from any part of a Pimcore application. Add custom data sources (Data Objects, Assets, external
+systems) by implementing `DataProviderInterface` and tagging the service with
+`pimcore.studio_backend.gdpr_data_provider`.
 
-New providers can be created by implementing the `Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface` and tagging your class as a service with `pimcore.studio_backend.gdpr_data_provider`.
+## How It Works
 
-## How does it work
+Implement the `DataProviderInterface` and register the service. The Studio Backend auto-discovers
+tagged providers and includes them in the GDPR Data Extractor.
 
-As a developer, you only need to register it with the `pimcore.studio_backend.gdpr_data_provider` tag and implement the `DataProviderInterface`.
-The Pimcore system will automatically find your provider and use it for searching and exporting.
+### Searching
 
-### For Searching
+When a user opens the GDPR Data Extractor and clicks "Search":
 
-This flow happens when a user opens the GDPR Data Extractor page and clicks "Search".
-
-1.  **To build the page:** The user needs to create these methods on their newly created provider:
+1.  **Provider registration:** Implement these methods on your provider:
 
     -   `getName()`: To get the human-friendly name for the provider tab.
     -   `getKey()`: To get the unique ID.
@@ -26,15 +32,17 @@ This flow happens when a user opens the GDPR Data Extractor page and clicks "Sea
     -   If permission is granted, the system calls your `findData()` method, passing the user's search terms as a `FilterParameter`.
     -   The `Collection` you return from `findData()` is then displayed in the results grid.
 
-> **Note:** The columns displayed in the search results grid are defined on the **frontend** side
-> (in the tab component using TanStack Table's `createColumnHelper`). The backend only returns
-> data rows via `GdprDataRow` — each row contains a key-value map that the frontend maps to columns.
-> See the [GDPR Data Extractor documentation](https://docs.pimcore.com/platform/Pimcore/Content_Management_Features/GDPR_Data_Extractor)
-> for the frontend implementation details.
+:::note
+The columns displayed in the search results grid are defined on the **frontend** side
+(in the tab component using TanStack Table's `createColumnHelper`). The backend only returns
+data rows via `GdprDataRow`, where each row contains a key-value map that the frontend maps to columns.
+See the [GDPR Data Extractor documentation](https://docs.pimcore.com/platform/Pimcore/Content_Management_Features/GDPR_Data_Extractor)
+for the frontend implementation details.
+:::
 
-### For Exporting (Direct Download)
+### Exporting (Direct Download)
 
-This flow happens when a user has already searched and clicks the "Export" button on a single item in your results grid.
+When the user clicks "Export" on a single item in the results grid:
 
 1.  **When the user clicks "Export" on an item:**
     -   The system again checks your `getRequiredPermissions()` method.
@@ -46,7 +54,7 @@ This flow happens when a user has already searched and clicks the "Export" butto
 
 ## Configuration
 
-The GDPR Data Extractor can be configured. The following options are available:
+Configure which data object classes and asset types the GDPR Data Extractor includes:
 
 ```yaml
 pimcore_studio_backend:
@@ -78,7 +86,7 @@ pimcore_studio_backend:
 ## Example Data Provider
 
 The example below shows a minimal provider implementation. The constructor **must** accept
-an `array $gdprConfig = []` parameter — a compiler pass injects the
+an `array $gdprConfig = []` parameter. A compiler pass injects the
 `pimcore_studio_backend.gdpr_data_extractor` configuration into every tagged provider.
 
 ```php

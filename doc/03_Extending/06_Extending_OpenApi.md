@@ -1,19 +1,21 @@
-# Extending OpenApi
+---
+title: Extending OpenAPI
+description: Create reusable OpenAPI attribute classes for custom endpoints.
+---
 
-For the OpenApi documentation we are using the [zircote/swagger-php](https://zircote.github.io/swagger-php/) library. 
-This library allows us to define the OpenApi documentation in PHP attributes and extend them.
+# Extending OpenAPI
 
-## Why extending OpenApi attributes
-You can always use the standard attributes that are provided by the library.
-To reduce the amount of code duplication and make the controllers easier on the eyes we introduced custom attributes.
+The Studio Backend uses [zircote/swagger-php](https://zircote.github.io/swagger-php/) to generate
+OpenAPI documentation from PHP attributes. You can use the library's standard attributes directly,
+or create custom attribute classes that encapsulate common patterns and reduce duplication in
+controller annotations.
 
-## How to extend OpenApi attributes
-With PHP 8 we can use the `#[Attribute]` attribute to define custom attributes.
-The easiest way is to extend an already existing attribute and add your custom logic.
-These attributes can then be used in the controller itself e.g. `#[CreateNoteRequestBody]`
-You can also use classes as a reference to describe the content as seen in the example.
+## Creating Custom Attributes
 
-### Example for extending OpenApi attributes and the referenced class
+Extend an existing OpenAPI attribute (e.g. `RequestBody`, `Schema`) and set defaults in the
+constructor. Use the custom attribute on your controller method (e.g. `#[CreateNoteRequestBody]`).
+
+### Example: Custom Request Body Attribute
 ```php
 <?php
 declare(strict_types=1);
@@ -39,13 +41,12 @@ final class CreateNoteRequestBody extends RequestBody
 
 ```
 
-## Extending Schemas
-In order to extend a schema, you can use the `#[Schema]` attribute and define the properties that you want to add.
-The important part is to use the `#[Property]` attribute to define the properties of the schema.
-e.g. `#[Property(description: 'title', type: 'string', example: 'Title of note')]`
-Schemas should be unique and are shown at the bottom of the OpenApi documentation.
+## Creating Custom Schemas
 
-### Example for extending a schema
+Define schema classes with `#[Schema]` and `#[Property]` attributes. Each schema appears in the
+"Schemas" section of the Swagger UI. Schema class names must be unique across the application.
+
+### Example: Custom Schema
 ```php
 <?php
 declare(strict_types=1);

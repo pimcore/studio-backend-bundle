@@ -1,13 +1,22 @@
+---
+title: Listing Filters
+description: Add custom filters for classic Pimcore listings.
+---
+
 # Extending Listing Filters
 
-The Listing Filters are based on the Pimcore Listing classes and provide an abstraction layer to add filters to a listing.
+Listing Filters add filter logic to classic Pimcore Listing classes.
 
-## Adding a new Listing Filter
-In order to add a new Filter, you need to implement the `Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface` and register the service with the tag `pimcore.studio_backend.listing.filter`
+## Adding a Listing Filter
+
+Implement `Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface` and register the
+service with the tag `pimcore.studio_backend.listing.filter`.
 
 ## AbstractListing vs CallableListingInterface
-Unfortunately not all listings are the same. 
-If you encounter a listing that only allows you to use the method `setFilter` you have to do all the filtering in one 
-filter like e.g. the properties filter.
-For AbstractListings you can use the method `addConditionParam` to chain the filters.
-Make sure that you do not override the filters of the listing by using `setCondition`.
+
+Not all listings support the same filtering API:
+
+- **`AbstractListing`**: Use `addConditionParam()` to chain multiple filters. Do not use
+  `setCondition()` as it overwrites all existing conditions.
+- **`CallableListingInterface`**: Only supports `setFilter()`, so all filtering logic must be
+  combined into a single filter (see the properties filter for an example).
