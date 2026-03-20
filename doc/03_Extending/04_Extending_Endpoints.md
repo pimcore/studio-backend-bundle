@@ -1,30 +1,31 @@
+---
+title: Extending Endpoints
+description: Add custom REST API endpoints to the Studio Backend.
+---
+
 # Extending Endpoints
 
-Endpoints can be added at any given point. In order to show up in the OpenApi documentation you need to add the according OpenApi attributes.
-This secures that the endpoint is documented and can be used by other developers. We are using the OpenApi standards for the documentation.
+Add custom API endpoints by extending `AbstractApiController` and annotating with OpenAPI attributes.
+All endpoints must include OpenAPI documentation so they appear in the Swagger UI.
 
-## How to add a custom endpoint
+## Implementation Steps
 
-To add a custom endpoint to the Pimcore Studio Backend you need to implement it like the following:
+1. **Extend `AbstractApiController`** - provides the base `API_PATH` and JSON serialization via the Symfony serializer.
 
-- Extend from AbstractApiController
-  - The AbstractApiController includes the base `API_PATH` and a standard way to serialize your response to json.
-  - Keep in mind that for serialization the symfony serializer is used and the response must be representable in json if you want to use the standard function.
-- Add the route attribute like in a standard symfony way
-- For security checks you can use the IsGranted attribute
-  - This will invoke the according symfony voter and checks the current logged-in user for the given permission
-  - If the user does not have the permission a 403 response is returned
-- Add the OpenApi method according to your route
-  - In order that your endpoint shows up in the OpenApi documentation you need to add the OpenApi method
-  - If your route specifies that it is a `POST` route use the according OpenApi method `OpenApi\Attributes\Post`
-- Add the necessary OpenApi attributes
-  - Add at least one response, you can check out the existing responses here: -- TODO ADD PAGE WITH RESPONSES --
-  - You can also add some DefaultResponses
-  - Add query params or request payload if necessary. You can check out the existing parameters here: -- TODO ADD PAGE WITH PARAMETERS --
-  - If you need specific parameters, payloads or responses you can extend OpenApi Schemas, Properties, Responses, etc.
-  - How to extend OpenApi Schemas, Properties, Responses, etc. is described [here](./06_Extending_OpenApi.md)
-- Implement your endpoint logic in the standard symfony way
-  - We try to leverage symfony functionality as much as possible for parameters with `#[MapQueryString]` or `#[MapRequestPayload]` attributes
+2. **Define the route** using Symfony's `#[Route]` attribute.
+
+3. **Add security** with `#[IsGranted]` - the `UserPermissionVoter` checks the current user's permissions
+   and returns a 403 response if denied.
+
+4. **Add OpenAPI attributes** - use the matching HTTP method attribute (e.g. `#[Get]`, `#[Post]`).
+   Include at least one response annotation. Use `#[DefaultResponses]` for standard error responses.
+   For query parameters, use `#[MapQueryString]`; for request bodies, use `#[MapRequestPayload]`.
+
+5. **Add custom OpenAPI schemas** if needed. See [Extending OpenAPI](./06_Extending_OpenApi.md)
+   for creating reusable attribute classes.
+
+We try to leverage symfony functionality as much as possible for parameters with `#[MapQueryString]` or 
+`#[MapRequestPayload]` attributes.
 
 ### Example
 
