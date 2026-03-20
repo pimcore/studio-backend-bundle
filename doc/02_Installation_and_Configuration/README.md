@@ -18,17 +18,39 @@ composer require pimcore/studio-backend-bundle
 
 3) Enable Firewall settings
 
-To enable the firewall settings in your project, add the following configuration to your `config/packages/security.yaml` file:
-Keep in mind that the prefix part pimcore-studio/api can be changed to any other value in the config.
-You need to adapt your access_control settings accordingly.
+To enable the firewall settings in your project, add the following configuration to your
+`config/packages/security.yaml` file. Keep in mind that the prefix part `pimcore-studio/api` can be changed
+to any other value in the config. You need to adapt your `access_control` settings accordingly.
+
 ```yaml
 security:
-    firewalls: 
+    firewalls:
         pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
     access_control:
       - { path: ^/pimcore-studio/api/(docs|docs/json|translations|user/reset-password)$, roles: PUBLIC_ACCESS }
       - { path: ^/pimcore-studio/api, roles: ROLE_PIMCORE_USER }
 ```
+
+**Optional: MCP firewall**
+
+If you use bundles that provide MCP (Model Context Protocol) servers (e.g. Data Importer), add the
+`pimcore_mcp` firewall as well. This enables authentication for all `/pimcore-mcp/` routes — see the
+[MCP Server documentation](./08_MCP_Server.md) for details on authentication and token configuration.
+
+```yaml
+security:
+    firewalls:
+        pimcore_mcp: '%pimcore_studio_backend.mcp_firewall_settings%'
+        pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
+    access_control:
+      - { path: ^/pimcore-studio/api/(docs|docs/json|translations|user/reset-password)$, roles: PUBLIC_ACCESS }
+      - { path: ^/pimcore-studio/api, roles: ROLE_PIMCORE_USER }
+      - { path: ^/pimcore-mcp/, roles: ROLE_PIMCORE_USER }
+```
+
+> **Note:** The `pimcore_mcp` firewall must be listed **before** `pimcore_studio` in the firewalls section.
+> Symfony evaluates firewalls in order, so placing it first ensures `/pimcore-mcp/` requests are matched
+> by the correct firewall.
 
 4) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
 

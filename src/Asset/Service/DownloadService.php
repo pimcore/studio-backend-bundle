@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use DateInterval;
+use DateTime;
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
@@ -52,7 +55,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
+     * @throws ElementStreamResourceNotFoundException
      */
     public function downloadAsset(
         Asset $asset
@@ -71,10 +74,13 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidElementTypeException($image->getType());
         }
 
-        return $this->thumbnailService->getBinaryResponseFromThumbnail(
+        $response = $this->thumbnailService->getBinaryResponseFromThumbnail(
             $this->thumbnailService->getThumbnailFromConfiguration($image, $parameters),
             $image
         );
+        $this->addThumbnailCacheHeaders($response);
+
+        return $response;
     }
 
     /**
@@ -191,10 +197,13 @@ final readonly class DownloadService implements DownloadServiceInterface
             dpi: $configuration['dpi'] ?? null
         );
 
-        return $this->thumbnailService->getBinaryResponseFromThumbnail(
+        $response = $this->thumbnailService->getBinaryResponseFromThumbnail(
             $this->thumbnailService->getThumbnailFromConfiguration($image, $parameters),
             $image
         );
+        $this->addThumbnailCacheHeaders($response);
+
+        return $response;
     }
 
     /**
@@ -237,5 +246,22 @@ final readonly class DownloadService implements DownloadServiceInterface
         }
 
         return $this->getStreamedResponse($thumbnail, $attachmentType);
+    }
+
+    private function addThumbnailCacheHeaders(BinaryFileResponse $response): void
+    {
+        $lifetime = 300;
+        $date = new DateTime('now');
+
+        try {
+            $date->add(new DateInterval('PT' . $lifetime . 'S'));
+        } catch (Exception) {
+            return;
+        }
+
+        $response->setMaxAge($lifetime);
+        $response->setPublic();
+        $response->setExpires($date);
+        $response->headers->set('Pragma', '');
     }
 }

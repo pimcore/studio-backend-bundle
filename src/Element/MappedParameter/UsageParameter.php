@@ -13,16 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter;
 
-use JsonException;
-
 /**
  * @internal
  */
 final readonly class UsageParameter
 {
-    /**
-     * @throws JsonException
-     */
     public function __construct(
         private int $page = 1,
         private int $pageSize = 50,

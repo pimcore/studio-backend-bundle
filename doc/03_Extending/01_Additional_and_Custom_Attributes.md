@@ -138,6 +138,9 @@ For more details and frontend customization options, see the [Custom Icons & Too
 - `pre_response.bundle_seo.redirect.import_stats`
 - `pre_response.bundle_seo.redirect.list`
 - `pre_response.bundle_seo.redirect.status`
+- `pre_response.class.bulk_export_available_item`
+- `pre_response.class.bulk_import_prepare`
+- `pre_response.class.bulk_import_result_item`
 - `pre_response.class_definition`
 - `pre_response.class_definition.visible_field`
 - `pre_response.class_definition.collection`

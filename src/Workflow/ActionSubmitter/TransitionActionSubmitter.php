@@ -55,7 +55,8 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
                 $workflow,
                 $element,
                 $transitionName,
-                $parameters->getWorkflowOptions()
+                $parameters->getWorkflowOptions(),
+                true
             );
 
             return new ActionSubmissionResponse(

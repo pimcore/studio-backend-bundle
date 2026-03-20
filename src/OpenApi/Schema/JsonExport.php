@@ -28,7 +28,7 @@ use OpenApi\Attributes\Schema;
 final readonly class JsonExport
 {
     public function __construct(
-        #[Property(description: 'JSON encoded export data', type: 'string')]
+        #[Property(description: 'JSON encoded export data', type: 'string', example: '{"key":"value"}')]
         private string $json,
         #[Property(description: 'Suggested file name for download', type: 'string', example: 'export.json')]
         private string $fileName,

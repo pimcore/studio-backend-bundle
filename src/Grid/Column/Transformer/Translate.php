@@ -59,6 +59,7 @@ final readonly class Translate implements TransformerInterface
         $translatedValues = [];
 
         foreach ($value as $item) {
+            /** @phpstan-ignore instanceof.alwaysTrue */
             if (!$item instanceof AdvancedValue) {
                 continue;
             }

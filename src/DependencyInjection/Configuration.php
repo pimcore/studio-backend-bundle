@@ -17,6 +17,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
@@ -85,6 +86,7 @@ class Configuration implements ConfigurationInterface
         $this->addDefaultFromEmail($rootNode);
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
+        $this->addMcpNode($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
@@ -360,6 +362,11 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->children()
                 ->arrayNode('types')
+                    ->beforeNormalization()
+                        ->always(fn (mixed $v) => is_array($v)
+                            ? ConfigKeyMapper::convertKeysForApp($v)
+                            : $v)
+                    ->end()
                     ->info('List all note types for asset, document, and data-object.')
                     ->normalizeKeys(false)
                     ->children()
@@ -450,6 +457,11 @@ class Configuration implements ConfigurationInterface
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
                 ->arrayPrototype()
+                    ->beforeNormalization()
+                        ->always(fn (mixed $v) => is_array($v)
+                            ? ConfigKeyMapper::convertKeysForConfig($v)
+                            : $v)
+                    ->end()
                     ->children()
                         ->scalarNode('name')
                             ->isRequired()
@@ -474,7 +486,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->arrayNode('widgetsLeft')
+                        ->arrayNode('widgets_left')
                             ->useAttributeAsKey('id')
                             ->scalarPrototype()
                                 ->validate()
@@ -483,7 +495,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->arrayNode('widgetsRight')
+                        ->arrayNode('widgets_right')
                             ->useAttributeAsKey('id')
                             ->scalarPrototype()
                                 ->validate()
@@ -492,7 +504,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->arrayNode('widgetsBottom')
+                        ->arrayNode('widgets_bottom')
                             ->useAttributeAsKey('id')
                             ->scalarPrototype()
                                 ->validate()
@@ -501,15 +513,15 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->scalarNode('expandedLeft')
+                        ->scalarNode('expanded_left')
                             ->info('The id of the widget that should be expanded on the left side.')
                             ->defaultNull()
                         ->end()
-                        ->scalarNode('expandedRight')
+                        ->scalarNode('expanded_right')
                             ->info('The id of the widget that should be expanded on the right side.')
                             ->defaultNull()
                         ->end()
-                        ->arrayNode('contextPermissions')
+                        ->arrayNode('context_permissions')
                             ->useAttributeAsKey('key')
                             ->arrayPrototype()
                                 ->useAttributeAsKey('key')
@@ -535,18 +547,23 @@ class Configuration implements ConfigurationInterface
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
                 ->arrayPrototype()
+                    ->beforeNormalization()
+                        ->always(fn (mixed $v) => is_array($v)
+                            ? ConfigKeyMapper::convertKeysForConfig($v)
+                            : $v)
+                    ->end()
                     ->children()
                         ->scalarNode('name')
                             ->isRequired()
                         ->end()
-                        ->scalarNode('elementType')
+                        ->scalarNode('element_type')
                             ->defaultValue(ElementTypes::TYPE_OBJECT)
                         ->end()
-                        ->scalarNode('pageSize')
+                        ->scalarNode('page_size')
                             ->defaultNull()
                             ->validate()
                                 ->ifTrue(fn ($v) => !is_null($v) && !is_int($v))
-                                ->thenInvalid('The "pageSize" must be an integer or null.')
+                                ->thenInvalid('The "page_size" must be an integer or null.')
                             ->end()
                         ->end()
                         ->arrayNode('icon')
@@ -569,11 +586,11 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->scalarNode('rootFolder')
+                        ->scalarNode('root_folder')
                             ->defaultValue('/')
                             ->isRequired()
                         ->end()
-                        ->booleanNode('showRoot')
+                        ->booleanNode('show_root')
                             ->defaultFalse()
                         ->end()
                         ->arrayNode('classes')
@@ -588,7 +605,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('pql')
                             ->defaultNull()
                         ->end()
-                        ->arrayNode('contextPermissions')
+                        ->arrayNode('context_permissions')
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifNotInArray([true, false])
@@ -661,6 +678,33 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
+    private function addMcpNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('mcp')
+                ->addDefaultsIfNotSet()
+                ->info('MCP (Model Context Protocol) server configuration (experimental)')
+                ->children()
+                    ->arrayNode('authentication')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->arrayNode('tokens')
+                                ->info(
+                                    'Map of Pimcore username to bearer token list. '
+                                    . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
+                                )
+                                ->useAttributeAsKey('username')
+                                ->arrayPrototype()
+                                    ->scalarPrototype()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -677,7 +721,7 @@ class Configuration implements ConfigurationInterface
             ->arrayNode('gdpr_data_extractor')
                 ->addDefaultsIfNotSet()
                 ->children()
-                    ->arrayNode('dataObjects')
+                    ->arrayNode('data_objects')
                         ->addDefaultsIfNotSet()
                         ->info('Settings for DataObjects DataProvider')
                         ->children()
@@ -686,8 +730,13 @@ class Configuration implements ConfigurationInterface
                                 ->useAttributeAsKey('name')
                                 ->defaultValue([])
                                 ->arrayPrototype()
+                                    ->beforeNormalization()
+                                        ->always(fn (mixed $v) => is_array($v)
+                                            ? ConfigKeyMapper::convertKeysForConfig($v)
+                                            : $v)
+                                    ->end()
                                     ->children()
-                                        ->booleanNode('allowDelete')
+                                        ->booleanNode('allow_delete')
                                             ->info('Allow delete of objects directly in preview grid.')
                                             ->defaultFalse()
                                         ->end()

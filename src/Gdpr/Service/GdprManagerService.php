@@ -59,8 +59,6 @@ final readonly class GdprManagerService implements GdprManagerServiceInterface
     {
         $providerClass = $this->loader->resolve($provider);
 
-        $this->checkProviderPermission($providerClass);
-
         $results = $providerClass->findData(
             $parameters->getFilters() ?? new FilterParameter()
         );

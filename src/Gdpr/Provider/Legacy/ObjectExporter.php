@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
-use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Fieldcollection;
@@ -41,14 +40,13 @@ final readonly class ObjectExporter implements ObjectExporterInterface
             $value = $object->$getter();
 
             if ($fd instanceof Data\Fieldcollections && $value instanceof Fieldcollection) {
-                self::doExportFieldcollection($result, $value);
+                $this->doExportFieldcollection($result, $value); // @phpstan-ignore parameterByRef.type
             } elseif ($fd instanceof Data\Objectbricks && $value instanceof Objectbrick) {
-                self::doExportBrick($result, $value);
+                $this->doExportBrick($result, $value); // @phpstan-ignore parameterByRef.type
             } else {
-                if ($fd instanceof NormalizerInterface
-                    && $fd instanceof DataObject\ClassDefinition\Data) {
+                if ($fd instanceof NormalizerInterface) {
                     $marshalledValue = $fd->normalize($value);
-                    $result[$fd->getName()] = $marshalledValue;
+                    $result[$fd->getName()] = $marshalledValue; // @phpstan-ignore parameterByRef.type
                 }
             }
         }
@@ -69,8 +67,7 @@ final readonly class ObjectExporter implements ObjectExporterInterface
                 foreach ($fDefs as $fd) {
                     $getter = 'get' . ucfirst($fd->getName());
                     $value = $brickValue->$getter();
-                    if ($fd instanceof NormalizerInterface
-                        && $fd instanceof DataObject\ClassDefinition\Data) {
+                    if ($fd instanceof NormalizerInterface) {
                         $marshalledValue = $fd->normalize($value);
                         $resultContainer[$brickType][$fd->getName()] = $marshalledValue;
                     }
@@ -97,8 +94,7 @@ final readonly class ObjectExporter implements ObjectExporterInterface
                 $getter = 'get' . ucfirst($fd->getName());
                 $value = $item->$getter();
 
-                if ($fd instanceof NormalizerInterface
-                    && $fd instanceof DataObject\ClassDefinition\Data) {
+                if ($fd instanceof NormalizerInterface) {
                     $marshalledValue = $fd->normalize($value);
                     $itemValues[$fd->getName()] = $marshalledValue;
                 }

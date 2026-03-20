@@ -36,10 +36,12 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetC
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -61,6 +63,8 @@ use function sprintf;
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
     private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+
+    private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
 
     /**
      * {@inheritdoc}
@@ -162,8 +166,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
         ]);
 
-        $defaultPerspective = $this->getParsedConfig(
-            __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+        $defaultPerspective = ConfigKeyMapper::convertKeysForApp(
+            $this->getParsedConfig(
+                __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+            )
         );
 
         $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
@@ -193,6 +199,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         ]);
 
         $this->populateTwigSandboxExtension($config, $container);
+
+        // MCP authentication token map
+        $mcpTokenMap = $config['mcp']['authentication']['tokens'] ?? [];
+        $container->setParameter('pimcore_studio_backend.mcp.token_map', $mcpTokenMap);
+
+        $definition = $container->getDefinition(PatAuthenticator::class);
+        $definition->setArgument('$tokenMap', $mcpTokenMap);
     }
 
     /**
@@ -230,6 +243,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         }
 
         $container->setParameter('pimcore_studio_backend.url_prefix', $urlPrefix);
+
+        // Default MCP token map (overwritten in load() with actual config)
+        if (!$container->hasParameter('pimcore_studio_backend.mcp.token_map')) {
+            $container->setParameter('pimcore_studio_backend.mcp.token_map', []);
+        }
+
+        // MCP firewall settings (separate firewall for /pimcore-mcp/ routes)
+        if (!$container->hasParameter('pimcore_studio_backend.mcp_firewall_settings')) {
+            $container->setParameter('pimcore_studio_backend.mcp_firewall_settings', [
+                'pattern' => self::MCP_FIREWALL_PATTERN,
+                'user_checker' => 'Pimcore\Security\User\UserChecker',
+                'provider' => 'pimcore_studio_backend',
+                'stateless' => true,
+                'custom_authenticators' => [
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator',
+                ],
+            ]);
+        }
 
         foreach ($containerConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {

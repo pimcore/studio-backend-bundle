@@ -15,6 +15,9 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Cache\Service\CacheClearerServiceInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Cache\Service\CacheClearerService
 
+    Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapperInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper
+
 
 
 

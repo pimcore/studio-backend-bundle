@@ -22,6 +22,7 @@ enum UserPermissions: string
     case DEFINITIONS_TABLE = 'users_permission_definitions';
     case APPLICATION_LOGGING = 'application_logging';
     case ASSETS = 'assets';
+    case ASSET_METADATA = 'asset_metadata';
     case DATA_OBJECTS = 'objects';
     case DOCUMENTS = 'documents';
     case DOCUMENT_TYPES = 'document_types';

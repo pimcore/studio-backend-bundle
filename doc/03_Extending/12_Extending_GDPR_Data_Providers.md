@@ -51,14 +51,14 @@ The GDPR Data Extractor can be configured. The following options are available:
 ```yaml
 pimcore_studio_backend:
     gdpr_data_extractor:
-        dataObjects:
+        data_objects:
             classes:
                 # Configure which classes should be considered
                 # Array key is the class name
                 Person:
-                    allowDelete: true  # Allow delete of objects directly in preview grid (default: false)
+                    allow_delete: true  # Allow delete of objects directly in preview grid (default: false)
                 Customer:
-                    allowDelete: false
+                    allow_delete: false
         assets:
             types:
                 # Configure which asset types should be considered
@@ -69,11 +69,11 @@ pimcore_studio_backend:
 
 ### Configuration Options
 
-| Option                                                            | Type    | Default | Description                                                                                                |
-|-------------------------------------------------------------------|---------|---------|------------------------------------------------------------------------------------------------------------|
-| `gdpr_data_extractor.dataObjects.classes`                         | array   | `[]`    | Configure which Data Object classes should be considered for GDPR search. The array key is the class name. |
-| `gdpr_data_extractor.dataObjects.classes.<ClassName>.allowDelete` | boolean | `false` | Allow deletion of objects directly in the preview grid.                                                    |
-| `gdpr_data_extractor.assets.types`                                | array   | `[]`    | Configure which asset types should be considered for GDPR search (e.g., `image`, `document`, `video`).     |
+| Option                                                              | Type    | Default | Description                                                                                                |
+|---------------------------------------------------------------------|---------|---------|------------------------------------------------------------------------------------------------------------|
+| `gdpr_data_extractor.data_objects.classes`                          | array   | `[]`    | Configure which Data Object classes should be considered for GDPR search. The array key is the class name. |
+| `gdpr_data_extractor.data_objects.classes.<ClassName>.allow_delete` | boolean | `false` | Allow deletion of objects directly in the preview grid.                                                    |
+| `gdpr_data_extractor.assets.types`                                  | array   | `[]`    | Configure which asset types should be considered for GDPR search (e.g., `image`, `document`, `video`).     |
 
 ## Example Data Provider
 

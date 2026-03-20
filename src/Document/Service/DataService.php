@@ -57,9 +57,7 @@ final readonly class DataService implements DataServiceInterface
             );
         }
 
-        if (method_exists($document, 'setDraftData')) {
-            $document->setDraftData($this->getDraftData($element, $documentVersion));
-        }
+        $document->setDraftData($this->getDraftData($element, $documentVersion));
     }
 
     public function updateDocumentData(

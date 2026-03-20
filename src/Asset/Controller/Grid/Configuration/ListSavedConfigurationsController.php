@@ -36,6 +36,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ListSavedConfigurationsController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/grid/configurations';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ConfigurationServiceInterface $configurationService,
@@ -47,13 +49,13 @@ final class ListSavedConfigurationsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/configurations',
+        self::ROUTE,
         name: 'pimcore_studio_api_get_asset_saved_grid_configurations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/configurations',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_get_saved_grid_configurations',
         description: 'asset_get_saved_grid_configurations_description',
         summary: 'asset_get_saved_grid_configurations_summary',

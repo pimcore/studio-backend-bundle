@@ -45,7 +45,7 @@ final readonly class DataObjectDraftData
         return $this->id;
     }
 
-    public function getModificationDate(): ?int
+    public function getModificationDate(): int
     {
         return $this->modificationDate;
     }

@@ -96,14 +96,14 @@ pimcore_studio_backend:
             icon: # Use null to use the default icon
                 type: "path"
                 value: "/path/to/custom/icon.svg"
-            widgetsLeft:
+            widgets_left:
                 1efe7ac9_a03a_6334_9e48_13f662882599: "my_widget_type" # Array of widget ID => widget type
                 d061699e_da42_4075_b504_c2c93c687819: "my_widget_type" # Array of widget ID => widget type
-            widgetsRight: []
-            widgetsBottom: []
-            expandedLeft: "d061699e_da42_4075_b504_c2c93c687819" # ID of widget which should be expanded
-            expandedRight: null
-            contextPermissions: [] # When empty all registered permissions will be used with default values
+            widgets_right: []
+            widgets_bottom: []
+            expanded_left: "d061699e_da42_4075_b504_c2c93c687819" # ID of widget which should be expanded
+            expanded_right: null
+            context_permissions: [] # When empty all registered permissions will be used with default values
 ```
 
 :::info

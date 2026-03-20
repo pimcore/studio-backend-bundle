@@ -135,7 +135,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         }
 
         $reportToClone = $this->getCustomReportByName($reportName);
-        $config = $this->customReportRepository->clone($reportToClone, $newName);
+        $config = $this->customReportRepository->cloneConfig($reportToClone, $newName);
 
         return $this->customReportHydrator->extractReportDetails($config);
     }

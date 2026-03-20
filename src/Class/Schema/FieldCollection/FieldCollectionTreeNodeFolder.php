@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'FieldCollectionTreeNodeFolder',
     title: 'Field Collection Tree Node Folder',
-    required: ['key', 'title', 'icon', 'children'],
+    required: ['key', 'name', 'icon', 'children'],
     type: 'object'
 )]
 final class FieldCollectionTreeNodeFolder implements AdditionalAttributesInterface

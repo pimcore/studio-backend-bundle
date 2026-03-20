@@ -129,7 +129,7 @@ final readonly class TagRepository implements TagRepositoryInterface
             }
         }
 
-        $filterIds = array_unique(array_values($filterIds));
+        $filterIds = array_unique($filterIds);
         $tagList->setConditionVariablesFromSetCondition([]);
         $tagList->setCondition('id IN('.implode(',', $filterIds).')');
 

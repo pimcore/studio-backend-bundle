@@ -363,7 +363,10 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $filteredConfigurations = [];
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($configurations as $configuration) {
-            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
+            if (
+                $configuration->isShareGlobal() ||
+                $this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)
+            ) {
                 $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
 
                 $this->dispatchConfigurationEvent($hydratedConfiguration);
@@ -407,10 +410,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
         $visibility['fullpath'] = $visibility['path'] ?? false;
 
-        if (isset($visibility[$predefinedColumn['key']]) && $visibility[$predefinedColumn['key']]) {
-            return false;
-        }
-
-        return true;
+        return !(isset($visibility[$predefinedColumn['key']]) && $visibility[$predefinedColumn['key']]);
     }
 }

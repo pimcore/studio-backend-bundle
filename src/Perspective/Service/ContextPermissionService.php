@@ -47,6 +47,7 @@ final class ContextPermissionService implements ContextPermissionsServiceInterfa
         'dataModel_hidden' => false,
         'dataModel_objectBricks' => true,
         'dataModel_quantityValue' => true,
+        'dataModel_selectOptions' => true,
     ];
 
     private array $experienceEcommercePermissions = [

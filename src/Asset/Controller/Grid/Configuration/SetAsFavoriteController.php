@@ -35,9 +35,11 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class SetAsFavoriteController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}';
+
     public function __construct(
         SerializerInterface $serializer,
-        private UpdateConfigurationServiceInterface $updateConfigurationService
+        private readonly UpdateConfigurationServiceInterface $updateConfigurationService
     ) {
         parent::__construct($serializer);
     }
@@ -46,13 +48,13 @@ final class SetAsFavoriteController extends AbstractApiController
      * @throws NotFoundException|ForbiddenException|InvalidArgumentException
      */
     #[Route(
-        '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
+        self::ROUTE,
         name: 'pimcore_studio_api_asset_set_grid_configuration_as_favorite',
         methods: ['POST'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_set_grid_configuration_as_favorite',
         description: 'asset_set_grid_configuration_as_favorite_description',
         summary: 'asset_set_grid_configuration_as_favorite_summary',
@@ -67,7 +69,7 @@ final class SetAsFavoriteController extends AbstractApiController
         name: 'folderId'
     )]
     #[SuccessResponse(
-        description: 'asset_set_grid_configuration_as_favorite_response'
+        description: 'asset_set_grid_configuration_as_favorite_success_response'
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

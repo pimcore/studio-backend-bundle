@@ -137,7 +137,7 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function clone(Config $existingConfig, string $newName): Config
+    public function cloneConfig(Config $existingConfig, string $newName): Config
     {
         $newConfig = new Config();
         if (!$newConfig->isWriteable()) {

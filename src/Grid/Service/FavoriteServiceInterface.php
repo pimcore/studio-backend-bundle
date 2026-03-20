@@ -31,7 +31,8 @@ interface FavoriteServiceInterface
     ): GridConfiguration;
 
     public function removeAssetConfigurationAsFavoriteForCurrentUser(
-        GridConfiguration $gridConfiguration
+        GridConfiguration $gridConfiguration,
+        int $folderId
     ): GridConfiguration;
 
     public function removeDataObjectConfigurationAsFavoriteForCurrentUser(

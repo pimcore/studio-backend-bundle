@@ -37,6 +37,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ListSavedConfigurationsController extends AbstractApiController
 {
+    private const string ROUTE = '/data-object/grid/configurations/{classId}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ConfigurationServiceInterface $configurationService,
@@ -48,13 +50,13 @@ final class ListSavedConfigurationsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/data-object/grid/configurations/{classId}',
+        self::ROUTE,
         name: 'pimcore_studio_api_get_data_objects_saved_grid_configurations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-object/grid/configurations/{classId}',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'data_object_list_saved_grid_configurations',
         description: 'data_object_list_saved_grid_configurations_description',
         summary: 'data_object_list_saved_grid_configurations_summary',

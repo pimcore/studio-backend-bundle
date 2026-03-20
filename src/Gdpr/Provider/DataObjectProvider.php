@@ -39,7 +39,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
         private ObjectExporterInterface $objectExporter,
         array $gdprConfig = []
     ) {
-        $this->dataObjectConfig = $gdprConfig['dataObjects'] ?? [];
+        $this->dataObjectConfig = $gdprConfig['data_objects'] ?? [];
     }
 
     /**
