@@ -11,7 +11,7 @@ It provides a unified interface based on the OpenApi Specification for all backe
 
 It uses [zircote/swagger-php](https://github.com/zircote/swagger-php) attributes to generate the OpenApi Specification.
 
-Swagger-ui is available at `/pimcore-studio/api/docs` and the OpenApi Specification is available at `/pimcore-studio/api/docs.json`.
+Swagger UI is available at `/pimcore-studio/api/docs` in the `dev` environment, and the OpenApi Specification (JSON) is available at `/pimcore-studio/api/docs/json`.
 Every description is translatable and can be found in the `studio_api_docs.en.yaml` file of the bundle.
 
 ## Requirements
