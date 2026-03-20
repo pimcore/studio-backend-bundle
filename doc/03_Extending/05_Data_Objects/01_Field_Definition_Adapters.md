@@ -1,8 +1,41 @@
+---
+title: Field Definition Adapters
+description: Custom resolvers for data object field definitions and dot notation.
+---
+
 # Field Definition Adapters
 
-Field Definition Adapters (resolvers) are responsible for resolving Data Object field definitions from dot notation strings. The Studio Backend uses dot notation to address fields within complex container structures such as localized fields, object bricks, field collections, and blocks.
+Field Definition Adapters (resolvers) resolve Data Object field definitions from dot notation
+strings. The Studio Backend uses dot notation to address fields within complex container
+structures such as localized fields, object bricks, field collections, and blocks.
 
-For example, a dot notation like `objectBrickField.myBrick.name` is parsed into parts and handed to the resolver that can handle the structure.
+For example, `objectBrickField.myBrick.name` is parsed into parts and handed to the resolver
+that handles the `objectbrick` structure.
+
+:::note
+
+Field definition adapters are one of several backend components needed when adding a custom data
+object datatype. For the full cross-layer workflow (core registration, search index adapter,
+data adapter, grid column definition, and frontend dynamic types), see the
+[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md)
+guide.
+
+:::
+
+## When Do You Need a Custom Resolver?
+
+The built-in resolvers handle all standard Pimcore container types (localized fields, object
+bricks, field collections, blocks). You need a custom resolver only when you introduce a
+**custom container data type** that nests child field definitions in a non-standard way.
+
+For simple (non-container) field types like text, number, or select fields, no resolver is
+needed. The `DefaultResolver` already handles all top-level fields. Custom non-container data
+types only need registration in the field type map, a GDI adapter, a data adapter, and a grid
+column definition, as described in
+[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md).
+
+For dot notation usage examples, see the
+[Dot Notation reference](../../04_Development_Details/01_Dot_Notation_for_Field_Definitions.md).
 
 ## Architecture Overview
 

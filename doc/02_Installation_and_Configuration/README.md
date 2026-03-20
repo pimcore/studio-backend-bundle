@@ -77,38 +77,36 @@ bin/console pimcore:bundle:install PimcoreStudioBackendBundle
 
 ## OpenApi Documentation
 
-The Studio Backend Bundle provides an OpenApi documentation for the API. To access the documentation, navigate to the following URL:
+Access the OpenAPI documentation at:
 
 ```
 https://<your-pimcore-host>/pimcore-studio/api/docs
 ```
 
-You can also access the OpenApi documentation in JSON format by navigating to the following URL:
+JSON format:
 ```
 https://<your-pimcore-host>/pimcore-studio/api/docs/json
 ```
 
-It is also possible to export the OpenApi documentation as a JSON file by running the following command:
+Export the OpenAPI spec as a JSON file:
 ```bash
 bin/console studio-backend-bundle:generate-openapi-config-json --file-name=<your-file-name>.json
 ```
 Filename is optional. If not provided, the default filename is `studio-backend-openapi.json`. 
 The file will be saved in the `temp` directory of your Pimcore project. If the file with the same name already exists, it will be overwritten
 
-## Setting up generic data index
-Pimcore Studio Backend also requires the installation and setup of the generic data index. 
-The bundle is required by default and also automatically enabled in the bundles.
-To install the generic data index refer to [Generic-Data-Index](https://github.com/pimcore/generic-data-index-bundle?tab=readme-ov-file)
+## Setting Up Generic Data Index
+
+The Studio Backend requires the Generic Data Index bundle, which is a default dependency and
+automatically enabled. For setup instructions, see the
+[Generic Data Index documentation](https://github.com/pimcore/generic-data-index-bundle?tab=readme-ov-file).
 
 ## Mercure
 
-The Studio Backend Bundle uses Mercure to push updates to the frontend. To enable Mercure, you need to set up a 
-Mercure hub and configure the bundle to use it.
-
-For Mercure setup instruction, see [https://mercure.rocks/docs/hub/install](https://mercure.rocks/docs/hub/install).
-
-The simplest way to set up Mercure is using the docker image and set up a reverse proxy on our webserver to prevent CSP issues.
-For details, more aspects and some Q&A see the [Mercure Setup page](./01_Mercure_Setup.md).
+The Studio Backend uses Mercure to push real-time updates to the frontend. Set up a Mercure hub
+and configure the bundle to use it. See [Mercure official docs](https://mercure.rocks/docs/hub/install)
+for general setup. The simplest approach is the Docker image with a reverse proxy to avoid CSP issues.
+For detailed configuration, see the [Mercure Setup page](./01_Mercure_Setup.md).
 
 ### JWT Key
 A valid JWT key is necessary for proper Mercure communication. Currently, the bundle uses the same key for subscriber and publisher.
@@ -122,7 +120,7 @@ Also make sure that the keys configured in pimcore match the keys in the (docker
 
 ### Configuration
 
-It is necessary to configure a JWT key for Mercure. This key is used to sign and verify the JWT tokens that are used for authentication.
+Configure a JWT key for Mercure. This key signs and verifies the JWT tokens used for authentication.
 
 #### Optional Mercure configuration
 

@@ -12,9 +12,11 @@ Messages are dispatched via `pimcore_generic_execution_engine` transport. Please
 
 :::
 
-The Generic Execution Engine is a powerful tool to execute actions in the background. It is based on the Symfony Messenger component, to learn more about it, please visit the [Generic Execution Engine documentation](https://github.com/pimcore/pimcore/tree/11.x/doc/19_Development_Tools_and_Details/08_Generic_Execution_Engine).
+The Generic Execution Engine executes long-running actions in the background using the Symfony Messenger
+component. For the core framework documentation, see the
+[Generic Execution Engine](https://github.com/pimcore/pimcore/blob/2026.x/doc/09_Development_Tools/08_Generic_Execution_Engine/README.md).
 
-There are several actions, which currently benefit from the Execution Engine:
+The Studio Backend uses the Execution Engine for these operations:
 
 ### Asset ZIP Upload
 When uploading a ZIP file containing assets, the ZIP file is extracted and the assets are created in the background.
@@ -54,7 +56,7 @@ Assets, Documents, Data Objects and folders can be deleted in the background. Th
 
 ### Elements Recycle Bin
 Before deleting elements, they and the respective children are moved to the recycle bin. This is done in the background while using the Generic Execution Engine.
-by default, recycle bin is only used for elements with less than 100 children. This can be configured in the `config.yaml` file.
+By default, the recycle bin is only used for elements with fewer than 100 children. Configure the threshold in `config.yaml`:
 
 ```yaml
 pimcore_studio_backend:
