@@ -14,7 +14,7 @@ Messages are dispatched via `pimcore_generic_execution_engine` transport. Please
 
 The Generic Execution Engine executes long-running actions in the background using the Symfony Messenger
 component. For the core framework documentation, see the
-[Generic Execution Engine](https://github.com/pimcore/pimcore/blob/2026.x/doc/09_Development_Tools/08_Generic_Execution_Engine/README.md).
+[Generic Execution Engine](https://github.com/pimcore/pimcore/blob/2026.x/doc/09_Development_Tools/01_Generic_Execution_Engine/README.md).
 
 The Studio Backend uses the Execution Engine for these operations:
 

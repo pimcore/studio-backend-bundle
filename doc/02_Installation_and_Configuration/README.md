@@ -40,7 +40,7 @@ security:
 
 If you use bundles that provide MCP (Model Context Protocol) servers (e.g. Data Importer), add the
 `pimcore_mcp` firewall as well. This enables authentication for all `/pimcore-mcp/` routes. See the
-[MCP Server documentation](./08_MCP_Server.md) for details on authentication and token configuration.
+[MCP Server documentation](../04_Development_Details/08_MCP_Server.md) for details on authentication and token configuration.
 
 ```yaml
 security:

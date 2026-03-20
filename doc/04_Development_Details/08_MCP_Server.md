@@ -117,7 +117,7 @@ pimcore_studio_backend:
 ```
 
 The firewall is automatically configured by the bundle extension. To enable it, add the following to your
-`config/packages/security.yaml` (see also [Installation](./00_Installation.md)):
+`config/packages/security.yaml` (see also [Installation](../02_Installation_and_Configuration/README.md)):
 
 ```yaml
 security:
