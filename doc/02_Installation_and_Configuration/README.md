@@ -1,3 +1,8 @@
+---
+title: Installation and Configuration
+description: Setup, security, Mercure, and configuration options for the Studio Backend Bundle.
+---
+
 # Installation of the Studio Backend Bundle
 
 ## Bundle Installation
@@ -34,7 +39,7 @@ security:
 **Optional: MCP firewall**
 
 If you use bundles that provide MCP (Model Context Protocol) servers (e.g. Data Importer), add the
-`pimcore_mcp` firewall as well. This enables authentication for all `/pimcore-mcp/` routes — see the
+`pimcore_mcp` firewall as well. This enables authentication for all `/pimcore-mcp/` routes. See the
 [MCP Server documentation](./08_MCP_Server.md) for details on authentication and token configuration.
 
 ```yaml

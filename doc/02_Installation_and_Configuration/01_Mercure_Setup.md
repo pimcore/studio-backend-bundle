@@ -1,3 +1,8 @@
+---
+title: Mercure Setup
+description: Configure Mercure for real-time updates in Pimcore Studio.
+---
+
 # Mercure Setup
 
 ## Start and configure Mercure server

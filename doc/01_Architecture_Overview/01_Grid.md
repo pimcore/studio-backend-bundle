@@ -1,3 +1,8 @@
+---
+title: Grid
+description: "Grid system architecture: columns, filters, transformers, and configuration."
+---
+
 # Grid
 
 On the request level we have three main components for the grid: `Column`, `ColumnConfiguration` and `ColumnData`.

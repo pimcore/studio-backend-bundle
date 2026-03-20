@@ -1,22 +1,29 @@
+---
+title: Additional and Custom Attributes
+description: Add custom data to API response schemas via PreResponse events.
+---
+
 # Additional and Custom Attributes
 
-Pimcore Studio Backend allows you to add additional data to response schemas.
-Every response schema implements the `AdditionalAttributesInterface` and `AdditionalAttributesTrait` which allows you to add additional attributes to the schema.
+Every API response schema implements `AdditionalAttributesInterface` (via `AdditionalAttributesTrait`),
+which lets you attach arbitrary key-value data to any response.
 
-Similarly to the additional attributes, you can also add custom attributes to the schema. These attributes contain mainly data used for the `tree` customization. 
-Therefore as default, the custom attributes are available for the tree response schema. 
-If you want to add custom attributes to another schema, you need to implement the `CustomAttributesTrait` in the schema.
+**Custom attributes** are a specialized subset for tree and editor customization (icons, tooltips,
+CSS classes). They are available on tree response schemas by default. To add custom attributes to
+other schemas, implement `CustomAttributesTrait` in the schema class.
 
-## How to add additional and custom attributes
-You need to register a subscriber to that specific schema where you can add the additional data.
+## Adding Attributes via Events
 
-Every schema implements its own event that you can subscribe to.
-Every event implements the `AbstractPreResponseEvent` which allows to add the actual data, but also makes it possible to get the actual Schema out of the event with a type-safe getter.
+Each schema dispatches its own `PreResponse` event before the response is sent.
+Subscribe to the event for the schema you want to enrich. All events extend
+`AbstractPreResponseEvent`, which provides methods to add additional attributes and
+a type-safe getter for the underlying schema object.
 
-## Listen to the event
-For an example see [Extending Events](./11_Extending_via_Events.md). 
+## Subscribing to Events
 
-#### Example Event
+For the subscriber pattern, see [Extending via Events](./11_Extending_via_Events.md).
+
+### Example: PreResponse Event Structure
 ```php
 <?php
 declare(strict_types=1);

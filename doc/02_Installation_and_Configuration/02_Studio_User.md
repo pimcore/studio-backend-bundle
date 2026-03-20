@@ -1,3 +1,8 @@
+---
+title: Studio User
+description: Default key bindings and user configuration for Pimcore Studio.
+---
+
 # Studio User
 ## Default Key Bindings
 To change the default key bindings, you can add a Symfony configuration file in your project. 

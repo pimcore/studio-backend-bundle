@@ -1,3 +1,8 @@
+---
+title: Custom Grid Columns
+description: Add custom column types, resolvers, and collectors to the element grid.
+---
+
 # Extending Grid with Custom Columns
 
 ## Overview
@@ -5,12 +10,12 @@
 The Studio grid displays element data in configurable columns. Each
 column is powered by three backend components:
 
-- **Column Definition** — declares the column type, its capabilities
+- **Column Definition** - declares the column type, its capabilities
   (sortable, filterable, exportable), and which frontend cell type
   renders it.
-- **Column Resolver** — fetches the actual value for a given element
+- **Column Resolver** - fetches the actual value for a given element
   and column.
-- **Column Collector** — lists the available columns that users can
+- **Column Collector** - lists the available columns that users can
   add to their grid configuration.
 
 For data objects, columns are generated automatically from class
@@ -95,7 +100,7 @@ final readonly class ProgressBarDefinition implements
 
     public function getFrontendType(): string
     {
-        // Custom type — requires a frontend cell registration.
+        // Custom type - requires a frontend cell registration.
         // Use a built-in FrontendType value to skip frontend work.
         return 'progress-bar';
     }
