@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMeta
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CreatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
@@ -108,9 +109,9 @@ final readonly class MetadataService implements MetadataServiceInterface
         return new Collection(count($items), $items);
     }
 
-    public function createPredefinedMetadata(): PredefinedMetadata
+    public function createPredefinedMetadata(CreatePredefinedMetadata $metadata): PredefinedMetadata
     {
-        $predefined = $this->metadataRepository->createPredefinedMetadata();
+        $predefined = $this->metadataRepository->createPredefinedMetadata($metadata);
 
         return $this->hydrateAndDispatch($predefined);
     }

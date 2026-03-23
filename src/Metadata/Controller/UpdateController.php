@@ -17,7 +17,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Attribute\Request\PredefinedMetadataRequestBody;
@@ -51,7 +51,9 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws ElementExistsException
+     * @throws NotFoundException
+     * @throws NotWriteableException
      */
     #[Route(
         self::ROUTE,
@@ -73,6 +75,7 @@ final class UpdateController extends AbstractApiController
         content: new JsonContent(ref: PredefinedMetadata::class, type: 'object')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::CONFLICT,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
