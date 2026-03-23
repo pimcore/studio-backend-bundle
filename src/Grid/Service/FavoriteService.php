@@ -97,11 +97,12 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     }
 
     public function removeAssetConfigurationAsFavoriteForCurrentUser(
-        GridConfiguration $gridConfiguration
+        GridConfiguration $gridConfiguration,
+        int $folderId
     ): GridConfiguration {
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
             $this->securityService->getCurrentUser()->getId(),
-            $gridConfiguration->getAssetFolderId()
+            $folderId
         );
 
         if ($favorite) {

@@ -41,6 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositor
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -165,8 +166,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
         ]);
 
-        $defaultPerspective = $this->getParsedConfig(
-            __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+        $defaultPerspective = ConfigKeyMapper::convertKeysForApp(
+            $this->getParsedConfig(
+                __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+            )
         );
 
         $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);

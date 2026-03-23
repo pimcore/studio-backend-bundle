@@ -38,6 +38,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetConfigurationController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/grid/configuration/{folderId}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ConfigurationServiceInterface $gridConfigurationService,
@@ -49,13 +51,13 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/{folderId}',
+        self::ROUTE,
         name: 'pimcore_studio_api_get_asset_grid_configuration',
         methods: ['GET'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/configuration/{folderId}',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_get_grid_configuration_by_folderId',
         description: 'asset_get_grid_configuration_by_folderId_description',
         summary: 'asset_get_grid_configuration_by_folderId_summary',

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\Loader\TaggedIteratorDataProviderLoader;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -42,6 +43,7 @@ final readonly class DataProviderPass implements CompilerPassInterface
         );
 
         $gdprConfig = $container->getParameter(self::GDPR_CONFIG_PARAMETER);
+        $gdprConfig = ConfigKeyMapper::convertKeysForApp($gdprConfig);
 
         foreach ($taggedServices as $dataProviderId) {
             $this->checkInterface($dataProviderId, DataProviderInterface::class);

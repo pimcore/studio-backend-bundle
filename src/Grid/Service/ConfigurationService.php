@@ -161,7 +161,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
         }
 
-        $configuration =  $this->configurationRepository->getById($configurationId);
+        $configuration = $this->configurationRepository->getById($configurationId);
         $user = $this->securityService->getCurrentUser();
 
         if ($configuration->getClassId() !== $classId) {
@@ -407,10 +407,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
         $visibility['fullpath'] = $visibility['path'] ?? false;
 
-        if (isset($visibility[$predefinedColumn['key']]) && $visibility[$predefinedColumn['key']]) {
-            return false;
-        }
-
-        return true;
+        return !(isset($visibility[$predefinedColumn['key']]) && $visibility[$predefinedColumn['key']]);
     }
 }

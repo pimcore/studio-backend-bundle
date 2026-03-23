@@ -37,6 +37,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetAvailableColumnsController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/grid/available-columns';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
@@ -48,13 +50,13 @@ final class GetAvailableColumnsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/available-columns',
+        self::ROUTE,
         name: 'pimcore_studio_api_get_asset_grid_available_configuration',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/available-columns',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_get_available_grid_columns',
         description: 'asset_get_available_grid_columns_description',
         summary: 'asset_get_available_grid_columns_summary',

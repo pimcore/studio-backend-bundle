@@ -13,19 +13,32 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
+
 /**
  * @internal
  */
 final readonly class MetadataParameters
 {
     public function __construct(
-        private ?string $filter = null
-
+        private ?string $searchTerm = null,
+        private array $columnFilters = [],
+        private ?SortFilter $sortFilter = null,
     ) {
     }
 
-    public function getFilter(): ?string
+    public function getSearchTerm(): ?string
     {
-        return $this->filter;
+        return $this->searchTerm;
+    }
+
+    public function getColumnFilters(): array
+    {
+        return $this->columnFilters;
+    }
+
+    public function getSortFilter(): ?SortFilter
+    {
+        return $this->sortFilter;
     }
 }

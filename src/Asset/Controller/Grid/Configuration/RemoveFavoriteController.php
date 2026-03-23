@@ -13,21 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -35,51 +33,55 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class SaveConfigurationController extends AbstractApiController
+final class RemoveFavoriteController extends AbstractApiController
 {
-    private const string ROUTE = '/assets/grid/configuration/save';
+    private const string ROUTE = '/assets/grid/configuration/remove-favorite/{configurationId}/{folderId}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SaveConfigurationServiceInterface $gridSaveConfigurationService
+        private readonly UpdateConfigurationServiceInterface $updateConfigurationService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|ForbiddenException|InvalidArgumentException
      */
     #[Route(
         self::ROUTE,
-        name: 'pimcore_studio_api_save_asset_grid_configuration',
-        methods: ['POST'],
+        name: 'pimcore_studio_api_asset_remove_grid_configuration_as_favorite',
+        methods: ['DELETE'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Post(
+    #[Delete(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'asset_save_grid_configuration',
-        description: 'asset_save_grid_configuration_description',
-        summary: 'asset_save_grid_configuration_description',
+        operationId: 'asset_remove_grid_configuration_as_favorite',
+        description: 'asset_remove_grid_configuration_as_favorite_description',
+        summary: 'asset_remove_grid_configuration_as_favorite_summary',
         tags: [Tags::AssetGrid->value]
     )]
-    #[ConfigurationRequestBody(
-        type: 'asset'
+    #[IdParameter(
+        type: 'configurationId',
+        name: 'configurationId'
+    )]
+    #[IdParameter(
+        type: 'folderId',
+        name: 'folderId'
     )]
     #[SuccessResponse(
-        description: 'asset_save_grid_configuration_success_response',
-        content: new JsonContent(ref: Configuration::class)
+        description: 'asset_remove_grid_configuration_as_favorite_success_response'
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function saveAssetGridConfiguration(
-        #[MapRequestPayload] ConfigurationParameter $saveConfigurationParameter
+    public function removeAssetGridConfigurationAsFavorite(
+        int $configurationId,
+        int $folderId
     ): Response {
-        $configuration = $this->gridSaveConfigurationService->saveAssetGridConfiguration(
-            $saveConfigurationParameter
-        );
+        $this->updateConfigurationService->removeAssetGridConfigurationAsFavorite($configurationId, $folderId);
 
-        return $this->jsonResponse($configuration);
+        return new Response();
     }
 }

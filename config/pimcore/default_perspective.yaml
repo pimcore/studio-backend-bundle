@@ -4,55 +4,55 @@ studio_default_perspective:
   icon: 
     type: "name"
     value: "pimcore"
-  widgetsLeft:
+  widgets_left:
     studio_document_tree_widget:
       id: "studio_document_tree_widget"
       name: "document.document-tree.title"
       widget_type: "element_tree"
-      elementType: "document"
+      element_type: "document"
       icon:
         type: "name"
         value: "document"
-      rootFolder: "/"
-      showRoot: true
+      root_folder: "/"
+      show_root: true
       pql: null
-      pageSize: null # use default page size
+      page_size: null # use default page size
       classes: []
-      contextPermissions: [] # use all default context permissions
-      isWriteable: false
+      context_permissions: [] # use all default context permissions
+      is_writeable: false
     studio_asset_tree_widget:
       id: "studio_asset_tree_widget"
       name: "asset.asset-tree.title"
       widget_type: "element_tree"
-      elementType: "asset"
+      element_type: "asset"
       icon:
         type: "name"
         value: "asset"
-      rootFolder: "/"
-      showRoot: true
+      root_folder: "/"
+      show_root: true
       pql: null
-      pageSize: null # use default page size
+      page_size: null # use default page size
       classes: []
-      contextPermissions: [] # use all default context permissions
-      isWriteable: false
+      context_permissions: [] # use all default context permissions
+      is_writeable: false
     studio_data_object_tree_widget:
       id: "studio_data_object_tree_widget"
       name: "data-object.data-object-tree.title"
       widget_type: "element_tree"
-      elementType: "data-object"
+      element_type: "data-object"
       icon:
         type: "name"
         value: "data-object"
-      rootFolder: "/"
-      showRoot: true
+      root_folder: "/"
+      show_root: true
       pql: null
-      pageSize: null # use default page size
+      page_size: null # use default page size
       classes: []
-      contextPermissions: [] # use all default context permissions
-      isWriteable: false
-  widgetsRight: []
-  widgetsBottom: []
-  expandedLeft: "studio_document_tree_widget"
-  expandedRight: null
-  contextPermissions: []
-  isWriteable: false
+      context_permissions: [] # use all default context permissions
+      is_writeable: false
+  widgets_right: []
+  widgets_bottom: []
+  expanded_left: "studio_document_tree_widget"
+  expanded_right: null
+  context_permissions: []
+  is_writeable: false
