@@ -111,7 +111,9 @@ final class PatchHandler extends AbstractHandler
             $this->publishService,
             $this->userTopicService,
             $jobRun,
-            $this->getJobStep($message)->getName()
+            $this->getJobStep($message)->getName(),
+            1,
+            1
         );
     }
 

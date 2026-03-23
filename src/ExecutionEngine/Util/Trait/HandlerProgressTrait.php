@@ -41,7 +41,8 @@ trait HandlerProgressTrait
         UserTopicServiceInterface $userTopicService,
         JobRun $jobRun,
         string $jobStepName,
-        int $stepElements = 1
+        int $stepElements = 1,
+        int $frequency = self::FREQUENCY
     ): void {
         $currentStep = $this->getCurrentStep($jobRun);
         $totalSteps = $this->getTotalSteps($jobRun);

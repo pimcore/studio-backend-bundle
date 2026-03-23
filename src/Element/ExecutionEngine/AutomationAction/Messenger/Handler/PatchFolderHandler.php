@@ -18,7 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
@@ -63,18 +64,23 @@ final class PatchFolderHandler extends AbstractHandler
             return;
         }
 
-        $validatedParameters = $this->validateFullParameters(
-            $message,
-            $jobRun,
-            $this->userResolver,
-        );
-
-        if ($validatedParameters instanceof AbortActionData) {
-            $this->abort($validatedParameters);
+        $selectedElements = $job->getSelectedElements();
+        if (empty($selectedElements)) {
+            $this->abort($this->getAbortData(Config::NO_ELEMENT_PROVIDED->value));
         }
 
-        $folderId = $validatedParameters->getSubject()->getId();
-        $elementType = $validatedParameters->getSubject()->getType();
+        $folderDescriptor = $selectedElements[0];
+        $folderId = $folderDescriptor->getId();
+        $elementType = $folderDescriptor->getType();
+
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        if ($user === null) {
+            $this->abort($this->getAbortData(
+                Config::USER_NOT_FOUND_MESSAGE->value,
+                ['userId' => $jobRun->getOwnerId()]
+            ));
+        }
+
         $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
         $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $filters = $this->filterParameterMapper->fromArray($filters);
@@ -85,7 +91,7 @@ final class PatchFolderHandler extends AbstractHandler
         $elementIds = $this->gridSearch->searchElementIdsForUser(
             $elementType,
             new GridParameter($folderId, [], $filters),
-            $validatedParameters->getUser()
+            $user
         );
 
         if (empty($elementIds)) {
@@ -102,6 +108,8 @@ final class PatchFolderHandler extends AbstractHandler
         $job->setSelectedElements(
             array_map(static fn ($id) => new ElementDescriptor($elementType, $id), $elementIds)
         );
+
+        $jobRun->setTotalElements(count($elementIds));
 
         $this->updateProgress(
             $this->publishService,

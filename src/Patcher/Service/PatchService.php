@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInte
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
-use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RefreshJobMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -109,13 +108,7 @@ final readonly class PatchService implements PatchServiceInterface
                     [
                         StepConfig::CONFIG_FILTERS->value => $patchFolderParameter->getFilters(),
                         StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
-                    ]
-                ),
-                new JobStep(
-                    JobSteps::ELEMENT_REFRESH_COUNT->value,
-                    RefreshJobMessage::class,
-                    '',
-                    [],
+                    ],
                     SelectionProcessingMode::ONCE
                 ),
                 new JobStep(
