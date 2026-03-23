@@ -28,7 +28,7 @@ final readonly class TreeNodeHydrator implements TreeNodeHydratorInterface
         return new ObjectBrickTreeNode(
             $definition->getKey() ?? '',
             $definition->getTitle() ?? '',
-            new ElementIcon(ElementIconTypes::NAME->value, 'objectbricks'),
+            new ElementIcon(ElementIconTypes::NAME->value, 'object-bricks'),
             $definition->getGroup(),
         );
     }
