@@ -122,7 +122,7 @@ final class PatchHandler extends AbstractHandler
         $this->stepConfiguration->setDefault(StepConfig::FOLDER_TO_EXPORT->value, null);
         $this->stepConfiguration->setAllowedTypes(
             StepConfig::FOLDER_TO_EXPORT->value,
-            StepConfig::CONFIG_TYPE_INT->value
+            [StepConfig::CONFIG_TYPE_INT->value, 'null']
         );
     }
 }
