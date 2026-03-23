@@ -22,6 +22,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'CreatePredefinedMetadata',
     title: 'Create Predefined Metadata',
+    required: ['name', 'type', 'description', 'targetSubType', 'data', 'config', 'language', 'group'],
     type: 'object'
 )]
 final readonly class CreatePredefinedMetadata
