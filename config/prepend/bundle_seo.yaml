@@ -24,6 +24,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvService
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RobotsTxtServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RobotsTxtService
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+
   #
   # Hydrators
   #
@@ -36,6 +41,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RobotsTxtHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RobotsTxtHydrator
 
   #
   # Repository

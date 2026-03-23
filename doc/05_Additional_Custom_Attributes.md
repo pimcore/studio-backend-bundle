@@ -81,6 +81,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.bundle_seo.redirect.import_stats`
 - `pre_response.bundle_seo.redirect.list`
 - `pre_response.bundle_seo.redirect.status`
+- `pre_response.bundle_seo.robots_txt_config`
 - `pre_response.class.bulk_export_available_item`
 - `pre_response.class.bulk_import_prepare`
 - `pre_response.class.bulk_import_result_item`
