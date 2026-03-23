@@ -730,8 +730,9 @@ metadata_get_collection_description: |
 metadata_get_collection_success_response: Predefined metadata collection with total item count
 metadata_get_collection_summary: Get predefined metadata collection with filtering and sorting
 metadata_predefined_create_description: |
-    Create a new predefined metadata entry with default values.
-    The entry can be configured afterwards using the update endpoint.
+    Create a new predefined metadata entry.
+    An optional request body can be provided to set name, type, language, and other fields.
+    If no body is sent, the entry is created with default values (name: "New Definition", type: "input").
 metadata_predefined_create_success_response: Newly created predefined metadata entry
 metadata_predefined_create_summary: Create a new predefined metadata entry
 metadata_predefined_delete_description: |

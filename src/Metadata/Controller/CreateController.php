@@ -16,7 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Attribute\Request\CreatePredefinedMetadataRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CreatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -25,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -44,6 +48,7 @@ final class CreateController extends AbstractApiController
     }
 
     /**
+     * @throws ElementExistsException
      * @throws NotWriteableException
      */
     #[Route(
@@ -59,16 +64,19 @@ final class CreateController extends AbstractApiController
         summary: 'metadata_predefined_create_summary',
         tags: [Tags::Metadata->value],
     )]
+    #[CreatePredefinedMetadataRequestBody]
     #[SuccessResponse(
         description: 'metadata_predefined_create_success_response',
         content: new JsonContent(ref: PredefinedMetadata::class, type: 'object')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::CONFLICT,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
-    public function createPredefinedMetadata(): JsonResponse
-    {
-        return $this->jsonResponse($this->metadataService->createPredefinedMetadata());
+    public function createPredefinedMetadata(
+        #[MapRequestPayload] CreatePredefinedMetadata $createMetadata = new CreatePredefinedMetadata(),
+    ): JsonResponse {
+        return $this->jsonResponse($this->metadataService->createPredefinedMetadata($createMetadata));
     }
 }
