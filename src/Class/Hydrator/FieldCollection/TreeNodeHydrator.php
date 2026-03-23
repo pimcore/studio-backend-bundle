@@ -28,7 +28,7 @@ final readonly class TreeNodeHydrator implements TreeNodeHydratorInterface
         return new FieldCollectionTreeNode(
             $definition->getKey() ?? '',
             $definition->getTitle() ?? '',
-            new ElementIcon(ElementIconTypes::NAME->value, 'field-collection'),
+            new ElementIcon(ElementIconTypes::NAME->value, 'field-collection-field'),
             $definition->getGroup(),
         );
     }
