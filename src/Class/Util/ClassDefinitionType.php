@@ -44,10 +44,10 @@ enum ClassDefinitionType: string
     public function icon(): string
     {
         return match ($this) {
-            self::FieldCollection => 'fieldcollection',
+            self::FieldCollection => 'field-collection-field',
             self::ClassDefinition => 'class',
-            self::CustomLayout => 'custom_views',
-            self::ObjectBrick => 'objectbricks',
+            self::CustomLayout => 'custom-layout',
+            self::ObjectBrick => 'object-bricks',
         };
     }
 
