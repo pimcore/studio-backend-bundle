@@ -36,7 +36,7 @@ use function sprintf;
 final readonly class TranslationRepository implements TranslationRepositoryInterface
 {
     private array $validLanguages;
-    
+
     public function __construct(
         private SettingsProviderInterface $systemSettingsProvider,
         private Connection $db,
