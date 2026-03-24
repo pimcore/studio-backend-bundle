@@ -293,6 +293,14 @@ bundle_seo_redirect_update_by_id_description: |
     Please note that <strong>all fields<strong> have to be provided.
 bundle_seo_redirect_update_by_id_success_response: Successfully updated redirect
 bundle_seo_redirect_update_by_id_summary: Update a redirect by ID
+bundle_seo_robots_txt_get_description: |
+    Get the robots.txt configuration for all sites, including whether a physical robots.txt file exists on the filesystem.
+bundle_seo_robots_txt_get_summary: Get robots.txt configuration
+bundle_seo_robots_txt_get_success_response: Robots.txt configuration data
+bundle_seo_robots_txt_update_description: |
+    Update the robots.txt configuration for all sites. Saves the provided site-keyed robots.txt content to the settings store.
+bundle_seo_robots_txt_update_summary: Update robots.txt configuration
+bundle_seo_robots_txt_update_success_response: Updated robots.txt configuration data
 class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
