@@ -138,7 +138,7 @@ final readonly class ExportService implements ExportServiceInterface
         array $selectedElements = [],
         bool $isFolder = false
     ): int {
-        $name = $this->createJobNameByFormat($jobSteps, $exportFormat);
+        $name = $this->createJobNameByFormat($exportFormat);
         if ($isFolder) {
             $name = Jobs::COLLECT_EXPORT_FOLDER_ELEMENTS->value;
         }
@@ -214,7 +214,7 @@ final readonly class ExportService implements ExportServiceInterface
         );
     }
 
-    private function createJobNameByFormat(array $jobSteps, string $exportFormat): string
+    private function createJobNameByFormat(string $exportFormat): string
     {
         $name = Jobs::CREATE_CSV->value;
         if ($exportFormat === ExportFormat::XLSX->value) {
