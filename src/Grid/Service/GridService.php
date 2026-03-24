@@ -289,9 +289,9 @@ final class GridService implements GridServiceInterface
                 $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
                 if ($withGroup) {
-                    $key = $fd ? $fd['name'] : $column->getKey();
+                    $key = $fd ? ($fd['name'] ?? $column->getKey()) : $column->getKey();
                 } else {
-                    $key = $fd ? $fd['title'] : $column->getKey();
+                    $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
                 }
 
                 return ($withGroup ? $firstGroup . '~' : '') . $key;
