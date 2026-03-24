@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
@@ -22,11 +22,16 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class FileSizeResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
+final class FileSizeResolver implements
+    ColumnResolverInterface,
+    StudioElementColumnResolverInterface,
+    CoreElementColumnResolverInterface
 {
     use ColumnDataTrait;
     use SimpleGetterTrait;
@@ -37,6 +42,16 @@ final class FileSizeResolver implements ColumnResolverInterface, StudioElementCo
         return $this->getColumnData(
             $column,
             formatBytes($element->getFileSize()),
+            $this->getType()
+        );
+    }
+
+    public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+    {
+        /** @var Asset $element */
+        return $this->getColumnData(
+            $column,
+            $element instanceof Asset ? formatBytes($element->getFileSize()) : null,
             $this->getType()
         );
     }
