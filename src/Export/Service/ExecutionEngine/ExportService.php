@@ -111,7 +111,7 @@ final readonly class ExportService implements ExportServiceInterface
         return $this->generateExportFileJob(
             [
                 new JobStep(
-                    JobSteps::DATA_COLLECTION->value,
+                    JobSteps::FOLDER_DATA_COLLECTION->value,
                     FolderCollectionMessage::class,
                     '',
                     [
@@ -126,7 +126,8 @@ final readonly class ExportService implements ExportServiceInterface
             ],
             $exportFormat,
             $this->securityService->getCurrentUser()->getId(),
-            [new ElementDescriptor($elementType, $folderId)]
+            [new ElementDescriptor($elementType, $folderId)],
+            true
         );
     }
 
@@ -135,9 +136,15 @@ final readonly class ExportService implements ExportServiceInterface
         string $exportFormat,
         int $ownerId,
         array $selectedElements = [],
+        bool $isFolder = false
     ): int {
+        $name = $this->createJobNameByFormat($jobSteps, $exportFormat);
+        if ($isFolder) {
+            $name = Jobs::COLLECT_EXPORT_FOLDER_ELEMENTS->value;
+        }
+
         $jobRun = $this->jobExecutionAgent->startJobExecution(
-            $this->createJobByFormat($jobSteps, $exportFormat, $selectedElements),
+            new Job($name, $jobSteps, $selectedElements),
             $ownerId,
             Config::CONTEXT_STOP_ON_ERROR->value
         );
@@ -207,14 +214,14 @@ final readonly class ExportService implements ExportServiceInterface
         );
     }
 
-    private function createJobByFormat(array $jobSteps, string $exportFormat, array $selectedElements = []): Job
+    private function createJobNameByFormat(array $jobSteps, string $exportFormat): string
     {
         $name = Jobs::CREATE_CSV->value;
         if ($exportFormat === ExportFormat::XLSX->value) {
             $name = Jobs::CREATE_XLSX->value;
         }
 
-        return new Job($name, $jobSteps, $selectedElements);
+        return $name;
     }
 
     private function getMessageClass(string $elementType): string

@@ -49,3 +49,5 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\XlsxCreationSubscriber:
     arguments:
       $xlsxExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService'
+
+  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\FolderCollectionSubscriber: ~
