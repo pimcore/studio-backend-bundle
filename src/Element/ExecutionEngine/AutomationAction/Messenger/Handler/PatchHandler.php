@@ -113,7 +113,7 @@ final class PatchHandler extends AbstractHandler
             $jobRun,
             $this->getJobStep($message)->getName(),
             1,
-            1
+            $jobRun->getTotalElements()
         );
     }
 

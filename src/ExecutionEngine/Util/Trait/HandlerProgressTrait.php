@@ -56,7 +56,7 @@ trait HandlerProgressTrait
                 self::PROCESSED_ELEMENTS => $processedElements,
             ]
         );
-        $updateFrequency = max(1, (int)($totalEvents / self::FREQUENCY));
+        $updateFrequency = max(1, (int)($totalEvents / $frequency));
 
         $progress = (int)($processedElements / $totalEvents * 100);
 

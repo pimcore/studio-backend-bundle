@@ -105,11 +105,10 @@ final class PatchFolderHandler extends AbstractHandler
             return;
         }
 
-        $job->setSelectedElements(
-            array_map(static fn ($id) => new ElementDescriptor($elementType, $id), $elementIds)
+        $newSelectedElements = array_map(
+            static fn ($id) => new ElementDescriptor($elementType, $id),
+            $elementIds
         );
-
-        $jobRun->setTotalElements(count($elementIds));
 
         $this->updateProgress(
             $this->publishService,
@@ -117,6 +116,9 @@ final class PatchFolderHandler extends AbstractHandler
             $jobRun,
             $this->getJobStep($message)->getName()
         );
+
+        $jobRun->setTotalElements(count($elementIds));
+        $this->setSelectedElementsForNextJobStep($jobRun, $newSelectedElements);
     }
 
     protected function configureStep(): void

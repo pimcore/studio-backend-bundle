@@ -102,6 +102,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
                 $this->userTopicService,
                 $jobRun,
                 $this->getJobStep($message)->getName(),
+                $totalAssets,
                 $totalAssets
             );
         }
