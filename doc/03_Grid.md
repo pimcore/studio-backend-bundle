@@ -58,7 +58,7 @@ Available filters are:
 |       classificationstore.boolean        |                  array                   |        `true`, `false` or `null`        |      true      |
 |        classificationstore.number        |                  object                  |      `from`, `to`, `is`, `setting`      |      true      |
 |               crm.consent                |                  array                   |            `true` or `false`            |      true      |
-|           dataobject.relation            |                  object                  |              `type`, `ids`              |      true      |
+|           dataobject.relation            |                  array                   |    array of `type`, `ids` objects       |      true      |
 
 
 ### Examples:
@@ -142,7 +142,7 @@ The filter value of a Classification Store looks a bit difrent. All Filter need 
 ```
 
 Filter by DataObject Relation:
-The `dataobject.relation` filter allows filtering by relation fields. The filter value must contain a `type` (the element type: `asset`, `object`, or `document`) and an `ids` array with the relation IDs to filter by.
+The `dataobject.relation` filter allows filtering by relation fields. The filter value must be an array of objects, each containing a `type` (the element type: `asset`, `object`, or `document`) and an `ids` array with the relation IDs to filter by. This allows filtering by multiple element types at the same time.
 
 To filter by this structure:
 ```json
@@ -151,10 +151,16 @@ To filter by this structure:
   {
     "key": "bodyStyle",
     "type": "dataobject.relation",
-    "filterValue": {
-      "type": "object",
-      "ids": [6]
-    }
+    "filterValue": [
+      {
+        "type": "object",
+        "ids": [6]
+      },
+      {
+        "type": "asset",
+        "ids": [7, 9]
+      }
+    ]
   }
 ]
 ...
