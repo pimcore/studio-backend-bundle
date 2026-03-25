@@ -152,7 +152,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
 
         foreach ($toDelete as $id) {
             $owner = $this->dataObjectResolver->getById($id);
-            //TODO: lock ?!
+
             if (method_exists($owner, $getter)) {
                 $currentData = $owner->$getter();
                 if (is_array($currentData)) {
@@ -181,7 +181,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
 
         foreach ($toAdd as $id) {
             $owner = $this->dataObjectResolver->getById($id);
-            //TODO: lock ?!
+
             if (method_exists($owner, $getter)) {
                 $currentData = $owner->$getter();
                 if (is_array($currentData)) {
