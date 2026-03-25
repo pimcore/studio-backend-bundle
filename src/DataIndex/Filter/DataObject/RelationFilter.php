@@ -57,12 +57,30 @@ final class RelationFilter implements FilterInterface
     {
         $filterValue = $column->getFilterValue();
 
-        if (!is_array($filterValue)) {
-            throw new InvalidArgumentException('Value for relation filter must be an array');
+        if (!is_array($filterValue) || $filterValue === []) {
+            throw new InvalidArgumentException('Value for relation filter must be a non-empty array');
         }
 
-        $type = $filterValue['type'] ?? null;
-        $ids = $filterValue['ids'] ?? null;
+        foreach ($filterValue as $entry) {
+            $query = $this->applyRelationEntry($column->getKey(), $entry, $query);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function applyRelationEntry(string $key, mixed $entry, QueryInterface $query): QueryInterface
+    {
+        if (!is_array($entry)) {
+            throw new InvalidArgumentException(
+                'Each relation filter entry must be an array with type and ids'
+            );
+        }
+
+        $type = $entry['type'] ?? null;
+        $ids = $entry['ids'] ?? null;
 
         if ($type === null || !in_array($type, self::ALLOWED_TYPES, true)) {
             throw new InvalidArgumentException(
@@ -74,7 +92,7 @@ final class RelationFilter implements FilterInterface
             throw new InvalidArgumentException('Value for relation filter must contain a non-empty ids array');
         }
 
-        $fieldKey = $column->getKey() . '.' . $type;
+        $fieldKey = $key . '.' . $type;
 
         return $query->filterMultiSelect($fieldKey, $ids);
     }

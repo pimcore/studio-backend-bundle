@@ -62,7 +62,43 @@ final class RelationFilterTest extends Unit
         $queryMock = $this->makeEmpty(DataObjectQueryInterface::class);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Value for relation filter must be an array');
+        $this->expectExceptionMessage('Value for relation filter must be a non-empty array');
+
+        $filter->apply($parameterMock, $queryMock);
+    }
+
+    public function testRelationFilterThrowsExceptionWhenFilterValueIsEmptyArray(): void
+    {
+        $filter = new RelationFilter();
+        $parameterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
+            'getColumnFilterByType' => function () {
+                return [
+                    new ColumnFilter('bodyStyle', ColumnType::DATAOBJECT_RELATION->value, []),
+                ];
+            },
+        ]);
+        $queryMock = $this->makeEmpty(DataObjectQueryInterface::class);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Value for relation filter must be a non-empty array');
+
+        $filter->apply($parameterMock, $queryMock);
+    }
+
+    public function testRelationFilterThrowsExceptionWhenEntryIsNotArray(): void
+    {
+        $filter = new RelationFilter();
+        $parameterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
+            'getColumnFilterByType' => function () {
+                return [
+                    new ColumnFilter('bodyStyle', ColumnType::DATAOBJECT_RELATION->value, ['invalid']),
+                ];
+            },
+        ]);
+        $queryMock = $this->makeEmpty(DataObjectQueryInterface::class);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Each relation filter entry must be an array with type and ids');
 
         $filter->apply($parameterMock, $queryMock);
     }
@@ -73,7 +109,11 @@ final class RelationFilterTest extends Unit
         $parameterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
             'getColumnFilterByType' => function () {
                 return [
-                    new ColumnFilter('bodyStyle', ColumnType::DATAOBJECT_RELATION->value, ['ids' => [1, 2]]),
+                    new ColumnFilter(
+                        'bodyStyle',
+                        ColumnType::DATAOBJECT_RELATION->value,
+                        [['ids' => [1, 2]]]
+                    ),
                 ];
             },
         ]);
@@ -94,7 +134,7 @@ final class RelationFilterTest extends Unit
                     new ColumnFilter(
                         'bodyStyle',
                         ColumnType::DATAOBJECT_RELATION->value,
-                        ['type' => 'invalid', 'ids' => [1, 2]]
+                        [['type' => 'invalid', 'ids' => [1, 2]]]
                     ),
                 ];
             },
@@ -113,7 +153,11 @@ final class RelationFilterTest extends Unit
         $parameterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
             'getColumnFilterByType' => function () {
                 return [
-                    new ColumnFilter('bodyStyle', ColumnType::DATAOBJECT_RELATION->value, ['type' => 'object']),
+                    new ColumnFilter(
+                        'bodyStyle',
+                        ColumnType::DATAOBJECT_RELATION->value,
+                        [['type' => 'object']]
+                    ),
                 ];
             },
         ]);
@@ -134,7 +178,7 @@ final class RelationFilterTest extends Unit
                     new ColumnFilter(
                         'bodyStyle',
                         ColumnType::DATAOBJECT_RELATION->value,
-                        ['type' => 'object', 'ids' => []]
+                        [['type' => 'object', 'ids' => []]]
                     ),
                 ];
             },
@@ -156,7 +200,7 @@ final class RelationFilterTest extends Unit
                     new ColumnFilter(
                         'bodyStyle',
                         ColumnType::DATAOBJECT_RELATION->value,
-                        ['type' => 'object', 'ids' => [6]]
+                        [['type' => 'object', 'ids' => [6]]]
                     ),
                 ];
             },
@@ -183,7 +227,7 @@ final class RelationFilterTest extends Unit
                     new ColumnFilter(
                         'images',
                         ColumnType::DATAOBJECT_RELATION->value,
-                        ['type' => 'asset', 'ids' => [10, 20]]
+                        [['type' => 'asset', 'ids' => [10, 20]]]
                     ),
                 ];
             },
@@ -210,7 +254,7 @@ final class RelationFilterTest extends Unit
                     new ColumnFilter(
                         'relatedDocuments',
                         ColumnType::DATAOBJECT_RELATION->value,
-                        ['type' => 'document', 'ids' => [5, 15, 25]]
+                        [['type' => 'document', 'ids' => [5, 15, 25]]]
                     ),
                 ];
             },
@@ -222,6 +266,43 @@ final class RelationFilterTest extends Unit
                 $this->assertSame([5, 15, 25], $ids);
 
                 return $this->makeEmpty(DataObjectQueryInterface::class);
+            }),
+        ]);
+
+        $filter->apply($parameterMock, $queryMock);
+    }
+
+    public function testRelationFilterAppliesFilterWithMultipleTypes(): void
+    {
+        $filter = new RelationFilter();
+        $parameterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
+            'getColumnFilterByType' => function () {
+                return [
+                    new ColumnFilter(
+                        'relations',
+                        ColumnType::DATAOBJECT_RELATION->value,
+                        [
+                            ['type' => 'object', 'ids' => [6]],
+                            ['type' => 'asset', 'ids' => [7, 9]],
+                        ]
+                    ),
+                ];
+            },
+        ]);
+
+        $callCount = 0;
+        $queryMock = $this->makeEmpty(DataObjectQueryInterface::class, [
+            'filterMultiSelect' => Expected::exactly(2, function ($fieldKey, $ids) use (&$callCount, &$queryMock) {
+                if ($callCount === 0) {
+                    $this->assertSame('relations.object', $fieldKey);
+                    $this->assertSame([6], $ids);
+                } else {
+                    $this->assertSame('relations.asset', $fieldKey);
+                    $this->assertSame([7, 9], $ids);
+                }
+                $callCount++;
+
+                return $queryMock;
             }),
         ]);
 
