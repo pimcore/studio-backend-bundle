@@ -39,7 +39,7 @@ final readonly class BooleanDefinition implements ColumnDefinitionInterface
 
     public function getFrontendType(): string
     {
-        return FrontendType::BOOLEAN->value;
+        return FrontendType::CHECKBOX->value;
     }
 
     public function isExportable(): bool
