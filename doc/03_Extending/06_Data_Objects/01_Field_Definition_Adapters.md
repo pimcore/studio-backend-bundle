@@ -1,231 +1,500 @@
 ---
-title: Field Definition Adapters
-description: Custom resolvers for data object field definitions and dot notation.
+title: Data Adapters
+description: Custom adapters for saving, loading, exporting, and normalizing data object field data via the Studio Backend API.
 ---
 
-# Field Definition Adapters
+# Data Adapters
 
-Field Definition Adapters (resolvers) resolve Data Object field definitions from dot notation
-strings. The Studio Backend uses dot notation to address fields within complex container
-structures such as localized fields, object bricks, field collections, and blocks.
+Data adapters are the bridge between the Studio Backend API and Pimcore's data object field
+types. Each field type (input, date, relation, etc.) has an adapter that controls how data is:
 
-For example, `objectBrickField.myBrick.name` is parsed into parts and handed to the resolver
-that handles the `objectbrick` structure.
+- **Saved** — transforming incoming API request data into the format the field definition
+  expects before it is stored.
+- **Read** — normalizing stored data into an API-friendly response format.
+- **Exported** — converting stored data into a string for grid/CSV export.
+- **Inherited** — resolving inherited values in the data object hierarchy.
+- **Previewed** — providing preview data for search results.
+
+The Studio Backend ships adapters for all built-in Pimcore field types. If your custom field
+type behaves similarly to a built-in type, you can **reuse an existing adapter** by mapping
+your field type name to the same adapter class — no new PHP class required. See
+[Built-in Adapters](#built-in-adapters) for the full list and
+[Registration](#registration) for how to add the mapping.
 
 :::note
 
-Field definition adapters are one of several backend components needed when adding a custom data
-object datatype. For the full cross-layer workflow (core registration, search index adapter,
-data adapter, grid column definition, and frontend dynamic types), see the
+Data adapters are one of several backend components needed when adding a custom data object
+datatype. For the full cross-layer workflow (core registration, search index adapter, data
+adapter, grid column definition, field definition resolver, and frontend dynamic types), see
+the
 [Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md)
 guide.
 
 :::
 
-## When Do You Need a Custom Resolver?
+---
 
-The built-in resolvers handle all standard Pimcore container types (localized fields, object
-bricks, field collections, blocks). You need a custom resolver only when you introduce a
-**custom container data type** that nests child field definitions in a non-standard way.
+## Interfaces
 
-For simple (non-container) field types like text, number, or select fields, no resolver is
-needed. The `DefaultResolver` already handles all top-level fields. Custom non-container data
-types only need registration in the field type map, a GDI adapter, a data adapter, and a grid
-column definition, as described in
-[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md).
+Every adapter must implement `SetterDataInterface`. The remaining four interfaces are optional
+and can be added when your field type needs the corresponding capability.
 
-For dot notation usage examples, see the
-[Dot Notation reference](../../04_Development_Details/01_Dot_Notation_for_Field_Definitions.md).
+| Interface | Required | Purpose |
+|---|---|---|
+| `SetterDataInterface` | **Yes** | Transform API request data for saving |
+| `DataNormalizerInterface` | No | Customize the API response format |
+| `DataExportInterface` | No | Provide a string representation for grid/CSV export |
+| `DataInheritanceInterface` | No | Resolve inherited values in the object hierarchy |
+| `SearchPreviewDataInterface` | No | Contribute preview data to search results |
 
-## Architecture Overview
+All interfaces live in the `Pimcore\Bundle\StudioBackendBundle\DataObject\Data` namespace.
 
-The resolver system consists of the following components:
+---
 
-- **`ResolverInterface`** - The contract every resolver must implement.
-- **`AbstractResolver`** - A base class providing common functionality (field definition lookup, sub-container checks, wrapping results).
-- **`DotNotationParser`** - The parser that splits a dot notation string and iterates over all registered resolvers to find one that can handle the given parts.
-- **`TaggedIteratorResolverLoader`** - Collects all resolvers tagged with `pimcore.studio_backend.field_definition_resolver` via Symfony's tagged iterator.
-- **`FieldDefinitionWrapper`** - A read-only value object that wraps the resolved `Data` field definition together with its container context.
+### SetterDataInterface (Required)
 
-### Resolution Flow
-
-1. The `DotNotationParser` receives a dot notation string (e.g. `localizedfields.title`) and splits it by `.`.
-2. It loads all registered resolvers via the `TaggedIteratorResolverLoader`.
-3. Each resolver receives the current field definitions (from the class definition) and a reference to all other resolvers (for recursive resolution).
-4. The parser iterates over all resolvers and calls `canResolve()` with the dot notation parts.
-5. The first resolver that returns `true` is used. Its `resolve()` method returns a `FieldDefinitionWrapper`.
-
-## The ResolverInterface
-
-Every field definition resolver must implement `ResolverInterface`:
+Every adapter must implement this interface. It defines how incoming API data is transformed
+before being passed to the field's setter on the data object.
 
 ```php
-namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
-use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 
-interface ResolverInterface
+interface SetterDataInterface
 {
-    public function getResolverName(): string;
-
-    public function canResolve(array $dotNotationParts): bool;
-
-    /**
-     * @throws ParseException
-     */
-    public function resolve(array $dotNotationParts): FieldDefinitionWrapper;
-
-    /**
-     * @param array<string, Data> $fieldDefinitions
-     */
-    public function setFieldDefinitions(array $fieldDefinitions): void;
-
-    /**
-     * @param array<string, ResolverInterface> $resolvers
-     */
-    public function setResolvers(array $resolvers): void;
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        UserInterface $user,
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
+    ): mixed;
 }
 ```
 
-| Method | Purpose |
+| Parameter | Description |
 |---|---|
-| `getResolverName()` | Returns a unique identifier for the resolver (e.g. `default`, `block`). Used as key when resolvers reference each other. |
-| `canResolve()` | Determines whether this resolver can handle the given dot notation parts. |
-| `resolve()` | Performs the actual resolution and returns a `FieldDefinitionWrapper`. |
-| `setFieldDefinitions()` | Called by the parser to inject the current class field definitions. |
-| `setResolvers()` | Called by the parser to inject all registered resolvers (enables recursive resolution). |
+| `$element` | The data object being saved. |
+| `$fieldDefinition` | The Pimcore field definition for this field. |
+| `$key` | The field name (key in the `$data` array). |
+| `$data` | The full request data array. Access the field value via `$data[$key]`. |
+| `$user` | The authenticated user performing the save. |
+| `$contextData` | Container context (object brick, field collection, block, etc.). `null` for top-level fields. |
+| `$isPatch` | `true` for PATCH requests. When patching, a `null` value typically means "don't change" rather than "set to null". |
 
-## Built-in Resolvers
+The return value is passed directly to the field's setter on the data object. Return `null`
+when the field should be cleared.
 
-The bundle ships with five resolvers:
+---
 
-| Resolver | Name | Handles |
-|---|---|---|
-| `DefaultResolver` | `default` | Simple top-level fields (single-part dot notation) |
-| `LocalizedFieldResolver` | `localizedfields` | Localized fields, e.g. `localizedfields.title` |
-| `BlockResolver` | `block` | Block fields, e.g. `myBlock.innerField` |
-| `ObjectBrickResolver` | `objectbrick` | Object brick fields, e.g. `bricks.myBrick.fieldName` |
-| `FieldCollectionResolver` | `field_collection` | Field collection fields, e.g. `collections.myCollection.fieldName` |
+### DataNormalizerInterface
 
-## Creating a Custom Resolver
+Implement this interface when the field's stored data needs custom transformation for API
+responses. Without it, the raw value from the data object getter is returned as-is.
 
-### Step 1: Implement the Resolver
+**When to use:**
 
-Extend `AbstractResolver` to get access to helper methods like `getFieldDefinition()`, `getResolvers()`, and `wrapFieldDefinition()`.
+- The stored value is an object (e.g., `Carbon`, `ElementInterface`) that needs to be
+  converted to a serializable format (timestamp, structured array).
+- You want to enrich the response with additional data (e.g., adding `fullPath` or
+  `isPublished` to a relation).
+
+```php
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+
+interface DataNormalizerInterface
+{
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): mixed;
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `$value` | The raw stored value from the data object getter. |
+| `$fieldDefinition` | The Pimcore field definition for this field. |
+
+Return the API-friendly representation of the value.
+
+---
+
+### DataExportInterface
+
+Implement this interface when the field type needs custom handling for grid column display
+or CSV export. The return value is always a string.
+
+**When to use:**
+
+- The field's value cannot be meaningfully converted to a string by default (e.g., image
+  galleries, encrypted fields, complex objects).
+- You want to control exactly what appears in exported data.
+
+```php
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\Concrete;
+
+interface DataExportInterface
+{
+    public function getExportData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string;
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `$object` | The data object being exported. |
+| `$fieldDefinition` | The Pimcore field definition for this field. |
+| `$key` | The field name. |
+| `$contextData` | Container context, or `null` for top-level fields. |
+
+Return an empty string when the field has no exportable value.
+
+---
+
+### DataInheritanceInterface
+
+Implement this interface when the field type participates in data object inheritance and
+needs custom logic to determine if a value is inherited, overridden, or empty.
+
+**When to use:**
+
+- Container types (localized fields, object bricks, classification stores) that need to
+  report inheritance status for their child fields.
+- Field types with non-trivial inheritance semantics.
+
+```php
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\Concrete;
+
+interface DataInheritanceInterface
+{
+    public function getFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array;
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `$object` | The data object to check inheritance for. |
+| `$fieldDefinition` | The Pimcore field definition for this field. |
+| `$key` | The field name. |
+| `$contextData` | Container context, or `null` for top-level fields. |
+
+Return an array describing the inheritance state of the field and its children.
+
+---
+
+### SearchPreviewDataInterface
+
+Implement this interface when the field type should contribute preview data to search
+results. This controls what appears in quick-search and listing previews.
+
+**When to use:**
+
+- The field type has a natural preview representation (e.g., a date as a formatted timestamp,
+  an image as a thumbnail URL).
+- You want the field to appear in search result cards.
+
+```php
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+
+interface SearchPreviewDataInterface
+{
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array;
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `$value` | The raw stored value from the data object getter. |
+| `$fieldDefinition` | The Pimcore field definition for this field. |
+| `$data` | The accumulated preview data array. Add your field's preview entry and return it. |
+
+Return the `$data` array with your field's preview entry added.
+
+---
+
+## Registration
+
+Making the Studio Backend aware of your adapter requires two steps: tagging the service
+and mapping it to one or more field type names.
+
+### Step 1: Service Tag
+
+Use the `#[AutoconfigureTag]` attribute on your adapter class to tag it with
+`pimcore.studio_backend.data_adapter`:
+
+```php
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+
+#[AutoconfigureTag('pimcore.studio_backend.data_adapter')]
+final readonly class CustomFieldAdapter implements SetterDataInterface
+{
+    // ...
+}
+```
+
+### Step 2: Configuration Mapping
+
+Map your adapter class to the field type name(s) it handles. Create a config file in your
+bundle and load it via the `prepend()` method of your bundle extension:
+
+```yaml
+# config/pimcore/studio_backend.yaml
+pimcore_studio_backend:
+    data_object_data_adapter_mapping:
+        App\DataObject\Data\Adapter\CustomFieldAdapter:
+            - "customFieldType"
+```
+
+```php
+// src/DependencyInjection/MyBundleExtension.php
+public function prepend(ContainerBuilder $container): void
+{
+    if ($container->hasExtension('pimcore_studio_backend')) {
+        $loader = new YamlFileLoader(
+            $container,
+            new FileLocator(__DIR__ . '/../../config')
+        );
+        $loader->load('pimcore/studio_backend.yaml');
+    }
+}
+```
+
+:::note
+
+A single adapter class can handle multiple field types. For example, the built-in
+`StringAdapter` handles `input`, `textarea`, `email`, `firstname`, `lastname`, `password`,
+`time`, and `wysiwyg`.
+
+:::
+
+---
+
+## Complete Example
+
+The following adapter implements all five interfaces for a hypothetical `customField` type:
 
 ```php
 <?php
 declare(strict_types=1);
 
-namespace App\FieldDefinition\Resolver;
+namespace App\DataObject\Data\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
-use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
-use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\AbstractResolver;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-final class CustomContainerResolver extends AbstractResolver
+#[AutoconfigureTag('pimcore.studio_backend.data_adapter')]
+final readonly class CustomFieldAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataExportInterface,
+    DataInheritanceInterface,
+    SearchPreviewDataInterface
 {
-    public function getResolverName(): string
-    {
-        // Unique name for this resolver.
-        return 'custom_container';
-    }
+    // --- SetterDataInterface (required) ---
 
-    public function canResolve(array $dotNotationParts): bool
-    {
-        if (count($dotNotationParts) < 2) {
-            return false;
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        UserInterface $user,
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
+    ): string {
+        // Access the incoming value from the request data array.
+        $value = $data[$key] ?? null;
+
+        if ($value === null && $isPatch) {
+            // PATCH request: null means "don't change", not "clear the field".
+            return $element->get($key);
         }
 
-        try {
-            $fd = $this->getFieldDefinition($dotNotationParts[0]);
-        } catch (ParseException) {
-            return false;
+        // Transform the API value into the format the field definition expects.
+        if (!is_string($value)) {
+            $value = (string) $value;
         }
-
-        // Check whether the field definition type matches your custom container.
-        return $fd instanceof Data\SomeCustomType;
+        
+        return $value;
     }
 
-    /**
-     * @throws ParseException
-     */
-    public function resolve(array $dotNotationParts): FieldDefinitionWrapper
-    {
-        $containerFd = $this->getFieldDefinition($dotNotationParts[0]);
+    // --- DataNormalizerInterface (optional) ---
 
-        if (!$containerFd instanceof Data\SomeCustomType) {
-            throw new ParseException('Field is not of type SomeCustomType');
+    public function normalize(mixed $value, Data $fieldDefinition): string
+    {
+        if ($value === null) {
+            return null;
         }
 
-        // Resolve the inner field from your container structure.
-        $innerField = $this->resolveInnerField($containerFd, $dotNotationParts[1]);
-
-        return $this->wrapFieldDefinition(
-            fieldDefinition: $innerField,
-            containerType: 'custom_container',
-            fieldname: $dotNotationParts[1],
-        );
+        // Transform the stored value into the API response format.
+        // Return any serializable structure (string, array, int, etc.).
+        if (!is_string($value)) {
+            $value = (string) $value;
+        }
+        
+        return $value;
     }
 
-    private function resolveInnerField(Data\SomeCustomType $container, string $key): Data
-    {
-        // Your custom resolution logic here.
-        // ...
+    // --- DataExportInterface (optional) ---
+
+    public function getExportData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string {
+        $value = $object->get($key);
+
+        if ($value === null) {
+            return '';
+        }
+
+        // Return a string representation for grid/CSV export.
+        return (string) $value;
+    }
+
+    // --- DataInheritanceInterface (optional) ---
+
+    public function getFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array {
+        // Return an array describing the inheritance state.
+        // Check whether the value is set directly or inherited from a parent.
+        return [];
+    }
+
+    // --- SearchPreviewDataInterface (optional) ---
+
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        if ($value === null) {
+            return $data;
+        }
+
+        // Add a preview entry for this field to the accumulated data array.
+        $data[$fieldDefinition->getName()] = (string) $value;
+
+        return $data;
     }
 }
 ```
 
-### Key Methods from AbstractResolver
+---
 
-The `AbstractResolver` base class provides the following protected helpers:
+## Built-in Adapters
 
-- **`getFieldDefinition(string $key): Data`** - Looks up a field definition by key from the injected class definitions. Throws `ParseException` if the key does not exist.
-- **`getFieldDefinitions(): array`** - Returns all injected field definitions.
-- **`getResolvers(): array`** - Returns all registered resolvers, keyed by resolver name. Useful for delegating to another resolver (e.g. the `block` resolver) for nested structures.
-- **`wrapFieldDefinition(...): FieldDefinitionWrapper`** - Creates a `FieldDefinitionWrapper` with the resolved field definition and its container context. Accepts optional `subContainerType` and `subContainerKey` parameters for nested containers (e.g. localized fields inside a block).
+The following table lists all built-in adapters, the field types they handle, and which
+optional interfaces they implement. If your custom field type behaves similarly to one of
+these, you can reuse the existing adapter by adding a configuration mapping — no new PHP
+class required.
 
-### Step 2: Register the Resolver
+| Adapter | Field Types | Interfaces |
+|---|---|---|
+| `StringAdapter` | `email`, `firstname`, `input`, `lastname`, `password`, `textarea`, `time`, `wysiwyg` | Setter |
+| `BooleanAdapter` | `booleanSelect`, `checkbox` | Setter |
+| `NumericAdapter` | `numeric` | Setter |
+| `NumericRangeAdapter` | `numericRange` | Setter |
+| `SliderAdapter` | `slider` | Setter |
+| `SelectAdapter` | `country`, `gender`, `language`, `select` | Setter |
+| `MultiSelectAdapter` | `countrymultiselect`, `languagemultiselect`, `multiselect` | Setter |
+| `DateAdapter` | `date`, `datetime` | Setter, SearchPreview |
+| `DateRangeAdapter` | `dateRange` | Setter, Normalizer |
+| `LinkAdapter` | `link` | Setter, Normalizer |
+| `RgbaColorAdapter` | `rgbaColor` | Setter, Normalizer |
+| `ConsentAdapter` | `consent` | Setter, Normalizer |
+| `UserAdapter` | `user` | Setter, Normalizer |
+| `VideoAdapter` | `video` | Setter, Normalizer, SearchPreview |
+| `ImageAdapter` | `image` | Setter, SearchPreview |
+| `ExternalImageAdapter` | `externalImage` | Setter |
+| `HotspotImageAdapter` | `hotspotimage` | Setter, Normalizer, SearchPreview |
+| `ImageGalleryAdapter` | `imageGallery` | Setter, Normalizer, Export |
+| `ManyToOneRelationAdapter` | `manyToOneRelation` | Setter, Normalizer |
+| `ManyToManyRelationAdapter` | `manyToManyRelation` | Setter, Normalizer |
+| `ManyToManyObjectRelationAdapter` | `manyToManyObjectRelation` | Setter, Normalizer |
+| `AdvancedManyToManyRelationAdapter` | `advancedManyToManyRelation` | Setter, Normalizer |
+| `AdvancedManyToManyObjectRelationAdapter` | `advancedManyToManyObjectRelation` | Setter, Normalizer |
+| `ReverseObjectRelationAdapter` | `reverseObjectRelation` | Setter, Normalizer |
+| `GeoPointAdapter` | `geopoint` | Setter |
+| `GeoBoundsAdapter` | `geobounds` | Setter |
+| `GeoPointsAdapter` | `geopolygon`, `geopolyline` | Setter |
+| `QuantityValueAdapter` | `quantityValue` | Setter |
+| `InputQuantityValueAdapter` | `inputQuantityValue` | Setter |
+| `QuantityValueRangeAdapter` | `quantityValueRange` | Setter |
+| `UrlSlugAdapter` | `urlSlug` | Setter |
+| `CalculatedValueAdapter` | `calculatedValue` | Setter |
+| `EncryptedFieldAdapter` | `encryptedField` | Setter, Normalizer, Export |
+| `TableAdapter` | `table` | Setter, SearchPreview |
+| `StructuredTableAdapter` | `structuredTable` | Setter, Normalizer, SearchPreview |
+| `BlockAdapter` | `block` | Setter, Normalizer, SearchPreview |
+| `FieldCollectionsAdapter` | `fieldcollections` | Setter, Normalizer, SearchPreview |
+| `ObjectBricksAdapter` | `objectbricks` | Setter, Normalizer, Inheritance, SearchPreview |
+| `LocalizedFieldsAdapter` | `localizedfields` | Setter, Normalizer, Inheritance, SearchPreview |
+| `ClassificationStoreAdapter` | `classificationstore` | Setter, Normalizer, Inheritance, SearchPreview |
 
-Tag your service with `pimcore.studio_backend.field_definition_resolver` in your `services.yaml`:
+**Legend:** Setter = `SetterDataInterface`, Normalizer = `DataNormalizerInterface`,
+Export = `DataExportInterface`, Inheritance = `DataInheritanceInterface`,
+SearchPreview = `SearchPreviewDataInterface`
+
+:::info
+
+To reuse an existing adapter for your custom field type, you only need to add a configuration
+mapping. For example, if your custom field type stores and retrieves simple string values,
+map it to `StringAdapter`:
 
 ```yaml
-services:
-    App\FieldDefinition\Resolver\CustomContainerResolver:
-        tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
+pimcore_studio_backend:
+    data_object_data_adapter_mapping:
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StringAdapter:
+            - "myCustomTextField"
 ```
 
-The `TaggedIteratorResolverLoader` collects all services with this tag and makes them available to the `DotNotationParser`.
+The field type names are merged with the existing mapping for that adapter class, so the
+built-in field types continue to work alongside your custom one. See
+[Registration](#registration) for how to load this config in your bundle.
 
-## The FieldDefinitionWrapper
-
-The resolver's `resolve()` method must return a `FieldDefinitionWrapper`. This is a read-only value object that carries the resolved field definition along with its container context:
-
-| Property | Type | Description |
-|---|---|---|
-| `fieldDefinition` | `Data` | The resolved Pimcore field definition |
-| `containerType` | `string` | The type of container (e.g. `object`, `block`, `objectbrick`, `fieldcollection`, `localizedfield`) |
-| `fieldname` | `string` | The name of the resolved field |
-| `subContainerType` | `?string` | Optional sub-container type (e.g. `localizedfield` when a localized field is nested inside a block) |
-| `subContainerKey` | `?string` | Optional sub-container key (the field name within the sub-container) |
-
-## Handling Nested Containers
-
-Some resolvers need to handle nested structures. For example, a field collection may contain a block, which in turn contains a localized field. The `AbstractResolver` provides `checkForSubBlockContainer()` to handle recursive block resolution within containers.
-
-If your custom resolver deals with container types that can nest blocks or localized fields, you can delegate to the built-in resolvers:
-
-```php
-// Get the block resolver from the resolver pool
-$blockResolver = $this->getResolvers()['block'];
-$blockResolver->setFieldDefinitions($innerFieldDefinitions);
-
-if ($blockResolver->canResolve($remainingParts)) {
-    $result = $blockResolver->resolve($remainingParts);
-}
-```
-
-This pattern is used by the built-in `ObjectBrickResolver` and `FieldCollectionResolver` to handle blocks nested within their respective containers.
+:::
