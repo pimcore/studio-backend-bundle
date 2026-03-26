@@ -198,11 +198,17 @@ final class AdvancedColumnResolver implements
             $this->user
         );
 
+        $isLocalizable = $this->resolverTypeGuesser->isLocalizable(
+            $fieldConfig->getField(),
+            $element->getClassId(),
+            $this->user
+        );
+
         $resolver = $this->gridService->getColumnResolvers()[$resolverType];
 
         $subColumn = new Column(
             key: $fieldConfig->getField(),
-            locale: $column->getLocale(),
+            locale: $isLocalizable ? $column->getLocale() : null,
             type: $resolverType,
             group: $column->getGroup(),
             config: $column->getConfig()
@@ -237,9 +243,15 @@ final class AdvancedColumnResolver implements
         Concrete $element,
         bool $export = false
     ): void {
+        $isRelationLocalizable = $this->resolverTypeGuesser->isLocalizable(
+            $relationFieldConfig->getRelation(),
+            $element->getClassId(),
+            $this->user
+        );
+
         $relation = $this->getLocalizedValueFromKey(
             $relationFieldConfig->getRelation(),
-            $column->getLocale(),
+            $isRelationLocalizable ? $column->getLocale() : null,
             $element
         );
 
