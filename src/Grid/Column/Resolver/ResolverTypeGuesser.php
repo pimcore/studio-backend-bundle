@@ -49,8 +49,11 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
         return $this->findColumnConfiguration($key, $classId, $user)->isLocalizable();
     }
 
-    private function findColumnConfiguration(string $key, string $classId, ?UserInterface $user = null): ColumnConfiguration
-    {
+    private function findColumnConfiguration(
+        string $key,
+        string $classId,
+        ?UserInterface $user = null
+    ): ColumnConfiguration {
         $cacheName = $classId . '_' . $key;
 
         if (isset($this->columnConfigurationByKeyCache[$cacheName])) {
