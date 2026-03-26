@@ -20,10 +20,12 @@ use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Schedule\Task;
@@ -89,9 +91,6 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         return $this->checkElementPermissions($elementType, $id)->getScheduledTasks();
     }
 
-    /**
-     * @throws DatabaseException
-     */
     public function updateSchedules(
         string $elementType,
         int $id,
@@ -118,7 +117,8 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             $task->setCid($id);
             $task->setCtype($elementType);
             $task->setDate($schedule->getDate());
-            $task->setAction($this->matchAction($schedule->getAction()));
+            $this->validateAction($elementType, $schedule->getAction());
+            $task->setAction($schedule->getAction());
             $task->setVersion($schedule->getVersion());
             $task->setActive($schedule->isActive());
             $task->save();
@@ -127,9 +127,6 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $this->deleteObsoleteTasks($currentTasks, $id);
     }
 
-    /**
-     * @throws NotFoundException|DatabaseException
-     */
     public function deleteSchedule(int $id): void
     {
         $task = $this->getSchedule($id);
@@ -168,6 +165,33 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         }
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateAction(string $elementType, ?string $action): void
+    {
+        if ($action === null) {
+            return;
+        }
+
+        $allowedActions = ScheduleActions::forElementType($elementType);
+        $allowedValues = array_map(
+            static fn (ScheduleActions $a): string => $a->value,
+            $allowedActions
+        );
+
+        if (!in_array($action, $allowedValues, true)) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Action "%s" is not supported for element type "%s". Allowed actions: %s',
+                    $action,
+                    $elementType,
+                    implode(', ', $allowedValues)
+                )
+            );
+        }
+    }
+
     private function checkElementPermissions(string $elementType, int $id): ElementInterface
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
@@ -179,13 +203,5 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         );
 
         return $element;
-    }
-
-    private function matchAction(?string $action): ?string
-    {
-        return match ($action) {
-            'publish' => 'publish-version',
-            default => $action
-        };
     }
 }

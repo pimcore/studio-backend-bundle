@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 
 /**
  * @internal
@@ -31,7 +32,17 @@ final readonly class UpdateSchedule
         private ?int $id,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
         private int $date,
-        #[Property(description: 'Action', type: 'string', enum: ['publish', 'delete'], example: 'publish')]
+        #[Property(
+            description: 'Action',
+            type: 'string',
+            enum: [
+                ScheduleActions::PublishVersion->value,
+                ScheduleActions::Publish->value,
+                ScheduleActions::Unpublish->value,
+                ScheduleActions::Delete->value,
+            ],
+            example: 'publish-version'
+        )]
         private ?string $action,
         #[Property(description: 'Version ID', type: 'integer', example: 987)]
         private ?int $version,
