@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Schedule\Task;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
