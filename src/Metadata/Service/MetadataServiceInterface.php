@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CreatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
@@ -41,9 +42,10 @@ interface MetadataServiceInterface
     public function getPredefinedMetadata(MetadataParameters $parameters): Collection;
 
     /**
+     * @throws ElementExistsException
      * @throws NotWriteableException
      */
-    public function createPredefinedMetadata(): PredefinedMetadata;
+    public function createPredefinedMetadata(CreatePredefinedMetadata $metadata): PredefinedMetadata;
 
     /**
      * @throws NotFoundException
@@ -51,9 +53,9 @@ interface MetadataServiceInterface
     public function getPredefinedMetadataById(string $id): PredefinedMetadata;
 
     /**
+     * @throws ElementExistsException
      * @throws NotFoundException
      * @throws NotWriteableException
-     * @throws ApiInvalidArgumentException
      */
     public function updatePredefinedMetadata(string $id, UpdatePredefinedMetadata $metadata): PredefinedMetadata;
 

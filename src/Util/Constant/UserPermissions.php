@@ -42,6 +42,7 @@ enum UserPermissions: string
     case PREDEFINED_PROPERTIES = 'predefined_properties';
     case RECYCLE_BIN = 'recyclebin';
     case REDIRECTS = 'redirects';
+    case ROBOTS_TXT = 'robots.txt';
     case SHARE_CONFIGURATIONS = 'share_configurations';
     case TAGS_CONFIGURATION = 'tags_configuration';
     case TAGS_ASSIGNMENT = 'tags_assignment';

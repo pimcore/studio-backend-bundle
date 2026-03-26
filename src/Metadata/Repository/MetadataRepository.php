@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CreatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Util\Constant\FilterableFields;
 use Pimcore\Model\Metadata\Predefined;
@@ -86,18 +87,31 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
         return $predefined;
     }
 
-    public function createPredefinedMetadata(): Predefined
+    public function createPredefinedMetadata(CreatePredefinedMetadata $metadata): Predefined
     {
         if (!(new Predefined())->isWriteable()) {
             throw new NotWriteableException(self::EXCEPTION_SUBJECT);
         }
 
-        $metadata = $this->predefinedResolver->create();
-        $metadata->setName('New Definition');
-        $metadata->setType('input');
-        $metadata->save();
+        $this->checkForDuplicate(
+            null,
+            $metadata->getName(),
+            $metadata->getLanguage(),
+            $metadata->getTargetSubType(),
+        );
 
-        return $metadata;
+        $predefined = $this->predefinedResolver->create();
+        $predefined->setName($metadata->getName());
+        $predefined->setType($metadata->getType());
+        $predefined->setDescription($metadata->getDescription());
+        $predefined->setTargetSubtype($metadata->getTargetSubType());
+        $predefined->setData($metadata->getData());
+        $predefined->setConfig($metadata->getConfig());
+        $predefined->setLanguage($metadata->getLanguage());
+        $predefined->setGroup($metadata->getGroup());
+        $predefined->save();
+
+        return $predefined;
     }
 
     public function updatePredefinedMetadata(
@@ -288,7 +302,7 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
     }
 
     private function checkForDuplicate(
-        string $id,
+        ?string $id,
         string $name,
         ?string $language,
         ?string $targetSubType,
@@ -298,21 +312,25 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
                 continue;
             }
 
-            if ($language !== null && $language !== $item->getLanguage()) {
+            if (!(empty($language) ? empty($item->getLanguage()) : $item->getLanguage() === $language)) {
                 continue;
             }
 
-            if ($targetSubType !== null && $targetSubType !== $item->getTargetSubtype()) {
+            if (!(empty($targetSubType)
+                ? empty($item->getTargetSubtype())
+                : $item->getTargetSubtype() === $targetSubType)
+            ) {
                 continue;
             }
 
-            if ($item->getId() !== $id) {
-                throw new ApiInvalidArgumentException(
+            if ($id === null || $item->getId() !== $id) {
+                throw new ElementExistsException(
                     sprintf(
-                        'Predefined metadata with name "%s", language "%s" and target subtype "%s" already exists',
+                        'Predefined metadata with name: %s, language: %s'
+                        . ' and target subtype: %s already exists',
                         $name,
-                        $language ?? '',
-                        $targetSubType ?? '',
+                        $language ?? 'undefined',
+                        $targetSubType ?? 'undefined',
                     ),
                 );
             }

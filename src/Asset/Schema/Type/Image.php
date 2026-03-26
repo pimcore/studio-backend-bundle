@@ -22,11 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 #[Schema(
     title: 'Image',
     required: [
-        'format',
         'width',
         'height',
-        'isVectorGraphic',
-        'isAnimated',
         'imageThumbnailPath',
     ],
     type: 'object'
@@ -34,16 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 final class Image extends Asset implements ThumbnailPathInterface
 {
     public function __construct(
-        #[Property(description: 'Format', type: 'string', example: 'muhFormat')]
-        private readonly string $format,
         #[Property(description: 'width', type: 'integer', example: 666)]
         private readonly int $width,
         #[Property(description: 'height', type: 'integer', example: 333)]
         private readonly int $height,
-        #[Property(description: 'is vector graphic', type: 'boolean', example: false)]
-        private readonly bool $isVectorGraphic,
-        #[Property(description: 'is animated', type: 'boolean', example: false)]
-        private readonly bool $isAnimated,
         #[Property(description: 'path to thumbnail', type: 'string', example: '/path/to/element/hulk-smash.jpg')]
         private readonly string $imageThumbnailPath,
         bool $hasChildren,
@@ -96,11 +87,6 @@ final class Image extends Asset implements ThumbnailPathInterface
         return $this->imageThumbnailPath;
     }
 
-    public function getFormat(): string
-    {
-        return $this->format;
-    }
-
     public function getWidth(): int
     {
         return $this->width;
@@ -109,15 +95,5 @@ final class Image extends Asset implements ThumbnailPathInterface
     public function getHeight(): int
     {
         return $this->height;
-    }
-
-    public function getIsVectorGraphic(): bool
-    {
-        return $this->isVectorGraphic;
-    }
-
-    public function getIsAnimated(): bool
-    {
-        return $this->isAnimated;
     }
 }

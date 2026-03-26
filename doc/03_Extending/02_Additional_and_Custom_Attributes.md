@@ -145,6 +145,7 @@ For more details and frontend customization options, see the [Custom Icons & Too
 - `pre_response.bundle_seo.redirect.import_stats`
 - `pre_response.bundle_seo.redirect.list`
 - `pre_response.bundle_seo.redirect.status`
+- `pre_response.bundle_seo.robots_txt_config`
 - `pre_response.class.bulk_export_available_item`
 - `pre_response.class.bulk_import_prepare`
 - `pre_response.class.bulk_import_result_item`
@@ -235,6 +236,7 @@ For more details and frontend customization options, see the [Custom Icons & Too
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
 - `pre_response.schedule`
+- `pre_response.schedule.action_type`
 - `pre_response.select_option.detail`
 - `pre_response.select_option.tree`
 - `pre_response.select_option.usage_item`

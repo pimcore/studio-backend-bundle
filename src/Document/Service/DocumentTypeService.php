@@ -29,7 +29,6 @@ final readonly class DocumentTypeService implements DocumentTypeServiceInterface
     ) {
     }
 
-    // ToDo: Consider removing this method and using getTypeAdapter when document types from bundles are implemented
     public function tryTypeAdapter(string $documentType): ?SetterDataInterface
     {
         try {
