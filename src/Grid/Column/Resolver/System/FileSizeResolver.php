@@ -48,7 +48,6 @@ final class FileSizeResolver implements
 
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
         return $this->getColumnData(
             $column,
             $element instanceof Asset ? formatBytes($element->getFileSize()) : null,
