@@ -213,6 +213,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
      */
     public function getRequiredPermissions(): array
     {
-        return [UserPermissions::PIMCORE_USER->value];
+        return [UserPermissions::USER_MANAGEMENT->value];
     }
 }
