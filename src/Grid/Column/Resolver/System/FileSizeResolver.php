@@ -22,8 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset as StudioAsset;
+use Pimcore\Model\Asset as PimcoreAsset;
 use Pimcore\Model\Element\ElementInterface;
+
 
 /**
  * @internal
@@ -38,10 +40,9 @@ final class FileSizeResolver implements
 
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
         return $this->getColumnData(
             $column,
-            formatBytes($element->getFileSize()),
+            $element instanceof StudioAsset ? formatBytes($element->getFileSize()) : null,
             $this->getType()
         );
     }
@@ -50,7 +51,7 @@ final class FileSizeResolver implements
     {
         return $this->getColumnData(
             $column,
-            $element instanceof Asset ? formatBytes($element->getFileSize()) : null,
+            $element instanceof PimcoreAsset ? formatBytes($element->getFileSize()) : null,
             $this->getType()
         );
     }
