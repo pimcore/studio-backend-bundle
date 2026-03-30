@@ -12,13 +12,12 @@
   <body>
     <div class="header">
       <a style="text-decoration: none;" id="logo" href="#" target="_blank">
-        <img alt="{{ "Pimcore's logotype"|trans([], 'admin') }}" src="{{ path('pimcore_settings_display_custom_logo', {'white': true}) }}">
+        <img alt="{{ "Pimcore's logotype"|trans([], 'admin') }}" src="{{ asset('bundles/pimcorestudiobackend/img/logo.png') }}">
       </a>
     </div>
     <div id="swagger-ui" data-url="{{ path('pimcore_studio_api_docs_json', {'locale': locale}) }}" ></div>
     <script src="{{ asset('bundles/pimcorestudiobackend/js/swagger-ui/swagger-ui-bundle.js') }}" charset="UTF-8"> </script>
     <script src="{{ asset('bundles/pimcorestudiobackend/js/swagger-ui/swagger-ui-standalone-preset.js') }}" charset="UTF-8"> </script>
     <script src="{{ asset('bundles/pimcorestudiobackend/js/swagger-ui/swagger-initializer.js') }}" charset="UTF-8"> </script>
-    <div class="custom-logo"></div>
   </body>
 </html>
