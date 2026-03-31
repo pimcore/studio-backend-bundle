@@ -294,6 +294,11 @@ final class GridService implements GridServiceInterface
                     $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
                 }
 
+                $locale = $column->getLocale();
+                if ($locale !== null) {
+                    $key .= ' (' . $locale . ')';
+                }
+
                 return ($withGroup ? $firstGroup . '~' : '') . $key;
             },
             $columnCollection->getColumns()
