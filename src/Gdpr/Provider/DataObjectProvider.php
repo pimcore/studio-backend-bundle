@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
+use function sprintf;
 
 /**
  * @internal

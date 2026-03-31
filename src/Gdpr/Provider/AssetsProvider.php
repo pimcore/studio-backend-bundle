@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\Response;
+use function sprintf;
 
 /**
  * @internal
