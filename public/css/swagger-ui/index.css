@@ -28,12 +28,6 @@ body {
     color: #fff;
 }
 
-.custom-logo {
-    width: 24px;
-    height: 24px;
-    position: fixed;
-    bottom: 2px;
-    right: 2px;
-    background: url(/bundles/pimcorestudiobackend/img/api-icon.png) center center no-repeat;
-    background-size: 24px 24px;
+.header img {
+    max-height: 41px;
 }

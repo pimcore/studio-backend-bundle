@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\ScheduleAction;
 
 /**
  * @internal
@@ -30,6 +31,11 @@ interface ScheduleServiceInterface
     public function createSchedule(string $elementType, int $id): Schedule;
 
     public function listSchedules(string $elementType, int $id): array;
+
+    /**
+     * @return ScheduleAction[]
+     */
+    public function listActions(string $elementType): array;
 
     /**
      * @throws DatabaseException

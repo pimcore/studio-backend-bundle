@@ -16,11 +16,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\PreResponse\ScheduleActionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\ScheduleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\ScheduleAction;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -43,6 +46,23 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         $task = $this->scheduleRepository->createSchedule($elementType, $id);
 
         return $this->getSchedule($task->getId());
+    }
+
+    public function listActions(string $elementType): array
+    {
+        $actions = ScheduleActions::forElementType($elementType);
+        $result = [];
+
+        foreach ($actions as $action) {
+            $item = new ScheduleAction($action->value);
+            $this->eventDispatcher->dispatch(
+                new ScheduleActionEvent($item),
+                ScheduleActionEvent::EVENT_NAME
+            );
+            $result[] = $item;
+        }
+
+        return $result;
     }
 
     /**

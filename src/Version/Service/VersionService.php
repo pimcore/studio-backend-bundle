@@ -136,7 +136,7 @@ final readonly class VersionService implements VersionServiceInterface
 
         $lastVersion = $this->repository->getLastVersion(
             $elementId,
-            $this->getElementType($element),
+            $this->getElementType($element, true),
             $user
         );
 

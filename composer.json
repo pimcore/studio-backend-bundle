@@ -18,7 +18,7 @@
   "minimum-stability": "dev",
   "require": {
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
-    "league/csv": "^9.22",
+    "league/csv": "^9.27",
     "nesbot/carbon": "^3.8.4",
     "pimcore/static-resolver-bundle": "^3.5.0 || ^2026.1",
     "pimcore/generic-data-index-bundle": "^2.4.0 || ^2026.1",

@@ -20,4 +20,6 @@ use Pimcore\Model\UserInterface;
 interface ResolverTypeGuesserInterface
 {
     public function guessType(string $key, string $classId, ?UserInterface $user = null): string;
+
+    public function isLocalizable(string $key, string $classId, ?UserInterface $user = null): bool;
 }

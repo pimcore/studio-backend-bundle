@@ -293,6 +293,14 @@ bundle_seo_redirect_update_by_id_description: |
     Please note that <strong>all fields<strong> have to be provided.
 bundle_seo_redirect_update_by_id_success_response: Successfully updated redirect
 bundle_seo_redirect_update_by_id_summary: Update a redirect by ID
+bundle_seo_robots_txt_get_description: |
+    Get the robots.txt configuration for all sites, including whether a physical robots.txt file exists on the filesystem.
+bundle_seo_robots_txt_get_summary: Get robots.txt configuration
+bundle_seo_robots_txt_get_success_response: Robots.txt configuration data
+bundle_seo_robots_txt_update_description: |
+    Update the robots.txt configuration for all sites. Saves the provided site-keyed robots.txt content to the settings store.
+bundle_seo_robots_txt_update_summary: Update robots.txt configuration
+bundle_seo_robots_txt_update_success_response: Updated robots.txt configuration data
 class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
@@ -571,7 +579,7 @@ element_get_tree_location_summary: Get location data of the element by id, eleme
 element_resolve_by_search_term_description: |
   Get the element ID based on the given <strong>{searchTerm}</strong>. <br> The <strong>{searchTerm}</strong> must be a valid ID or Path of an existing element. <br> The <strong>{searchTerm}</strong> can be modified via the <strong>ElementResolveEvent</strong>.
 element_resolve_by_search_term_summary: Get ID of the element with given search term
-element_resolve_response_description: ID of the element with given search term
+element_resolve_success_response: ID of the element with given search term
 email_blocklist_add_description: |
   Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
 email_blocklist_add_success_response: Successfully added E-mail address to blocklist
@@ -926,6 +934,10 @@ schedule_get_collection_for_element_by_type_and_id_description: |
   Get all schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
 schedule_get_collection_for_element_by_type_and_id_success_response: List of schedules for element
 schedule_get_collection_for_element_by_type_and_id_summary: Get schedules for an element
+schedule_list_actions_for_element_type_description: |
+  Get available schedule actions for the given element type <strong>{elementType}</strong>.
+schedule_list_actions_for_element_type_success_response: List of available schedule actions
+schedule_list_actions_for_element_type_summary: List available schedule actions for element type
 schedule_update_for_element_by_type_and_id_description: |
   Update schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
