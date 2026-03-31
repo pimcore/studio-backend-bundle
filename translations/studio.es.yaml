@@ -17,7 +17,7 @@ studio_ee_csv_data_collection_failed: 'Los datos para la exportación CSV no se 
 studio_ee_element_patch_failed: 'El elemento de tipo %type% con ID %id% no se pudo actualizar: %message%'
 studio_ee_element_rewrite_references_failed: 'Las referencias del elemento de tipo %type% con ID %id% no se pudieron reescribir: %message%'
 studio_ee_element_tag_operation_failed: 'No se pudo ejecutar %operation% en las etiquetas del elemento de tipo %type% con ID %id%: %message%'
-studio_ee_no_element_data_found: 'No se encontraron datos'
+studio_ee_no_element_data_found: No se encontraron datos
 studio_ee_job_create_download_zip: Crear ZIP de descarga
 studio_ee_job_clone_assets: Clonar assets
 studio_ee_job_upload_zip_file: Cargar archivo ZIP

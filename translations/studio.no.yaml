@@ -17,7 +17,7 @@ studio_ee_csv_data_collection_failed: 'Data for CSV-eksporten kunne ikke hentes 
 studio_ee_element_patch_failed: 'Element av type %type% med ID %id% kunne ikke oppdateres: %message%'
 studio_ee_element_rewrite_references_failed: 'Referanser for element av type %type% med ID %id% kunne ikke skrives om: %message%'
 studio_ee_element_tag_operation_failed: 'Kunne ikke utføre %operation% på tagger for element av type %type% med ID %id%: %message%'
-studio_ee_no_element_data_found: 'Ingen data funnet'
+studio_ee_no_element_data_found: Ingen data funnet
 studio_ee_job_create_download_zip: Opprett nedlastings-ZIP
 studio_ee_job_clone_assets: Klon assets
 studio_ee_job_upload_zip_file: Last opp ZIP-fil
