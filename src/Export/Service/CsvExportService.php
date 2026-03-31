@@ -48,7 +48,7 @@ final readonly class CsvExportService extends AbstractExportService
         $data = array_merge($data, $exportData);
 
         try {
-            $csv = Writer::createFromString();
+            $csv = Writer::fromString();
             $csv->setDelimiter($delimiter);
             $csv->insertAll($data);
 
