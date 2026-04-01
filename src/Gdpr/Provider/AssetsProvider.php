@@ -17,14 +17,17 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\AssetExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\Response;
+use function sprintf;
 
 /**
  * @internal
@@ -128,6 +131,10 @@ final readonly class AssetsProvider implements DataProviderInterface
 
         if (!$asset) {
             throw new NotFoundException('Asset Not Found', $id);
+        }
+
+        if (!$asset->isAllowed(ElementPermissions::VIEW_PERMISSION)) {
+            throw new ForbiddenException(sprintf('Access Denied for asset with id "%d".', $asset->getId()));
         }
 
         return $this->assetExporter->doExportData($asset);
