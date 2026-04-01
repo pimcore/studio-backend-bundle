@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Deleting Items from Recycle Bin
 studio_ee_job_step_recycle_bin_restore: Restoring Items from Recycle Bin
 studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'File %type% not found for job run. ID: %jobRunId%'
-studio_ee_invalid_element_type_provided: 'Collection for element with ID %elementId% and type %elementType% is not supported.'
+studio_ee_invalid_element_type_provided: Collection for element with ID %elementId% and type %elementType% is not supported.
 studio_ee_no_assets_found_for_job_run: 'No assets found for job run. ID: %jobRunId%'
 studio_ee_asset_upload_failed: 'File could not be uploaded: %message%'
-studio_email_param_children: 'Children (%count%)'
+studio_email_param_children: Children (%count%)
 studio_ee_element_replace_assignment_failed: 'Could not replace %sourceId% (%sourceType%) with %targetId% (%targetType%) in %elementId% (%elementType%). Error: %message%'
 studio_ee_job_bulk_import_class_definitions: Bulk Import Class Definitions
 studio_ee_job_step_field_collection_importing: Field Collection Importing

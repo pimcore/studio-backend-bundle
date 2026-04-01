@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Sletting av elementer fra papirkurven
 studio_ee_job_step_recycle_bin_restore: Gjenoppretting av elementer fra papirkurven
 studio_ee_element_folder_collection_not_supported: 'Innsamling for mapper støttes ikke. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'Fil %type% ble ikke funnet for jobbkjøring. ID: %jobRunId%'
-studio_ee_invalid_element_type_provided: 'Innsamling for element med ID %elementId% og type %elementType% støttes ikke.'
+studio_ee_invalid_element_type_provided: Innsamling for element med ID %elementId% og type %elementType% støttes ikke.
 studio_ee_no_assets_found_for_job_run: 'Ingen assets funnet for jobbkjøring. ID: %jobRunId%'
 studio_ee_asset_upload_failed: 'Filen kunne ikke lastes opp: %message%'
-studio_email_param_children: 'Underordnede elementer (%count%)'
+studio_email_param_children: Underordnede elementer (%count%)
 studio_ee_element_replace_assignment_failed: 'Kunne ikke erstatte %sourceId% (%sourceType%) med %targetId% (%targetType%) i %elementId% (%elementType%). Feil: %message%'
 studio_ee_job_bulk_import_class_definitions: Importer klassedefinisjoner (masseimport)
 studio_ee_job_step_field_collection_importing: Import av feltsamlinger

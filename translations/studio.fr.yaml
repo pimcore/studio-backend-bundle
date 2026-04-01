@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Suppression des éléments de la corbeill
 studio_ee_job_step_recycle_bin_restore: Restauration des éléments de la corbeille
 studio_ee_element_folder_collection_not_supported: "La collecte pour les dossiers n'est pas prise en charge. ID : %folderId%"
 studio_ee_file_not_found_for_job_run: "Fichier %type% introuvable pour l'exécution du job. ID : %jobRunId%"
-studio_ee_invalid_element_type_provided: "La collecte pour l'élément avec l'ID %elementId% et le type %elementType% n'est pas prise en charge."
+studio_ee_invalid_element_type_provided: La collecte pour l'élément avec l'ID %elementId% et le type %elementType% n'est pas prise en charge.
 studio_ee_no_assets_found_for_job_run: "Aucun asset trouvé pour l'exécution du job. ID : %jobRunId%"
 studio_ee_asset_upload_failed: "Le fichier n'a pas pu être téléversé : %message%"
-studio_email_param_children: 'Éléments enfants (%count%)'
+studio_email_param_children: Éléments enfants (%count%)
 studio_ee_element_replace_assignment_failed: "Impossible de remplacer %sourceId% (%sourceType%) par %targetId% (%targetType%) dans %elementId% (%elementType%). Erreur : %message%"
 studio_ee_job_bulk_import_class_definitions: Importer les définitions de classes (import en masse)
 studio_ee_job_step_field_collection_importing: Import des collections de champs
