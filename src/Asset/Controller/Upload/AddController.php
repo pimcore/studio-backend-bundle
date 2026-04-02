@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UploadAssetParamete
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -37,8 +36,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -58,7 +57,6 @@ final class AddController extends AbstractApiController
 
     /**
      * @throws DatabaseException
-     * @throws EnvironmentException
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
@@ -90,14 +88,9 @@ final class AddController extends AbstractApiController
     ])]
     public function addAsset(
         int $parentId,
-        // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
-        Request $request,
+        #[MapUploadedFile] UploadedFile $file,
         #[MapRequestPayload] ?UploadAssetParameter $parameter = null,
     ): JsonResponse {
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
-        }
 
         return $this->jsonResponse(
             [

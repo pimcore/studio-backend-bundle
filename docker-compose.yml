@@ -1,7 +1,7 @@
 version: '3.0'
 services:
     php-studio-backend-bundle:
-        image: pimcore/pimcore:php8.3-debug-latest
+        image: pimcore/pimcore:php8.4-debug-latest
         environment:
             PHP_IDE_CONFIG: serverName=localhost
         working_dir: /var/cli

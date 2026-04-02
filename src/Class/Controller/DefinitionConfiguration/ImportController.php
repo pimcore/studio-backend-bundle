@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -33,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -54,7 +53,7 @@ final class ImportController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|EnvironmentException|InvalidArgumentException
+     * @throws ElementSavingFailedException|InvalidArgumentException
      * @throws NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_class_definition_import', methods: ['POST'])]
@@ -92,13 +91,8 @@ final class ImportController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function importClassDefinition(string $id, Request $request): JsonResponse
+    public function importClassDefinition(string $id, #[MapUploadedFile] UploadedFile $file): JsonResponse
     {
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
-        }
-
         return $this->jsonResponse(
             $this->classDefinitionService->importClassDefinitionFromJson($id, $file->getContent())
         );

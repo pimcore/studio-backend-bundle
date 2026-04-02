@@ -19,8 +19,6 @@ use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\BulkImport\BulkImportPrepareResponse;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -29,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -48,10 +46,6 @@ final class PrepareImportController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws EnvironmentException
-     * @throws ApiInvalidArgumentException
-     */
     #[Route(
         path: self::ROUTE,
         name: 'pimcore_studio_api_class_bulk_import_prepare',
@@ -85,15 +79,8 @@ final class PrepareImportController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
-    public function prepareImport(Request $request): JsonResponse
+    public function prepareImport(#[MapUploadedFile] UploadedFile $file): JsonResponse
     {
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new ApiInvalidArgumentException(
-                'Invalid file found in the request'
-            );
-        }
-
         return $this->jsonResponse(
             $this->bulkImportService->prepareImport($file)
         );
