@@ -99,7 +99,11 @@ final class ImportController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function importBrickCustomLayout(string $key, string $customLayoutId, #[MapUploadedFile] UploadedFile $file): JsonResponse
+    public function importBrickCustomLayout(
+        string $key,
+        string $customLayoutId,
+        #[MapUploadedFile] UploadedFile $file
+    ): JsonResponse
     {
         return $this->jsonResponse(
             $this->customLayoutService->importBrickCustomLayoutFromJson(
