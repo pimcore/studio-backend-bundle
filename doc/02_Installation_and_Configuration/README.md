@@ -32,7 +32,9 @@ security:
     firewalls:
         pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
     access_control:
-      - { path: ^/pimcore-studio/api/(docs|docs/json|translations|user/reset-password)$, roles: PUBLIC_ACCESS }
+      - { 
+            path: ^/pimcore-studio/api/(docs|docs/json|translations|user/reset-password|setting/admin/thumbnail)$, roles: PUBLIC_ACCESS 
+        }
       - { path: ^/pimcore-studio/api, roles: ROLE_PIMCORE_USER }
 ```
 
@@ -48,7 +50,9 @@ security:
         pimcore_mcp: '%pimcore_studio_backend.mcp_firewall_settings%'
         pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
     access_control:
-      - { path: ^/pimcore-studio/api/(docs|docs/json|translations|user/reset-password)$, roles: PUBLIC_ACCESS }
+      - { 
+            path: ^/pimcore-studio/api/(docs|docs/json|translations|user/reset-password|setting/admin/thumbnail)$, roles: PUBLIC_ACCESS 
+        }
       - { path: ^/pimcore-studio/api, roles: ROLE_PIMCORE_USER }
       - { path: ^/pimcore-mcp/, roles: ROLE_PIMCORE_USER }
 ```
