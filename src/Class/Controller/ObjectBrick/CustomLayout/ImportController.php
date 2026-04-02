@@ -103,8 +103,7 @@ final class ImportController extends AbstractApiController
         string $key,
         string $customLayoutId,
         #[MapUploadedFile] UploadedFile $file
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(
             $this->customLayoutService->importBrickCustomLayoutFromJson(
                 $key,
