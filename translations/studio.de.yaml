@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Elemente aus dem Papierkorb löschen
 studio_ee_job_step_recycle_bin_restore: Elemente aus dem Papierkorb wiederherstellen
 studio_ee_element_folder_collection_not_supported: 'Erfassung für Ordner wird nicht unterstützt. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'Datei %type% für Auftragsausführung nicht gefunden. ID: %jobRunId%'
-studio_ee_invalid_element_type_provided: 'Erfassung für Element mit ID %elementId% und Typ %elementType% wird nicht unterstützt.'
+studio_ee_invalid_element_type_provided: Erfassung für Element mit ID %elementId% und Typ %elementType% wird nicht unterstützt.
 studio_ee_no_assets_found_for_job_run: 'Keine Assets für Auftragsausführung gefunden. ID: %jobRunId%'
 studio_ee_asset_upload_failed: 'Datei konnte nicht hochgeladen werden: %message%'
-studio_email_param_children: 'Untergeordnete Elemente (%count%)'
+studio_email_param_children: Untergeordnete Elemente (%count%)
 studio_ee_element_replace_assignment_failed: 'Konnte %sourceId% (%sourceType%) nicht durch %targetId% (%targetType%) in %elementId% (%elementType%) ersetzen. Fehler: %message%'
 studio_ee_job_bulk_import_class_definitions: Klassendefinitionen importieren (Massenimport)
 studio_ee_job_step_field_collection_importing: Feldsammlungs-Import
