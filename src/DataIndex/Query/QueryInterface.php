@@ -47,6 +47,11 @@ interface QueryInterface
 
     public function filterByPql(string $pqlQuery): self;
 
+    /**
+     * @param string[] $relevantFolderKeys
+     */
+    public function filterByTreePql(string $pqlQuery, array $relevantFolderKeys): self;
+
     public function setUser(UserInterface $user): self;
 
     public function filterInteger(string $field, int $value): self;
