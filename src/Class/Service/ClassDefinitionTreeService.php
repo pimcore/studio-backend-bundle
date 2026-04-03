@@ -24,8 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNodeFolde
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\Folder;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -69,15 +69,15 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
         return $hydrated;
     }
 
-    public function getClassDefinitionIdsInsideFolder(int $folderId): array
+    public function getChildrenClassDefinitionIds(int $parentId): array
     {
-        $folder = $this->elementService->getElementById(ElementTypes::TYPE_DATA_OBJECT, $folderId);
-        if (!$folder instanceof Folder) {
-            throw new NotFoundException(ElementTypes::TYPE_DATA_OBJECT . ' Folder', $folderId);
+        $object = $this->elementService->getElementById(ElementTypes::TYPE_DATA_OBJECT, $parentId);
+        if (!$object instanceof DataObject) {
+            throw new NotFoundException(ElementTypes::TYPE_DATA_OBJECT . ' Parent', $parentId);
         }
 
         $hydratedClassDefinitions = [];
-        foreach ($folder->getDao()->getClasses() as $classDefinition) {
+        foreach ($object->getDao()->getClasses() as $classDefinition) {
             $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);
             $this->eventDispatcher->dispatch(
                 new ClassDefinitionFolderListEvent($class),
