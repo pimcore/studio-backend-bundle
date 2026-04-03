@@ -30,5 +30,5 @@ interface ClassDefinitionTreeServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getClassDefinitionIdsInsideFolder(int $folderId): array;
+    public function getChildrenClassDefinitionIds(int $parentId): array;
 }
