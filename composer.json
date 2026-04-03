@@ -17,13 +17,13 @@
   "prefer-stable": true,
   "minimum-stability": "dev",
   "require": {
-    "php": "~8.4.0 || ~8.5.0",
+    "php": "~8.3.0 || ~8.4.0",
     "league/csv": "^9.27",
-    "nesbot/carbon": "^3.10.0",
-    "pimcore/static-resolver-bundle": "^2026.1",
-    "pimcore/generic-data-index-bundle": "^2026.1",
-    "pimcore/pimcore": "^2026.1",
-    "zircote/swagger-php": "^5.0",
+    "nesbot/carbon": "^3.8.4",
+    "pimcore/static-resolver-bundle": "^3.5.0 ",
+    "pimcore/generic-data-index-bundle": "^2.5.0",
+    "pimcore/pimcore": "^12.3",
+    "zircote/swagger-php": "^4.8 || ^5.0",
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",
     "symfony/mercure-bundle": "^0.3.9",
@@ -34,7 +34,7 @@
     "ext-filter": "*",
     "php-http/discovery": "^1.20",
     "psr/http-factory": "^1.0",
-    "symfony/psr-http-message-bridge": "^7.4"
+    "symfony/psr-http-message-bridge": "^6.3 || ^7.0"
   },
   "require-dev": {    
     "roave/security-advisories": "dev-latest",
@@ -66,7 +66,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-2026.x": "2026.1.x-dev"
+      "dev-2025.4": "1.x-dev"
     },
     "pimcore": {
       "bundles": [
