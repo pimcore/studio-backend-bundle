@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Unit\Controller\QuantityValue;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -25,8 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -72,13 +71,8 @@ final class ImportController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
-    public function importUnits(Request $request): Response
+    public function importUnits(#[MapUploadedFile] UploadedFile $file): Response
     {
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
-        }
-
         try {
             $this->quantityValueService->importUnits($file->getContent());
         } finally {

@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -90,15 +91,9 @@ final class ImportController extends AbstractApiController
     ])]
     public function importTranslations(
         string $domain,
-        // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
-        // TODO: Remove manual extraction of csvSettings from request body and use attribute when available
         Request $request,
+        #[MapUploadedFile] UploadedFile $file,
     ): JsonResponse {
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
-        }
-
         // Manually extract csvSettings from multipart form data
         $csvSettings = $request->request->getString('csvSettings');
 

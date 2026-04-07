@@ -16,11 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -30,8 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -50,7 +48,7 @@ final class UploadUserImageController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
      */
     #[Route('/user/upload-image/{id}', name: 'pimcore_studio_api_user_upload_image', methods: ['POST'])]
     #[Post(
@@ -75,18 +73,13 @@ final class UploadUserImageController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function uploadUserImage(
         int $id,
-        // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
-        Request $request
+        #[MapUploadedFile(name: 'userImage')] UploadedFile $userImage
     ): Response {
-        $file = $request->files->get('userImage');
-        if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
-        }
-
-        $this->imageUploadService->uploadUserImage($file, $id);
+        $this->imageUploadService->uploadUserImage($userImage, $id);
 
         return new Response();
     }

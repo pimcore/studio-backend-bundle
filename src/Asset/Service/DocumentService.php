@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
-use Pimcore\Document\Adapter;
+use Pimcore\Document\AdapterInterface;
 use Pimcore\Messenger\AssetUpdateTasksMessage;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Enum\PdfScanStatus;
@@ -105,7 +105,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     private function getStreamFromDocument(Document $asset): StreamedResponse
     {
         $adapter = $this->documentResolver->getDefaultAdapter();
-        if (!$adapter) {
+        if (!$adapter instanceof AdapterInterface) {
             throw new EnvironmentException('Document adapter is not available.');
         }
 
@@ -146,7 +146,7 @@ final readonly class DocumentService implements DocumentServiceInterface
      * @throws ElementStreamResourceNotFoundException
      */
     private function getPdfStreamFromAdapter(
-        Adapter $adapter,
+        AdapterInterface $adapter,
         Document $asset
     ): StreamedResponse {
         try {

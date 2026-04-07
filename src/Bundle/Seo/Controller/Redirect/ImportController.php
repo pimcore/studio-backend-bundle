@@ -19,7 +19,6 @@ use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectImportStats;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -29,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -49,7 +48,7 @@ final class ImportController extends AbstractApiController
     }
 
     /**
-     * @throws ElementStreamResourceNotFoundException|EnvironmentException
+     * @throws EnvironmentException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_bundle_seo_redirects_import', methods: ['POST'])]
     #[IsGranted(UserPermissions::REDIRECTS->value)]
@@ -80,13 +79,8 @@ final class ImportController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function importRedirects(Request $request): JsonResponse
+    public function importRedirects(#[MapUploadedFile] UploadedFile $file): JsonResponse
     {
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new ElementStreamResourceNotFoundException(0, 'File');
-        }
-
         return $this->jsonResponse($this->csvService->importRedirects($file->getRealPath()));
     }
 }
