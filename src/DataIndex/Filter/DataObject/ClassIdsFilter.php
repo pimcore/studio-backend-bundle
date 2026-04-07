@@ -37,7 +37,7 @@ final class ClassIdsFilter implements FilterInterface
         }
 
         $classIds = $parameters->getClassIdsArray();
-        if ($classIds === null || $classIds === []) {
+        if ($classIds === []) {
             return $query;
         }
 

@@ -85,7 +85,7 @@ final class GetAvailableColumnsForRelationController extends AbstractApiControll
     #[StringParameter(
         name: 'relationField',
         example: 'myRelationField',
-        description: 'relationField',
+        description: 'relationField as dot notation, e.g. "myBlock.mySubRelationField"',
         required: false,
     )]
     #[DefaultResponses([

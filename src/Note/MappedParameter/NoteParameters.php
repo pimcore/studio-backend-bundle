@@ -56,7 +56,7 @@ final readonly class NoteParameters extends CollectionParameters
         return $this->filter;
     }
 
-    public function getFieldFiltersArray(): ?array
+    public function getFieldFiltersArray(): array
     {
         return $this->fieldFiltersArray;
     }

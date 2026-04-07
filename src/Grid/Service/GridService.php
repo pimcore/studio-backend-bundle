@@ -281,7 +281,7 @@ final class GridService implements GridServiceInterface
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
-            static function (Column $column) use ($withGroup) {
+            function (Column $column) use ($withGroup) {
                 if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
@@ -289,15 +289,27 @@ final class GridService implements GridServiceInterface
                 $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
                 if ($withGroup) {
-                    $key = $fd ? $fd['name'] : $column->getKey();
+                    $key = $fd ? ($fd['name'] ?? $column->getKey()) : $column->getKey();
                 } else {
-                    $key = $fd ? $fd['title'] : $column->getKey();
+                    $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
                 }
+
+                $key = $this->appendLocale($key, $column);
 
                 return ($withGroup ? $firstGroup . '~' : '') . $key;
             },
             $columnCollection->getColumns()
         );
+    }
+
+    private function appendLocale(string $key, Column $column): string
+    {
+        $locale = $column->getLocale();
+        if ($locale !== null) {
+            return $key . ' (' . $locale . ')';
+        }
+
+        return $key;
     }
 
     /**

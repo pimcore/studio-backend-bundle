@@ -35,7 +35,6 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function get_class;
 use function in_array;
 use function sprintf;
 
@@ -76,7 +75,7 @@ final readonly class LayoutService implements LayoutServiceInterface
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
-                sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))
+                sprintf('DataObject id (%s) is not a concrete object', $dataObject->getId())
             );
         }
 
@@ -142,7 +141,10 @@ final readonly class LayoutService implements LayoutServiceInterface
     ): CoreLayout {
         if (!$user->isAdmin()) {
             $allowedLayouts = $this->securityLayoutService->getUserAllowedLayoutsByClass($dataObject, $user);
-            if ($layoutId === '-1' || !in_array($layoutId, $allowedLayouts, true)) {
+            if (
+                $layoutId === '-1' ||
+                (!empty($allowedLayouts) && !in_array($layoutId, $allowedLayouts, true))
+            ) {
                 throw new ForbiddenException('Layout not allowed for this user');
             }
         }

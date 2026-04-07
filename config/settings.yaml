@@ -15,9 +15,11 @@ services:
   #
   # Services
   #
-
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\UpdateSettingProviderLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\UpdateSettingsTaggedIteratorAdapter
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
@@ -28,8 +30,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\ElementService
 
-  Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\AdminSettingsService
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\ThumbnailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\ThumbnailService
 
   #
   # Hydrators
@@ -41,9 +43,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\CountryHydrator
 
-  Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\AdminSettingsHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\AdminSettingsHydrator
-
   #
   # Providers
   #
@@ -52,13 +51,7 @@ services:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
-    tags: [ 'pimcore.studio_backend.settings_provider' ]
-
-  #
-  # Repositories
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Setting\Repository\AdminSettingRepository
-    arguments:
-      $adminConfig: '%pimcore_admin.config%'
+    tags: [
+      'pimcore.studio_backend.settings_provider',
+      'pimcore.studio_backend.update_settings_provider'
+    ]

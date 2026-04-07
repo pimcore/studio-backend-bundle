@@ -42,7 +42,7 @@ interface PatchServiceInterface
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
-    ): ?int;
+    ): int;
 
     /**
      * @throws ElementSavingFailedException

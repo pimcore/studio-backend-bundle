@@ -16,8 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
-use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function count;
@@ -99,26 +97,10 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         $this->applyGroupIdsFilter($listing, $groupIds);
 
         if ($searchTerm !== null && $searchTerm !== '') {
-            $this->applySearchTermFilter($listing, $searchTerm);
+            $this->searchHelperService->applyKeyGroupRelationSearchFilter($listing, $searchTerm);
         }
 
         return $listing;
-    }
-
-    private function applySearchTermFilter(Listing $list, string $searchTerm): void
-    {
-        $searchTerms = $this->searchHelperService->getTranslatedSearchFilterTerms($searchTerm);
-        $searchFilterConditions = [];
-
-        foreach ($searchTerms as $term) {
-            $searchFilterConditions[] =
-                KeyConfigDao::TABLE_NAME_KEYS.'.name LIKE '.$list->quote('%'.$term.'%')
-                .' OR '.GroupConfigDao::TABLE_NAME_GROUPS.'.name LIKE '.$list->quote('%'.$term.'%')
-                .' OR '.KeyConfigDao::TABLE_NAME_KEYS.'.description LIKE '.$list->quote('%'.$term.'%');
-        }
-        $list->setResolveGroupName(true);
-
-        $list->addConditionParam(implode(' OR ', $searchFilterConditions));
     }
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void

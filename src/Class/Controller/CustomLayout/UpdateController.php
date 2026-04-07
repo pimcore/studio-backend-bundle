@@ -57,20 +57,20 @@ final class UpdateController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Put(
         path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_update',
-        description: 'pimcore_studio_api_class_custom_layout_update_description',
-        summary: 'pimcore_studio_api_class_custom_layout_update_summary',
+        operationId: 'class_custom_layout_update',
+        description: 'class_custom_layout_update_description',
+        summary: 'class_custom_layout_update_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_update_layout_id',
+        description: 'class_custom_layout_update_layout_id',
         required: true
     )]
     #[CustomLayoutUpdateRequestBody]
     #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_update_success_response',
+        description: 'class_custom_layout_update_success_response',
         content: new JsonContent(ref: CustomLayout::class, type: 'object')
     )]
     #[DefaultResponses([

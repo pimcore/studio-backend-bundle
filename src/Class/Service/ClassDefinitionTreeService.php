@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionTreeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\FolderNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Tree\NodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNodeFolder;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -28,16 +35,18 @@ use function count;
 final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeServiceInterface
 {
     public function __construct(
-        private ClassDefinitionServiceInterface $classDefinitionService,
+        private ClassDefinitionRepositoryInterface $classDefinitionRepository,
+        private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator,
+        private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private FolderNodeHydratorInterface $folderNodeHydrator,
-        private NodeHydratorInterface $nodeHydrator
+        private NodeHydratorInterface $nodeHydrator,
     ) {
     }
 
     public function getTree(bool $grouped = false): array
     {
-        $cds = $this->classDefinitionService->getClassDefinitions();
+        $cds = $this->classDefinitionRepository->getClassDefinitions();
         $groups = $this->getGroups($cds);
 
         if (empty($groups)) {
@@ -58,6 +67,26 @@ final readonly class ClassDefinitionTreeService implements ClassDefinitionTreeSe
         }
 
         return $hydrated;
+    }
+
+    public function getChildrenClassDefinitionIds(int $parentId): array
+    {
+        $object = $this->elementService->getElementById(ElementTypes::TYPE_DATA_OBJECT, $parentId);
+        if (!$object instanceof DataObject) {
+            throw new NotFoundException(ElementTypes::TYPE_DATA_OBJECT . ' Parent', $parentId);
+        }
+
+        $hydratedClassDefinitions = [];
+        foreach ($object->getDao()->getClasses() as $classDefinition) {
+            $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);
+            $this->eventDispatcher->dispatch(
+                new ClassDefinitionFolderListEvent($class),
+                ClassDefinitionFolderListEvent::EVENT_NAME
+            );
+            $hydratedClassDefinitions[] = $class;
+        }
+
+        return $hydratedClassDefinitions;
     }
 
     /**

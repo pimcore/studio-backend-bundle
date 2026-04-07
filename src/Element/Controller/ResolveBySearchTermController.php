@@ -67,7 +67,7 @@ final class ResolveBySearchTermController extends AbstractApiController
         required: true
     )]
     #[SuccessResponse(
-        description: 'element_resolve_response_description',
+        description: 'element_resolve_success_response',
         content: new IdJson('ID of the element')
     )]
     #[DefaultResponses([

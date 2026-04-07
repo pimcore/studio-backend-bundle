@@ -170,7 +170,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException
      */
     public function assetFolderExists(int $id, bool $checkPermissionsForCurrentUser = true): bool
     {
@@ -184,7 +184,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException
      */
     public function assetFolderExistsForUser(int $id, UserInterface $user): bool
     {

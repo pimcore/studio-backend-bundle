@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionTreeNodeFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
@@ -25,4 +26,9 @@ interface ClassDefinitionTreeServiceInterface
      * @return ClassDefinitionTreeNode[]|ClassDefinitionTreeNodeFolder[]
      */
     public function getTree(bool $grouped = true): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getChildrenClassDefinitionIds(int $parentId): array;
 }

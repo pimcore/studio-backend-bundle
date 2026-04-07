@@ -13,6 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateFieldCollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
 
 /**
@@ -24,4 +31,33 @@ interface FieldCollectionRepositoryInterface
      * @return Definition[]
      */
     public function listFieldCollections(): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getFieldCollectionByKey(string $key): Definition;
+
+    /**
+     * @throws ElementExistsException|ElementSavingFailedException|NotWriteableException
+     */
+    public function create(CreateFieldCollectionParameters $parameters): Definition;
+
+    /**
+     * @throws ElementSavingFailedException|NotWriteableException
+     */
+    public function update(Definition $definition, UpdateParameters $parameters): Definition;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function delete(Definition $definition): void;
+
+    public function exportAsJson(Definition $definition): string;
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotWriteableException
+     */
+    public function importFromJson(Definition $definition, string $json): Definition;
+
+    public function getFieldCollectionUsages(string $key): array;
 }

@@ -69,7 +69,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
 
         if (!$configurationParams->setAsFavorite()) {
             $configuration = $this->favoriteService
-                ->removeAssetConfigurationAsFavoriteForCurrentUser($configuration);
+                ->removeAssetConfigurationAsFavoriteForCurrentUser($configuration, $configurationParams->getFolderId());
         }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
@@ -161,6 +161,34 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         }
 
         $configuration = $this->favoriteService->setDataObjectConfigurationAsFavoriteForCurrentUser(
+            $configuration,
+            $folderId
+        );
+
+        $this->gridConfigurationRepository->update($configuration);
+    }
+
+    public function removeAssetGridConfigurationAsFavorite(int $configurationId, int $folderId): void
+    {
+        $configuration = $this->gridConfigurationRepository->getById($configurationId);
+
+        $configuration = $this->favoriteService->removeAssetConfigurationAsFavoriteForCurrentUser(
+            $configuration,
+            $folderId
+        );
+
+        $this->gridConfigurationRepository->update($configuration);
+    }
+
+    public function removeDataObjectGridConfigurationAsFavorite(int $configurationId, int $folderId): void
+    {
+        $configuration = $this->gridConfigurationRepository->getById($configurationId);
+
+        if (!$configuration->getClassId()) {
+            throw new NotFoundException('Configuration', $configurationId);
+        }
+
+        $configuration = $this->favoriteService->removeDataObjectConfigurationAsFavoriteForCurrentUser(
             $configuration,
             $folderId
         );

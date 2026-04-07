@@ -24,18 +24,14 @@ use Pimcore\Model\UserInterface;
 final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
 {
     /**
-     * Summary of columnConfigurationCache
-     *
      * @var array<string, ColumnConfiguration[]>
      */
     private array $columnConfigurationCache = [];
 
     /**
-     * Summary of columnConfigurationCache
-     *
-     * @var string[]
+     * @var array<string, ColumnConfiguration>
      */
-    private array $typeCache = [];
+    private array $columnConfigurationByKeyCache = [];
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
@@ -45,13 +41,40 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
 
     public function guessType(string $key, string $classId, ?UserInterface $user = null): string
     {
+        return $this->findColumnConfiguration($key, $classId, $user)->getType();
+    }
+
+    public function isLocalizable(string $key, string $classId, ?UserInterface $user = null): bool
+    {
+        return $this->findColumnConfiguration($key, $classId, $user)->isLocalizable();
+    }
+
+    private function findColumnConfiguration(
+        string $key,
+        string $classId,
+        ?UserInterface $user = null
+    ): ColumnConfiguration {
+        $cacheName = $classId . '_' . $key;
+
+        if (isset($this->columnConfigurationByKeyCache[$cacheName])) {
+            return $this->columnConfigurationByKeyCache[$cacheName];
+        }
+
         if ($user === null) {
             $user = $this->securityService->getCurrentUser();
         }
 
         $columnConfigurations = $this->getColumnConfigurations($classId, $user);
 
-        return $this->findType($key, $classId, $columnConfigurations);
+        foreach ($columnConfigurations as $columnConfiguration) {
+            if ($columnConfiguration->getKey() === $key) {
+                $this->columnConfigurationByKeyCache[$cacheName] = $columnConfiguration;
+
+                return $columnConfiguration;
+            }
+        }
+
+        throw new NotFoundException('key', $key, 'Column Key');
     }
 
     /**
@@ -72,27 +95,5 @@ final class ResolverTypeGuesser implements ResolverTypeGuesserInterface
         $this->columnConfigurationCache[$classId] = $colConfiguration;
 
         return $colConfiguration;
-    }
-
-    /**
-     * @param ColumnConfiguration[] $columnConfigurations
-     */
-    private function findType(string $key, string $classId, array $columnConfigurations): string
-    {
-        $cacheName = $classId .'_'. $key;
-
-        if (isset($this->typeCache[$cacheName])) {
-            return $this->typeCache[$cacheName];
-        }
-
-        foreach ($columnConfigurations as $columnConfiguration) {
-            if ($columnConfiguration->getKey() === $key) {
-                $this->typeCache[$cacheName] = $columnConfiguration->getType();
-
-                return $columnConfiguration->getType();
-            }
-        }
-
-        throw new NotFoundException('key', $key, 'Column Key');
     }
 }

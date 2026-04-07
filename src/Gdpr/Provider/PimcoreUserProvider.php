@@ -17,7 +17,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -83,8 +82,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
 
         $users = $listing->getUsers();
 
-        $columns = $this->getAvailableColumns();
-
         $rows = array_map(
             fn ($user) => new GdprDataRow(
                 [
@@ -93,9 +90,8 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                     'firstname' => $user->getFirstname(),
                     'lastname' => $user->getLastname(),
                     'email' => $user->getEmail(),
-                     '__gdprIsDeletable' => $user->getId() != $this->securityService->getCurrentUser()->getId(),
-                ],
-                $columns
+                     '__gdprIsDeletable' => $user->getId() !== $this->securityService->getCurrentUser()->getId(),
+                ]
             ),
             $users
         );
@@ -121,11 +117,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
                     : SortDirection::ASC->value
             );
         }
-    }
-
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'user_delete_by_id';
     }
 
     /**
@@ -180,7 +171,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         if ($handle) {
             while (!feof($handle)) {
                 $buffer = fgets($handle);
-                if ($buffer && strpos($buffer, $pattern) !== false) {
+                if ($buffer && str_contains($buffer, $pattern)) {
                     $matches[] = $buffer;
                 }
             }
@@ -194,7 +185,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
         if ($handle) {
             while (!feof($handle)) {
                 $buffer = fgets($handle);
-                if ($buffer && strpos($buffer, $pattern) !== false) {
+                if ($buffer && str_contains($buffer, $pattern)) {
                     $matches[] = $buffer;
                 }
             }
@@ -222,21 +213,6 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
      */
     public function getRequiredPermissions(): array
     {
-        return [UserPermissions::PIMCORE_USER->value];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAvailableColumns(): array
-    {
-        return [
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('name', 'Username'),
-            new GdprDataColumn('firstname', 'First Name'),
-            new GdprDataColumn('lastname', 'Last Name'),
-            new GdprDataColumn('email', 'Email'),
-            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
-        ];
+        return [UserPermissions::USER_MANAGEMENT->value];
     }
 }

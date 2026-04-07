@@ -37,6 +37,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepository
+    arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]
 
 
   #

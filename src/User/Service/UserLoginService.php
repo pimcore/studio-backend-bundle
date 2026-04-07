@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
@@ -39,7 +38,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
     public function __construct(
         private AuthenticationResolverInterface $authenticationResolver,
         private MailServiceInterface $mailService,
-        private RateLimiterInterface $rateLimiter,
         private LoggerInterface $pimcoreLogger,
         private UrlGeneratorInterface $urlGenerator,
         private UserRepositoryInterface $userRepository,
@@ -53,7 +51,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
      */
     public function resetPassword(ResetPassword $resetPassword): void
     {
-        $this->rateLimiter->check();
 
         $user = $this->userResolver->getByName($resetPassword->getUsername());
 
@@ -65,10 +62,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
-        $loginUrl = null;
-        if ($resetPassword->getResetPasswordUrl() !== null) {
-            $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
-        }
+        $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
 
         try {
             $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);

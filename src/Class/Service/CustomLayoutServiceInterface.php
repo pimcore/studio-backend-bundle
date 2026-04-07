@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewPara
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -43,9 +44,11 @@ interface CustomLayoutServiceInterface
     ): array;
 
     /**
+     * @param string[] $dataObjectClassIds
+     *
      * @return CustomLayoutCompact[]
      */
-    public function getCustomLayoutCollection(string $dataObjectClass): array;
+    public function getCustomLayoutCollection(array $dataObjectClassIds): array;
 
     /**
      * @throws NotFoundException
@@ -91,4 +94,37 @@ interface CustomLayoutServiceInterface
     public function getMainLayout(): CoreLayout;
 
     public function getMainAdminLayout(): CoreLayout;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getBrickCustomLayout(string $key, string $customLayoutId): CustomLayout;
+
+    /**
+     * @throws NotFoundException|NotWriteableException|InvalidArgumentException|EnvironmentException
+     */
+    public function updateBrickCustomLayout(
+        string $key,
+        string $customLayoutId,
+        UpdateParameters $parameters,
+    ): CustomLayout;
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function deleteBrickCustomLayout(string $key, string $customLayoutId): void;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function exportBrickCustomLayoutAsJson(string $key, string $customLayoutId): Response;
+
+    /**
+     * @throws NotFoundException|NotWriteableException|JsonEncodingException|InvalidArgumentException
+     */
+    public function importBrickCustomLayoutFromJson(
+        string $key,
+        string $customLayoutId,
+        string $json,
+    ): CustomLayout;
 }

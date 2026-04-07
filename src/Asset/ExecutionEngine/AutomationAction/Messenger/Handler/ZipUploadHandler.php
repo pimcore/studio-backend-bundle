@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -46,6 +47,7 @@ final class ZipUploadHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly StorageServiceInterface $storageService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly UploadServiceInterface $uploadService,
         private readonly ZipServiceInterface $zipService,
     ) {
@@ -127,6 +129,7 @@ final class ZipUploadHandler extends AbstractHandler
 
                 $this->updateProgress(
                     $this->publishService,
+                    $this->userTopicService,
                     $jobRun,
                     $this->getJobStep($message)->getName(),
                     $stepElementsForProgress
@@ -146,6 +149,7 @@ final class ZipUploadHandler extends AbstractHandler
 
             $this->updateProgress(
                 $this->publishService,
+                $this->userTopicService,
                 $jobRun,
                 $this->getJobStep($message)->getName(),
                 $stepElementsForProgress

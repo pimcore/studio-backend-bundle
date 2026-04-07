@@ -51,7 +51,10 @@ final readonly class UserRoleShareService implements UserRoleShareServiceInterfa
 
     public function isConfigurationSharedWithUser(GridConfiguration $gridConfiguration, UserInterface $user): bool
     {
-        if ($gridConfiguration->getOwner() === $user->getId()) {
+        if (
+            $gridConfiguration->isShareGlobal() ||
+            $gridConfiguration->getOwner() === $user->getId()
+        ) {
             return true;
         }
 

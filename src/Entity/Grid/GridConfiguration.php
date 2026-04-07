@@ -31,6 +31,7 @@ class GridConfiguration
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
+    /** @phpstan-ignore property.unusedType */
     private ?int $id = null;
 
     #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]

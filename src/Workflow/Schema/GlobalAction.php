@@ -67,7 +67,7 @@ final readonly class GlobalAction
         return $this->objectLayout;
     }
 
-    public function getNotes(): ?array
+    public function getNotes(): array
     {
         return $this->notes;
     }

@@ -22,22 +22,27 @@ enum UserPermissions: string
     case DEFINITIONS_TABLE = 'users_permission_definitions';
     case APPLICATION_LOGGING = 'application_logging';
     case ASSETS = 'assets';
+    case ASSET_METADATA = 'asset_metadata';
     case DATA_OBJECTS = 'objects';
     case DOCUMENTS = 'documents';
     case DOCUMENT_TYPES = 'document_types';
     case ELEMENT_TYPE_PERMISSION  = 'ELEMENT_TYPE_PERMISSION';
     case EMAILS = 'emails';
+    case FIELD_COLLECTIONS = 'fieldcollections';
     case GDPR = 'gdpr_data_extractor';
     case NOTES_EVENTS = 'notes_events';
     case NOTIFICATIONS = 'notifications';
     case NOTIFICATIONS_SEND = 'notifications_send';
     case OBJECTS_SORT_METHOD = 'objects_sort_method';
+    case OBJECT_BRICKS = 'objectbricks';
     case PERSPECTIVE_EDITOR = 'studio_perspective_editor';
+    case QUANTITY_VALUE_UNITS = 'quantityValueUnits';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';
     case RECYCLE_BIN = 'recyclebin';
     case REDIRECTS = 'redirects';
+    case ROBOTS_TXT = 'robots.txt';
     case SHARE_CONFIGURATIONS = 'share_configurations';
     case TAGS_CONFIGURATION = 'tags_configuration';
     case TAGS_ASSIGNMENT = 'tags_assignment';
@@ -50,5 +55,7 @@ enum UserPermissions: string
     case WIDGET_EDITOR = 'studio_perspective_widget_editor';
     case SELECT_OPTIONS = 'selectoptions';
     case CLASS_DEFINITION = 'classes';
+    case CLASSIFICATION_STORE = 'classificationstore';
     case SYSTEM_APPEARANCE_SETTINGS = 'system_appearance_settings';
+    case SYSTEM_SETTINGS = 'system_settings';
 }

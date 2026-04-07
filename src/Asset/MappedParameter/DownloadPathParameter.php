@@ -37,7 +37,6 @@ final readonly class DownloadPathParameter
 
     private function validate(): void
     {
-        // TODO Can this be a security risk?
         if (!is_file($this->path) && !$this->inDownloadFormats()) {
             throw new ForbiddenException();
         }

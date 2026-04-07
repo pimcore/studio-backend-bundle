@@ -1,0 +1,73 @@
+studio_ee_no_element_provided: No se proporcionó ningún elemento
+studio_ee_element_not_found: Elemento de tipo %type% con ID %id% no encontrado
+studio_ee_user_not_found: Usuario con ID %userId% no encontrado
+studio_ee_environment_variable_not_found: Variable de entorno %variable% no encontrada
+studio_ee_element_locked: El elemento de tipo %type% con ID %id% está bloqueado
+studio_ee_element_permission_missing: El usuario con ID %userId% no tiene el permiso %permission% sobre el elemento de tipo %type% con ID %id%
+studio_ee_element_delete_failed: 'El elemento de tipo %type% con ID %id% no se pudo eliminar: %message%'
+studio_ee_element_batch_delete_failed: 'La eliminación por lotes del elemento de tipo %type% con ID %id% y sus elementos secundarios falló: %message%'
+studio_ee_zip_file_copy_failed: 'El archivo ZIP no se pudo copiar: %message%'
+studio_ee_zip_file_upload_failed: 'El archivo ZIP no se pudo cargar: %message%'
+studio_ee_zip_cleanup_failed: 'El directorio ZIP %directory% no se pudo eliminar: %message%'
+studio_ee_csv_creation_failed: 'La exportación CSV falló: %message%'
+studio_ee_xlsx_creation_failed: 'La exportación XLSX falló: %message%'
+studio_ee_recycle_bin_delete_failed: 'El elemento con ID %id% no se pudo eliminar de la papelera de reciclaje: %message%'
+studio_ee_recycle_bin_restore_failed: 'El elemento de la papelera de reciclaje con ID %id% no se pudo restaurar: %message%'
+studio_ee_csv_data_collection_failed: 'Los datos para la exportación CSV no se pudieron extraer para %id%: %message%'
+studio_ee_element_patch_failed: 'El elemento de tipo %type% con ID %id% no se pudo actualizar: %message%'
+studio_ee_element_rewrite_references_failed: 'Las referencias del elemento de tipo %type% con ID %id% no se pudieron reescribir: %message%'
+studio_ee_element_tag_operation_failed: 'No se pudo ejecutar %operation% en las etiquetas del elemento de tipo %type% con ID %id%: %message%'
+studio_ee_no_element_data_found: No se encontraron datos
+studio_ee_job_create_download_zip: Crear ZIP de descarga
+studio_ee_job_clone_assets: Clonar assets
+studio_ee_job_upload_zip_file: Cargar archivo ZIP
+studio_ee_job_delete_assets: Eliminar assets
+studio_ee_job_batch_delete_assets: Eliminar assets por lotes
+studio_ee_job_patch_elements: Actualizar elementos
+studio_ee_job_create_csv: Crear CSV
+studio_ee_job_create_xlsx: Crear XLSX
+studio_ee_job_upload_assets: Cargar assets
+studio_ee_job_clone_data_objects: Clonar objetos de datos
+studio_ee_job_delete_data_objects: Eliminar objetos de datos
+studio_ee_job_batch_delete_data_objects: Eliminar objetos de datos por lotes
+studio_ee_job_clone_documents: Clonar documentos
+studio_ee_job_delete_documents: Eliminar documentos
+studio_ee_job_rewrite_element_references: Reescribir referencias de elementos
+studio_ee_job_batch_tag_assign: Asignar etiquetas por lotes
+studio_ee_job_batch_tag_replace: Reemplazar etiquetas por lotes
+studio_ee_job_recycle_bin_delete: Eliminar elementos de la papelera de reciclaje
+studio_ee_job_recycle_bin_restore: Restaurar elementos de la papelera de reciclaje
+studio_ee_job_step_zip_creation: Creación del ZIP de descarga
+studio_ee_job_step_asset_cloning: Clonación de assets
+studio_ee_job_step_csv_file_not_found: Archivo CSV no encontrado
+studio_ee_jop_step_zip_uploading: Carga del ZIP
+studio_ee_job_step_asset_uploading: Carga de assets
+studio_ee_job_step_csv_creation: Creación del CSV
+studio_ee_job_step_xlsx_creation: Creación del XLSX
+studio_ee_job_step_export_data_collection: Recopilación de datos para exportar
+studio_ee_job_step_element_patching: Actualización de elementos
+studio_ee_job_step_folder_patching: Actualización de carpetas
+studio_ee_job_step_element_rewrite_references: Reescritura de referencias de elementos
+studio_ee_job_step_element_deletion: Eliminación de elementos
+studio_ee_job_step_element_recycling: Envío de elementos a la papelera de reciclaje
+studio_ee_job_step_data_object_cloning: Clonación de objetos de datos
+studio_ee_job_step_document_cloning: Clonación de documentos
+studio_ee_job_step_batch_tag_assign: Asignación de etiquetas por lotes
+studio_ee_job_step_batch_tag_replace: Reemplazo de etiquetas por lotes
+studio_ee_job_step_recycle_bin_delete: Eliminación de elementos de la papelera de reciclaje
+studio_ee_job_step_recycle_bin_restore: Restauración de elementos de la papelera de reciclaje
+studio_ee_element_folder_collection_not_supported: 'La recopilación para carpetas no es compatible. ID: %folderId%'
+studio_ee_file_not_found_for_job_run: 'Archivo %type% no encontrado para la ejecución del job. ID: %jobRunId%'
+studio_ee_invalid_element_type_provided: La recopilación para el elemento con ID %elementId% y tipo %elementType% no es compatible.
+studio_ee_no_assets_found_for_job_run: 'No se encontraron assets para la ejecución del job. ID: %jobRunId%'
+studio_ee_asset_upload_failed: 'El archivo no se pudo cargar: %message%'
+studio_email_param_children: Elementos secundarios (%count%)
+studio_ee_element_replace_assignment_failed: 'No se pudo reemplazar %sourceId% (%sourceType%) por %targetId% (%targetType%) en %elementId% (%elementType%). Error: %message%'
+studio_ee_job_bulk_import_class_definitions: Importar definiciones de clases (importación masiva)
+studio_ee_job_step_field_collection_importing: Importación de colecciones de campos
+studio_ee_job_step_class_importing: Importación de clases
+studio_ee_job_step_custom_layout_importing: Importación de diseños personalizados
+studio_ee_job_step_object_brick_importing: Importación de bloques de objetos
+studio_ee_job_step_bulk_import_cleanup: Limpieza de la importación masiva
+studio_ee_bulk_import_failed: 'La importación masiva de %type% «%name%» falló: %message%'
+studio_ee_job_element_usage_replace: Reemplazar uso del elemento

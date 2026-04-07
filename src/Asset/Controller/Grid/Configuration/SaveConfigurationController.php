@@ -37,6 +37,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class SaveConfigurationController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/grid/configuration/save';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly SaveConfigurationServiceInterface $gridSaveConfigurationService
@@ -48,13 +50,13 @@ final class SaveConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/save',
+        self::ROUTE,
         name: 'pimcore_studio_api_save_asset_grid_configuration',
         methods: ['POST'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/grid/configuration/save',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_save_grid_configuration',
         description: 'asset_save_grid_configuration_description',
         summary: 'asset_save_grid_configuration_description',

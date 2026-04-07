@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Xlsx;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
@@ -42,7 +41,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|NotFoundException
      */
     #[Route('/export/download/xlsx/{jobRunId}', name: 'pimcore_studio_api_export_delete_xlsx', methods: ['DELETE'])]
     #[Delete(
@@ -56,7 +55,6 @@ final class DeleteController extends AbstractApiController
     #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteXlsx(int $jobRunId): Response

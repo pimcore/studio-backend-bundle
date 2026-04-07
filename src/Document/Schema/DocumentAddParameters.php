@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 #[Schema(
     title: 'DocumentAdd',
     required: [
-        'key', 'type', 'title', 'navigationName', 'docTypeId',
+        'key', 'type', 'title', 'navigationName', 'docTypeId', 'template',
         'translationsSourceId', 'language', 'inheritanceSourceId',
     ],
     type: 'object'
@@ -42,6 +42,8 @@ final readonly class DocumentAddParameters
         private ?string $navigationName = null,
         #[Property(description: 'Document type ID', type: 'string', example: DocumentTypes::PAGE->value)]
         private ?string $docTypeId = null,
+        #[Property(description: 'Document template', type: 'string', example: 'default')]
+        private ?string $template = null,
         #[Property(description: 'Id of the base document for new translation', type: 'integer', example: 33)]
         private ?int $translationsSourceId = null,
         #[Property(description: 'Document language when adding a translation', type: 'string', example: 'en')]
@@ -75,6 +77,11 @@ final readonly class DocumentAddParameters
     public function getDocTypeId(): ?string
     {
         return $this->docTypeId;
+    }
+
+    public function getTemplate(): ?string
+    {
+        return $this->template;
     }
 
     public function getTranslationsSourceId(): ?int

@@ -17,10 +17,11 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprSearchResultProperty;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -82,9 +83,7 @@ final class SearchDataProviderController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'gdpr_search_data_success_response',
-        content: new CollectionJson(
-            collection: new GdprSearchResultProperty()
-        )
+        content: new CollectionJson(new GenericCollection(GdprDataRow::class))
     )]
 
     #[DefaultResponses([

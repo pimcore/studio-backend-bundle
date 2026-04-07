@@ -37,6 +37,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteConfigurationController extends AbstractApiController
 {
+    private const string ROUTE = '/assets/grid/configuration/{configurationId}/delete';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ConfigurationServiceInterface $gridConfigurationService,
@@ -48,13 +50,13 @@ final class DeleteConfigurationController extends AbstractApiController
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/{configurationId}/delete',
+        self::ROUTE,
         name: 'pimcore_studio_api_delete_asset_grid_configuration',
         methods: ['DELETE'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::PREFIX . '/assets/grid/configuration/{configurationId}/delete',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'asset_delete_grid_configuration_by_configurationId',
         description: 'asset_delete_grid_configuration_by_configurationId_description',
         summary: 'asset_delete_grid_configuration_by_configurationId_summary',

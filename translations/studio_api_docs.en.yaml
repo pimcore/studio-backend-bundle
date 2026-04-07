@@ -127,6 +127,10 @@ asset_clear_thumbnail_summary: Clear image thumbnail by ID
 asset_clear_thumbnail_description: |
     Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
     The <strong>{id}</strong> must be an ID of an existing asset image, video or pdf
+asset_image_download_by_format_description:
+    Download image asset by ID and format. <br>
+    The <strong>{id}</strong> must be an ID of existing asset image. <br>
+    List of available formats can be obtained via the thumbnail image collection endpoint
 asset_image_download_by_format_success_response: Image asset binary file based on format
 asset_image_download_by_format_summary: Download image asset by ID and format
 asset_image_download_by_thumbnail_description: |
@@ -289,16 +293,58 @@ bundle_seo_redirect_update_by_id_description: |
     Please note that <strong>all fields<strong> have to be provided.
 bundle_seo_redirect_update_by_id_success_response: Successfully updated redirect
 bundle_seo_redirect_update_by_id_summary: Update a redirect by ID
+bundle_seo_robots_txt_get_description: |
+    Get the robots.txt configuration for all sites, including whether a physical robots.txt file exists on the filesystem.
+bundle_seo_robots_txt_get_summary: Get robots.txt configuration
+bundle_seo_robots_txt_get_success_response: Robots.txt configuration data
+bundle_seo_robots_txt_update_description: |
+    Update the robots.txt configuration for all sites. Saves the provided site-keyed robots.txt content to the settings store.
+bundle_seo_robots_txt_update_summary: Update robots.txt configuration
+bundle_seo_robots_txt_update_success_response: Updated robots.txt configuration data
 class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
 class_all_layout_collection_summary: Get all available class layouts
+class_bulk_export_available_description: |
+    Get all available definitions (field collections, classes, custom layouts, object bricks) that can be exported, filtered by user permissions.
+class_bulk_export_available_success_response: List of available exportable items
+class_bulk_export_available_summary: Get available items for bulk export
+class_bulk_export_description: |
+    Export multiple definitions (field collections, classes, custom layouts, object bricks) as a single JSON file. <br>
+    Items are grouped by type in the exported file.
+class_bulk_export_success_response: Bulk export JSON file download
+class_bulk_export_summary: Bulk export class definitions
+class_bulk_import_description: |
+    Import selected definitions asynchronously from a previously prepared bulk import file identified by <strong>{fileId}</strong>. <br>
+    The <strong>{fileId}</strong> must be obtained from the prepare import endpoint. <br>
+    Items are imported in dependency order (field collections, classes, custom layouts, object bricks). <br>
+    Import is processed asynchronously via the execution engine. The response contains a <strong>{jobRunId}</strong> to track progress.
+class_bulk_import_created_response: Successfully created jobRun for bulk import
+class_bulk_import_summary: Bulk import class definitions asynchronously
+class_bulk_import_prepare_description: |
+    Upload a bulk export JSON file to analyze its contents and prepare for import. <br>
+    Returns a file identifier and a list of importable items found in the file. <br>
+    Use the returned <strong>{fileId}</strong> with the bulk import endpoint to perform the actual import.
+class_bulk_import_prepare_success_response: File identifier and list of importable items
+class_bulk_import_prepare_summary: Prepare a bulk import from an uploaded file
+class_bulk_import_delete_file_description: |
+    Delete a previously prepared bulk import file identified by <strong>{fileId}</strong>. <br>
+    The <strong>{fileId}</strong> must be obtained from the prepare import endpoint. <br>
+    Returns 404 if the file does not exist or has already been cleaned up.
+class_bulk_import_delete_file_success_response: Successfully deleted bulk import file
+class_bulk_import_delete_file_summary: Delete a prepared bulk import file
 class_get_available_visible_fields_description: |
   Get available visible fields for the specified data object classes. <br>
   Returns system columns and common fields across all provided class names. <br>
   The <strong>{classNames}</strong> must be a comma separated list of existing data object class names.
 class_get_available_visible_fields_summary: Get available visible fields for classes
 class_get_available_visible_fields_success_response: Successfully retrieved available visible fields
+class_get_fields_by_type_description: |
+  Get class definition fields filtered by one or more field types. <br>
+  The <strong>{classId}</strong> must be an ID of an existing data object class. <br>
+  The <strong>{type}</strong> must be a comma-separated list of field types, e.g. <strong>manyToOneRelation,objectbricks</strong>.
+class_get_fields_by_type_summary: Get class definition fields by type
+class_get_fields_by_type_success_response: Successfully retrieved class definition fields for the requested types
 class_get_selected_visible_fields_description: |
   Get selected visible fields for the specified data object class and relation field. <br>
   The <strong>{classId}</strong> must be an ID of existing data object class. <br>
@@ -350,7 +396,7 @@ data_object_replace_content_success_response: Successfully replaced content of d
 data_object_replace_content_summary: Replace content of a data object
 data_object_get_grid_configuration_description: |
   Get data object saved grid configuration by <strong>{folderId}</strong> <strong>{classId}</strong> if a configuration-id is set, otherwise get the default configuration will be returned.
-data_object_get_grid_configuration__success_response: Data Object grid configuration
+data_object_get_grid_configuration_success_response: Data Object grid configuration
 data_object_get_grid_configuration_summary: Get data object grid configuration for a specific folder and class-id
 data_object_get_search_configuration_description: Get data object search configuration
 data_object_get_search_configuration_summary: Get data object search configuration
@@ -533,7 +579,7 @@ element_get_tree_location_summary: Get location data of the element by id, eleme
 element_resolve_by_search_term_description: |
   Get the element ID based on the given <strong>{searchTerm}</strong>. <br> The <strong>{searchTerm}</strong> must be a valid ID or Path of an existing element. <br> The <strong>{searchTerm}</strong> can be modified via the <strong>ElementResolveEvent</strong>.
 element_resolve_by_search_term_summary: Get ID of the element with given search term
-element_resolve_response_description: ID of the element with given search term
+element_resolve_success_response: ID of the element with given search term
 email_blocklist_add_description: |
   Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
 email_blocklist_add_success_response: Successfully added E-mail address to blocklist
@@ -677,9 +723,35 @@ logout_summary: Logout and invalidate current session for active user.
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
-metadata_get_collection_description: Get predefined metadata collection with basic filter options
-metadata_get_collection_success_response: Predefined metadata collection
-metadata_get_collection_summary: Get predefined metadata collection
+metadata_asset_get_collection_description: |
+    Get predefined metadata entries filtered by asset type, sub-type and group.
+    Returns metadata definitions applicable to a specific asset type.
+metadata_asset_get_collection_param_group: Filter by metadata group. Use 'default' to match entries with no group assigned.
+metadata_asset_get_collection_param_sub_type: Filter by asset sub-type (e.g. image, video).
+metadata_asset_get_collection_success_response: Filtered predefined metadata entries for the specified asset type
+metadata_asset_get_collection_summary: Get predefined metadata for assets by type
+metadata_get_collection_description: |
+  Get predefined metadata collection with optional search, column filtering, and sorting.
+  Supports <strong>searchTerm</strong> for global text search across all fields,
+  <strong>columnFilters</strong> for per-column filtering (like/equals), and
+  <strong>sortFilter</strong> for sorting by any filterable column.
+metadata_get_collection_success_response: Predefined metadata collection with total item count
+metadata_get_collection_summary: Get predefined metadata collection with filtering and sorting
+metadata_predefined_create_description: |
+    Create a new predefined metadata entry.
+    An optional request body can be provided to set name, type, language, and other fields.
+    If no body is sent, the entry is created with default values (name: "New Definition", type: "input").
+metadata_predefined_create_success_response: Newly created predefined metadata entry
+metadata_predefined_create_summary: Create a new predefined metadata entry
+metadata_predefined_delete_description: |
+    Delete the predefined metadata entry with the given <strong>{id}</strong>.
+metadata_predefined_delete_success_response: Successfully deleted predefined metadata entry
+metadata_predefined_delete_summary: Delete predefined metadata entry by id
+metadata_predefined_update_description: |
+    Update the predefined metadata entry with the given <strong>{id}</strong>.
+    All provided fields will be updated on the existing entry.
+metadata_predefined_update_success_response: Updated predefined metadata entry
+metadata_predefined_update_summary: Update predefined metadata entry by id
 note_delete_by_id_description: |
   Delete the note with the given <strong>{id}</strong>
 note_delete_by_id_success_response: Successfully deleted note
@@ -829,6 +901,9 @@ role_get_by_id_summary: Get all available user roles.
 role_get_collection_success_response: List of available roles.
 role_get_collection_summary: Get all available roles.
 role_get_collection_description: Get all available roles with basic information
+role_get_share_collection_summary: Get all roles for sharing configurations
+role_get_share_collection_description: Get all available roles with basic information for sharing configurations
+role_get_share_collection_success_response: List of roles for sharing
 role_get_tree_success_response: Collection of roles including folders for the given parent id.
 role_get_tree_summary: Get collection of roles for tree view.
 role_list_with_permission_description: |
@@ -854,6 +929,10 @@ schedule_get_collection_for_element_by_type_and_id_description: |
   Get all schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
 schedule_get_collection_for_element_by_type_and_id_success_response: List of schedules for element
 schedule_get_collection_for_element_by_type_and_id_summary: Get schedules for an element
+schedule_list_actions_for_element_type_description: |
+  Get available schedule actions for the given element type <strong>{elementType}</strong>.
+schedule_list_actions_for_element_type_success_response: List of available schedule actions
+schedule_list_actions_for_element_type_summary: List available schedule actions for element type
 schedule_update_for_element_by_type_and_id_description: |
   Update schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
@@ -885,6 +964,18 @@ settings_country_collection_description: |
   Returns a list of countries with their codes and names
 settings_country_collection_summary: Get all available countries
 settings_country_collection_success_response: List of available countries
+settings_image_adapter_check_description: |
+  Check what image adapter is used. <br>
+  Returns <strong>true</strong> if Imagick extension is used for image processing. <br>
+  Returns <strong>false</strong> if the GD library fallback is used, which provides lower quality image processing.
+settings_image_adapter_check_summary: Check image adapter
+settings_image_adapter_check_success_response: Image adapter availability
+settings_video_adapter_check_description: |
+  Check if the video adapter is valid. <br> 
+  Returns <strong>true</strong> if FFmpeg is properly configured for video processing. <br>
+  Returns <strong>false</strong> if video processing is not available due to missing PHP CLI binary or FFmpeg binary configuration.
+settings_video_adapter_check_summary: Check video adapter validity
+settings_video_adapter_check_success_response: Video adapter validity status
 simple_search_preview_get_description: |
   Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -976,10 +1067,57 @@ thumbnail_image_get_collection_description: |
   The thumbnails have to be defined as downloadable in order to be listed in the collection.
 thumbnail_image_get_collection_success_response: All downloadable image thumbnails
 thumbnail_image_get_collection_summary: Get collection of thumbnails for images
+thumbnail_image_get_tree_description: |
+  Get image thumbnail configuration tree with thumbnails organized by groups. <br>
+  Thumbnails without a group are listed directly, while grouped thumbnails are organized into folder nodes.
+thumbnail_image_get_tree_success_response: Image thumbnail configuration tree as JSON
+thumbnail_image_get_tree_summary: Get image thumbnails tree
+thumbnail_image_get_by_name_description: |
+  Get a specific image thumbnail configuration by its name including settings and media transformations.
+thumbnail_image_get_by_name_success_response: Image thumbnail configuration as JSON
+thumbnail_image_get_by_name_summary: Get image thumbnail configuration
+thumbnail_image_delete_description: |
+  Delete a specific image thumbnail configuration by its name.
+thumbnail_image_delete_success_response: Image thumbnail configuration successfully deleted
+thumbnail_image_delete_summary: Delete image thumbnail configuration
+thumbnail_image_update_description: |
+  Update a specific image thumbnail configuration by its name with new settings and media transformations.
+thumbnail_image_update_success_response: Updated image thumbnail configuration as JSON
+thumbnail_image_update_summary: Update image thumbnail configuration
+thumbnail_image_create_description: |
+  Create a new image thumbnail configuration with the specified name. <br>
+  The name must be unique and not already used by an existing thumbnail configuration.
+thumbnail_image_create_success_response: Created image thumbnail configuration as JSON
+thumbnail_image_create_summary: Create a new image thumbnail configuration
 thumbnail_video_get_collection_description: |
   Get collection of all thumbnails for videos.
 thumbnail_video_get_collection_success_response: All video thumbnails
 thumbnail_video_get_collection_summary: Get collection of thumbnails for videos
+thumbnail_video_get_tree_description: |
+  Retrieves a tree structure of all video thumbnail configurations. <br>
+  Thumbnails are grouped by their group property.
+thumbnail_video_get_tree_summary: Get video thumbnail configuration tree
+thumbnail_video_get_tree_success_response: Successfully retrieved video thumbnail configuration tree
+thumbnail_video_get_by_name_description: |
+  Retrieves a specific video thumbnail configuration based on the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing video thumbnail configuration.
+thumbnail_video_get_by_name_summary: Get video thumbnail configuration by name
+thumbnail_video_get_by_name_success_response: Successfully retrieved video thumbnail configuration details
+thumbnail_video_delete_description: |
+  Deletes a specific video thumbnail configuration based on the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing video thumbnail configuration.
+thumbnail_video_delete_summary: Delete video thumbnail configuration by name
+thumbnail_video_delete_success_response: Successfully deleted video thumbnail configuration
+thumbnail_video_create_description: |
+  Creates a new video thumbnail configuration with the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be unique.
+thumbnail_video_create_summary: Create a new video thumbnail configuration
+thumbnail_video_create_success_response: Successfully created video thumbnail configuration
+thumbnail_video_update_description: |
+  Updates a specific video thumbnail configuration based on the given <strong>{name}</strong>. <br>
+  The <strong>{name}</strong> must be a name of an existing video thumbnail configuration.
+thumbnail_video_update_summary: Update video thumbnail configuration by name
+thumbnail_video_update_success_response: Successfully updated video thumbnail configuration
 translation_create_description: | 
   Add new translation entries for given translation key
 translation_create_success_response: Successfully created translations
@@ -1129,6 +1267,10 @@ asset_set_grid_configuration_as_favorite_description: |
     Set asset grid configuration as favorite for the current user for a specific folder
 asset_set_grid_configuration_as_favorite_success_response: Asset grid configuration set as favorite successfully
 asset_set_grid_configuration_as_favorite_summary: Set asset grid configuration as favorite for a specific folder
+asset_remove_grid_configuration_as_favorite_description: |
+    Remove asset grid configuration as favorite for the current user for a specific folder
+asset_remove_grid_configuration_as_favorite_success_response: Asset grid configuration removed as favorite successfully
+asset_remove_grid_configuration_as_favorite_summary: Remove asset grid configuration as favorite for a specific folder
 asset_get_available_grid_list_configurations_description: |
     Get all saved grid configurations for assets of the given folder for the current user
 asset_get_available_grid_list_configurations_success_response: List of saved grid configurations for the given folder
@@ -1140,6 +1282,9 @@ asset_get_saved_grid_configurations_summary: Get all saved grid configurations f
 user_get_collection_summary: Get all users
 user_get_collection_description: Get all users with basic information
 user_get_collection_success_response: List of users
+user_get_share_collection_summary: Get all users for sharing configurations
+user_get_share_collection_description: Get all users with basic information for sharing configurations
+user_get_share_collection_success_response: List of users for sharing
 data_object_get_search_description: Get data object search results
 data_object_get_search_summary: Get data object search results
 data_object_get_search_success_response:  Data object search results
@@ -1177,6 +1322,10 @@ data_object_set_grid_configuration_as_favorite_description: |
   Set data object grid configuration as favorite for the current user for a specific folder
 data_object_set_grid_configuration_as_favorite_success_response: Data Object grid configuration set as favorite successfully
 data_object_set_grid_configuration_as_favorite_summary: Set data object grid configuration as favorite for a specific folder
+data_object_remove_grid_configuration_as_favorite_description: |
+  Remove data object grid configuration as favorite for the current user for a specific folder
+data_object_remove_grid_configuration_as_favorite_success_response: Data Object grid configuration removed as favorite successfully
+data_object_remove_grid_configuration_as_favorite_summary: Remove data object grid configuration as favorite for a specific folder
 data_object_delete_grid_configuration_by_configurationId_description: |
   Delete grid configuration for a given configuration ID <strong>{configurationId}</strong>
 data_object_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a given configuration ID
@@ -1193,6 +1342,21 @@ user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
 user_get_image_summary: Get user profile image
 user_get_image_success_response: User profile image
+class_field_collection_get_by_key_description: |
+  Retrieves a specific field collection definition based on the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_get_by_key_summary: Get field collection by key
+class_field_collection_get_by_key_success_response: Field collection detail data
+class_field_collection_get_layout_by_key_description: |
+  Retrieves the layout definition for a specific field collection based on the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_get_layout_by_key_summary: Get field collection layout definition by key
+class_field_collection_get_layout_by_key_success_response: Field collection layout definition data
+class_field_collection_get_tree_description: |
+  Get the field collection tree with grouped folders. <br>
+  Optionally filter by allowed types using a comma-separated list via the <strong>{allowedTypes}</strong> query parameter.
+class_field_collection_get_tree_summary: Get field collection tree
+class_field_collection_get_tree_success_response: Field collection tree with nodes and folders
 class_field_collection_collection_description: |
   Get all available field collection configurations in the system
 class_field_collection_collection_summary: Get all field collection configurations
@@ -1201,10 +1365,123 @@ class_field_collection_object_layout_description: |
   Get all layouts from the field collection for an given object
 class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
 class_field_collection_object_layout_success_response: List of layouts
+class_field_collection_create_description: |
+  Create a new empty field collection definition with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be unique and not already exist (case-insensitive). <br>
+class_field_collection_create_summary: Create a new field collection definition
+class_field_collection_create_success_response: Successfully created field collection definition
+class_field_collection_update_description: |
+  Update an existing field collection definition with the given <strong>{key}</strong> and parameters. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition. <br>
+  The <strong>{values}</strong> and <strong>{configuration}</strong> fields are required.
+class_field_collection_update_summary: Update field collection definition by given key
+class_field_collection_update_success_response: Successfully updated field collection definition
+class_field_collection_delete_description: |
+  Delete a field collection definition with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_delete_summary: Delete a field collection definition
+class_field_collection_delete_success_response: Successfully deleted field collection definition
+class_field_collection_export_description: |
+  Export a field collection definition as JSON for the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_export_summary: Export a field collection definition as JSON
+class_field_collection_export_success_response: Exported field collection definition as JSON
+class_field_collection_import_description: |
+  Import a field collection definition from a previously exported JSON file for the given field collection <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_import_summary: Import a field collection definition from JSON file
+class_field_collection_import_success_response: Successfully imported field collection definition
+class_field_collection_get_usages_description: |
+  Get usage data showing which classes and fields use the field collection with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing field collection definition.
+class_field_collection_get_usages_summary: Get field collection usage data
+class_field_collection_get_usages_success_response: Field collection usage data
 class_object_brick_object_layout_description: |
   Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_summary: Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_success_response: List of layouts
+class_object_brick_get_tree_description: |
+  Get the object brick tree with grouped folders.
+class_object_brick_get_tree_summary: Get object brick tree
+class_object_brick_get_tree_success_response: Object brick tree with nodes and folders
+class_object_brick_collection_description: |
+  Get a collection of all available object brick definitions.
+class_object_brick_collection_summary: Get all object brick definitions
+class_object_brick_collection_success_response: Collection of object brick definitions
+class_object_brick_get_by_key_description: |
+  Get a single object brick definition by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_get_by_key_summary: Get object brick definition by key
+class_object_brick_get_by_key_success_response: Object brick definition detail
+class_object_brick_get_layout_by_key_description: |
+  Get the layout definition for the object brick with the given <strong>{key}</strong>.
+class_object_brick_get_layout_by_key_summary: Get object brick layout definition by key
+class_object_brick_get_layout_by_key_success_response: Object brick layout definition
+class_object_brick_create_description: |
+  Create a new object brick definition with the provided <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be unique and not already exist.
+class_object_brick_create_summary: Create a new object brick definition
+class_object_brick_create_success_response: Created object brick definition detail
+class_object_brick_update_description: |
+  Update an existing object brick definition by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_update_summary: Update an object brick definition by key
+class_object_brick_update_success_response: Updated object brick definition detail
+class_object_brick_delete_description: |
+  Delete an existing object brick definition by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_delete_summary: Delete an object brick definition by key
+class_object_brick_delete_success_response: Successfully deleted object brick definition
+class_object_brick_export_description: |
+  Export an existing object brick definition as JSON by its unique <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_export_summary: Export an object brick definition as JSON
+class_object_brick_export_success_response: JSON export of the object brick definition
+class_object_brick_import_description: |
+  Import an object brick definition from a JSON file for the object brick with the given <strong>{key}</strong>. <br>
+  The <strong>{key}</strong> must be the key of an existing object brick definition.
+class_object_brick_import_summary: Import an object brick definition from JSON
+class_object_brick_import_success_response: Imported object brick definition detail
+class_object_brick_get_usages_description: |
+  Get the usages of an object brick definition by its unique <strong>{key}</strong>. <br>
+  Returns all classes and fields that reference this object brick.
+class_object_brick_get_usages_summary: Get usages of an object brick definition
+class_object_brick_get_usages_success_response: List of classes and fields using the object brick
+class_object_brick_classes_description: |
+  Get a collection of class definitions that have at least one ObjectBricks field definition.
+class_object_brick_classes_summary: Get class definitions with ObjectBricks fields
+class_object_brick_classes_success_response: Collection of class definitions with ObjectBricks fields
+class_object_brick_custom_layout_get_description: |
+  Get a custom layout for a specific object brick by brick key and custom layout ID.
+class_object_brick_custom_layout_get_summary: Get object brick custom layout
+class_object_brick_custom_layout_get_key: Object brick key
+class_object_brick_custom_layout_get_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_get_success_response: Object brick custom layout data
+class_object_brick_custom_layout_update_description: |
+  Update a custom layout for a specific object brick. If the brick layout does not exist yet, it will be
+  auto-created from the base custom layout and then updated with the provided data.
+class_object_brick_custom_layout_update_summary: Update object brick custom layout
+class_object_brick_custom_layout_update_key: Object brick key
+class_object_brick_custom_layout_update_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_update_success_response: Updated object brick custom layout
+class_object_brick_custom_layout_delete_description: |
+  Delete a custom layout for a specific object brick by brick key and custom layout ID.
+class_object_brick_custom_layout_delete_summary: Delete object brick custom layout
+class_object_brick_custom_layout_delete_key: Object brick key
+class_object_brick_custom_layout_delete_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_delete_success_response: Object brick custom layout deleted
+class_object_brick_custom_layout_export_description: |
+  Export a custom layout for a specific object brick as JSON file download.
+class_object_brick_custom_layout_export_summary: Export object brick custom layout as JSON
+class_object_brick_custom_layout_export_key: Object brick key
+class_object_brick_custom_layout_export_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_export_success_response: Object brick custom layout data as JSON
+class_object_brick_custom_layout_import_description: |
+  Import a custom layout for a specific object brick from a previously exported JSON file.
+class_object_brick_custom_layout_import_summary: Import object brick custom layout from JSON
+class_object_brick_custom_layout_import_key: Object brick key
+class_object_brick_custom_layout_import_layout_id: Id of the base custom layout
+class_object_brick_custom_layout_import_success_response: Successfully imported object brick custom layout
 unit_quantity_value_list_description: |
   List of available quantity value units
 unit_quantity_value_list_summary: List of available quantity value units
@@ -1218,6 +1495,34 @@ unit_quantity_value_convert_all_description: |
   Units have to have <strong>{fromUnitId}</strong> defined as base unit to be considered for conversion.
 unit_quantity_value_convert_all_summary: Convert quantity value from one unit to all other related units
 unit_quantity_value_convert_all_success_response: Converted quantity value
+unit_quantity_value_units_collection_description: |
+  Get a paginated and filterable collection of quantity value units.
+unit_quantity_value_units_collection_summary: Get quantity value unit collection
+unit_quantity_value_units_collection_success_response: Paginated collection of quantity value units
+unit_quantity_value_units_create_description: |
+  Create a new quantity value unit. The unit ID must be unique and not exceed 50 characters.
+unit_quantity_value_units_create_summary: Create a new quantity value unit
+unit_quantity_value_units_create_success_response: Created quantity value unit
+unit_quantity_value_units_update_description: |
+  Update an existing quantity value unit by its ID. <br>
+  The unit with the given ID must already exist. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+unit_quantity_value_units_update_summary: Update a quantity value unit
+unit_quantity_value_units_update_param_id: ID of the unit to update
+unit_quantity_value_units_update_success_response: Updated quantity value unit
+unit_quantity_value_units_delete_description: |
+  Delete a quantity value unit by its ID.
+unit_quantity_value_units_delete_summary: Delete a quantity value unit
+unit_quantity_value_units_delete_param_id: ID of the unit to delete
+unit_quantity_value_units_delete_success_response: Successfully deleted quantity value unit
+unit_quantity_value_units_import_description: |
+  Import quantity value unit definitions from a JSON file. Existing units with the same ID will be skipped.
+unit_quantity_value_units_import_summary: Import quantity value units from JSON
+unit_quantity_value_units_import_success_response: Successfully imported quantity value units
+unit_quantity_value_units_export_description: |
+  Export all quantity value unit definitions as JSON.
+unit_quantity_value_units_export_summary: Export quantity value units as JSON
+unit_quantity_value_units_export_success_response: JSON export of quantity value units
 data_object_get_select_options_description: |
   Get all dynamic select options for data objects for given field
 data_object_get_select_options_summary: Get all dynamic select options for data objects
@@ -1391,34 +1696,59 @@ class_select_option_get_tree_description: |
   Get select options tree data. Results can be grouped based on the <strong>{withGroup}</strong> parameter.
 class_select_option_get_tree_summary: Get select options tree data
 class_select_option_get_tree_success_response: Select options data for the tree view
-pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
-pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
-pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
-pimcore_studio_api_class_custom_layout_get_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_get_success_response: Custom layout data
-pimcore_studio_api_class_custom_layout_delete: Delete custom layout by given id
-pimcore_studio_api_class_custom_layout_delete_description: Delete custom layout by given id
-pimcore_studio_api_class_custom_layout_delete_summary: Delete custom layout by given id
-pimcore_studio_api_class_custom_layout_delete_success_response: Custom layout deleted
-pimcore_studio_api_class_custom_layout_delete_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_create: Create custom layout
-pimcore_studio_api_class_custom_layout_create_description: Create custom layout
-pimcore_studio_api_class_custom_layout_create_summary: Create custom layout
-pimcore_studio_api_class_custom_layout_create_success_response: Custom layout created
-pimcore_studio_api_class_custom_layout_create_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_update: Update custom layout by given id
-pimcore_studio_api_class_custom_layout_update_description: |
+class_select_option_get_description: |
+    Get a single select option configuration by its ID.
+    Returns all configuration details including select option entries, group, traits, interfaces, and the fully qualified enum name.
+class_select_option_get_summary: Get select option configuration by ID
+class_select_option_get_success_response: Select option configuration detail
+class_select_option_create_description: |
+    Create a new select option configuration.
+    The ID must be unique (case-insensitive). Returns the newly created configuration detail.
+class_select_option_create_summary: Create a new select option configuration
+class_select_option_create_success_response: Newly created select option configuration detail
+class_select_option_update_description: |
+    Update an existing select option configuration.
+    Replaces the configuration data with the provided values. Admin-only configurations require admin access.
+class_select_option_update_summary: Update a select option configuration
+class_select_option_update_success_response: Updated select option configuration detail
+class_select_option_delete_description: |
+    Delete a select option configuration by its ID.
+    Fails with a conflict error if the configuration is currently in use by class definitions.
+    Admin-only configurations require admin access.
+class_select_option_delete_summary: Delete a select option configuration
+class_select_option_delete_success_response: Successfully deleted the select option configuration
+class_select_option_get_usages_description: |
+    Get the list of class definitions and fields that use a specific select option configuration.
+class_select_option_get_usages_summary: Get usages of a select option configuration
+class_select_option_get_usages_success_response: List of classes and fields using the select option configuration
+class_custom_layout_get: Get custom layout by given id
+class_custom_layout_get_description: Get custom layout by given id
+class_custom_layout_get_summary: Get custom layout by given id
+class_custom_layout_get_layout_id: Id of custom layout
+class_custom_layout_get_success_response: Custom layout data
+class_custom_layout_delete: Delete custom layout by given id
+class_custom_layout_delete_description: Delete custom layout by given id
+class_custom_layout_delete_summary: Delete custom layout by given id
+class_custom_layout_delete_success_response: Custom layout deleted
+class_custom_layout_delete_layout_id: Id of custom layout
+class_custom_layout_create: Create custom layout
+class_custom_layout_create_description: Create custom layout
+class_custom_layout_create_summary: Create custom layout
+class_custom_layout_create_success_response: Custom layout created
+class_custom_layout_create_layout_id: Id of custom layout
+class_custom_layout_update: Update custom layout by given id
+class_custom_layout_update_description: |
   Update custom layout by the given <strong>{customLayoutId}</strong> and parameters. <br>
   The <strong>{customLayoutId}</strong> must be an ID of an existing custom layout. <br>
   Please note that <strong>all fields<strong> have to be provided.
-pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given ID
-pimcore_studio_api_class_custom_layout_update_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_update_success_response: Custom layout updated
-pimcore_studio_api_class_custom_layout_export: Export custom layout by given id
-pimcore_studio_api_class_custom_layout_export_description: Export custom layout by given id as JSON
-pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
-pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
-pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
+class_custom_layout_update_summary: Update custom layout by given ID
+class_custom_layout_update_layout_id: Id of custom layout
+class_custom_layout_update_success_response: Custom layout updated
+class_custom_layout_export: Export custom layout by given id
+class_custom_layout_export_description: Export custom layout by given id as JSON
+class_custom_layout_export_summary: Export custom layout by given id as JSON
+class_custom_layout_export_layout_id: Id of custom layout
+class_custom_layout_export_success_response: Custom layout data as JSON
 class_custom_layout_import_description: Import custom layout using a previously exported JSON.
 class_custom_layout_import_summary: Import custom layout
 class_custom_layout_import_success_response: Successfully imported custom layout configuration
@@ -1453,6 +1783,90 @@ classification_store_get_layout_by_key_response: Layout definition
 classification_store_get_layout_by_collection_description: Get Layout definition for given collection
 classification_store_get_layout_by_collection_summary: Get Layout definition for given collection
 classification_store_get_layout_by_collection_response: Layout definition
+classification_store_configuration_store_create_description: Create a new classification store configuration
+classification_store_configuration_store_create_summary: Create a new store
+classification_store_configuration_store_create_success_response: Created store configuration
+classification_store_configuration_store_update_description: Update an existing classification store configuration by ID
+classification_store_configuration_store_update_summary: Update a store
+classification_store_configuration_store_update_success_response: Updated store configuration
+classification_store_configuration_store_tree_description: Get all classification store configurations as a flat tree list
+classification_store_configuration_store_tree_summary: Get store tree
+classification_store_configuration_store_tree_success_response: List of store tree nodes
+classification_store_configuration_group_collection_description: |
+    Get a paginated list of classification store group configurations.
+    You can specify filters, sorting and pagination in the request body.
+classification_store_configuration_group_collection_summary: List group configurations
+classification_store_configuration_group_collection_success_response: Paginated list of group configurations
+classification_store_configuration_group_create_description: Create a new classification store group configuration within a store
+classification_store_configuration_group_create_summary: Create a new group
+classification_store_configuration_group_create_success_response: Created group configuration
+classification_store_configuration_group_update_description: Update an existing classification store group configuration by ID
+classification_store_configuration_group_update_summary: Update a group
+classification_store_configuration_group_update_success_response: Updated group configuration
+classification_store_configuration_group_delete_description: Delete a classification store group configuration by ID
+classification_store_configuration_group_delete_summary: Delete a group
+classification_store_configuration_group_delete_success_response: Successfully deleted group configuration
+classification_store_configuration_key_collection_description: |
+  Get a paginated list of classification store key configurations.
+  Supports filtering, sorting, and pagination via the collection request body.
+classification_store_configuration_key_collection_summary: List key configurations
+classification_store_configuration_key_collection_success_response: Paginated list of key configurations
+classification_store_configuration_key_create_description: Create a new classification store key configuration within a store
+classification_store_configuration_key_create_summary: Create a new key
+classification_store_configuration_key_create_success_response: Created key configuration
+classification_store_configuration_key_update_description: Update an existing classification store key configuration by ID
+classification_store_configuration_key_update_summary: Update a key
+classification_store_configuration_key_update_success_response: Updated key configuration
+classification_store_configuration_key_delete_description: |
+  Soft-delete a classification store key configuration by ID.
+  The key is not permanently removed but disabled (enabled is set to false).
+classification_store_configuration_key_delete_summary: Disable a key (soft-delete)
+classification_store_configuration_key_delete_success_response: Successfully disabled key configuration
+classification_store_configuration_collection_collection_description: |
+  Get a paginated list of classification store collection configurations.
+  Supports filtering, sorting, and pagination via the collection filter parameter.
+classification_store_configuration_collection_collection_summary: List collection configurations
+classification_store_configuration_collection_collection_success_response: Paginated list of collection configurations
+classification_store_configuration_collection_create_description: Create a new classification store collection configuration with a name and store ID
+classification_store_configuration_collection_create_summary: Create a collection
+classification_store_configuration_collection_create_success_response: Created collection configuration
+classification_store_configuration_collection_update_description: Update an existing classification store collection configuration by ID
+classification_store_configuration_collection_update_summary: Update a collection
+classification_store_configuration_collection_update_success_response: Updated collection configuration
+classification_store_configuration_collection_delete_description: |
+  Delete a classification store collection configuration by ID.
+  This also removes all associated collection-group relations.
+classification_store_configuration_collection_delete_summary: Delete a collection
+classification_store_configuration_collection_delete_success_response: Successfully deleted collection configuration
+classification_store_configuration_collection_relation_collection_description: |
+  List collection-group relations for a given collection ID.
+  Supports filtering, sorting, and pagination via the collection filter parameter.
+  The colId query parameter is required.
+classification_store_configuration_collection_relation_collection_summary: List collection-group relations
+classification_store_configuration_collection_relation_collection_success_response: Paginated list of collection-group relations
+classification_store_configuration_collection_relation_create_description: Create or update a collection-group relation with collection ID, group ID, and optional sorter
+classification_store_configuration_collection_relation_create_summary: Create or update a collection-group relation
+classification_store_configuration_collection_relation_create_success_response: Created or updated collection-group relation
+classification_store_configuration_collection_relation_delete_description: Delete a collection-group relation by collection ID and group ID
+classification_store_configuration_collection_relation_delete_summary: Delete a collection-group relation
+classification_store_configuration_collection_relation_delete_success_response: Successfully deleted collection-group relation
+classification_store_configuration_key_group_relation_collection_description: |
+  List key-group relations for a given group ID.
+  Supports filtering, sorting, and pagination via the collection filter parameter.
+  The groupId query parameter is required. Returns key details with layout definition.
+classification_store_configuration_key_group_relation_collection_summary: List key-group relations
+classification_store_configuration_key_group_relation_collection_success_response: Paginated list of key-group relations
+classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag
+classification_store_configuration_key_group_relation_create_summary: Create or update a key-group relation
+classification_store_configuration_key_group_relation_create_success_response: Created or updated key-group relation
+classification_store_configuration_key_group_relation_delete_description: Delete a key-group relation by key ID and group ID
+classification_store_configuration_key_group_relation_delete_summary: Delete a key-group relation
+classification_store_configuration_key_group_relation_delete_success_response: Successfully deleted key-group relation
+classification_store_configuration_get_page_description: |
+  Calculate the page number where a specific item (key or group) is located within a paginated listing.
+  Useful for navigating directly to the page containing a specific item.
+classification_store_configuration_get_page_summary: Get page number for a specific item
+classification_store_configuration_get_page_success_response: Page number where the item is located
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_summary: Get a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_success_response: Preview of an Advanced Column Grid for a given Data Object.
@@ -1559,3 +1973,16 @@ class_definition_collection_creatable: Get creatable class definitions.
 class_definition_collection_creatable_description: Get collection of all class definitions that can be created.
 class_definition_collection_creatable_summary: Get collection of all class definitions that can be created.
 class_definition_collection_creatable_success_response: List of class definitions that can be created.
+setting_admin_thumbnail_summary: Get thumbnail for images in admin settings
+setting_admin_thumbnail: Get thumbnail for images in admin settings
+settings_update_description: |
+  Update system settings. <br>
+  This endpoint allows you to update various system configuration parameters including: <br>
+  <ul>
+    <li><strong>general</strong>: Language settings (valid languages, fallback languages, required languages, default language), domain configuration, and translation debugging</li>
+    <li><strong>objects</strong>: Object versioning settings (days and steps to keep)</li>
+    <li><strong>assets</strong>: Asset versioning settings (days and steps to keep)</li>
+    <li><strong>documents</strong>: Document versioning settings and localized error pages</li>
+  </ul>
+  <strong>Note:</strong> Only the settings provided in the request body will be updated.
+settings_update_summary: Update system settings

@@ -1,2 +1,0 @@
-# Field Definition Adapters
-TBA

@@ -13,12 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Unit\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertAllUnitsParameter;
-use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertUnitParameter;
-use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValues;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\CreateUnitParameters;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\UpdateUnitParameters;
 use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\QuantityValueUnit;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -31,12 +34,37 @@ interface QuantityValueServiceInterface
     public function listUnits(): array;
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @return Collection<QuantityValueUnit>
+     *
+     * @throws InvalidArgumentException
      */
-    public function convertUnit(ConvertUnitParameter $parameters): float|int;
+    public function listUnitCollection(CollectionFilterParameter $parameters): Collection;
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws InvalidArgumentException
+     * @throws EnvironmentException
      */
-    public function convertAllUnits(ConvertAllUnitsParameter $parameters): ConvertedQuantityValues;
+    public function createUnit(CreateUnitParameters $parameters): QuantityValueUnit;
+
+    /**
+     * @throws NotFoundException
+     * @throws EnvironmentException
+     */
+    public function updateUnit(string $id, UpdateUnitParameters $parameters): QuantityValueUnit;
+
+    /**
+     * @throws NotFoundException
+     * @throws EnvironmentException
+     */
+    public function deleteUnit(string $id): void;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function importUnits(string $json): void;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function exportUnits(): Response;
 }

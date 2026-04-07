@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
@@ -41,6 +43,8 @@ class Configuration implements ConfigurationInterface
 
     public const string PERSPECTIVES_NODE = 'studio_perspectives';
 
+    public const string ADMIN_SETTINGS_NODE = 'admin_settings';
+
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
@@ -49,6 +53,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidHostException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -79,13 +85,19 @@ class Configuration implements ConfigurationInterface
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
         $this->addGdprDataExtractorNode($rootNode);
+        $this->addAdminSettingsNode($rootNode);
+        $this->addMcpNode($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
             [
-                self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
-                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+                self::TREE_WIDGETS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
+                self::PERSPECTIVES_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+                self::ADMIN_SETTINGS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . SettingRepository::SCOPE,
             ],
             ['read_target']
         );
@@ -350,6 +362,11 @@ class Configuration implements ConfigurationInterface
             ->addDefaultsIfNotSet()
             ->children()
                 ->arrayNode('types')
+                    ->beforeNormalization()
+                        ->always(fn (mixed $v) => is_array($v)
+                            ? ConfigKeyMapper::convertKeysForApp($v)
+                            : $v)
+                    ->end()
                     ->info('List all note types for asset, document, and data-object.')
                     ->normalizeKeys(false)
                     ->children()
@@ -440,6 +457,11 @@ class Configuration implements ConfigurationInterface
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
                 ->arrayPrototype()
+                    ->beforeNormalization()
+                        ->always(fn (mixed $v) => is_array($v)
+                            ? ConfigKeyMapper::convertKeysForConfig($v)
+                            : $v)
+                    ->end()
                     ->children()
                         ->scalarNode('name')
                             ->isRequired()
@@ -464,7 +486,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->arrayNode('widgetsLeft')
+                        ->arrayNode('widgets_left')
                             ->useAttributeAsKey('id')
                             ->scalarPrototype()
                                 ->validate()
@@ -473,7 +495,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->arrayNode('widgetsRight')
+                        ->arrayNode('widgets_right')
                             ->useAttributeAsKey('id')
                             ->scalarPrototype()
                                 ->validate()
@@ -482,7 +504,7 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->arrayNode('widgetsBottom')
+                        ->arrayNode('widgets_bottom')
                             ->useAttributeAsKey('id')
                             ->scalarPrototype()
                                 ->validate()
@@ -491,15 +513,15 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->scalarNode('expandedLeft')
+                        ->scalarNode('expanded_left')
                             ->info('The id of the widget that should be expanded on the left side.')
                             ->defaultNull()
                         ->end()
-                        ->scalarNode('expandedRight')
+                        ->scalarNode('expanded_right')
                             ->info('The id of the widget that should be expanded on the right side.')
                             ->defaultNull()
                         ->end()
-                        ->arrayNode('contextPermissions')
+                        ->arrayNode('context_permissions')
                             ->useAttributeAsKey('key')
                             ->arrayPrototype()
                                 ->useAttributeAsKey('key')
@@ -525,18 +547,23 @@ class Configuration implements ConfigurationInterface
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
                 ->arrayPrototype()
+                    ->beforeNormalization()
+                        ->always(fn (mixed $v) => is_array($v)
+                            ? ConfigKeyMapper::convertKeysForConfig($v)
+                            : $v)
+                    ->end()
                     ->children()
                         ->scalarNode('name')
                             ->isRequired()
                         ->end()
-                        ->scalarNode('elementType')
+                        ->scalarNode('element_type')
                             ->defaultValue(ElementTypes::TYPE_OBJECT)
                         ->end()
-                        ->scalarNode('pageSize')
+                        ->scalarNode('page_size')
                             ->defaultNull()
                             ->validate()
                                 ->ifTrue(fn ($v) => !is_null($v) && !is_int($v))
-                                ->thenInvalid('The "pageSize" must be an integer or null.')
+                                ->thenInvalid('The "page_size" must be an integer or null.')
                             ->end()
                         ->end()
                         ->arrayNode('icon')
@@ -559,24 +586,26 @@ class Configuration implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
-                        ->scalarNode('rootFolder')
+                        ->scalarNode('root_folder')
                             ->defaultValue('/')
                             ->isRequired()
                         ->end()
-                        ->booleanNode('showRoot')
+                        ->booleanNode('show_root')
                             ->defaultFalse()
                         ->end()
                         ->arrayNode('classes')
                             ->defaultValue([])
                             ->beforeNormalization()
-                                ->ifString()->then(function ($v) { return [$v]; })
+                                ->ifString()->then(function ($v) {
+                                    return [$v];
+                                })
                             ->end()
                             ->scalarPrototype()->end()
                         ->end()
                         ->scalarNode('pql')
                             ->defaultNull()
                         ->end()
-                        ->arrayNode('contextPermissions')
+                        ->arrayNode('context_permissions')
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifNotInArray([true, false])
@@ -649,6 +678,33 @@ class Configuration implements ConfigurationInterface
         return $node;
     }
 
+    private function addMcpNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('mcp')
+                ->addDefaultsIfNotSet()
+                ->info('MCP (Model Context Protocol) server configuration (experimental)')
+                ->children()
+                    ->arrayNode('authentication')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->arrayNode('tokens')
+                                ->info(
+                                    'Map of Pimcore username to bearer token list. '
+                                    . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
+                                )
+                                ->useAttributeAsKey('username')
+                                ->arrayPrototype()
+                                    ->scalarPrototype()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -665,7 +721,7 @@ class Configuration implements ConfigurationInterface
             ->arrayNode('gdpr_data_extractor')
                 ->addDefaultsIfNotSet()
                 ->children()
-                    ->arrayNode('dataObjects')
+                    ->arrayNode('data_objects')
                         ->addDefaultsIfNotSet()
                         ->info('Settings for DataObjects DataProvider')
                         ->children()
@@ -674,8 +730,13 @@ class Configuration implements ConfigurationInterface
                                 ->useAttributeAsKey('name')
                                 ->defaultValue([])
                                 ->arrayPrototype()
+                                    ->beforeNormalization()
+                                        ->always(fn (mixed $v) => is_array($v)
+                                            ? ConfigKeyMapper::convertKeysForConfig($v)
+                                            : $v)
+                                    ->end()
                                     ->children()
-                                        ->booleanNode('allowDelete')
+                                        ->booleanNode('allow_delete')
                                             ->info('Allow delete of objects directly in preview grid.')
                                             ->defaultFalse()
                                         ->end()
@@ -698,5 +759,48 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+    private function addAdminSettingsNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::ADMIN_SETTINGS_NODE)
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('branding')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('background_shade')
+                                ->defaultValue('')
+                            ->end()
+                            ->scalarNode('brand_color')
+                                ->defaultValue('')
+                            ->end()
+                            ->arrayNode('login_screen_custom_background_image')
+                                ->children()
+                                    ->scalarNode('id')->end()
+                                    ->scalarNode('type')->end()
+                                ->end()
+                            ->end()
+                            ->arrayNode('custom_logo')
+                                ->children()
+                                    ->scalarNode('id')->end()
+                                    ->scalarNode('type')->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('assets')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->booleanNode('hide_edit_image')
+                                ->defaultFalse()
+                            ->end()
+                            ->booleanNode('disable_tree_preview')
+                                ->defaultFalse()
+                            ->end()
+                        ->end()
+            ->end()
+            ->end();
     }
 }

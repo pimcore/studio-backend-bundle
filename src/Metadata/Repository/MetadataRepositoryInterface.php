@@ -13,7 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CreatePredefinedMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
 use Pimcore\Model\Metadata\Predefined;
 
 /**
@@ -29,4 +34,39 @@ interface MetadataRepositoryInterface
     public function getAllPredefinedMetadataDefinitions(MetadataParameters $metadataParameters): array;
 
     public function getPredefinedMetadataByName(string $name): ?Predefined;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getPredefinedMetadataById(string $id): Predefined;
+
+    /**
+     * @throws ElementExistsException
+     * @throws NotWriteableException
+     */
+    public function createPredefinedMetadata(CreatePredefinedMetadata $metadata): Predefined;
+
+    /**
+     * @throws ElementExistsException
+     * @throws NotFoundException
+     * @throws NotWriteableException
+     */
+    public function updatePredefinedMetadata(
+        string $id,
+        UpdatePredefinedMetadata $metadata,
+    ): Predefined;
+
+    /**
+     * @throws NotFoundException
+     * @throws NotWriteableException
+     */
+    public function deletePredefinedMetadata(string $id): void;
+
+    /**
+     * @return Predefined[]
+     */
+    public function getPredefinedMetadataByTargetType(
+        ?string $subType,
+        ?string $group,
+    ): array;
 }

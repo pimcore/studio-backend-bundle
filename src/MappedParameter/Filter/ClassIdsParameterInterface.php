@@ -18,5 +18,5 @@ namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
  */
 interface ClassIdsParameterInterface
 {
-    public function getClassIdsArray(): ?array;
+    public function getClassIdsArray(): array;
 }

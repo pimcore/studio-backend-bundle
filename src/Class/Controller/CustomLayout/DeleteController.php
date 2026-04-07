@@ -48,19 +48,19 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
         path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
-        operationId: 'pimcore_studio_api_class_custom_layout_delete',
-        description: 'pimcore_studio_api_class_custom_layout_delete_description',
-        summary: 'pimcore_studio_api_class_custom_layout_delete_summary',
+        operationId: 'class_custom_layout_delete',
+        description: 'class_custom_layout_delete_description',
+        summary: 'class_custom_layout_delete_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_delete_layout_id',
+        description: 'class_custom_layout_delete_layout_id',
         required: true
     )]
     #[SuccessResponse(
-        description: 'pimcore_studio_api_class_custom_layout_delete_success_response',
+        description: 'class_custom_layout_delete_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

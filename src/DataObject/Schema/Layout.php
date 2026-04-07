@@ -24,8 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'Layout',
     required: [
         'name',
-        'dataType',
-        'fieldType',
+        'datatype',
+        'fieldtype',
         'type',
         'layout',
         'region',
@@ -52,9 +52,9 @@ class Layout implements AdditionalAttributesInterface
         #[Property(description: 'Name', type: 'string', example: 'pimcore_root')]
         private readonly string $name,
         #[Property(description: 'Data Type', type: 'string', example: 'layout')]
-        private readonly string $dataType,
+        private readonly string $datatype,
         #[Property(description: 'Field Type', type: 'string', example: 'panel')]
-        private readonly string $fieldType,
+        private readonly string $fieldtype,
         #[Property(description: 'Type', type: 'string', example: null)]
         private readonly ?string $type = null,
         #[Property(description: 'Layout', type: 'string', example: null)]
@@ -98,14 +98,14 @@ class Layout implements AdditionalAttributesInterface
         return $this->title;
     }
 
-    public function getDataType(): string
+    public function getDatatype(): string
     {
-        return $this->dataType;
+        return $this->datatype;
     }
 
-    public function getFieldType(): string
+    public function getFieldtype(): string
     {
-        return $this->fieldType;
+        return $this->fieldtype;
     }
 
     public function getType(): ?string

@@ -24,6 +24,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use function in_array;
+use function is_string;
 
 /**
  * @internal
@@ -39,9 +40,12 @@ final class PublicAuthorizationVoter extends Voter
 
     private const string RESET_PASSWORD_SUBJECT = 'resetPassword';
 
+    private const string SETTINGS_ADMIN_THUMBNAIL = 'settingsAdminThumbnail';
+
     private const array SUPPORTED_SUBJECTS = [
         self::TRANSLATION_SUBJECT,
         self::RESET_PASSWORD_SUBJECT,
+        self::SETTINGS_ADMIN_THUMBNAIL,
     ];
 
     public function __construct(
@@ -78,7 +82,7 @@ final class PublicAuthorizationVoter extends Voter
     {
         return match ($subject) {
             self::TRANSLATION_SUBJECT => $this->voteOnTranslation($request->getPayload()),
-            self::RESET_PASSWORD_SUBJECT => true,
+            self::RESET_PASSWORD_SUBJECT, self::SETTINGS_ADMIN_THUMBNAIL => true,
             default => false,
         };
     }
@@ -87,6 +91,10 @@ final class PublicAuthorizationVoter extends Voter
     {
         if ($subject instanceof MapRequestPayload) {
             return $subject->metadata->getName();
+        }
+
+        if (is_string($subject)) {
+            return $subject;
         }
 
         return '';

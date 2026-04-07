@@ -15,12 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder as DoctrineQueryBuilder;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
@@ -35,11 +35,15 @@ use function sprintf;
  */
 final readonly class TranslationRepository implements TranslationRepositoryInterface
 {
+    private array $validLanguages;
+
     public function __construct(
+        private SettingsProviderInterface $systemSettingsProvider,
         private Connection $db,
-        private AdminResolverInterface $adminResolver,
         private SecurityServiceInterface $securityService,
     ) {
+        $settings = $this->systemSettingsProvider->getSettings();
+        $this->validLanguages = $settings['validLanguages'] ?? [];
     }
 
     /**
@@ -47,7 +51,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
      */
     public function createTranslations(bool $throwError, array $translationData): void
     {
-        $languages = $this->adminResolver->getLanguages();
         $hasPermissions = $this->securityService->getCurrentUser()->isAllowed(UserPermissions::TRANSLATIONS->value);
 
         /** @var CreateTranslationData $translation */
@@ -71,7 +74,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
             $this->createTranslationEntry(
                 $translation->getKey(),
                 $translation->getType(),
-                $languages,
                 $translation->getDomain()
             );
         }
@@ -82,7 +84,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
      */
     public function updateTranslations(string $domain, UpdateTranslation $updateData): void
     {
-        $languages = $this->adminResolver->getLanguages();
         $translation = $this->getTranslationByKey($updateData->getKey(), $domain);
         if ($translation === null) {
             throw new NotFoundException('translation', $updateData->getKey(), 'key');
@@ -93,7 +94,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $translation->setModificationDate(time());
 
         foreach ($updateData->getTranslationData() as $data) {
-            $this->validateLocale($data->getLocale(), $languages);
+            $this->validateLocale($data->getLocale());
             $translation->addTranslation($data->getLocale(), $data->getTranslation());
         }
 
@@ -207,7 +208,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $translation->getDao()->getDatabaseTableName();
     }
 
-    private function createTranslationEntry(string $key, string $type, array $languages, string $domain): void
+    private function createTranslationEntry(string $key, string $type, string $domain): void
     {
         $t = new Translation();
         $t->setDomain($domain);
@@ -215,13 +216,13 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $t->setType($type);
         $t->setCreationDate(time());
         $t->setModificationDate(time());
-        $this->setNewValues($t, $languages);
+        $this->setNewValues($t);
         $t->save();
     }
 
-    private function setNewValues(Translation $translation, array $languages): void
+    private function setNewValues(Translation $translation): void
     {
-        foreach ($languages as $language) {
+        foreach ($this->validLanguages as $language) {
             $translation->addTranslation($language, '');
         }
     }
@@ -238,9 +239,9 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     /**
      * @throws InvalidLocaleException
      */
-    private function validateLocale(string $locale, array $validLanguages): void
+    private function validateLocale(string $locale): void
     {
-        if (!in_array($locale, $validLanguages, true)) {
+        if (!in_array($locale, $this->validLanguages, true)) {
             throw new InvalidLocaleException($locale);
         }
     }

@@ -17,7 +17,6 @@ use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
@@ -37,6 +36,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteConfigurationController extends AbstractApiController
 {
+    private const string ROUTE = '/data-object/grid/configuration/{configurationId}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ConfigurationServiceInterface $gridConfigurationService,
@@ -45,16 +46,16 @@ final class DeleteConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     #[Route(
-        '/data-object/grid/configuration/{configurationId}',
+        self::ROUTE,
         name: 'pimcore_studio_api_delete_data_object_grid_configuration',
         methods: ['DELETE'],
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
-        path: self::PREFIX . '/data-object/grid/configuration/{configurationId}',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'data_object_delete_grid_configuration_by_configurationId',
         description: 'data_object_delete_grid_configuration_by_configurationId_description',
         summary: 'data_object_delete_grid_configuration_by_configurationId_summary',

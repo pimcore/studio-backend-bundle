@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -44,7 +43,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_delete_perspectives_config', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]

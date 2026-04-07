@@ -17,15 +17,17 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataColumn;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
+use function sprintf;
 
 /**
  * @internal
@@ -40,7 +42,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
         private ObjectExporterInterface $objectExporter,
         array $gdprConfig = []
     ) {
-        $this->dataObjectConfig = $gdprConfig['dataObjects'] ?? [];
+        $this->dataObjectConfig = $gdprConfig['data_objects'] ?? [];
     }
 
     /**
@@ -80,8 +82,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         $searchResult = $this->searchService->searchDataObjects($query);
 
-        $columns = $this->getAvailableColumns();
-
         $items   = $searchResult->getItems();
 
         $rows = array_map(
@@ -92,7 +92,7 @@ final readonly class DataObjectProvider implements DataProviderInterface
                 'className' => $item->getClassName(),
                 '__gdprIsDeletable' =>
                     $this->dataObjectConfig['classes'][$item->getClassName()]['allowDelete'] ?? false,
-            ], $columns),
+            ]),
             $items
         );
 
@@ -120,11 +120,6 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
     }
 
-    public function getDeleteSwaggerOperationId(): string
-    {
-        return 'data_object_batch_delete';
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -138,6 +133,10 @@ final readonly class DataObjectProvider implements DataProviderInterface
 
         if (!$object instanceof Concrete) {
             throw new NotFoundException('Requested object is not a Concrete data object', $id);
+        }
+
+        if (!$object->isAllowed(ElementPermissions::VIEW_PERMISSION)) {
+            throw new ForbiddenException(sprintf('Access Denied for object with id "%d".', $object->getId()));
         }
 
         $export = [
@@ -180,19 +179,5 @@ final readonly class DataObjectProvider implements DataProviderInterface
     public function getRequiredPermissions(): array
     {
         return [UserPermissions::DATA_OBJECTS->value];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAvailableColumns(): array
-    {
-        return [
-            new GdprDataColumn('type', 'Type'),
-            new GdprDataColumn('id', 'ID'),
-            new GdprDataColumn('fullPath', 'Full Path'),
-            new GdprDataColumn('className', 'Class Name'),
-            new GdprDataColumn('__gdprIsDeletable', 'Is Deletable'),
-        ];
     }
 }
