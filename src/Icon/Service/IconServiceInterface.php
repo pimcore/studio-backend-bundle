@@ -30,7 +30,7 @@ interface IconServiceInterface
 
     public function getIconForTag(): string;
 
-    public function getIconForClassDefinition(?string $iconPath): ElementIcon;
+    public function getIconForClassDefinition(?string $value): ElementIcon;
 
     public function getIconForLayout(?string $iconPath): ?ElementIcon;
 

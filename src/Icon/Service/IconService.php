@@ -121,16 +121,14 @@ final readonly class IconService implements IconServiceInterface
         return 'tag';
     }
 
-    public function getIconForClassDefinition(?string $iconPath): ElementIcon
+    public function getIconForClassDefinition(?string $value): ElementIcon
     {
-        $type = ElementIconTypes::PATH->value;
         // $iconPath can be null and empty string
-        if (empty($iconPath)) {
-            $type = ElementIconTypes::NAME->value;
-            $iconPath = 'class';
+        if (empty($value)) {
+            return new ElementIcon(ElementIconTypes::NAME->value, 'class');
         }
 
-        return new ElementIcon($type, $iconPath);
+        return new ElementIcon($this->guessIconType($value), $value);
     }
 
     public function getIconForLayout(?string $iconPath): ?ElementIcon
@@ -157,14 +155,26 @@ final readonly class IconService implements IconServiceInterface
         if ($dataObject instanceof Concrete) {
             $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
             if ($class->getIcon() !== null) {
-                return new ElementIcon(ElementIconTypes::PATH->value, $class->getIcon());
+                return new ElementIcon($this->guessIconType($class->getIcon()), $class->getIcon());
             }
         }
 
         if ($dataObject->getClassDefinitionIcon() !== null) {
-            return new ElementIcon(ElementIconTypes::PATH->value, $dataObject->getClassDefinitionIcon());
+            return new ElementIcon(
+                $this->guessIconType($dataObject->getClassDefinitionIcon()),
+                $dataObject->getClassDefinitionIcon()
+            );
         }
 
         return null;
+    }
+
+    private function guessIconType(string $value): string
+    {
+        if (str_contains($value, '/') && str_contains($value, '.')) {
+            return ElementIconTypes::PATH->value;
+        }
+
+        return ElementIconTypes::NAME->value;
     }
 }
