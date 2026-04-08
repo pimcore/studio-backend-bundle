@@ -178,8 +178,6 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         $languageDirs = [];
         $translatedLanguages = [];
 
-
-
         $languageDir = $this->kernel->locateResource($this->translationsPath);
         if (is_dir($languageDir)) {
             $languageDirs[] = $languageDir;
