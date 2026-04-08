@@ -206,6 +206,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(PatAuthenticator::class);
         $definition->setArgument('$tokenMap', $mcpTokenMap);
+
+        $container->setParameter('pimcore_studio_backend.translations.path', $config['translations']['path']);
     }
 
     /**
