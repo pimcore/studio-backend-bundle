@@ -38,7 +38,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
@@ -208,7 +208,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(PatAuthenticator::class);
         $definition->setArgument('$tokenMap', $mcpTokenMap);
 
-        $definition = $container->getDefinition(SystemSettingsProvider::class);
+        $definition = $container->getDefinition(AdminLanguageServiceInterface::class);
         $definition->setArgument('$translationsPath', $config['translations']['path']);
         $definition->setArgument('$defaultTranslationsPath', '%translator.default_path%');
     }

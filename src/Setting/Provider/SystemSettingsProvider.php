@@ -15,16 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use Symfony\Component\HttpKernel\KernelInterface;
 use function ini_get;
 
 /**
@@ -38,18 +36,14 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
     private array $systemSettings;
 
     public function __construct(
-        private string $translationsPath,
-        private string $defaultTranslationsPath,
         SystemSettingsConfig $systemSettingsConfig,
         private ToolResolverInterface $toolResolver,
         private VersionResolverInterface $versionResolver,
         private ConfigResolver $configResolver,
         private ServiceResolverInterface $serviceResolver,
         private ElementDataServiceInterface $elementDataService,
-        private KernelInterface $kernel,
-        private LocaleServiceInterface $localeService,
-    )
-    {
+        private AdminLanguageServiceInterface $adminLanguageService,
+    ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
 
@@ -68,7 +62,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'errorPages' => $this->systemSettings['error_pages'] ?? [],
             'redirectToMainDomain' => $this->systemSettings['redirect_to_maindomain'] ?? false,
             'email' => $this->systemSettings['email'] ?? [],
-            'availableAdminLanguages' => $this->getAvailableAdminLanguages(),
+            'availableAdminLanguages' => $this->adminLanguageService->getAvailableAdminLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
@@ -169,75 +163,5 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'document',
             $path
         );
-    }
-
-    private function getAvailableAdminLanguages(): array
-    {
-        $translatedLanguages = [];
-
-        foreach ($this->getLanguageDirectories() as $directory) {
-            $translatedLanguages = array_merge($translatedLanguages, $this->scanDirectoryForLanguages($directory));
-        }
-
-        return array_unique($translatedLanguages);
-    }
-
-    private function getLanguageDirectories(): array
-    {
-        $directories = [];
-
-        $languageDir = $this->kernel->locateResource($this->translationsPath);
-        if (is_dir($languageDir)) {
-            $directories[] = $languageDir;
-        }
-
-        if (is_dir($this->defaultTranslationsPath)) {
-            $directories[] = $this->defaultTranslationsPath;
-        }
-
-        return $directories;
-    }
-
-    private function scanDirectoryForLanguages(string $directory): array
-    {
-        $languages = [];
-        $files = scandir($directory);
-
-        if ($files === false) {
-            return [];
-        }
-
-        foreach ($files as $file) {
-            $languageCode = $this->extractLanguageCode($directory, $file);
-            if ($languageCode !== null) {
-                $languages[] = $languageCode;
-            }
-        }
-
-        return $languages;
-    }
-
-    private function extractLanguageCode(string $directory, string $file): ?string
-    {
-        if (!is_file($directory . '/' . $file)) {
-            return null;
-        }
-
-        $parts = explode('.', $file);
-        if (count($parts) < 2) {
-            return null;
-        }
-
-        $languageCode = $parts[0];
-        if ($parts[0] === 'studio' && isset($parts[1])) {
-            $languageCode = $parts[1];
-        }
-
-        $extension = end($parts);
-        if (($extension === 'json' || $parts[0] === 'studio') && $this->localeService->isLocale($languageCode)) {
-            return $languageCode;
-        }
-
-        return null;
     }
 }
