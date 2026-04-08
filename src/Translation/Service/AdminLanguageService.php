@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Pimcore\Localization\LocaleServiceInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use function count;
 
 /**
  * @internal
