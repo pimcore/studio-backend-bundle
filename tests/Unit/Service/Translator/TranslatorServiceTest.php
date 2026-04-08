@@ -17,12 +17,12 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
@@ -84,7 +84,7 @@ final class TranslatorServiceTest extends Unit
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'isLoggedIn' => $loggedIn,
         ]);
-        $adminResolver = $this->makeEmpty(AdminResolverInterface::class);
+        $adminLanguageService = $this->makeEmpty(AdminLanguageServiceInterface::class);
         $listingFilter = $this->makeEmpty(ListingFilterInterface::class);
         $filterMapper = $this->makeEmpty(FilterMapperServiceInterface::class);
         $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
@@ -96,7 +96,7 @@ final class TranslatorServiceTest extends Unit
             $translator,
             $repository,
             $securityService,
-            $adminResolver,
+            $adminLanguageService,
             $listingFilter,
             $filterMapper,
             $translationsHydrator,

@@ -87,6 +87,7 @@ class Configuration implements ConfigurationInterface
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
+        $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
@@ -801,6 +802,19 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
             ->end()
+            ->end();
+    }
+
+    private function addTranslation(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('translations')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('path')->defaultNull()->end()
+                    ->end()
+                ->end()
             ->end();
     }
 }

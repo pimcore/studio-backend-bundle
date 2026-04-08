@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
@@ -31,7 +31,7 @@ use function sprintf;
 final readonly class LanguageService implements LanguageServiceInterface
 {
     public function __construct(
-        private AdminResolverInterface $adminResolver,
+        private AdminLanguageServiceInterface $adminLanguageService,
         private SecurityServiceInterface $securityService,
         private ToolResolverInterface $toolResolver,
     ) {
@@ -77,7 +77,7 @@ final readonly class LanguageService implements LanguageServiceInterface
     {
         $allowedLanguages = $user->getAllowedLanguagesForViewingWebsiteTranslations();
         if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
-            $allowedLanguages = $this->adminResolver->getLanguages();
+            $allowedLanguages = $this->adminLanguageService->getAvailableAdminLanguages();
         }
 
         return $allowedLanguages;

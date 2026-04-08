@@ -28,6 +28,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Translation\Service\ImportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\ImportService
 
+  Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageService
+
   Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService
 

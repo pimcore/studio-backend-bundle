@@ -18,7 +18,6 @@ use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as StudioNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
@@ -57,7 +56,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private TranslatorInterface $translator,
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService,
-        private AdminResolverInterface $adminResolver,
+        private AdminLanguageServiceInterface $adminLanguageService,
         private ListingFilterInterface $listingFilter,
         private FilterMapperServiceInterface $filterMapper,
         private TranslationsHydratorInterface $translationsHydrator,
@@ -211,7 +210,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
     public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing
     {
-        $validLanguages = $this->adminResolver->getLanguages();
+        $validLanguages = $this->adminLanguageService->getAvailableAdminLanguages();
 
         $list = $this->translationRepository->getTranslationList($domain);
         $filters = $parameter->getFilters();
