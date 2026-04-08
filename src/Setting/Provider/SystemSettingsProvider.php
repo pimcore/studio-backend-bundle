@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
-use Pimcore;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
@@ -42,7 +41,6 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         private string $translationsPath,
         private string $defaultTranslationsPath,
         SystemSettingsConfig $systemSettingsConfig,
-        private AdminResolverInterface $adminResolver,
         private ToolResolverInterface $toolResolver,
         private VersionResolverInterface $versionResolver,
         private ConfigResolver $configResolver,
@@ -175,52 +173,71 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
     private function getAvailableAdminLanguages(): array
     {
-        $languageDirs = [];
         $translatedLanguages = [];
+
+        foreach ($this->getLanguageDirectories() as $directory) {
+            $translatedLanguages = array_merge($translatedLanguages, $this->scanDirectoryForLanguages($directory));
+        }
+
+        return array_unique($translatedLanguages);
+    }
+
+    private function getLanguageDirectories(): array
+    {
+        $directories = [];
 
         $languageDir = $this->kernel->locateResource($this->translationsPath);
         if (is_dir($languageDir)) {
-            $languageDirs[] = $languageDir;
+            $directories[] = $languageDir;
         }
 
         if (is_dir($this->defaultTranslationsPath)) {
-            $languageDirs[] = $this->defaultTranslationsPath;
+            $directories[] = $this->defaultTranslationsPath;
         }
 
-        foreach ($languageDirs as $filesDir) {
-            $files = scandir($filesDir);
+        return $directories;
+    }
 
-            if ($files === false) {
-                continue;
-            }
-            foreach ($files as $file) {
-                $filePath = $filesDir . '/' . $file;
+    private function scanDirectoryForLanguages(string $directory): array
+    {
+        $languages = [];
+        $files = scandir($directory);
 
-                if (!is_file($filePath)) {
-                    continue;
-                }
+        if ($files === false) {
+            return [];
+        }
 
-                $parts = explode('.', $file);
-
-                if (count($parts) < 2) {
-                    continue;
-                }
-
-                $languageCode = $parts[0];
-
-                if ($parts[0] === 'studio' && isset($parts[1])) {
-                    $languageCode = $parts[1];
-                }
-
-                $extension = end($parts);
-
-                if ($extension === 'json' || $parts[0] === 'studio') {
-                    if ($this->localeService->isLocale($languageCode)) {
-                        $translatedLanguages[] = $languageCode;
-                    }
-                }
+        foreach ($files as $file) {
+            $languageCode = $this->extractLanguageCode($directory, $file);
+            if ($languageCode !== null) {
+                $languages[] = $languageCode;
             }
         }
-        return array_unique($translatedLanguages);
+
+        return $languages;
+    }
+
+    private function extractLanguageCode(string $directory, string $file): ?string
+    {
+        if (!is_file($directory . '/' . $file)) {
+            return null;
+        }
+
+        $parts = explode('.', $file);
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $languageCode = $parts[0];
+        if ($parts[0] === 'studio' && isset($parts[1])) {
+            $languageCode = $parts[1];
+        }
+
+        $extension = end($parts);
+        if (($extension === 'json' || $parts[0] === 'studio') && $this->localeService->isLocale($languageCode)) {
+            return $languageCode;
+        }
+
+        return null;
     }
 }
