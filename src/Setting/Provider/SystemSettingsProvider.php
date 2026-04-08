@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
+use Pimcore;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
@@ -20,9 +21,11 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\HttpKernel\KernelInterface;
 use function ini_get;
 
 /**
@@ -36,14 +39,19 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
     private array $systemSettings;
 
     public function __construct(
+        private string $translationsPath,
+        private string $defaultTranslationsPath,
         SystemSettingsConfig $systemSettingsConfig,
         private AdminResolverInterface $adminResolver,
         private ToolResolverInterface $toolResolver,
         private VersionResolverInterface $versionResolver,
         private ConfigResolver $configResolver,
         private ServiceResolverInterface $serviceResolver,
-        private ElementDataServiceInterface $elementDataService
-    ) {
+        private ElementDataServiceInterface $elementDataService,
+        private KernelInterface $kernel,
+        private LocaleServiceInterface $localeService,
+    )
+    {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
 
@@ -62,7 +70,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'errorPages' => $this->systemSettings['error_pages'] ?? [],
             'redirectToMainDomain' => $this->systemSettings['redirect_to_maindomain'] ?? false,
             'email' => $this->systemSettings['email'] ?? [],
-            'availableAdminLanguages' => $this->adminResolver->getLanguages(),
+            'availableAdminLanguages' => $this->getAvailableAdminLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
@@ -163,5 +171,58 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'document',
             $path
         );
+    }
+
+    private function getAvailableAdminLanguages(): array
+    {
+        $languageDirs = [];
+        $translatedLanguages = [];
+
+
+
+        $languageDir = $this->kernel->locateResource($this->translationsPath);
+        if (is_dir($languageDir)) {
+            $languageDirs[] = $languageDir;
+        }
+
+        if (is_dir($this->defaultTranslationsPath)) {
+            $languageDirs[] = $this->defaultTranslationsPath;
+        }
+
+        foreach ($languageDirs as $filesDir) {
+            $files = scandir($filesDir);
+
+            if ($files === false) {
+                continue;
+            }
+            foreach ($files as $file) {
+                $filePath = $filesDir . '/' . $file;
+
+                if (!is_file($filePath)) {
+                    continue;
+                }
+
+                $parts = explode('.', $file);
+
+                if (count($parts) < 2) {
+                    continue;
+                }
+
+                $languageCode = $parts[0];
+
+                if ($parts[0] === 'studio' && isset($parts[1])) {
+                    $languageCode = $parts[1];
+                }
+
+                $extension = end($parts);
+
+                if ($extension === 'json' || $parts[0] === 'studio') {
+                    if ($this->localeService->isLocale($languageCode)) {
+                        $translatedLanguages[] = $languageCode;
+                    }
+                }
+            }
+        }
+        return array_unique($translatedLanguages);
     }
 }
