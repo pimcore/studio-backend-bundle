@@ -19,6 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\Drill
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -33,7 +35,10 @@ interface CustomReportServiceInterface
 {
     public function getCustomReportTree(): array;
 
-    public function getCustomReportConfigTree(): array;
+    /**
+     * @return array<CustomReportTreeConfigNode|CustomReportTreeNodeFolder>
+     */
+    public function getCustomReportConfigTree(bool $grouped = false): array;
 
     /**
      * @throws InvalidArgumentException|NotWriteableException

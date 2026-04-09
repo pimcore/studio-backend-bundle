@@ -27,6 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomRepo
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -74,23 +76,19 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $treeData;
     }
 
-    public function getCustomReportConfigTree(): array
+    public function getCustomReportConfigTree(bool $grouped = false): array
     {
-        $treeConfigData = [];
         $reportTree = $this->customReportRepository->loadAll();
 
-        foreach ($reportTree as $report) {
-            $data = $this->customReportHydrator->extractConfigTreeData($report);
-
-            $this->eventDispatcher->dispatch(
-                new TreeConfigNodeEvent($data),
-                TreeConfigNodeEvent::EVENT_NAME
-            );
-
-            $treeConfigData[] = $data;
+        if (empty($reportTree)) {
+            return [];
         }
 
-        return $treeConfigData;
+        if ($grouped) {
+            return $this->getGroupedConfigTree($reportTree);
+        }
+
+        return $this->getFlatConfigTree($reportTree);
     }
 
     /**
@@ -257,6 +255,130 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         }
 
         return $options;
+    }
+
+    /**
+     * @param Config[] $reports
+     *
+     * @return CustomReportTreeConfigNode[]
+     */
+    private function getFlatConfigTree(array $reports): array
+    {
+        $treeData = [];
+
+        foreach ($reports as $report) {
+            $treeData[] = $this->hydrateConfigTreeNode($report);
+        }
+
+        return $treeData;
+    }
+
+    /**
+     * @param Config[] $reports
+     *
+     * @return array<CustomReportTreeConfigNode|CustomReportTreeNodeFolder>
+     */
+    private function getGroupedConfigTree(array $reports): array
+    {
+        $groups = [];
+        $ungrouped = [];
+
+        foreach ($reports as $report) {
+            $group = $report->getGroup();
+
+            if ($group !== '') {
+                if (!isset($groups[$group])) {
+                    $groups[$group] = [
+                        'groupIconClass' => $report->getGroupIconClass(),
+                        'reports' => [],
+                    ];
+                }
+
+                $groups[$group]['reports'][] = $report;
+            } else {
+                $ungrouped[] = $report;
+            }
+        }
+
+        $sortable = [];
+
+        foreach ($ungrouped as $report) {
+            $sortable[] = [
+                'sortKey' => $report->getName(),
+                'type' => 'node',
+                'data' => $report,
+            ];
+        }
+
+        foreach ($groups as $groupName => $groupData) {
+            $sortable[] = [
+                'sortKey' => $groupName,
+                'type' => 'folder',
+                'data' => $groupData,
+            ];
+        }
+
+        usort(
+            $sortable,
+            static fn (array $a, array $b): int => strnatcasecmp($a['sortKey'], $b['sortKey'])
+        );
+
+        $result = [];
+
+        foreach ($sortable as $entry) {
+            if ($entry['type'] === 'node') {
+                $result[] = $this->hydrateConfigTreeNode($entry['data']);
+
+                continue;
+            }
+
+            $result[] = $this->hydrateConfigTreeFolderNode(
+                $entry['sortKey'],
+                $entry['data']['groupIconClass'],
+                $entry['data']['reports']
+            );
+        }
+
+        return $result;
+    }
+
+    private function hydrateConfigTreeNode(Config $report): CustomReportTreeConfigNode
+    {
+        $node = $this->customReportHydrator->extractConfigTreeData($report);
+        $this->eventDispatcher->dispatch(
+            new TreeConfigNodeEvent($node),
+            TreeConfigNodeEvent::EVENT_NAME
+        );
+
+        return $node;
+    }
+
+    /**
+     * @param Config[] $reports
+     */
+    private function hydrateConfigTreeFolderNode(
+        string $group,
+        string $groupIconClass,
+        array $reports
+    ): CustomReportTreeNodeFolder {
+        $children = [];
+
+        foreach ($reports as $report) {
+            $children[] = $this->hydrateConfigTreeNode($report);
+        }
+
+        $folderNode = $this->customReportHydrator->extractTreeFolderData(
+            $group,
+            $groupIconClass,
+            $children
+        );
+
+        $this->eventDispatcher->dispatch(
+            new TreeConfigNodeEvent($folderNode),
+            TreeConfigNodeEvent::EVENT_NAME
+        );
+
+        return $folderNode;
     }
 
     private function sanitizeColumnFilterValues(array $columnFilters): array
