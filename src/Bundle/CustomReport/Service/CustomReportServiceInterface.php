@@ -13,19 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
-use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
@@ -33,51 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
  */
 interface CustomReportServiceInterface
 {
-    public function getCustomReportTree(): array;
-
-    /**
-     * @return array<CustomReportTreeConfigNode|CustomReportTreeNodeFolder>
-     */
-    public function getCustomReportConfigTree(bool $grouped = false): array;
-
-    /**
-     * @throws InvalidArgumentException|NotWriteableException
-     */
-    public function createCustomReport(CustomReportAdd $parameters): CustomReportDetails;
-
-    /**
-     * @throws NotFoundException|NotWriteableException
-     */
-    public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails;
-
-    /**
-     * @throws NotFoundException|NotWriteableException
-     */
-    public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails;
-
-    /**
-     * @throws NotFoundException|NotWriteableException
-     */
-    public function deleteCustomReport(string $name): void;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getCustomReportByName(string $reportName): Config;
-
     /**
      * @throws NotFoundException
      */
     public function getChartData(ChartDataParameter $parameters): Collection;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getCustomReportDetails(string $reportName): CustomReportDetails;
-
-    public function getFieldsForExport(Config $reportConfig): array;
-
-    public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array;
 
     /**
      * @throws DatabaseException|NotFoundException

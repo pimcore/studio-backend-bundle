@@ -16,11 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Conf
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Attribute\Response\Property\AnyOfCustomReportNodes;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\TreeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -46,7 +44,7 @@ final class TreeController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService,
+        private readonly CustomReportConfigServiceInterface $customReportConfigService,
     ) {
         parent::__construct($serializer);
     }
@@ -76,7 +74,7 @@ final class TreeController extends AbstractApiController
     public function getCustomReports(
         #[MapQueryString] TreeParameter $parameters = new TreeParameter()
     ): JsonResponse {
-        $items = $this->customReportService->getCustomReportConfigTree($parameters->isWithGroup());
+        $items = $this->customReportConfigService->getCustomReportConfigTree($parameters->isWithGroup());
 
         return $this->getPaginatedCollection($this->serializer, $items, count($items));
     }

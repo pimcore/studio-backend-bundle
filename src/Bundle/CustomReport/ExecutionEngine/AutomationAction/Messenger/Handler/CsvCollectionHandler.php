@@ -17,7 +17,7 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -37,7 +37,7 @@ final class CsvCollectionHandler extends AbstractHandler
     public function __construct(
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
-        private readonly CustomReportServiceInterface $customReportService,
+        private readonly CustomReportConfigServiceInterface $customReportConfigService,
         private readonly AdapterServiceInterface $customReportAdapterService
     ) {
         parent::__construct();
@@ -57,8 +57,8 @@ final class CsvCollectionHandler extends AbstractHandler
         try {
 
             $stepData = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value);
-            $reportConfig = $this->customReportService->getCustomReportByName($stepData['name']);
-            $exportFields = $this->customReportService->getFieldsForExport($reportConfig);
+            $reportConfig = $this->customReportConfigService->getCustomReportByName($stepData['name']);
+            $exportFields = $this->customReportConfigService->getFieldsForExport($reportConfig);
             $stepData['fields'] = $exportFields;
             $exportParameter = ExportParameter::fromArray($stepData);
 
@@ -66,7 +66,7 @@ final class CsvCollectionHandler extends AbstractHandler
                 $reportConfig,
                 $exportParameter
             );
-            $csvData = $this->customReportService->generateCsvData(
+            $csvData = $this->customReportConfigService->generateCsvData(
                 $reportData,
                 $exportFields,
                 $exportParameter->getIncludeHeaders()
