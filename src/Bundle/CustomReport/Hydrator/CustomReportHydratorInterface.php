@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 
 /**
@@ -31,6 +32,15 @@ interface CustomReportHydratorInterface
     public function extractConfigTreeData(Config $report): CustomReportTreeConfigNode;
 
     public function extractTreeData(Config $report): CustomReportTreeNode;
+
+    /**
+     * @param CustomReportTreeConfigNode[] $children
+     */
+    public function extractTreeFolderData(
+        string $group,
+        string $groupIconClass,
+        array $children
+    ): CustomReportTreeNodeFolder;
 
     public function extractChartData(array $chartData): CustomReportChartData;
 

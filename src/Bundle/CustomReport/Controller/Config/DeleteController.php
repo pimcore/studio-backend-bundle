@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Conf
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -38,7 +38,7 @@ final class DeleteController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService,
+        private readonly CustomReportConfigServiceInterface $customReportConfigService,
     ) {
         parent::__construct($serializer);
     }
@@ -69,7 +69,7 @@ final class DeleteController extends AbstractApiController
     ])]
     public function deleteCustomReport(string $name): Response
     {
-        $this->customReportService->deleteCustomReport($name);
+        $this->customReportConfigService->deleteCustomReport($name);
 
         return new Response();
     }

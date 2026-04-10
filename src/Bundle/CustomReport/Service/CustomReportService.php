@@ -17,141 +17,30 @@ use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\ChartDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\DrillDownOptionEvent;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\ReportEvent;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\TreeConfigNodeEvent;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\TreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportAdd;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use TypeError;
 use function is_string;
-use function sprintf;
 
 /**
  * @internal
  */
 final readonly class CustomReportService implements CustomReportServiceInterface
 {
-    use ValidateConfigurationTrait;
-
     private const string VALUE_KEY = 'value';
 
     public function __construct(
         private CustomReportHydratorInterface $customReportHydrator,
         private CustomReportRepositoryInterface $customReportRepository,
         private AdapterServiceInterface $adapterService,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
     ) {
-    }
-
-    public function getCustomReportTree(): array
-    {
-        $treeData = [];
-        $reportTree = $this->customReportRepository->loadForCurrentUser();
-
-        foreach ($reportTree as $report) {
-            $data = $this->customReportHydrator->extractTreeData($report);
-
-            $this->eventDispatcher->dispatch(
-                new TreeNodeEvent($data),
-                TreeNodeEvent::EVENT_NAME
-            );
-
-            $treeData[] = $data;
-        }
-
-        return $treeData;
-    }
-
-    public function getCustomReportConfigTree(): array
-    {
-        $treeConfigData = [];
-        $reportTree = $this->customReportRepository->loadAll();
-
-        foreach ($reportTree as $report) {
-            $data = $this->customReportHydrator->extractConfigTreeData($report);
-
-            $this->eventDispatcher->dispatch(
-                new TreeConfigNodeEvent($data),
-                TreeConfigNodeEvent::EVENT_NAME
-            );
-
-            $treeConfigData[] = $data;
-        }
-
-        return $treeConfigData;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function createCustomReport(CustomReportAdd $parameters): CustomReportDetails
-    {
-        $configName = $this->getValidConfigName(['name' => $parameters->getName()]);
-
-        if ($this->customReportRepository->exists($configName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $configName)
-            );
-        }
-        $config = $this->customReportRepository->create($configName);
-
-        return $this->customReportHydrator->extractReportDetails($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails
-    {
-        $customReport = $this->getAllowedReport($name);
-        $this->customReportHydrator->dehydrateReportDetails($customReport, $parameters);
-        $config = $this->customReportRepository->update($customReport);
-
-        return $this->customReportHydrator->extractReportDetails($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails
-    {
-        $newName = $this->getValidConfigName(['name' => $parameters->getNewName()]);
-        if ($this->customReportRepository->exists($newName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $newName)
-            );
-        }
-
-        $reportToClone = $this->getCustomReportByName($reportName);
-        $config = $this->customReportRepository->cloneConfig($reportToClone, $newName);
-
-        return $this->customReportHydrator->extractReportDetails($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteCustomReport(string $name): void
-    {
-        $customReport = $this->getCustomReportByName($name);
-        $this->customReportRepository->delete($customReport);
-    }
-
-    public function getCustomReportByName(string $reportName): Config
-    {
-        return $this->customReportRepository->loadByName($reportName);
     }
 
     public function getChartData(ChartDataParameter $parameters): Collection
@@ -174,63 +63,13 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return new Collection($data['total'] ?? 0, $hydratedData);
     }
 
-    public function getCustomReportDetails(string $reportName): CustomReportDetails
-    {
-        $config = $this->getAllowedReport($reportName);
-        $reportDetails = $this->customReportHydrator->extractReportDetails($config);
-
-        $this->eventDispatcher->dispatch(
-            new ReportEvent($reportDetails),
-            ReportEvent::EVENT_NAME
-        );
-
-        return $reportDetails;
-    }
-
-    public function getFieldsForExport(Config $reportConfig): array
-    {
-        $columns = $reportConfig->getColumnConfiguration();
-        $fields = [];
-        foreach ($columns as $column) {
-            if ($column['export']) {
-                $fields[] = $column['name'];
-            }
-        }
-
-        return $fields;
-    }
-
-    public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array
-    {
-        $csvData = [];
-
-        if (empty($reportData['data'])) {
-            return $csvData;
-        }
-
-        $data = $reportData['data'];
-        if ($includeHeaders) {
-            $csvData[] = $exportFields;
-        }
-
-        $sortedData = array_map(static function ($row) use ($exportFields) {
-            return array_merge(array_flip($exportFields), $row);
-        }, $data);
-
-        foreach ($sortedData as $row) {
-            $csvData[] = array_values($row);
-        }
-
-        return $csvData;
-    }
-
     /**
      * {@inheritdoc}
      */
     public function getDrillDownOptions(DrillDownParameter $parameters): array
     {
         $options = [];
-        $config = $this->getCustomReportByName($parameters->getName());
+        $config = $this->customReportRepository->loadByName($parameters->getName());
         $adapter = $this->adapterService->getAdapter($config);
 
         try {
