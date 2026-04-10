@@ -28,7 +28,7 @@ final readonly class ColumnService implements ColumnServiceInterface
 {
     public function __construct(
         private AdapterServiceInterface $adapterService,
-        private CustomReportServiceInterface $customReportService,
+        private CustomReportConfigServiceInterface $customReportConfigService,
         private ColumnHydratorInterface $columnHydrator,
         private EventDispatcherInterface $eventDispatcher
     ) {
@@ -39,7 +39,7 @@ final readonly class ColumnService implements ColumnServiceInterface
      */
     public function getColumnConfig(string $name, CustomReportDataSourceConfig $dataSourceConfig): array
     {
-        $report = $this->customReportService->getCustomReportByName($name);
+        $report = $this->customReportConfigService->getCustomReportByName($name);
         $columns = $this->adapterService->getAdapterColumns($dataSourceConfig->getConfiguration());
         $hydrated = [];
 
