@@ -130,7 +130,7 @@ abstract readonly class AbstractPageSnippetAdapter implements SetterDataInterfac
         if (!isset($data[DocumentFieldKeys::APPEND_EDITABLES->value]) ||
             $data[DocumentFieldKeys::APPEND_EDITABLES->value] !== true
         ) {
-            $document->setEditables(null);
+            $document->setEditables([]);
         }
 
         $document->getEditables();
