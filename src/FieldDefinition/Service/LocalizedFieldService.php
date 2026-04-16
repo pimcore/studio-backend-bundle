@@ -25,7 +25,7 @@ final class LocalizedFieldService implements LocalizedFieldServiceInterface
 {
     public function getFieldDefinition(Localizedfields $localizedfields, string $key): Data
     {
-        $item = array_filter($localizedfields->getChildren(), function (Data $field) use ($key) {
+        $item = array_filter($localizedfields->getFieldDefinitions(), function (Data $field) use ($key) {
             return $field->getName() === $key;
         });
         $item = reset($item);
