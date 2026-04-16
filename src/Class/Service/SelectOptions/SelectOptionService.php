@@ -72,7 +72,7 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
     public function updateSelectOption(string $id, UpdateSelectOptionParameters $parameters): SelectOptionDetail
     {
         $config = $this->selectOptionRepository->getById($id);
-        $this->checkAdminAccess($config);
+        $this->validateAdminAccess($config);
 
         $this->validateSelectOptions($parameters->getSelectOptions());
 
@@ -100,7 +100,7 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
     public function deleteSelectOption(string $id): void
     {
         $config = $this->selectOptionRepository->getById($id);
-        $this->checkAdminAccess($config);
+        $this->validateAdminAccess($config);
         $this->selectOptionRepository->delete($config);
     }
 
@@ -130,6 +130,9 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
     private function hydrateDetail(Config $config): SelectOptionDetail
     {
         $isWriteable = $this->selectOptionRepository->isWriteable($config);
+        if (!$this->hasAccess($config)) {
+            $isWriteable = false;
+        }
         $detail = $this->detailHydrator->hydrate($config, $isWriteable);
         $this->eventDispatcher->dispatch(new DetailEvent($detail), DetailEvent::EVENT_NAME);
 
@@ -160,10 +163,15 @@ final readonly class SelectOptionService implements SelectOptionServiceInterface
     /**
      * @throws ForbiddenException
      */
-    private function checkAdminAccess(Config $config): void
+    private function validateAdminAccess(Config $config): void
     {
-        if ($config->getAdminOnly() && !$this->securityService->getCurrentUser()->isAdmin()) {
+        if ($this->hasAccess($config) === false) {
             throw new ForbiddenException('Restricted to admin users');
         }
+    }
+
+    private function hasAccess(Config $config): bool
+    {
+        return !($config->getAdminOnly() && !$this->securityService->getCurrentUser()->isAdmin());
     }
 }
