@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 
@@ -44,6 +45,22 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $report->getMenuShortcut(),
             htmlspecialchars($report->getReportClass()),
             (bool)$report->getDataSourceConfig()
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function extractTreeFolderData(
+        string $group,
+        string $groupIconClass,
+        array $children
+    ): CustomReportTreeNodeFolder {
+        return new CustomReportTreeNodeFolder(
+            htmlspecialchars($group),
+            htmlspecialchars($group),
+            htmlspecialchars($groupIconClass),
+            $children,
         );
     }
 

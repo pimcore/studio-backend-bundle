@@ -36,6 +36,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CsvServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CsvService
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigService
+
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportService
 

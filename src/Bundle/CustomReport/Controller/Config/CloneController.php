@@ -18,7 +18,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportClone;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -44,7 +44,7 @@ final class CloneController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService,
+        private readonly CustomReportConfigServiceInterface $customReportConfigService,
     ) {
         parent::__construct($serializer);
     }
@@ -79,6 +79,6 @@ final class CloneController extends AbstractApiController
         #[MapRequestPayload] CustomReportClone $parameters
     ): JsonResponse {
 
-        return $this->jsonResponse($this->customReportService->cloneCustomReport($name, $parameters));
+        return $this->jsonResponse($this->customReportConfigService->cloneCustomReport($name, $parameters));
     }
 }
