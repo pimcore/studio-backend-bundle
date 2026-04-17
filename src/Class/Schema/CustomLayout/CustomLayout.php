@@ -54,7 +54,7 @@ final class CustomLayout implements AdditionalAttributesInterface
         #[Property(description: 'Modification date timestamp', type: 'integer', example: 1633036800)]
         private readonly int $modificationDate,
         #[Property(description: 'User id of owner', type: 'integer', example: 1)]
-        private readonly int $userOwner,
+        private readonly ?int $userOwner,
         #[Property(description: 'Class id', type: 'string', example: 'Product')]
         private readonly string $classId,
         #[Property(description: 'Whether it is the default layout', type: 'boolean', example: false)]
@@ -94,7 +94,7 @@ final class CustomLayout implements AdditionalAttributesInterface
         return $this->modificationDate;
     }
 
-    public function getUserOwner(): int
+    public function getUserOwner(): ?int
     {
         return $this->userOwner;
     }
