@@ -75,7 +75,7 @@ final class ClassDefinition implements AdditionalAttributesInterface
         #[Property(description: 'Modification date timestamp', type: 'integer', example: 1700000000)]
         private readonly ?int $modificationDate,
         #[Property(description: 'User id of owner', type: 'integer', example: 1)]
-        private readonly int $userOwner,
+        private readonly ?int $userOwner,
         #[Property(
             description: 'Namespace of parent class',
             type: 'string',
@@ -175,7 +175,7 @@ final class ClassDefinition implements AdditionalAttributesInterface
         return $this->modificationDate;
     }
 
-    public function getUserOwner(): int
+    public function getUserOwner(): ?int
     {
         return $this->userOwner;
     }
