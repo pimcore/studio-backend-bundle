@@ -39,7 +39,7 @@
   "require-dev": {
     "roave/security-advisories": "dev-latest",
     "codeception/codeception": "^5.3.5",
-    "codeception/stub": "^5.0",
+    "codeception/stub": "^4.3.0",
     "codeception/module-symfony": "^3.5",
     "codeception/module-asserts": "^2",
     "phpstan/phpstan": "2.1.26",
