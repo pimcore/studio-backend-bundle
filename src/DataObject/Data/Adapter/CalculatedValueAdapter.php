@@ -16,12 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\CalculatedValue as CalculatedValueDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -35,10 +36,12 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
 
     private const string OWNER_TYPE_LOCALIZED_FIELD = 'localizedfield';
 
+    private const string OWNER_TYPE_OBJECT_BRICK = 'objectbrick';
+
     private const string LOCALIZED_FIELDS_NAME = 'localizedfields';
 
     public function __construct(
-        private CalculatedValueResolverInterface $calculatedValueResolver,
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
     ) {
     }
 
@@ -65,26 +68,60 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
         }
 
         $calculatedValue = new CalculatedValue($fieldDefinition->getName());
+        $this->applyContextualData($calculatedValue, $fieldDefinition, $contextData);
 
-        $ownerType = self::OWNER_TYPE_OBJECT;
-        $ownerName = $fieldDefinition->getName();
+        return $this->dataObjectServiceResolver->getCalculatedFieldValueForEditMode(
+            $object,
+            [],
+            $calculatedValue,
+        );
+    }
+
+    private function applyContextualData(
+        CalculatedValue $calculatedValue,
+        CalculatedValueDefinition $fieldDefinition,
+        ?FieldContextData $contextData,
+    ): void {
+        $contextObject = $contextData?->getContextObject();
+
+        if ($contextObject instanceof AbstractData) {
+            $calculatedValue->setContextualData(
+                self::OWNER_TYPE_OBJECT_BRICK,
+                $contextObject->getFieldname(),
+                $contextObject->getType(),
+                $fieldDefinition->getName(),
+                null,
+                null,
+                $fieldDefinition,
+            );
+
+            return;
+        }
+
         $language = $contextData?->getLanguage();
 
         if ($language !== null) {
-            $ownerType = self::OWNER_TYPE_LOCALIZED_FIELD;
-            $ownerName = self::LOCALIZED_FIELDS_NAME;
+            $calculatedValue->setContextualData(
+                self::OWNER_TYPE_LOCALIZED_FIELD,
+                self::LOCALIZED_FIELDS_NAME,
+                null,
+                $language,
+                null,
+                null,
+                $fieldDefinition,
+            );
+
+            return;
         }
 
         $calculatedValue->setContextualData(
-            $ownerType,
-            $ownerName,
+            self::OWNER_TYPE_OBJECT,
+            $fieldDefinition->getName(),
             null,
-            $language,
+            null,
             null,
             null,
             $fieldDefinition,
         );
-
-        return $this->calculatedValueResolver->getCalculatedFieldValueForEditMode($object, [], $calculatedValue);
     }
 }
