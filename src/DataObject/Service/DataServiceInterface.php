@@ -47,6 +47,18 @@ interface DataServiceInterface
     ): mixed;
 
     /**
+     * Resolves the value to render on the detail page. If the corresponding data
+     * adapter implements {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface},
+     * its output is used, otherwise the call falls back to {@see self::getNormalizedValue()}.
+     */
+    public function getDetailValue(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): mixed;
+
+    /**
      * @throws DatabaseException|NotFoundException
      */
     public function getPreviewObjectData(Concrete $dataObject): array;
