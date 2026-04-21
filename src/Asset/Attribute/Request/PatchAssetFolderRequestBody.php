@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
@@ -39,23 +38,13 @@ final class PatchAssetFolderRequestBody extends RequestBody
                 properties: [
                     new Property(
                         property: 'data',
-                        type: 'array',
-                        items: new Items(
-                            required: ['folderId'],
-                            properties: [
-                                new Property(
-                                    property: 'folderId',
-                                    description: 'Folder ID',
-                                    type: 'integer',
-                                    example: 83
-                                ),
-                                new UpdateIntegerProperty('parentId'),
-                                new UpdateStringProperty('key'),
-                                new UpdateStringProperty('locked'),
-                                new CustomMetadata(PatchCustomMetadata::class),
-                            ],
-                            type: 'object',
-                        ),
+                        properties: [
+                            new UpdateIntegerProperty('parentId'),
+                            new UpdateStringProperty('key'),
+                            new UpdateStringProperty('locked'),
+                            new CustomMetadata(PatchCustomMetadata::class),
+                        ],
+                        type: 'object',
                     ),
                     new Property(
                         property: 'filters',

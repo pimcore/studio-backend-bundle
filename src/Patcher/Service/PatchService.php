@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
@@ -87,6 +88,7 @@ final readonly class PatchService implements PatchServiceInterface
      * {@inheritdoc}
      */
     public function patchFolder(
+        int $folderId,
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
@@ -97,8 +99,8 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         $job = new Job(
-            name: Jobs::PATCH_ELEMENTS->value,
-            steps: [
+            Jobs::PATCH_ELEMENTS->value,
+            [
                 new JobStep(
                     JobSteps::ELEMENT_FOLDER_PATCHING->value,
                     PatchFolderMessage::class,
@@ -106,17 +108,20 @@ final readonly class PatchService implements PatchServiceInterface
                     [
                         StepConfig::CONFIG_FILTERS->value => $patchFolderParameter->getFilters(),
                         StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
+                    ],
+                    SelectionProcessingMode::ONCE
+                ),
+                new JobStep(
+                    JobSteps::ELEMENT_PATCHING->value,
+                    PatchMessage::class,
+                    '',
+                    [
+                        StepConfig::FOLDER_TO_EXPORT->value => $folderId,
                     ]
                 ),
             ],
-            selectedElements: array_map(
-                static fn (array $data) => new ElementDescriptor(
-                    $elementType,
-                    $data['folderId']
-                ),
-                $patchFolderParameter->getData()
-            ),
-            environmentData: array_column($patchFolderParameter->getData(), null, 'folderId'),
+            [new ElementDescriptor($elementType, $folderId)],
+            [$folderId => $patchFolderParameter->getData()],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

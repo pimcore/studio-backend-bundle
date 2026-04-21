@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
@@ -39,27 +38,17 @@ final class PatchDataObjectFolderRequestBody extends RequestBody
                 properties: [
                     new Property(
                         property: 'data',
-                        type: 'array',
-                        items: new Items(
-                            required: ['folderId'],
-                            properties: [
-                                new Property(
-                                    property: 'folderId',
-                                    description: 'Folder ID',
-                                    type: 'integer',
-                                    example: 2
-                                ),
-                                new UpdateIntegerProperty('parentId'),
-                                new UpdateIntegerProperty('index', 0),
-                                new UpdateStringProperty('key'),
-                                new UpdateStringProperty('locked'),
-                                new UpdateStringProperty('childrenSortBy'),
-                                new UpdateStringProperty('childrenSortOrder'),
-                                new UpdateBooleanProperty('published'),
-                                new UpdateObjectProperty('editableData'),
-                            ],
-                            type: 'object',
-                        ),
+                        properties: [
+                            new UpdateIntegerProperty('parentId'),
+                            new UpdateIntegerProperty('index', 0),
+                            new UpdateStringProperty('key'),
+                            new UpdateStringProperty('locked'),
+                            new UpdateStringProperty('childrenSortBy'),
+                            new UpdateStringProperty('childrenSortOrder'),
+                            new UpdateBooleanProperty('published'),
+                            new UpdateObjectProperty('editableData'),
+                        ],
+                        type: 'object',
                     ),
                     new Property(
                         property: 'filters',

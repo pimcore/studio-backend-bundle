@@ -56,8 +56,7 @@ interface GridServiceInterface
         ColumnCollection $columnCollection,
         string $elementType,
         int $elementId,
-        bool $isExport = false,
-        ?UserInterface $user = null,
+        UserInterface $user
     ): array;
 
     /**

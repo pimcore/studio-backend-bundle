@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 /**
  * @internal
  */
-trait CsvExportHandlerSetupTrait
+trait ExportCreationHandlerSetupTrait
 {
     protected function configureStep(): void
     {
@@ -27,9 +27,14 @@ trait CsvExportHandlerSetupTrait
             StepConfig::ELEMENT_CLASS_ID->value,
             StepConfig::CONFIG_TYPE_STRING->value
         );
-        $this->stepConfiguration->setRequired(StepConfig::ELEMENTS_TO_EXPORT->value);
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TYPE->value);
         $this->stepConfiguration->setAllowedTypes(
-            StepConfig::ELEMENTS_TO_EXPORT->value,
+            StepConfig::ELEMENT_TYPE->value,
+            StepConfig::CONFIG_TYPE_STRING->value
+        );
+        $this->stepConfiguration->setRequired(StepConfig::CONFIG_CONFIGURATION->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::CONFIG_CONFIGURATION->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
         $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
@@ -37,5 +42,9 @@ trait CsvExportHandlerSetupTrait
             StepConfig::CONFIG_COLUMNS->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
+        $this->stepConfiguration->setDefaults([
+            StepConfig::CONFIG_COLUMNS->value => [],
+            StepConfig::CONFIG_CONFIGURATION->value => [],
+        ]);
     }
 }

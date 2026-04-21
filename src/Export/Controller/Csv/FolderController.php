@@ -19,10 +19,12 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\ExportFolderData
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFormat;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,6 +38,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class FolderController extends AbstractApiController
 {
+    private const string ROUTE = '/export/csv/folder/{id}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ExportServiceInterface $exportService
@@ -43,15 +47,16 @@ final class FolderController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/export/csv/folder', name: 'pimcore_studio_api_export_csv_folder', methods: ['POST'])]
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_export_csv_folder', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/export/csv/folder',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'export_csv_folder',
         description: 'export_csv_folder_description',
         summary: 'export_csv_folder_summary',
         tags: [Tags::Export->name]
     )]
+    #[IdParameter(type: ElementTypes::TYPE_FOLDER, name: 'id')]
     #[ExportFolderDataRequestBody]
     #[CreatedResponse(
         description: 'export_csv_created_response',
@@ -62,11 +67,13 @@ final class FolderController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function exportCsvFolder(
+        int $id,
         #[MapRequestPayload] ExportFolderParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
             [
                 'jobRunId' => $this->exportService->generateExportFileForFolders(
+                    $id,
                     $exportParameter,
                     ExportFormat::CSV->value
                 ),
