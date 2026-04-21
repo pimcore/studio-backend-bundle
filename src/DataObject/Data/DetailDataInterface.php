@@ -17,15 +17,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 
-/**
- * @internal
- *
- * Implemented by data adapters that need to expose a dedicated value for the
- * detail page of a data object (as opposed to the generic normalized value
- * used e.g. for the grid). When implemented, the output takes precedence over
- * the standard {@see DataNormalizerInterface::normalize()} result within the
- * detail data flow only.
- */
 interface DetailDataInterface
 {
     public function getDetailData(
