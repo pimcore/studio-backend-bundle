@@ -199,7 +199,7 @@ final readonly class LocalizedFieldsAdapter implements
             return $data;
         }
         $language = $this->getPreviewLanguage($value);
-        $attributes = array_keys(reset($originalValue));
+        $attributes = array_keys(array_merge(...array_values($originalValue)));
 
         foreach ($attributes as $attribute) {
             try {
