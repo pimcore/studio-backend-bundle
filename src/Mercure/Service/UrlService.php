@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
+use LogicException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use Symfony\Component\HttpFoundation\RequestStack;
-use LogicException;
 
 /**
  * @internal
