@@ -78,7 +78,7 @@ final class CollectionController extends AbstractApiController
     public function getFolderClassList(
         int $folderId
     ): JsonResponse {
-        $collection = $this->classDefinitionTreeService->getClassDefinitionIdsInsideFolder($folderId);
+        $collection = $this->classDefinitionTreeService->getChildrenClassDefinitionIds($folderId);
 
         return $this->getPaginatedCollection(
             $this->serializer,

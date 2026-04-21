@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
@@ -77,7 +78,7 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setAllowVariants($classData->getAllowVariants());
         $dataObject->setShowVariants($classData->getShowVariants());
         $dataObject->setHasPreview($classData->getHasPreview());
-        $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
+        $dataObject->setObjectData($this->getDetailObjectData($element, $fieldDefinitions));
 
         if ($dataObject instanceof DataObjectDetail) {
             $dataObject->setDraftData($this->getDraftData($element, $version));
@@ -104,6 +105,20 @@ final readonly class DataService implements DataServiceInterface
         }
 
         return $fieldDefinition->normalize($value);
+    }
+
+    public function getDetailValue(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): mixed {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof DetailDataInterface) {
+            return $adapter->getDetailData($object, $value, $fieldDefinition, $contextData);
+        }
+
+        return $this->getNormalizedValue($value, $fieldDefinition);
     }
 
     /**
@@ -268,11 +283,12 @@ final readonly class DataService implements DataServiceInterface
     /**
      * @throws NotFoundException
      */
-    private function getNormalizedObjectData(Concrete $dataObject, array $fieldDefinitions): array
+    private function getDetailObjectData(Concrete $dataObject, array $fieldDefinitions): array
     {
         $data = [];
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            $data[$key] = $this->getNormalizedValue(
+            $data[$key] = $this->getDetailValue(
+                $dataObject,
                 $this->getValidFieldValue($dataObject, $key),
                 $fieldDefinition
             );

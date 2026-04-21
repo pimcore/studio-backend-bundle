@@ -17,7 +17,7 @@ studio_ee_csv_data_collection_failed: "I dati per l'esportazione CSV non sono st
 studio_ee_element_patch_failed: "L'elemento di tipo %type% con ID %id% non è stato aggiornato: %message%"
 studio_ee_element_rewrite_references_failed: "I riferimenti dell'elemento di tipo %type% con ID %id% non sono stati riscritti: %message%"
 studio_ee_element_tag_operation_failed: "Impossibile eseguire %operation% sui tag dell'elemento di tipo %type% con ID %id%: %message%"
-studio_ee_no_element_data_found: 'Nessun dato trovato'
+studio_ee_no_element_data_found: Nessun dato trovato
 studio_ee_job_create_download_zip: Crea ZIP per il download
 studio_ee_job_clone_assets: Clona asset
 studio_ee_job_upload_zip_file: Carica file ZIP
@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Eliminazione degli elementi dal cestino
 studio_ee_job_step_recycle_bin_restore: Ripristino degli elementi dal cestino
 studio_ee_element_folder_collection_not_supported: 'La raccolta per le cartelle non è supportata. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: "File %type% non trovato per l'esecuzione del job. ID: %jobRunId%"
-studio_ee_invalid_element_type_provided: "La raccolta per l'elemento con ID %elementId% e tipo %elementType% non è supportata."
+studio_ee_invalid_element_type_provided: La raccolta per l'elemento con ID %elementId% e tipo %elementType% non è supportata.
 studio_ee_no_assets_found_for_job_run: "Nessun asset trovato per l'esecuzione del job. ID: %jobRunId%"
 studio_ee_asset_upload_failed: 'Il file non è stato caricato: %message%'
-studio_email_param_children: 'Elementi figli (%count%)'
+studio_email_param_children: Elementi figli (%count%)
 studio_ee_element_replace_assignment_failed: "Impossibile sostituire %sourceId% (%sourceType%) con %targetId% (%targetType%) in %elementId% (%elementType%). Errore: %message%"
 studio_ee_job_bulk_import_class_definitions: Importa definizioni di classi (importazione in blocco)
 studio_ee_job_step_field_collection_importing: Importazione delle collezioni di campi

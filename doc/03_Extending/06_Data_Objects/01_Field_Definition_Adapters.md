@@ -11,6 +11,8 @@ types. Each field type (input, date, relation, etc.) has an adapter that control
 - **Saved** — transforming incoming API request data into the format the field definition
   expects before it is stored.
 - **Read** — normalizing stored data into an API-friendly response format.
+- **Detail page** — providing a detail-page-specific representation that may differ from the
+  normalized value (falls back to normalization when not implemented).
 - **Exported** — converting stored data into a string for grid/CSV export.
 - **Inherited** — resolving inherited values in the data object hierarchy.
 - **Previewed** — providing preview data for search results.
@@ -43,6 +45,7 @@ and can be added when your field type needs the corresponding capability.
 |---|---|---|
 | `SetterDataInterface` | **Yes** | Transform API request data for saving |
 | `DataNormalizerInterface` | No | Customize the API response format |
+| `DetailDataInterface` | No | Provide a detail-page-specific value (falls back to `DataNormalizerInterface`) |
 | `DataExportInterface` | No | Provide a string representation for grid/CSV export |
 | `DataInheritanceInterface` | No | Resolve inherited values in the object hierarchy |
 | `SearchPreviewDataInterface` | No | Contribute preview data to search results |
@@ -125,6 +128,47 @@ interface DataNormalizerInterface
 | `$fieldDefinition` | The Pimcore field definition for this field. |
 
 Return the API-friendly representation of the value.
+
+---
+
+### DetailDataInterface
+
+Implement this interface when the detail page of a data object should display a different
+representation than the normalized value. When this interface
+is **not** implemented, the system automatically falls back to
+`DataNormalizerInterface::normalize()`.
+
+**When to use:**
+
+- The detail page requires a richer or more descriptive value than from `normalize()`.
+
+
+```php
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\Concrete;
+
+interface DetailDataInterface
+{
+    public function getDetailData(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): mixed;
+}
+```
+
+| Parameter | Description |
+|---|---|
+| `$object` | The data object being loaded for the detail page. |
+| `$value` | The raw stored value from the data object getter. |
+| `$fieldDefinition` | The Pimcore field definition for this field. |
+| `$contextData` | Container context (object brick, localized field, etc.), or `null` for top-level fields. |
+
+Return the detail-page-specific representation of the value.
 
 ---
 
@@ -314,6 +358,7 @@ namespace App\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -326,6 +371,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class CustomFieldAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
+    DetailDataInterface,
     DataExportInterface,
     DataInheritanceInterface,
     SearchPreviewDataInterface
@@ -371,6 +417,19 @@ final readonly class CustomFieldAdapter implements
             $value = (string) $value;
         }
         
+        return $value;
+    }
+
+    // --- DetailDataInterface (optional) ---
+
+    public function getDetailData(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): mixed {
+        // Return a detail-page-specific representation of the value.
+        // When this interface is not implemented, normalize() is called instead.
         return $value;
     }
 
@@ -466,19 +525,19 @@ class required.
 | `InputQuantityValueAdapter` | `inputQuantityValue` | Setter |
 | `QuantityValueRangeAdapter` | `quantityValueRange` | Setter |
 | `UrlSlugAdapter` | `urlSlug` | Setter |
-| `CalculatedValueAdapter` | `calculatedValue` | Setter |
+| `CalculatedValueAdapter` | `calculatedValue` | Setter, Detail |
 | `EncryptedFieldAdapter` | `encryptedField` | Setter, Normalizer, Export |
 | `TableAdapter` | `table` | Setter, SearchPreview |
 | `StructuredTableAdapter` | `structuredTable` | Setter, Normalizer, SearchPreview |
 | `BlockAdapter` | `block` | Setter, Normalizer, SearchPreview |
 | `FieldCollectionsAdapter` | `fieldcollections` | Setter, Normalizer, SearchPreview |
-| `ObjectBricksAdapter` | `objectbricks` | Setter, Normalizer, Inheritance, SearchPreview |
-| `LocalizedFieldsAdapter` | `localizedfields` | Setter, Normalizer, Inheritance, SearchPreview |
-| `ClassificationStoreAdapter` | `classificationstore` | Setter, Normalizer, Inheritance, SearchPreview |
+| `ObjectBricksAdapter` | `objectbricks` | Setter, Normalizer, Detail, Inheritance, SearchPreview |
+| `LocalizedFieldsAdapter` | `localizedfields` | Setter, Normalizer, Detail, Inheritance, SearchPreview |
+| `ClassificationStoreAdapter` | `classificationstore` | Setter, Normalizer, Detail, Inheritance, SearchPreview |
 
 **Legend:** Setter = `SetterDataInterface`, Normalizer = `DataNormalizerInterface`,
-Export = `DataExportInterface`, Inheritance = `DataInheritanceInterface`,
-SearchPreview = `SearchPreviewDataInterface`
+Detail = `DetailDataInterface`, Export = `DataExportInterface`,
+Inheritance = `DataInheritanceInterface`, SearchPreview = `SearchPreviewDataInterface`
 
 :::info
 

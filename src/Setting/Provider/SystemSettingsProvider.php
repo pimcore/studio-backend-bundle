@@ -15,10 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolver;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\VersionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\SystemSettingsConfig;
@@ -37,12 +37,12 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
     public function __construct(
         SystemSettingsConfig $systemSettingsConfig,
-        private AdminResolverInterface $adminResolver,
         private ToolResolverInterface $toolResolver,
         private VersionResolverInterface $versionResolver,
         private ConfigResolver $configResolver,
         private ServiceResolverInterface $serviceResolver,
-        private ElementDataServiceInterface $elementDataService
+        private ElementDataServiceInterface $elementDataService,
+        private AdminLanguageServiceInterface $adminLanguageService,
     ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
@@ -62,7 +62,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'errorPages' => $this->systemSettings['error_pages'] ?? [],
             'redirectToMainDomain' => $this->systemSettings['redirect_to_maindomain'] ?? false,
             'email' => $this->systemSettings['email'] ?? [],
-            'availableAdminLanguages' => $this->adminResolver->getLanguages(),
+            'availableAdminLanguages' => $this->adminLanguageService->getAvailableAdminLanguages(),
             'validLocales' => $this->toolResolver->getSupportedJSLocales(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],

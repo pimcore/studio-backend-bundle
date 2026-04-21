@@ -1547,8 +1547,11 @@ custom_reports_config_clone_description: |
   The <strong>{name}</strong> of the new report must be a unique valid name.
 custom_reports_config_clone_summary: Clone an existing custom reports configuration
 custom_reports_config_clone_success_response: Successfully cloned custom report configuration
-custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
+custom_reports_config_get_tree_description: |
+  Get all reports for the current user to display in configuration tree. <br>
+  Results can be grouped based on the <strong>{withGroup}</strong> parameter.
 custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
+custom_reports_config_get_tree_success_response: Configuration tree with nodes and optional group folders.
 custom_reports_config_update_description: |
   Update an existing custom reports configuration with the provided name and parameters. <br>
   The <strong>{name}</strong> must be a name of an existing custom report. <br>

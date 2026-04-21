@@ -17,7 +17,7 @@ studio_ee_csv_data_collection_failed: 'Data for CSV-eksporten kunne ikke hentes 
 studio_ee_element_patch_failed: 'Element av type %type% med ID %id% kunne ikke oppdateres: %message%'
 studio_ee_element_rewrite_references_failed: 'Referanser for element av type %type% med ID %id% kunne ikke skrives om: %message%'
 studio_ee_element_tag_operation_failed: 'Kunne ikke utføre %operation% på tagger for element av type %type% med ID %id%: %message%'
-studio_ee_no_element_data_found: 'Ingen data funnet'
+studio_ee_no_element_data_found: Ingen data funnet
 studio_ee_job_create_download_zip: Opprett nedlastings-ZIP
 studio_ee_job_clone_assets: Klon assets
 studio_ee_job_upload_zip_file: Last opp ZIP-fil
@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Sletting av elementer fra papirkurven
 studio_ee_job_step_recycle_bin_restore: Gjenoppretting av elementer fra papirkurven
 studio_ee_element_folder_collection_not_supported: 'Innsamling for mapper støttes ikke. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'Fil %type% ble ikke funnet for jobbkjøring. ID: %jobRunId%'
-studio_ee_invalid_element_type_provided: 'Innsamling for element med ID %elementId% og type %elementType% støttes ikke.'
+studio_ee_invalid_element_type_provided: Innsamling for element med ID %elementId% og type %elementType% støttes ikke.
 studio_ee_no_assets_found_for_job_run: 'Ingen assets funnet for jobbkjøring. ID: %jobRunId%'
 studio_ee_asset_upload_failed: 'Filen kunne ikke lastes opp: %message%'
-studio_email_param_children: 'Underordnede elementer (%count%)'
+studio_email_param_children: Underordnede elementer (%count%)
 studio_ee_element_replace_assignment_failed: 'Kunne ikke erstatte %sourceId% (%sourceType%) med %targetId% (%targetType%) i %elementId% (%elementType%). Feil: %message%'
 studio_ee_job_bulk_import_class_definitions: Importer klassedefinisjoner (masseimport)
 studio_ee_job_step_field_collection_importing: Import av feltsamlinger

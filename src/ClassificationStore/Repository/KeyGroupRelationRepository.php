@@ -68,11 +68,12 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * @inheritDoc
      */
-    public function getByKeyId(int $keyId): KeyGroupRelation
+    public function getByKeyGroupId(int $keyId, int $groupId): KeyGroupRelation
     {
         $listing = new Listing();
         $listing->setOrder('ASC');
-        $listing->setCondition('id = ?', $keyId);
+        $listing->addConditionParam('keyId = ?', $keyId);
+        $listing->addConditionParam('groupId = ?', $groupId);
 
         $list = $listing->load();
 

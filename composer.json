@@ -17,18 +17,18 @@
   "prefer-stable": true,
   "minimum-stability": "dev",
   "require": {
-    "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
+    "php": "~8.3.0 || ~8.4.0",
     "league/csv": "^9.27",
     "nesbot/carbon": "^3.8.4",
-    "pimcore/static-resolver-bundle": "^3.5.0 || ^2026.1",
-    "pimcore/generic-data-index-bundle": "^2.4.0 || ^2026.1",
-    "pimcore/pimcore": "^12.3 || ^2026.1",
+    "pimcore/static-resolver-bundle": "^3.6.1 ",
+    "pimcore/generic-data-index-bundle": "^2.5.0",
+    "pimcore/pimcore": "^12.3",
     "zircote/swagger-php": "^4.8 || ^5.0",
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",
     "symfony/mercure-bundle": "^0.3.9",
     "lcobucci/jwt": "^5.3",
-    "phpdocumentor/reflection-docblock": "^5.6",
+    "phpdocumentor/reflection-docblock": "^5.6 || ^6.0",
     "phpoffice/phpspreadsheet": "^3.3|^4.0|^5.0",
     "ext-intl": "*",
     "ext-filter": "*",
@@ -36,16 +36,15 @@
     "psr/http-factory": "^1.0",
     "symfony/psr-http-message-bridge": "^6.3 || ^7.0"
   },
-  "require-dev": {    
+  "require-dev": {
     "roave/security-advisories": "dev-latest",
-    "codeception/codeception": "^5.3",
-    "codeception/stub": "^4.1.4",
+    "codeception/codeception": "^5.3.5",
+    "codeception/stub": "^4.3.0",
     "codeception/module-symfony": "^3.5",
-    "codeception/phpunit-wrapper": "^9",
     "codeception/module-asserts": "^2",
     "phpstan/phpstan": "2.1.26",
     "phpstan/phpstan-symfony": "^2.0.2",
-    "phpunit/phpunit": "^10.5",
+    "phpunit/phpunit": "^12.5.23 || ^13.1.7",
     "nyholm/psr7": "^1",
     "symfony/phpunit-bridge": "^6",
     "fakerphp/faker": "^1.23"
@@ -66,7 +65,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-1.x": "1.0.x-dev"
+      "dev-2025.4": "1.x-dev"
     },
     "pimcore": {
       "bundles": [

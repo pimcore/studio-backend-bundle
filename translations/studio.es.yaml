@@ -17,7 +17,7 @@ studio_ee_csv_data_collection_failed: 'Los datos para la exportación CSV no se 
 studio_ee_element_patch_failed: 'El elemento de tipo %type% con ID %id% no se pudo actualizar: %message%'
 studio_ee_element_rewrite_references_failed: 'Las referencias del elemento de tipo %type% con ID %id% no se pudieron reescribir: %message%'
 studio_ee_element_tag_operation_failed: 'No se pudo ejecutar %operation% en las etiquetas del elemento de tipo %type% con ID %id%: %message%'
-studio_ee_no_element_data_found: 'No se encontraron datos'
+studio_ee_no_element_data_found: No se encontraron datos
 studio_ee_job_create_download_zip: Crear ZIP de descarga
 studio_ee_job_clone_assets: Clonar assets
 studio_ee_job_upload_zip_file: Cargar archivo ZIP
@@ -58,10 +58,10 @@ studio_ee_job_step_recycle_bin_delete: Eliminación de elementos de la papelera 
 studio_ee_job_step_recycle_bin_restore: Restauración de elementos de la papelera de reciclaje
 studio_ee_element_folder_collection_not_supported: 'La recopilación para carpetas no es compatible. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'Archivo %type% no encontrado para la ejecución del job. ID: %jobRunId%'
-studio_ee_invalid_element_type_provided: 'La recopilación para el elemento con ID %elementId% y tipo %elementType% no es compatible.'
+studio_ee_invalid_element_type_provided: La recopilación para el elemento con ID %elementId% y tipo %elementType% no es compatible.
 studio_ee_no_assets_found_for_job_run: 'No se encontraron assets para la ejecución del job. ID: %jobRunId%'
 studio_ee_asset_upload_failed: 'El archivo no se pudo cargar: %message%'
-studio_email_param_children: 'Elementos secundarios (%count%)'
+studio_email_param_children: Elementos secundarios (%count%)
 studio_ee_element_replace_assignment_failed: 'No se pudo reemplazar %sourceId% (%sourceType%) por %targetId% (%targetType%) en %elementId% (%elementType%). Error: %message%'
 studio_ee_job_bulk_import_class_definitions: Importar definiciones de clases (importación masiva)
 studio_ee_job_step_field_collection_importing: Importación de colecciones de campos

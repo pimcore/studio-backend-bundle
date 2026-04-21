@@ -18,7 +18,7 @@ use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -41,7 +41,7 @@ final class GetController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService
+        private readonly CustomReportConfigServiceInterface $customReportConfigService
     ) {
         parent::__construct($serializer);
     }
@@ -80,7 +80,7 @@ final class GetController extends AbstractApiController
         );
 
         return $this->jsonResponse(
-            $this->customReportService->getCustomReportDetails($name)
+            $this->customReportConfigService->getCustomReportDetails($name)
         );
     }
 }

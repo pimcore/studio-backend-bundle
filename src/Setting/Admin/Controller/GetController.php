@@ -22,10 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\SettingsServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,7 +44,6 @@ final class GetController extends AbstractApiController
      * @throws Exception
      */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_admin_settings', methods: ['GET'])]
-    #[IsGranted(UserPermissions::SYSTEM_APPEARANCE_SETTINGS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'admin_settings_get',

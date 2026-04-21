@@ -38,6 +38,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\F
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\MultiMatchSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\TreePqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
@@ -190,6 +191,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function filterByPql(string $pqlQuery): self
     {
         $this->search->addModifier(new PqlFilter($pqlQuery));
+
+        return $this;
+    }
+
+    public function filterByTreePql(string $pqlQuery, array $relevantFolderKeys): self
+    {
+        $this->search->addModifier(new TreePqlFilter($pqlQuery, $relevantFolderKeys));
 
         return $this;
     }

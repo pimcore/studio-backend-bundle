@@ -15,12 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -44,7 +42,7 @@ final class TreeController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService,
+        private readonly CustomReportConfigServiceInterface $customReportConfigService,
     ) {
         parent::__construct($serializer);
     }
@@ -61,8 +59,6 @@ final class TreeController extends AbstractApiController
         summary: 'custom_reports_get_tree_summary',
         tags: [Tags::BundleCustomReports->value]
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
     #[SuccessResponse(
         description: 'custom_reports_collection_success_response',
         content: new ItemsJson(CustomReportTreeNode::class)
@@ -72,7 +68,7 @@ final class TreeController extends AbstractApiController
     ])]
     public function getCustomReports(): JsonResponse
     {
-        $items = $this->customReportService->getCustomReportTree();
+        $items = $this->customReportConfigService->getCustomReportTree();
 
         return $this->getPaginatedCollection($this->serializer, $items, count($items));
     }

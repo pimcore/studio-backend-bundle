@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
@@ -49,6 +50,7 @@ use function sprintf;
 final readonly class LocalizedFieldsAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
+    DetailDataInterface,
     DataInheritanceInterface,
     SearchPreviewDataInterface
 {
@@ -125,42 +127,33 @@ final readonly class LocalizedFieldsAdapter implements
             return null;
         }
 
-        $value->loadLazyData();
-        $originalValue = $fieldDefinition->normalize($value);
-        if (empty($originalValue)) {
+        return $this->resolveLocalizedData(
+            $value,
+            $fieldDefinition,
+            fn (mixed $val, Data $fd, string $lang) => $this->dataService->getNormalizedValue($val, $fd),
+        );
+    }
+
+    public function getDetailData(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): ?array {
+        if (!$value instanceof Localizedfield || !$fieldDefinition instanceof Localizedfields) {
             return null;
         }
-        $languages = $this->languageService->getUserAllowedLanguages(
-            $value->getObject(),
-            $this->securityService->getCurrentUser(),
-            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+
+        return $this->resolveLocalizedData(
+            $value,
+            $fieldDefinition,
+            fn (mixed $val, Data $fd, string $lang) => $this->dataService->getDetailValue(
+                $value->getObject(),
+                $val,
+                $fd,
+                new FieldContextData(language: $lang),
+            ),
         );
-
-        $attributes = array_keys(reset($originalValue));
-        $result = [];
-        foreach ($attributes as $attribute) {
-            foreach ($languages as $language) {
-                try {
-                    $localizedValue = $value->getLocalizedValue($attribute, $language);
-                } catch (Exception $exception) {
-                    throw new DatabaseException(
-                        sprintf(
-                            'Error while normalizing localized field: %s',
-                            $exception->getMessage()
-                        )
-                    );
-                }
-                $fieldDefinition = $value->getFieldDefinition($attribute, $value->getContext());
-                if ($fieldDefinition === null) {
-                    throw new NotFoundException(type: 'Field Definition', id: $attribute);
-                }
-
-                $localizedValue = $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
-                $result[$attribute][$language] = $localizedValue;
-            }
-        }
-
-        return $result;
     }
 
     public function getFieldInheritance(
@@ -231,6 +224,53 @@ final readonly class LocalizedFieldsAdapter implements
         }
 
         return $data;
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    private function resolveLocalizedData(
+        Localizedfield $value,
+        Localizedfields $fieldDefinition,
+        callable $valueResolver,
+    ): ?array {
+        $value->loadLazyData();
+        $originalValue = $fieldDefinition->normalize($value);
+        if (empty($originalValue)) {
+            return null;
+        }
+
+        $languages = $this->languageService->getUserAllowedLanguages(
+            $value->getObject(),
+            $this->securityService->getCurrentUser(),
+            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+        );
+
+        $attributes = array_keys(array_merge(...array_values($originalValue)));
+        $result = [];
+        foreach ($attributes as $attribute) {
+            foreach ($languages as $language) {
+                try {
+                    $localizedValue = $value->getLocalizedValue($attribute, $language);
+                } catch (Exception $exception) {
+                    throw new DatabaseException(
+                        sprintf(
+                            'Error while normalizing localized field: %s',
+                            $exception->getMessage()
+                        )
+                    );
+                }
+
+                $childFieldDefinition = $value->getFieldDefinition($attribute, $value->getContext());
+                if ($childFieldDefinition === null) {
+                    throw new NotFoundException(type: 'Field Definition', id: $attribute);
+                }
+
+                $result[$attribute][$language] = $valueResolver($localizedValue, $childFieldDefinition, $language);
+            }
+        }
+
+        return $result;
     }
 
     private function getAllowedLanguages(
