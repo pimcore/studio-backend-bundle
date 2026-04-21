@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Importazione dei mattoni oggetto
 studio_ee_job_step_bulk_import_cleanup: Pulizia dell'importazione in blocco
 studio_ee_bulk_import_failed: "L'importazione in blocco di %type% «%name%» non è riuscita: %message%"
 studio_ee_job_element_usage_replace: Sostituisci utilizzo dell'elemento
+preview_generator_locale: Language
+main_site: Sito principale
+preview_generator_site: Site

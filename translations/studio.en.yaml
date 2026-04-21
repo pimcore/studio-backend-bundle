@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Object Brick Importing
 studio_ee_job_step_bulk_import_cleanup: Bulk Import Cleanup
 studio_ee_bulk_import_failed: 'Bulk import of %type% "%name%" failed: %message%'
 studio_ee_job_element_usage_replace: Element Usage Replace
+preview_generator_locale: Language
+main_site: 'Main Site'
+preview_generator_site: Site

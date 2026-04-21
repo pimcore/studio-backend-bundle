@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Import av objektblokker
 studio_ee_job_step_bulk_import_cleanup: Opprydding av masseimport
 studio_ee_bulk_import_failed: 'Masseimport av %type% «%name%» mislyktes: %message%'
 studio_ee_job_element_usage_replace: Erstatt elementbruk
+preview_generator_locale: Language
+main_site: 'Main Site'
+preview_generator_site: Site
