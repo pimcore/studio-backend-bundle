@@ -20,7 +20,7 @@
     "php": "~8.3.0 || ~8.4.0",
     "league/csv": "^9.27",
     "nesbot/carbon": "^3.8.4",
-    "pimcore/static-resolver-bundle": "^3.5.1 ",
+    "pimcore/static-resolver-bundle": "^3.6.1 ",
     "pimcore/generic-data-index-bundle": "^2.5.0",
     "pimcore/pimcore": "^12.3",
     "zircote/swagger-php": "^4.8 || ^5.0",
