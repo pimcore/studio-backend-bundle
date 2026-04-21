@@ -46,6 +46,13 @@ interface DataServiceInterface
         Data $fieldDefinition
     ): mixed;
 
+    public function getDetailValue(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): mixed;
+
     /**
      * @throws DatabaseException|NotFoundException
      */

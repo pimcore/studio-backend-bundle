@@ -39,3 +39,11 @@ This bundle requires the following dependencies:
 - [Installation and Configuration](./doc/02_Installation_and_Configuration/README.md)
 - [Extending](./doc/03_Extending/README.md)
 - [Development Details](./doc/04_Development_Details/README.md)
+
+
+## Contribute
+**Bug fixes:** please create a pull request including a step by step description to reproduce the problem  
+**Contribute features:** contact the core-team via issue before you start developing   
+**Security vulnerabilities:** please see our [security policy](https://github.com/pimcore/pimcore/security/policy)
+
+For details, please have a look at our [contributing guide](CONTRIBUTING.md).
