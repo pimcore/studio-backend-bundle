@@ -21,6 +21,7 @@ enum Jobs: string
     case UPLOAD_ASSETS = 'studio_ee_job_upload_assets';
     case ZIP_FILE_UPLOAD = 'studio_ee_job_upload_zip_file';
     case CREATE_CSV = 'studio_ee_job_create_csv';
+    case COLLECT_EXPORT_FOLDER_ELEMENTS = 'studio_ee_job_collect_folder_export_elements';
     case CREATE_XLSX = 'studio_ee_job_create_xlsx';
     case PATCH_ELEMENTS = 'studio_ee_job_patch_elements';
     case CLONE_DATA_OBJECTS = 'studio_ee_job_clone_data_objects';

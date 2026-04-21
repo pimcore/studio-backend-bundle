@@ -17,7 +17,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\ExportConfigValidationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
@@ -26,21 +25,13 @@ final readonly class ExportFolderParameter
 {
     use ExportConfigValidationTrait;
 
-    /**
-     * @param array<int> $folders
-     */
     public function __construct(
         private array $columns,
         private ?FilterParameter $filters,
         private array $config,
-        private array $folders,
         private string $elementType,
         private ?string $classId = null
     ) {
-        if (empty($this->getFolders())) {
-            throw new InvalidArgumentException('No folders provided');
-        }
-
         if ($this->classId === null && $this->getValidElementType($this->elementType) === ElementTypes::TYPE_OBJECT) {
             throw new InvalidArgumentException('Class ID must be provided for data object exports');
         }
@@ -61,17 +52,6 @@ final readonly class ExportFolderParameter
     public function getConfig(): array
     {
         return $this->config;
-    }
-
-    /**
-     * @return array<int, ElementDescriptor>
-     */
-    public function getFolders(): array
-    {
-        return array_map(
-            fn (int $id) => new ElementDescriptor($this->getElementType(), $id),
-            $this->folders
-        );
     }
 
     public function getElementType(): string

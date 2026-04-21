@@ -169,6 +169,22 @@ class AbstractHandler extends AbstractAutomationActionHandler
         $this->updateJobRunContext($jobRun, $key, $contextValue);
     }
 
+    protected function updateJobRunContextValues(
+        JobRun $jobRun,
+        array $values,
+        bool $persist = true
+    ): void {
+        $jobRun->setContext(
+            array_merge(
+                $jobRun->getContext() ?? [],
+                $values
+            )
+        );
+        if ($persist) {
+            $this->jobRunRepository->update($jobRun);
+        }
+    }
+
     private function getExecutionActionData(
         UserInterface $user,
         array $jobEnvironmentData,

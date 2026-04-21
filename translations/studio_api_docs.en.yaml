@@ -175,7 +175,7 @@ asset_patch_by_id_description: |
 asset_patch_by_id_success_response: Successfully patched asset
 asset_patch_by_id_summary: Patch assets by ID
 asset_patch_folder_by_id_description: |
-  Patching assets based on the given folder ID and data. <br> Patching on folders will be done asynchronously. <br>
+  Patching assets based on the given folder ID and data. <br> Patching on folder will be done asynchronously. <br>
   You can also use filters and sorting. Filter assets from folder based on the grid filter schema
 asset_patch_folder_by_id_summary: Patch all assets based on folder ID and filters
 asset_replace_description: |
@@ -387,7 +387,7 @@ data_object_patch_by_id_description: |
 data_object_patch_by_id_success_response: Successfully patched data object
 data_object_patch_by_id_summary: Patch data objects by ID
 data_object_patch_folder_by_id_description: |
-  Patching data objects based on the given folder ID, filters and data. <br> Patching on folders will be done asynchronously. <br>
+  Patching data objects based on the given folder ID, filters and data. <br> Patching on folder will be done asynchronously. <br>
   You can also use filters and sorting. Filter data objects from folder based on the grid filter schema
 data_object_patch_folder_by_id_summary: Patch all data objects based on folder ID and filters
 data_object_replace_content_description: |
@@ -664,8 +664,8 @@ export_csv_description: |
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
 export_csv_summary: Creating CSV file for elements
 export_csv_folder_description: |
-  Creating the CSV file for elements based on the folder. <br> Parameters are: <ul>
-    <li><strong>folders</strong>: Array of folder ids</li>
+  Creating the CSV file for elements based on the folder. <br> 
+  Parameters are: <ul>
     <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
     <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
     <li><strong>config</strong>: Delimiter and header options</li>
@@ -677,15 +677,19 @@ export_csv_folder_summary: Creating CSV file for elements based on folder
 export_delete_csv_description: |
   Delete the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
 export_delete_csv_summary: Delete CSV export file based on jobRunId
-export_download_csv_description: |
-  Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
+export_download_csv_description: |  
+  Download the CSV file using the <strong>{jobRunId}</strong> returned by the create export endpoint. <br>
+  For folder exports, you must provide the ID of the corresponding child job run. <br>
+  The folder export first collects all elements and then creates a child job run to export them.
 export_download_csv_success_response: CSV File as attachment
 export_download_csv_summary: Download CSV file for job run id
 export_delete_xlsx_description: |
   Delete the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
 export_delete_xlsx_summary: Delete XLSX export file based on jobRunId
 export_download_xlsx_description: |
-  Download the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
+  Download the XLSX file using the <strong>{jobRunId}</strong> returned by the create export endpoint. <br>
+  For folder exports, you must provide the ID of the corresponding child job run. <br>
+  The folder export first collects all elements and then creates a child job run to export them.
 export_download_xlsx_success_response: XLSX File as attachment
 export_download_xlsx_summary: Download XLSX file for job run id
 export_xlsx_created_response: Successfully created <strong>jobRun</strong> for
@@ -701,8 +705,9 @@ export_xlsx_description: |
   Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
 export_xlsx_summary: Creating XLSX file export for elements
 export_xlsx_folder_description: |
-  Creating the XLSX file for elements based on the folder. <br> Parameters are: <ul>
-    <li><strong>folders</strong>: Array of folder ids</li>
+  Creating the XLSX file for elements based on the folder. <br> 
+  Parameters are: 
+  <ul>
     <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
     <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
     <li><strong>config</strong>: Header options</li>

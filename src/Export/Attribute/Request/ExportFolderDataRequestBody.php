@@ -50,7 +50,6 @@ final class ExportFolderDataRequestBody extends RequestBody
         parent::__construct(
             content: new JsonContent(
                 properties: [
-                    new Property(property: 'folders', type: 'array', items: new Items(type: 'integer'), example: [1]),
                     new Property(
                         property: 'columns',
                         type: 'array',
