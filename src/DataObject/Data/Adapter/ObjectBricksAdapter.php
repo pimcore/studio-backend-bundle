@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -42,6 +43,7 @@ use function array_key_exists;
 final readonly class ObjectBricksAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
+    DetailDataInterface,
     DataInheritanceInterface,
     SearchPreviewDataInterface
 {
@@ -97,31 +99,31 @@ final readonly class ObjectBricksAdapter implements
             return null;
         }
 
-        $resultItems = [];
-        $allowedTypes = $value->getAllowedBrickTypes();
-        foreach ($allowedTypes as $type) {
-            $resultItems[$type] = null;
-            $item = $value->get($type);
+        return $this->resolveBrickData(
+            $value,
+            fn (mixed $val, Data $fd, AbstractData $brick) => $this->dataService->getNormalizedValue($val, $fd),
+        );
+    }
 
-            if (!$item instanceof AbstractData) {
-                continue;
-            }
-
-            $definition = $this->definitionResolver->getByKey($type);
-            if ($definition === null) {
-                continue;
-            }
-
-            foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
-                $fieldName = $brickFieldDefinition->getName();
-                $resultItems[$type][$fieldName] = $this->dataService->getNormalizedValue(
-                    $item->get($fieldName),
-                    $brickFieldDefinition,
-                );
-            }
+    public function getDetailData(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): ?array {
+        if (!$value instanceof Objectbrick) {
+            return null;
         }
 
-        return $resultItems;
+        return $this->resolveBrickData(
+            $value,
+            fn (mixed $val, Data $fd, AbstractData $brick) => $this->dataService->getDetailValue(
+                $object,
+                $val,
+                $fd,
+                new FieldContextData($brick),
+            ),
+        );
     }
 
     public function getFieldInheritance(
@@ -202,6 +204,39 @@ final readonly class ObjectBricksAdapter implements
         }
 
         return $data;
+    }
+
+    private function resolveBrickData(
+        Objectbrick $value,
+        callable $valueResolver,
+    ): array {
+        $resultItems = [];
+        $allowedTypes = $value->getAllowedBrickTypes();
+
+        foreach ($allowedTypes as $type) {
+            $resultItems[$type] = null;
+            $item = $value->get($type);
+
+            if (!$item instanceof AbstractData) {
+                continue;
+            }
+
+            $definition = $this->definitionResolver->getByKey($type);
+            if ($definition === null) {
+                continue;
+            }
+
+            foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
+                $fieldName = $brickFieldDefinition->getName();
+                $resultItems[$type][$fieldName] = $valueResolver(
+                    $item->get($fieldName),
+                    $brickFieldDefinition,
+                    $item,
+                );
+            }
+        }
+
+        return $resultItems;
     }
 
     /**

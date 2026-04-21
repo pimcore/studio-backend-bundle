@@ -63,7 +63,9 @@ final class CollectionController extends AbstractApiController
         summary: 'unit_quantity_value_units_collection_summary',
         tags: [Tags::Units->value]
     )]
-    #[CollectionRequestBody]
+    #[CollectionRequestBody(
+        columnFiltersExample: '[{"type":"search", "filterValue": "kg"}]',
+    )]
     #[SuccessResponse(
         description: 'unit_quantity_value_units_collection_success_response',
         content: new CollectionJson(new GenericCollection(QuantityValueUnit::class))
