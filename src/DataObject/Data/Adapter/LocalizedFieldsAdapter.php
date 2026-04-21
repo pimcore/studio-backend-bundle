@@ -246,7 +246,7 @@ final readonly class LocalizedFieldsAdapter implements
             ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
         );
 
-        $attributes = array_keys(reset($originalValue));
+        $attributes = array_keys(array_merge(...array_values($originalValue)));
         $result = [];
         foreach ($attributes as $attribute) {
             foreach ($languages as $language) {
