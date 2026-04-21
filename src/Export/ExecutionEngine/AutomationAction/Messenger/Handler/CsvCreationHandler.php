@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgres
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\ExportCreationHandlerSetupTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -32,6 +33,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class CsvCreationHandler extends AbstractHandler
 {
+    use ExportCreationHandlerSetupTrait;
     use HandlerProgressTrait;
 
     public function __construct(
@@ -64,6 +66,8 @@ final class CsvCreationHandler extends AbstractHandler
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
+        $elementType = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TYPE->value);
+        $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
         $delimiter = $settings[StepConfig::SETTINGS_DELIMITER->value] ?? null;
 
@@ -75,15 +79,13 @@ final class CsvCreationHandler extends AbstractHandler
         }
         $csvData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
 
-        $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? [];
-
         try {
             $this->csvExportService->createExportFile(
                 $jobRun->getId(),
                 new GridExportData(
                     $columns,
                     $csvData,
-                    $csvExportDataInfo,
+                    ['type' => $elementType, 'classId' => $classId],
                     $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
                     $headers === StepConfig::SETTINGS_HEADER_NAME,
                 ),
@@ -103,24 +105,5 @@ final class CsvCreationHandler extends AbstractHandler
             $jobRun,
             $this->getJobStep($message)->getName()
         );
-    }
-
-    protected function configureStep(): void
-    {
-        $this->stepConfiguration->setRequired(StepConfig::CONFIG_CONFIGURATION->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::CONFIG_CONFIGURATION->value,
-            StepConfig::CONFIG_TYPE_ARRAY->value
-        );
-        $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::CONFIG_COLUMNS->value,
-            StepConfig::CONFIG_TYPE_ARRAY->value
-        );
-
-        $this->stepConfiguration->setDefaults([
-            StepConfig::CONFIG_COLUMNS->value => [],
-            StepConfig::CONFIG_CONFIGURATION->value => [],
-        ]);
     }
 }

@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
@@ -36,6 +37,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -72,6 +75,7 @@ final class GridService implements GridServiceInterface
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver
     ) {
@@ -164,7 +168,7 @@ final class GridService implements GridServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException
+     * {@inheritdoc}
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
@@ -179,6 +183,20 @@ final class GridService implements GridServiceInterface
         $databaseElement = null;
         if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
             $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
+            if ($user !== null) {
+                $this->securityService->hasElementPermission(
+                    $databaseElement,
+                    $user,
+                    ElementPermissions::VIEW_PERMISSION
+                );
+            }
+        }
+
+        if ($isExport && $databaseElement->getType() === ElementTypes::TYPE_FOLDER) {
+            throw new InvalidArgumentException(
+                message: 'Exporting folder elements is not supported',
+                errorKey: Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value
+            );
         }
 
         foreach ($columnCollection->getColumns() as $column) {
@@ -224,18 +242,10 @@ final class GridService implements GridServiceInterface
         ColumnCollection $columnCollection,
         string $elementType,
         int $elementId,
-        bool $isExport = false,
-        ?UserInterface $user = null,
+        UserInterface $user
     ): array {
 
-        $data = $this->getGridDataForElement(
-            $columnCollection,
-            null,
-            $elementType,
-            $elementId,
-            $isExport,
-            $user
-        );
+        $data = $this->getGridDataForElement($columnCollection, null, $elementType, $elementId, true, $user);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -343,9 +353,7 @@ final class GridService implements GridServiceInterface
             return false;
         }
 
-        /** @var ColumnResolverInterface $resolver */
         $resolver = $this->getColumnResolvers()[$column->getType()];
-
         if (!in_array($elementType, $resolver->supportedElementTypes(), true)) {
             return false;
         }
