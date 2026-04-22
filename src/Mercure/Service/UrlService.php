@@ -32,7 +32,7 @@ final readonly class UrlService implements UrlServiceInterface
     public function getServerSideUrl(): string
     {
         if (empty($this->serverSideUrl)) {
-            return $this->getDefaultServerUrl();
+            throw new LogicException('Mercure server URL is not configured.');
         }
 
         return $this->serverSideUrl;
@@ -47,10 +47,6 @@ final readonly class UrlService implements UrlServiceInterface
         return str_replace(Mercure::HOST_PLACEHOLDER->value, $this->getHostUrl(), $this->clientSideUrl);
     }
 
-    private function getDefaultServerUrl(): string
-    {
-        return $this->getHostUrl() . '/hub/.well-known/mercure';
-    }
 
     private function getDefaultClientUrl(): string
     {
