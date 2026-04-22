@@ -32,7 +32,7 @@ final readonly class UrlService implements UrlServiceInterface
     public function getServerSideUrl(): string
     {
         if (empty($this->serverSideUrl)) {
-            throw new LogicException('Mercure server URL is not configured!');
+            throw new LogicException('Mercure server URL is not configured.');
         }
 
         return $this->serverSideUrl;
