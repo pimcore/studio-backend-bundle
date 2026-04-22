@@ -28,15 +28,13 @@ final class UrlServiceTest extends Unit
         $this->assertSame('https://custom/mercure', $service->getServerSideUrl());
     }
 
-    public function testGetServerSideUrlWithDefault(): void
+    public function testGetServerSideUrlThrowsWhenNotConfigured(): void
     {
-        $service = new UrlService(
-            null,
-            null,
-            $this->createRequestStackWithRequest('https://example.com')
-        );
+        $service = new UrlService(null, null, new RequestStack());
 
-        $this->assertSame('https://example.com/hub/.well-known/mercure', $service->getServerSideUrl());
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Mercure server URL is not configured.');
+        $service->getServerSideUrl();
     }
 
     public function testGetClientSideUrlWithCustomUrlReplacesPlaceholder(): void
@@ -66,10 +64,11 @@ final class UrlServiceTest extends Unit
         $service = new UrlService(null, null, new RequestStack());
 
         $this->expectException(LogicException::class);
-        $service->getServerSideUrl();
+        $this->expectExceptionMessage('Mercure fallback URL resolution requires an active HTTP request.');
+        $service->getClientSideUrl();
     }
 
-    public function testDefaultUrlIncludesNonStandardPort(): void
+    public function testDefaultClientUrlIncludesNonStandardPort(): void
     {
         $service = new UrlService(
             null,
@@ -77,7 +76,7 @@ final class UrlServiceTest extends Unit
             $this->createRequestStackWithRequest('http://localhost:8080')
         );
 
-        $this->assertSame('http://localhost:8080/hub/.well-known/mercure', $service->getServerSideUrl());
+        $this->assertSame('http://localhost:8080/hub', $service->getClientSideUrl());
     }
 
     private function createRequestStackWithRequest(string $uri): RequestStack
