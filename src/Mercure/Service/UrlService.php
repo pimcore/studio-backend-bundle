@@ -47,7 +47,6 @@ final readonly class UrlService implements UrlServiceInterface
         return str_replace(Mercure::HOST_PLACEHOLDER->value, $this->getHostUrl(), $this->clientSideUrl);
     }
 
-
     private function getDefaultClientUrl(): string
     {
         return $this->getHostUrl() . '/hub';
