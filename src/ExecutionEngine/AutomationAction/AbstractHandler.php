@@ -156,6 +156,16 @@ class AbstractHandler extends AbstractAutomationActionHandler
         throw new EnvironmentException('How did I get here?');
     }
 
+    protected function extractOptionalConfigFieldFromJobStepConfig(
+        GenericExecutionEngineMessageInterface $message,
+        string $key,
+        mixed $default = null,
+    ): mixed {
+        $config = $this->getCurrentJobStepConfig($message);
+
+        return array_key_exists($key, $config) ? $config[$key] : $default;
+    }
+
     protected function updateContextArrayValues(JobRun $jobRun, string $key, array $value): void
     {
         $context = $jobRun->getContext();
