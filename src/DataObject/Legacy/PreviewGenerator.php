@@ -19,11 +19,11 @@ use LogicException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Site\SiteResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\LinkGeneratorInterface;
 use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Site\Listing;
-use Pimcore\Model\Translation;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use function array_key_exists;
 use function in_array;
@@ -119,7 +119,7 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
 
         return [
             'name' => PreviewGeneratorInterface::PARAMETER_LOCALE,
-            'label' => $this->translator->trans('preview_generator_locale', [], Translation::DOMAIN_ADMIN),
+            'label' => $this->translator->trans('preview_generator_locale', [], TranslatorServiceInterface::DOMAIN),
             'values' => $locales,
             'defaultValue' => $defaultValue,
         ];
@@ -135,7 +135,7 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
         }
 
         $sitesOptions = [
-            $this->translator->trans('main_site', [], Translation::DOMAIN_ADMIN) => '0',
+            $this->translator->trans('main_site', [], TranslatorServiceInterface::DOMAIN) => '0',
         ];
 
         $preSelectedSite = null;
@@ -160,7 +160,7 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
 
         return [
             'name' => PreviewGeneratorInterface::PARAMETER_SITE,
-            'label' => $this->translator->trans('preview_generator_site', [], Translation::DOMAIN_ADMIN),
+            'label' => $this->translator->trans('preview_generator_site', [], TranslatorServiceInterface::DOMAIN),
             'values' => $sitesOptions,
             'defaultValue' => $preSelectedSite ?: reset($sitesOptions),
         ];

@@ -22,7 +22,6 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupCon
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
-use Pimcore\Model\Translation;
 
 /**
  * @internal
@@ -85,8 +84,7 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
             $translatedSearchKeys = $this->translationRepository->getTranslationKeysWithTextFilter(
                 $searchTerm,
-                $user->getLanguage(),
-                Translation::DOMAIN_ADMIN
+                $user->getLanguage()
             );
 
             $searchTerms = array_merge([$searchTerm], $translatedSearchKeys);
