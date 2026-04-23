@@ -95,7 +95,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         ];
 
         if (!empty($patchedMetadata)) {
-            $element->setMetadata($patchedMetadata);
+            $element->setMetadata($this->dataResolverService->prepareData($patchedMetadata));
         }
     }
 
