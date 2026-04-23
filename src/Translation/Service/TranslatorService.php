@@ -157,7 +157,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         foreach ($domains as $domain) {
             $availableDomains[] = [
                 'domain' => $domain,
-                'isFrontendDomain' => $domain !== 'studio' && $domain !== 'admin',
+                'isFrontendDomain' => $domain !== 'studio',
             ];
         }
 

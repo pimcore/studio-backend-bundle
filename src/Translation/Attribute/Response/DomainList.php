@@ -34,12 +34,12 @@ final class DomainList extends JsonContent
                         title: 'Domain',
                         description: 'The domain name.',
                         type: 'string',
-                        example: 'admin'
+                        example: 'studio'
                     ),
                     new Property(
                         'isFrontendDomain',
                         title: 'Is Frontend Domain',
-                        description: 'If the domain is a frontend or admin domain.',
+                        description: 'If the domain is a frontend or main domain.',
                         type: 'boolean',
                         example: false
                     ),
