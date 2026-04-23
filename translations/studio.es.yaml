@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Importación de bloques de objetos
 studio_ee_job_step_bulk_import_cleanup: Limpieza de la importación masiva
 studio_ee_bulk_import_failed: 'La importación masiva de %type% «%name%» falló: %message%'
 studio_ee_job_element_usage_replace: Reemplazar uso del elemento
+preview_generator_locale: Idioma
+main_site: Sitio Principal
+preview_generator_site: Web

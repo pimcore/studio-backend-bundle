@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Import des briques d'objets
 studio_ee_job_step_bulk_import_cleanup: Nettoyage de l'import en masse
 studio_ee_bulk_import_failed: "L'import en masse de %type% « %name% » a échoué : %message%"
 studio_ee_job_element_usage_replace: Remplacer l'utilisation de l'élément
+preview_generator_locale: Language
+main_site: Site principal
+preview_generator_site: Site

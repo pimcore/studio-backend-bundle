@@ -33,8 +33,8 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationReposit
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
+use Pimcore\Config;
 use Pimcore\Model\Exception\NotFoundException;
-use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Model\Translation\Listing;
 use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -53,6 +53,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     private TranslatorBagInterface $translatorBag;
 
     public function __construct(
+        private Config $config,
         private TranslatorInterface $translator,
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService,
@@ -150,12 +151,9 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
     public function getAvailableDomains(): array
     {
-        $translation = new TranslationModel();
-
-        $domains = $translation->getDao()->getAvailableDomains();
+        $domains = array_values(array_unique($this->config['translations']['domains'] ?? []));
 
         $availableDomains = [];
-
         foreach ($domains as $domain) {
             $availableDomains[] = [
                 'domain' => $domain,
