@@ -39,6 +39,7 @@ interface PatchServiceInterface
      * @throws InvalidArgumentException
      */
     public function patchFolder(
+        int $folderId,
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,

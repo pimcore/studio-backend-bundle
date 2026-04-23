@@ -64,6 +64,8 @@ final class CsvCreationHandler extends AbstractHandler
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
+        $elementType = $this->extractOptionalConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TYPE->value);
+        $classId = $this->extractOptionalConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
         $delimiter = $settings[StepConfig::SETTINGS_DELIMITER->value] ?? null;
 
@@ -75,15 +77,13 @@ final class CsvCreationHandler extends AbstractHandler
         }
         $csvData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
 
-        $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? [];
-
         try {
             $this->csvExportService->createExportFile(
                 $jobRun->getId(),
                 new GridExportData(
                     $columns,
                     $csvData,
-                    $csvExportDataInfo,
+                    ['type' => $elementType, 'classId' => $classId],
                     $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
                     $headers === StepConfig::SETTINGS_HEADER_NAME,
                 ),
@@ -117,10 +117,11 @@ final class CsvCreationHandler extends AbstractHandler
             StepConfig::CONFIG_COLUMNS->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
-
         $this->stepConfiguration->setDefaults([
             StepConfig::CONFIG_COLUMNS->value => [],
             StepConfig::CONFIG_CONFIGURATION->value => [],
+            StepConfig::ELEMENT_TYPE->value => null,
+            StepConfig::ELEMENT_CLASS_ID->value => null,
         ]);
     }
 }

@@ -13,15 +13,31 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 interface ExportServiceInterface
 {
-    public function generateExportFileForElements(ExportParameter $exportParameter, string $exportFormat): int;
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function generateExportFileForElements(
+        ExportParameter $exportParameter,
+        string $exportFormat,
+        ?UserInterface $user = null,
+    ): int;
 
-    public function generateExportFileForFolders(ExportFolderParameter $exportParameter, string $exportFormat): int;
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function generateExportFileForFolders(
+        int $folderId,
+        ExportFolderParameter $exportParameter,
+        string $exportFormat
+    ): int;
 }

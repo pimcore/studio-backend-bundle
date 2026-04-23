@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Objektbaustein-Import
 studio_ee_job_step_bulk_import_cleanup: Massenimport-Bereinigung
 studio_ee_bulk_import_failed: 'Massenimport von %type% „%name%" fehlgeschlagen: %message%'
 studio_ee_job_element_usage_replace: Elementverwendung ersetzen
+preview_generator_locale: Sprache
+main_site: Hauptseite
+preview_generator_site: Seite
