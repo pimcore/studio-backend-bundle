@@ -71,3 +71,6 @@ studio_ee_job_step_object_brick_importing: Import av objektblock
 studio_ee_job_step_bulk_import_cleanup: Rensning av massimport
 studio_ee_bulk_import_failed: 'Massimport av %type% "%name%" misslyckades: %message%'
 studio_ee_job_element_usage_replace: Ersätt elementanvändning
+preview_generator_locale: Language
+main_site: Huvudsajt
+preview_generator_site: Site
