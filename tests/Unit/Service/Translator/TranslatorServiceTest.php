@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceI
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
+use Pimcore\Config;
 use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -93,6 +94,7 @@ final class TranslatorServiceTest extends Unit
         $toolResolver = $this->makeEmpty(ToolResolverInterface::class);
 
         return new TranslatorService(
+            new Config(),
             $translator,
             $repository,
             $securityService,
