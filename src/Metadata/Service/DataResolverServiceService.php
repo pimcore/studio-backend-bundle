@@ -25,6 +25,15 @@ final readonly class DataResolverServiceService implements DataResolverServiceIn
     {
     }
 
+    public function prepareData(array $customMetadata): array
+    {
+        foreach ($customMetadata as $key => $metadata) {
+            $customMetadata[$key]['data'] = $metadata['data'] ?? '';
+        }
+
+        return $customMetadata;
+    }
+
     /**
      * {@inheritdoc}
      */

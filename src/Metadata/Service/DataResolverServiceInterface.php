@@ -21,6 +21,8 @@ use Pimcore\Model\UserInterface;
  */
 interface DataResolverServiceInterface
 {
+    public function prepareData(array $customMetadata): array;
+
     /**
      * @throws InvalidArgumentException
      */
