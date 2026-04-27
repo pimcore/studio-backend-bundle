@@ -145,8 +145,7 @@ final readonly class GridSearch implements GridSearchInterface
         string $type,
         GridParameter $gridParameter,
         UserInterface $user
-    ): QueryInterface
-    {
+    ): QueryInterface {
         $filter = $gridParameter->getFilters();
         $type = $this->getStudioElementType($type);
         $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
