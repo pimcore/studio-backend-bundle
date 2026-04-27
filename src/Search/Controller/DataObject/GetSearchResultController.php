@@ -17,6 +17,8 @@ use Exception;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\SearchGridRequestBody;
@@ -51,8 +53,10 @@ final class GetSearchResultController extends AbstractApiController
 
     /**
      * @throws InvalidArgumentException
-     * @throws Exception
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
      * @throws NotFoundException
+     * @throws Exception
      */
     #[Route('/search/data-objects', name: 'pimcore_studio_api_get_data_object_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]

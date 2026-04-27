@@ -110,8 +110,7 @@ final class GridService implements GridServiceInterface
     }
 
     /**
-     * @throws NotFoundException
-     * @throws Exception
+     * {@inheritdoc}
      */
     public function getDataObjectGrid(
         GridParameter $gridParameter,

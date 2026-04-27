@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetFilePara
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Asset;
@@ -70,6 +71,9 @@ interface ZipServiceInterface
      */
     public function generateZipFileForAssets(ExportAssetFileParameter $parameter): int;
 
+    /**
+     * @throws InvalidQueryTypeException
+     */
     public function generateZipFileForFolders(ExportFolderFileParameter $parameter): int;
 
     /**
