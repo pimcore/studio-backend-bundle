@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Tool;
 
 /**
  * @internal
@@ -26,12 +26,25 @@ trait LocalizedValueTrait
     {
         $getter = $this->getGetter($column->getKey());
         if ($column->getLocale()) {
-            if ($column->getApplyFallbackLanguages()) {
-                Localizedfield::setGetFallbackValues(true);
-                $value = $element->$getter($column->getLocale());
-                Localizedfield::setGetFallbackValues(false);
-            } else {
-                $value = $element->$getter($column->getLocale());
+            $value = $element->$getter($column->getLocale());
+
+            if ($column->getApplyFallbackLanguages() && $this->isEmptyValue($value)) {
+                // Walk configured fallback languages, then the system default as last resort
+                $fallbackLocales = Tool::getFallbackLanguagesFor($column->getLocale());
+                $defaultLanguage = Tool::getDefaultLanguage();
+                if ($defaultLanguage !== null
+                    && $defaultLanguage !== $column->getLocale()
+                    && !in_array($defaultLanguage, $fallbackLocales, true)
+                ) {
+                    $fallbackLocales[] = $defaultLanguage;
+                }
+
+                foreach ($fallbackLocales as $fallbackLocale) {
+                    $value = $element->$getter($fallbackLocale);
+                    if (!$this->isEmptyValue($value)) {
+                        break;
+                    }
+                }
             }
 
             return $value;
@@ -53,5 +66,10 @@ trait LocalizedValueTrait
     private function getGetter(string $key): string
     {
         return 'get' . ucfirst($key);
+    }
+
+    private function isEmptyValue(mixed $value): bool
+    {
+        return $value === null || $value === '' || $value === [];
     }
 }
