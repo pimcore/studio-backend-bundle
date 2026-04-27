@@ -152,6 +152,9 @@ final readonly class ZipService implements ZipServiceInterface
         return $this->createJobRunAndStartExecution($parameter->getAssets());
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function generateZipFileForFolders(ExportFolderFileParameter $parameter): int
     {
         $folders = $parameter->getFolders();

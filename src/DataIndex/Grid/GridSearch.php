@@ -27,10 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchService
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
@@ -59,7 +57,7 @@ final readonly class GridSearch implements GridSearchInterface
     }
 
     /**
-     * @throws NotFoundException|SearchException|InvalidArgumentException
+     * {@inheritdoc}
      */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult
     {
@@ -70,6 +68,9 @@ final readonly class GridSearch implements GridSearchInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function searchAssetsForUser(GridParameter $gridParameter, UserInterface $user): AssetSearchResult
     {
         return $this->searchElementsForUser(
@@ -79,6 +80,9 @@ final readonly class GridSearch implements GridSearchInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function searchDataObjects(GridParameter $gridParameter): DataObjectSearchResult
     {
         return $this->searchElementsForUser(
@@ -88,6 +92,9 @@ final readonly class GridSearch implements GridSearchInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function searchDocuments(GridParameter $gridParameter): DocumentSearchResult
     {
         return $this->searchElementsForUser(
@@ -97,6 +104,9 @@ final readonly class GridSearch implements GridSearchInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function searchElementsForUser(
         string $type,
         GridParameter $gridParameter,
@@ -113,6 +123,9 @@ final readonly class GridSearch implements GridSearchInterface
         };
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function searchElementIdsForUser(
         string $type,
         GridParameter $gridParameter,

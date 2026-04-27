@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\Document;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\SearchGridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
@@ -46,6 +48,8 @@ final class GetSearchResultController extends AbstractApiController
 
     /**
      * @throws InvalidArgumentException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
      */
     #[Route('/search/documents', name: 'pimcore_studio_api_get_document_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::DOCUMENTS->value)]
