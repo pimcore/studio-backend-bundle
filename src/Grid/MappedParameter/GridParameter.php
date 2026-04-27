@@ -23,7 +23,8 @@ final readonly class GridParameter
     public function __construct(
         private int $folderId,
         private array $columns,
-        private ?FilterParameter $filters
+        private ?FilterParameter $filters,
+        private bool $applyFallbackLanguages = false
     ) {
     }
 
@@ -40,5 +41,10 @@ final readonly class GridParameter
     public function getFilters(): FilterParameter
     {
         return $this->filters ?? new FilterParameter();
+    }
+
+    public function getApplyFallbackLanguages(): bool
+    {
+        return $this->applyFallbackLanguages;
     }
 }

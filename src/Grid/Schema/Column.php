@@ -54,6 +54,7 @@ final readonly class Column
             ),
             example: ['key' => 'value'])]
         private array $config,
+        private bool $applyFallbackLanguages = false,
     ) {
     }
 
@@ -80,6 +81,11 @@ final readonly class Column
     public function getConfig(): array
     {
         return $this->config;
+    }
+
+    public function getApplyFallbackLanguages(): bool
+    {
+        return $this->applyFallbackLanguages;
     }
 
     public function getAdvancedColumnConfig(): AdvancedColumnConfig

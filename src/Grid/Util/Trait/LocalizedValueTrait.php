@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Tool;
 
 /**
  * @internal
@@ -25,7 +26,18 @@ trait LocalizedValueTrait
     {
         $getter = $this->getGetter($column->getKey());
         if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
+            $value = $element->$getter($column->getLocale());
+
+            if ($column->getApplyFallbackLanguages() && $this->isEmptyValue($value)) {
+                foreach (Tool::getFallbackLanguagesFor($column->getLocale()) as $fallbackLocale) {
+                    $value = $element->$getter($fallbackLocale);
+                    if (!$this->isEmptyValue($value)) {
+                        break;
+                    }
+                }
+            }
+
+            return $value;
         }
 
         return $element->$getter();
@@ -44,5 +56,10 @@ trait LocalizedValueTrait
     private function getGetter(string $key): string
     {
         return 'get' . ucfirst($key);
+    }
+
+    private function isEmptyValue(mixed $value): bool
+    {
+        return $value === null || $value === '' || $value === [];
     }
 }
