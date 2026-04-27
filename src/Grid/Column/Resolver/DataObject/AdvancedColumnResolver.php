@@ -211,7 +211,8 @@ final class AdvancedColumnResolver implements
             locale: $isLocalizable ? $column->getLocale() : null,
             type: $resolverType,
             group: $column->getGroup(),
-            config: $column->getConfig()
+            config: $column->getConfig(),
+            applyFallbackLanguages: $column->getApplyFallbackLanguages()
         );
 
         $data = null;
