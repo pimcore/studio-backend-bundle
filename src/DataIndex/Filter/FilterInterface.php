@@ -20,5 +20,12 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
  */
 interface FilterInterface
 {
+    /**
+     * @template T of QueryInterface
+     *
+     * @param T $query
+     *
+     * @return T
+     */
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface;
 }

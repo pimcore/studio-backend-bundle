@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 
 /**
  * @internal
@@ -33,6 +35,14 @@ final class TagFilter implements FilterInterface
 
         if (!$filter) {
             return $query;
+        }
+        
+        $user = $query->getSearch()->getUser();
+        if (!$user || !$user->isAllowed(UserPermissions::TAGS_SEARCH->value)) {
+            throw new ForbiddenException(sprintf(
+                'User does not have permission: %s',
+                UserPermissions::TAGS_SEARCH->value)
+            );
         }
 
         $filterValue = $filter->getFilterValue();

@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
@@ -24,10 +23,20 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInter
  */
 interface SearchIndexFilterInterface extends FilterServiceInterface
 {
-    public const SERVICE_TYPE = 'search_index_filter';
+    public const string SERVICE_TYPE = 'search_index_filter';
 
     /**
-     * @throws InvalidQueryTypeException|InvalidFilterTypeException
+     * @template T of QueryInterface
+     *
+     * @param T $query
+     *
+     * @return T
+     *
+     * @throws InvalidFilterTypeException
      */
-    public function applyFilters(CollectionParametersInterface $parameters, string $type): QueryInterface;
+    public function applyFilters(
+        QueryInterface $query,
+        CollectionParametersInterface $parameters,
+        string $type
+    ): QueryInterface;
 }

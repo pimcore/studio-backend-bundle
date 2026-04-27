@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -46,10 +48,11 @@ final readonly class GridSearch implements GridSearchInterface
     private SearchIndexFilterInterface $filterService;
 
     public function __construct(
-        private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
         private DocumentSearchServiceInterface $documentSearchService,
+        private FilterServiceProviderInterface $filterServiceProvider,
+        private QueryFactoryInterface $queryFactory,
         private SecurityServiceInterface $securityService
     ) {
         $this->filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
@@ -99,13 +102,8 @@ final readonly class GridSearch implements GridSearchInterface
         GridParameter $gridParameter,
         UserInterface $user
     ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult {
-        $filter = $gridParameter->getFilters();
-        $type = $this->getStudioElementType($type);
-        $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
-
         /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
-        $query = $this->filterService->applyFilters($filter, $type);
-        $query->setUser($user);
+        $query = $this->getSearchQuery($type, $gridParameter, $user);
 
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
@@ -120,19 +118,31 @@ final readonly class GridSearch implements GridSearchInterface
         GridParameter $gridParameter,
         UserInterface $user
     ): array {
-        $filter = $gridParameter->getFilters();
-        $type = $this->getStudioElementType($type);
-        $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
-
         /** @var AssetQueryInterface|DataObjectQueryInterface $query */
-        $query = $this->filterService->applyFilters($filter, $type);
-        $query->setUser($user);
+        $query = $this->getSearchQuery($type, $gridParameter, $user);
 
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->fetchAssetIds($query),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->fetchDataObjectIds($query),
             default => throw new InvalidElementTypeException($type)
         };
+    }
+
+    private function getSearchQuery(
+        string $type,
+        GridParameter $gridParameter,
+        UserInterface $user
+    ): QueryInterface
+    {
+        $filter = $gridParameter->getFilters();
+        $type = $this->getStudioElementType($type);
+        $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
+
+        $query = $this->queryFactory->create($type);
+        $query = $this->filterService->applyFilters($query, $filter, $type);
+        $query->setUser($user);
+
+        return $query;
     }
 
     private function setFilterPath(
