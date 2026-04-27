@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
@@ -48,8 +49,12 @@ final class ZipFolderController extends AbstractApiController
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException|StreamResourceNotFoundException
-     * @throws EnvironmentException|MaxFileSizeExceededException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws StreamResourceNotFoundException
+     * @throws EnvironmentException
+     * @throws MaxFileSizeExceededException
+     * @throws InvalidQueryTypeException
      */
     #[Route('/assets/export/zip/folder', name: 'pimcore_studio_api_asset_export_zip_folder', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]

@@ -55,7 +55,7 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidQueryTypeException
      */
     #[Route('/tags', name: 'pimcore_studio_api_tags', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
+    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[Get(
         path: self::PREFIX . '/tags',
         operationId: 'tag_get_collection',
