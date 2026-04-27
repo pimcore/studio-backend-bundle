@@ -39,9 +39,11 @@ final class TagFilter implements FilterInterface
         
         $user = $query->getSearch()->getUser();
         if (!$user || !$user->isAllowed(UserPermissions::TAGS_SEARCH->value)) {
-            throw new ForbiddenException(sprintf(
-                'User does not have permission: %s',
-                UserPermissions::TAGS_SEARCH->value)
+            throw new ForbiddenException(
+                sprintf(
+                    'User does not have permission: %s',
+                    UserPermissions::TAGS_SEARCH->value
+                )
             );
         }
 
