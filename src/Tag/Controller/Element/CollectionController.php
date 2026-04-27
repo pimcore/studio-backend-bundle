@@ -48,7 +48,7 @@ final class CollectionController extends AbstractApiController
     }
 
     #[Route('/tags/{elementType}/{id}', name: 'pimcore_studio_api_get_element_tags', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
+    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[Get(
         path: self::PREFIX . '/tags/{elementType}/{id}',
         operationId: 'tag_get_collection_for_element_by_type_and_id',

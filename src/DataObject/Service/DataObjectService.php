@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
@@ -73,6 +74,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private DataServiceInterface $dataService,
+        private DataObjectQueryProviderInterface $dataObjectQueryProvider,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private FactoryInterface $factory,
@@ -118,7 +120,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         /** @var SearchIndexFilterInterface $filterService */
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
+        $query = $this->dataObjectQueryProvider->createDataObjectQuery();
         $query = $filterService->applyFilters(
+            $query,
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );

@@ -18,7 +18,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Filters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 
@@ -28,17 +27,21 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 final readonly class SearchIndexFilter implements SearchIndexFilterInterface
 {
     public function __construct(
-        private FilterLoaderInterface $filterLoader,
-        private QueryFactoryInterface $queryFactory
+        private FilterLoaderInterface $filterLoader
     ) {
     }
 
     /**
+     * @template T of QueryInterface
+     *
+     * @param T $query
+     *
+     * @return T
+     *
      * @throws InvalidQueryTypeException|InvalidFilterTypeException
      */
-    public function applyFilters(mixed $parameters, string $type): QueryInterface
+    public function applyFilters(QueryInterface $query, mixed $parameters, string $type): QueryInterface
     {
-        $query = $this->queryFactory->create($type);
         // apply default filters
         $filters = $this->filterLoader->loadFilters();
 

@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface;
@@ -33,6 +34,7 @@ use function sprintf;
 final readonly class TreeQuery implements TreeQueryInterface
 {
     public function __construct(
+        private QueryFactoryInterface $queryFactory,
         private SettingsServiceInterface $settingsService,
         private DataObjectServiceInterface $dataObjectService,
         private ElementServiceInterface $elementService,
@@ -49,7 +51,9 @@ final readonly class TreeQuery implements TreeQueryInterface
         ?int $parentId = null,
     ): QueryInterface {
         $type = $widget->getElementType();
-        $query = $filterService->applyFilters($this->getQueryParameters($widget, $parentId), $type);
+        $query = $this->queryFactory->create($type);
+        $query = $filterService->applyFilters($query, $this->getQueryParameters($widget, $parentId), $type);
+
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
             $this->handleTreeSorting(
                 $type,
