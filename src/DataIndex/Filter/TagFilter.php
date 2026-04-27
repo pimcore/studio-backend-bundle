@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use function sprintf;
 
 /**
  * @internal
@@ -36,7 +37,7 @@ final class TagFilter implements FilterInterface
         if (!$filter) {
             return $query;
         }
-        
+
         $user = $query->getSearch()->getUser();
         if (!$user || !$user->isAllowed(UserPermissions::TAGS_SEARCH->value)) {
             throw new ForbiddenException(
