@@ -29,7 +29,15 @@ trait LocalizedValueTrait
             $value = $element->$getter($column->getLocale());
 
             if ($column->getApplyFallbackLanguages() && $this->isEmptyValue($value)) {
-                foreach (Tool::getFallbackLanguagesFor($column->getLocale()) as $fallbackLocale) {
+                $fallbackLocales = Tool::getFallbackLanguagesFor($column->getLocale());
+
+                // Also try the system default language as a final fallback
+                $defaultLanguage = Tool::getDefaultLanguage();
+                if ($defaultLanguage !== null && $defaultLanguage !== $column->getLocale() && !in_array($defaultLanguage, $fallbackLocales, true)) {
+                    $fallbackLocales[] = $defaultLanguage;
+                }
+
+                foreach ($fallbackLocales as $fallbackLocale) {
                     $value = $element->$getter($fallbackLocale);
                     if (!$this->isEmptyValue($value)) {
                         break;
