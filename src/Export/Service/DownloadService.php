@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function sprintf;
@@ -39,7 +40,8 @@ final readonly class DownloadService implements DownloadServiceInterface
 
     public function __construct(
         private ExecutionEngineServiceInterface $executionEngineService,
-        private StorageServiceInterface $storageService
+        private LoggerInterface $logger,
+        private StorageServiceInterface $storageService,
     ) {
     }
 
@@ -59,27 +61,27 @@ final readonly class DownloadService implements DownloadServiceInterface
         $filePath = $folderName . '/' . $fileName;
         $storage = $this->validateStorage($filePath, $jobRunId);
 
-        $streamedResponse = $this->getFileStreamedResponse(
-            $filePath,
-            $mimeType,
-            $downloadName,
-            $storage
+        return $this->getFileStreamedResponse(
+            path: $filePath,
+            mimeType: $mimeType,
+            filename: $downloadName,
+            storage: $storage,
+            onStreamComplete: function () use ($storage, $filePath, $folderName, $jobRunId): void {
+                try {
+                    $storage->delete($filePath);
+                    $this->storageService->cleanUpFolder($folderName);
+                    $this->executionEngineService->hideJobRun($jobRunId);
+                } catch (FilesystemException $e) {
+                    $this->logger->error(
+                        'Failed to clean up temporary folder {folder}',
+                        [
+                            'folder' => $folderName,
+                            'exception' => $e,
+                        ]
+                    );
+                }
+            },
         );
-
-        try {
-            $storage->delete($filePath);
-            $this->storageService->cleanUpFolder($folderName);
-            $this->executionEngineService->hideJobRun($jobRunId);
-        } catch (FilesystemException) {
-            throw new EnvironmentException(
-                sprintf(
-                    'Failed to clean up temporary folder %s',
-                    $folderName
-                )
-            );
-        }
-
-        return $streamedResponse;
     }
 
     /**
