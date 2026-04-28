@@ -327,7 +327,6 @@ final class GridService implements GridServiceInterface
      */
     private function getConfigurationFromArray(
         array $config,
-        bool $applyFallbackLanguages = false
     ): ColumnCollection {
 
         $columns = [];
@@ -339,7 +338,7 @@ final class GridService implements GridServiceInterface
                     type: $column['type'],
                     group: $column['group'] ?? null,
                     config: $column['config'],
-                    applyFallbackLanguages: $applyFallbackLanguages
+                    applyFallbackLanguages: $column['applyFallbackLanguages'] ?? false
                 );
             } catch (Exception) {
                 throw new InvalidArgumentException('Invalid column configuration');
@@ -417,7 +416,7 @@ final class GridService implements GridServiceInterface
         $data = [];
         foreach ($items as $item) {
             $data[] = $this->getGridDataForElement(
-                $this->getConfigurationFromArray($gridParameter->getColumns(), $gridParameter->getApplyFallbackLanguages()),
+                $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $item,
                 $elementType,
                 $item->getId()

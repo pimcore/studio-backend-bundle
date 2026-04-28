@@ -54,6 +54,7 @@ final readonly class Column
             ),
             example: ['key' => 'value'])]
         private array $config,
+        #[Property(description: 'When true, empty localized values fall back to configured fallback languages', type: 'boolean', default: false)]
         private bool $applyFallbackLanguages = false,
     ) {
     }

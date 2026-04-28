@@ -46,12 +46,6 @@ final class GridRequestBody extends RequestBody
                         ref: Filter::class,
                         type: 'object'
                     ),
-                    new Property(
-                        property: 'applyFallbackLanguages',
-                        description: 'When true, empty localized values fall back to configured fallback languages',
-                        type: 'boolean',
-                        default: false
-                    ),
                 ],
                 type: 'object',
             ),
