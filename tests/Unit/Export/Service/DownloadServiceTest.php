@@ -32,7 +32,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 final class DownloadServiceTest extends Unit
 {
-
     /**
      * @throws Exception
      */
@@ -64,7 +63,6 @@ final class DownloadServiceTest extends Unit
 
         $this->assertInstanceOf(StreamedResponse::class, $response);
     }
-
 
     /**
      * @throws Exception

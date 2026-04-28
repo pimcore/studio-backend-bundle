@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Util\Trait;
 
-use Codeception\Test\Unit;
 use Closure;
+use Codeception\Test\Unit;
 use Exception;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToReadFile;
@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundExcep
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use function strlen;
 
 /**
  * @internal

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
+use Closure;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -23,7 +24,6 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Thumbnail\ImageThumbnailInterface;
 use Pimcore\Model\Asset\Video;
 use Pimcore\Model\Asset\Video\ImageThumbnailInterface as VideoImageThumbnailInterface;
-use Closure;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function is_resource;
 use function sprintf;
