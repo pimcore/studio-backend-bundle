@@ -41,6 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StaticResolverBundle\Contract\Models\DataObject\LocalizedFieldResolverContractInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -77,7 +78,8 @@ final class GridService implements GridServiceInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver
+        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly LocalizedFieldResolverContractInterface $localizedFieldResolver,
     ) {
     }
 
@@ -131,11 +133,18 @@ final class GridService implements GridServiceInterface
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
-        return $this->getCollectionFromSearchResult(
-            $result,
-            $gridParameter,
-            ElementTypes::TYPE_OBJECT
-        );
+        $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
+        $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
+
+        try {
+            return $this->getCollectionFromSearchResult(
+                $result,
+                $gridParameter,
+                ElementTypes::TYPE_OBJECT
+            );
+        } finally {
+            $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
+        }
     }
 
     /**
@@ -326,7 +335,7 @@ final class GridService implements GridServiceInterface
      * @throws InvalidArgumentException
      */
     private function getConfigurationFromArray(
-        array $config,
+        array $config
     ): ColumnCollection {
 
         $columns = [];
@@ -337,8 +346,7 @@ final class GridService implements GridServiceInterface
                     locale: $column['locale'] ?? null,
                     type: $column['type'],
                     group: $column['group'] ?? null,
-                    config: $column['config'],
-                    applyFallbackLanguages: $column['applyFallbackLanguages'] ?? false
+                    config: $column['config']
                 );
             } catch (Exception) {
                 throw new InvalidArgumentException('Invalid column configuration');

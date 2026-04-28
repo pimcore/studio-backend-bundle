@@ -54,8 +54,6 @@ final readonly class Column
             ),
             example: ['key' => 'value'])]
         private array $config,
-        #[Property(description: 'When true, empty localized values fall back to configured fallback languages', type: 'boolean', default: false)]
-        private bool $applyFallbackLanguages = false,
     ) {
     }
 
@@ -82,11 +80,6 @@ final readonly class Column
     public function getConfig(): array
     {
         return $this->config;
-    }
-
-    public function getApplyFallbackLanguages(): bool
-    {
-        return $this->applyFallbackLanguages;
     }
 
     public function getAdvancedColumnConfig(): AdvancedColumnConfig

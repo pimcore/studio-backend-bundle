@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Tool;
 
 /**
  * @internal
@@ -25,32 +24,20 @@ trait LocalizedValueTrait
     private function getLocalizedValue(Column $column, ElementInterface $element): mixed
     {
         $getter = $this->getGetter($column->getKey());
-        if ($column->getLocale()) {
-            $value = $element->$getter($column->getLocale());
-
-            if ($column->getApplyFallbackLanguages() && $this->isEmptyValue($value)) {
-                // Walk configured fallback languages, then the system default as last resort
-                $fallbackLocales = Tool::getFallbackLanguagesFor($column->getLocale());
-                $defaultLanguage = Tool::getDefaultLanguage();
-                if ($defaultLanguage !== null
-                    && $defaultLanguage !== $column->getLocale()
-                    && !in_array($defaultLanguage, $fallbackLocales, true)
-                ) {
-                    $fallbackLocales[] = $defaultLanguage;
-                }
-
-                foreach ($fallbackLocales as $fallbackLocale) {
-                    $value = $element->$getter($fallbackLocale);
-                    if (!$this->isEmptyValue($value)) {
-                        break;
-                    }
-                }
-            }
-
-            return $value;
+        if (!$column->getLocale()) {
+            return $element->$getter();
         }
 
-        return $element->$getter();
+        $value = $element->$getter($column->getLocale());
+
+        if ($this->isEmptyValue($value) && $this->doGetFallbackValues()) {
+            $defaultLanguage = $this->getDefaultLanguage();
+            if ($defaultLanguage !== null && $defaultLanguage !== $column->getLocale()) {
+                $value = $element->$getter($defaultLanguage);
+            }
+        }
+
+        return $value;
     }
 
     private function getLocalizedValueFromKey(string $key, ?string $locale, ElementInterface $element): mixed
@@ -70,6 +57,16 @@ trait LocalizedValueTrait
 
     private function isEmptyValue(mixed $value): bool
     {
-        return $value === null || $value === '' || $value === [];
+        return $value === null || $value === '';
+    }
+
+    protected function doGetFallbackValues(): bool
+    {
+        return false;
+    }
+
+    protected function getDefaultLanguage(): ?string
+    {
+        return null;
     }
 }

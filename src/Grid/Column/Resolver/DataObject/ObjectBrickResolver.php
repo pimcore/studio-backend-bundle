@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Contract\Lib\ToolResolverContractInterface;
+use Pimcore\Bundle\StaticResolverBundle\Contract\Models\DataObject\LocalizedFieldResolverContractInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
@@ -57,9 +59,20 @@ final class ObjectBrickResolver implements
         private readonly InheritanceServiceInterface $inheritanceService,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ObjectBrickServiceInterface $objectBrickService,
-        private readonly DefinitionResolverInterface $definitionResolver
-
+        private readonly DefinitionResolverInterface $definitionResolver,
+        private readonly ToolResolverContractInterface $toolResolver,
+        private readonly LocalizedFieldResolverContractInterface $localizedFieldResolver,
     ) {
+    }
+
+    protected function doGetFallbackValues(): bool
+    {
+        return $this->localizedFieldResolver->doGetFallbackValues();
+    }
+
+    protected function getDefaultLanguage(): ?string
+    {
+        return $this->toolResolver->getDefaultLanguage();
     }
 
     /**
