@@ -21,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesserInterface;
-use Pimcore\Bundle\StaticResolverBundle\Contract\Lib\ToolResolverContractInterface;
-use Pimcore\Bundle\StaticResolverBundle\Contract\Models\DataObject\LocalizedFieldResolverContractInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
@@ -72,8 +72,8 @@ final class AdvancedColumnResolver implements
         private readonly TransformerLoaderInterface $transformerLoader,
         private readonly GridServiceInterface $gridService,
         private readonly ResolverTypeGuesserInterface $resolverTypeGuesser,
-        private readonly ToolResolverContractInterface $toolResolver,
-        private readonly LocalizedFieldResolverContractInterface $localizedFieldResolver,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
     }
 

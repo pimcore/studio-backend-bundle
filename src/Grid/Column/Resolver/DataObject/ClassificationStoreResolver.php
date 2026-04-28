@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Contract\Lib\ToolResolverContractInterface;
-use Pimcore\Bundle\StaticResolverBundle\Contract\Models\DataObject\LocalizedFieldResolverContractInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
@@ -57,8 +57,8 @@ final class ClassificationStoreResolver implements
         private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private readonly ServiceResolverInterface $classificationStoreServiceResolver,
         private readonly DataServiceInterface $dataService,
-        private readonly ToolResolverContractInterface $toolResolver,
-        private readonly LocalizedFieldResolverContractInterface $localizedFieldResolver,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
     }
 

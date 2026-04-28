@@ -41,7 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Bundle\StaticResolverBundle\Contract\Models\DataObject\LocalizedFieldResolverContractInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -79,7 +79,7 @@ final class GridService implements GridServiceInterface
         private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
-        private readonly LocalizedFieldResolverContractInterface $localizedFieldResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
     }
 
