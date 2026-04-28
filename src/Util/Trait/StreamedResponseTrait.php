@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
+use Closure;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -42,11 +43,12 @@ trait StreamedResponseTrait
         ?int $fileSize = null,
     ): StreamedResponse {
         $stream = $element->getStream();
+        $asset = $this->getAsset($element);
 
         if (!is_resource($stream)) {
             throw new ElementStreamResourceNotFoundException(
-                $element->getId(),
-                $element->getType()
+                $asset->getId(),
+                $asset->getType()
             );
         }
 
@@ -62,7 +64,7 @@ trait StreamedResponseTrait
             $this->getResponseHeaders(
                 mimeType: $element->getMimeType(),
                 fileSize: $fileSize,
-                filename: $element->getFilename(),
+                filename: $asset->getFilename(),
                 contentDisposition: $contentDisposition,
                 additionalHeaders: $additionalHeaders
             )
@@ -106,13 +108,17 @@ trait StreamedResponseTrait
         string $filename,
         FilesystemOperator $storage,
         string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
+        ?Closure $onStreamComplete = null,
     ): StreamedResponse {
         try {
             $stream = $storage->readStream($path);
 
             return new StreamedResponse(
-                function () use ($stream) {
+                function () use ($stream, $onStreamComplete) {
                     fpassthru($stream);
+                    if ($onStreamComplete !== null) {
+                        $onStreamComplete();
+                    }
                 },
                 HttpResponseCodes::SUCCESS->value,
                 $this->getResponseHeaders(
@@ -133,6 +139,15 @@ trait StreamedResponseTrait
             );
         }
 
+    }
+
+    private function getAsset(Asset|VideoImageThumbnailInterface|ImageThumbnailInterface $element): Asset
+    {
+        if ($element instanceof Asset) {
+            return $element;
+        }
+
+        return $element->getAsset();
     }
 
     private function getResponseHeaders(

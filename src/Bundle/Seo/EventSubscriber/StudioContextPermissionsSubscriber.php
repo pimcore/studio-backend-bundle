@@ -44,5 +44,12 @@ final readonly class StudioContextPermissionsSubscriber implements EventSubscrib
                 ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value
             )
         );
+
+        $this->permissionsService->add(
+            new ContextPermissionData(
+                'robotsTxt',
+                ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value
+            )
+        );
     }
 }
