@@ -42,4 +42,5 @@ enum StepConfig: string
     case CONFIG_TYPE_INT = 'int';
     case CONFIG_TYPE_STRING = 'string';
     case CONFIG_TYPE_BOOL = 'bool';
+    case ITEMS_TO_RESTORE = 'items_to_restore';
 }

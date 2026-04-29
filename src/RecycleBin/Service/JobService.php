@@ -13,18 +13,28 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 
+use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Element\ElementDescriptor;
+use function array_map;
+use function array_slice;
+use function count;
 
 /**
  * @internal
  */
 final readonly class JobService implements JobServiceInterface
 {
+    private const int RESTORE_BATCH_SIZE = 500;
+
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
@@ -54,5 +64,40 @@ final readonly class JobService implements JobServiceInterface
         );
 
         return $jobRun->getId();
+    }
+
+    public function createRestoreJob(array $sortedItemIds): int
+    {
+        $steps = [];
+        foreach ($this->chunkGenerator($sortedItemIds, self::RESTORE_BATCH_SIZE) as $batch) {
+            $steps[] = new JobStep(
+                JobSteps::RESTORE_ITEMS->value,
+                RestoreItemsMessage::class,
+                '',
+                [StepConfig::ITEMS_TO_RESTORE->value => $batch],
+            );
+        }
+
+        $job = new Job(
+            name: Jobs::RECYCLE_BIN_RESTORE->value,
+            steps: $steps,
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $this->securityService->getCurrentUser()->getId(),
+            Config::CONTEXT_STOP_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
+    }
+
+    private function chunkGenerator(array $items, int $size): Generator
+    {
+        $total = count($items);
+
+        for ($i = 0; $i < $total; $i += $size) {
+            yield array_slice($items, $i, $size);
+        }
     }
 }

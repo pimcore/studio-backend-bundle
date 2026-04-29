@@ -19,4 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 interface JobServiceInterface
 {
     public function createJob(string $jobName, string $jobStepName, string $messageFQCN, array $items): int;
+
+    /**
+     * @param int[] $sortedItemIds
+     */
+    public function createRestoreJob(array $sortedItemIds): int;
 }
