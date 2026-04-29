@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ResolverTypeGuesserInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
@@ -69,8 +71,22 @@ final class AdvancedColumnResolver implements
     public function __construct(
         private readonly TransformerLoaderInterface $transformerLoader,
         private readonly GridServiceInterface $gridService,
-        private readonly ResolverTypeGuesserInterface $resolverTypeGuesser
+        private readonly ResolverTypeGuesserInterface $resolverTypeGuesser,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
+    }
+
+    /** @see LocalizedValueTrait::doGetFallbackValues() */
+    protected function doGetFallbackValues(): bool
+    {
+        return $this->localizedFieldResolver->doGetFallbackValues();
+    }
+
+    /** @see LocalizedValueTrait::getDefaultLanguage() */
+    protected function getDefaultLanguage(): ?string
+    {
+        return $this->toolResolver->getDefaultLanguage();
     }
 
     public function getType(): string
@@ -211,7 +227,7 @@ final class AdvancedColumnResolver implements
             locale: $isLocalizable ? $column->getLocale() : null,
             type: $resolverType,
             group: $column->getGroup(),
-            config: $column->getConfig()
+            config: $column->getConfig(),
         );
 
         $data = null;
