@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RecycleBinEvent;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\DeleteItemsMessage;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
@@ -80,12 +79,9 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
             return null;
         }
 
-        return $this->jobService->createJob(
-            Jobs::RECYCLE_BIN_RESTORE->value,
-            JobSteps::RESTORE_ITEMS->value,
-            RestoreItemsMessage::class,
-            $items
-        );
+        $sortedIds = $this->recycleBinRepository->getItemIdsSortedByPath($items);
+
+        return $this->jobService->createRestoreJob($sortedIds);
     }
 
     /**

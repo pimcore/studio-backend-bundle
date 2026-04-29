@@ -22,4 +22,11 @@ use Pimcore\Model\Element\Recyclebin\Item\Listing;
 interface RecycleBinRepositoryInterface
 {
     public function getListing(FilterParameter $parameters): Listing;
+
+    /**
+     * @param int[] $ids
+     *
+     * @return int[]
+     */
+    public function getItemIdsSortedByPath(array $ids): array;
 }
