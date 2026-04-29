@@ -81,7 +81,6 @@ final class RecycleBinServiceTest extends Unit
         $this->assertSame(50, $result);
     }
 
-
     /**
      * @throws Exception
      */
@@ -107,6 +106,7 @@ final class RecycleBinServiceTest extends Unit
         $repository = $this->makeEmpty(RecycleBinRepositoryInterface::class, [
             'getItemIdsSortedByPath' => function (array $ids) use (&$capturedIds) {
                 $capturedIds = $ids;
+
                 // Simulate DB sorting by path: parent IDs come first
                 return [5, 10, 15];
             },
