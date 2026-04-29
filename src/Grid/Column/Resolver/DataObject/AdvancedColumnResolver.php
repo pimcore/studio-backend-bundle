@@ -77,13 +77,11 @@ final class AdvancedColumnResolver implements
     ) {
     }
 
-    #[\Override]
     protected function doGetFallbackValues(): bool
     {
         return $this->localizedFieldResolver->doGetFallbackValues();
     }
 
-    #[\Override]
     protected function getDefaultLanguage(): ?string
     {
         return $this->toolResolver->getDefaultLanguage();
