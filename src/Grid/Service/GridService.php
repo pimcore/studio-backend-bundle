@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
@@ -77,7 +78,8 @@ final class GridService implements GridServiceInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver
+        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
     }
 
@@ -130,11 +132,18 @@ final class GridService implements GridServiceInterface
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
-        return $this->getCollectionFromSearchResult(
-            $result,
-            $gridParameter,
-            ElementTypes::TYPE_OBJECT
-        );
+        $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
+        $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
+
+        try {
+            return $this->getCollectionFromSearchResult(
+                $result,
+                $gridParameter,
+                ElementTypes::TYPE_OBJECT
+            );
+        } finally {
+            $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
+        }
     }
 
     /**
