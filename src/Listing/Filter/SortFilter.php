@@ -30,8 +30,8 @@ final readonly class SortFilter implements FilterInterface
         }
 
         $sortFilter = $parameters->getSortFilter();
-        $listing->setOrderKey($sortFilter->getKey());
-        $listing->setOrder($sortFilter->getDirection());
+        $listing->setOrderKey([$sortFilter->getKey(), 'id']);
+        $listing->setOrder([$sortFilter->getDirection(), 'asc']);
 
         return $listing;
     }
