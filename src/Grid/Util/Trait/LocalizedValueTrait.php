@@ -24,11 +24,20 @@ trait LocalizedValueTrait
     private function getLocalizedValue(Column $column, ElementInterface $element): mixed
     {
         $getter = $this->getGetter($column->getKey());
-        if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
+        if (!$column->getLocale()) {
+            return $element->$getter();
         }
 
-        return $element->$getter();
+        $value = $element->$getter($column->getLocale());
+
+        if ($this->isEmptyValue($value) && $this->doGetFallbackValues()) {
+            $defaultLanguage = $this->getDefaultLanguage();
+            if ($defaultLanguage !== null && $defaultLanguage !== $column->getLocale()) {
+                $value = $element->$getter($defaultLanguage);
+            }
+        }
+
+        return $value;
     }
 
     private function getLocalizedValueFromKey(string $key, ?string $locale, ElementInterface $element): mixed
@@ -44,5 +53,20 @@ trait LocalizedValueTrait
     private function getGetter(string $key): string
     {
         return 'get' . ucfirst($key);
+    }
+
+    private function isEmptyValue(mixed $value): bool
+    {
+        return $value === null || $value === '';
+    }
+
+    protected function doGetFallbackValues(): bool
+    {
+        return false;
+    }
+
+    protected function getDefaultLanguage(): ?string
+    {
+        return null;
     }
 }
