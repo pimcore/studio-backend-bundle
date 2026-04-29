@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
 use JsonException;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -69,8 +71,22 @@ final class AdvancedColumnResolver implements
     public function __construct(
         private readonly TransformerLoaderInterface $transformerLoader,
         private readonly GridServiceInterface $gridService,
-        private readonly ResolverTypeGuesserInterface $resolverTypeGuesser
+        private readonly ResolverTypeGuesserInterface $resolverTypeGuesser,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
+    }
+
+    /** @see LocalizedValueTrait::doGetFallbackValues() */
+    protected function doGetFallbackValues(): bool
+    {
+        return $this->localizedFieldResolver->doGetFallbackValues();
+    }
+
+    /** @see LocalizedValueTrait::getDefaultLanguage() */
+    protected function getDefaultLanguage(): ?string
+    {
+        return $this->toolResolver->getDefaultLanguage();
     }
 
     public function getType(): string
@@ -211,7 +227,7 @@ final class AdvancedColumnResolver implements
             locale: $isLocalizable ? $column->getLocale() : null,
             type: $resolverType,
             group: $column->getGroup(),
-            config: $column->getConfig()
+            config: $column->getConfig(),
         );
 
         $data = null;

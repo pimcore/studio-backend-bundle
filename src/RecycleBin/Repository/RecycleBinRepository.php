@@ -34,4 +34,25 @@ final readonly class RecycleBinRepository implements RecycleBinRepositoryInterfa
 
         return $listing;
     }
+
+    public function getItemIdsSortedByPath(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $listing = new Listing();
+        $listing->setCondition(
+            'id IN (' . implode(',', array_map('intval', $ids)) . ')'
+        );
+        $listing->setOrderKey('path');
+        $listing->setOrder('ASC');
+
+        $sortedIds = [];
+        foreach ($listing->load() as $item) {
+            $sortedIds[] = $item->getId();
+        }
+
+        return $sortedIds;
+    }
 }
