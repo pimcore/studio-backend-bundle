@@ -65,11 +65,13 @@ final class ObjectBrickResolver implements
     ) {
     }
 
+    /** @see LocalizedValueTrait::doGetFallbackValues() */
     protected function doGetFallbackValues(): bool
     {
         return $this->localizedFieldResolver->doGetFallbackValues();
     }
 
+    /** @see LocalizedValueTrait::getDefaultLanguage() */
     protected function getDefaultLanguage(): ?string
     {
         return $this->toolResolver->getDefaultLanguage();
