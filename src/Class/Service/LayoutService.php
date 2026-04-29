@@ -126,7 +126,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         }
 
         $this->classDefinitionRepository->getClassDefinition($parameters->getClassName());
-        $className = '\\Pimcore\\Model\\DataObject\\' . $parameters->getClassName();
+        $className = '\\Pimcore\\Model\\DataObject\\' . ucfirst($parameters->getClassName());
 
         return new $className();
     }
