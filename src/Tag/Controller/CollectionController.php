@@ -25,10 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ParentI
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
