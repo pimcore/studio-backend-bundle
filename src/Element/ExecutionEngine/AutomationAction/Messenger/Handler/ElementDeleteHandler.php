@@ -18,15 +18,18 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
@@ -68,40 +71,63 @@ final class ElementDeleteHandler extends AbstractHandler
 
         $user = $validatedParameters->getUser();
         $parentElement = $validatedParameters->getSubject();
-        $element = $this->getElementById(
-            new ElementDescriptor(
-                $parentElement->getType(),
-                $this->extractConfigFieldFromJobStepConfig($message, DeleteServiceInterface::ELEMENT_TO_DELETE)
-            ),
-            $user,
-            $this->elementService
+
+        $items = $this->extractConfigFieldFromJobStepConfig(
+            $message,
+            StepConfig::ITEMS_TO_DELETE->value
         );
+        $totalItems = count($items);
+        $stepName = $this->getJobStep($message)->getName();
 
-        if ($element->getId() === $parentElement->getId()) {
-            try {
-                $this->elementDeleteService->deleteParentElement($element, $user);
-                $this->updateProgress(
-                    $this->publishService,
-                    $this->userTopicService,
-                    $jobRun,
-                    $this->getJobStep($message)->getName()
-                );
-            } catch (Exception $exception) {
-                $this->abort($this->getAbortData(
-                    Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
-                    [
-                        'type' => $element->getType(),
-                        'id' => $element->getId(),
-                        'message' => $exception->getMessage(),
-                    ],
-                ));
-            }
+        foreach ($items as $elementId) {
+            $element = $this->getElementById(
+                new ElementDescriptor(
+                    $parentElement->getType(),
+                    $elementId
+                ),
+                $user,
+                $this->elementService
+            );
 
-            return;
+            $this->deleteElement($element, $parentElement, $user);
+
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $stepName,
+                $totalItems,
+                $totalItems,
+            );
         }
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired(StepConfig::ITEMS_TO_DELETE->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ITEMS_TO_DELETE->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
+        );
+    }
+
+
+
+    /**
+     * @throws Exception
+     */
+    private function deleteElement(
+        ElementInterface $element,
+        ElementInterface $parentElement,
+        UserInterface $user
+    ): void {
+        $isParent = $element->getId() === $parentElement->getId();
 
         try {
-            $this->elementDeleteService->deleteElement($element, $user);
+            match ($isParent) {
+                true => $this->elementDeleteService->deleteParentElement($element, $user),
+                false => $this->elementDeleteService->deleteElement($element, $user),
+            };
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
@@ -112,18 +138,5 @@ final class ElementDeleteHandler extends AbstractHandler
                 ],
             ));
         }
-
-        $this->updateProgress(
-            $this->publishService,
-            $this->userTopicService,
-            $jobRun,
-            $this->getJobStep($message)->getName()
-        );
-    }
-
-    protected function configureStep(): void
-    {
-        $this->stepConfiguration->setRequired(DeleteServiceInterface::ELEMENT_TO_DELETE);
-        $this->stepConfiguration->setAllowedTypes(DeleteServiceInterface::ELEMENT_TO_DELETE, 'int');
     }
 }

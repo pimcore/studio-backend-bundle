@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine;
 
+use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -23,16 +24,21 @@ use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function array_slice;
+use function count;
 
 /**
  * @internal
  */
 final readonly class DeleteService implements DeleteServiceInterface
 {
+    private const int DELETE_BATCH_SIZE = 500;
+
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent
     ) {
@@ -55,30 +61,22 @@ final readonly class DeleteService implements DeleteServiceInterface
             );
         }
 
-        $jobSteps = array_merge(
-            $jobSteps,
-            array_map(
-                static fn (int $id) => new JobStep(
-                    JobSteps::ELEMENT_DELETION->value,
-                    ElementDeleteMessage::class,
-                    '',
-                    [self::ELEMENT_TO_DELETE => $id]
-                ),
-                $childrenIds
-            )
-        );
+        // Append parent ID to the end so it's deleted last
+        $allIds = array_merge($childrenIds, [$element->getId()]);
 
-        $jobSteps[] = new JobStep(
-            JobSteps::ELEMENT_DELETION->value,
-            ElementDeleteMessage::class,
-            '',
-            [self::ELEMENT_TO_DELETE => $element->getId()]
-        );
+        foreach ($this->chunkGenerator($allIds, self::DELETE_BATCH_SIZE) as $batch) {
+            $jobSteps[] = new JobStep(
+                JobSteps::ELEMENT_DELETION->value,
+                ElementDeleteMessage::class,
+                '',
+                [StepConfig::ITEMS_TO_DELETE->value => $batch],
+            );
+        }
 
         $job = new Job(
             name: $this->getJobName($elementType),
             steps: $jobSteps,
-            selectedElements:[
+            selectedElements: [
                 new ElementDescriptor(
                     $elementType,
                     $element->getId()
@@ -100,18 +98,23 @@ final readonly class DeleteService implements DeleteServiceInterface
         UserInterface $user,
         string $elementType,
     ): int {
-        $jobSteps = array_map(
-            static fn (ElementInterface $element) => new JobStep(
+        $elementIds = array_map(
+            static fn (ElementInterface $element) => $element->getId(),
+            $elements
+        );
+
+        $jobSteps = [];
+        foreach ($this->chunkGenerator($elementIds, self::DELETE_BATCH_SIZE) as $batch) {
+            $jobSteps[] = new JobStep(
                 JobSteps::ELEMENT_DELETION->value,
                 BatchDeleteMessage::class,
                 '',
                 [
-                    self::ELEMENT_TO_DELETE => $element->getId(),
-                    self::ELEMENT_TYPE_TO_DELETE => $elementType,
-                ]
-            ),
-            $elements
-        );
+                    StepConfig::ITEMS_TO_BATCH_DELETE->value => $batch,
+                    StepConfig::ELEMENT_TYPE_TO_BATCH_DELETE->value => $elementType,
+                ],
+            );
+        }
 
         $job = new Job(
             name: $this->getBatchJobName($elementType),
@@ -150,5 +153,14 @@ final readonly class DeleteService implements DeleteServiceInterface
             ElementTypes::TYPE_DATA_OBJECT => Jobs::BATCH_DELETE_DATA_OBJECTS->value,
             default => throw new InvalidElementTypeException($type),
         };
+    }
+
+    private function chunkGenerator(array $items, int $size): Generator
+    {
+        $total = count($items);
+
+        for ($i = 0; $i < $total; $i += $size) {
+            yield array_slice($items, $i, $size);
+        }
     }
 }
