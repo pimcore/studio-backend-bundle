@@ -198,7 +198,10 @@ final class LogRepository implements LogRepositoryInterface
     private function addSorting(QueryBuilder $queryBuilder, SortFilter $sortFilter): void
     {
         $queryBuilder
-            ->orderBy($sortFilter->getKey(), $sortFilter->getDirection());
+            ->orderBy(
+                $this->dbResolver->get()->quoteIdentifier($sortFilter->getKey()),
+                $sortFilter->getDirection()
+            );
     }
 
     /**
