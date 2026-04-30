@@ -45,4 +45,5 @@ enum StepConfig: string
     case ITEMS_TO_BATCH_DELETE = 'items_to_batch_delete';
     case ITEMS_TO_DELETE = 'items_to_delete';
     case ELEMENT_TYPE_TO_BATCH_DELETE = 'element_type_to_batch_delete';
+    case ITEMS_TO_RESTORE = 'items_to_restore';
 }
