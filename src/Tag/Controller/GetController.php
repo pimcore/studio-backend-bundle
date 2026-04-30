@@ -22,11 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -42,7 +42,6 @@ final class GetController extends AbstractApiController
     }
 
     #[Route('/tags/{id}', name: 'pimcore_studio_api_get_tag', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[Get(
         path: self::PREFIX . '/tags/{id}',
         operationId: 'tag_get_by_id',
@@ -61,6 +60,14 @@ final class GetController extends AbstractApiController
     ])]
     public function getTags(int $id): JsonResponse
     {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                UserPermissions::TAGS_CONFIGURATION->value,
+                UserPermissions::TAGS_SEARCH->value,
+            ])
+        );
+
         return $this->jsonResponse($this->tagService->getTag($id));
     }
 }
