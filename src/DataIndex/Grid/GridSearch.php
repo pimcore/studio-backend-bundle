@@ -114,7 +114,7 @@ final readonly class GridSearch implements GridSearchInterface
     ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult {
         $type = $this->getStudioElementType($type);
         /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
-        $query = $this->getSearchQuery($type, $gridParameter, $user, );
+        $query = $this->getSearchQuery($type, $gridParameter, $user);
 
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
