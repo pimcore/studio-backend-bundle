@@ -18,6 +18,7 @@ use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 
 /**
@@ -59,14 +60,15 @@ final readonly class JobRunRepository implements JobRunRepositoryInterface
         $qb->andWhere('jr.ownerId = :ownerId')
             ->setParameter('ownerId', $ownerId);
 
-        $qb->setFirstResult($parameter->getFilters()->getStart());
-        $qb->setMaxResults($parameter->getFilters()->getPageSize());
+        $filters = $parameter->getFilters() ?? new FilterParameter();
+        $qb->setFirstResult($filters->getStart());
+        $qb->setMaxResults($filters->getPageSize());
 
         $this->applyFilter($parameter, $qb);
 
         $qb->orderBy(
-            'jr.'.$parameter->getFilters()->getSortFilter()->getKey(),
-            $parameter->getFilters()->getSortFilter()->getDirection());
+            'jr.'.$filters->getSortFilter()->getKey(),
+            $filters->getSortFilter()->getDirection());
 
         // Add execution contexts condition
         $qb->andWhere('jr.executionContext IN (:executionContexts)')
