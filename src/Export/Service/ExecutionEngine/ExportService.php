@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine;
 
-use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -24,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ChunkGeneratorTrait;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\XlsxCreationMessage;
@@ -35,14 +35,14 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
-use function array_slice;
-use function count;
 
 /**
  * @internal
  */
 final readonly class ExportService implements ExportServiceInterface
 {
+    use ChunkGeneratorTrait;
+
     private const int EXPORT_BATCH_SIZE = 500;
 
     public function __construct(
@@ -174,15 +174,6 @@ final readonly class ExportService implements ExportServiceInterface
         }
 
         return $steps;
-    }
-
-    private function chunkGenerator(array $elements, int $size): Generator
-    {
-        $total = count($elements);
-
-        for ($i = 0; $i < $total; $i += $size) {
-            yield array_slice($elements, $i, $size);
-        }
     }
 
     private function getExportFileStep(array $settings, string $exportFormat): JobStep

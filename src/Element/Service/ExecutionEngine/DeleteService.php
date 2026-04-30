@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine;
 
-use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -25,18 +24,19 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ChunkGeneratorTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use function array_slice;
-use function count;
 
 /**
  * @internal
  */
 final readonly class DeleteService implements DeleteServiceInterface
 {
+    use ChunkGeneratorTrait;
+
     private const int DELETE_BATCH_SIZE = 500;
 
     public function __construct(
@@ -153,14 +153,5 @@ final readonly class DeleteService implements DeleteServiceInterface
             ElementTypes::TYPE_DATA_OBJECT => Jobs::BATCH_DELETE_DATA_OBJECTS->value,
             default => throw new InvalidElementTypeException($type),
         };
-    }
-
-    private function chunkGenerator(array $items, int $size): Generator
-    {
-        $total = count($items);
-
-        for ($i = 0; $i < $total; $i += $size) {
-            yield array_slice($items, $i, $size);
-        }
     }
 }
