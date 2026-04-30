@@ -25,8 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Config;
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
+use function array_unique;
+use function array_values;
 use function in_array;
 use function sprintf;
 
@@ -41,6 +44,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         private SettingsProviderInterface $systemSettingsProvider,
         private Connection $db,
         private SecurityServiceInterface $securityService,
+        private Config $config,
     ) {
         $settings = $this->systemSettingsProvider->getSettings();
         $this->validLanguages = $settings['validLanguages'] ?? [];
@@ -192,10 +196,10 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 
     public function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing
     {
+        $this->assertValidDomain($domain);
+
         $list = new Translation\Listing();
         $list->setDomain($domain);
-        $list->setOrder('asc');
-        $list->setOrderKey('translations_' . $domain . '.key', false);
 
         return $list;
     }
@@ -243,6 +247,17 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     {
         if (!in_array($locale, $this->validLanguages, true)) {
             throw new InvalidLocaleException($locale);
+        }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function assertValidDomain(string $domain): void
+    {
+        $allowedDomains = array_values(array_unique($this->config['translations']['domains'] ?? []));
+        if (!in_array($domain, $allowedDomains, true)) {
+            throw new NotFoundException('Translation Domain', $domain);
         }
     }
 }
