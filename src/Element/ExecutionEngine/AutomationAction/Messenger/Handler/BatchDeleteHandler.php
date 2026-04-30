@@ -96,7 +96,7 @@ final class BatchDeleteHandler extends AbstractHandler
                 $jobRun,
                 $stepName,
                 $totalItems,
-                $totalItems,
+                100,
             );
         }
     }

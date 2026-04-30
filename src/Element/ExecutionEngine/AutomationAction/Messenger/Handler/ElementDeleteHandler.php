@@ -81,15 +81,12 @@ final class ElementDeleteHandler extends AbstractHandler
 
         foreach ($items as $elementId) {
             $element = $this->getElementById(
-                new ElementDescriptor(
-                    $parentElement->getType(),
-                    $elementId
-                ),
+                new ElementDescriptor($parentElement->getType(), $elementId),
                 $user,
                 $this->elementService
             );
 
-            $this->deleteElement($element, $parentElement, $user);
+            $this->deleteElement($element, $parentElement->getId(), $user);
 
             $this->updateProgress(
                 $this->publishService,
@@ -97,7 +94,7 @@ final class ElementDeleteHandler extends AbstractHandler
                 $jobRun,
                 $stepName,
                 $totalItems,
-                $totalItems,
+                100,
             );
         }
     }
@@ -118,15 +115,15 @@ final class ElementDeleteHandler extends AbstractHandler
      */
     private function deleteElement(
         ElementInterface $element,
-        ElementInterface $parentElement,
+        int $parentId,
         UserInterface $user
     ): void {
-        $isParent = $element->getId() === $parentElement->getId();
+        $isParent = $element->getId() === $parentId;
 
         try {
             match ($isParent) {
                 true => $this->elementDeleteService->deleteParentElement($element, $user),
-                false => $this->elementDeleteService->deleteElement($element, $user),
+                false => $this->elementDeleteService->deleteElement($element, $user, true),
             };
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
