@@ -112,8 +112,9 @@ final readonly class GridSearch implements GridSearchInterface
         GridParameter $gridParameter,
         UserInterface $user
     ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult {
+        $type = $this->getStudioElementType($type);
         /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
-        $query = $this->getSearchQuery($type, $gridParameter, $user);
+        $query = $this->getSearchQuery($type, $gridParameter, $user, );
 
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
@@ -131,6 +132,7 @@ final readonly class GridSearch implements GridSearchInterface
         GridParameter $gridParameter,
         UserInterface $user
     ): array {
+        $type = $this->getStudioElementType($type);
         /** @var AssetQueryInterface|DataObjectQueryInterface $query */
         $query = $this->getSearchQuery($type, $gridParameter, $user);
 
@@ -147,7 +149,6 @@ final readonly class GridSearch implements GridSearchInterface
         UserInterface $user
     ): QueryInterface {
         $filter = $gridParameter->getFilters();
-        $type = $this->getStudioElementType($type);
         $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
 
         $query = $this->queryFactory->create($type);
