@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service\ExecutionEngine;
 
+use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -25,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Messages\BatchTagOperationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchOperationParameters;
@@ -41,6 +43,8 @@ use function sprintf;
 final readonly class BatchService implements BatchServiceInterface
 {
     use ElementProviderTrait;
+
+    private const int BATCH_TAG_SIZE = 500;
 
     public function __construct(
         private ElementSearchServiceInterface $elementSearchService,
@@ -69,23 +73,22 @@ final readonly class BatchService implements BatchServiceInterface
             new ElementParameters($parameters->getType(), $parameters->getId())
         );
 
+        $jobSteps = [];
+        foreach ($this->chunkGenerator($childrenIds, self::BATCH_TAG_SIZE) as $batch) {
+            $jobSteps[] = new JobStep(
+                JobSteps::ELEMENT_DELETION->value,
+                BatchTagOperationMessage::class,
+                '',
+                [
+                    StepConfig::ELEMENTS_TO_TAG->value => $batch,
+                    StepConfig::ELEMENT_TYPE_TO_TAG->value => $parameters->getType(),
+                ],
+            );
+        }
+
         $job = new Job(
             name: $this->getJobName($parameters->getOperation()),
-            steps: [
-                new JobStep(
-                    $this->getJobStepName($parameters->getOperation()),
-                    BatchTagOperationMessage::class,
-                    '',
-                    []
-                ),
-            ],
-            selectedElements: array_map(
-                static fn (int $id) => new ElementDescriptor(
-                    $parameters->getType(),
-                    $id
-                ),
-                $childrenIds
-            ),
+            steps: $jobSteps,
             environmentData: [
                 EnvironmentVariables::BATCH_TAG_OPERATION->value => $parameters->getOperation(),
                 EnvironmentVariables::TAG_IDS->value => $tagIds,
@@ -112,5 +115,15 @@ final readonly class BatchService implements BatchServiceInterface
         return $operation === BatchOperations::ASSIGN->value ?
             JobSteps::ELEMENT_BATCH_TAG_ASSIGN->value :
             JobSteps::ELEMENT_BATCH_TAG_REPLACE->value;
+    }
+
+    // TODO: replace with ChunkGeneratorTrait once https://github.com/pimcore/studio-backend-bundle/pull/1800 is merged
+    private function chunkGenerator(array $items, int $size): Generator
+    {
+        $total = count($items);
+
+        for ($i = 0; $i < $total; $i += $size) {
+            yield array_slice($items, $i, $size);
+        }
     }
 }
