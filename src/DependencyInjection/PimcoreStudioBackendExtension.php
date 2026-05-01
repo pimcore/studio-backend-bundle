@@ -268,14 +268,19 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ]);
         }
 
-        foreach ($containerConfig['mercure_settings'] as $key => $setting) {
+        $processedConfig = $this->processConfiguration(
+            new Configuration(),
+            $container->getExtensionConfig(Configuration::ROOT_NODE)
+        );
+
+        foreach ($processedConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;
             }
 
             $container->setParameter(
                 'pimcore_studio_backend.mercure_settings.' . $key,
-                $containerConfig['mercure_settings'][$key]
+                $processedConfig['mercure_settings'][$key]
             );
         }
 
