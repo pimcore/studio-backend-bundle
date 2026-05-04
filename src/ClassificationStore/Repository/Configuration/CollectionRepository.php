@@ -100,7 +100,7 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
     {
         $config = $this->getById($id);
         $config->setName($name);
-        $config->setDescription($description);
+        $config->setDescription($description ?? '');
 
         try {
             $config->save();
