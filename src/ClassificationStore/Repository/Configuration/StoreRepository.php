@@ -94,7 +94,7 @@ final readonly class StoreRepository implements StoreRepositoryInterface
         }
 
         $config->setName($name);
-        $config->setDescription($description);
+        $config->setDescription($description ?? '');
 
         try {
             $config->save();
