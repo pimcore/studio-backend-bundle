@@ -43,6 +43,7 @@ final readonly class HydratorService implements HydratorServiceInterface
 
         $searchData = $item->getSearchIndexData();
         $navigationExclude = $searchData['standard_fields'][DocumentStandardField::NAVIGATION_EXCLUDE->value] ?? false;
+        $staticGeneratorEnabled = $searchData['system_fields']['staticGeneratorEnabled'] ?? false;
 
         return [
             $item->getFullPath(),
@@ -56,7 +57,7 @@ final readonly class HydratorService implements HydratorServiceInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
-            $this->iconService->getIconForDocument($item->getType()),
+            $this->iconService->getIconForDocument($item->getType(), $staticGeneratorEnabled),
             $item->getUserOwner(),
             $item->getModificationDate(),
             $item->getLocked(),
