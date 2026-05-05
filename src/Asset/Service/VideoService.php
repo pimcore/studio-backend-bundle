@@ -14,7 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\VideoTypeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video\VideoThumbnailStatus;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video\VideoType;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Video as VideoAsset;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Video;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -25,6 +30,7 @@ final readonly class VideoService implements VideoServiceInterface
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
+        private ThumbnailServiceInterface $thumbnailService,
     ) {
     }
 
@@ -39,5 +45,21 @@ final readonly class VideoService implements VideoServiceInterface
         }
 
         return $types;
+    }
+
+    public function getThumbnailStatus(Asset $video, string $thumbnailName): VideoThumbnailStatus
+    {
+        if (!$video instanceof VideoAsset) {
+            throw new InvalidElementTypeException($video->getType(), ElementTypes::TYPE_ASSET);
+        }
+
+        $configuration = $this->thumbnailService->getVideoThumbnailConfig($thumbnailName);
+        $thumbnail = $video->getThumbnail($configuration, ['mp4']);
+
+        $status = is_array($thumbnail) && isset($thumbnail['status'])
+            ? (string) $thumbnail['status']
+            : VideoThumbnailStatus::STATUS_NOT_STARTED;
+
+        return new VideoThumbnailStatus($status);
     }
 }

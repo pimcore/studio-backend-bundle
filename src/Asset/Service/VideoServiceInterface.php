@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video\VideoThumbnailStatus;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video\VideoType;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
+use Pimcore\Model\Asset;
 
 /**
  * @internal
@@ -24,4 +28,10 @@ interface VideoServiceInterface
      * @return VideoType[]
      */
     public function getVideoTypes(): array;
+
+    /**
+     * @throws InvalidElementTypeException
+     * @throws InvalidThumbnailException
+     */
+    public function getThumbnailStatus(Asset $video, string $thumbnailName): VideoThumbnailStatus;
 }
