@@ -99,7 +99,7 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         $job = new Job(
-            Jobs::PATCH_ELEMENTS->value,
+            Jobs::PATCH_FOLDER_ELEMENTS->value,
             [
                 new JobStep(
                     JobSteps::ELEMENT_FOLDER_PATCHING->value,

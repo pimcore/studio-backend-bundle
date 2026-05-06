@@ -43,6 +43,7 @@ final class JobRunListHydrator implements JobRunListHydratorInterface
             totalSteps: $totalSteps,
             creationDate: $jobRun->getCreationDate(),
             modificationDate: $jobRun->getModificationDate(),
+            jobName: $jobRun->getJob()?->getName() ?? '',
         );
     }
 

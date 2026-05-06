@@ -44,7 +44,10 @@ final readonly class PatchSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !== Jobs::PATCH_ELEMENTS->value) {
+        if (!in_array($event->getJobName(), [
+            Jobs::PATCH_ELEMENTS->value,
+            Jobs::PATCH_FOLDER_ELEMENTS->value,
+        ], true)) {
             return;
         }
 
