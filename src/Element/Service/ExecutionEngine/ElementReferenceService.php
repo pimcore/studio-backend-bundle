@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine;
 
 use Exception;
-use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -28,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ChunkGeneratorTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Document;
@@ -39,6 +39,8 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class ElementReferenceService implements ElementReferenceServiceInterface
 {
+    use ChunkGeneratorTrait;
+
     private const int REWRITE_REFERENCES_BATCH_SIZE = 500;
 
     public function __construct(
@@ -161,15 +163,5 @@ final readonly class ElementReferenceService implements ElementReferenceServiceI
 
         $object->setUserModification($user->getId());
         $object->save();
-    }
-
-    // TODO: replace with ChunkGeneratorTrait once https://github.com/pimcore/studio-backend-bundle/pull/1800 is merged
-    private function chunkGenerator(array $items, int $size): Generator
-    {
-        $total = count($items);
-
-        for ($i = 0; $i < $total; $i += $size) {
-            yield array_slice($items, $i, $size);
-        }
     }
 }

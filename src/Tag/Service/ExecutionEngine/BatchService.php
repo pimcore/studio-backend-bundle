@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service\ExecutionEngine;
 
-use Generator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -27,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ChunkGeneratorTrait;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Messages\BatchTagOperationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchOperationParameters;
@@ -42,6 +42,7 @@ use function sprintf;
 final readonly class BatchService implements BatchServiceInterface
 {
     use ElementProviderTrait;
+    use ChunkGeneratorTrait;
 
     private const int BATCH_TAG_SIZE = 500;
 
@@ -114,15 +115,5 @@ final readonly class BatchService implements BatchServiceInterface
         return $operation === BatchOperations::ASSIGN->value ?
             JobSteps::ELEMENT_BATCH_TAG_ASSIGN->value :
             JobSteps::ELEMENT_BATCH_TAG_REPLACE->value;
-    }
-
-    // TODO: replace with ChunkGeneratorTrait once https://github.com/pimcore/studio-backend-bundle/pull/1800 is merged
-    private function chunkGenerator(array $items, int $size): Generator
-    {
-        $total = count($items);
-
-        for ($i = 0; $i < $total; $i += $size) {
-            yield array_slice($items, $i, $size);
-        }
     }
 }
