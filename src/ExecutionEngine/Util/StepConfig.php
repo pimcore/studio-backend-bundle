@@ -24,9 +24,11 @@ enum StepConfig: string
     case CUSTOM_REPORT_TO_EXPORT = 'custom_report_to_export';
     case ELEMENT_CLASS_ID = 'element_class_id';
     case ELEMENTS_TO_EXPORT = 'elements_to_export';
+    case ELEMENTS_TO_REWRITE_REFERENCES = 'elements_to_rewrite_references';
     case ELEMENTS_TO_TAG = 'elements_to_tag';
     case ELEMENT_TYPE = 'element_type';
     case ELEMENT_TYPE_TO_TAG = 'element_type_to_tag';
+    case ELEMENT_TYPE_TO_REWRITE_REFERENCES = 'element_type_to_rewrite_references';
     case EXPORT_FORMAT = 'export_format';
     case FOLDER_TO_EXPORT = 'folder_to_export';
     case GRID_EXPORT_DATA = 'grid_export_data';

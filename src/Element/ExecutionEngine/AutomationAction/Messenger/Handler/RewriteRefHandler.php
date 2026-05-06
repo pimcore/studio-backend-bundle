@@ -22,10 +22,12 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -57,7 +59,7 @@ final class RewriteRefHandler extends AbstractHandler
         }
 
         $jobRun = $this->getJobRun($message);
-        $validatedParameters = $this->validateFullParameters(
+        $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
             $this->userResolver,
@@ -71,36 +73,64 @@ final class RewriteRefHandler extends AbstractHandler
             $this->abort($validatedParameters);
         }
 
+        $user = $validatedParameters->getUser();
         $environmentVariables = $validatedParameters->getEnvironmentData();
-        $element = $this->getElementById(
-            $validatedParameters->getSubject(),
-            $validatedParameters->getUser(),
-            $this->elementService
+        $rewriteConfiguration = $environmentVariables[EnvironmentVariables::REWRITE_CONFIGURATION->value];
+        $rewriteParameters = $environmentVariables[EnvironmentVariables::REWRITE_PARAMETERS->value];
+
+        $elementIds = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENTS_TO_REWRITE_REFERENCES->value);
+        $elementType = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TYPE_TO_REWRITE_REFERENCES->value);
+        $totalItems = count($elementIds);
+        $stepName = $this->getJobStep($message)->getName();
+
+        foreach ($elementIds as $elementId) {
+            $element = $this->getElementById(
+                new ElementDescriptor($elementType, $elementId),
+                $user,
+                $this->elementService,
+            );
+
+            try {
+                $this->elementReferenceService->rewriteElementReferences(
+                    $user,
+                    $element,
+                    $rewriteConfiguration,
+                    $rewriteParameters,
+                );
+            } catch (Exception $exception) {
+                $this->abort($this->getAbortData(
+                    Config::ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE->value,
+                    [
+                        'type' => $element->getType(),
+                        'id' => $element->getId(),
+                        'message' => $exception->getMessage(),
+                    ],
+                ));
+            }
+
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $stepName,
+                $totalItems,
+                100,
+            );
+        }
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENTS_TO_REWRITE_REFERENCES->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENTS_TO_REWRITE_REFERENCES->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
 
-        try {
-            $this->elementReferenceService->rewriteElementReferences(
-                $validatedParameters->getUser(),
-                $element,
-                $environmentVariables[EnvironmentVariables::REWRITE_CONFIGURATION->value],
-                $environmentVariables[EnvironmentVariables::REWRITE_PARAMETERS->value],
-            );
-        } catch (Exception $exception) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE->value,
-                [
-                    'type' => $element->getType(),
-                    'id' => $element->getId(),
-                    'message' => $exception->getMessage(),
-                ],
-            ));
-        }
-
-        $this->updateProgress(
-            $this->publishService,
-            $this->userTopicService,
-            $jobRun,
-            $this->getJobStep($message)->getName()
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TYPE_TO_REWRITE_REFERENCES->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENT_TYPE_TO_REWRITE_REFERENCES->value,
+            StepConfig::CONFIG_TYPE_STRING->value
         );
     }
 }

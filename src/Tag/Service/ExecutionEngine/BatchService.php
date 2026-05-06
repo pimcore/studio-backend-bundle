@@ -34,7 +34,6 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Model\Element\ElementDescriptor;
 use function sprintf;
 
 /**
@@ -76,7 +75,7 @@ final readonly class BatchService implements BatchServiceInterface
         $jobSteps = [];
         foreach ($this->chunkGenerator($childrenIds, self::BATCH_TAG_SIZE) as $batch) {
             $jobSteps[] = new JobStep(
-                JobSteps::ELEMENT_DELETION->value,
+                $this->getJobStepName($parameters->getOperation()),
                 BatchTagOperationMessage::class,
                 '',
                 [
