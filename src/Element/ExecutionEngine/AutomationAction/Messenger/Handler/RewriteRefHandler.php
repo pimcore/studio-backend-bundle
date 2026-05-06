@@ -78,8 +78,14 @@ final class RewriteRefHandler extends AbstractHandler
         $rewriteConfiguration = $environmentVariables[EnvironmentVariables::REWRITE_CONFIGURATION->value];
         $rewriteParameters = $environmentVariables[EnvironmentVariables::REWRITE_PARAMETERS->value];
 
-        $elementIds = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENTS_TO_REWRITE_REFERENCES->value);
-        $elementType = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TYPE_TO_REWRITE_REFERENCES->value);
+        $elementIds = $this->extractConfigFieldFromJobStepConfig(
+            $message,
+            StepConfig::ELEMENTS_TO_REWRITE_REFERENCES->value
+        );
+        $elementType = $this->extractConfigFieldFromJobStepConfig(
+            $message,
+            StepConfig::ELEMENT_TYPE_TO_REWRITE_REFERENCES->value
+        );
         $totalItems = count($elementIds);
         $stepName = $this->getJobStep($message)->getName();
 
