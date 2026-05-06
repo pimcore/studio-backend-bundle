@@ -301,6 +301,22 @@ bundle_seo_robots_txt_update_description: |
     Update the robots.txt configuration for all sites. Saves the provided site-keyed robots.txt content to the settings store.
 bundle_seo_robots_txt_update_summary: Update robots.txt configuration
 bundle_seo_robots_txt_update_success_response: Updated robots.txt configuration data
+cache_clear_description: |
+    Clear the Pimcore and/or Symfony application cache.
+    Use query parameters to selectively clear only one cache type.
+cache_clear_summary: Clear application cache
+cache_clear_success_response: Cache cleared successfully
+cache_clear_only_pimcore_cache_description: Only clear the Pimcore cache
+cache_clear_only_symfony_cache_description: Only clear the Symfony cache
+cache_clear_output_description: |
+    Clear the full-page output cache including output lifetime cache entries.
+cache_clear_output_summary: Clear output cache
+cache_clear_output_success_response: Output cache cleared successfully
+cache_clear_temporary_files_description: |
+    Clear all temporary files including thumbnails, asset cache, and system temp files.
+cache_clear_temporary_files_summary: Clear temporary files
+cache_clear_temporary_files_success_response: Temporary files cleared successfully
+tag_cache_description: Cache management endpoints
 class_all_layout_collection_description: |
     Get all available layouts for classes.
 class_all_layout_collection_success_response: List of all available class layouts
