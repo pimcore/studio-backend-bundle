@@ -26,7 +26,7 @@ interface IconServiceInterface
 
     public function getIconForDataObject(DataObjectSearchResultItem|DataObject $dataObject): ElementIcon;
 
-    public function getIconForDocument(string $documentType, bool $staticGeneratorEnabled = false): ElementIcon;
+    public function getIconForDocument(string $documentType): ElementIcon;
 
     public function getIconForTag(): string;
 

@@ -101,14 +101,14 @@ final readonly class IconService implements IconServiceInterface
         return new ElementIcon(ElementIconTypes::NAME->value, $value);
     }
 
-    public function getIconForDocument(string $documentType, bool $staticGeneratorEnabled = false): ElementIcon
+    public function getIconForDocument(string $documentType): ElementIcon
     {
         $value = match ($documentType) {
             DocumentTypes::EMAIL->value => 'email',
             DocumentTypes::HARDLINK->value => 'hardlink',
             ElementTypes::TYPE_FOLDER => 'folder',
             DocumentTypes::LINK->value => 'document-link',
-            DocumentTypes::PAGE->value => $staticGeneratorEnabled ? 'page_static' : 'document',
+            DocumentTypes::PAGE->value => 'document',
             DocumentTypes::SNIPPET->value => 'snippet',
             default => self::DEFAULT_ICON
         };
