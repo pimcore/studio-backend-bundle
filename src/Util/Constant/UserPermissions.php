@@ -58,4 +58,7 @@ enum UserPermissions: string
     case CLASSIFICATION_STORE = 'classificationstore';
     case SYSTEM_APPEARANCE_SETTINGS = 'system_appearance_settings';
     case SYSTEM_SETTINGS = 'system_settings';
+    case CLEAR_CACHE = 'clear_cache';
+    case CLEAR_FULLPAGE_CACHE = 'clear_fullpage_cache';
+    case CLEAR_TEMP_FILES = 'clear_temp_files';
 }

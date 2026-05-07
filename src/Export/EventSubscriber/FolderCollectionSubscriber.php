@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use function in_array;
 
 /**
  * @internal
@@ -45,8 +46,10 @@ final readonly class FolderCollectionSubscriber implements EventSubscriberInterf
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !== Jobs::COLLECT_EXPORT_FOLDER_ELEMENTS->value) {
-
+        if (!in_array($event->getJobName(), [
+            Jobs::COLLECT_CSV_FOLDER_EXPORT_ELEMENTS->value,
+            Jobs::COLLECT_XLSX_FOLDER_EXPORT_ELEMENTS->value,
+        ], true)) {
             return;
         }
 

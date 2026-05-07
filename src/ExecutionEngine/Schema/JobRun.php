@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'JobRun',
     required: [
         'id', 'ownerId', 'state', 'executionContext', 'totalElements', 'currentMessage',
-        'jobRunChildId', 'currentStep', 'totalSteps', 'creationDate', 'modificationDate',
+        'jobRunChildId', 'currentStep', 'totalSteps', 'creationDate', 'modificationDate', 'jobName',
     ],
     type: 'object'
 )]
@@ -56,6 +56,8 @@ final class JobRun implements AdditionalAttributesInterface
         private readonly ?int $creationDate = null,
         #[Property(description: 'Modification date', type: 'integer', example: null)]
         private readonly ?int $modificationDate = null,
+        #[Property(description: 'The name of the job', type: 'string', example: 'studio_ee_job_delete_assets')]
+        private readonly string $jobName = '',
     ) {
     }
 
@@ -112,5 +114,10 @@ final class JobRun implements AdditionalAttributesInterface
     public function getTotalSteps(): ?int
     {
         return $this->totalSteps;
+    }
+
+    public function getJobName(): string
+    {
+        return $this->jobName;
     }
 }
