@@ -35,6 +35,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_authorization_description'
 )]
 #[Tag(
+    name: Tags::Cache->value,
+    description: 'tag_cache_description',
+)]
+#[Tag(
     name: Tags::ClassDefinition->value,
     description: 'tag_class_description'
 )]
@@ -175,6 +179,7 @@ enum Tags: string
     case BundleApplicationLogger = 'Bundle Application Logger';
     case BundleCustomReports = 'Bundle Custom Reports';
     case BundleSeo = 'Bundle Seo';
+    case Cache = 'Cache';
     case ClassDefinition = 'Class Definition';
     case ClassificationStore = 'Classification Store';
     case DataObjects = 'Data Objects';

@@ -140,7 +140,9 @@ final readonly class ExportService implements ExportServiceInterface
     ): int {
         $name = $this->createJobNameByFormat($exportFormat);
         if ($isFolder) {
-            $name = Jobs::COLLECT_EXPORT_FOLDER_ELEMENTS->value;
+            $name = $exportFormat === ExportFormat::XLSX->value
+                ? Jobs::COLLECT_XLSX_FOLDER_EXPORT_ELEMENTS->value
+                : Jobs::COLLECT_CSV_FOLDER_EXPORT_ELEMENTS->value;
         }
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
