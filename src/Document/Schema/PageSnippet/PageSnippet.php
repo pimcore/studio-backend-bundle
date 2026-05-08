@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     required: [
         'title',
         'description',
+        'staticGeneratorEnabled',
     ],
     type: 'object'
 )]
@@ -55,6 +56,8 @@ final class PageSnippet extends Document
         private readonly ?string $title = null,
         #[Property(description: 'Description of the Page Snippet', type: 'string', example: 'Description')]
         private readonly ?string $description = null,
+        #[Property(description: 'Static generator enabled', type: 'boolean', example: false)]
+        private readonly bool $staticGeneratorEnabled = false,
     ) {
         parent::__construct(
             $fullPath,
@@ -88,5 +91,10 @@ final class PageSnippet extends Document
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function getStaticGeneratorEnabled(): bool
+    {
+        return $this->staticGeneratorEnabled;
     }
 }
