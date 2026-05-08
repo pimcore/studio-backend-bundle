@@ -335,7 +335,6 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         return $values;
     }
 
-    // TODO: test nesting & multiselect functionality
     private function applyOptionsProviderDefaults(array $config): array
     {
         $type = $config['optionsProviderType'] ?? null;
