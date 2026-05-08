@@ -37,6 +37,9 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             $documentBaseData[] = $item->getTitle();
             $documentBaseData[] = $item->getDescription();
 
+            $searchData = $item->getSearchIndexData();
+            $documentBaseData[] = (bool) ($searchData['system_fields']['staticGeneratorEnabled'] ?? false);
+
             return new PageSnippet(...$documentBaseData);
         }
 
