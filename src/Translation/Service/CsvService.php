@@ -214,7 +214,7 @@ final readonly class CsvService implements CsvServiceInterface
             $dialect->delimiter = ';';
             $dialect->quotechar = '"';
             $dialect->escapechar = '\\';
-            $dialect->lineterminator = '';
+            $dialect->lineterminator = "\r\n";
         }
 
         // ensure we have a valid delimiter
@@ -222,10 +222,13 @@ final readonly class CsvService implements CsvServiceInterface
             $dialect->delimiter = ';';
         }
 
-        if (
-            $dialect->lineterminator !== '' &&
-            empty(preg_match('/[a-f0-9]{2}/i', $dialect->lineterminator))
-        ) {
+        // Default to \r\n if line terminator is empty
+        if ($dialect->lineterminator === '') {
+            $dialect->lineterminator = "\r\n";
+        }
+
+        // Hex-encode control characters for safe JSON transport
+        if (!empty(preg_match('/[\x00-\x1f]/', $dialect->lineterminator))) {
             $dialect->lineterminator = bin2hex($dialect->lineterminator);
         }
 
