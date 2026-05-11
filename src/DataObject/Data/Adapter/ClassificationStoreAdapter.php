@@ -107,14 +107,25 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         $activeGroups = $store['activeGroups'] ?? [];
+        $deletedGroupIds = $this->getDeletedGroupIds($store);
+        $activeGroups = array_diff_key($activeGroups, array_flip($deletedGroupIds));
+
         if (empty($activeGroups)) {
-            return null;
+            $container = $this->getContainer($element, $key, $contextData);
+            $container->setActiveGroups([]);
+            $container->setGroupCollectionMappings([]);
+            $this->cleanupStoreGroups($container);
+
+            return $container;
         }
+
         $groupCollectionMapping = $store['groupCollectionMapping'] ?? [];
+        $groupCollectionMapping = array_diff_key($groupCollectionMapping, array_flip($deletedGroupIds));
         $container = $this->getContainer($element, $key, $contextData);
         if (!empty($groupCollectionMapping)) {
-            $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
+            $this->setMapping($container, $activeGroups, $groupCollectionMapping);
         }
+        $store = array_diff_key($store, array_flip($deletedGroupIds));
         unset($store['activeGroups'], $store['groupCollectionMapping']);
         $this->setStoreValues($element, $user, $fieldDefinition, $container, $store, $isPatch);
         $this->cleanupStoreGroups($container);
@@ -372,6 +383,28 @@ final readonly class ClassificationStoreAdapter implements
                 $container->removeGroupData($existingGroupId);
             }
         }
+    }
+
+    /**
+     * Returns group IDs that are marked for deletion in the store data.
+     *
+     * @return int[]
+     */
+    private function getDeletedGroupIds(array $store): array
+    {
+        $deletedGroupIds = [];
+
+        foreach ($store as $groupId => $groupData) {
+            if ($groupId === 'activeGroups' || $groupId === 'groupCollectionMapping') {
+                continue;
+            }
+
+            if (is_array($groupData) && isset($groupData['action']) && $groupData['action'] === 'deleted') {
+                $deletedGroupIds[] = (int) $groupId;
+            }
+        }
+
+        return $deletedGroupIds;
     }
 
     private function getStoreDefinitions(
