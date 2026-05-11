@@ -220,7 +220,8 @@ final readonly class BinaryService implements BinaryServiceInterface
             throw new ElementProcessingNotCompletedException($video->getId(), 'Thumbnail for video');
         }
 
-        $storagePath = $video->getRealPath() . '/' .
+        $realPathWithoutSlash = rtrim($video->getRealPath(), '/');
+        $storagePath = $realPathWithoutSlash . '/' .
             preg_replace(
                 '@^' . preg_quote($video->getPath(), '@') . '@',
                 '',

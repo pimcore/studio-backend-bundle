@@ -39,6 +39,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\InputQuantityValue;
+use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValue as QuantityValueDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore as ClassificationstoreModel;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -47,6 +49,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
+use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
@@ -561,6 +564,10 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
+        if ($value === null) {
+            $value = $this->getDefaultValue($fieldDefinition);
+        }
+
         if ($isPreview && $data !== null) {
             $data = $this->dataService->getPreviewFieldData($value, $fieldDefinition, $data);
 
@@ -568,5 +575,21 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $this->dataService->getNormalizedValue($value, $fieldDefinition);
+    }
+
+    private function getDefaultValue(Data $fieldDefinition): ?QuantityValue
+    {
+        if (!$fieldDefinition instanceof InputQuantityValue && !$fieldDefinition instanceof QuantityValueDefinition) {
+            return null;
+        }
+
+        $defaultValue = $fieldDefinition->getDefaultValue();
+        $defaultUnit = $fieldDefinition->getDefaultUnit();
+
+        if ($defaultValue || $defaultUnit) {
+            return new QuantityValue($defaultValue, $defaultUnit);
+        }
+
+        return null;
     }
 }
