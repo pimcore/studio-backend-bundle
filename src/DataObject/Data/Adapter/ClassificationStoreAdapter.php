@@ -53,6 +53,7 @@ use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
+use function is_array;
 
 /**
  * @internal
