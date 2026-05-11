@@ -75,6 +75,10 @@ final class FieldDefinitionCollector implements
 
         $classDefinition = $this->classDefinitionService->getClassDefinition($this->getClassId());
 
+        if ($layoutDefinitions === null) {
+            return [];
+        }
+
         $children = $layoutDefinitions->getChildren();
 
         $this->groupDefinitions($children, true, $classDefinition->getName(), false);
