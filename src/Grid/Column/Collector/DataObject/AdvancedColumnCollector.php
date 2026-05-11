@@ -74,6 +74,10 @@ final class AdvancedColumnCollector implements
             $this->getUser()
         );
 
+        if ($layoutDefinitions === null) {
+            return [];
+        }
+
         $children = $layoutDefinitions->getChildren();
 
         $collectedDefinitions = $this->collectSupportedDefinitions($children);
@@ -285,6 +289,10 @@ final class AdvancedColumnCollector implements
             $this->getFolderId(),
             $this->getUser()
         );
+
+        if ($filteredLayoutDefinitions === null) {
+            return [];
+        }
 
         return $this->getDefaultFields(
             $this->collectSupportedDefinitions($filteredLayoutDefinitions->getChildren())
