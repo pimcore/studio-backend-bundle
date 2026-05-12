@@ -1669,6 +1669,11 @@ class_definition_get_bricks_usages_description: |
   The <strong>{id}</strong> must be an ID of an existing class definition.
 class_definition_get_bricks_usages_summary: Get object bricks usage data for the class definition
 class_definition_get_bricks_usages_success_response: Object bricks usage data
+class_definition_get_brick_fields_description: |
+  Get all object brick field names for the given class definition ID <strong>{id}</strong> <br>
+  The <strong>{id}</strong> must be an ID of an existing class definition.
+class_definition_get_brick_fields_summary: Get object brick fields for the class definition
+class_definition_get_brick_fields_success_response: List of object brick field names
 class_definition_get_data_object_class: Data object class
 class_definition_get_success_response: Class definition
 class_definition_get_identifier_data_description: |
