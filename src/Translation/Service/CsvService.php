@@ -223,7 +223,7 @@ final readonly class CsvService implements CsvServiceInterface
         }
 
         // Default to \r\n if line terminator is empty
-        if ($dialect->lineterminator === '') {
+        if (empty($dialect->lineterminator)) {
             $dialect->lineterminator = "\r\n";
         }
 
