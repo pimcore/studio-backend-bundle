@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickField;
 use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
@@ -25,4 +26,6 @@ interface ClassDefinitionHydratorInterface
     public function hydrate(ClassDefinition $data): ClassDefinitionSchema;
 
     public function hydrateBrickData(string $key, string $fieldName): ClassDefinitionBrickData;
+
+    public function hydrateBrickField(string $fieldName): ClassDefinitionBrickField;
 }
