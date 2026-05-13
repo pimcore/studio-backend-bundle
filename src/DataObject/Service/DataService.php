@@ -78,6 +78,7 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setAllowVariants($classData->getAllowVariants());
         $dataObject->setShowVariants($classData->getShowVariants());
         $dataObject->setHasPreview($classData->getHasPreview());
+        $dataObject->setShowAppLoggerTab($classData->getShowAppLoggerTab());
         $dataObject->setObjectData($this->getDetailObjectData($element, $fieldDefinitions));
 
         if ($dataObject instanceof DataObjectDetail) {
@@ -304,7 +305,8 @@ final readonly class DataService implements DataServiceInterface
             $class->getAllowInherit(),
             $class->getAllowVariants(),
             $class->getShowVariants(),
-            (bool)$class->getLinkGeneratorReference()
+            (bool)$class->getLinkGeneratorReference(),
+            $class->getShowAppLoggerTab()
         );
     }
 

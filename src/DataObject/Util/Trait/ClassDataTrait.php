@@ -29,6 +29,9 @@ trait ClassDataTrait
     #[Property(description: 'Has preview', type: 'bool', example: false)]
     private ?bool $hasPreview = null;
 
+    #[Property(description: 'Show application logger tab', type: 'bool', example: false)]
+    private ?bool $showAppLoggerTab = null;
+
     public function getShowVariants(): ?bool
     {
         return $this->showVariants;
@@ -57,5 +60,15 @@ trait ClassDataTrait
     public function setHasPreview(bool $hasPreview): void
     {
         $this->hasPreview = $hasPreview;
+    }
+
+    public function getShowAppLoggerTab(): ?bool
+    {
+        return $this->showAppLoggerTab;
+    }
+
+    public function setShowAppLoggerTab(bool $showAppLoggerTab): void
+    {
+        $this->showAppLoggerTab = $showAppLoggerTab;
     }
 }
