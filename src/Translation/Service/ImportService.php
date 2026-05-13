@@ -84,7 +84,8 @@ final readonly class ImportService implements ImportServiceInterface
         $dialect->delimiter = $parameter->getDelimiter();
         $dialect->quotechar = $parameter->getQuoteChar();
         $dialect->escapechar = $parameter->getEscapeChar();
-        $dialect->lineterminator = $parameter->getLineTerminator();
+        $lineTerminator = $parameter->getLineTerminator();
+        $dialect->lineterminator = $lineTerminator !== '' ? hex2bin($lineTerminator) : "\r\n";
 
         return $dialect;
     }
