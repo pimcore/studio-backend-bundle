@@ -155,6 +155,7 @@ For more details and frontend customization options, see the [Custom Icons & Too
 - `pre_response.class_definition.folder.collection`
 - `pre_response.class_definition.identifier_data`
 - `pre_response.class_definition.object_brick_data`
+- `pre_response.class_definition.object_brick_field`
 - `pre_response.class_definition.tree`
 - `pre_response.class_field_by_type`
 - `pre_response.classification_store.collection`

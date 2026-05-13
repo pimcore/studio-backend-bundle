@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Override;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickFieldEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface;
@@ -26,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -156,6 +159,30 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         }
 
         return $hydratedBricks;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getClassDefinitionBrickFields(string $id): array
+    {
+        $class = $this->classDefinitionRepository->getClassDefinitionById($id);
+
+        $brickFields = [];
+        foreach ($class->getFieldDefinitions() as $fieldName => $fieldDefinition) {
+            if (!$fieldDefinition instanceof Objectbricks) {
+                continue;
+            }
+
+            $brickField = $this->classDefinitionHydrator->hydrateBrickField($fieldName);
+            $this->eventDispatcher->dispatch(
+                new ClassDefinitionBrickFieldEvent($brickField),
+                ClassDefinitionBrickFieldEvent::EVENT_NAME
+            );
+            $brickFields[] = $brickField;
+        }
+
+        return $brickFields;
     }
 
     /**
