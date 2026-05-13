@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Override;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionBrickFieldEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
