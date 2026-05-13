@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickField;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
@@ -83,4 +84,11 @@ interface ClassDefinitionServiceInterface
      * @throws NotFoundException
      */
     public function getClassDefinitionBricks(string $id): array;
+
+    /**
+     * @return ClassDefinitionBrickField[]
+     *
+     * @throws NotFoundException
+     */
+    public function getClassDefinitionBrickFields(string $id): array;
 }

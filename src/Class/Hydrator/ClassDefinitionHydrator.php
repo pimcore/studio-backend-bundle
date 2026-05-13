@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickField;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 
@@ -64,5 +65,10 @@ final readonly class ClassDefinitionHydrator implements ClassDefinitionHydratorI
     public function hydrateBrickData(string $key, string $fieldName): ClassDefinitionBrickData
     {
         return new ClassDefinitionBrickData($key, $fieldName);
+    }
+
+    public function hydrateBrickField(string $fieldName): ClassDefinitionBrickField
+    {
+        return new ClassDefinitionBrickField($fieldName);
     }
 }
