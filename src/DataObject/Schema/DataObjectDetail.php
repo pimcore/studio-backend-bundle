@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'allowInheritance',
         'showVariants',
         'hasPreview',
+        'showAppLoggerTab',
         'hasWorkflowAvailable',
     ],
     type: 'object'

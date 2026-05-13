@@ -23,6 +23,7 @@ final readonly class ClassData
         private bool $allowVariants,
         private bool $showVariants,
         private bool $hasPreview,
+        private bool $showAppLoggerTab,
     ) {
     }
 
@@ -44,5 +45,10 @@ final readonly class ClassData
     public function getHasPreview(): bool
     {
         return $this->hasPreview;
+    }
+
+    public function getShowAppLoggerTab(): bool
+    {
+        return $this->showAppLoggerTab;
     }
 }
