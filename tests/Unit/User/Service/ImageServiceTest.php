@@ -51,7 +51,7 @@ final class ImageServiceTest extends Unit
         $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
         $this->expectException(ForbiddenException::class);
-        $this->expectExceptionMessage('You are not allowed to upload an image for an admin user');
+        $this->expectExceptionMessage('Only admin users are allowed to modify admin users');
         $imageUploadService->uploadUserImage($this->makeEmpty(UploadedFile::class), 1);
     }
 

@@ -18,13 +18,13 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -35,6 +35,7 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
     public function __construct(
         private JobRunRepositoryInterface $jobRunRepository,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
         private UploadServiceInterface $uploadService,
         private ZipServiceInterface $zipService,
     ) {
@@ -61,7 +62,7 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
         $jobRun = $this->jobRunRepository->getJobRunById($event->getJobRunId());
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Events::ZIP_UPLOAD_FINISHED->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

@@ -18,10 +18,11 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
@@ -60,7 +61,7 @@ final readonly class DataService implements DataServiceInterface
      * {@inheritdoc}
      */
     public function setObjectDetailData(
-        DataObjectFolder|DataObject|DataObjectVersion $dataObject,
+        DataObjectFolder|DataObjectDetail|DataObjectVersion $dataObject,
         DataObjectModel $element,
         ?DataObjectVersionModel $version = null,
     ): void {
@@ -77,9 +78,10 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setAllowVariants($classData->getAllowVariants());
         $dataObject->setShowVariants($classData->getShowVariants());
         $dataObject->setHasPreview($classData->getHasPreview());
-        $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
+        $dataObject->setShowAppLoggerTab($classData->getShowAppLoggerTab());
+        $dataObject->setObjectData($this->getDetailObjectData($element, $fieldDefinitions));
 
-        if ($dataObject instanceof DataObject) {
+        if ($dataObject instanceof DataObjectDetail) {
             $dataObject->setDraftData($this->getDraftData($element, $version));
 
             if ($dataObject->getAllowInheritance()) {
@@ -94,16 +96,30 @@ final readonly class DataService implements DataServiceInterface
         mixed $value,
         Data $fieldDefinition
     ): mixed {
-        if (!$fieldDefinition instanceof NormalizerInterface) {
-            return null;
-        }
-
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataNormalizerInterface) {
             return $adapter->normalize($value, $fieldDefinition);
         }
 
+        if (!$fieldDefinition instanceof NormalizerInterface) {
+            return null;
+        }
+
         return $fieldDefinition->normalize($value);
+    }
+
+    public function getDetailValue(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): mixed {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof DetailDataInterface) {
+            return $adapter->getDetailData($object, $value, $fieldDefinition, $contextData);
+        }
+
+        return $this->getNormalizedValue($value, $fieldDefinition);
     }
 
     /**
@@ -244,6 +260,10 @@ final readonly class DataService implements DataServiceInterface
             return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
         }
 
+        if ($contextData && $contextData->getContextObject()) {
+            $dataObject = $contextData->getContextObject();
+        }
+
         return $fieldDefinition->getForCsvExport(
             $dataObject,
             $contextData ? $contextData->getLegacyParameters() : []
@@ -264,11 +284,12 @@ final readonly class DataService implements DataServiceInterface
     /**
      * @throws NotFoundException
      */
-    private function getNormalizedObjectData(Concrete $dataObject, array $fieldDefinitions): array
+    private function getDetailObjectData(Concrete $dataObject, array $fieldDefinitions): array
     {
         $data = [];
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            $data[$key] = $this->getNormalizedValue(
+            $data[$key] = $this->getDetailValue(
+                $dataObject,
                 $this->getValidFieldValue($dataObject, $key),
                 $fieldDefinition
             );
@@ -284,7 +305,8 @@ final readonly class DataService implements DataServiceInterface
             $class->getAllowInherit(),
             $class->getAllowVariants(),
             $class->getShowVariants(),
-            (bool)$class->getLinkGeneratorReference()
+            (bool)$class->getLinkGeneratorReference(),
+            $class->getShowAppLoggerTab()
         );
     }
 

@@ -47,11 +47,23 @@ interface QueryInterface
 
     public function filterByPql(string $pqlQuery): self;
 
+    /**
+     * @param string[] $relevantFolderKeys
+     */
+    public function filterByTreePql(string $pqlQuery, array $relevantFolderKeys): self;
+
     public function setUser(UserInterface $user): self;
 
     public function filterInteger(string $field, int $value): self;
 
     public function filterFullText(string $value): self;
+
+    public function filterMultiMatch(
+        string $searchTerm,
+        array $fields = [],
+        string $type = 'best_fields',
+        string $operator = 'or'
+    ): self;
 
     public function orderByField(string $fieldName, SortDirection $direction): self;
 
@@ -69,4 +81,33 @@ interface QueryInterface
         bool $roundToDay = true,
         bool $enablePqlFieldNameResolution = true
     ): self;
+
+    public function filterTime(
+        string $field,
+        string|null $startTime = null,
+        string|null $endTime = null,
+        string|null $onTime = null,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
+
+    public function filterNumber(
+        string $fieldName,
+        int|float $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
+
+    public function filterNumberRange(
+        string $fieldName,
+        int|float|null $min = null,
+        int|float|null $max = null,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
+
+    public function filterMultiSelect(
+        string $fieldName,
+        array $values,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
+
+    public function booleanFilter(string $fieldName, array $values): self;
 }

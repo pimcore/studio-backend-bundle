@@ -18,28 +18,44 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\CoreLocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class DateResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
+final class DateResolver implements
+    ColumnResolverInterface,
+    StudioElementColumnResolverInterface,
+    CoreElementColumnResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
+    use CoreLocalizedValueTrait;
+
+    public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+    {
+        return $this->getColumnData(
+            $column,
+            $this->getCoreLocalizedValue($column, $element),
+            $this->getType()
+        );
+    }
 
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         $value = $this->getLocalizedValue($column, $element);
 
         if (!$value) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -48,7 +64,7 @@ final class DateResolver implements ColumnResolverInterface, StudioElementColumn
             throw new InvalidArgumentException('Invalid date format');
         }
 
-        return $this->getColumnData($column, $datetime->getTimestamp());
+        return $this->getColumnData($column, $datetime->getTimestamp(), $this->getType());
     }
 
     public function getType(): string

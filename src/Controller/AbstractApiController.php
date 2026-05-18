@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Controller;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\SerializerContextTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,9 +22,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 abstract class AbstractApiController extends AbstractController
 {
-    public const VOTER_PUBLIC_STUDIO_API = 'PUBLIC_STUDIO_API';
+    use SerializerContextTrait;
 
-    public const PREFIX = '{prefix}';
+    public const string VOTER_PUBLIC_STUDIO_API = 'PUBLIC_STUDIO_API';
+
+    public const string PREFIX = '{prefix}';
 
     public function __construct(
         protected readonly SerializerInterface $serializer,
@@ -33,16 +36,22 @@ abstract class AbstractApiController extends AbstractController
     protected function jsonResponse(
         mixed $data,
         int $status = HttpResponseCodes::SUCCESS->value,
-        array $headers = []
+        array $headers = [],
+        array $context = []
     ): JsonResponse {
-        return new JsonResponse($this->serializer->serialize($data, 'json'), $status, $headers, true);
+        return new JsonResponse(
+            $this->serializer->serialize($data, 'json', $this->getSerializerContext($context)),
+            $status,
+            $headers,
+            true
+        );
     }
 
-    protected function patchResponse(array $errors = [], array $headers = []): Response
+    protected function patchResponse(array $errors = [], array $headers = [], array $context = []): Response
     {
         if (!empty($errors)) {
             return new JsonResponse(
-                $this->serializer->serialize($errors, 'json'),
+                $this->serializer->serialize($errors, 'json', $this->getSerializerContext($context)),
                 HttpResponseCodes::MULTI_STATUS->value,
                 $headers,
                 true

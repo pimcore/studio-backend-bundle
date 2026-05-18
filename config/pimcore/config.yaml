@@ -15,6 +15,8 @@ pimcore:
             - studio
 
 pimcore_studio_backend:
+    translations:
+        path: "@PimcoreStudioBackendBundle/translations"
     open_api_scan_paths:
         - "%kernel.project_dir%/vendor/pimcore/studio-backend-bundle/src"
     asset_default_formats:
@@ -90,7 +92,7 @@ pimcore_studio_backend:
         types:
             asset: ['content', 'seo', 'warning', 'notice']
             document: ['content', 'seo', 'warning', 'notice']
-            data-object: ['content', 'seo', 'warning', 'notice']
+            data_object: ['content', 'seo', 'warning', 'notice']
 
     widget_types:
         - 'element_tree'

@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
@@ -26,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -41,9 +44,11 @@ interface GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        StudioElementInterface $element,
+        ?StudioElementInterface $element,
         string $elementType,
-        bool $isExport = false
+        int $elementId,
+        bool $isExport = false,
+        ?UserInterface $user = null,
     ): array;
 
     /**
@@ -51,9 +56,9 @@ interface GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        StudioElementInterface $element,
         string $elementType,
-        bool $isExport = false
+        int $elementId,
+        UserInterface $user
     ): array;
 
     /**
@@ -66,17 +71,28 @@ interface GridServiceInterface
 
     /**
      * @throws InvalidArgumentException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
      */
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 
     /**
      * @throws NotFoundException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
      * @throws Exception
      */
     public function getDataObjectGrid(
         GridParameter $gridParameter,
         ?string $classId
     ): Collection;
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
+     */
+    public function getDocumentGrid(GridParameter $gridParameter): Collection;
 
     /**
      * @throws Exception

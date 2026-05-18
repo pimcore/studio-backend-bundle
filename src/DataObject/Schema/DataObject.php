@@ -15,14 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'DataObject',
@@ -39,22 +37,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'index',
         'childrenSortBy',
         'childrenSortOrder',
-        'objectData',
-        'draftData',
-        'inheritanceData',
-        'allowInheritance',
         'allowVariants',
-        'showVariants',
-        'hasPreview',
     ],
     type: 'object'
 )]
 class DataObject extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
-    use ClassDataTrait;
     use CustomAttributesTrait;
-    use WorkflowAvailableTrait;
 
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
@@ -79,6 +69,8 @@ class DataObject extends Element implements AdditionalAttributesInterface
         private readonly string $childrenSortBy,
         #[Property(description: 'Sort order of children', type: 'string', example: 'asc')]
         private readonly string $childrenSortOrder,
+        #[Property(description: 'Allow variants', type: 'bool', example: false)]
+        private ?bool $allowVariants,
         int $id,
         int $parentId,
         string $path,
@@ -89,16 +81,6 @@ class DataObject extends Element implements AdditionalAttributesInterface
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
-        #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
-        private array $objectData = [],
-        #[Property(
-            description: 'Inheritance object data',
-            type: 'object',
-            example: ['fieldKey' => new InheritanceData(1, true)])
-        ]
-        private array $inheritanceData = [],
-        #[Property(ref: DataObjectDraftData::class)]
-        private ?DataObjectDraftData $draftData = null,
     ) {
         parent::__construct(
             $id,
@@ -110,7 +92,8 @@ class DataObject extends Element implements AdditionalAttributesInterface
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate
+            $modificationDate,
+            ElementTypes::TYPE_DATA_OBJECT
         );
     }
 
@@ -132,6 +115,11 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function isPublished(): bool
     {
         return $this->published;
+    }
+
+    public function getPublished(): bool
+    {
+        return $this->isPublished();
     }
 
     public function getHasChildren(): bool
@@ -169,34 +157,14 @@ class DataObject extends Element implements AdditionalAttributesInterface
         return $this->childrenSortOrder;
     }
 
-    public function setObjectData(array $objectData): void
+    public function getAllowVariants(): ?bool
     {
-        $this->objectData = $objectData;
+        return $this->allowVariants;
     }
 
-    public function setInheritanceData(array $inheritanceData): void
+    public function setAllowVariants(bool $allowVariants): void
     {
-        $this->inheritanceData = $inheritanceData;
-    }
-
-    public function getInheritanceData(): array
-    {
-        return $this->inheritanceData;
-    }
-
-    public function getObjectData(): array
-    {
-        return $this->objectData;
-    }
-
-    public function getDraftData(): ?DataObjectDraftData
-    {
-        return $this->draftData;
-    }
-
-    public function setDraftData(?DataObjectDraftData $draftData): void
-    {
-        $this->draftData = $draftData;
+        $this->allowVariants = $allowVariants;
     }
 
     public function getFilename(): string

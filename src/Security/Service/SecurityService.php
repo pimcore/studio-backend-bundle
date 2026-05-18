@@ -21,6 +21,8 @@ use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Pimcore\Security\User\User as SecurityUser;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use function sprintf;
 
 /**
@@ -31,6 +33,7 @@ final readonly class SecurityService implements SecurityServiceInterface
     public function __construct(
         private ElementPermissionServiceInterface $elementPermissionService,
         private AuthenticationResolverInterface $authenticationResolver,
+        private TokenStorageInterface $tokenStorage,
     ) {
     }
 
@@ -39,12 +42,19 @@ final readonly class SecurityService implements SecurityServiceInterface
      */
     public function getCurrentUser(): UserInterface
     {
-        $pimcoreUser = $this->authenticationResolver->authenticateSession();
-        if (!$pimcoreUser instanceof User) {
-            throw new UserNotFoundException();
+        // 1. Try TokenStorage (populated by all firewall authenticators, including PAT)
+        $token = $this->tokenStorage->getToken();
+        if ($token?->getUser() instanceof SecurityUser) {
+            return $token->getUser()->getUser();
         }
 
-        return $pimcoreUser;
+        // 2. Fall back to session reading (legacy compatibility)
+        $pimcoreUser = $this->authenticationResolver->authenticateSession();
+        if ($pimcoreUser instanceof User) {
+            return $pimcoreUser;
+        }
+
+        throw new UserNotFoundException();
     }
 
     public function isLoggedIn(): bool

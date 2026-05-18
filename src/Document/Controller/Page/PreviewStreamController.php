@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -59,7 +58,6 @@ final class PreviewStreamController extends AbstractApiController
      * @throws EnvironmentException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws InvalidThumbnailException
      * @throws UserNotFoundException
      */
     #[Route(

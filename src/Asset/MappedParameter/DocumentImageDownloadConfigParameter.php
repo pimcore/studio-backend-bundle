@@ -28,14 +28,24 @@ final readonly class DocumentImageDownloadConfigParameter extends ImageDownloadC
         ?int $height = null,
         ?int $quality = 85,
         ?int $dpi = null,
+        bool $cropPercent = false,
+        ?float $cropHeight = null,
+        ?float $cropWidth = null,
+        ?float $cropTop = null,
+        ?float $cropLeft = null,
     ) {
         parent::__construct(
-            $mimeType,
-            $resizeMode,
-            $width,
-            $height,
-            $quality,
-            $dpi,
+            mimeType: $mimeType,
+            resizeMode: $resizeMode,
+            width: $width,
+            height: $height,
+            quality: $quality,
+            dpi: $dpi,
+            cropPercent: $cropPercent,
+            cropHeight: $cropHeight,
+            cropWidth: $cropWidth,
+            cropTop: $cropTop,
+            cropLeft: $cropLeft,
         );
     }
 

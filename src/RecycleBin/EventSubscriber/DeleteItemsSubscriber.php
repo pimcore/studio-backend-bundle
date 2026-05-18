@@ -18,7 +18,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -28,6 +28,7 @@ final readonly class DeleteItemsSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -46,7 +47,7 @@ final readonly class DeleteItemsSubscriber implements EventSubscriberInterface
             $event->getJobName() === Jobs::RECYCLE_BIN_DELETE->value
         ) {
             $this->publishService->publish(
-                Events::RECYCLE_BIN_DELETE_FINISHED->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

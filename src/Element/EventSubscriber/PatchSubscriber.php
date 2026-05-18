@@ -15,12 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
-use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use function in_array;
 
 /**
  * @internal
@@ -30,6 +31,7 @@ final readonly class PatchSubscriber implements EventSubscriberInterface
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -43,13 +45,16 @@ final readonly class PatchSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !== Jobs::PATCH_ELEMENTS->value) {
+        if (!in_array($event->getJobName(), [
+            Jobs::PATCH_ELEMENTS->value,
+            Jobs::PATCH_FOLDER_ELEMENTS->value,
+        ], true)) {
             return;
         }
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Events::PATCH_FINISHED->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

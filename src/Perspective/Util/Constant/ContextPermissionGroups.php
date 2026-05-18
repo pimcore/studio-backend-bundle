@@ -19,8 +19,12 @@ enum ContextPermissionGroups: string
 {
     use EnumToValueArrayTrait;
 
-    case EXTRAS = 'extras';
-    case FILE = 'file';
+    case QUICK_ACCESS = 'quickAccess';
+    case DATA_MANAGEMENT = 'dataManagement';
+    case EXPERIENCE_ECOMMERCE = 'experienceEcommerce';
+    case ASSET_MANAGEMENT = 'assetManagement';
+    case TRANSLATIONS = 'translations';
+    case REPORTING = 'reporting';
+    case SYSTEM = 'system';
     case SEARCH = 'search';
-    case SETTINGS = 'settings';
 }

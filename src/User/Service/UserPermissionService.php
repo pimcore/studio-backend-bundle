@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserPermissionEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -48,5 +49,19 @@ final class UserPermissionService implements UserPermissionServiceInterface
         }
 
         return new Collection(count($items), $items);
+    }
+
+    public function getAllowedUserPermissions(UserInterface $user): array
+    {
+        $permissions = [];
+        $definitions = $this->permissionsRepository->getAvailablePermissions();
+        foreach ($definitions as $definition) {
+            $definitionKey = $definition->getKey();
+            if ($user->isAllowed($definitionKey)) {
+                $permissions[] = $definitionKey;
+            }
+        }
+
+        return $permissions;
     }
 }

@@ -17,11 +17,13 @@ use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
@@ -31,9 +33,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\Concrete;
@@ -57,6 +61,7 @@ final readonly class PatchService implements PatchServiceInterface
         private DataAdapterServiceInterface $dataAdapterService,
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
+        private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService
     ) {
     }
@@ -79,29 +84,44 @@ final readonly class PatchService implements PatchServiceInterface
         return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function patchFolder(
+        int $folderId,
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
-    ): ?int {
+    ): int {
+        $classId = $patchFolderParameter->getClassId();
+        if ($elementType === ElementTypes::TYPE_OBJECT && $classId === null) {
+            throw new InvalidArgumentException('Class ID must be provided for object folder patching');
+        }
+
         $job = new Job(
-            name: Jobs::PATCH_ELEMENTS->value,
-            steps: [
+            Jobs::PATCH_FOLDER_ELEMENTS->value,
+            [
                 new JobStep(
                     JobSteps::ELEMENT_FOLDER_PATCHING->value,
                     PatchFolderMessage::class,
                     '',
-                    ['filters' => $patchFolderParameter->getFilters()]
+                    [
+                        StepConfig::CONFIG_FILTERS->value => $patchFolderParameter->getFilters(),
+                        StepConfig::ELEMENT_CLASS_ID->value => $classId ?? '',
+                    ],
+                    SelectionProcessingMode::ONCE
+                ),
+                new JobStep(
+                    JobSteps::ELEMENT_PATCHING->value,
+                    PatchMessage::class,
+                    '',
+                    [
+                        StepConfig::FOLDER_TO_EXPORT->value => $folderId,
+                    ]
                 ),
             ],
-            selectedElements: array_map(
-                static fn (array $data) => new ElementDescriptor(
-                    $elementType,
-                    $data['folderId']
-                ),
-                $patchFolderParameter->getData()
-            ),
-            environmentData: array_column($patchFolderParameter->getData(), null, 'folderId'),
+            [new ElementDescriptor($elementType, $folderId)],
+            [$folderId => $patchFolderParameter->getData()],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -143,6 +163,10 @@ final readonly class PatchService implements PatchServiceInterface
                 $user,
                 $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
             );
+
+            if (isset($elementPatchData['index'])) {
+                $this->indexService->indexRelatedElements($element, $elementPatchData['index']);
+            }
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
@@ -165,7 +189,7 @@ final readonly class PatchService implements PatchServiceInterface
         return match ($action) {
             PatcherActions::ADD->value => $this->handleAddition($existingMap, $newData, $dataKey),
             PatcherActions::REMOVE->value => $this->handleRemoval($existingMap, $newData, $dataKey),
-            default => $fieldData
+            default => $newData
         };
     }
 

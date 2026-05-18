@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\User\Workspace\AbstractWorkspace;
 use Pimcore\Model\UserInterface;
+use function is_string;
 
 /**
  * @internal
@@ -30,41 +33,52 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
     {
         $workspaces = [];
         foreach ($user->getWorkspacesAsset() as $workspace) {
-            $workspaces[] = $this->hydrate($workspace);
+            $workspaces[] = new UserWorkspace(...$this->hydrateBaseWorkspace($workspace));
         }
 
         return $workspaces;
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function hydrateDataObjectWorkspace(UserInterface|UserRoleInterface $user): array
     {
         $workspaces = [];
         foreach ($user->getWorkspacesObject() as $workspace) {
-            $workspaces[] = $this->hydrate($workspace);
+            $workspaces[] = new UserDataObjectWorkspace(
+                $workspace->getSave(),
+                $workspace->getUnpublish(),
+                $this->transformLocalizedValues($workspace->getLEdit()),
+                $this->transformLocalizedValues($workspace->getLView()),
+                $this->transformLocalizedValues($workspace->getLayouts()),
+                ...$this->hydrateBaseWorkspace($workspace)
+            );
         }
 
         return $workspaces;
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function hydrateDocumentWorkspace(UserInterface|UserRoleInterface $user): array
     {
         $workspaces = [];
         foreach ($user->getWorkspacesDocument() as $workspace) {
-            $workspaces[] = $this->hydrate($workspace);
+            $workspaces[] = new UserDocumentWorkspace(
+                $workspace->getSave(),
+                $workspace->getUnpublish(),
+                ...$this->hydrateBaseWorkspace($workspace)
+            );
         }
 
         return $workspaces;
     }
 
-    private function hydrate(AbstractWorkspace $workspace): UserWorkspace
+    private function hydrateBaseWorkspace(AbstractWorkspace $workspace): array
     {
-        return new UserWorkspace(
+        return [
             $workspace->getCid(),
             $workspace->getCpath(),
             $workspace->getList(),
@@ -76,6 +90,20 @@ final class WorkspaceHydrator implements WorkspaceHydratorInterface
             $workspace->getSettings(),
             $workspace->getVersions(),
             $workspace->getProperties(),
+        ];
+    }
+
+    private function transformLocalizedValues(?string $workspaceValue): ?array
+    {
+        if (!is_string($workspaceValue)) {
+            return null;
+        }
+
+        return array_values(
+            array_filter(
+                explode(',', $workspaceValue),
+                static fn (string $v): bool => $v !== ''
+            )
         );
     }
 }

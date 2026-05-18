@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -29,7 +31,13 @@ interface KeyGroupLayoutServiceInterface
      */
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,
-        Concrete $object,
-        string $fieldName
+        string $fieldName,
+        ?Concrete $object = null,
     ): EncryptedField|Data;
+
+    public function getKeyLayout(
+        LayoutParameter $layoutParameter,
+        int $keyId,
+        int $groupId
+    ): KeyLayout;
 }

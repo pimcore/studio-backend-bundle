@@ -36,6 +36,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionService
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsService
+
   #
   # Hydrators
   #

@@ -30,7 +30,7 @@ final readonly class ListClassificationStoreParameter implements CollectionParam
         private int $page,
         #[NotBlank(message: 'The page size name must not be empty.')]
         private int $pageSize,
-        private ?int $objectId = null,
+        private ?string $classId = null,
         private ?string $searchTerm = null,
     ) {
     }
@@ -45,9 +45,9 @@ final readonly class ListClassificationStoreParameter implements CollectionParam
         return $this->fieldName;
     }
 
-    public function getObjectId(): ?int
+    public function getClassId(): ?string
     {
-        return $this->objectId;
+        return $this->classId;
     }
 
     public function getPage(): int

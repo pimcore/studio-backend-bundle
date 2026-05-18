@@ -31,9 +31,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     description: 'Information about the user',
     required: [
         'id', 'username', 'email', 'firstname', 'lastname', 'permissions', 'isAdmin', 'classes', 'docTypes',
-        'language', 'dateTimeLocale', 'welcomeScreen', 'memorizeTabs', 'hasImage', 'contentLanguages',
-        'keyBindings', 'activePerspective', 'perspectives', 'allowedLanguagesForEditingWebsiteTranslations',
-        'allowedLanguagesForViewingWebsiteTranslations',
+        'language', 'dateTimeLocale', 'welcomeScreen', 'memorizeTabs', 'allowDirtyClose', 'hasImage',
+        'contentLanguages', 'keyBindings', 'twoFactorAuthentication', 'activePerspective', 'perspectives',
+        'allowedLanguagesForEditingWebsiteTranslations', 'allowedLanguagesForViewingWebsiteTranslations',
     ],
     type: 'object'
 )]
@@ -80,6 +80,8 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly bool $welcomeScreen,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private readonly bool $memorizeTabs,
+        #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
+        private readonly bool $allowDirtyClose,
         #[Property(description: 'Has Image', type: 'boolean', example: true)]
         private readonly bool $hasImage,
         #[Property(
@@ -90,22 +92,24 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly array $contentLanguages,
         #[Property(
             description: 'List of valid website Languages to edit.',
-            type: 'object',
-            example: ['language' => 'de', 'display' => 'Deutsch']
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['de', 'en']
         )]
         private readonly array $allowedLanguagesForEditingWebsiteTranslations,
         #[Property(
             description: 'List of valid website Languages to view.',
-            type: 'object',
-            example: ['language' => 'de', 'display' => 'Deutsch']
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['de', 'en'],
         )]
         private readonly array $allowedLanguagesForViewingWebsiteTranslations,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
         private readonly array $keyBindings,
         #[Property(
+            ref: TwoFactorAuth::class,
             description: 'Two Factor Authentication',
-            type: 'array',
-            items: new Items(ref: TwoFactorAuth::class)
+            type: 'object'
         )]
         private readonly TwoFactorAuth $twoFactorAuthentication,
         #[Property(
@@ -186,6 +190,11 @@ final class UserInformation implements AdditionalAttributesInterface
     public function isMemorizeTabs(): bool
     {
         return $this->memorizeTabs;
+    }
+
+    public function isAllowDirtyClose(): bool
+    {
+        return $this->allowDirtyClose;
     }
 
     public function isHasImage(): bool

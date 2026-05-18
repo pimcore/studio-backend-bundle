@@ -38,7 +38,7 @@ final readonly class CustomReportUpdate
         #[Property(
             description: 'Configuration for columns to be displayed in report',
             type: 'array',
-            items: new Items(CustomReportColumnConfiguration::class)
+            items: new Items(CustomReportColumnConfigurationUpdate::class)
         )]
         private array $columnConfigurations,
         #[Property(description: 'Label/nice name of report', type: 'string', example: 'Attributes')]
@@ -77,7 +77,8 @@ final readonly class CustomReportUpdate
         private bool $sharedGlobally,
         #[Property(
             description: 'Configuration for data source. Content of array depends on selected adapter/data source',
-            type: 'object',
+            type: 'array',
+            items: new Items(type: 'object'),
             example: [
                 [
                     'sql' => 'carClass',
@@ -112,7 +113,7 @@ final readonly class CustomReportUpdate
         return $this->sql;
     }
 
-    public function getDataSourceConfig(): ?array
+    public function getDataSourceConfig(): array
     {
         return $this->dataSourceConfig;
     }

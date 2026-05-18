@@ -14,13 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 
@@ -39,27 +38,17 @@ final class PatchAssetFolderRequestBody extends RequestBody
                 properties: [
                     new Property(
                         property: 'data',
-                        type: 'array',
-                        items: new Items(
-                            required: ['folderId'],
-                            properties: [
-                                new Property(
-                                    property: 'folderId',
-                                    description: 'Folder ID',
-                                    type: 'integer',
-                                    example: 83
-                                ),
-                                new UpdateIntegerProperty('parentId'),
-                                new UpdateStringProperty('key'),
-                                new UpdateStringProperty('locked'),
-                                new CustomMetadata(PatchCustomMetadata::class),
-                            ],
-                            type: 'object',
-                        ),
+                        properties: [
+                            new UpdateIntegerProperty('parentId'),
+                            new UpdateStringProperty('key'),
+                            new UpdateStringProperty('locked'),
+                            new CustomMetadata(PatchCustomMetadata::class),
+                        ],
+                        type: 'object',
                     ),
                     new Property(
                         property: 'filters',
-                        ref: Filter::class,
+                        ref: ExportAllFilter::class,
                         type: 'object'
                     ),
                 ],

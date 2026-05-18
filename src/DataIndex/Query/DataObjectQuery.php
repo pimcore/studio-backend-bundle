@@ -14,23 +14,31 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Carbon\Carbon;
-use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\BooleanFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeVariantsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\ClassificationStoreFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\TimeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ClassIdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\FullTextSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\MultiMatchSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\TreePqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
@@ -95,12 +103,33 @@ final class DataObjectQuery implements DataObjectQueryInterface
         return $this;
     }
 
+    public function excludeVariants(): self
+    {
+        $this->search->addModifier(new ExcludeVariantsFilter());
+
+        return $this;
+    }
+
     /**
-     * @throws Exception
+     * {@inheritdoc}
      */
     public function setClassDefinitionName(string $classDefinitionId): self
     {
         $classDefinition = $this->classDefinitionResolver->getByName($classDefinitionId);
+        if ($classDefinition === null) {
+            throw new NotFoundException('Class definition', $classDefinitionId);
+        }
+        $this->search->setClassDefinition($classDefinition);
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setClassDefinition(string $classDefinitionId): self
+    {
+        $classDefinition = $this->classDefinitionResolver->getById($classDefinitionId);
         if ($classDefinition === null) {
             throw new NotFoundException('Class definition', $classDefinitionId);
         }
@@ -166,6 +195,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
         return $this;
     }
 
+    public function filterByTreePql(string $pqlQuery, array $relevantFolderKeys): self
+    {
+        $this->search->addModifier(new TreePqlFilter($pqlQuery, $relevantFolderKeys));
+
+        return $this;
+    }
+
     public function setUser(UserInterface $user): QueryInterface
     {
         /** @var User $user */
@@ -184,6 +220,17 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function filterFullText(string $value): QueryInterface
     {
         $this->search->addModifier(new FullTextSearch($value));
+
+        return $this;
+    }
+
+    public function filterMultiMatch(
+        string $searchTerm,
+        array $fields = [],
+        string $type = 'best_fields',
+        string $operator = 'or'
+    ): QueryInterface {
+        $this->search->addModifier(new MultiMatchSearch($searchTerm, $fields, $type, $operator));
 
         return $this;
     }
@@ -225,9 +272,97 @@ final class DataObjectQuery implements DataObjectQueryInterface
         return $this;
     }
 
-    public function booleanFilter(string $fieldName, bool $value): self
+    public function filterTime(
+        string $field,
+        string|null $startTime = null,
+        string|null $endTime = null,
+        string|null $onTime = null,
+        bool $enablePqlFieldNameResolution = true
+    ): QueryInterface {
+        $this->search->addModifier(new TimeFilter(
+            $field,
+            $startTime,
+            $endTime,
+            $onTime,
+            $enablePqlFieldNameResolution
+        ));
+
+        return $this;
+    }
+
+    public function booleanFilter(string $fieldName, array $values): self
     {
-        $this->search->addModifier(new BooleanFilter($fieldName, $value));
+        $this->search->addModifier(new BooleanMultiSelectFilter($fieldName, $values));
+
+        return $this;
+    }
+
+    public function classificationStoreFilter(
+        string $fieldName,
+        string $group,
+        BooleanFilter|
+        DateFilter|
+        FullTextSearch|
+        IntegerFilter|
+        MultiSelectFilter|
+        NumberRangeFilter|
+        NumberFilter|
+        BooleanMultiSelectFilter|
+        TimeFilter|
+        WildcardSearch $subModifier,
+        ?string $locale = null
+    ): self {
+        if ($locale === null) {
+            $this->search->addModifier(
+                new ClassificationStoreFilter(
+                    $fieldName,
+                    $group,
+                    $subModifier,
+                )
+            );
+
+            return $this;
+        }
+
+        $this->search->addModifier(
+            new ClassificationStoreFilter(
+                $fieldName,
+                $group,
+                $subModifier,
+                $locale
+            )
+        );
+
+        return $this;
+    }
+
+    public function filterNumber(
+        string $fieldName,
+        int|float $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new NumberFilter($fieldName, $searchTerm, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterNumberRange(
+        string $fieldName,
+        int|float|null $min = null,
+        int|float|null $max = null,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new NumberRangeFilter($fieldName, $min, $max, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterMultiSelect(
+        string $fieldName,
+        array $values,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new MultiSelectFilter($fieldName, $values, $enablePqlFieldNameResolution));
 
         return $this;
     }

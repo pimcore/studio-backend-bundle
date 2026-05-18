@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Document;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PageConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\ThumbnailNameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageCropParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\PageConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
@@ -23,9 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
@@ -61,7 +62,6 @@ final class ThumbnailStreamController extends AbstractApiController
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws SearchException
      * @throws UserNotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_stream_document_thumbnail', methods: ['GET'])]
@@ -76,6 +76,11 @@ final class ThumbnailStreamController extends AbstractApiController
     #[IdParameter(type: 'document')]
     #[PageConfigParameter]
     #[ThumbnailNameParameter]
+    #[BoolParameter('cropPercent', '', false, false)]
+    #[ImageCropParameter('cropWidth', 0)]
+    #[ImageCropParameter('cropHeight', 0)]
+    #[ImageCropParameter('cropTop', 0)]
+    #[ImageCropParameter('cropLeft', 0)]
     #[SuccessResponse(
         description: 'asset_document_stream_by_thumbnail_success_response',
         content: new MediaType(),
@@ -90,15 +95,10 @@ final class ThumbnailStreamController extends AbstractApiController
     public function streamDocumentImageByThumbnail(
         int $id,
         string $thumbnailName,
-        #[MapQueryString] ?PageConfigurationParameter $parameter,
+        #[MapQueryString] ?DocumentStreamConfigParameter $parameter,
     ): StreamedResponse {
         $asset = $this->assetService->getAssetElement($this->securityService->getCurrentUser(), $id);
 
-        return $this->downloadService->getDocumentThumbnailByName(
-            $asset,
-            $thumbnailName,
-            $parameter ? $parameter->getPage() : 1,
-            HttpResponseHeaders::INLINE_TYPE->value
-        );
+        return $this->downloadService->streamDocumentThumbnailByName($asset, $thumbnailName, $parameter);
     }
 }

@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\BasicStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DocumentImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\StreamCropParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
@@ -37,7 +40,11 @@ interface ThumbnailServiceInterface
     /**
      * @throws InvalidThumbnailException
      */
-    public function getImageThumbnailByName(Image $image, string $thumbnailName): ThumbnailInterface;
+    public function getImageThumbnailByName(
+        Image $image,
+        string $thumbnailName,
+        ?BasicStreamConfigParameter $parameter = null
+    ): ThumbnailInterface;
 
     /**
      * @throws ThumbnailResizingFailedException
@@ -45,6 +52,14 @@ interface ThumbnailServiceInterface
     public function getThumbnailFromConfiguration(
         Image $image,
         ImageDownloadConfigParameter $parameters
+    ): ThumbnailInterface;
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getDynamicThumbnail(
+        Image $image,
+        DynamicConfigurationParameter $parameter
     ): ThumbnailInterface;
 
     public function getBinaryResponseFromThumbnail(
@@ -67,7 +82,8 @@ interface ThumbnailServiceInterface
      * @throws InvalidThumbnailException
      */
     public function getImageThumbnailConfigByName(
-        string $thumbnailName
+        string $thumbnailName,
+        ?StreamCropParameter $parameter = null
     ): ImageThumbnailConfig;
 
     /**
@@ -76,6 +92,14 @@ interface ThumbnailServiceInterface
     public function getDocumentThumbnailConfig(
         Document $document,
         DocumentImageDownloadConfigParameter $parameters
+    ): ImageThumbnailConfig;
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getDynamicDocumentThumbnail(
+        Document $document,
+        DynamicConfigurationParameter $parameter
     ): ImageThumbnailConfig;
 
     /**

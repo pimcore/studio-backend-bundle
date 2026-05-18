@@ -25,9 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
+use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
@@ -56,6 +56,7 @@ final class ObjectBrickCollector implements
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly ObjectBrickServiceInterface $objectBrickService,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -91,35 +92,50 @@ final class ObjectBrickCollector implements
                 continue;
             }
 
-            $fieldName = $this->getUsedFieldName($objectBrick, $classDefinition);
+            $fieldNames = $this->getUsedFieldNames($objectBrick, $classDefinition);
 
-            if (!$this->fieldNameExists($fieldName, $filteredFieldDefinitions)) {
-                continue;
+            foreach ($fieldNames as $fieldName) {
+                if (!$this->fieldNameExists($fieldName, $filteredFieldDefinitions)) {
+                    continue;
+                }
+
+                $baseLayoutName = $this->getBaseLayoutName($fieldName, $classDefinition->getLayoutDefinitions());
+
+                if (!$baseLayoutName) {
+                    throw new InvalidArgumentException('Base layout name not found for field ' . $fieldName);
+                }
+
+                $this->buildColumnConfigurations($objectBrick, $fieldName, $baseLayoutName);
             }
-
-            $this->buildColumnConfigurations($objectBrick, $fieldName);
 
         }
 
         return $this->configurations;
     }
 
-    private function buildColumnConfigurations(ObjectBrickDefinition $objectBrick, string $fieldname): void
-    {
-        $dataFields = $this->getDataFields($objectBrick->getLayoutDefinitions());
+    private function buildColumnConfigurations(
+        ObjectBrickDefinition $objectBrick,
+        string $fieldname,
+        string $baseLayoutName
+    ): void {
+        $dataFields = $this->objectBrickService->getDataFields($objectBrick->getLayoutDefinitions());
 
         foreach ($dataFields as $dataField) {
-            $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
+            $grouping = [
+                $baseLayoutName,
+                $fieldname,
+                $objectBrick->getKey(),
+            ];
 
             try {
                 $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                    new ColumnFieldDefinition($dataField, $groupName, false),
+                    new ColumnFieldDefinition($dataField->getFieldDefinition(), $grouping, $dataField->isLocalized()),
                     'dataobject.objectbrick',
-                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
+                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getFieldDefinition()->getName(),
                     [
                         'field' => $fieldname,
                         'objectBrick' => $objectBrick->getKey(),
-                        'attribute' => $dataField->getName(),
+                        'attribute' => $dataField->getFieldDefinition()->getName(),
                     ]
                 );
             } catch (InvalidArgumentException $exception) {
@@ -128,25 +144,6 @@ final class ObjectBrickCollector implements
                 continue;
             }
         }
-    }
-
-    /**
-     * @return Data[]
-     */
-    public function getDataFields(Layout $layout): array
-    {
-        $dataFields = [];
-        foreach ($layout->getChildren() as $child) {
-            if ($child instanceof Layout) {
-                $dataFields = [...$dataFields, ...$this->getDataFields($child)];
-            }
-
-            if ($child instanceof ClassDefinition\Data) {
-                $dataFields = [...$dataFields, $child];
-            }
-        }
-
-        return $dataFields;
     }
 
     private function usesClass(ObjectBrickDefinition $objectBrick, ClassDefinition $classDefinition): bool
@@ -160,15 +157,19 @@ final class ObjectBrickCollector implements
         return false;
     }
 
-    private function getUsedFieldName(ObjectBrickDefinition $objectBrick, ClassDefinition $classDefinition): string
+    /**
+     * @return string[]
+     */
+    private function getUsedFieldNames(ObjectBrickDefinition $objectBrick, ClassDefinition $classDefinition): array
     {
+        $fieldNames = [];
         foreach ($objectBrick->getClassDefinitions() as $usedClassDefinition) {
             if ($usedClassDefinition['classname'] === $classDefinition->getName()) {
-                return $usedClassDefinition['fieldname'];
+                $fieldNames[] = $usedClassDefinition['fieldname'];
             }
         }
 
-        throw new InvalidArgumentException('Field not found');
+        return $fieldNames;
     }
 
     private function fieldNameExists(string $fieldName, array $filteredFieldDefinitions): bool
@@ -192,5 +193,26 @@ final class ObjectBrickCollector implements
         return [
             ElementTypes::TYPE_DATA_OBJECT,
         ];
+    }
+
+    private function getBaseLayoutName(string $fieldname, Layout $layout, ?string $baseLayoutName = null): ?string
+    {
+        foreach ($layout->getChildren() as $child) {
+            if ($child instanceof Layout) {
+                $found = $this->getBaseLayoutName($fieldname, $child, $child->getTitle() ?: $child->getName());
+
+                if ($found !== null) {
+                    return $found;
+                }
+
+                continue;
+            }
+
+            if ($child->getName() === $fieldname) {
+                return $baseLayoutName;
+            }
+        }
+
+        return null;
     }
 }

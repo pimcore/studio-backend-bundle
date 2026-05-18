@@ -126,3 +126,49 @@ pimcore_studio_backend:
         action: clearDataCache
         ctrl: false
         alt: true
+      application_logger:
+        key: 'L'
+        action: applicationLogger
+        ctrl: true
+        alt: true
+      reports:
+        key: 'M'
+        action: reports
+        ctrl: true
+        alt: true
+      custom_reports:
+        key: 'C'
+        action: customReports
+        ctrl: true
+        alt: true
+        shift: false
+      glossary:
+        key: 'G'
+        action: glossary
+        ctrl: false
+        alt: true
+        shift: true
+      http_error_log:
+        key: 'O'
+        action: httpErrorLog
+        ctrl: true
+        alt: true
+        shift: false
+      seo_document_editor:
+        key: 'S'
+        action: seoDocumentEditor
+        ctrl: true
+        alt: true
+        shift: false
+      robots:
+        key: 'J'
+        action: robots
+        ctrl: true
+        alt: true
+        shift: false
+      quick_search:
+        key: 'F'
+        action: quickSearch
+        ctrl: true
+        alt: false
+        shift: true

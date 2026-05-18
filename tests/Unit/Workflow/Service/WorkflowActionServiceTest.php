@@ -16,9 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Workflow\Manager;
+use Pimcore\Workflow\Transition;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -36,19 +38,21 @@ final class WorkflowActionServiceTest extends Unit
             $this->makeEmpty(Registry::class),
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(ServiceProviderInterface::class),
-            $this->makeEmpty(ServiceResolverInterface::class)
+            $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(UserServiceInterface::class)
         );
     }
 
     public function testEnrichActionNotes(): void
     {
+        $transition = new Transition('toReview', [], []);
         $folder = new Folder();
         $folder->setId(15);
-        $this->assertEmpty($this->workflowActionService->enrichActionNotes($folder, []));
-        $enrichedNotes = $this->workflowActionService->enrichActionNotes($folder, ['notes' => 'This is a note']);
+        $this->assertEmpty($this->workflowActionService->enrichActionNotes($transition, $folder, []));
+        $enrichedNotes = $this->workflowActionService->enrichActionNotes($transition, $folder, ['notes' => 'This is a note']);
         $this->assertArrayHasKey('commentPrefill', $enrichedNotes);
         $this->assertEmpty($enrichedNotes['commentPrefill']);
-        $enrichedNotes = $this->workflowActionService->enrichActionNotes($folder, ['commentGetterFn' => 'getId']);
+        $enrichedNotes = $this->workflowActionService->enrichActionNotes($transition, $folder, ['commentGetterFn' => 'getId']);
         $this->assertEquals(15, $enrichedNotes['commentPrefill']);
     }
 }

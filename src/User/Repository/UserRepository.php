@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
+use function count;
 use function sprintf;
 
 /**
@@ -101,7 +102,7 @@ final readonly class UserRepository implements UserRepositoryInterface
         if ($excludeUserId !== null) {
             $listing->addConditionParam('id != :excludeUser', ['excludeUser' => $excludeUserId]);
         }
-        $roleCondition = '(roles = :roleId' .
+        $roleCondition = '(roles = :roleId ' .
             'OR roles LIKE :roleIdEnds OR roles LIKE :roleIdStarts OR roles LIKE :roleIdContains)';
         $roleParams = [
             'roleId' => $roleId,
@@ -181,7 +182,7 @@ final readonly class UserRepository implements UserRepositoryInterface
             $userListing->load();
 
             foreach ($userListing->getUsers() as $user) {
-                if ($user instanceof UserInterface && $user->getName() !== 'system') {
+                if ($user->getName() !== 'system') {
                     $list[] = $user;
                 }
             }
@@ -190,5 +191,22 @@ final readonly class UserRepository implements UserRepositoryInterface
         } catch (Exception $e) {
             throw new  DatabaseException(sprintf('Error while searching for users: %s', $e->getMessage()));
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsersByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $listing = new UserListing();
+        $placeholders = implode(',', array_fill(0, count($names), '?'));
+        $listing->setCondition('name IN (' . $placeholders . ')', $names);
+        $listing->load();
+
+        return $listing->getUsers();
     }
 }

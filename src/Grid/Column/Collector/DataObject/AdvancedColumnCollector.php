@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
@@ -27,15 +26,17 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
+use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
-use function array_key_exists;
 
 /**
  * @internal
@@ -52,8 +53,11 @@ final class AdvancedColumnCollector implements
 
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly ClassDefinitionRepositoryInterface $classRepository,
         private readonly TransformerLoaderInterface $transformerLoader,
+        private readonly DefinitionResolverInterface $objectBrickdefinitionResolver,
+        private readonly ObjectBrickServiceInterface $objectBrickService,
+        private readonly SystemColumnServiceInterface $systemColumnService,
     ) {
     }
 
@@ -64,13 +68,17 @@ final class AdvancedColumnCollector implements
 
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
-        $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
+        $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
             $this->getFolderId(),
             $this->getUser()
         );
 
-        $children = $test->getChildren();
+        if ($layoutDefinitions === null) {
+            return [];
+        }
+
+        $children = $layoutDefinitions->getChildren();
 
         $collectedDefinitions = $this->collectSupportedDefinitions($children);
 
@@ -130,7 +138,7 @@ final class AdvancedColumnCollector implements
     ): ColumnConfiguration {
         return new ColumnConfiguration(
             key: 'advanced',
-            group: 'advanced',
+            group: ['advanced'],
             sortable: false,
             editable: false,
             exportable: true,
@@ -153,8 +161,17 @@ final class AdvancedColumnCollector implements
      */
     private function getDefaultFields(array $groupedDefinitions): array
     {
-        $simpleFields = [];
+        $simpleFields = $this->getSystemFields();
         foreach ($groupedDefinitions as $definition) {
+            if ($definition instanceof Objectbricks) {
+                $simpleFields = [
+                    ...$this->buildObjectBricksFields($definition),
+                    ...$simpleFields,
+                ];
+
+                continue;
+            }
+
             if (!$definition instanceof ManyToOneRelation) {
                 $simpleFields[] = new SimpleField(
                     name: $definition->getTitle(),
@@ -166,12 +183,55 @@ final class AdvancedColumnCollector implements
         return $simpleFields;
     }
 
+    private function getSystemFields(): array
+    {
+        $systemColumns = $this->systemColumnService->getSystemColumnsForDataObjects();
+
+        foreach ($systemColumns as $key => $systemField) {
+            $systemFields[] = new SimpleField(
+                name: $key,
+                key: $key,
+            );
+        }
+
+        return $systemFields ?? [];
+    }
+
     /**
      * @return TransformerInterface[]
      */
     public function getTransformers(): array
     {
         return $this->transformerLoader->loadTransformers();
+    }
+
+    /**
+     * @return SimpleField[]
+     */
+    private function buildObjectBricksFields(Objectbricks $brick): array
+    {
+        $allowedBricks = $brick->getAllowedTypes();
+
+        $fields = [];
+        foreach ($allowedBricks as $brickType) {
+            $objectBrickDefinition = $this->objectBrickdefinitionResolver->getByKey($brickType);
+            if ($objectBrickDefinition === null) {
+                continue;
+            }
+
+            $objectBrickItems = $this->objectBrickService->getDataFields(
+                $objectBrickDefinition->getLayoutDefinitions()
+            );
+
+            foreach ($objectBrickItems as $objectBrickItem) {
+                $fields[] = new SimpleField(
+                    name: $objectBrickItem->getFieldDefinition()->getTitle(),
+                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getFieldDefinition()->getName()
+                );
+            }
+        }
+
+        return $fields;
     }
 
     /**
@@ -197,10 +257,11 @@ final class AdvancedColumnCollector implements
     ): RelationField {
         $classes  = $definition->getClasses();
         $fields = [];
+        $classIds = [];
         foreach ($classes as $class) {
-            if (!array_key_exists('classes', $class)) {
-                continue;
-            }
+            $classDefinition = $this->classRepository->getClassDefinition($class['classes']);
+
+            $classIds[] = $classDefinition->getId();
 
             $fields = [
                 ...$this->buildFieldForClassName($class['classes']),
@@ -211,6 +272,7 @@ final class AdvancedColumnCollector implements
         return new RelationField(
             name: $definition->getTitle(),
             key: $definition->getName(),
+            classIds: $classIds,
             fields: $fields
         );
     }
@@ -220,24 +282,20 @@ final class AdvancedColumnCollector implements
      */
     private function buildFieldForClassName(string $className): array
     {
-        try {
-            $definitionOfTheRelation = $this->classDefinitionResolver->getByName($className);
-        } catch (Exception $e) {
-            throw new NotFoundException('Class definition', $className);
-        }
+        $definitionOfTheRelation = $this->classRepository->getClassDefinition($className);
 
-        if ($definitionOfTheRelation === null) {
-            throw new NotFoundException('Class definition', $className);
-        }
-
-        $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
+        $filteredLayoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $definitionOfTheRelation->getId(),
             $this->getFolderId(),
             $this->getUser()
         );
 
+        if ($filteredLayoutDefinitions === null) {
+            return [];
+        }
+
         return $this->getDefaultFields(
-            $this->collectSupportedDefinitions($test->getChildren())
+            $this->collectSupportedDefinitions($filteredLayoutDefinitions->getChildren())
         );
     }
 }

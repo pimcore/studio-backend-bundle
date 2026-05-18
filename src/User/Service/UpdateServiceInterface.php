@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\UserInterface;
@@ -75,7 +77,7 @@ interface UpdateServiceInterface
     /**
      * @template T of UserInterface|UserRoleInterface
      *
-     * @param UserWorkspace[] $objectWorkspacesToSet
+     * @param UserDataObjectWorkspace[] $objectWorkspacesToSet
      * @param T $user
      *
      * @throws ParseException
@@ -90,7 +92,7 @@ interface UpdateServiceInterface
     /**
      * @template T of UserInterface|UserRoleInterface
      *
-     * @param UserWorkspace[] $documentWorkspacesToSet
+     * @param UserDocumentWorkspace[] $documentWorkspacesToSet
      * @param T $user
      *
      * @throws ParseException

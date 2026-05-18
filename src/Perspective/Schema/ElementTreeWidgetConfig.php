@@ -15,13 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions as APermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions as DOPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions as DPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
@@ -33,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
         'contextPermissions',
         'elementType',
         'rootFolder',
-        'rootFolderId',
         'showRoot',
         'classes',
         'pql',
@@ -50,20 +45,37 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         #[Property(
             description: 'Context Permissions',
             type: 'object',
-            oneOf: [
-                new Schema(APermissions::class),
-                new Schema(DOPermissions::class),
-                new Schema(DPermissions::class),
+            example: [
+                'add' => true,
+                'addFolder' => true,
+                'changeChildrenSortBy' => true,
+                'copy' => true,
+                'cut' => true,
+                'delete' => true,
+                'lock' => true,
+                'lockAndPropagate' => true,
+                'paste' => true,
+                'publish' => true,
+                'refresh' => true,
+                'rename' => true,
+                'searchAndMove' => true,
+                'unlock' => true,
+                'unlockAndPropagate' => true,
+                'unpublish' => true,
             ]
         )]
-        private readonly APermissions|DOPermissions|DPermissions $contextPermissions,
+        private readonly array $contextPermissions,
         ElementIcon $icon,
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
-        #[Property(description: 'Root Folder', type: 'string', example: '/Product Data/Cars')]
-        private readonly string $rootFolder = ElementFolderPaths::ROOT->value,
-        #[Property(description: 'Root Folder ID', type: 'int', example: 2)]
-        private readonly int $rootFolderId = ElementFolderIds::ROOT->value,
+        #[Property(ref: RelatedElementData::class, description: 'Data of root folder element', type: 'object')]
+        private readonly RelatedElementData $rootFolder = new RelatedElementData(
+            1,
+            ElementTypes::TYPE_OBJECT,
+            ElementTypes::TYPE_FOLDER,
+            '/',
+            null
+        ),
         #[Property(description: 'Show Root', type: 'bool', example: false)]
         private readonly bool $showRoot = false,
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]
@@ -83,14 +95,9 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         return $this->elementType;
     }
 
-    public function getRootFolder(): string
+    public function getRootFolder(): RelatedElementData
     {
         return $this->rootFolder;
-    }
-
-    public function getRootFolderId(): int
-    {
-        return $this->rootFolderId;
     }
 
     public function isShowRoot(): bool
@@ -113,7 +120,7 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         return $this->pageSize;
     }
 
-    public function getContextPermissions(): DPermissions|APermissions|DOPermissions
+    public function getContextPermissions(): array
     {
         return $this->contextPermissions;
     }

@@ -1,0 +1,66 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Controller\:
+    resource: '../../src/Bundle/Seo/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\FilterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\FilterService
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsService
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvService
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RobotsTxtServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RobotsTxtService
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectStatusHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectStatusHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RobotsTxtHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RobotsTxtHydrator
+
+  #
+  # Repository
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepository
+
+  #
+  # Event Subscribers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\EventSubscriber\StudioContextPermissionsSubscriber: ~
+
+  #
+  # Filters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Filter\UrlFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]

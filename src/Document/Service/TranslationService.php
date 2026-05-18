@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Service as DocumentService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -57,7 +58,7 @@ final class TranslationService implements TranslationServiceInterface
         }
 
         try {
-            $translations = $this->coreDocumentService->getTranslations($document);
+            $translations = $this->coreDocumentService->getTranslations($parent);
         } catch (Exception $exception) {
             throw new DatabaseException($exception->getMessage());
         }
@@ -164,7 +165,9 @@ final class TranslationService implements TranslationServiceInterface
                     '%s Document(ID: %s) has no Language property set.',
                     ucfirst($type),
                     $document->getId(),
-                )
+                ),
+                null,
+                HttpResponseErrorKeys::DOCUMENT_LANGUAGE_NOT_SET->value
             );
         }
     }

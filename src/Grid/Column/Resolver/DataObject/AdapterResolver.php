@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
@@ -32,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -48,9 +52,22 @@ final class AdapterResolver implements
     public function __construct(
         private readonly DataServiceInterface $dataService,
         private readonly InheritanceServiceInterface $inheritanceService,
-        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver
-
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
+    }
+
+    /** @see LocalizedValueTrait::doGetFallbackValues() */
+    protected function doGetFallbackValues(): bool
+    {
+        return $this->localizedFieldResolver->doGetFallbackValues();
+    }
+
+    /** @see LocalizedValueTrait::getDefaultLanguage() */
+    protected function getDefaultLanguage(): ?string
+    {
+        return $this->toolResolver->getDefaultLanguage();
     }
 
     /**
@@ -58,7 +75,7 @@ final class AdapterResolver implements
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
-    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
     {
         if (!$element instanceof Concrete) {
             throw new InvalidArgumentException('Element must be a concrete object');
@@ -66,9 +83,14 @@ final class AdapterResolver implements
 
         $classDefinition = $element->getClass();
         $fieldDefinition = $this->getFieldDefinition($column->getKey(), $classDefinition);
-        $value = $this->dataService->getExportFieldValue($element, $fieldDefinition, $column->getKey());
 
-        return $this->getColumnData($column, $value);
+        $context = new FieldContextData(
+            legacyParameters: ['language' => $column->getLocale()]
+        );
+
+        $value = $this->dataService->getExportFieldValue($element, $fieldDefinition, $column->getKey(), $context);
+
+        return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
     }
 
     /**
@@ -92,12 +114,13 @@ final class AdapterResolver implements
 
         $inheritanceData = null;
         if ($classDefinition->getAllowInherit() && $fieldDefinition->supportsInheritance()) {
-            $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $column->getKey());
+            $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $column);
         }
 
         return $this->getColumnData(
             $column,
             $value,
+            $fieldDefinition->getFieldType(),
             $inheritanceData
         );
     }
@@ -114,12 +137,17 @@ final class AdapterResolver implements
         ];
     }
 
-    private function getInheritanceData(Concrete $element, Data $fieldDefinition, string $field): InheritanceData
+    private function getInheritanceData(Concrete $element, Data $fieldDefinition, Column $column): array|InheritanceData
     {
         return $this->dataObjectServiceResolver->useInheritedValues(
             false,
-            function () use ($element, $fieldDefinition, $field) {
-                return $this->inheritanceService->processFieldDefinition($element, $fieldDefinition, $field);
+            function () use ($element, $fieldDefinition, $column) {
+                return $this->inheritanceService->processFieldDefinition(
+                    $element,
+                    $fieldDefinition,
+                    $column->getKey(),
+                    new FieldContextData(contextObject: null, language: $column->getLocale())
+                );
             }
         );
     }

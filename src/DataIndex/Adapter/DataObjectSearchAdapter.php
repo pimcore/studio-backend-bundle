@@ -13,18 +13,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
+use Pimcore\Bundle\GenericDataIndexBundle\Permission\Workspace\DataObjectWorkspace;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\SearchHelper;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DataObjectHydratorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -42,18 +47,31 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function __construct(
         private DataObjectSearchServiceInterface $searchService,
         private DataObjectHydratorServiceInterface $hydratorService,
+        private SearchHelper $searchHelper,
         private SearchResultIdListServiceInterface $searchResultIdListService,
     ) {
     }
 
     /**
-     * @throws InvalidSearchException
+     * @throws InvalidSearchException|GdiParsingException
      */
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
-
         $search = $this->validateSearch($dataObjectQuery->getSearch());
-        $searchResult = $this->searchService->search($search);
+
+        try {
+            $searchResult = $this->searchService->search($search);
+        } catch (ParsingException $e) {
+            throw new GdiParsingException(
+                $e->getMessage(),
+                $e->getPosition(),
+                $e->getExpected(),
+                $e->getQuery(),
+                $e->getFound(),
+                $e->getToken()?->value,
+                $e
+            );
+        }
 
         $result = array_map(function (DataObjectSearchResultItem $item) {
             return $this->hydratorService->hydrateDataObjects($item);
@@ -70,7 +88,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectById(int $id, ?UserInterface $user = null): DataObject
+    public function getDataObjectById(int $id, ?UserInterface $user = null): DataObjectDetail|DataObjectFolder
     {
         try {
             /** @var User $user
@@ -85,7 +103,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
             throw new NotFoundException('DataObject', $id);
         }
 
-        return $this->hydratorService->hydrateDataObjects($dataObject);
+        return $this->hydratorService->hydrateDetailObjects($dataObject);
     }
 
     /**
@@ -96,8 +114,11 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function fetchDataObjectIds(QueryInterface $dataObjectQuery): array
     {
         try {
-            $search = $dataObjectQuery->getSearch();
-            $search->addModifier(new OrderByFullPath());
+            $search = $this->searchHelper->addSearchRestrictions(
+                search: $dataObjectQuery->getSearch(),
+                userPermission: UserPermissionTypes::OBJECTS->value,
+                workspaceType: DataObjectWorkspace::WORKSPACE_TYPE,
+            );
 
             return $this->searchResultIdListService->getAllIds($search);
         } catch (DataObjectSearchException) {

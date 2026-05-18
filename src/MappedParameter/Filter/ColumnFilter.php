@@ -22,12 +22,27 @@ final readonly class ColumnFilter extends SimpleColumnFilter
         private string $key,
         private string $type,
         private mixed $filterValue,
+        private ?string $locale = null
     ) {
         parent::__construct($this->type, $this->filterValue);
     }
 
     public function getKey(): string
     {
+        if ($this->locale) {
+            return $this->key . '.' . $this->locale;
+        }
+
         return $this->key;
+    }
+
+    public function getKeyWithOutLocale(): string
+    {
+        return $this->key;
+    }
+
+    public function getLocale(): ?string
+    {
+        return $this->locale;
     }
 }

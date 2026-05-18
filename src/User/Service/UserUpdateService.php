@@ -74,14 +74,18 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setMemorizeTabs($updateUserParameter->isMemorizeTabs());
         $user->setParentId($updateUserParameter->getParentId());
         $user->setAllowDirtyClose($updateUserParameter->isAllowDirtyClose());
-        $user->setTwoFactorAuthentication('required', $updateUserParameter->isTwoFactorAuthenticationEnabled());
+        $user->setTwoFactorAuthentication('required', $updateUserParameter->isTwoFactorAuthenticationRequired());
         $user->setWelcomescreen($updateUserParameter->isWelcomescreen());
         $user->setContentLanguages($updateUserParameter->getContentLanguages());
         $user->setWebsiteTranslationLanguagesEdit($updateUserParameter->getWebsiteTranslationLanguagesEdit());
         $user->setWebsiteTranslationLanguagesView($updateUserParameter->getWebsiteTranslationLanguagesView());
+        $user->setDocTypes($updateUserParameter->getDocTypes());
         $user->setKeyBindings(
             $this->getKeyBindingsString($updateUserParameter->getKeyBindings())
         );
+        if ($user instanceof User) {
+            $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
+        }
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
         $user = $this->updateService->updateRoles($updateUserParameter->getRoles(), $user);

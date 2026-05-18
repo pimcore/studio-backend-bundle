@@ -18,9 +18,14 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\ControllerEven
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\TemplateEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Controller;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Template;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ReflectionException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Controller\Config\ControllerDataProvider;
+use Pimcore\Model\Document\PageSnippet;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -29,7 +34,9 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
 {
     public function __construct(
         private ControllerDataProvider $controllerDataProvider,
+        private DocumentServiceInterface $documentService,
         private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -70,5 +77,34 @@ final readonly class PageSnippetService implements PageSnippetServiceInterface
         }
 
         return $templates;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setMainDocument(int $documentId, ?string $mainDocumentPath = null): void
+    {
+        try {
+            $snippet = $this->getPageSnippet($documentId);
+            $snippet->setEditables([]);
+            $snippet->setContentMainDocumentId($mainDocumentPath, true);
+            $snippet->saveVersion();
+        } catch (Exception $exception) {
+            throw new ElementSavingFailedException($documentId, $exception->getMessage(), $exception);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getPageSnippet(int $id): PageSnippet
+    {
+        $document = $this->documentService->getDocumentElement($this->securityService->getCurrentUser(), $id);
+
+        if (!$document instanceof PageSnippet) {
+            throw new InvalidArgumentException(sprintf('Document with id %d is not a PageSnippet', $id));
+        }
+
+        return $document;
     }
 }

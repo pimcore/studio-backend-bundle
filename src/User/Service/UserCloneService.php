@@ -36,8 +36,10 @@ final class UserCloneService implements UserCloneServiceInterface
     ) {
     }
 
+    /** @phpstan-ignore property.unusedType */
     private ?User $user;
 
+    /** @phpstan-ignore property.unusedType */
     private ?User $userToClone;
 
     /**

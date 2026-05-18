@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -27,9 +28,18 @@ use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 interface CustomLayoutRepositoryInterface
 {
     /**
+     * @param string[] $dataObjectClassIds
+     *
      * @return CustomLayout[]
      */
-    public function getCustomLayouts(string $dataObjectClassId): array;
+    public function getCustomLayoutsByClass(array $dataObjectClassIds): array;
+
+    public function getAllCustomLayouts(): array;
+
+    /**
+     * @return CustomLayout[]
+     */
+    public function getAllCustomLayoutsIncludingBricks(): array;
 
     /**
      * @throws NotFoundException
@@ -54,7 +64,7 @@ interface CustomLayoutRepositoryInterface
      */
     public function updateCustomLayout(
         CustomLayout $customLayout,
-        CustomLayoutUpdateParameters $customLayoutParameters
+        UpdateParameters $customLayoutParameters
     ): CustomLayout;
 
     public function exportCustomLayoutAsJson(CustomLayout $customLayout): string;
@@ -63,4 +73,14 @@ interface CustomLayoutRepositoryInterface
      * @throws NotWriteableException|JsonEncodingException|InvalidArgumentException
      */
     public function importCustomLayoutFromJson(CustomLayout $customLayout, string $json): CustomLayout;
+
+    /**
+     * @throws NotWriteableException|EnvironmentException
+     */
+    public function createBrickCustomLayout(string $compositeId, CustomLayout $baseLayout): CustomLayout;
+
+    /**
+     * @return CustomLayout[]
+     */
+    public function getBrickLayoutsByBaseId(string $baseLayoutId): array;
 }

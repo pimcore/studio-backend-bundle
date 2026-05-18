@@ -1,0 +1,62 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Translation\Schema;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+
+#[Schema(
+    schema: 'CsvSettings',
+    title: 'CSV Settings',
+    required: ['delimiter', 'quoteChar', 'escapeChar', 'lineTerminator'],
+    type: 'object'
+)]
+final class CsvSettings implements AdditionalAttributesInterface
+{
+    use AdditionalAttributesTrait;
+
+    public function __construct(
+        #[Property(description: 'Field delimiter character', type: 'string', example: ';')]
+        private readonly string $delimiter,
+        #[Property(description: 'Quote character for fields', type: 'string', example: '"')]
+        private readonly string $quoteChar,
+        #[Property(description: 'Escape character', type: 'string', example: '\\')]
+        private readonly string $escapeChar,
+        #[Property(description: 'Line terminator character', type: 'string', example: '')]
+        private readonly string $lineTerminator,
+    ) {
+    }
+
+    public function getDelimiter(): string
+    {
+        return $this->delimiter;
+    }
+
+    public function getQuoteChar(): string
+    {
+        return $this->quoteChar;
+    }
+
+    public function getEscapeChar(): string
+    {
+        return $this->escapeChar;
+    }
+
+    public function getLineTerminator(): string
+    {
+        return $this->lineTerminator;
+    }
+}

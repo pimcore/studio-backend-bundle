@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
@@ -30,19 +32,21 @@ final readonly class UpdateUserParameter
         private bool $active,
         private bool $admin,
         private array $classes,
+        private array $docTypes,
         private bool $closeWarning,
         private bool $allowDirtyClose,
         private array $contentLanguages,
         private array $keyBindings,
         #[NotBlank(message: 'Language is required')]
         private string $language,
+        private ?string $dateTimeLocale,
         private bool $memorizeTabs,
         #[PositiveOrZero(message: 'ParentId must be a positive integer')]
         #[NotBlank(message: 'ParentId is required')]
         private int $parentId,
         private array $permissions,
         private array $roles,
-        private bool $twoFactorAuthenticationEnabled,
+        private bool $twoFactorAuthenticationRequired,
         private array $websiteTranslationLanguagesEdit,
         private array $websiteTranslationLanguagesView,
         private bool $welcomeScreen,
@@ -83,6 +87,11 @@ final readonly class UpdateUserParameter
         return $this->classes;
     }
 
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
+    }
+
     public function isCloseWarning(): bool
     {
         return $this->closeWarning;
@@ -111,6 +120,11 @@ final readonly class UpdateUserParameter
         return $this->language;
     }
 
+    public function getDateTimeLocale(): ?string
+    {
+        return $this->dateTimeLocale;
+    }
+
     public function isMemorizeTabs(): bool
     {
         return $this->memorizeTabs;
@@ -131,9 +145,9 @@ final readonly class UpdateUserParameter
         return $this->roles;
     }
 
-    public function isTwoFactorAuthenticationEnabled(): bool
+    public function isTwoFactorAuthenticationRequired(): bool
     {
-        return $this->twoFactorAuthenticationEnabled;
+        return $this->twoFactorAuthenticationRequired;
     }
 
     public function getWebsiteTranslationLanguagesEdit(): array
@@ -160,7 +174,7 @@ final readonly class UpdateUserParameter
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function getDataObjectWorkspaces(): array
     {
@@ -168,7 +182,7 @@ final readonly class UpdateUserParameter
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function getDocumentWorkspaces(): array
     {

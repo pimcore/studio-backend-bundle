@@ -1,0 +1,10 @@
+framework:
+  rate_limiter:
+    reset_password:
+      policy: 'fixed_window'
+      limit: 5
+      interval: '5 minutes'
+    setting_admin_thumbnail:
+      policy: 'fixed_window'
+      limit: 60
+      interval: '1 minutes'

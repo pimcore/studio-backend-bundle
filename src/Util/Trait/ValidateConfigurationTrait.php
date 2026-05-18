@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Symfony\Component\Uid\Factory\UuidFactory;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 use function strlen;
 
 /**
@@ -33,24 +35,64 @@ trait ValidateConfigurationTrait
      */
     private function getValidConfigName(array $configData): string
     {
+        $this->validateConfigNameLength($configData);
+        $this->validateConfigName($configData['name']);
+
+        return htmlspecialchars($configData['name'], ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getValidConfigDisplayName(array $configData): string
+    {
+        $this->validateConfigNameLength($configData);
+        $this->validateYamlSafeName($configData['name']);
+
+        return $configData['name'];
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateConfigNameLength(array $configData): void
+    {
         if (!isset($configData['name'])) {
             throw new InvalidArgumentException(
                 'Missing configuration name',
                 errorKey: HttpResponseErrorKeys::CONFIG_NAME_INVALID->value
             );
         }
-        $this->validateConfigName($configData['name']);
 
-        return htmlspecialchars($configData['name'], ENT_QUOTES, 'UTF-8');
+        if (strlen($configData['name']) < 3 || strlen($configData['name']) > 80) {
+            throw new InvalidArgumentException(
+                'Configuration name must be between 3 and 80 characters',
+                errorKey: HttpResponseErrorKeys::CONFIG_NAME_INVALID->value
+            );
+        }
     }
 
-    private function validateConfigName(
-        string $configurationName
-    ): void {
-        if (strlen($configurationName) < 3 ||
-            strlen($configurationName) > 80 ||
-            !preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_-]{2,79}$/', $configurationName)
-        ) {
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateConfigName(string $configurationName): void
+    {
+        if (!preg_match('/^[a-zA-Z0-9][a-zA-Z0-9 _-]{2,79}$/', $configurationName)) {
+            throw new InvalidArgumentException(
+                'Invalid configuration name',
+                errorKey: HttpResponseErrorKeys::CONFIG_NAME_INVALID->value
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateYamlSafeName(string $name): void
+    {
+        try {
+            Yaml::parse($name);
+        } catch (ParseException) {
             throw new InvalidArgumentException(
                 'Invalid configuration name',
                 errorKey: HttpResponseErrorKeys::CONFIG_NAME_INVALID->value

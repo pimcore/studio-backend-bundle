@@ -24,9 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'User',
     description: 'Contains all information about a user',
     required: [
-        'id', 'active', 'admin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
+        'id', 'name', 'email', 'firstname', 'lastname', 'active', 'admin',
+        'classes', 'docTypes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
-        'twoFactorAuthenticationEnabled', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
+        'twoFactorAuthentication', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
         'perspectives',
     ],
@@ -53,6 +54,12 @@ final class User implements AdditionalAttributesInterface
         private readonly bool $admin,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
+        #[Property(
+            description: 'Allowed doc types to create',
+            type: 'array',
+            items: new Items(type: 'string')
+        )]
+        private readonly array $docTypes,
         #[Property(description: 'Show close warning', type: 'boolean', example: true)]
         private readonly bool $closeWarning,
         #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
@@ -69,6 +76,8 @@ final class User implements AdditionalAttributesInterface
         private readonly array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private readonly string $language,
+        #[Property(description: 'Locale for dateTime', type: 'string', example: '')]
+        private readonly ?string $dateTimeLocale,
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: '1718757677')]
         private readonly ?int $lastLogin,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
@@ -79,8 +88,12 @@ final class User implements AdditionalAttributesInterface
         private readonly array $permissions,
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private readonly array $roles,
-        #[Property(description: 'Two Factor Authentication Enabled', type: 'boolean', example: false)]
-        private readonly bool $twoFactorAuthenticationEnabled,
+        #[Property(
+            ref: TwoFactorAuth::class,
+            description: 'Two Factor Authentication',
+            type: 'object'
+        )]
+        private readonly TwoFactorAuth $twoFactorAuthentication,
         #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
         private readonly array $websiteTranslationLanguagesEdit,
         #[Property(description: 'Website Translation Languages View', type: 'object', example: ['de'])]
@@ -89,9 +102,17 @@ final class User implements AdditionalAttributesInterface
         private readonly bool $welcomeScreen,
         #[Property(description: 'Asset Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private readonly array $assetWorkspaces,
-        #[Property(description: 'Data Object Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
+        #[Property(
+            description: 'Data Object Workspace',
+            type: 'array',
+            items: new Items(ref: UserDataObjectWorkspace::class)
+        )]
         private readonly array $dataObjectWorkspaces,
-        #[Property(description: 'Document Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
+        #[Property(
+            description: 'Document Workspace',
+            type: 'array',
+            items: new Items(ref: UserDocumentWorkspace::class)
+        )]
         private readonly array $documentWorkspaces,
         #[Property(ref: ObjectDependencies::class, description: 'Object Dependencies', type: 'object')]
         private readonly ObjectDependencies $objectDependencies,
@@ -144,6 +165,11 @@ final class User implements AdditionalAttributesInterface
         return $this->classes;
     }
 
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
+    }
+
     public function isCloseWarning(): bool
     {
         return $this->closeWarning;
@@ -170,6 +196,11 @@ final class User implements AdditionalAttributesInterface
     public function getLanguage(): string
     {
         return $this->language;
+    }
+
+    public function getDateTimeLocale(): ?string
+    {
+        return $this->dateTimeLocale;
     }
 
     public function getLastLogin(): ?int
@@ -202,9 +233,9 @@ final class User implements AdditionalAttributesInterface
         return $this->allowDirtyClose;
     }
 
-    public function isTwoFactorAuthenticationEnabled(): bool
+    public function getTwoFactorAuthentication(): TwoFactorAuth
     {
-        return $this->twoFactorAuthenticationEnabled;
+        return $this->twoFactorAuthentication;
     }
 
     public function getWebsiteTranslationLanguagesEdit(): array
@@ -231,7 +262,7 @@ final class User implements AdditionalAttributesInterface
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function getDataObjectWorkspaces(): array
     {
@@ -239,7 +270,7 @@ final class User implements AdditionalAttributesInterface
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function getDocumentWorkspaces(): array
     {

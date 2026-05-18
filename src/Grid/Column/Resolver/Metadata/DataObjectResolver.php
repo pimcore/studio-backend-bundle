@@ -17,25 +17,45 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInter
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\CoreLocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final class DataObjectResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
+final class DataObjectResolver implements
+    ColumnResolverInterface,
+    StudioElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
+    use CoreLocalizedValueTrait;
 
     public function __construct(
         private readonly DataObjectServiceInterface $dataObjectService
     ) {
+    }
+
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
+    {
+        $dataObject = $this->getCoreLocalizedValue($column, $element);
+
+        if (!$dataObject instanceof DataObject) {
+            return $this->getColumnData($column, null, $this->getType());
+        }
+
+        return $this->getColumnData($column, $dataObject->getFullPath(), $this->getType());
     }
 
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
@@ -43,7 +63,7 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
         $object = $this->getLocalizedValue($column, $element);
 
         if (!isset($object['object'])) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -52,7 +72,7 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
@@ -63,7 +83,8 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
                 'type' => 'object',
                 'fullPath' => $relatedObject->getFullPath(),
                 'isPublished' => $relatedObject->isPublished(),
-            ]
+            ],
+            $this->getType()
         );
     }
 

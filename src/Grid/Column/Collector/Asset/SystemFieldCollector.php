@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
@@ -28,6 +29,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 {
     public function __construct(
         private SystemColumnServiceInterface $systemColumnService,
+        private AssetResolverInterface $assetResolver,
     ) {
     }
 
@@ -53,7 +55,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
             $column = new ColumnConfiguration(
                 key: $columnKey,
-                group: $this->getTypeName(),
+                group: [$this->getTypeName()],
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: false,
                 exportable: $availableColumnDefinitions[$type]->isExportable(),
@@ -65,7 +67,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                     $columnKey,
                     $availableColumnDefinitions[$type]->getFrontendType()
                 ),
-                config: []
+                config: $this->getCustomConfig($columnKey)
             );
 
             $columns[] = $column;
@@ -95,6 +97,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     {
         $customFrontendAdapters = [
             'fullpath' => FrontendType::ASSET_LINK->value,
+            'type' => FrontendType::MULTISELECT->value,
         ];
 
         if (array_key_exists($columnKey, $customFrontendAdapters)) {
@@ -102,5 +105,30 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
         }
 
         return $defaultAdapter;
+    }
+
+    private function getCustomConfig(string $columnKey): array
+    {
+        $customConfig = [
+            'type' => $this->getTypeConfig(),
+        ];
+
+        if (array_key_exists($columnKey, $customConfig)) {
+            return $customConfig[$columnKey];
+        }
+
+        return [];
+    }
+
+    private function getTypeConfig(): array
+    {
+        return [
+            'definition' => [
+                'options' => array_map(
+                    static fn ($type) => ['key' => ucfirst($type), 'value' => $type],
+                    $this->assetResolver->getTypes()
+                ),
+            ],
+        ];
     }
 }

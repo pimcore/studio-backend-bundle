@@ -28,7 +28,8 @@ final readonly class FilterParameterMapper implements FilterParameterMapperInter
             columnFilters: $filters['columnFilters'] ?? [],
             sortFilter: new SortFilter(
                 key: $filters['sortFilter']['key'] ?? 'id',
-                direction: $filters['sortFilter']['direction'] ?? SortDirection::ASC->value
+                direction: $filters['sortFilter']['direction'] ?? SortDirection::ASC->value,
+                locale: $filters['sortFilter']['locale'] ?? null
             )
         );
     }

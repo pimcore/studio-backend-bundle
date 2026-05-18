@@ -41,8 +41,8 @@ final readonly class Column
         private ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'system.id')]
         private string $type,
-        #[Property(description: 'Group', type: 'string', example: 'system')]
-        private ?string $group,
+        #[Property(description: 'Group', type: 'array', items: new Items(type: 'string'), example: ['system'])]
+        private ?array $group,
         #[Property(
             description: 'Config',
             type: 'array',
@@ -72,7 +72,7 @@ final readonly class Column
         return $this->type;
     }
 
-    public function getGroup(): ?string
+    public function getGroup(): ?array
     {
         return $this->group;
     }
@@ -130,6 +130,12 @@ final readonly class Column
         if (isset($this->config['transformers'])) {
             foreach ($this->config['transformers'] as $transformer) {
                 if (isset($transformer['key'])) {
+
+                    // Inject locale into original config array if not set
+                    if ($this->getLocale() !== null) {
+                        $transformer['config']['locale'] = $this->getLocale();
+                    }
+
                     $transformers[] = new Transformer(
                         key: $transformer['key'],
                         config: $transformer['config'] ?? []
@@ -138,7 +144,7 @@ final readonly class Column
             }
         }
 
-        return  $transformers;
+        return $transformers;
     }
 
     public function toArray(): array

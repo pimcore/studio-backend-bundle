@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
 use Pimcore\Model\User\UserRoleInterface;
+use function count;
 use function in_array;
 use function sprintf;
 
@@ -102,6 +103,31 @@ final class RoleRepository implements RoleRepositoryInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function searchRoles(string $searchQuery): array
+    {
+        try {
+            $roleListing = new Listing();
+            $roleListing->setCondition(
+                '(name LIKE :name OR id = :id) AND `type` = :type',
+                [
+                    'name' => '%' . $searchQuery . '%',
+                    'id' => (int)$searchQuery,
+                    'type' => 'role',
+                ]
+            );
+            $roleListing->setOrder('ASC');
+            $roleListing->setOrderKey('name');
+            $roleListing->load();
+
+            return $roleListing->getRoles();
+        } catch (Exception $e) {
+            throw new DatabaseException(sprintf('Error while searching for roles: %s', $e->getMessage()));
+        }
+    }
+
+    /**
      * @throws Exception
      */
     public function deleteRole(Role $role): void
@@ -133,5 +159,25 @@ final class RoleRepository implements RoleRepositoryInterface
                 )
             );
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoleIdsByNames(array $names): array
+    {
+        if (empty($names)) {
+            return [];
+        }
+
+        $listing = new Listing();
+        $placeholders = implode(',', array_fill(0, count($names), '?'));
+        $listing->setCondition('name IN (' . $placeholders . ') AND type = ?', [...$names, 'role']);
+        $listing->load();
+
+        return array_map(
+            static fn ($role): int => $role->getId(),
+            $listing->getRoles()
+        );
     }
 }

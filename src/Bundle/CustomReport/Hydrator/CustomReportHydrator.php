@@ -19,6 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 
 /**
  * @internal
@@ -27,6 +30,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
 {
     public function __construct(
         private ColumnHydratorInterface $columnHydrator,
+        private readonly AdapterServiceInterface $adapterService
     ) {
     }
 
@@ -39,7 +43,24 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             htmlspecialchars($report->getGroup()),
             htmlspecialchars($report->getGroupIconClass()),
             $report->getMenuShortcut(),
-            htmlspecialchars($report->getReportClass())
+            htmlspecialchars($report->getReportClass()),
+            (bool)$report->getDataSourceConfig()
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function extractTreeFolderData(
+        string $group,
+        string $groupIconClass,
+        array $children
+    ): CustomReportTreeNodeFolder {
+        return new CustomReportTreeNodeFolder(
+            htmlspecialchars($group),
+            htmlspecialchars($group),
+            htmlspecialchars($groupIconClass),
+            $children,
         );
     }
 
@@ -55,13 +76,10 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
 
     public function extractReportDetails(Config $report): CustomReportDetails
     {
-
         return new CustomReportDetails(
             $report->getName(),
             $report->getSql(),
-            $this->columnHydrator->getCustomReportColumnConfiguration(
-                $report->getColumnConfiguration()
-            ),
+            $this->columnHydrator->getCustomReportColumnConfiguration($report),
             $report->getNiceName(),
             $report->getGroup(),
             $report->getGroupIconClass(),
@@ -94,5 +112,37 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $drillDownData['name'] ?? '',
             $drillDownData['value'] ?? ''
         );
+    }
+
+    public function dehydrateReportDetails(
+        Config $config,
+        CustomReportUpdate $customReportUpdate
+    ): Config {
+        $adapter = $this->adapterService->getAdapter($config);
+
+        $config->setSql($customReportUpdate->getSql());
+        $config->setColumnConfiguration(
+            $this->columnHydrator->dehydrateColumnConfiguration(
+                $customReportUpdate->getColumnConfigurations()
+            )
+        );
+        $config->setDataSourceConfig($customReportUpdate->getDataSourceConfig());
+        $config->setNiceName($customReportUpdate->getNiceName());
+        $config->setGroup($customReportUpdate->getGroup());
+        $config->setGroupIconClass($customReportUpdate->getGroupIconClass());
+        $config->setIconClass($customReportUpdate->getIconClass());
+        $config->setMenuShortcut($customReportUpdate->getMenuShortcut());
+        $config->setReportClass($customReportUpdate->getReportClass());
+        $config->setChartType($customReportUpdate->getChartType());
+        $config->setPieColumn($customReportUpdate->getPieColumn());
+        $config->setPieLabelColumn($customReportUpdate->getPieLabelColumn());
+        $config->setXAxis($customReportUpdate->getXAxis());
+        $config->setYAxis($customReportUpdate->getYAxis());
+        $config->setShareGlobally($customReportUpdate->getSharedGlobally());
+        $config->setSharedUserNames($customReportUpdate->getSharedUserNames());
+        $config->setSharedRoleNames($customReportUpdate->getSharedRoleNames());
+        $config->setPagination($adapter->getPagination());
+
+        return $config;
     }
 }

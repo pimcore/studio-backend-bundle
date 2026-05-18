@@ -1,0 +1,76 @@
+studio_ee_no_element_provided: Ingen element oppgitt
+studio_ee_element_not_found: Element av type %type% med ID %id% ble ikke funnet
+studio_ee_user_not_found: Bruker med ID %userId% ble ikke funnet
+studio_ee_environment_variable_not_found: Miljøvariabel %variable% ble ikke funnet
+studio_ee_element_locked: Element av type %type% med ID %id% er låst
+studio_ee_element_permission_missing: Bruker med ID %userId% mangler tillatelse %permission% på element av type %type% med ID %id%
+studio_ee_element_delete_failed: 'Element av type %type% med ID %id% kunne ikke slettes: %message%'
+studio_ee_element_batch_delete_failed: 'Massesletting av element av type %type% med ID %id% og dets underordnede elementer mislyktes: %message%'
+studio_ee_zip_file_copy_failed: 'ZIP-filen kunne ikke kopieres: %message%'
+studio_ee_zip_file_upload_failed: 'ZIP-filen kunne ikke lastes opp: %message%'
+studio_ee_zip_cleanup_failed: 'ZIP-katalogen %directory% kunne ikke fjernes: %message%'
+studio_ee_csv_creation_failed: 'CSV-eksporten mislyktes: %message%'
+studio_ee_xlsx_creation_failed: 'XLSX-eksporten mislyktes: %message%'
+studio_ee_recycle_bin_delete_failed: 'Element med ID %id% kunne ikke slettes fra papirkurven: %message%'
+studio_ee_recycle_bin_restore_failed: 'Element fra papirkurven med ID %id% kunne ikke gjenopprettes: %message%'
+studio_ee_csv_data_collection_failed: 'Data for CSV-eksporten kunne ikke hentes ut for %id%: %message%'
+studio_ee_element_patch_failed: 'Element av type %type% med ID %id% kunne ikke oppdateres: %message%'
+studio_ee_element_rewrite_references_failed: 'Referanser for element av type %type% med ID %id% kunne ikke skrives om: %message%'
+studio_ee_element_tag_operation_failed: 'Kunne ikke utføre %operation% på tagger for element av type %type% med ID %id%: %message%'
+studio_ee_no_element_data_found: Ingen data funnet
+studio_ee_job_create_download_zip: Opprett nedlastings-ZIP
+studio_ee_job_clone_assets: Klon assets
+studio_ee_job_upload_zip_file: Last opp ZIP-fil
+studio_ee_job_delete_assets: Slett assets
+studio_ee_job_batch_delete_assets: Slett assets i batch
+studio_ee_job_patch_elements: Oppdater elementer
+studio_ee_job_create_csv: Opprett CSV
+studio_ee_job_create_xlsx: Opprett XLSX
+studio_ee_job_upload_assets: Last opp assets
+studio_ee_job_clone_data_objects: Klon dataobjekter
+studio_ee_job_delete_data_objects: Slett dataobjekter
+studio_ee_job_batch_delete_data_objects: Slett dataobjekter i batch
+studio_ee_job_clone_documents: Klon dokumenter
+studio_ee_job_delete_documents: Slett dokumenter
+studio_ee_job_rewrite_element_references: Skriv om elementreferanser
+studio_ee_job_batch_tag_assign: Tildel tagger i batch
+studio_ee_job_batch_tag_replace: Erstatt tagger i batch
+studio_ee_job_recycle_bin_delete: Slett elementer fra papirkurven
+studio_ee_job_recycle_bin_restore: Gjenopprett elementer fra papirkurven
+studio_ee_job_step_zip_creation: Oppretting av nedlastings-ZIP
+studio_ee_job_step_asset_cloning: Kloning av assets
+studio_ee_job_step_csv_file_not_found: CSV-fil ikke funnet
+studio_ee_jop_step_zip_uploading: Opplasting av ZIP
+studio_ee_job_step_asset_uploading: Opplasting av assets
+studio_ee_job_step_csv_creation: Oppretting av CSV
+studio_ee_job_step_xlsx_creation: Oppretting av XLSX
+studio_ee_job_step_export_data_collection: Innsamling av data for eksport
+studio_ee_job_step_element_patching: Oppdatering av elementer
+studio_ee_job_step_folder_patching: Oppdatering av mapper
+studio_ee_job_step_element_rewrite_references: Omskriving av elementreferanser
+studio_ee_job_step_element_deletion: Sletting av elementer
+studio_ee_job_step_element_recycling: Legg elementer i papirkurven
+studio_ee_job_step_data_object_cloning: Kloning av dataobjekter
+studio_ee_job_step_document_cloning: Kloning av dokumenter
+studio_ee_job_step_batch_tag_assign: Tildeling av tagger i batch
+studio_ee_job_step_batch_tag_replace: Erstatning av tagger i batch
+studio_ee_job_step_recycle_bin_delete: Sletting av elementer fra papirkurven
+studio_ee_job_step_recycle_bin_restore: Gjenoppretting av elementer fra papirkurven
+studio_ee_element_folder_collection_not_supported: 'Innsamling for mapper støttes ikke. ID: %folderId%'
+studio_ee_file_not_found_for_job_run: 'Fil %type% ble ikke funnet for jobbkjøring. ID: %jobRunId%'
+studio_ee_invalid_element_type_provided: Innsamling for element med ID %elementId% og type %elementType% støttes ikke.
+studio_ee_no_assets_found_for_job_run: 'Ingen assets funnet for jobbkjøring. ID: %jobRunId%'
+studio_ee_asset_upload_failed: 'Filen kunne ikke lastes opp: %message%'
+studio_email_param_children: Underordnede elementer (%count%)
+studio_ee_element_replace_assignment_failed: 'Kunne ikke erstatte %sourceId% (%sourceType%) med %targetId% (%targetType%) i %elementId% (%elementType%). Feil: %message%'
+studio_ee_job_bulk_import_class_definitions: Importer klassedefinisjoner (masseimport)
+studio_ee_job_step_field_collection_importing: Import av feltsamlinger
+studio_ee_job_step_class_importing: Import av klasser
+studio_ee_job_step_custom_layout_importing: Import av tilpassede layouter
+studio_ee_job_step_object_brick_importing: Import av objektblokker
+studio_ee_job_step_bulk_import_cleanup: Opprydding av masseimport
+studio_ee_bulk_import_failed: 'Masseimport av %type% «%name%» mislyktes: %message%'
+studio_ee_job_element_usage_replace: Erstatt elementbruk
+preview_generator_locale: Language
+main_site: 'Main Site'
+preview_generator_site: Site

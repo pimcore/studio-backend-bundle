@@ -66,6 +66,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchService
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Filter\TreePqlServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Filter\TreePqlService
+
  # Assets
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapter

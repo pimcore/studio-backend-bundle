@@ -35,7 +35,7 @@ final readonly class LinkAdapter implements SetterDataInterface, SettingsNormali
 {
     private const string PATH_KEY = 'path';
 
-    private const string LINK_TYPE_KEY = 'linktype';
+    private const string LINK_TYPE_KEY = 'linkType';
 
     private const string INTERNAL_TYPE_KEY = 'internalType';
 
@@ -136,7 +136,6 @@ final readonly class LinkAdapter implements SetterDataInterface, SettingsNormali
     private function isInternalTypeKeySet(array $settingsData): bool
     {
         return isset($settingsData[self::INTERNAL_TYPE_KEY]) &&
-        $settingsData[self::INTERNAL_TYPE_KEY] !== null &&
         $settingsData[self::INTERNAL_TYPE_KEY] !== '';
     }
 

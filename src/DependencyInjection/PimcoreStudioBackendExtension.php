@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
@@ -35,8 +36,13 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetC
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -59,6 +65,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 {
     private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
 
+    private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
+
     /**
      * {@inheritdoc}
      *
@@ -71,11 +79,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $files = glob(__DIR__ . '/../../config/*.yaml');
         foreach ($files as $file) {
-            $fileName = basename($file);
-            if (str_starts_with($fileName, 'bundle_')) {
-                continue;
-            }
-            $loader->load($fileName);
+            $loader->load(
+                basename($file)
+            );
         }
 
         $configuration = new Configuration();
@@ -124,6 +130,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $config['search_grid']['data_object']['predefined_columns']
         );
 
+        $definition = $container->getDefinition(FieldDefinitionCollector::class);
+        $definition->setArgument('$skipFieldTypes', $config['grid']['data_object']['skip_field_types']);
+
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
         $definition->setArgument('$dataObjectPredefinedColumns', $config['grid']['data_object']['predefined_columns']);
 
@@ -158,8 +167,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
         ]);
 
-        $defaultPerspective = $this->getParsedConfig(
-            __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+        $defaultPerspective = ConfigKeyMapper::convertKeysForApp(
+            $this->getParsedConfig(
+                __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+            )
         );
 
         $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
@@ -174,6 +185,32 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$serverSideUrl' => $config['mercure_settings']['hub_url_server'],
             '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
         ]);
+
+        $container->setParameter(
+            'pimcore_studio_backend.gdpr_data_extractor',
+            $config['gdpr_data_extractor']
+        );
+
+        $definition = $container->getDefinition(SettingRepositoryInterface::class);
+        $definition->setArguments([
+            '$adminConfig' => [
+                Configuration::ADMIN_SETTINGS_NODE => $config[Configuration::ADMIN_SETTINGS_NODE],
+            ],
+            '$storageConfig' => $config['config_location'][Configuration::ADMIN_SETTINGS_NODE],
+        ]);
+
+        $this->populateTwigSandboxExtension($config, $container);
+
+        // MCP authentication token map
+        $mcpTokenMap = $config['mcp']['authentication']['tokens'] ?? [];
+        $container->setParameter('pimcore_studio_backend.mcp.token_map', $mcpTokenMap);
+
+        $definition = $container->getDefinition(PatAuthenticator::class);
+        $definition->setArgument('$tokenMap', $mcpTokenMap);
+
+        $definition = $container->getDefinition(AdminLanguageServiceInterface::class);
+        $definition->setArgument('$translationsPath', $config['translations']['path']);
+        $definition->setArgument('$defaultTranslationsPath', '%translator.default_path%');
     }
 
     /**
@@ -182,7 +219,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     public function prepend(ContainerBuilder $container): void
     {
         // Load bundles
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config/prepend'));
         if ($container->hasExtension('pimcore_application_logger')) {
             $loader->load('bundle_application_logger.yaml');
         }
@@ -192,6 +229,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         if ($container->hasExtension('pimcore_seo')) {
             $loader->load('bundle_seo.yaml');
         }
+        $loader->load('rate_limiter.yaml');
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
@@ -211,19 +249,44 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $container->setParameter('pimcore_studio_backend.url_prefix', $urlPrefix);
 
-        foreach ($containerConfig['mercure_settings'] as $key => $setting) {
+        // Default MCP token map (overwritten in load() with actual config)
+        if (!$container->hasParameter('pimcore_studio_backend.mcp.token_map')) {
+            $container->setParameter('pimcore_studio_backend.mcp.token_map', []);
+        }
+
+        // MCP firewall settings (separate firewall for /pimcore-mcp/ routes)
+        if (!$container->hasParameter('pimcore_studio_backend.mcp_firewall_settings')) {
+            $container->setParameter('pimcore_studio_backend.mcp_firewall_settings', [
+                'pattern' => self::MCP_FIREWALL_PATTERN,
+                'user_checker' => 'Pimcore\Security\User\UserChecker',
+                'provider' => 'pimcore_studio_backend',
+                'stateless' => true,
+                'custom_authenticators' => [
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator',
+                ],
+            ]);
+        }
+
+        $processedConfig = $this->processConfiguration(
+            new Configuration(),
+            $container->getExtensionConfig(Configuration::ROOT_NODE)
+        );
+
+        foreach ($processedConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;
             }
 
             $container->setParameter(
                 'pimcore_studio_backend.mercure_settings.' . $key,
-                $containerConfig['mercure_settings'][$key]
+                $processedConfig['mercure_settings'][$key]
             );
         }
 
         $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
+        $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
     }
 
     /**
@@ -280,6 +343,24 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         foreach ($configs as $config) {
             $configLoader->load($config);
         }
+    }
+
+    private function populateTwigSandboxExtension(array $config, ContainerBuilder $container): void
+    {
+        $definition = $container->getDefinition(SandboxExtensionInitializerInterface::class);
+
+        $definition->setArgument(
+            '$allowedTags',
+            $config['twig']['sandbox_security_policy']['tags']
+        );
+        $definition->setArgument(
+            '$allowedFilters',
+            $config['twig']['sandbox_security_policy']['filters']
+        );
+        $definition->setArgument(
+            '$allowedFunctions',
+            $config['twig']['sandbox_security_policy']['functions']
+        );
     }
 
     /**

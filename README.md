@@ -11,8 +11,8 @@ It provides a unified interface based on the OpenApi Specification for all backe
 
 It uses [zircote/swagger-php](https://github.com/zircote/swagger-php) attributes to generate the OpenApi Specification.
 
-Swagger-ui is available at `/studio/api/docs` and the OpenApi Specification is available at `/studio/api/docs.json`.
-Every description is translatable and can be found in the `studio_api_docs.en.yaml` folder of the bundle.
+Swagger UI is available at `/pimcore-studio/api/docs` in the `dev` environment, and the OpenApi Specification (JSON) is available at `/pimcore-studio/api/docs/json`.
+Every description is translatable and can be found in the `studio_api_docs.en.yaml` file of the bundle.
 
 ## Requirements
 This bundle requires the following dependencies:
@@ -22,11 +22,28 @@ This bundle requires the following dependencies:
 * Generic Data Index
 * Mercure (https://mercure.rocks)
 
+## Features in a Nutshell
+
+- OpenAPI-documented REST API for all Pimcore operations (assets, data objects, documents)
+- Real-time updates via Mercure (Server-Sent Events)
+- Extensible architecture: custom endpoints, filters, grid columns, document types
+- Grid system with configurable columns, filters, and data transformers
+- Generic Execution Engine integration for background task processing
+- GDPR data extraction support
+- Perspective and widget system for UI customization
+- Comprehensive event system for customization hooks
+
 ## Documentation Overview
 
-- [Installation](./doc/00_Installation.md)
-- [Mercure Setup](./doc/02_Mercure_Setup.md)
-- [Grid](./doc/03_Grid.md)
-- [Generic Execution Engine](./doc/04_Generic_Execution_Engine.md)
-- [Additional Attributes](./doc/05_Additional_Custom_Attributes.md)
-- [Studio User](./doc/07_User.md)
+- [Architecture Overview](./doc/01_Architecture_Overview/README.md)
+- [Installation and Configuration](./doc/02_Installation_and_Configuration/README.md)
+- [Extending](./doc/03_Extending/README.md)
+- [Development Details](./doc/04_Development_Details/README.md)
+
+
+## Contribute
+**Bug fixes:** please create a pull request including a step by step description to reproduce the problem  
+**Contribute features:** contact the core-team via issue before you start developing   
+**Security vulnerabilities:** please see our [security policy](https://github.com/pimcore/pimcore/security/policy)
+
+For details, please have a look at our [contributing guide](CONTRIBUTING.md).

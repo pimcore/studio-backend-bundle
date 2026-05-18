@@ -16,8 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\PatchDataObjectFolderRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -38,6 +40,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class PatchFolderController extends AbstractApiController
 {
+    private const string ROUTE = '/data-objects/folder/{id}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly PatchServiceInterface $patchService,
@@ -47,17 +51,18 @@ final class PatchFolderController extends AbstractApiController
     }
 
     /**
-     * @throws UserNotFoundException
+     * @throws InvalidArgumentException|UserNotFoundException
      */
-    #[Route('/data-objects/folder', name: 'pimcore_studio_api_patch_data_object_folder', methods: ['PATCH'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_patch_data_object_folder', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
-        path: self::PREFIX . '/data-objects/folder',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'data_object_patch_folder_by_id',
         description: 'data_object_patch_folder_by_id_description',
         summary: 'data_object_patch_folder_by_id_summary',
         tags: [Tags::DataObjects->value]
     )]
+    #[IdParameter(type: ElementTypes::TYPE_FOLDER, name: 'id')]
     #[PatchDataObjectFolderRequestBody]
     #[CreatedResponse(
         description: 'data_object_patch_by_id_created_response',
@@ -68,10 +73,11 @@ final class PatchFolderController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function dataObjectsPatchFolderById(
+        int $id,
         #[MapRequestPayload] PatchFolderParameter $patchFolderParameter
     ): Response {
-
         $jobRunId = $this->patchService->patchFolder(
+            $id,
             ElementTypes::TYPE_OBJECT,
             $patchFolderParameter,
             $this->securityService->getCurrentUser()

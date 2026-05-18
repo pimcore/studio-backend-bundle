@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDa
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\ColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
@@ -49,7 +50,7 @@ final class ColumnConfigController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws DatabaseException|EnvironmentException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_column_config', methods: ['POST'])]
     #[IsGranted(CustomReportPermissions::REPORTS_CONFIG->value)]

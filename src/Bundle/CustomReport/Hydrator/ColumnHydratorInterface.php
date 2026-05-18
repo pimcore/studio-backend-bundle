@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator;
 
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\ColumnInformation;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportColumnInformation;
 
@@ -23,5 +24,7 @@ interface ColumnHydratorInterface
 {
     public function hydrateColumnInfo(ColumnInformation $information): CustomReportColumnInformation;
 
-    public function getCustomReportColumnConfiguration(array $columns): array;
+    public function getCustomReportColumnConfiguration(Config $report): array;
+
+    public function dehydrateColumnConfiguration(array $columnConfigurations): array;
 }

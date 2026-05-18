@@ -22,9 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\SendNotificationParameters;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 
 /**
  * @internal
@@ -34,7 +32,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
     public function __construct(
         private JobRunErrorLogRepositoryInterface $jobRunErrorLogRepository,
         private PublishServiceInterface $publishService,
-        private SendNotificationServiceInterface $sendNotificationService
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -55,18 +53,6 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
             $event->getJobRunOwnerId(),
             $event->getNewState()
         );
-
-        $payload = $this->publishService->getJsonData($finished);
-        $parameters = new SendNotificationParameters(
-            $event->getJobRunOwnerId(),
-            $topic,
-            $topic
-        );
-        $this->sendNotificationService->sendNotification(
-            $parameters,
-            null,
-            $payload
-        );
         $this->publishService->publish(
             $topic,
             $finished
@@ -85,7 +71,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
         }
 
         $this->publishService->publish(
-            Events::FINISHED_WITH_ERRORS->value,
+            $this->userTopicService->getUserTopic($ownerId),
             new Finished(
                 $jobRunId,
                 $jobName,

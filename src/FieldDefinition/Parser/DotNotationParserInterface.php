@@ -22,4 +22,6 @@ use Pimcore\Model\DataObject\Concrete;
 interface DotNotationParserInterface
 {
     public function parse(Concrete $concreteObject, string $dotNotation): FieldDefinitionWrapper;
+
+    public function parseByClassId(string $classId, string $dotNotation): FieldDefinitionWrapper;
 }

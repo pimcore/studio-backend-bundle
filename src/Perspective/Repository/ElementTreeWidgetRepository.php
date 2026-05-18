@@ -116,7 +116,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
         UserInterface $user
     ): array {
         $levels = $this->pathService->getAllParentPaths([$element->getFullPath()]);
-        $levels = $this->filterParentPaths($levels, $widget->getRootFolder());
+        $levels = $this->filterParentPaths($levels, $widget->getRootFolder()->getFullPath());
 
         $parents = [];
         foreach ($levels as $level) {

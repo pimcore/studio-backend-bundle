@@ -21,10 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutUpd
 #[Attribute(Attribute::TARGET_METHOD)]
 final class CustomLayoutUpdateRequestBody extends RequestBody
 {
-    public function __construct()
+    public function __construct(bool $required = true)
     {
         parent::__construct(
-            required: true,
+            required: $required,
             content: new JsonContent(
                 ref: CustomLayoutUpdate::class,
                 type: 'object'

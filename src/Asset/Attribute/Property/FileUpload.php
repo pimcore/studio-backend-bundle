@@ -20,11 +20,11 @@ use OpenApi\Attributes\Property;
  */
 final class FileUpload extends Property
 {
-    public function __construct(string $name = 'file')
+    public function __construct(string $name = 'file', string $description = 'File to upload')
     {
         parent::__construct(
-            $name,
-            description: 'File to upload',
+            property: $name,
+            description: $description,
             type: 'string',
             format: 'binary'
         );

@@ -13,13 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\UpdateParameter;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
+use Pimcore\Model\Translation\Listing;
 
 /**
  * @internal
@@ -28,12 +30,15 @@ interface TranslatorServiceInterface
 {
     public const string DOMAIN = 'studio';
 
-    public function createTranslations(CreateTranslation $translation): void;
+    /**
+     * @throws ElementExistsException
+     */
+    public function createTranslations(CreateTranslation $parameter): void;
 
     /**
-     * @throws InvalidLocaleException
+     * @throws InvalidLocaleException|NotFoundException
      */
-    public function updateTranslations(UpdateTranslation $translation): void;
+    public function updateTranslations(string $domain, UpdateParameter $parameter): void;
 
     /**
      * Get all translations for a specific locale.
@@ -55,16 +60,21 @@ interface TranslatorServiceInterface
 
     /**
      * Returns a list of all available domains for translations.
-     *
-     * @return string[] List of domain names
      */
     public function getAvailableDomains(): array;
+
+    /**
+     * Returns a list of all available locals for translations.
+     */
+    public function getAvailableLocales(): array;
 
     /**
      * Returns a list of all available translations including all languages.
      * Used for grid listing including filters and pagination.
      */
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection;
+
+    public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing;
 
     /**
      *

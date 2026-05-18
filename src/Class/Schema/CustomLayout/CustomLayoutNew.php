@@ -33,8 +33,8 @@ final readonly class CustomLayoutNew
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'My Custom Layout')]
         private string $name,
-        #[Property(description: 'Data object class id', type: 'integer', example: 123)]
-        private int $classId
+        #[Property(description: 'Data object class id', type: 'integer', example: 'CAR')]
+        private string $classId
     ) {
     }
 
@@ -43,7 +43,7 @@ final readonly class CustomLayoutNew
         return $this->name;
     }
 
-    public function getClassId(): int
+    public function getClassId(): string
     {
         return $this->classId;
     }

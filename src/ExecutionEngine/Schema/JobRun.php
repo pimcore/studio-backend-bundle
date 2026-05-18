@@ -23,7 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'JobRun',
     title: 'JobRun',
-    required: ['id', 'ownerId', 'state', 'executionContext', 'totalElements', 'creationDate', 'modificationDate'],
+    required: [
+        'id', 'ownerId', 'state', 'executionContext', 'totalElements', 'currentMessage',
+        'jobRunChildId', 'currentStep', 'totalSteps', 'creationDate', 'modificationDate', 'jobName',
+    ],
     type: 'object'
 )]
 final class JobRun implements AdditionalAttributesInterface
@@ -41,10 +44,20 @@ final class JobRun implements AdditionalAttributesInterface
         private readonly string $executionContext,
         #[Property(description: 'Total elements', type: 'integer', example: 0)]
         private readonly int $totalElements,
+        #[Property(description: 'Current Message og the last Event', type: 'string', example: 'Message')]
+        private readonly string $currentMessage,
+        #[Property(description: 'Id of the child Job run', type: 'integer', example: 55)]
+        private readonly ?int $jobRunChildId = null,
+        #[Property(description: 'Current Step of a running Job', type: 'integer', example: 0)]
+        private readonly ?int $currentStep = null,
+        #[Property(description: 'Number of total Steps of a running Job', type: 'integer', example: 0)]
+        private readonly ?int $totalSteps = null,
         #[Property(description: 'Creation date', type: 'integer', example: null)]
         private readonly ?int $creationDate = null,
         #[Property(description: 'Modification date', type: 'integer', example: null)]
         private readonly ?int $modificationDate = null,
+        #[Property(description: 'The name of the job', type: 'string', example: 'studio_ee_job_delete_assets')]
+        private readonly string $jobName = '',
     ) {
     }
 
@@ -78,8 +91,33 @@ final class JobRun implements AdditionalAttributesInterface
         return $this->creationDate;
     }
 
+    public function getJobRunChildId(): ?int
+    {
+        return $this->jobRunChildId;
+    }
+
     public function getModificationDate(): ?int
     {
         return $this->modificationDate;
+    }
+
+    public function getCurrentStep(): ?int
+    {
+        return $this->currentStep;
+    }
+
+    public function getCurrentMessage(): array
+    {
+        return json_decode($this->currentMessage, true);
+    }
+
+    public function getTotalSteps(): ?int
+    {
+        return $this->totalSteps;
+    }
+
+    public function getJobName(): string
+    {
+        return $this->jobName;
     }
 }

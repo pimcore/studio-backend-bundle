@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
+use Pimcore\Helper\ParameterBagHelper;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -64,6 +65,6 @@ final class UserPasswordVoter extends Voter
     {
         $request = $this->getCurrentRequest($this->requestStack);
 
-        return $request->attributes->getInt('id');
+        return ParameterBagHelper::getInt($request->attributes, 'id');
     }
 }

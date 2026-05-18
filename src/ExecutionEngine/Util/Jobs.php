@@ -21,8 +21,11 @@ enum Jobs: string
     case UPLOAD_ASSETS = 'studio_ee_job_upload_assets';
     case ZIP_FILE_UPLOAD = 'studio_ee_job_upload_zip_file';
     case CREATE_CSV = 'studio_ee_job_create_csv';
+    case COLLECT_CSV_FOLDER_EXPORT_ELEMENTS = 'studio_ee_job_collect_csv_folder_export_elements';
+    case COLLECT_XLSX_FOLDER_EXPORT_ELEMENTS = 'studio_ee_job_collect_xlsx_folder_export_elements';
     case CREATE_XLSX = 'studio_ee_job_create_xlsx';
     case PATCH_ELEMENTS = 'studio_ee_job_patch_elements';
+    case PATCH_FOLDER_ELEMENTS = 'studio_ee_job_patch_folder_elements';
     case CLONE_DATA_OBJECTS = 'studio_ee_job_clone_data_objects';
     case REWRITE_REFERENCES = 'studio_ee_job_rewrite_element_references';
     case DELETE_DATA_OBJECTS = 'studio_ee_job_delete_data_objects';
@@ -33,4 +36,6 @@ enum Jobs: string
     case BATCH_TAG_REPLACE = 'studio_ee_job_batch_tag_replace';
     case RECYCLE_BIN_DELETE = 'studio_ee_job_recycle_bin_delete';
     case RECYCLE_BIN_RESTORE = 'studio_ee_job_recycle_bin_restore';
+    case ELEMENT_USAGE_REPLACE = 'studio_ee_job_element_usage_replace';
+    case BULK_IMPORT_CLASS_DEFINITIONS = 'studio_ee_job_bulk_import_class_definitions';
 }

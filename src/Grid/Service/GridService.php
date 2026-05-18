@@ -15,11 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
@@ -36,9 +38,12 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -71,8 +76,10 @@ final class GridService implements GridServiceInterface
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver
+        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
     }
 
@@ -91,8 +98,21 @@ final class GridService implements GridServiceInterface
     }
 
     /**
-     * @throws NotFoundException
-     * @throws Exception
+     * {@inheritdoc}
+     */
+    public function getDocumentGrid(GridParameter $gridParameter): Collection
+    {
+        $result = $this->gridSearch->searchDocuments($gridParameter);
+
+        return $this->getCollectionFromSearchResult(
+            $result,
+            $gridParameter,
+            ElementTypes::TYPE_DOCUMENT
+        );
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getDataObjectGrid(
         GridParameter $gridParameter,
@@ -112,11 +132,18 @@ final class GridService implements GridServiceInterface
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
-        return $this->getCollectionFromSearchResult(
-            $result,
-            $gridParameter,
-            ElementTypes::TYPE_OBJECT
-        );
+        $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
+        $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
+
+        try {
+            return $this->getCollectionFromSearchResult(
+                $result,
+                $gridParameter,
+                ElementTypes::TYPE_OBJECT
+            );
+        } finally {
+            $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
+        }
     }
 
     /**
@@ -149,19 +176,35 @@ final class GridService implements GridServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException
+     * {@inheritdoc}
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        StudioElementInterface $element,
+        ?StudioElementInterface $element,
         string $elementType,
-        bool $isExport = false
+        int $elementId,
+        bool $isExport = false,
+        ?UserInterface $user = null,
     ): array {
         $data = [];
 
         $databaseElement = null;
-        if ($elementType === ElementTypes::TYPE_OBJECT) {
-            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $element->getId());
+        if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
+            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
+            if ($user !== null) {
+                $this->securityService->hasElementPermission(
+                    $databaseElement,
+                    $user,
+                    ElementPermissions::VIEW_PERMISSION
+                );
+            }
+        }
+
+        if ($isExport && $databaseElement->getType() === ElementTypes::TYPE_FOLDER) {
+            throw new InvalidArgumentException(
+                message: 'Exporting folder elements is not supported',
+                errorKey: Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value
+            );
         }
 
         foreach ($columnCollection->getColumns() as $column) {
@@ -173,11 +216,11 @@ final class GridService implements GridServiceInterface
             $resolver = $this->getColumnResolvers()[$column->getType()];
 
             $columnData = match (true) {
-                $databaseElement && $isExport && $resolver instanceof ExportResolverInterface =>
-                    $resolver->resolveForExport($column, $databaseElement),
+                $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
+                    $resolver->resolveForExport($column, $databaseElement, $user),
                 $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
                     $resolver->resolveForCoreElement($column, $databaseElement),
-                $resolver instanceof StudioElementColumnResolverInterface =>
+                $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
                     $resolver->resolveForStudioElement($column, $element),
                 default =>
                     throw new InvalidArgumentException(
@@ -191,10 +234,10 @@ final class GridService implements GridServiceInterface
                 GridColumnDataEvent::EVENT_NAME
             );
 
-            $data['id'] = $element->getId();
+            $data['id'] = $elementId;
             $data['columns'][] = $columnData;
-            $data['isLocked'] = $element->getIsLocked();
-            $data['permissions'] = $element->getPermissions();
+            $data['isLocked'] = $element?->getIsLocked();
+            $data['permissions'] = $element?->getPermissions();
         }
 
         return $data;
@@ -205,11 +248,12 @@ final class GridService implements GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        StudioElementInterface $element,
         string $elementType,
-        bool $isExport = false
+        int $elementId,
+        UserInterface $user
     ): array {
-        $data = $this->getGridDataForElement($columnCollection, $element, $elementType, $isExport);
+
+        $data = $this->getGridDataForElement($columnCollection, null, $elementType, $elementId, true, $user);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -236,7 +280,12 @@ final class GridService implements GridServiceInterface
     ): ColumnCollection {
         $exportableColumns = [];
         foreach ($config as $column) {
-            $columnConfig = $this->findColumnConfiguration($column['key'], $columnsDefinitions);
+            $key = $column['key'];
+            if ($column['type'] === 'dataobject.advanced') {
+                $key = 'advanced';
+            }
+
+            $columnConfig = $this->findColumnConfiguration($key, $columnsDefinitions);
             if (!$columnConfig || !$columnConfig->isExportable()) {
                 continue;
             }
@@ -250,15 +299,35 @@ final class GridService implements GridServiceInterface
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
-            static function (Column $column) use ($withGroup) {
-                if (!$column->getGroup()) {
+            function (Column $column) use ($withGroup) {
+                if ($withGroup === true && !$column->getGroup()) {
                     throw new InvalidArgumentException('Group must be set when withGroup is true');
                 }
+                $firstGroup = $column->getGroup()[0] ?? '';
+                $fd = $column->getConfig()['fieldDefinition'] ?? null;
 
-                return $column->getKey() . ($withGroup ? '~' . $column->getGroup() : '');
+                if ($withGroup) {
+                    $key = $fd ? ($fd['name'] ?? $column->getKey()) : $column->getKey();
+                } else {
+                    $key = $fd ? ($fd['title'] ?? $column->getKey()) : $column->getKey();
+                }
+
+                $key = $this->appendLocale($key, $column);
+
+                return ($withGroup ? $firstGroup . '~' : '') . $key;
             },
             $columnCollection->getColumns()
         );
+    }
+
+    private function appendLocale(string $key, Column $column): string
+    {
+        $locale = $column->getLocale();
+        if ($locale !== null) {
+            return $key . ' (' . $locale . ')';
+        }
+
+        return $key;
     }
 
     /**
@@ -292,9 +361,7 @@ final class GridService implements GridServiceInterface
             return false;
         }
 
-        /** @var ColumnResolverInterface $resolver */
         $resolver = $this->getColumnResolvers()[$column->getType()];
-
         if (!in_array($elementType, $resolver->supportedElementTypes(), true)) {
             return false;
         }
@@ -358,7 +425,8 @@ final class GridService implements GridServiceInterface
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $item,
-                $elementType
+                $elementType,
+                $item->getId()
             );
         }
 

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -28,12 +29,16 @@ use function sprintf;
 final readonly class BlocklistRepository implements BlocklistRepositoryInterface
 {
     /**
-     * @throws EnvironmentException
+     * @throws ElementExistsException|EnvironmentException
      */
     public function addEntry(string $email): void
     {
         try {
-            $this->getEntry($email);
+            $existingEmail = $this->getEntry($email);
+
+            throw new ElementExistsException(
+                sprintf('Email (%s) is already in the blocklist.', $existingEmail->getAddress())
+            );
         } catch (NotFoundException) {
             $this->createNewEntry($email);
         }
@@ -64,6 +69,9 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
         $blockList->delete();
     }
 
+    /**
+     * @throws EnvironmentException
+     */
     private function createNewEntry(string $email): void
     {
         try {

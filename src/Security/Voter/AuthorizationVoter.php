@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -33,9 +31,6 @@ final class AuthorizationVoter extends Voter
         return $attribute === self::SUPPORTED_ATTRIBUTE;
     }
 
-    /**
-     * @throws NoRequestException|NotAuthorizedException
-     */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         return $attribute === self::SUPPORTED_ATTRIBUTE;

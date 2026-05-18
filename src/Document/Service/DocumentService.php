@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
@@ -50,6 +51,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function __construct(
         private CreateServiceInterface $createService,
         private DataServiceInterface $dataService,
+        private DocumentQueryProviderInterface $documentQueryProvider,
         private DocumentSearchServiceInterface $documentSearchService,
         private DocumentServiceResolverInterface $documentServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
@@ -82,8 +84,9 @@ final readonly class DocumentService implements DocumentServiceInterface
         /** @var SearchIndexFilterInterface $filterService */
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
-        /** @var DocumentQueryInterface $documentQuery */
+        $documentQuery = $this->documentQueryProvider->createDocumentQuery();
         $documentQuery = $filterService->applyFilters(
+            $documentQuery,
             $parameters,
             ElementTypes::TYPE_DOCUMENT
         );
@@ -146,7 +149,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getDocumentElementByPath(UserInterface $user, string $path): DocumentModel
     {
@@ -172,7 +175,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * @throws InvalidElementTypeException|NotFoundException
+     * {@inheritdoc}
      */
     private function getDocumentDetailData(DocumentDetail $document): void
     {

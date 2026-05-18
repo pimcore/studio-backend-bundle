@@ -24,22 +24,29 @@ use OpenApi\Attributes\Schema;
     schema: 'UpdateTranslation',
     title: 'Translation Update',
     description: 'Translation Update Scheme for API',
-    required: ['locale', 'translationData'],
+    required: ['key', 'type', 'translationData'],
     type: 'object'
 )]
 final readonly class UpdateTranslation
 {
     public function __construct(
-        #[Property(description: 'Locale', type: 'string', example: 'en')]
-        private string $locale = 'en',
+        #[Property(description: 'Key of the translation', type: 'string', example: 'car')]
+        private string $key,
+        #[Property(description: 'Type of the translation', type: 'string', example: 'simple')]
+        private ?string $type = null,
         #[Property(description: 'Translation Data', type: 'array', items: new Items(ref: TranslationData::class))]
         private array $translationData = []
     ) {
     }
 
-    public function getLocale(): string
+    public function getKey(): string
     {
-        return $this->locale;
+        return $this->key;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
     }
 
     /**

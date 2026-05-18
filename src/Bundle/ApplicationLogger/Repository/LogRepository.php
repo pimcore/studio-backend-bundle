@@ -57,17 +57,15 @@ final class LogRepository implements LogRepositoryInterface
             ->from(ApplicationLoggerDb::TABLE_NAME);
 
         $filters = $parameters->getFilters();
-        if ($filters === null) {
-            $qb->orderBy('id', 'DESC');
+        if ($filters instanceof FilterParameter) {
+            $this->addFilters($qb, $filters);
+            $this->addSorting($qb, $filters->getSortFilter());
+            $this->addPaging($qb, $filters);
 
             return $this->performSearch($qb);
         }
 
-        $this->addKeyFilters($qb, $filters, FilterType::LIKE->value);
-        $this->addKeyFilters($qb, $filters, FilterType::EQUALS->value);
-        $this->addDateFilters($qb, $filters);
-        $this->addSorting($qb, $filters->getSortFilter());
-        $this->addPaging($qb, $filters);
+        $qb->orderBy('id', 'DESC');
 
         return $this->performSearch($qb);
     }
@@ -75,12 +73,17 @@ final class LogRepository implements LogRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getTotalCount(): int
+    public function getTotalCount(CollectionFilterParameter $parameters): int
     {
         $qb = $this->dbResolver->get()->createQueryBuilder();
         $qb
             ->select('COUNT(*) AS total_count')
             ->from(ApplicationLoggerDb::TABLE_NAME);
+
+        $filters = $parameters->getFilters();
+        if ($filters instanceof FilterParameter) {
+            $this->addFilters($qb, $filters);
+        }
 
         try {
             $result = $qb->executeQuery()->fetchOne();
@@ -109,6 +112,13 @@ final class LogRepository implements LogRepositoryInterface
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage(), $e);
         }
+    }
+
+    private function addFilters(QueryBuilder $queryBuilder, FilterParameter $filters): void
+    {
+        $this->addKeyFilters($queryBuilder, $filters, FilterType::LIKE->value);
+        $this->addKeyFilters($queryBuilder, $filters, FilterType::EQUALS->value);
+        $this->addDateFilters($queryBuilder, $filters);
     }
 
     private function addKeyFilters(QueryBuilder $queryBuilder, FilterParameter $parameters, string $operation): void
@@ -188,7 +198,10 @@ final class LogRepository implements LogRepositoryInterface
     private function addSorting(QueryBuilder $queryBuilder, SortFilter $sortFilter): void
     {
         $queryBuilder
-            ->orderBy($sortFilter->getKey(), $sortFilter->getDirection());
+            ->orderBy(
+                $this->dbResolver->get()->quoteIdentifier($sortFilter->getKey()),
+                $sortFilter->getDirection()
+            );
     }
 
     /**

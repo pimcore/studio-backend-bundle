@@ -29,29 +29,29 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
 
     public function __construct(
         #[Property(description: 'Id', type: 'string', example: '1')]
-        private string $id,
+        private readonly string $id,
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
-        private string $name,
+        private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'A predefined metadata')]
-        private ?string $description,
+        private readonly ?string $description,
         #[Property(description: 'Type', type: 'string', example: 'input')]
-        private string $type,
+        private readonly string $type,
         #[Property(description: 'Target sub type', type: 'string', example: 'input')]
-        private ?string $targetSubType,
+        private readonly ?string $targetSubType,
         #[Property(description: 'Data', type: 'mixed', example: 'data')]
-        private mixed $data,
+        private readonly mixed $data,
         #[Property(description: 'Config', type: 'string', example: 'config')]
-        private ?string $config,
+        private readonly ?string $config,
         #[Property(description: 'Language', type: 'string', example: 'en')]
-        private ?string $language,
+        private readonly ?string $language,
         #[Property(description: 'Group', type: 'string', example: 'group')]
-        private ?string $group,
+        private readonly ?string $group,
         #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
-        private int $creationDate,
+        private readonly int $creationDate,
         #[Property(description: 'Modfication Date', type: 'integer', example: 1634025600)]
-        private int $modificationDate,
+        private readonly int $modificationDate,
         #[Property(description: 'Writable', type: 'bool', example: false)]
-        private bool $isWriteable = false,
+        private readonly bool $isWriteable = false,
     ) {
     }
 

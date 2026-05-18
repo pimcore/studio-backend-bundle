@@ -30,7 +30,7 @@ use function sprintf;
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final readonly class ChildrenSortOrderAdapter implements PatchAdapterInterface
 {
-    private const INDEX_KEY = 'childrenSortOrder';
+    public const string INDEX_KEY = 'childrenSortOrder';
 
     /**
      * @throws ElementSavingFailedException

@@ -13,18 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'DataObjectVersion',
-    required: ['key', 'type', 'hasChildren', 'fullPath', 'index', 'className', 'published', 'objectData'],
+    required: [
+        'allowInheritance', 'showVariants', 'hasPreview', 'hasWorkflowAvailable',
+        'key', 'type', 'hasChildren', 'fullPath', 'index', 'allowVariants', 'className', 'published', 'objectData',
+    ],
     type: 'object'
 )]
 final class DataObjectVersion extends Element implements AdditionalAttributesInterface
@@ -60,6 +66,10 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
         private readonly ?bool $published = null,
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
+        #[Property(description: 'Allow variants', type: 'bool', example: false)]
+        private ?bool $allowVariants = null,
+        #[Property(description: 'Properties', type: 'array', items: new Items(ref: ElementProperty::class))]
+        private array $properties = [],
     ) {
         parent::__construct(
             $id,
@@ -71,7 +81,8 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate
+            $modificationDate,
+            ElementTypes::TYPE_DATA_OBJECT
         );
     }
 
@@ -118,5 +129,25 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
     public function getObjectData(): array
     {
         return $this->objectData;
+    }
+
+    public function getAllowVariants(): ?bool
+    {
+        return $this->allowVariants;
+    }
+
+    public function setAllowVariants(bool $allowVariants): void
+    {
+        $this->allowVariants = $allowVariants;
+    }
+
+    public function getProperties(): array
+    {
+        return $this->properties;
+    }
+
+    public function setProperties(array $properties): void
+    {
+        $this->properties = $properties;
     }
 }

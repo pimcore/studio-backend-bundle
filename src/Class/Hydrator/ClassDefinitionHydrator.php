@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickData;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionBrickField;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 
@@ -38,7 +40,7 @@ final readonly class ClassDefinitionHydrator implements ClassDefinitionHydratorI
             $data->getModificationDate(),
             $data->getUserOwner(),
             $data->getParentClass(),
-            $data->getImplementsInterfaces(),
+            $data->getImplementsInterfaces() ?? '',
             $data->getListingParentClass(),
             $data->getUseTraits(),
             $data->getListingUseTraits(),
@@ -48,8 +50,8 @@ final readonly class ClassDefinitionHydrator implements ClassDefinitionHydratorI
             $data->getShowVariants(),
             $this->iconService->getIconForClassDefinition($data->getIcon()),
             $data->getShowAppLoggerTab(),
-            $data->getLinkGeneratorReference(),
-            $data->getPreviewGeneratorReference(),
+            $data->getLinkGeneratorReference() ?? '',
+            $data->getPreviewGeneratorReference() ?? '',
             $data->getCompositeIndices(),
             $data->getShowFieldLookup(),
             $data->getPropertyVisibility(),
@@ -58,5 +60,15 @@ final readonly class ClassDefinitionHydrator implements ClassDefinitionHydratorI
             $data->isWritable(),
             $data->getGroup(),
         );
+    }
+
+    public function hydrateBrickData(string $key, string $fieldName): ClassDefinitionBrickData
+    {
+        return new ClassDefinitionBrickData($key, $fieldName);
+    }
+
+    public function hydrateBrickField(string $fieldName): ClassDefinitionBrickField
+    {
+        return new ClassDefinitionBrickField($fieldName);
     }
 }

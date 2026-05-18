@@ -1,0 +1,109 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Controller;
+
+use OpenApi\Attributes\Post;
+use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\GdprManagerServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
+
+/**
+ * @internal
+ */
+final class SearchDataProviderController extends AbstractApiController
+{
+    use PaginatedResponseTrait;
+
+    public function __construct(
+        SerializerInterface $serializer,
+        private readonly GdprManagerServiceInterface $gdprManagerService,
+    ) {
+        parent::__construct($serializer);
+    }
+
+    /**
+     * Handles GDPR data search requests across different providers.
+     *
+     * @throws NotFoundException
+     */
+    #[Route(
+        '/gdpr/search',
+        name: 'pimcore_studio_api_gdpr_search',
+        methods: ['POST'])]
+    #[IsGranted(UserPermissions::GDPR->value)]
+    #[Post(
+        path: self::PREFIX . '/gdpr/search',
+        operationId: 'gdpr_search_data',
+        description: 'gdpr_search_data_description',
+        summary: 'gdpr_search_data_summary',
+        tags: [Tags::GDPR->value]
+    )]
+    #[CollectionRequestBody(
+        columnFiltersExample: '[' .
+        '{"type":"firstname", "filterValue": "John"},' .
+        '{"type":"lastname", "filterValue": "Doe"},' .
+        '{"type":"email", "filterValue": "john.doe@mail.com"},'.
+        '{"type":"id", "filterValue": 1}'
+        . ']',
+        sortFilterExample: '{"key":"id", "direction":"ASC"}'
+    )]
+    #[TextFieldParameter(
+        name: 'provider',
+        description: 'Define the data provider to search in.',
+        example: 'assets'
+    )]
+    #[SuccessResponse(
+        description: 'gdpr_search_data_success_response',
+        content: new CollectionJson(new GenericCollection(GdprDataRow::class))
+    )]
+
+    #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
+    ])]
+    public function searchData(
+        #[MapRequestPayload] CollectionFilterParameter $parameters,
+        #[MapQueryParameter] string $provider
+    ): JsonResponse {
+
+        $collection = $this->gdprManagerService->search($parameters, $provider);
+
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $collection->getItems(),
+            $collection->getTotalItems()
+        );
+    }
+}

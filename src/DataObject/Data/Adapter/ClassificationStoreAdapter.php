@@ -19,8 +19,10 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
@@ -37,15 +39,21 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\InputQuantityValue;
+use Pimcore\Model\DataObject\ClassDefinition\Data\QuantityValue as QuantityValueDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore as ClassificationstoreModel;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\CalculatedValue;
+use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
+use function is_array;
 
 /**
  * @internal
@@ -54,12 +62,14 @@ use function in_array;
 final readonly class ClassificationStoreAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
+    DetailDataInterface,
     DataInheritanceInterface,
     SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
     public function __construct(
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private DefinitionCacheResolverInterface $definitionCacheResolver,
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
@@ -68,7 +78,7 @@ final readonly class ClassificationStoreAdapter implements
         private LanguageServiceInterface $languageService,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
-        private ToolResolverInterface $toolResolver
+        private ToolResolverInterface $toolResolver,
     ) {
     }
 
@@ -90,15 +100,33 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         $store = $data[$key];
-        $activeGroups = $store['activeGroups'] ?? [];
-        if (empty($activeGroups)) {
-            return null;
+
+        if ($isPatch) {
+            $elementStore = $this->handleNormalize($element->get($key), $fieldDefinition, $user);
+            $store['activeGroups'] = $this->getActiveGroupsFromStore($store);
+            $store = array_replace_recursive($elementStore, $store);
         }
+
+        $activeGroups = $store['activeGroups'] ?? [];
+        $deletedGroupIds = $this->getDeletedGroupIds($store);
+        $activeGroups = array_diff_key($activeGroups, array_flip($deletedGroupIds));
+
+        if (empty($activeGroups)) {
+            $container = $this->getContainer($element, $key, $contextData);
+            $container->setActiveGroups([]);
+            $container->setGroupCollectionMappings([]);
+            $this->cleanupStoreGroups($container);
+
+            return $container;
+        }
+
         $groupCollectionMapping = $store['groupCollectionMapping'] ?? [];
+        $groupCollectionMapping = array_diff_key($groupCollectionMapping, array_flip($deletedGroupIds));
         $container = $this->getContainer($element, $key, $contextData);
         if (!empty($groupCollectionMapping)) {
-            $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
+            $this->setMapping($container, $activeGroups, $groupCollectionMapping);
         }
+        $store = array_diff_key($store, array_flip($deletedGroupIds));
         unset($store['activeGroups'], $store['groupCollectionMapping']);
         $this->setStoreValues($element, $user, $fieldDefinition, $container, $store, $isPatch);
         $this->cleanupStoreGroups($container);
@@ -110,33 +138,16 @@ final readonly class ClassificationStoreAdapter implements
         mixed $value,
         Data $fieldDefinition
     ): ?array {
-        if (!$value instanceof ClassificationstoreModel ||
-            !$fieldDefinition instanceof ClassificationstoreDefinition
-        ) {
-            return null;
-        }
+        return $this->handleNormalize($value, $fieldDefinition, useComputedValues: true);
+    }
 
-        $validLanguages = $this->getValidLanguages($value->getObject(), $fieldDefinition->isLocalized());
-        $resultItems = [];
-
-        $resultItems['activeGroups'] = $value->getActiveGroups();
-        $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
-
-        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
-            $resultItems[$groupId] = [];
-            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
-            foreach ($validLanguages as $validLanguage) {
-                foreach ($keys as $key) {
-                    $normalizedValue = $this->getNormalizedValue($value, $groupId, $key, $validLanguage);
-
-                    if ($normalizedValue !== null) {
-                        $resultItems[$groupId][$validLanguage][$key->getKeyId()] = $normalizedValue;
-                    }
-                }
-            }
-        }
-
-        return $resultItems;
+    public function getDetailData(
+        Concrete $object,
+        mixed $value,
+        Data $fieldDefinition,
+        ?FieldContextData $contextData = null,
+    ): ?array {
+        return $this->handleNormalize($value, $fieldDefinition);
     }
 
     public function getFieldInheritance(
@@ -206,6 +217,52 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $data;
+    }
+
+    private function handleNormalize(
+        mixed $value,
+        Data $fieldDefinition,
+        ?UserInterface $user = null,
+        bool $useComputedValues = false,
+    ): ?array {
+        if (!$value instanceof ClassificationstoreModel ||
+            !$fieldDefinition instanceof ClassificationstoreDefinition
+        ) {
+            return null;
+        }
+
+        $validLanguages = $this->getValidLanguages(
+            $value->getObject(),
+            $fieldDefinition->isLocalized(),
+            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS,
+            $user
+        );
+        $resultItems = [];
+
+        $resultItems['activeGroups'] = $value->getActiveGroups();
+        $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
+
+        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
+            $resultItems[$groupId] = [];
+            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
+            foreach ($validLanguages as $validLanguage) {
+                foreach ($keys as $key) {
+                    $normalizedValue = $this->getResolvedValue(
+                        $value,
+                        $groupId,
+                        $key,
+                        $validLanguage,
+                        $useComputedValues,
+                    );
+
+                    if ($normalizedValue !== null) {
+                        $resultItems[$groupId][$validLanguage][$key->getKeyId()] = $normalizedValue;
+                    }
+                }
+            }
+        }
+
+        return $resultItems;
     }
 
     /**
@@ -329,6 +386,28 @@ final readonly class ClassificationStoreAdapter implements
         }
     }
 
+    /**
+     * Returns group IDs that are marked for deletion in the store data.
+     *
+     * @return int[]
+     */
+    private function getDeletedGroupIds(array $store): array
+    {
+        $deletedGroupIds = [];
+
+        foreach ($store as $groupId => $groupData) {
+            if ($groupId === 'activeGroups' || $groupId === 'groupCollectionMapping') {
+                continue;
+            }
+
+            if (is_array($groupData) && isset($groupData['action']) && $groupData['action'] === 'deleted') {
+                $deletedGroupIds[] = (int) $groupId;
+            }
+        }
+
+        return $deletedGroupIds;
+    }
+
     private function getStoreDefinitions(
         Concrete $dataObject,
         ClassificationstoreDefinition $classificationStore
@@ -396,6 +475,16 @@ final readonly class ClassificationStoreAdapter implements
         return $groups;
     }
 
+    private function getActiveGroupsFromStore(array $store): array
+    {
+        $activeGroups = [];
+        foreach ($store as $groupId => $groupData) {
+            $activeGroups[$groupId] = true;
+        }
+
+        return $activeGroups;
+    }
+
     /**
      * @return KeyGroupRelation[]
      */
@@ -410,13 +499,55 @@ final readonly class ClassificationStoreAdapter implements
     /**
      * @throws DatabaseException
      */
-    private function getNormalizedValue(
+    private function getResolvedValue(
         ClassificationstoreModel $classificationstore,
         int $groupId,
         KeyGroupRelation $key,
-        string $language
+        string $language,
+        bool $useComputedValue = false,
     ): mixed {
+        $keyConfig = $this->definitionCacheResolver->get($key->getKeyId());
+        if ($keyConfig === null) {
+            return null;
+        }
+
+        if ($useComputedValue && $keyConfig->getType() === 'calculatedValue') {
+            return $this->resolveComputedValue($classificationstore, $groupId, $key, $language, $keyConfig);
+        }
+
         return $this->getValue($classificationstore, $groupId, $key, $language);
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    private function resolveComputedValue(
+        ClassificationstoreModel $classificationstore,
+        int $groupId,
+        KeyGroupRelation $key,
+        string $language,
+        KeyConfig $keyConfig,
+    ): mixed {
+        $childDef = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+        if ($childDef === null) {
+            return null;
+        }
+
+        $calculatedValue = new CalculatedValue($classificationstore->getFieldname());
+        $calculatedValue->setContextualData(
+            'classificationstore',
+            $classificationstore->getFieldname(),
+            null,
+            $language,
+            $groupId,
+            $key->getKeyId(),
+            $childDef,
+        );
+
+        return $this->dataObjectServiceResolver->getCalculatedFieldValue(
+            $classificationstore->getObject(),
+            $calculatedValue,
+        );
     }
 
     /**
@@ -467,6 +598,10 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
+        if ($value === null) {
+            $value = $this->getDefaultValue($fieldDefinition);
+        }
+
         if ($isPreview && $data !== null) {
             $data = $this->dataService->getPreviewFieldData($value, $fieldDefinition, $data);
 
@@ -474,5 +609,21 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $this->dataService->getNormalizedValue($value, $fieldDefinition);
+    }
+
+    private function getDefaultValue(Data $fieldDefinition): ?QuantityValue
+    {
+        if (!$fieldDefinition instanceof InputQuantityValue && !$fieldDefinition instanceof QuantityValueDefinition) {
+            return null;
+        }
+
+        $defaultValue = $fieldDefinition->getDefaultValue();
+        $defaultUnit = $fieldDefinition->getDefaultUnit();
+
+        if ($defaultValue || $defaultUnit) {
+            return new QuantityValue($defaultValue, $defaultUnit);
+        }
+
+        return null;
     }
 }

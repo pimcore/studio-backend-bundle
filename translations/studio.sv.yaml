@@ -1,0 +1,76 @@
+studio_ee_no_element_provided: Inget element angivet
+studio_ee_element_not_found: Element av typ %type% med ID %id% hittades inte
+studio_ee_user_not_found: Användare med ID %userId% hittades inte
+studio_ee_environment_variable_not_found: Miljövariabel %variable% hittades inte
+studio_ee_element_locked: Element av typ %type% med ID %id% är låst
+studio_ee_element_permission_missing: Användare med ID %userId% saknar behörighet %permission% för element av typ %type% med ID %id%
+studio_ee_element_delete_failed: 'Element av typ %type% med ID %id% kunde inte tas bort: %message%'
+studio_ee_element_batch_delete_failed: 'Massborttagning av element av typ %type% med ID %id% och dess underordnade element misslyckades: %message%'
+studio_ee_zip_file_copy_failed: 'ZIP-filen kunde inte kopieras: %message%'
+studio_ee_zip_file_upload_failed: 'ZIP-filen kunde inte laddas upp: %message%'
+studio_ee_zip_cleanup_failed: 'ZIP-katalogen %directory% kunde inte tas bort: %message%'
+studio_ee_csv_creation_failed: 'CSV-exporten misslyckades: %message%'
+studio_ee_xlsx_creation_failed: 'XLSX-exporten misslyckades: %message%'
+studio_ee_recycle_bin_delete_failed: 'Element med ID %id% kunde inte tas bort från papperskorgen: %message%'
+studio_ee_recycle_bin_restore_failed: 'Element från papperskorgen med ID %id% kunde inte återställas: %message%'
+studio_ee_csv_data_collection_failed: 'Data för CSV-exporten kunde inte extraheras för %id%: %message%'
+studio_ee_element_patch_failed: 'Element av typ %type% med ID %id% kunde inte uppdateras: %message%'
+studio_ee_element_rewrite_references_failed: 'Referenser för element av typ %type% med ID %id% kunde inte skrivas om: %message%'
+studio_ee_element_tag_operation_failed: 'Kunde inte utföra %operation% på taggar för element av typ %type% med ID %id%: %message%'
+studio_ee_no_element_data_found: Ingen data hittades
+studio_ee_job_create_download_zip: Skapa nedladdnings-ZIP
+studio_ee_job_clone_assets: Klona assets
+studio_ee_job_upload_zip_file: Ladda upp ZIP-fil
+studio_ee_job_delete_assets: Ta bort assets
+studio_ee_job_batch_delete_assets: Ta bort assets i batch
+studio_ee_job_patch_elements: Uppdatera element
+studio_ee_job_create_csv: Skapa CSV
+studio_ee_job_create_xlsx: Skapa XLSX
+studio_ee_job_upload_assets: Ladda upp assets
+studio_ee_job_clone_data_objects: Klona dataobjekt
+studio_ee_job_delete_data_objects: Ta bort dataobjekt
+studio_ee_job_batch_delete_data_objects: Ta bort dataobjekt i batch
+studio_ee_job_clone_documents: Klona dokument
+studio_ee_job_delete_documents: Ta bort dokument
+studio_ee_job_rewrite_element_references: Skriv om elementreferenser
+studio_ee_job_batch_tag_assign: Tilldela taggar i batch
+studio_ee_job_batch_tag_replace: Ersätt taggar i batch
+studio_ee_job_recycle_bin_delete: Ta bort element från papperskorgen
+studio_ee_job_recycle_bin_restore: Återställ element från papperskorgen
+studio_ee_job_step_zip_creation: Skapande av nedladdnings-ZIP
+studio_ee_job_step_asset_cloning: Kloning av assets
+studio_ee_job_step_csv_file_not_found: CSV-fil hittades inte
+studio_ee_jop_step_zip_uploading: Uppladdning av ZIP
+studio_ee_job_step_asset_uploading: Uppladdning av assets
+studio_ee_job_step_csv_creation: Skapande av CSV
+studio_ee_job_step_xlsx_creation: Skapande av XLSX
+studio_ee_job_step_export_data_collection: Insamling av data för export
+studio_ee_job_step_element_patching: Uppdatering av element
+studio_ee_job_step_folder_patching: Uppdatering av mappar
+studio_ee_job_step_element_rewrite_references: Omskrivning av elementreferenser
+studio_ee_job_step_element_deletion: Borttagning av element
+studio_ee_job_step_element_recycling: Flytta element till papperskorgen
+studio_ee_job_step_data_object_cloning: Kloning av dataobjekt
+studio_ee_job_step_document_cloning: Kloning av dokument
+studio_ee_job_step_batch_tag_assign: Tilldelning av taggar i batch
+studio_ee_job_step_batch_tag_replace: Ersättning av taggar i batch
+studio_ee_job_step_recycle_bin_delete: Borttagning av element från papperskorgen
+studio_ee_job_step_recycle_bin_restore: Återställning av element från papperskorgen
+studio_ee_element_folder_collection_not_supported: 'Insamling för mappar stöds inte. ID: %folderId%'
+studio_ee_file_not_found_for_job_run: 'Fil %type% hittades inte för jobbkörning. ID: %jobRunId%'
+studio_ee_invalid_element_type_provided: Insamling för element med ID %elementId% och typ %elementType% stöds inte.
+studio_ee_no_assets_found_for_job_run: 'Inga assets hittades för jobbkörning. ID: %jobRunId%'
+studio_ee_asset_upload_failed: 'Filen kunde inte laddas upp: %message%'
+studio_email_param_children: Underordnade element (%count%)
+studio_ee_element_replace_assignment_failed: 'Kunde inte ersätta %sourceId% (%sourceType%) med %targetId% (%targetType%) i %elementId% (%elementType%). Fel: %message%'
+studio_ee_job_bulk_import_class_definitions: Importera klassdefinitioner (massimport)
+studio_ee_job_step_field_collection_importing: Import av fältsamlingar
+studio_ee_job_step_class_importing: Import av klasser
+studio_ee_job_step_custom_layout_importing: Import av anpassade layouter
+studio_ee_job_step_object_brick_importing: Import av objektblock
+studio_ee_job_step_bulk_import_cleanup: Rensning av massimport
+studio_ee_bulk_import_failed: 'Massimport av %type% "%name%" misslyckades: %message%'
+studio_ee_job_element_usage_replace: Ersätt elementanvändning
+preview_generator_locale: Language
+main_site: Huvudsajt
+preview_generator_site: Site

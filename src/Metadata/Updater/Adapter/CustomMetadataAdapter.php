@@ -52,7 +52,7 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 
         $this->eventDispatcher->dispatch($metadataEvent, CustomMetadataEvent::EVENT_NAME);
 
-        $element->setMetadata($metadataEvent->getCustomMetadata());
+        $element->setMetadata($this->dataResolverService->prepareData($metadataEvent->getCustomMetadata()));
     }
 
     public function getIndexKey(): string

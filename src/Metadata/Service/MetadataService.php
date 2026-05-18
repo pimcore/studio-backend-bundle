@@ -21,13 +21,19 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMeta
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CreatePredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\UpdatePredefinedMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Metadata\Predefined;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 
 /**
  * @internal
@@ -41,7 +47,7 @@ final readonly class MetadataService implements MetadataServiceInterface
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher,
-        private MetadataHydratorInterface $hydrator
+        private MetadataHydratorInterface $hydrator,
     ) {
     }
 
@@ -91,22 +97,65 @@ final readonly class MetadataService implements MetadataServiceInterface
         return $customMetadata;
     }
 
-    public function getPredefinedMetadata(MetadataParameters $parameters): array
+    public function getPredefinedMetadata(MetadataParameters $parameters): Collection
     {
-        $originalPredefinedMetadata = $this->metadataRepository->getAllPredefinedMetadataDefinitions($parameters);
+        $definitions = $this->metadataRepository->getAllPredefinedMetadataDefinitions($parameters);
 
-        $predefinedMetadata = [];
+        $items = array_map(
+            fn (Predefined $predefined) => $this->hydrateAndDispatch($predefined),
+            $definitions,
+        );
 
-        foreach ($originalPredefinedMetadata as $predefined) {
-            $metadata = $this->hydrator->hydratePredefined($predefined);
+        return new Collection(count($items), $items);
+    }
 
-            $this->eventDispatcher->dispatch(
-                new PredefinedMetadataEvent($metadata),
-                PredefinedMetadataEvent::EVENT_NAME
-            );
-            $predefinedMetadata[] = $metadata;
-        }
+    public function createPredefinedMetadata(CreatePredefinedMetadata $metadata): PredefinedMetadata
+    {
+        $predefined = $this->metadataRepository->createPredefinedMetadata($metadata);
 
-        return $predefinedMetadata;
+        return $this->hydrateAndDispatch($predefined);
+    }
+
+    public function getPredefinedMetadataById(string $id): PredefinedMetadata
+    {
+        return $this->hydrateAndDispatch(
+            $this->metadataRepository->getPredefinedMetadataById($id)
+        );
+    }
+
+    public function updatePredefinedMetadata(string $id, UpdatePredefinedMetadata $metadata): PredefinedMetadata
+    {
+        $predefined = $this->metadataRepository->updatePredefinedMetadata($id, $metadata);
+
+        return $this->hydrateAndDispatch($predefined);
+    }
+
+    public function deletePredefinedMetadata(string $id): void
+    {
+        $this->metadataRepository->deletePredefinedMetadata($id);
+    }
+
+    public function getAssetPredefinedMetadata(
+        ?string $subType,
+        ?string $group,
+    ): array {
+        $items = $this->metadataRepository->getPredefinedMetadataByTargetType($subType, $group);
+
+        return array_map(
+            fn (Predefined $item) => $this->hydrateAndDispatch($item),
+            $items,
+        );
+    }
+
+    private function hydrateAndDispatch(Predefined $predefined): PredefinedMetadata
+    {
+        $metadata = $this->hydrator->hydratePredefined($predefined);
+
+        $this->eventDispatcher->dispatch(
+            new PredefinedMetadataEvent($metadata),
+            PredefinedMetadataEvent::EVENT_NAME
+        );
+
+        return $metadata;
     }
 }

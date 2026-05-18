@@ -14,11 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Schema\ExportAllFilter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
@@ -35,36 +34,32 @@ final class PatchDataObjectFolderRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['data'],
+                required: ['data', 'classId'],
                 properties: [
                     new Property(
                         property: 'data',
-                        type: 'array',
-                        items: new Items(
-                            required: ['folderId'],
-                            properties: [
-                                new Property(
-                                    property: 'folderId',
-                                    description: 'Folder ID',
-                                    type: 'integer',
-                                    example: 2
-                                ),
-                                new UpdateIntegerProperty('parentId'),
-                                new UpdateIntegerProperty('index', 0),
-                                new UpdateStringProperty('key'),
-                                new UpdateStringProperty('locked'),
-                                new UpdateStringProperty('childrenSortBy'),
-                                new UpdateStringProperty('childrenSortOrder'),
-                                new UpdateBooleanProperty('published'),
-                                new UpdateObjectProperty('editableData'),
-                            ],
-                            type: 'object',
-                        ),
+                        properties: [
+                            new UpdateIntegerProperty('parentId'),
+                            new UpdateIntegerProperty('index', 0),
+                            new UpdateStringProperty('key'),
+                            new UpdateStringProperty('locked'),
+                            new UpdateStringProperty('childrenSortBy'),
+                            new UpdateStringProperty('childrenSortOrder'),
+                            new UpdateBooleanProperty('published'),
+                            new UpdateObjectProperty('editableData'),
+                        ],
+                        type: 'object',
                     ),
                     new Property(
                         property: 'filters',
-                        ref: Filter::class,
+                        ref: ExportAllFilter::class,
                         type: 'object'
+                    ),
+                    new Property(
+                        property: 'classId',
+                        type: 'string',
+                        example: 'CAR',
+                        nullable: false
                     ),
                 ],
                 type: 'object',

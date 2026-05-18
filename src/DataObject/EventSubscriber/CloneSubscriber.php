@@ -16,11 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\EventSubscriber;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -31,6 +31,7 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
     public function __construct(
         private JobRunRepositoryInterface $jobRunRepository,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
     ) {
 
     }
@@ -50,7 +51,7 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
         ) {
             $jobRun = $this->jobRunRepository->getJobRunById($event->getJobRunId());
             $this->publishService->publish(
-                Events::CLONING_FINISHED->value,
+                $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

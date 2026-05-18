@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageCropParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
@@ -24,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
@@ -63,7 +63,6 @@ final class CustomStreamController extends AbstractApiController
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws ThumbnailResizingFailedException
      * @throws UserNotFoundException
      */
     #[Route(
@@ -100,10 +99,10 @@ final class CustomStreamController extends AbstractApiController
     #[BoolParameter('cover', 'Cover', false, false)]
     #[BoolParameter('forceResize', 'Force resize', false, false)]
     #[BoolParameter('cropPercent', '', false, false)]
-    #[ImageConfigParameter('cropWidth', 0)]
-    #[ImageConfigParameter('cropHeight', 0)]
-    #[ImageConfigParameter('cropTop', 0)]
-    #[ImageConfigParameter('cropLeft', 0)]
+    #[ImageCropParameter('cropWidth', 0)]
+    #[ImageCropParameter('cropHeight', 0)]
+    #[ImageCropParameter('cropTop', 0)]
+    #[ImageCropParameter('cropLeft', 0)]
     #[SuccessResponse(
         description: 'asset_image_stream_custom_success_response',
         content: [new MediaType('image/*')],

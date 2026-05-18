@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function array_key_exists;
 
 /**
  * @internal
@@ -156,6 +157,16 @@ class AbstractHandler extends AbstractAutomationActionHandler
         throw new EnvironmentException('How did I get here?');
     }
 
+    protected function extractOptionalConfigFieldFromJobStepConfig(
+        GenericExecutionEngineMessageInterface $message,
+        string $key,
+        mixed $default = null,
+    ): mixed {
+        $config = $this->getCurrentJobStepConfig($message);
+
+        return array_key_exists($key, $config) ? $config[$key] : $default;
+    }
+
     protected function updateContextArrayValues(JobRun $jobRun, string $key, array $value): void
     {
         $context = $jobRun->getContext();
@@ -167,6 +178,22 @@ class AbstractHandler extends AbstractAutomationActionHandler
         }
 
         $this->updateJobRunContext($jobRun, $key, $contextValue);
+    }
+
+    protected function updateJobRunContextValues(
+        JobRun $jobRun,
+        array $values,
+        bool $persist = true
+    ): void {
+        $jobRun->setContext(
+            array_merge(
+                $jobRun->getContext() ?? [],
+                $values
+            )
+        );
+        if ($persist) {
+            $this->jobRunRepository->update($jobRun);
+        }
     }
 
     private function getExecutionActionData(

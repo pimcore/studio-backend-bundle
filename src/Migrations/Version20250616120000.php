@@ -24,7 +24,12 @@ final class Version20250616120000 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Hide already existing studio job runs';
+        return 'Hide already existing studio job runs (create the schema)';
+    }
+
+    public function isTransactional(): bool
+    {
+        return false;
     }
 
     public function up(Schema $schema): void
@@ -39,15 +44,6 @@ final class Version20250616120000 extends AbstractMigration
                     ON DELETE CASCADE
             )
         ');
-
-        $this->addSql('
-            INSERT INTO ' . JobRunHidden::TABLE_NAME . ' (jobRunId)
-            SELECT jr.id
-            FROM generic_execution_engine_job_run jr
-            LEFT JOIN ' . JobRunHidden::TABLE_NAME . " jrh ON jr.id = jrh.jobRunId
-            WHERE jrh.jobRunId IS NULL
-            AND jr.executionContext IN ('studio_stop_on_error', 'studio_continue_on_error')
-        ");
     }
 
     public function down(Schema $schema): void

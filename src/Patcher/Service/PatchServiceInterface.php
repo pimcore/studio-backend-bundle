@@ -35,11 +35,15 @@ interface PatchServiceInterface
         UserInterface $user,
     ): ?int;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function patchFolder(
+        int $folderId,
         string $elementType,
         PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
-    ): ?int;
+    ): int;
 
     /**
      * @throws ElementSavingFailedException

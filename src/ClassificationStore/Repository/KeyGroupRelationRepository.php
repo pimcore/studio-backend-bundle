@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
-use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function count;
 
@@ -40,36 +40,16 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         ?array $groupIds = null,
         ?string $searchTerm = null
     ): array {
-
-        $groupIds = array_map(
-            fn ($group) => $group->getId(),
-            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
-        );
-
-        $listing = new Listing();
+        $listing = $this->getBaseListing($storeId, $groupIds, $searchTerm);
         $listing->setOffset($this->getOffset($collectionParameters));
-        $listing->setOrder('ASC');
-        $listing->setOrderKey('sorter');
-        $this->applyGroupIdsFilter($listing, $groupIds);
-
-        if ($searchTerm !== null) {
-            $this->applySearchTermFilter($listing, $searchTerm);
-        }
+        $listing->setLimit($collectionParameters->getPageSize());
 
         return $listing->getList();
     }
 
-    public function getCountByStoreId(int $storeId, ?array $groupIds = null): int
+    public function getCountByStoreId(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): int
     {
-        $groupIds = array_map(
-            fn ($group) => $group->getId(),
-            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
-        );
-
-        $listing = new Listing();
-        $this->applyGroupIdsFilter($listing, $groupIds);
-
-        return $listing->count();
+        return $this->getBaseListing($storeId, $groupIds, $searchTerm)->count();
     }
 
     /**
@@ -85,24 +65,49 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         return $listing->load();
     }
 
-    private function applySearchTermFilter(Listing $list, string $searchTerm): void
+    /**
+     * @inheritDoc
+     */
+    public function getByKeyGroupId(int $keyId, int $groupId): KeyGroupRelation
     {
-        $searchTerms = $this->searchHelperService->getTranslatedSearchFilterTerms($searchTerm);
-        $searchFilterConditions = [];
+        $listing = new Listing();
+        $listing->setOrder('ASC');
+        $listing->addConditionParam('keyId = ?', $keyId);
+        $listing->addConditionParam('groupId = ?', $groupId);
 
-        foreach ($searchTerms as $term) {
-            $searchFilterConditions[] =
-                KeyConfigDao::TABLE_NAME_KEYS.'.name LIKE '.$list->quote('%'.$term.'%')
-                .' OR '.GroupConfigDao::TABLE_NAME_GROUPS.'.name LIKE '.$list->quote('%'.$term.'%')
-                .' OR '.KeyConfigDao::TABLE_NAME_KEYS.'.description LIKE '.$list->quote('%'.$term.'%');
+        $list = $listing->load();
+
+        if (count($list) !== 1) {
+            throw new NotFoundException('KeyGroupRelation', $keyId);
         }
-        $list->setResolveGroupName(true);
 
-        $list->addConditionParam(implode(' OR ', $searchFilterConditions));
+        return $list[0];
+    }
+
+    private function getBaseListing(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): Listing
+    {
+        $groupIds = array_map(
+            static fn ($group) => $group->getId(),
+            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
+        );
+
+        $listing = new Listing();
+        $listing->setOrder('ASC');
+        $listing->setOrderKey('sorter');
+        $this->applyGroupIdsFilter($listing, $groupIds);
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $this->searchHelperService->applyKeyGroupRelationSearchFilter($listing, $searchTerm);
+        }
+
+        return $listing;
     }
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {
+        if (empty($groupIds)) {
+            return;
+        }
         $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
         $list->addConditionParam('groupID IN ('. $placeholders .')', $groupIds);
     }

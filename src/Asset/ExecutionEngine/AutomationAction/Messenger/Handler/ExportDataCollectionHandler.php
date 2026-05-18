@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -25,8 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvExportHandlerSetupTr
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
@@ -41,8 +42,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UserTopicServiceInterface $userTopicService,
         private readonly GridServiceInterface $gridService,
-        private readonly AssetServiceInterface $assetService
     ) {
         parent::__construct();
     }
@@ -68,64 +69,62 @@ final class ExportDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
-
-        $asset = $this->assetService->getAssetForUser($jobAsset['id'], $user);
-
-        if ($asset->getType() === ElementTypes::TYPE_FOLDER) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
-                [
-                    'folderId' => $asset->getId(),
-                ]
-            ));
-
-            return;
-        }
-
+        $assets = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENTS_TO_EXPORT->value);
+        $totalAssets = count($assets);
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
         $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
 
-        $columnCollection = $this->gridService->getConfigurationForExport(
-            $columns,
-            $columnsDefinitions
-        );
+        $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
-        try {
-            $assetData = [
-                $asset->getId() => $this->gridService->getGridValuesForElement(
+        $assetsData = [];
+        foreach ($assets as $asset) {
+            try {
+                $assetsData[$asset['id']] = $this->gridService->getGridValuesForElement(
                     $columnCollection,
-                    $asset,
                     ElementTypes::TYPE_ASSET,
-                    true
-                ),
-            ];
-
-            $this->updateContextArrayValues($jobRun, StepConfig::GRID_EXPORT_DATA->value, $assetData);
-
-            $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? null;
-
-            if ($csvExportDataInfo === null) {
-                $this->updateContextArrayValues(
-                    $jobRun,
-                    StepConfig::GRID_EXPORT_DATA_INFO->value,
-                    [
-                        'type' => ElementTypes::TYPE_ASSET,
-                    ]
+                    $asset['id'],
+                    $user
                 );
+
+            } catch (Exception $e) {
+                $this->abort($this->getAbortData(
+                    Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
+                    [
+                        'id' => $asset['id'],
+                        'message' => $e->getMessage(),
+                    ]
+                ));
             }
 
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $this->getJobStep($message)->getName(),
+                $totalAssets,
+                $totalAssets
+            );
+        }
+
+        try {
+            if (!empty($assetsData)) {
+                $context = $jobRun->getContext();
+                if (isset($context[StepConfig::GRID_EXPORT_DATA->value])) {
+                    $assetsData = array_merge(
+                        $context[StepConfig::GRID_EXPORT_DATA->value],
+                        $assetsData
+                    );
+                }
+                $this->updateJobRunContext($jobRun, StepConfig::GRID_EXPORT_DATA->value, $assetsData);
+            }
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $asset->getId(),
                     'message' => $e->getMessage(),
                 ]
             ));
         }
-
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

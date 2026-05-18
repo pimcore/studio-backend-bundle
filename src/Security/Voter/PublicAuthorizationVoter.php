@@ -24,6 +24,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use function in_array;
+use function is_string;
 
 /**
  * @internal
@@ -33,9 +34,19 @@ final class PublicAuthorizationVoter extends Voter
     use RequestTrait;
     use PublicTranslationTrait;
 
-    private const SUPPORTED_ATTRIBUTE = 'PUBLIC_STUDIO_API';
+    private const string SUPPORTED_ATTRIBUTE = 'PUBLIC_STUDIO_API';
 
-    private const SUPPORTED_SUBJECTS = ['translation'];
+    private const string TRANSLATION_SUBJECT = 'translation';
+
+    private const string RESET_PASSWORD_SUBJECT = 'resetPassword';
+
+    private const string SETTINGS_ADMIN_THUMBNAIL = 'settingsAdminThumbnail';
+
+    private const array SUPPORTED_SUBJECTS = [
+        self::TRANSLATION_SUBJECT,
+        self::RESET_PASSWORD_SUBJECT,
+        self::SETTINGS_ADMIN_THUMBNAIL,
+    ];
 
     public function __construct(
         private readonly RequestStack $requestStack,
@@ -70,7 +81,8 @@ final class PublicAuthorizationVoter extends Voter
     private function voteOnRequest(Request $request, string $subject): bool
     {
         return match ($subject) {
-            'translation' => $this->voteOnTranslation($request->getPayload()),
+            self::TRANSLATION_SUBJECT => $this->voteOnTranslation($request->getPayload()),
+            self::RESET_PASSWORD_SUBJECT, self::SETTINGS_ADMIN_THUMBNAIL => true,
             default => false,
         };
     }
@@ -79,6 +91,10 @@ final class PublicAuthorizationVoter extends Voter
     {
         if ($subject instanceof MapRequestPayload) {
             return $subject->metadata->getName();
+        }
+
+        if (is_string($subject)) {
+            return $subject;
         }
 
         return '';

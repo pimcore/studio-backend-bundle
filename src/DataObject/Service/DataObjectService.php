@@ -17,14 +17,16 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectDetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEvent;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -33,12 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -76,6 +74,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private DataServiceInterface $dataService,
+        private DataObjectQueryProviderInterface $dataObjectQueryProvider,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private FactoryInterface $factory,
@@ -88,12 +87,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws DatabaseException
-     * @throws ElementSavingFailedException
-     * @throws ForbiddenException
-     * @throws InvalidElementTypeException
-     * @throws NotFoundException
-     * @throws UserNotFoundException
+     * {@inheritdoc}
      */
     public function addDataObject(
         int $parentId,
@@ -119,15 +113,16 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|InvalidFilterServiceTypeException|InvalidQueryTypeException
-     * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
+     * {@inheritdoc}
      */
     public function getDataObjects(DataObjectParameters $parameters): Collection
     {
         /** @var SearchIndexFilterInterface $filterService */
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
+        $query = $this->dataObjectQueryProvider->createDataObjectQuery();
         $query = $filterService->applyFilters(
+            $query,
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );
@@ -140,20 +135,21 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         }
 
         $this->setTreeSorting($parent, $query, $parameters->getPathIncludeParent());
+        $this->addVariantsQuery($parent, $query, $parameters->getPathIncludeDescendants());
         $result = $this->dataObjectSearchService->searchDataObjects($query);
         $items = $result->getItems();
 
         foreach ($items as $item) {
-            $this->dispatchDataObjectEvent($item);
+            $this->dispatchTreeEvent($item);
         }
 
         return new Collection($result->getTotalItems(), $items);
     }
 
     /**
-     * @throws SearchException|NotFoundException|UserNotFoundException
+     * {@inheritdoc}
      */
-    public function getDataObject(int $id, bool $getDetailData = true): DataObject
+    public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
         $dataObject = $this->dataObjectSearchService->getDataObjectById(
@@ -165,60 +161,25 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $this->getObjectDetailData($dataObject);
         }
 
-        $this->dispatchDataObjectEvent($dataObject);
+        $this->dispatchDetailEvent($dataObject);
 
         return $dataObject;
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritdoc}
      */
-    public function getDataObjectForUser(int $id, UserInterface $user): DataObject
+    public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
-        $this->dispatchDataObjectEvent($dataObject);
+        $this->dispatchDetailEvent($dataObject);
 
         return $dataObject;
     }
 
     /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getDataObjectFolder(int $id, bool $checkPermissionsForCurrentUser = true): DataObjectFolder
-    {
-        $dataObject = $this->dataObjectSearchService->getDataObjectById(
-            $id,
-            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
-        );
-
-        if (!$dataObject instanceof DataObjectFolder) {
-            throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
-        }
-
-        $this->dispatchDataObjectEvent($dataObject);
-
-        return $dataObject;
-    }
-
-    /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getDataObjectFolderForUser(int $id, UserInterface $user): DataObjectFolder
-    {
-        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
-
-        if (!$dataObject instanceof DataObjectFolder) {
-            throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
-        }
-
-        $this->dispatchDataObjectEvent($dataObject);
-
-        return $dataObject;
-    }
-
-    /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getDataObjectElement(
         UserInterface $user,
@@ -235,7 +196,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getDataObjectElementByPath(
         UserInterface $user,
@@ -252,7 +213,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
+     * {@inheritdoc}
      */
     public function setTreeSorting(DataObjectModel $parent, QueryInterface $dataObjectQuery, bool $includeParent): void
     {
@@ -270,6 +231,34 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         }
 
         $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
+    }
+
+    private function addVariantsQuery(
+        DataObjectModel $parent,
+        QueryInterface $dataObjectQuery,
+        bool $includeDescendants
+    ): void {
+        if ($includeDescendants === true || !$parent instanceof Concrete) {
+            return;
+        }
+
+        if (!$dataObjectQuery instanceof DataObjectQuery) {
+            throw new InvalidQueryTypeException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                'Query type has to be instance of ' . DataObjectQuery::class
+            );
+        }
+
+        try {
+            $class = $parent->getClass();
+            if ($class->getAllowVariants() === false || $class->getShowVariants() === true) {
+                return;
+            }
+
+            $dataObjectQuery->excludeVariants();
+        } catch (Exception $e) {
+            throw new NotFoundException('class', $parent->getId(), 'object with ID', $e);
+        }
     }
 
     /**
@@ -292,7 +281,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             throw new InvalidElementTypeException($objectType);
         }
 
-        // class needs to be upper case for factory
+        // class needs to be an upper case for factory
         $className = ucfirst($className);
         $object = $this->factory->build('Pimcore\\Model\\DataObject\\' . $className);
         if (!$object instanceof Concrete) {
@@ -333,7 +322,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws InvalidElementTypeException|NotFoundException
      */
-    private function getObjectDetailData(DataObjectFolder|DataObject $dataObject): void
+    private function getObjectDetailData(DataObjectFolder|DataObjectDetail $dataObject): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
         $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
@@ -350,11 +339,19 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         );
     }
 
-    private function dispatchDataObjectEvent(mixed $dataObject): void
+    private function dispatchTreeEvent(mixed $dataObject): void
     {
         $this->eventDispatcher->dispatch(
             new DataObjectEvent($dataObject),
             DataObjectEvent::EVENT_NAME
+        );
+    }
+
+    private function dispatchDetailEvent(DataObjectDetail|DataObjectFolder $dataObject): void
+    {
+        $this->eventDispatcher->dispatch(
+            new DataObjectDetailEvent($dataObject),
+            DataObjectDetailEvent::EVENT_NAME
         );
     }
 }

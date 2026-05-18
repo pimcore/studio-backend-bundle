@@ -18,4 +18,5 @@ enum DocumentFieldKeys: string
     case SETTINGS_DATA = 'settingsData';
     case EDITABLE_DATA = 'editableData';
     case MISSING_REQUIRED_EDITABLE = 'missingRequiredEditable';
+    case APPEND_EDITABLES = 'appendEditables';
 }

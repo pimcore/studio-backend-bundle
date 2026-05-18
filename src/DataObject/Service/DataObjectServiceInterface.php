@@ -15,8 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -59,22 +59,12 @@ interface DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDataObject(int $id, bool $getDetailData = true): DataObject;
+    public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder;
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectForUser(int $id, UserInterface $user): DataObject;
-
-    /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getDataObjectFolder(int $id, bool $checkPermissionsForCurrentUser = true): DataObjectFolder;
-
-    /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getDataObjectFolderForUser(int $id, UserInterface $user): DataObjectFolder;
+    public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder;
 
     /**
      * @throws ForbiddenException|NotFoundException

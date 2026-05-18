@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
@@ -23,22 +27,28 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ObjectBrickKey;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use function count;
 
 /**
  * @internal
  */
-final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface
+final class ObjectBrickResolver implements
+    ColumnResolverInterface,
+    CoreElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
@@ -47,9 +57,24 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
         private readonly InheritanceServiceInterface $inheritanceService,
-        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver
-
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly ObjectBrickServiceInterface $objectBrickService,
+        private readonly DefinitionResolverInterface $definitionResolver,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
+    }
+
+    /** @see LocalizedValueTrait::doGetFallbackValues() */
+    protected function doGetFallbackValues(): bool
+    {
+        return $this->localizedFieldResolver->doGetFallbackValues();
+    }
+
+    /** @see LocalizedValueTrait::getDefaultLanguage() */
+    protected function getDefaultLanguage(): ?string
+    {
+        return $this->toolResolver->getDefaultLanguage();
     }
 
     /**
@@ -68,37 +93,106 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         $fieldDefinition = $this->getFieldDefinition($objectBrickKey->getField(), $classDefinition);
 
         $value = $this->dataService->getNormalizedValue(
-            $this->getLocalizedValueFromKey($objectBrickKey->getField(), $column->getLocale(), $element),
+            $this->getLocalizedValueFromKey($objectBrickKey->getField(), null, $element),
             $fieldDefinition
         );
+
+        $objectBrickFieldType = $this->objectBrickService->findObjectBrickField(
+            $objectBrickKey->getBrickName(),
+            $objectBrickKey->getAttribute(),
+        )->getFieldType();
 
         if ($value === []) {
             return $this->getColumnData(
                 $column,
                 null,
+                $objectBrickFieldType
             );
         }
 
         $inheritanceData = null;
         if ($classDefinition->getAllowInherit() && $fieldDefinition->supportsInheritance()) {
             try {
-                $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $objectBrickKey);
+                $inheritanceData = $this->getInheritanceData($element, $fieldDefinition, $objectBrickKey, $column);
             } catch (NotFoundException) {
                 // inheritance data not found (field not set in parent id)
             }
         }
 
         try {
-            $value = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
+            $returnValue = null;
+            $brickName = $objectBrickKey->getBrickName();
+            $attribute = $objectBrickKey->getAttribute();
+
+            if ($column->getLocale()) {
+                $returnValue = $value[$brickName]['localizedfields'][$attribute][$column->getLocale()];
+            }
+
+            if (!$column->getLocale()) {
+                $returnValue = $value[$brickName][$attribute];
+            }
         } catch (Exception) {
             $value = null;
         }
 
         return $this->getColumnData(
             $column,
-            $value,
+            $returnValue,
+            $objectBrickFieldType,
             $inheritanceData
         );
+    }
+
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
+    {
+        if (!$element instanceof Concrete) {
+            throw new InvalidArgumentException('Element must be a concrete object');
+        }
+
+        try {
+            $objectBrickKey = $this->mapObjectBrickKey($column->getKey());
+
+            $brickClass = $this->definitionResolver->getByKey($objectBrickKey->getBrickName());
+            $fieldDefinition = $brickClass->getFieldDefinition($objectBrickKey->getAttribute());
+
+            $brickContainer = $element->get($objectBrickKey->getField());
+            if (!$brickContainer) {
+                return $this->getColumnData($column, null, $fieldDefinition->getFieldType());
+            }
+
+            $brick = $brickContainer->get($objectBrickKey->getBrickName());
+
+            if ($column->getLocale()) {
+                $brick = $brick->get('localizedfields');
+            }
+
+            if (!$brick) {
+                return $this->getColumnData($column, null, $fieldDefinition->getFieldType());
+            }
+
+            $context = new FieldContextData(
+                contextObject: $brick,
+                legacyParameters: ['context' => [
+                    'containerType' => 'objectbrick',
+                    'containerKey' => $objectBrickKey->getBrickName(),
+                    'fieldname' => $objectBrickKey->getAttribute(),
+                ],
+                'language' => $column->getLocale(),
+            ]
+            );
+
+            $value = $this->dataService->getExportFieldValue(
+                $element,
+                $fieldDefinition,
+                $objectBrickKey->getField(),
+                $context
+            );
+
+            return $this->getColumnData($column, $value, $fieldDefinition->getFieldType());
+
+        } catch (Exception) {
+            return $this->getColumnData($column, null, $column->getType());
+        }
     }
 
     public function getType(): string
@@ -131,8 +225,12 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
     /**
      * @throws NotFoundException
      */
-    private function getInheritanceData(Concrete $element, Data $fieldDefinition, ObjectBrickKey $key): InheritanceData
-    {
+    private function getInheritanceData(
+        Concrete $element,
+        Data $fieldDefinition,
+        ObjectBrickKey $key,
+        Column $column
+    ): InheritanceData {
         $inheritanceDataCollection = $this->dataObjectServiceResolver->useInheritedValues(
             false,
             function () use ($element, $fieldDefinition, $key) {
@@ -141,7 +239,18 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         );
 
         try {
-            $inheritanceData = $inheritanceDataCollection[$key->getBrickName()][$key->getAttribute()];
+            $inheritanceData = null;
+            $brickName = $key->getBrickName();
+            $attribute = $key->getAttribute();
+            $locale = $column->getLocale();
+
+            if ($locale) {
+                $inheritanceData = $inheritanceDataCollection[$brickName]['localizedfields'][$attribute][$locale];
+            }
+
+            if (!$locale) {
+                $inheritanceData = $inheritanceDataCollection[$brickName][$attribute];
+            }
 
             if (!$inheritanceData instanceof InheritanceData) {
                 throw new Exception();

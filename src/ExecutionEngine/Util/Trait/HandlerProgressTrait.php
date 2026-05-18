@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use function count;
 
 /**
@@ -38,9 +38,11 @@ trait HandlerProgressTrait
 
     private function updateProgress(
         PublishServiceInterface $publishService,
+        UserTopicServiceInterface $userTopicService,
         JobRun $jobRun,
         string $jobStepName,
-        int $stepElements = 1
+        int $stepElements = 1,
+        int $frequency = self::FREQUENCY
     ): void {
         $currentStep = $this->getCurrentStep($jobRun);
         $totalSteps = $this->getTotalSteps($jobRun);
@@ -48,8 +50,13 @@ trait HandlerProgressTrait
 
         $processedElements = $jobRun->getContext()[self::PROCESSED_ELEMENTS] ?? 0;
         $processedElements++;
-        $this->updateJobRunContext($jobRun, self::PROCESSED_ELEMENTS, $processedElements);
-        $updateFrequency = max(1, (int)($totalEvents / self::FREQUENCY));
+        $this->updateJobRunContextValues(
+            $jobRun,
+            [
+                self::PROCESSED_ELEMENTS => $processedElements,
+            ]
+        );
+        $updateFrequency = max(1, (int)($totalEvents / $frequency));
 
         $progress = (int)($processedElements / $totalEvents * 100);
 
@@ -58,7 +65,7 @@ trait HandlerProgressTrait
         }
 
         $publishService->publish(
-            Events::HANDLER_PROGRESS->value,
+            $userTopicService->getUserTopic($jobRun->getOwnerId()),
             new Progress(
                 $progress,
                 // $currentStep + 1 because the current step is 0-based
@@ -80,7 +87,13 @@ trait HandlerProgressTrait
         }
 
         $totalSteps = count($jobRun->getJob()?->getSteps() ?? []);
-        $this->updateJobRunContext($jobRun, self::TOTAL_STEPS, $totalSteps);
+        $this->updateJobRunContextValues(
+            $jobRun,
+            [
+                self::TOTAL_STEPS => $totalSteps,
+            ],
+            false
+        );
 
         return $totalSteps;
     }
@@ -94,9 +107,15 @@ trait HandlerProgressTrait
         }
 
         $currentStep = $jobRun->getCurrentStep();
-        $this->updateJobRunContext($jobRun, self::PROCESSED_ELEMENTS, 0);
-        $this->updateJobRunContext($jobRun, self::ELEMENTS_PER_STEP, null);
-        $this->updateJobRunContext($jobRun, self::CURRENT_STEP, $currentStep);
+        $this->updatejobRunContextValues(
+            $jobRun,
+            [
+                self::PROCESSED_ELEMENTS => 0,
+                self::CURRENT_STEP => $currentStep,
+                self::ELEMENTS_PER_STEP => null,
+            ],
+            false
+        );
 
         return $currentStep;
     }
@@ -113,7 +132,13 @@ trait HandlerProgressTrait
             $elementsPerStep = $jobRun->getTotalElements() * $elementsPerStep;
         }
 
-        $this->updateJobRunContext($jobRun, self::ELEMENTS_PER_STEP, $elementsPerStep);
+        $this->updateJobRunContextValues(
+            $jobRun,
+            [
+                self::ELEMENTS_PER_STEP => $elementsPerStep,
+            ],
+            false
+        );
 
         return $elementsPerStep;
     }

@@ -17,6 +17,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
@@ -85,13 +86,19 @@ class Document extends Element implements AdditionalAttributesInterface
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate
+            $modificationDate,
+            ElementTypes::TYPE_DOCUMENT
         );
     }
 
     public function getFullPath(): string
     {
         return $this->fullPath;
+    }
+
+    public function getPublished(): bool
+    {
+        return $this->isPublished();
     }
 
     public function isPublished(): bool
@@ -137,5 +144,10 @@ class Document extends Element implements AdditionalAttributesInterface
     public function getNavigationExclude(): bool
     {
         return $this->navigationExclude;
+    }
+
+    public function getFilename(): string
+    {
+        return $this->getKey();
     }
 }

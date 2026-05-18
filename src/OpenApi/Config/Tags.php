@@ -35,6 +35,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_authorization_description'
 )]
 #[Tag(
+    name: Tags::Cache->value,
+    description: 'tag_cache_description',
+)]
+#[Tag(
     name: Tags::ClassDefinition->value,
     description: 'tag_class_description'
 )]
@@ -73,6 +77,10 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::Export->value,
     description: 'tag_export_description'
+)]
+#[Tag(
+    name: Tags::GDPR->value,
+    description: 'tag_gdpr_description'
 )]
 #[Tag(
     name: Tags::Mercure->value,
@@ -171,6 +179,7 @@ enum Tags: string
     case BundleApplicationLogger = 'Bundle Application Logger';
     case BundleCustomReports = 'Bundle Custom Reports';
     case BundleSeo = 'Bundle Seo';
+    case Cache = 'Cache';
     case ClassDefinition = 'Class Definition';
     case ClassificationStore = 'Classification Store';
     case DataObjects = 'Data Objects';
@@ -181,6 +190,7 @@ enum Tags: string
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';
     case Export = 'Export';
+    case GDPR = 'GDPR Data Extractor';
     case Mercure = 'Mercure';
     case Metadata = 'Metadata';
     case Notes = 'Notes';
@@ -192,6 +202,7 @@ enum Tags: string
     case Search = 'Search';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
+    case SettingsAdmin = 'Settings Admin';
     case Tags = 'Tags';
     case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';

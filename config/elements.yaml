@@ -39,11 +39,17 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexService
+
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementLocationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementLocationService
 
-  Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface:
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsService
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageService
 
   #
   # Handler
@@ -55,6 +61,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RewriteRefHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchFolderHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\ElementUsageReplaceHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RefreshJobHandler: ~
 
   #
   # Event Subscriber
@@ -64,23 +72,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\RewriteReferencesSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\DeletionSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\BatchDeletionSubscriber: ~
-
-  #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Provider\ElementTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\ReplaceAssignmentSubscriber: ~
 
   #
   # Hydrator
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydrator
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydrator

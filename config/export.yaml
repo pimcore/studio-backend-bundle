@@ -23,6 +23,8 @@ services:
     arguments:
         $xlsxExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService'
 
+  Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\FolderCollectionHandler: ~
+
   #
   # Services
   #
@@ -48,9 +50,4 @@ services:
     arguments:
       $xlsxExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService'
 
-  #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Provider\ExportTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]
+  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\FolderCollectionSubscriber: ~

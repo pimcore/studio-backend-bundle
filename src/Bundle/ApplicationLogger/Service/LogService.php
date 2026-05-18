@@ -47,7 +47,7 @@ final readonly class LogService implements LogServiceInterface
         }
 
         return new Collection(
-            $this->logRepository->getTotalCount(),
+            $this->logRepository->getTotalCount($parameters),
             $list
         );
     }

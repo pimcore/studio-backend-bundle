@@ -29,7 +29,7 @@ interface LogRepositoryInterface
     /**
      * @throws DatabaseException
      */
-    public function getTotalCount(): int;
+    public function getTotalCount(CollectionFilterParameter $parameters): int;
 
     /**
      * @throws DatabaseException

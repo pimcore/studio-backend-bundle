@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapter
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
@@ -45,7 +45,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery);
     }
 
-    public function getDataObjectById(int $id, ?UserInterface $user): DataObject|DataObjectFolder
+    public function getDataObjectById(int $id, ?UserInterface $user): DataObjectDetail|DataObjectFolder
     {
         return $this->dataObjectSearchAdapter->getDataObjectById($id, $user);
     }

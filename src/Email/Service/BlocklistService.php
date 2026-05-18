@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\BlocklistEntryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Repository\BlocklistRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -34,7 +35,7 @@ final readonly class BlocklistService implements BlocklistServiceInterface
     }
 
     /**
-     * @throws EnvironmentException
+     * @throws ElementExistsException|EnvironmentException
      */
     public function addEntry(string $email): void
     {

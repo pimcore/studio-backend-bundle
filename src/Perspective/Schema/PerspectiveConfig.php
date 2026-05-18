@@ -60,7 +60,7 @@ class PerspectiveConfig implements AdditionalAttributesInterface
         return $this->icon;
     }
 
-    public function isWriteable(): bool
+    public function getIsWriteable(): bool
     {
         return $this->isWriteable;
     }

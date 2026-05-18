@@ -1,0 +1,76 @@
+studio_ee_no_element_provided: Aucun élément fourni
+studio_ee_element_not_found: Élément de type %type% avec l'ID %id% introuvable
+studio_ee_user_not_found: Utilisateur avec l'ID %userId% introuvable
+studio_ee_environment_variable_not_found: Variable d'environnement %variable% introuvable
+studio_ee_element_locked: L'élément de type %type% avec l'ID %id% est verrouillé
+studio_ee_element_permission_missing: L'utilisateur avec l'ID %userId% n'a pas la permission %permission% sur l'élément de type %type% avec l'ID %id%
+studio_ee_element_delete_failed: "L'élément de type %type% avec l'ID %id% n'a pas pu être supprimé : %message%"
+studio_ee_element_batch_delete_failed: "La suppression par lot de l'élément de type %type% avec l'ID %id% et de ses éléments enfants a échoué : %message%"
+studio_ee_zip_file_copy_failed: "Le fichier ZIP n'a pas pu être copié : %message%"
+studio_ee_zip_file_upload_failed: "Le fichier ZIP n'a pas pu être téléversé : %message%"
+studio_ee_zip_cleanup_failed: "Le répertoire ZIP %directory% n'a pas pu être supprimé : %message%"
+studio_ee_csv_creation_failed: "L'export CSV a échoué : %message%"
+studio_ee_xlsx_creation_failed: "L'export XLSX a échoué : %message%"
+studio_ee_recycle_bin_delete_failed: "L'élément avec l'ID %id% n'a pas pu être supprimé de la corbeille : %message%"
+studio_ee_recycle_bin_restore_failed: "L'élément de la corbeille avec l'ID %id% n'a pas pu être restauré : %message%"
+studio_ee_csv_data_collection_failed: "Les données pour l'export CSV n'ont pas pu être extraites pour %id% : %message%"
+studio_ee_element_patch_failed: "L'élément de type %type% avec l'ID %id% n'a pas pu être mis à jour : %message%"
+studio_ee_element_rewrite_references_failed: "Les références de l'élément de type %type% avec l'ID %id% n'ont pas pu être réécrites : %message%"
+studio_ee_element_tag_operation_failed: "Impossible d'effectuer %operation% sur les tags de l'élément de type %type% avec l'ID %id% : %message%"
+studio_ee_no_element_data_found: Aucune donnée trouvée
+studio_ee_job_create_download_zip: Créer le ZIP de téléchargement
+studio_ee_job_clone_assets: Cloner les assets
+studio_ee_job_upload_zip_file: Téléverser le fichier ZIP
+studio_ee_job_delete_assets: Supprimer les assets
+studio_ee_job_batch_delete_assets: Supprimer les assets par lot
+studio_ee_job_patch_elements: Mettre à jour les éléments
+studio_ee_job_create_csv: Créer le CSV
+studio_ee_job_create_xlsx: Créer le XLSX
+studio_ee_job_upload_assets: Téléverser les assets
+studio_ee_job_clone_data_objects: Cloner les objets de données
+studio_ee_job_delete_data_objects: Supprimer les objets de données
+studio_ee_job_batch_delete_data_objects: Supprimer les objets de données par lot
+studio_ee_job_clone_documents: Cloner les documents
+studio_ee_job_delete_documents: Supprimer les documents
+studio_ee_job_rewrite_element_references: Réécrire les références d'éléments
+studio_ee_job_batch_tag_assign: Attribuer les tags par lot
+studio_ee_job_batch_tag_replace: Remplacer les tags par lot
+studio_ee_job_recycle_bin_delete: Supprimer les éléments de la corbeille
+studio_ee_job_recycle_bin_restore: Restaurer les éléments de la corbeille
+studio_ee_job_step_zip_creation: Création du ZIP de téléchargement
+studio_ee_job_step_asset_cloning: Clonage des assets
+studio_ee_job_step_csv_file_not_found: Fichier CSV introuvable
+studio_ee_jop_step_zip_uploading: Téléversement du ZIP
+studio_ee_job_step_asset_uploading: Téléversement des assets
+studio_ee_job_step_csv_creation: Création du CSV
+studio_ee_job_step_xlsx_creation: Création du XLSX
+studio_ee_job_step_export_data_collection: Collecte des données à exporter
+studio_ee_job_step_element_patching: Mise à jour des éléments
+studio_ee_job_step_folder_patching: Mise à jour des dossiers
+studio_ee_job_step_element_rewrite_references: Réécriture des références d'éléments
+studio_ee_job_step_element_deletion: Suppression des éléments
+studio_ee_job_step_element_recycling: Ajout des éléments à la corbeille
+studio_ee_job_step_data_object_cloning: Clonage des objets de données
+studio_ee_job_step_document_cloning: Clonage des documents
+studio_ee_job_step_batch_tag_assign: Attribution des tags par lot
+studio_ee_job_step_batch_tag_replace: Remplacement des tags par lot
+studio_ee_job_step_recycle_bin_delete: Suppression des éléments de la corbeille
+studio_ee_job_step_recycle_bin_restore: Restauration des éléments de la corbeille
+studio_ee_element_folder_collection_not_supported: "La collecte pour les dossiers n'est pas prise en charge. ID : %folderId%"
+studio_ee_file_not_found_for_job_run: "Fichier %type% introuvable pour l'exécution du job. ID : %jobRunId%"
+studio_ee_invalid_element_type_provided: La collecte pour l'élément avec l'ID %elementId% et le type %elementType% n'est pas prise en charge.
+studio_ee_no_assets_found_for_job_run: "Aucun asset trouvé pour l'exécution du job. ID : %jobRunId%"
+studio_ee_asset_upload_failed: "Le fichier n'a pas pu être téléversé : %message%"
+studio_email_param_children: Éléments enfants (%count%)
+studio_ee_element_replace_assignment_failed: "Impossible de remplacer %sourceId% (%sourceType%) par %targetId% (%targetType%) dans %elementId% (%elementType%). Erreur : %message%"
+studio_ee_job_bulk_import_class_definitions: Importer les définitions de classes (import en masse)
+studio_ee_job_step_field_collection_importing: Import des collections de champs
+studio_ee_job_step_class_importing: Import des classes
+studio_ee_job_step_custom_layout_importing: Import des mises en page personnalisées
+studio_ee_job_step_object_brick_importing: Import des briques d'objets
+studio_ee_job_step_bulk_import_cleanup: Nettoyage de l'import en masse
+studio_ee_bulk_import_failed: "L'import en masse de %type% « %name% » a échoué : %message%"
+studio_ee_job_element_usage_replace: Remplacer l'utilisation de l'élément
+preview_generator_locale: Language
+main_site: Site principal
+preview_generator_site: Site

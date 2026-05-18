@@ -36,10 +36,3 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Tag\EventSubscriber\BatchOperationSubscriber: ~
-
-  #
-  # Mercure SSE
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\Tag\Mercure\Provider\TagTopicProvider:
-    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

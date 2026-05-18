@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -28,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -46,6 +49,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private EventDispatcherInterface $eventDispatcher,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
         private FavoriteServiceInterface $favoriteService,
+        private ClassDefinitionResolverInterface $classDefinitionResolver,
         private array $assetPredefinedColumns,
         private array $dataObjectPredefinedColumns,
         private array $assetSearchPredefinedColumns,
@@ -134,7 +138,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return $this->buildDefaultConfiguration(
             $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1, $user),
             $this->dataObjectPredefinedColumns,
-            true
+            true,
+            false,
+            $classId
         );
     }
 
@@ -155,7 +161,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
         }
 
-        $configuration =  $this->configurationRepository->getById($configurationId);
+        $configuration = $this->configurationRepository->getById($configurationId);
         $user = $this->securityService->getCurrentUser();
 
         if ($configuration->getClassId() !== $classId) {
@@ -248,7 +254,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             $availableColumns,
             $this->dataObjectPredefinedColumns,
             false,
-            true
+            true,
+            $classId
         );
     }
 
@@ -260,14 +267,24 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         array $availableColumns,
         array $predefinedColumns,
         bool $search = false,
-        bool $grid = false
+        bool $grid = false,
+        ?string $classId = null
     ): DetailedConfiguration {
         $defaultColumns = [];
+        $classDefinition = null;
+        if ($classId) {
+            try {
+                $classDefinition = $this->classDefinitionResolver->getById($classId);
+            } catch (Exception) {
+                // Ignore exception and proceed without class definition
+            }
+        }
+
         foreach ($predefinedColumns as $predefinedColumn) {
             $filteredColumns =
                 array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
                     if ($column->getKey() === $predefinedColumn['key'] &&
-                        $column->getGroup() === $predefinedColumn['group']
+                        $column->getGroup()[0] === $predefinedColumn['group']
                     ) {
                         return true;
                     }
@@ -275,7 +292,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                     return false;
                 });
 
-            if (count($filteredColumns) === 1) {
+            if (count($filteredColumns) === 1 && !$this->isHiddenColumn($classDefinition, $search, $grid, $predefinedColumn)) {
                 $column = array_pop($filteredColumns);
                 $defaultColumns[] = new ColumnSchema(
                     key: $column->getKey(),
@@ -372,5 +389,24 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             new GridConfigurationEvent($configuration),
             GridConfigurationEvent::EVENT_NAME
         );
+    }
+
+    private function isHiddenColumn(?ClassDefinition $classDefinition, bool $search, bool $grid, array $predefinedColumn): bool
+    {
+        if (!$classDefinition) {
+            return false;
+        }
+
+        $visibility = [];
+        if ($search) {
+            $visibility = $classDefinition->getPropertyVisibility()['search'];
+        }
+
+        if ($grid) {
+            $visibility = $classDefinition->getPropertyVisibility()['grid'];
+        }
+        $visibility['fullpath'] = $visibility['path'] ?? false;
+
+        return !(isset($visibility[$predefinedColumn['key']]) && $visibility[$predefinedColumn['key']]);
     }
 }

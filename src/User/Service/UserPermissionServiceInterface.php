@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -21,4 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 interface UserPermissionServiceInterface
 {
     public function getAvailablePermissions(): Collection;
+
+    /**
+     * @return array<string>
+     */
+    public function getAllowedUserPermissions(UserInterface $user): array;
 }

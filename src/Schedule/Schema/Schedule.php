@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ScheduleActions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -34,7 +35,17 @@ final class Schedule implements AdditionalAttributesInterface
         private readonly string $ctype,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
         private readonly int $date,
-        #[Property(description: 'Action', type: 'string', enum: ['publish', 'delete'], example: 'publish')]
+        #[Property(
+            description: 'Action',
+            type: 'string',
+            enum: [
+                ScheduleActions::PublishVersion->value,
+                ScheduleActions::Publish->value,
+                ScheduleActions::Unpublish->value,
+                ScheduleActions::Delete->value,
+            ],
+            example: 'publish-version'
+        )]
         private readonly ?string $action,
         #[Property(description: 'Version ID', type: 'integer', example: 987)]
         private readonly ?int $version,

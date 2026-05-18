@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -24,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RecycleBinEvent;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\DeleteItemsMessage;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
@@ -46,7 +46,8 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         private ItemResolverInterface $itemResolver,
         private JobServiceInterface $jobService,
         private RecycleBinHydratorInterface $hydrator,
-        private RecycleBinRepositoryInterface $recycleBinRepository
+        private RecycleBinRepositoryInterface $recycleBinRepository,
+        private SynchronousProcessingServiceInterface $synchronousProcessing
     ) {
     }
 
@@ -78,12 +79,9 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
             return null;
         }
 
-        return $this->jobService->createJob(
-            Jobs::RECYCLE_BIN_RESTORE->value,
-            JobSteps::RESTORE_ITEMS->value,
-            RestoreItemsMessage::class,
-            $items
-        );
+        $sortedIds = $this->recycleBinRepository->getItemIdsSortedByPath($items);
+
+        return $this->jobService->createRestoreJob($sortedIds);
     }
 
     /**
@@ -117,15 +115,20 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
      */
     public function restoreItem(int $id): void
     {
+        $syncProcessingEnabled = $this->synchronousProcessing->isEnabled();
         $item = $this->itemResolver->getById($id);
         if (!$item instanceof Item) {
             throw new NotFoundException('recycle bin item', $id);
         }
 
         try {
+            $this->synchronousProcessing->enable();
             $item->restore();
         } catch (Exception $e) {
             throw new EnvironmentException($e->getMessage());
+        } finally {
+            $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
+            $this->synchronousProcessing->disable();
         }
     }
 

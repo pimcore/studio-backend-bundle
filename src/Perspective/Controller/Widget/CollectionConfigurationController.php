@@ -17,17 +17,20 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\SkipWrapperWidgetsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -61,6 +64,7 @@ final class CollectionConfigurationController extends AbstractApiController
         summary: 'perspective_widget_get_config_collection_summary',
         tags: [Tags::Perspectives->name]
     )]
+    #[BoolParameter('skipWrapperWidgets', 'Skip wrapper widget configurations', false, false)]
     #[SuccessResponse(
         description: 'perspective_widget_get_config_collection_success_response',
         content: new CollectionJson(new GenericCollection(WidgetConfig::class))
@@ -71,9 +75,10 @@ final class CollectionConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function getWidgetConfigCollection(
+        #[MapQueryString] SkipWrapperWidgetsParameters $param = new SkipWrapperWidgetsParameters()
     ): JsonResponse {
 
-        $items = $this->widgetService->listWidgetConfigurations();
+        $items = $this->widgetService->listWidgetConfigurations($param->getSkipWrapperWidgets());
 
         return $this->getPaginatedCollection(
             $this->serializer,

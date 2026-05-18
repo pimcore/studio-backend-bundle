@@ -38,7 +38,7 @@ final readonly class HydratorService implements HydratorServiceInterface
     {
         $isSite = false;
         if ($item->getType() === DocumentTypes::PAGE->value) {
-            $isSite =  $this->siteResolver->getByRootId($item->getId()) !== null;
+            $isSite = $this->siteResolver->getByRootId($item->getId()) !== null;
         }
 
         $searchData = $item->getSearchIndexData();

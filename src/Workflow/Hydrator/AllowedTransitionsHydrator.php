@@ -41,7 +41,7 @@ final readonly class AllowedTransitionsHydrator implements AllowedTransitionsHyd
         foreach ($allowedTransitions as $transition) {
             $notes = $transition->getNotes();
             if (($element instanceof Concrete || $element instanceof Folder) && $notes) {
-                $notes = $this->workflowActionService->enrichActionNotes($element, $notes);
+                $notes = $this->workflowActionService->enrichActionNotes($transition, $element, $notes);
             }
             $options = $transition->getOptions();
 

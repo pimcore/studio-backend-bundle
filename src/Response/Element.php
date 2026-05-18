@@ -26,12 +26,14 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
         'id',
         'parentId',
         'path',
+        'icon',
         'userOwner',
         'userModification',
         'locked',
         'isLocked',
         'creationDate',
         'modificationDate',
+        'elementType',
     ],
     type: 'object'
 )]
@@ -58,6 +60,8 @@ class Element implements StudioElementInterface
         private readonly ?int $creationDate,
         #[Property(description: 'Modification date', type: 'integer', example: 327417600)]
         private readonly ?int $modificationDate,
+        #[Property(description: 'elementType', type: 'string', example: 'asset')]
+        private readonly string $elementType,
     ) {
     }
 
@@ -114,5 +118,10 @@ class Element implements StudioElementInterface
     public function getPermissions(): Permissions
     {
         return new Permissions();
+    }
+
+    public function getElementType(): string
+    {
+        return $this->elementType;
     }
 }

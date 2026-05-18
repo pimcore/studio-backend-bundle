@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -27,6 +29,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 {
     public function __construct(
         private SystemColumnServiceInterface $systemColumnService,
+        private DataObjectResolverInterface $dataObjectResolver
     ) {
     }
 
@@ -52,16 +55,19 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
             $column = new ColumnConfiguration(
                 key: $columnKey,
-                group: $this->getTypeName(),
-                sortable: $availableColumnDefinitions[$type]->isSortable(),
+                group: [$this->getTypeName()],
+                sortable: $this->overrideSortable($availableColumnDefinitions[$type], $columnKey),
                 editable: $this->isSystemFieldEditable($columnKey),
                 exportable: $availableColumnDefinitions[$type]->isExportable(),
-                filterable: $availableColumnDefinitions[$type]->isFilterable(),
+                filterable: $this->overrideFilterable($availableColumnDefinitions[$type], $columnKey),
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),
-                frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
-                config: []
+                frontendType: $this->getCustomFrontendAdapter(
+                    $columnKey,
+                    $availableColumnDefinitions[$type]->getFrontendType()
+                ),
+                config: $this->getCustomConfig($columnKey)
             );
 
             $columns[] = $column;
@@ -70,12 +76,67 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
         return $columns;
     }
 
+    private function overrideSortable(ColumnDefinitionInterface $definition, string $column): bool
+    {
+        return match ($column) {
+            'filename',  => false,
+            default => $definition->isSortable(),
+        };
+    }
+
+    private function overrideFilterable(ColumnDefinitionInterface $definition, string $column): bool
+    {
+        return match ($column) {
+            'filename', 'index', 'classname',  => false,
+            default => $definition->isSortable(),
+        };
+    }
+
     private function isSystemFieldEditable(string $systemField): bool
     {
         return match ($systemField) {
             'published',  => true,
             default => false,
         };
+    }
+
+    private function getCustomFrontendAdapter(string $columnKey, string $defaultAdapter): string
+    {
+        $customFrontendAdapters = [
+            'type' => FrontendType::MULTISELECT->value,
+            'fullpath' => FrontendType::OBJECT_LINK->value,
+        ];
+
+        if (array_key_exists($columnKey, $customFrontendAdapters)) {
+            return $customFrontendAdapters[$columnKey];
+        }
+
+        return $defaultAdapter;
+    }
+
+    private function getCustomConfig(string $columnKey): array
+    {
+        $customConfig = [
+            'type' => $this->getTypeConfig(),
+        ];
+
+        if (array_key_exists($columnKey, $customConfig)) {
+            return $customConfig[$columnKey];
+        }
+
+        return [];
+    }
+
+    private function getTypeConfig(): array
+    {
+        return [
+            'fieldDefinition' => [
+                'options' => array_map(
+                    static fn ($type) => ['key' => ucfirst($type), 'value' => $type ],
+                    $this->dataObjectResolver->getTypes()
+                ),
+            ],
+        ];
     }
 
     public function supportedElementTypes(): array

@@ -23,11 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\Translation
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -48,7 +46,6 @@ final class CreateController extends AbstractApiController
      * @throws ElementExistsException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_create', methods: ['POST'])]
-    #[IsGranted(UserPermissions::TRANSLATIONS->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'translation_create',
@@ -61,13 +58,14 @@ final class CreateController extends AbstractApiController
         description: 'translation_create_success_response'
     )]
     #[DefaultResponses([
+        HttpResponseCodes::CONFLICT,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function createTranslations(
-        #[MapRequestPayload] CreateTranslation $translation
+        #[MapRequestPayload] CreateTranslation $parameter
     ): Response {
-        $this->translatorService->createTranslations($translation);
+        $this->translatorService->createTranslations($parameter);
 
         return new Response();
     }

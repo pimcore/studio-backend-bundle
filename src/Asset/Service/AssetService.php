@@ -26,19 +26,14 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -60,6 +55,7 @@ final readonly class AssetService implements AssetServiceInterface
     use UserPermissionTrait;
 
     public function __construct(
+        private AssetQueryProviderInterface $assetQueryProvider,
         private AssetSearchServiceInterface $assetSearchService,
         private AssetServiceResolverInterface $assetServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
@@ -71,15 +67,16 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     * {@inheritdoc}
      */
     public function getAssets(ElementParameters $parameters): Collection
     {
         /** @var SearchIndexFilterInterface $filterService */
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
-        /** @var AssetQueryInterface $assetQuery */
+        $assetQuery = $this->assetQueryProvider->createAssetQuery();
         $assetQuery = $filterService->applyFilters(
+            $assetQuery,
             $parameters,
             ElementTypes::TYPE_ASSET
         );
@@ -99,7 +96,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException|UserNotFoundException
+     * {@inheritdoc}
      */
     public function getAsset(
         int $id,
@@ -121,7 +118,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAssetForUser(
         int $id,
@@ -135,7 +132,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAssetFolder(int $id, bool $checkPermissionsForCurrentUser = true): AssetFolder
     {
@@ -154,7 +151,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAssetFolderForUser(int $id, UserInterface $user): AssetFolder
     {
@@ -170,7 +167,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritdoc}
      */
     public function assetFolderExists(int $id, bool $checkPermissionsForCurrentUser = true): bool
     {
@@ -184,7 +181,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritdoc}
      */
     public function assetFolderExistsForUser(int $id, UserInterface $user): bool
     {
@@ -198,7 +195,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAssetElement(
         UserInterface $user,
@@ -215,7 +212,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritdoc}
      */
     public function getAssetElementByPath(
         UserInterface $user,
@@ -252,7 +249,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws DatabaseException|ForbiddenException
+     * {@inheritdoc}
      */
     public function clearThumbnails(int $id): void
     {

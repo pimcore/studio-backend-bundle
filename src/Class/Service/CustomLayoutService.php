@@ -13,12 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutCollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
@@ -26,12 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInter
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use function in_array;
 
 /**
@@ -79,10 +79,10 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         return $compactLayouts;
     }
 
-    public function getCustomLayoutCollection(string $dataObjectClass): array
+    public function getCustomLayoutCollection(array $dataObjectClassIds): array
     {
         $compactLayouts = [];
-        $layouts = $this->customLayoutRepository->getCustomLayouts($dataObjectClass);
+        $layouts = $this->customLayoutRepository->getCustomLayoutsByClass($dataObjectClassIds);
 
         foreach ($layouts as $layout) {
             $compactLayouts[] = $this->hydrateCompactLayout($layout);
@@ -104,7 +104,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function getUserCustomLayouts(DataObject $dataObject, UserInterface $user, array $allowedLayouts): array
     {
         $layouts = $this->handleCustomLayoutPermissions(
-            $this->customLayoutRepository->getCustomLayouts($dataObject->getClassId()),
+            $this->customLayoutRepository->getCustomLayoutsByClass([$dataObject->getClassId()]),
             $user,
             $allowedLayouts
         );
@@ -114,9 +114,14 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     public function deleteCustomLayout(string $customLayoutId): void
     {
-        $this->customLayoutRepository->deleteCustomLayout(
-            $this->customLayoutRepository->getCustomLayout($customLayoutId)
-        );
+        $customLayout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
+
+        $brickLayouts = $this->customLayoutRepository->getBrickLayoutsByBaseId($customLayoutId);
+        foreach ($brickLayouts as $brickLayout) {
+            $this->customLayoutRepository->deleteCustomLayout($brickLayout);
+        }
+
+        $this->customLayoutRepository->deleteCustomLayout($customLayout);
     }
 
     public function createCustomLayout(
@@ -130,7 +135,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     public function updateCustomLayout(
         string $customLayoutId,
-        CustomLayoutUpdateParameters $customLayoutParameters
+        UpdateParameters $customLayoutParameters
     ): CustomLayout {
         return $this->hydrateLayout(
             $this->customLayoutRepository->updateCustomLayout(
@@ -140,7 +145,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         );
     }
 
-    public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse
+    public function exportCustomLayoutAsJson(string $customLayoutId): Response
     {
         $customLayout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
         $json = $this->customLayoutRepository->exportCustomLayoutAsJson($customLayout);
@@ -175,6 +180,72 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
             ->setDefault(false);
     }
 
+    public function getBrickCustomLayout(string $key, string $customLayoutId): CustomLayout
+    {
+        return $this->hydrateLayout(
+            $this->customLayoutRepository->getCustomLayout(
+                $this->buildBrickLayoutId($key, $customLayoutId)
+            )
+        );
+    }
+
+    public function updateBrickCustomLayout(
+        string $key,
+        string $customLayoutId,
+        UpdateParameters $parameters,
+    ): CustomLayout {
+        $compositeId = $this->buildBrickLayoutId($key, $customLayoutId);
+
+        try {
+            $coreLayout = $this->customLayoutRepository->getCustomLayout($compositeId);
+        } catch (NotFoundException) {
+            $baseLayout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
+            $coreLayout = $this->customLayoutRepository->createBrickCustomLayout($compositeId, $baseLayout);
+        }
+
+        return $this->hydrateLayout(
+            $this->customLayoutRepository->updateCustomLayout($coreLayout, $parameters)
+        );
+    }
+
+    public function deleteBrickCustomLayout(string $key, string $customLayoutId): void
+    {
+        $this->customLayoutRepository->deleteCustomLayout(
+            $this->customLayoutRepository->getCustomLayout(
+                $this->buildBrickLayoutId($key, $customLayoutId)
+            )
+        );
+    }
+
+    public function exportBrickCustomLayoutAsJson(string $key, string $customLayoutId): Response
+    {
+        $compositeId = $this->buildBrickLayoutId($key, $customLayoutId);
+        $customLayout = $this->customLayoutRepository->getCustomLayout($compositeId);
+        $json = $this->customLayoutRepository->exportCustomLayoutAsJson($customLayout);
+
+        return $this->downloadService->downloadJSON(
+            $json,
+            'custom_definition_' . $customLayout->getName() . '_export.json'
+        );
+    }
+
+    public function importBrickCustomLayoutFromJson(
+        string $key,
+        string $customLayoutId,
+        string $json,
+    ): CustomLayout {
+        $compositeId = $this->buildBrickLayoutId($key, $customLayoutId);
+        $customLayout = $this->customLayoutRepository->getCustomLayout($compositeId);
+        $customLayout = $this->customLayoutRepository->importCustomLayoutFromJson($customLayout, $json);
+
+        return $this->hydrateLayout($customLayout);
+    }
+
+    private function buildBrickLayoutId(string $key, string $customLayoutId): string
+    {
+        return $customLayoutId . '.brick.' . $key;
+    }
+
     private function hydrateLayout(CoreLayout $layout): CustomLayout
     {
         $hydratedLayout = $this->customLayoutHydrator->hydrateLayout($layout);
@@ -204,7 +275,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
      */
     private function handleCustomLayoutPermissions(array $layouts, UserInterface $user, array $allowedLayouts): array
     {
-        if ($user->isAdmin()) {
+        if (empty($allowedLayouts) || $user->isAdmin()) {
             return $layouts;
         }
 
@@ -231,7 +302,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
             return $hydratedLayouts;
         }
 
-        if (in_array('0', $allowedLayouts, true)) {
+        if (empty($allowedLayouts) || in_array('0', $allowedLayouts, true)) {
             array_unshift($hydratedLayouts, $this->getMainLayout());
         }
 

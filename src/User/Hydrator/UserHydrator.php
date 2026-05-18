@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -32,6 +33,7 @@ final readonly class UserHydrator implements UserHydratorInterface
         private WorkspaceHydratorInterface $workspaceHydrator,
         private ObjectDependenciesServiceInterface $objectDependenciesService,
         private KeyBindingServiceInterface $keyBindingService,
+        private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPerspectiveServiceInterface $userPerspectiveService
     ) {
     }
@@ -47,19 +49,20 @@ final readonly class UserHydrator implements UserHydratorInterface
             active: $user->getActive(),
             admin: $user->isAdmin(),
             classes: $user->getClasses(),
+            docTypes: $user->getDocTypes(),
             closeWarning: $user->getCloseWarning(),
             allowDirtyClose: $user->getAllowDirtyClose(),
             contentLanguages: $this->contentLanguagesHydrator->hydrate($user),
             hasImage: $user->hasImage(),
             keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
             language: $user->getLanguage(),
+            dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
             lastLogin: $user->getLastLogin(),
             memorizeTabs: $user->getMemorizeTabs(),
             parentId: $user->getParentId(),
             permissions: $this->sanitizePermissions($user->getPermissions()),
             roles: $user->getRoles(),
-            twoFactorAuthenticationEnabled:
-                $user->getTwoFactorAuthentication('enabled') || $user->getTwoFactorAuthentication('secret'),
+            twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             websiteTranslationLanguagesEdit: $user->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $user->getWebsiteTranslationLanguagesView(),
             welcomeScreen: $user->getWelcomeScreen(),

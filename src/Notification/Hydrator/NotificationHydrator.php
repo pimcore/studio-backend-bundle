@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator;
 use Carbon\Carbon;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationMinimal;
 use Pimcore\Model\Notification as NotificationModel;
 use Pimcore\Model\User;
 
@@ -33,6 +34,19 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             $notification->isRead(),
             (bool)$notification->getLinkedElementType(),
             (new Carbon($notification->getCreationDate(), 'UTC'))->getTimeStamp(),
+            $this->getRecipientName($notification->getSender()),
+        );
+    }
+
+    public function hydrateMinimal(NotificationModel $notification): NotificationMinimal
+    {
+        return new NotificationMinimal(
+            $notification->getId(),
+            $notification->getType() ?? 'info',
+            $notification->getTitle(),
+            $notification->isRead(),
+            (new Carbon($notification->getCreationDate(), 'UTC'))->getTimeStamp(),
+            $notification->getRecipient()?->getId() ?? 0,
             $this->getRecipientName($notification->getSender()),
         );
     }

@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\RateLimiter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 interface RateLimiterInterface
 {
     /**
      * @throws RateLimitException
      */
-    public function check(): void;
+    public function check(
+        RateLimiterFactory $rateLimiterFactory,
+    ): void;
 }

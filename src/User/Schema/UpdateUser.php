@@ -25,8 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
     title: 'User',
     description: 'User Schema to update a User.',
     required: [
-        'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
-        'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
+        'email', 'firstname', 'lastname', 'admin',
+        'active', 'classes', 'docTypes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
+        'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationRequired',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'perspectives',
     ],
@@ -47,6 +48,8 @@ final readonly class UpdateUser
         private bool $active,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private array $classes,
+        #[Property(description: 'Allowed Document types to create', type: 'object', example: ['3', '5'])]
+        private array $docTypes,
         #[Property(description: 'Show Close Warning', type: 'boolean', example: true)]
         private bool $closeWarning,
         #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
@@ -61,6 +64,8 @@ final readonly class UpdateUser
         private array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private string $language,
+        #[Property(description: 'Date Time Locale for the User', type: 'string', example: '')]
+        private string $dateTimeLocale,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private bool $memorizeTabs,
         #[Property(description: 'Parent ID', type: 'integer', example: 2)]
@@ -70,7 +75,7 @@ final readonly class UpdateUser
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private array $roles,
         #[Property(description: 'Two Factor Authentication Enabled', type: 'boolean', example: false)]
-        private bool $twoFactorAuthenticationEnabled,
+        private bool $twoFactorAuthenticationRequired,
         #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
         private array $websiteTranslationLanguagesEdit,
         #[Property(description: 'Website Translation Languages View', type: 'object', example: ['de'])]
@@ -122,6 +127,11 @@ final readonly class UpdateUser
         return $this->classes;
     }
 
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
+    }
+
     public function isCloseWarning(): bool
     {
         return $this->closeWarning;
@@ -143,6 +153,11 @@ final readonly class UpdateUser
     public function getLanguage(): string
     {
         return $this->language;
+    }
+
+    public function getDateTimeLocale(): string
+    {
+        return $this->dateTimeLocale;
     }
 
     public function isMemorizeTabs(): bool
@@ -170,9 +185,9 @@ final readonly class UpdateUser
         return $this->allowDirtyClose;
     }
 
-    public function isTwoFactorAuthenticationEnabled(): bool
+    public function isTwoFactorAuthenticationRequired(): bool
     {
-        return $this->twoFactorAuthenticationEnabled;
+        return $this->twoFactorAuthenticationRequired;
     }
 
     public function getWebsiteTranslationLanguagesEdit(): array
@@ -199,7 +214,7 @@ final readonly class UpdateUser
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function getDataObjectWorkspaces(): array
     {
@@ -207,7 +222,7 @@ final readonly class UpdateUser
     }
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function getDocumentWorkspaces(): array
     {

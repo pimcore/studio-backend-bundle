@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\UserInterface;
@@ -28,12 +30,12 @@ interface WorkspaceHydratorInterface
     public function hydrateAssetWorkspace(UserInterface|UserRoleInterface $user): array;
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDataObjectWorkspace[]
      */
     public function hydrateDataObjectWorkspace(UserInterface|UserRoleInterface $user): array;
 
     /**
-     * @return UserWorkspace[]
+     * @return UserDocumentWorkspace[]
      */
     public function hydrateDocumentWorkspace(UserInterface|UserRoleInterface $user): array;
 }

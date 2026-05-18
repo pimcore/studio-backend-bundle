@@ -14,20 +14,24 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
+use Pimcore\Bundle\GenericDataIndexBundle\Permission\Workspace\AssetWorkspace;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\Aggregation\FileSizeAggregationServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\SearchHelper;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\AssetHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -46,6 +50,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     public function __construct(
         private AssetSearchServiceInterface $searchService,
         private AssetHydratorServiceInterface $hydratorService,
+        private SearchHelper $searchHelper,
         private SearchResultIdListServiceInterface $searchResultIdListService,
         private FileSizeAggregationServiceInterface $fileSizeAggregationService,
     ) {
@@ -60,6 +65,16 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
             $searchResult = $this->searchService->search($assetQuery->getSearch());
         } catch (AssetSearchException) {
             throw new SearchException('assets');
+        } catch (ParsingException $e) {
+            throw new GdiParsingException(
+                $e->getMessage(),
+                $e->getPosition(),
+                $e->getExpected(),
+                $e->getQuery(),
+                $e->getFound(),
+                $e->getToken()?->value,
+                $e
+            );
         } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }
@@ -107,8 +122,11 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     public function fetchAssetIds(QueryInterface $assetQuery): array
     {
         try {
-            $search = $assetQuery->getSearch();
-            $search->addModifier(new OrderByFullPath());
+            $search = $this->searchHelper->addSearchRestrictions(
+                search: $assetQuery->getSearch(),
+                userPermission: UserPermissionTypes::ASSETS->value,
+                workspaceType: AssetWorkspace::WORKSPACE_TYPE
+            );
 
             return $this->searchResultIdListService->getAllIds($search);
         } catch (AssetSearchException) {

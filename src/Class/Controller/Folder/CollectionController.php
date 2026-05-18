@@ -15,13 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\Folder;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder\ClassDefinitionFolderItem;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionTreeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -47,17 +43,13 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+        private readonly ClassDefinitionTreeServiceInterface $classDefinitionTreeService,
 
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws ElementSavingFailedException
-     * @throws ForbiddenException
-     * @throws InvalidElementTypeException
-     * @throws UserNotFoundException
      * @throws NotFoundException
      */
     #[Route(
@@ -80,15 +72,13 @@ final class CollectionController extends AbstractApiController
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'folderId')]
     #[DefaultResponses([
-        HttpResponseCodes::FORBIDDEN,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function getFolderClassList(
         int $folderId
     ): JsonResponse {
-        $collection = $this->classDefinitionService->getClassDefinitionIdsInsideFolder($folderId);
+        $collection = $this->classDefinitionTreeService->getChildrenClassDefinitionIds($folderId);
 
         return $this->getPaginatedCollection(
             $this->serializer,

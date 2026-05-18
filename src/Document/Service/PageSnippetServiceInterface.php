@@ -15,7 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Controller;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippet\Template;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ReflectionException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Model\Document\PageSnippet;
 
 /**
  * @internal
@@ -33,4 +39,15 @@ interface PageSnippetServiceInterface
      * @return Template[]
      */
     public function getAvailableTemplates(): array;
+
+    /**
+     * @throws ElementSavingFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException|UserNotFoundException
+     */
+    public function setMainDocument(int $documentId, ?string $mainDocumentPath = null): void;
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getPageSnippet(int $id): PageSnippet;
 }

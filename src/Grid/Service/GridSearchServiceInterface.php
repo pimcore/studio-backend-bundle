@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -26,13 +28,24 @@ interface GridSearchServiceInterface
 {
     /**
      * @throws InvalidArgumentException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
      */
     public function getAssetSearchGrid(SearchGridParameter $gridParameter): Collection;
 
     /**
      * @throws InvalidArgumentException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
      * @throws NotFoundException
      * @throws Exception
      */
     public function getDataObjectSearchGrid(SearchGridParameter $searchParameter, ?string $classId): Collection;
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws InvalidQueryTypeException
+     * @throws InvalidElementTypeException
+     */
+    public function getDocumentSearchGrid(SearchGridParameter $searchParameter): Collection;
 }

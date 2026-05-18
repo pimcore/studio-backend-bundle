@@ -13,8 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
-use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use LogicException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * @internal
@@ -24,14 +25,14 @@ final readonly class UrlService implements UrlServiceInterface
     public function __construct(
         private ?string $serverSideUrl,
         private ?string $clientSideUrl,
-        private ToolResolverInterface $toolResolver,
+        private RequestStack $requestStack,
     ) {
     }
 
     public function getServerSideUrl(): string
     {
         if (empty($this->serverSideUrl)) {
-            return $this->getDefaultServerUrl();
+            throw new LogicException('Mercure server URL is not configured.');
         }
 
         return $this->serverSideUrl;
@@ -43,16 +44,25 @@ final readonly class UrlService implements UrlServiceInterface
             return $this->getDefaultClientUrl();
         }
 
-        return str_replace(Mercure::HOST_PLACEHOLDER->value, $this->toolResolver->getHostUrl(), $this->clientSideUrl);
-    }
-
-    private function getDefaultServerUrl(): string
-    {
-        return $this->toolResolver->getHostUrl() . '/hub/.well-known/mercure';
+        return str_replace(Mercure::HOST_PLACEHOLDER->value, $this->getHostUrl(), $this->clientSideUrl);
     }
 
     private function getDefaultClientUrl(): string
     {
-        return $this->toolResolver->getHostUrl() . '/hub';
+        return $this->getHostUrl() . '/hub';
+    }
+
+    /**
+     * @throws LogicException
+     */
+    private function getHostUrl(): string
+    {
+        $request = $this->requestStack->getMainRequest();
+
+        if ($request === null) {
+            throw new LogicException('Mercure fallback URL resolution requires an active HTTP request.');
+        }
+
+        return $request->getSchemeAndHttpHost();
     }
 }

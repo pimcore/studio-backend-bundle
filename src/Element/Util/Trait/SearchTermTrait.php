@@ -24,7 +24,6 @@ use Pimcore\Model\UserInterface;
  */
 trait SearchTermTrait
 {
-    // TODO: once documents are fully implemented in GDI we need to change the path filter to url filter for documents
     private function applySearchTerm(QueryInterface $query, string $searchTerm, ?UserInterface $user): QueryInterface
     {
         $query->setPageSize(1);

@@ -77,10 +77,11 @@ final class GetCollectionsController extends AbstractApiController
         description: 'Classification Store ID',
         namePrefix: 'store',
     )]
-    #[IdParameter(
-        description: 'object ID',
-        namePrefix: 'object',
-        required: false
+    #[TextFieldParameter(
+        name: 'classId',
+        description: 'Class ID',
+        required: false,
+        example: 'AP'
     )]
     #[PageParameter]
     #[PageSizeParameter]

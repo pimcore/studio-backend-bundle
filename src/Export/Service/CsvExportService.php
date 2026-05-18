@@ -42,13 +42,13 @@ final readonly class CsvExportService extends AbstractExportService
         $data = [];
 
         if (!empty($headers)) {
-            $data[]  = $headers;
+            $data[] = $headers;
         }
 
         $data = array_merge($data, $exportData);
 
         try {
-            $csv = Writer::createFromString();
+            $csv = Writer::fromString();
             $csv->setDelimiter($delimiter);
             $csv->insertAll($data);
 

@@ -68,4 +68,11 @@ interface UserRepositoryInterface
      * @throws DatabaseException
      */
     public function searchUser(string $searchQuery): array;
+
+    /**
+     * @param string[] $names
+     *
+     * @return UserInterface[]
+     */
+    public function getUsersByNames(array $names): array;
 }

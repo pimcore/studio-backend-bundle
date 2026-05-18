@@ -21,7 +21,7 @@ use function in_array;
 /**
  * @internal
  */
-readonly class ImageDownloadConfigParameter
+readonly class ImageDownloadConfigParameter extends StreamCropParameter
 {
     private const array ALLOWED_RESIZE_MIME_TYPES = [
         MimeTypes::JPEG->value,
@@ -42,16 +42,17 @@ readonly class ImageDownloadConfigParameter
         private bool $frame = false,
         private bool $contain = false,
         private bool $forceResize = false,
-        private bool $cropPercent = false,
-        private ?int $cropWidth = null,
-        private ?int $cropHeight = null,
-        private ?int $cropTop = null,
-        private ?int $cropLeft = null,
+        bool $cropPercent = false,
+        ?float $cropHeight = null,
+        ?float $cropWidth = null,
+        ?float $cropTop = null,
+        ?float $cropLeft = null,
     ) {
 
         $this->validateResizeMode();
         $this->validateTransformations();
-        $this->validateCropOptions();
+
+        parent::__construct($cropPercent, $cropHeight, $cropWidth, $cropTop, $cropLeft);
     }
 
     public function getMimeType(): string
@@ -182,47 +183,6 @@ readonly class ImageDownloadConfigParameter
         ) {
             throw new InvalidArgumentException(
                 'Width, height must be set and non-negative when using frame, cover, contain or resize'
-            );
-        }
-    }
-
-    public function getCropHeight(): ?int
-    {
-        return $this->cropHeight;
-    }
-
-    public function getCropPercent(): bool
-    {
-        return $this->cropPercent;
-    }
-
-    public function getCropWidth(): ?int
-    {
-        return $this->cropWidth;
-    }
-
-    public function getCropTop(): ?int
-    {
-        return $this->cropTop;
-    }
-
-    public function getCropLeft(): ?int
-    {
-        return $this->cropLeft;
-    }
-
-    private function validateCropOptions(): void
-    {
-        if ($this->getCropPercent() &&
-            (
-                $this->getCropWidth() === null ||
-                $this->getCropHeight() === null ||
-                $this->getCropTop() === null ||
-                $this->getCropLeft() === null
-            )
-        ) {
-            throw new InvalidArgumentException(
-                'Crop percent cannot be used without crop width, height, top and left'
             );
         }
     }

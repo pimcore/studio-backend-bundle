@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
@@ -26,7 +27,8 @@ final readonly class DataObjectVersionHydrator implements DataObjectVersionHydra
 {
     public function __construct(
         private DataServiceInterface $dataService,
-        private IconServiceInterface $iconService
+        private IconServiceInterface $iconService,
+        private PropertyHydratorInterface $propertyHydrator
     ) {
     }
 
@@ -61,6 +63,13 @@ final readonly class DataObjectVersionHydrator implements DataObjectVersionHydra
         );
 
         $this->dataService->setObjectDetailData($hydratedDataObject, $dataObject);
+
+        $properties = [];
+        foreach ($dataObject->getProperties() as $property) {
+            $properties[] = $this->propertyHydrator->hydrateElementProperty($property);
+        }
+
+        $hydratedDataObject->setProperties($properties);
 
         return $hydratedDataObject;
     }

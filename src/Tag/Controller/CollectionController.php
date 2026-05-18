@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ParentI
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
@@ -34,7 +35,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -55,7 +55,6 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidQueryTypeException
      */
     #[Route('/tags', name: 'pimcore_studio_api_tags', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::PREFIX . '/tags',
         operationId: 'tag_get_collection',
@@ -81,6 +80,14 @@ final class CollectionController extends AbstractApiController
     public function getTags(
         #[MapQueryString] TagsParameters $parameters): JsonResponse
     {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                UserPermissions::TAGS_CONFIGURATION->value,
+                UserPermissions::TAGS_SEARCH->value,
+            ])
+        );
+
         return $this->jsonResponse(['items' => $this->tagService->listTags($parameters)]);
     }
 }

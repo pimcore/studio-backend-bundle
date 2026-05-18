@@ -25,20 +25,27 @@ final class DomainList extends JsonContent
     public function __construct()
     {
         parent::__construct(
-            required: ['domains'],
-            properties: [
-                new Property(
-                    'domains',
-                    title: 'Domain list',
-                    description: 'List if all available domains in the system for translations.',
-                    type: 'array',
-                    items: new Items(
+            type: 'array',
+            items: new Items(
+                required: ['domain', 'isFrontendDomain'],
+                properties: [
+                    new Property(
+                        'domain',
+                        title: 'Domain',
+                        description: 'The domain name.',
                         type: 'string',
-                        example: 'studio'
+                        example: 'admin'
                     ),
-                ),
-            ],
-            type: 'object'
+                    new Property(
+                        'isFrontendDomain',
+                        title: 'Is Frontend Domain',
+                        description: 'If the domain is a frontend or admin domain.',
+                        type: 'boolean',
+                        example: false
+                    ),
+                ],
+                type: 'object'
+            )
         );
     }
 }

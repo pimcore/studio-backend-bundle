@@ -61,6 +61,12 @@ final class ExportDataRequestBody extends RequestBody
                         enum: ElementTypes::ALLOWED_TYPES,
                         example: ElementTypes::TYPE_ASSET
                     ),
+                    new Property(
+                        property: 'classId',
+                        type: 'string',
+                        example: 'CAR',
+                        nullable: true
+                    ),
                 ],
                 type: 'object'
             )

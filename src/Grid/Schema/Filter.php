@@ -38,13 +38,13 @@ final readonly class Filter
         #[Property(
             description: 'Column Filter',
             type: 'object',
-            example: '[{"key":"name","type": "metadata.object","filterValue": 1}]'
+            example: '[{"key":"name","type": "metadata.object","filterValue": 1, "locale":"de"}]'
         )]
         private array $columnFilters = [],
         #[Property(
             description: 'Sort Filter',
             type: 'object',
-            example: '{"key":"id","direction": "ASC"}'
+            example: '{"key":"id","direction": "ASC", "locale": "en"}'
         )]
         private array $sortFilter = []
 

@@ -18,6 +18,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -44,7 +45,7 @@ final class LayoutController extends AbstractApiController
     }
 
     /**
-     * @throws Exception|NotFoundException
+     * @throws InvalidElementTypeException|Exception|NotFoundException
      */
     #[Route(
         '/class/field-collection/{objectId}/object/layout',
@@ -65,6 +66,7 @@ final class LayoutController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function getFieldCollectionLayoutForObject(int $objectId): JsonResponse
     {

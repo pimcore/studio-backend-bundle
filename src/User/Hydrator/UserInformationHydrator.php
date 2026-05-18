@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
-use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -29,8 +29,8 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
+        private UserPermissionServiceInterface $userPermissionService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
-        private ToolResolverInterface $toolResolver
     ) {
     }
 
@@ -42,7 +42,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             email: $user->getEmail(),
             firstname: $user->getFirstname(),
             lastname: $user->getLastname(),
-            permissions: $user->getPermissions(),
+            permissions: $this->userPermissionService->getAllowedUserPermissions($user),
             isAdmin: $user->isAdmin(),
             classes: $user->getClasses(),
             docTypes: $user->getDocTypes(),
@@ -50,35 +50,17 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
             welcomeScreen: $user->getWelcomeScreen(),
             memorizeTabs: $user->getMemorizeTabs(),
+            allowDirtyClose: $user->getAllowDirtyClose(),
             hasImage: $user->hasImage(),
             contentLanguages: $this->contentLanguagesHydrator->hydrate($user),
-            allowedLanguagesForEditingWebsiteTranslations: $this->includeDisplayNameForLanguage(
-                $user->getAllowedLanguagesForEditingWebsiteTranslations()
-            ),
-            allowedLanguagesForViewingWebsiteTranslations: $this->includeDisplayNameForLanguage(
-                $user->getAllowedLanguagesForViewingWebsiteTranslations()
-            ),
+            allowedLanguagesForEditingWebsiteTranslations:
+                $user->getAllowedLanguagesForEditingWebsiteTranslations() ?? [],
+            allowedLanguagesForViewingWebsiteTranslations:
+                $user->getAllowedLanguagesForViewingWebsiteTranslations() ?? [],
             keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
             twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             activePerspective: $this->userPerspectiveService->getActivePerspective($user),
             perspectives: $this->userPerspectiveService->getAllowedPerspectives($user)
         );
-    }
-
-    public function includeDisplayNameForLanguage(array $languages): array
-    {
-        $systemLanguages = $this->toolResolver->getSupportedLocales();
-
-        $languagesWithDisplayName = [];
-        foreach ($languages as $language) {
-            if (isset($systemLanguages[$language])) {
-                $languagesWithDisplayName[] = [
-                    'language' => $language,
-                    'display' => $systemLanguages[$language],
-                ];
-            }
-        }
-
-        return $languagesWithDisplayName;
     }
 }

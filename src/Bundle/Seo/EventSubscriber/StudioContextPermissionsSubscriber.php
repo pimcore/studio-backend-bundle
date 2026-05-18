@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\ContextPermissionData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\ContextPermissionGroups;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -37,6 +38,18 @@ final readonly class StudioContextPermissionsSubscriber implements EventSubscrib
 
     public function addContextPermissions(): void
     {
-        $this->permissionsService->add(new ContextPermissionData('redirects', 'extras'));
+        $this->permissionsService->add(
+            new ContextPermissionData(
+                'redirects',
+                ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value
+            )
+        );
+
+        $this->permissionsService->add(
+            new ContextPermissionData(
+                'robotsTxt',
+                ContextPermissionGroups::EXPERIENCE_ECOMMERCE->value
+            )
+        );
     }
 }

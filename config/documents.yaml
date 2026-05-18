@@ -39,6 +39,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\BlockService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorService
 
@@ -46,6 +49,9 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceService
     arguments:
       $classResolver: '@pimcore.class.resolver.document'
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\PageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\PageService
 
   Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetService

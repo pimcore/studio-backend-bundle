@@ -16,12 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 use Carbon\Carbon;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DatetimeFilter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateTimeFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\Metadata\ColumnFilterMockTrait;
 
 /**
  * @internal
@@ -32,7 +31,7 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWhenNoArrayIsGivenAsFilterValue(): void
     {
-        $datetimeFilter = new DatetimeFilter();
+        $datetimeFilter = new DateTimeFilter();
         $columnParameterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
             'getColumnFilterByType' => function () {
                 return  [
@@ -49,7 +48,7 @@ final class DatetimeFilterTest extends Unit
     public function testDateTimeFilterWithOn(): void
     {
         $time = Carbon::parse('2025-06-10T00:00:00+00:00');
-        $datetimeFilter = new DatetimeFilter();
+        $datetimeFilter = new DateTimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
                 $this->assertSame('key', $key);
@@ -70,7 +69,7 @@ final class DatetimeFilterTest extends Unit
     public function testDateTimeFilterWithFrom(): void
     {
         $time = Carbon::parse('2025-06-10T00:00:00+00:00');
-        $datetimeFilter = new DatetimeFilter();
+        $datetimeFilter = new DateTimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
                 $this->assertSame('key', $key);
@@ -90,7 +89,7 @@ final class DatetimeFilterTest extends Unit
     public function testDateTimeFilterWithTo(): void
     {
         $time = Carbon::parse('2025-06-10T00:00:00+00:00');
-        $datetimeFilter = new DatetimeFilter();
+        $datetimeFilter = new DateTimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
                 $this->assertSame('key', $key);

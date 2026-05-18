@@ -18,6 +18,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\HideJobRunsParameter;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Schema\JobRun;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -26,8 +29,10 @@ interface ExecutionEngineServiceInterface
 {
     /**
      * @throws UserNotFoundException
+     *
+     * @return Collection<JobRun>
      */
-    public function listJobRuns(): array;
+    public function listJobRuns(CollectionFilterParameter $parameter): Collection;
 
     /**
      * @throws DatabaseException|ForbiddenException|NotFoundException

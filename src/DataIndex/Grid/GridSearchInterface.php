@@ -15,8 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Model\UserInterface;
 
@@ -26,17 +27,40 @@ use Pimcore\Model\UserInterface;
 interface GridSearchInterface
 {
     /**
-     * @throws NotFoundException|SearchException
+     *  @throws InvalidQueryTypeException|InvalidElementTypeException
      */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult;
 
+    /**
+     *  @throws InvalidQueryTypeException|InvalidElementTypeException
+     */
     public function searchAssetsForUser(GridParameter $gridParameter, UserInterface $user): AssetSearchResult;
 
+    /**
+     *  @throws InvalidQueryTypeException|InvalidElementTypeException
+     */
     public function searchDataObjects(GridParameter $gridParameter): DataObjectSearchResult;
 
+    /**
+     *  @throws InvalidQueryTypeException|InvalidElementTypeException
+     */
+    public function searchDocuments(GridParameter $gridParameter): DocumentSearchResult;
+
+    /**
+     * @throws InvalidQueryTypeException
+     */
     public function searchElementsForUser(
         string $type,
         GridParameter $gridParameter,
         UserInterface $user
-    ): AssetSearchResult|DataObjectSearchResult;
+    ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult;
+
+    /**
+     * @throws InvalidQueryTypeException
+     */
+    public function searchElementIdsForUser(
+        string $type,
+        GridParameter $gridParameter,
+        UserInterface $user
+    ): array;
 }

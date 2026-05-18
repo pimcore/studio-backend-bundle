@@ -21,4 +21,6 @@ enum JobSteps: string
     case ELEMENT_DELETION = 'studio_ee_job_step_element_deletion';
     case ELEMENT_BATCH_TAG_ASSIGN = 'studio_ee_job_step_batch_tag_assign';
     case ELEMENT_BATCH_TAG_REPLACE = 'studio_ee_job_step_batch_tag_replace';
+    case ELEMENT_USAGE_REPLACE = 'studio_ee_job_step_element_usage_replace';
+    case ELEMENT_REFRESH_COUNT = 'studio_ee_job_step_element_refresh_count';
 }

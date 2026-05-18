@@ -33,7 +33,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CleanupController extends AbstractApiController
 {
-    private const string ROUTE = '/translations/cleanup/{domain}';
+    private const string ROUTE = '/translations/{domain}/cleanup';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -54,7 +54,7 @@ final class CleanupController extends AbstractApiController
         summary: 'translation_cleanup_by_domain_summary',
         tags: [Tags::Translation->name]
     )]
-    #[StringParameter('domain', 'admin', description: 'Domain of the translation, to be cleaned up')]
+    #[StringParameter(name: 'domain', example: 'admin', description: 'Domain of the translation, to be cleaned up')]
     #[SuccessResponse(
         description: 'translation_cleanup_by_domain_success_description',
     )]

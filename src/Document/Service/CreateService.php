@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocTypeResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetInitialDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Util\Trait\DocumentClassTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -32,6 +33,7 @@ use Pimcore\Model\Document\Service;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -47,6 +49,7 @@ final readonly class CreateService implements CreateServiceInterface
     public function __construct(
         private DocumentResolverInterface $documentResolver,
         private DocTypeResolverInterface $docTypeResolver,
+        private DocumentTypeServiceInterface $documentTypeService,
         private ElementSaveServiceInterface $elementSaveService,
         private ResolverInterface $classResolver,
         private ServiceResolverInterface $serviceResolver,
@@ -68,8 +71,24 @@ final readonly class CreateService implements CreateServiceInterface
         $data = $this->createData($user, $parameters, $baseTranslationDocument);
         $document = $this->createDocumentElement($data, $parent->getId(), $parameters);
 
+        if ($document instanceof PageSnippet && $parameters->getInheritanceSourceId() !== null) {
+            try {
+                $document->setContentMainDocumentId($parameters->getInheritanceSourceId());
+            } catch (Exception $exception) {
+                throw new InvalidArgumentException(
+                    sprintf('Could not set main document inheritance source: %s', $exception->getMessage()),
+                    $exception
+                );
+            }
+        }
+
         if ($isTranslation) {
             $this->addLanguageProperty($document, $baseTranslationDocument, $parameters->getLanguage());
+        }
+
+        $adapter = $this->documentTypeService->tryTypeAdapter($document->getType());
+        if ($adapter instanceof SetInitialDataInterface) {
+            $adapter->setInitialData($document, $data, $user);
         }
 
         try {
@@ -92,19 +111,24 @@ final readonly class CreateService implements CreateServiceInterface
         ?Document $baseTranslationDocument
     ): array {
         $data = $this->addBaseData($user, $parameters);
-        $data = $this->addDocTypeData($data, $parameters, $baseTranslationDocument);
 
-        return $this->addContentInheritanceData($data, $parameters);
+        return $this->addDocTypeData($data, $parameters, $baseTranslationDocument);
     }
 
     private function addBaseData(UserInterface $user, DocumentAddParameters $parameters): array
     {
-        return [
+        $baseData = [
             'userOwner' => $user->getId(),
             'published' => false,
             'type' => $parameters->getType(),
             'key' => $this->serviceResolver->getValidKey($parameters->getKey(), ElementTypes::TYPE_DOCUMENT),
         ];
+
+        if ($parameters->getTemplate() !== null) {
+            $baseData['template'] = $parameters->getTemplate();
+        }
+
+        return $baseData;
     }
 
     private function addDocTypeData(
@@ -150,18 +174,6 @@ final readonly class CreateService implements CreateServiceInterface
     private function requiresDefaultController(DocumentAddParameters $parameters): bool
     {
         return in_array($parameters->getType(), self::PAGE_SNIPPET_TYPES, true);
-    }
-
-    private function addContentInheritanceData(array $data, DocumentAddParameters $parameters): array
-    {
-        if (
-            $parameters->getInheritanceSourceId() !== null &&
-            in_array($parameters->getType(), self::PAGE_SNIPPET_TYPES, true)
-        ) {
-            $data['contentMainDocumentId'] = $parameters->getInheritanceSourceId();
-        }
-
-        return $data;
     }
 
     private function getBaseTranslationDocument(DocumentAddParameters $parameters): ?Document

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+use function strtolower;
 
 /**
  * @internal
@@ -23,16 +24,29 @@ final readonly class SortFilter
     public function __construct(
         private string $key = 'id',
         private string $direction = SortDirection::ASC->value,
+        private ?string $locale = null
     ) {
     }
 
     public function getKey(): string
+    {
+        if (!empty($this->locale)) {
+            return $this->key . '.' . $this->locale;
+        }
+
+        return $this->key;
+    }
+
+    public function getKeyWithOutLocale(): string
     {
         return $this->key;
     }
 
     public function getDirection(): string
     {
-        return $this->direction;
+        $normalised = strtolower($this->direction);
+        $direction = SortDirection::tryFrom($normalised) ?? SortDirection::ASC;
+
+        return $direction->value;
     }
 }

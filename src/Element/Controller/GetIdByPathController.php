@@ -67,7 +67,7 @@ final class GetIdByPathController extends AbstractApiController
     #[ElementTypeParameter]
     #[ElementPathParameter]
     #[SuccessResponse(
-        description: 'element_get_id_by_path_response_description',
+        description: 'element_get_id_by_path_success_response',
         content: new IdJson('ID of the element')
     )]
     #[DefaultResponses([

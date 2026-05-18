@@ -27,10 +27,12 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Psr\Log\LoggerInterface;
+use function in_array;
 
 /**
  * @internal
@@ -53,7 +55,8 @@ final class FieldDefinitionCollector implements
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly array $skipFieldTypes = []
     ) {
     }
 
@@ -71,6 +74,10 @@ final class FieldDefinitionCollector implements
         );
 
         $classDefinition = $this->classDefinitionService->getClassDefinition($this->getClassId());
+
+        if ($layoutDefinitions === null) {
+            return [];
+        }
 
         $children = $layoutDefinitions->getChildren();
 
@@ -109,17 +116,29 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
-            if (!$definition instanceof Data || $definition instanceof Objectbricks) {
+            // When definition is an instance of ObjectBrick, there is an ObjectbricksCollector.
+            // We also skip all field types in skipFieldTypes
+            if (!$definition instanceof Data || $definition instanceof Objectbricks ||
+                in_array($definition->getFieldType(), $this->skipFieldTypes, true)
+            ) {
                 continue;
+            }
+
+            if ($definition->invisible) {
+                continue;
+            }
+
+            if ($definition instanceof Classificationstore && $definition->localized) {
+                $localized = true;
             }
 
             if ($localized) {
-                $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, $defaultGroup, true);
+                $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, [$defaultGroup], true);
 
                 continue;
             }
 
-            $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, $defaultGroup, false);
+            $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, [$defaultGroup], false);
         }
     }
 
@@ -131,6 +150,15 @@ final class FieldDefinitionCollector implements
         $columns = [];
         foreach ($this->groupedDefinitions as $definition) {
             try {
+                if ($definition->getFieldDefinition() instanceof Classificationstore) {
+                    $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
+                        $definition,
+                        'dataobject.classificationstore'
+                    );
+
+                    continue;
+                }
+
                 $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
                     $definition,
                     'dataobject.adapter'

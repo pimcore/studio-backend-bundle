@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassIdParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
+use function array_key_exists;
 use function count;
 
 /**
@@ -36,11 +38,14 @@ final class FilterParameter implements
     ColumnFiltersParameterInterface,
     SimpleColumnFiltersParameterInterface,
     SortFilterParameterInterface,
-    ClassNameParametersInterface
+    ClassNameParametersInterface,
+    ClassIdParametersInterface
 {
     private ?string $path = null;
 
     private ?string $className = null;
+
+    private ?string $classId = null;
 
     private bool $excludeFolders = true;
 
@@ -61,6 +66,16 @@ final class FilterParameter implements
     public function getPageSize(): int
     {
         return $this->pageSize;
+    }
+
+    public function getStart(): int
+    {
+        $page = $this->page - 1;
+        if ($page < 0) {
+            $page = 0;
+        }
+
+        return $page * $this->pageSize;
     }
 
     public function getExcludeFolders(): bool
@@ -101,14 +116,15 @@ final class FilterParameter implements
         $columns  = array_filter($this->columnFilters, static fn ($columnFilter) => $columnFilter['type'] === $type);
 
         foreach ($columns as $column) {
-            if (!isset($column['key'], $column['type'], $column['filterValue'])) {
+            if (!isset($column['key'], $column['type']) || !array_key_exists('filterValue', $column)) {
                 throw new InvalidArgumentException('Invalid column filter');
             }
 
             yield new ColumnFilter(
                 $column['key'],
                 $column['type'],
-                $column['filterValue']
+                $column['filterValue'],
+                $column['locale'] ?? null
             );
         }
     }
@@ -159,5 +175,15 @@ final class FilterParameter implements
     public function setClassName(?string $className): void
     {
         $this->className = $className;
+    }
+
+    public function getClassId(): ?string
+    {
+        return $this->classId;
+    }
+
+    public function setClassId(?string $classId): void
+    {
+        $this->classId = $classId;
     }
 }

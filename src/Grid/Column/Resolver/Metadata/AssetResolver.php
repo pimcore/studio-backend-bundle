@@ -17,21 +17,41 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\CoreLocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final class AssetResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
+final class AssetResolver implements
+    ColumnResolverInterface,
+    StudioElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
+    use CoreLocalizedValueTrait;
+
+    public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
+    {
+        $asset = $this->getCoreLocalizedValue($column, $element);
+
+        if (!$asset instanceof Asset) {
+            return $this->getColumnData($column, null, $this->getType());
+        }
+
+        return $this->getColumnData($column, $asset->getFullPath(), $this->getType());
+    }
 
     public function __construct(
         private readonly AssetServiceInterface $assetService
@@ -43,7 +63,7 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
         $asset = $this->getLocalizedValue($column, $element);
 
         if (!isset($asset['asset'])) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         try {
@@ -52,7 +72,7 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
                 false
             );
         } catch (NotFoundException) {
-            return $this->getColumnData($column, null);
+            return $this->getColumnData($column, null, $this->getType());
         }
 
         return $this->getColumnData(
@@ -62,7 +82,8 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
                 'subtype' => $relatedAsset->getType(),
                 'type' => 'asset',
                 'fullPath' => $relatedAsset->getFullPath(),
-            ]
+            ],
+            $this->getType()
         );
     }
 

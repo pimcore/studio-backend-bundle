@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\BasicStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DynamicConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
@@ -48,10 +49,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     }
 
     /**
-     * @throws ElementProcessingNotCompletedException
-     * @throws InvalidElementTypeException
-     * @throws InvalidThumbnailException
-     * @throws FilesystemException
+     * {@inheritdoc}
      */
     public function downloadVideoByThumbnail(
         Asset $video,
@@ -65,7 +63,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     }
 
     /**
-     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException
+     * {@inheritdoc}
      */
     public function streamImage(
         Asset $image
@@ -80,20 +78,23 @@ final readonly class BinaryService implements BinaryServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function streamImageByThumbnail(ElementInterface $image, string $thumbnailName): StreamedResponse
-    {
+    public function streamImageByThumbnail(
+        ElementInterface $image,
+        string $thumbnailName,
+        ?BasicStreamConfigParameter $parameter = null
+    ): StreamedResponse {
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
 
         return $this->getStreamedResponse(
-            $this->thumbnailService->getImageThumbnailByName($image, $thumbnailName),
+            $this->thumbnailService->getImageThumbnailByName($image, $thumbnailName, $parameter),
             HttpResponseHeaders::INLINE_TYPE->value
         );
     }
 
     /**
-     * @throws InvalidElementTypeException|InvalidThumbnailException
+     * {@inheritdoc}
      */
     public function streamPreviewImageThumbnail(Asset $image): StreamedResponse
     {
@@ -107,6 +108,9 @@ final readonly class BinaryService implements BinaryServiceInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function streamImageThumbnailFromConfig(
         Asset $image,
         ImageDownloadConfigParameter $configParameter
@@ -122,10 +126,24 @@ final readonly class BinaryService implements BinaryServiceInterface
     }
 
     /**
-     * @throws ElementProcessingNotCompletedException
-     * @throws InvalidElementTypeException
-     * @throws InvalidThumbnailException
-     * @throws FilesystemException
+     * {@inheritdoc}
+     */
+    public function streamDynamicImageThumbnail(
+        Asset $image,
+        DynamicConfigurationParameter $parameter
+    ): StreamedResponse {
+        if (!$image instanceof Image) {
+            throw new InvalidElementTypeException($image->getType(), ElementTypes::TYPE_ASSET);
+        }
+
+        return $this->getStreamedResponse(
+            $this->thumbnailService->getDynamicThumbnail($image, $parameter),
+            HttpResponseHeaders::INLINE_TYPE->value
+        );
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function streamVideoByThumbnail(
         Asset $video,
@@ -139,10 +157,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     }
 
     /**
-     * @throws ElementStreamResourceNotFoundException
-     * @throws InvalidElementTypeException
-     * @throws InvalidThumbnailConfigurationException
-     * @throws InvalidThumbnailException
+     * {@inheritdoc}
      */
     public function streamVideoImageThumbnail(
         Asset $video,
@@ -205,7 +220,8 @@ final readonly class BinaryService implements BinaryServiceInterface
             throw new ElementProcessingNotCompletedException($video->getId(), 'Thumbnail for video');
         }
 
-        $storagePath = $video->getRealPath() . '/' .
+        $realPathWithoutSlash = rtrim($video->getRealPath(), '/');
+        $storagePath = $realPathWithoutSlash . '/' .
             preg_replace(
                 '@^' . preg_quote($video->getPath(), '@') . '@',
                 '',

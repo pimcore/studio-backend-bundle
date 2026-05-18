@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
@@ -32,7 +33,12 @@ use function sprintf;
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final readonly class ChildrenSortByAdapter implements PatchAdapterInterface
 {
-    private const INDEX_KEY = 'childrenSortBy';
+    private const string INDEX_KEY = 'childrenSortBy';
+
+    public function __construct(
+        private ElementIndexServiceInterface $indexService
+    ) {
+    }
 
     /**
      * @throws ElementSavingFailedException|ForbiddenException
@@ -57,6 +63,9 @@ final readonly class ChildrenSortByAdapter implements PatchAdapterInterface
         }
 
         $element->setChildrenSortBy($data[$this->getIndexKey()]);
+        if ($value === AbstractObject::OBJECT_CHILDREN_SORT_BY_INDEX) {
+            $this->indexService->reindexBasedOnSortBy($element, $this->getDefaultSortOrder($data));
+        }
     }
 
     public function getIndexKey(): string
@@ -69,5 +78,18 @@ final readonly class ChildrenSortByAdapter implements PatchAdapterInterface
         return [
             ElementTypes::TYPE_OBJECT,
         ];
+    }
+
+    private function getDefaultSortOrder(array $data): string
+    {
+        if (!in_array(
+            $data[ChildrenSortOrderAdapter::INDEX_KEY] ?? '',
+            ['ASC', 'DESC'],
+            true
+        )) {
+            return AbstractObject::OBJECT_CHILDREN_SORT_ORDER_DEFAULT;
+        }
+
+        return $data[ChildrenSortOrderAdapter::INDEX_KEY];
     }
 }
