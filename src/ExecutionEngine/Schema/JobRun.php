@@ -91,7 +91,7 @@ final class JobRun implements AdditionalAttributesInterface
         return $this->creationDate;
     }
 
-    public function getChildJobRunId(): ?int
+    public function getJobRunChildId(): ?int
     {
         return $this->jobRunChildId;
     }
