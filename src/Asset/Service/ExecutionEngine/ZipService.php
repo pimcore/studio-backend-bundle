@@ -46,6 +46,7 @@ use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 use function count;
+use function dirname;
 use function sprintf;
 
 /**
@@ -369,7 +370,7 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         $parts = array_map(
-            static fn(string $path) => explode('/', trim($path, '/')),
+            static fn (string $path) => explode('/', trim($path, '/')),
             $folderPaths
         );
         $common = [];
