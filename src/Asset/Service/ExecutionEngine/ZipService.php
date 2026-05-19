@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadDefaults;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
@@ -154,13 +155,18 @@ final readonly class ZipService implements ZipServiceInterface
 
         $parentId = $parameter->getParentId();
         if ($parentId === 1) {
-            return $this->createJobRunAndStartExecution($parameter->getAssets(), '/', 'assets.zip');
+            return $this->createJobRunAndStartExecution(
+                $parameter->getAssets(),
+                '/',
+                DownloadDefaults::DEFAULT_ZIP_FILENAME->value
+            );
         }
 
         $parentAsset = $this->assetSearchService->getAssetById($parentId);
         $basePath = $parentAsset->getFullPath();
         $folderName = basename($basePath);
-        $downloadFilename = ($folderName !== '' ? $folderName : 'assets') . '.zip';
+        $downloadFilename = ($folderName !== '' ? $folderName : DownloadDefaults::DEFAULT_FOLDER_NAME->value)
+            . DownloadDefaults::ZIP_EXTENSION->value;
 
         return $this->createJobRunAndStartExecution($parameter->getAssets(), $basePath, $downloadFilename);
     }
@@ -193,9 +199,7 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         $basePath = $this->resolveCommonBasePath($folderPaths);
-        $downloadFilename = count($folderPaths) === 1
-            ? (basename($folderPaths[0]) ?: 'assets') . '.zip'
-            : 'assets.zip';
+        $downloadFilename = $this->resolveDownloadFilename($folderPaths);
 
         return $this->createJobRunAndStartExecution($assets, $basePath, $downloadFilename);
     }
@@ -326,7 +330,7 @@ final readonly class ZipService implements ZipServiceInterface
     private function createJobRunAndStartExecution(
         array $assets,
         string $basePath = '/',
-        string $downloadFilename = 'assets.zip',
+        ?string $downloadFilename = null,
     ): int {
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
@@ -342,7 +346,7 @@ final readonly class ZipService implements ZipServiceInterface
                 ),
             ],
             environmentData: [
-                self::ZIP_DOWNLOAD_FILENAME => $downloadFilename,
+                self::ZIP_DOWNLOAD_FILENAME => $downloadFilename ?? DownloadDefaults::DEFAULT_ZIP_FILENAME->value,
             ],
         );
 
@@ -382,5 +386,22 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         return '/' . implode('/', $common);
+    }
+
+    /**
+     * @param string[] $folderPaths
+     */
+    private function resolveDownloadFilename(array $folderPaths): string
+    {
+        if (count($folderPaths) !== 1) {
+            return DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+        }
+
+        $folderName = basename($folderPaths[0]);
+        if ($folderName === '') {
+            $folderName = DownloadDefaults::DEFAULT_FOLDER_NAME->value;
+        }
+
+        return $folderName . DownloadDefaults::ZIP_EXTENSION->value;
     }
 }

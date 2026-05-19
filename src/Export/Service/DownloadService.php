@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Service;
 
+use Exception;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
@@ -23,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadDefaults;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
@@ -138,18 +140,15 @@ final readonly class DownloadService implements DownloadServiceInterface
         return $response;
     }
 
-    /**
-     * @throws EnvironmentException
-     */
     private function resolveDownloadName(int $jobRunId): string
     {
         try {
             $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
             $environmentData = $jobRun->getJob()?->getEnvironmentData() ?? [];
 
-            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ?? 'assets.zip';
-        } catch (\Exception) {
-            return 'assets.zip';
+            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ?? DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+        } catch (Exception) {
+            return DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
         }
     }
 

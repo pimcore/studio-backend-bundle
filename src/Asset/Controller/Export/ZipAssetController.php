@@ -75,7 +75,7 @@ final class ZipAssetController extends AbstractApiController
                 ),
                 new Property(
                     property: 'parentId',
-                    description: 'ID of the parent folder for relative path resolution in the zip. Defaults to root (1).',
+                    description: 'ID of the parent folder. Defaults to root (1).',
                     type: 'integer',
                     example: 1,
                 ),
