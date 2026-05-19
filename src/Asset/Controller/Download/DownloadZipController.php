@@ -76,7 +76,6 @@ final class DownloadZipController extends AbstractApiController
             ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME,
             ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
             MimeTypes::ZIP->value,
-            'assets.zip'
         );
     }
 }
