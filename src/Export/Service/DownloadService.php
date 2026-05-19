@@ -13,14 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Service;
 
+use Exception;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadDefaults;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
@@ -40,6 +44,7 @@ final readonly class DownloadService implements DownloadServiceInterface
 
     public function __construct(
         private ExecutionEngineServiceInterface $executionEngineService,
+        private JobRunRepositoryInterface $jobRunRepository,
         private LoggerInterface $logger,
         private StorageServiceInterface $storageService,
     ) {
@@ -53,9 +58,14 @@ final readonly class DownloadService implements DownloadServiceInterface
         string $tempFileName,
         string $tempFolderName,
         string $mimeType,
-        string $downloadName,
+        ?string $downloadName = null,
     ): StreamedResponse {
         $this->executionEngineService->validateJobRun($jobRunId);
+
+        if ($downloadName === null) {
+            $downloadName = $this->resolveDownloadName($jobRunId);
+        }
+
         $fileName = $this->getTempFileName($jobRunId, $tempFileName);
         $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
         $filePath = $folderName . '/' . $fileName;
@@ -128,6 +138,19 @@ final readonly class DownloadService implements DownloadServiceInterface
         );
 
         return $response;
+    }
+
+    private function resolveDownloadName(int $jobRunId): string
+    {
+        try {
+            $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
+            $environmentData = $jobRun->getJob()?->getEnvironmentData() ?? [];
+
+            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ??
+                DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+        } catch (Exception) {
+            return DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+        }
     }
 
     /**

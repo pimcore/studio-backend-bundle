@@ -50,7 +50,11 @@ interface ZipServiceInterface
 
     public const UPLOAD_ZIP_FILE_PATH = self::UPLOAD_ZIP_FOLDER_PATH . '/' . self::UPLOAD_ZIP_FILE_NAME_LOCAL;
 
-    public function addFile(ZipArchive $archive, Asset $asset): void;
+    public const ZIP_BASE_PATH = 'zip_base_path';
+
+    public const ZIP_DOWNLOAD_FILENAME = 'zip_download_filename';
+
+    public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): void;
 
     public function extractArchiveFiles(
         ZipArchive $archive,
