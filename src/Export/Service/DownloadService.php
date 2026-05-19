@@ -146,7 +146,8 @@ final readonly class DownloadService implements DownloadServiceInterface
             $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
             $environmentData = $jobRun->getJob()?->getEnvironmentData() ?? [];
 
-            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ?? DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ??
+                DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
         } catch (Exception) {
             return DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
         }
