@@ -20,6 +20,11 @@ use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToDeleteFile;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
@@ -403,13 +408,148 @@ final class DownloadServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testResolveDownloadNameFromJobRunEnvironmentData(): void
+    {
+        $stream = fopen('php://memory', 'rb+');
+        fwrite($stream, 'data');
+        rewind($stream);
+
+        $storage = $this->makeEmpty(FilesystemOperator::class, [
+            'readStream' => $stream,
+            'fileSize' => 4,
+        ]);
+
+        $job = new Job(
+            name: 'test-job',
+            steps: [new JobStep('step', 'SomeMessage', '', [])],
+            environmentData: [ZipServiceInterface::ZIP_DOWNLOAD_FILENAME => 'my-folder.zip'],
+        );
+
+        $jobRun = $this->makeEmpty(JobRun::class, [
+            'getJob' => $job,
+        ]);
+
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'getTempStorage' => $storage,
+                'tempFileExists' => true,
+            ]),
+            jobRunRepository: $this->makeEmpty(JobRunRepositoryInterface::class, [
+                'getJobRunById' => $jobRun,
+            ]),
+        );
+
+        $response = $service->downloadResourceByJobRunId(
+            jobRunId: 1,
+            tempFileName: 'export_{id}.zip',
+            tempFolderName: 'export_{id}',
+            mimeType: 'application/zip',
+        );
+
+        $this->assertSame(
+            'attachment; filename="my-folder.zip"',
+            $response->headers->get('Content-Disposition'),
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testResolveDownloadNameFallsBackWhenKeyMissing(): void
+    {
+        $stream = fopen('php://memory', 'rb+');
+        fwrite($stream, 'data');
+        rewind($stream);
+
+        $storage = $this->makeEmpty(FilesystemOperator::class, [
+            'readStream' => $stream,
+            'fileSize' => 4,
+        ]);
+
+        $job = new Job(
+            name: 'test-job',
+            steps: [new JobStep('step', 'SomeMessage', '', [])],
+            environmentData: [],
+        );
+
+        $jobRun = $this->makeEmpty(JobRun::class, [
+            'getJob' => $job,
+        ]);
+
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'getTempStorage' => $storage,
+                'tempFileExists' => true,
+            ]),
+            jobRunRepository: $this->makeEmpty(JobRunRepositoryInterface::class, [
+                'getJobRunById' => $jobRun,
+            ]),
+        );
+
+        $response = $service->downloadResourceByJobRunId(
+            jobRunId: 1,
+            tempFileName: 'export_{id}.zip',
+            tempFolderName: 'export_{id}',
+            mimeType: 'application/zip',
+        );
+
+        $this->assertSame(
+            'attachment; filename="assets.zip"',
+            $response->headers->get('Content-Disposition'),
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testResolveDownloadNameFallsBackOnException(): void
+    {
+        $stream = fopen('php://memory', 'rb+');
+        fwrite($stream, 'data');
+        rewind($stream);
+
+        $storage = $this->makeEmpty(FilesystemOperator::class, [
+            'readStream' => $stream,
+            'fileSize' => 4,
+        ]);
+
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'getTempStorage' => $storage,
+                'tempFileExists' => true,
+            ]),
+            jobRunRepository: $this->makeEmpty(JobRunRepositoryInterface::class, [
+                'getJobRunById' => function () {
+                    throw new \RuntimeException('Job run not found');
+                },
+            ]),
+        );
+
+        $response = $service->downloadResourceByJobRunId(
+            jobRunId: 1,
+            tempFileName: 'export_{id}.zip',
+            tempFolderName: 'export_{id}',
+            mimeType: 'application/zip',
+        );
+
+        $this->assertSame(
+            'attachment; filename="assets.zip"',
+            $response->headers->get('Content-Disposition'),
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     private function createService(
         ?ExecutionEngineServiceInterface $executionEngineService = null,
         ?StorageServiceInterface $storageService = null,
         ?LoggerInterface $logger = null,
+        ?JobRunRepositoryInterface $jobRunRepository = null,
     ): DownloadService {
         return new DownloadService(
             $executionEngineService ?? $this->makeEmpty(ExecutionEngineServiceInterface::class),
+            $jobRunRepository ?? $this->makeEmpty(JobRunRepositoryInterface::class),
             $logger ?? $this->makeEmpty(LoggerInterface::class),
             $storageService ?? $this->makeEmpty(StorageServiceInterface::class),
         );

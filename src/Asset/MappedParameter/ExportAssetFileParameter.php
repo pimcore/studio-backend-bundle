@@ -20,12 +20,18 @@ final readonly class ExportAssetFileParameter
 {
     /** @param array<int> $assets */
     public function __construct(
-        private array $assets
+        private array $assets,
+        private int $parentId = 1,
     ) {
     }
 
     public function getAssets(): array
     {
         return $this->assets;
+    }
+
+    public function getParentId(): int
+    {
+        return $this->parentId;
     }
 }
