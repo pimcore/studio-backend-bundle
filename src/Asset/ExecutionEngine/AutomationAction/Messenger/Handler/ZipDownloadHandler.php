@@ -65,6 +65,7 @@ final class ZipDownloadHandler extends AbstractHandler
         }
 
         $assetIds = $this->extractConfigFieldFromJobStepConfig($message, ZipServiceInterface::ASSETS_TO_ZIP);
+        $basePath = $this->extractConfigFieldFromJobStepConfig($message, ZipServiceInterface::ZIP_BASE_PATH) ?? '/';
         $assetCount = count($assetIds);
         if ($assetCount === 0) {
             $this->abort($this->getAbortData(
@@ -104,7 +105,7 @@ final class ZipDownloadHandler extends AbstractHandler
                 return;
             }
 
-            $this->zipService->addFile($archive, $asset);
+            $this->zipService->addFile($archive, $asset, $basePath);
 
             $this->updateProgress(
                 $this->publishService,
@@ -136,5 +137,8 @@ final class ZipDownloadHandler extends AbstractHandler
     {
         $this->stepConfiguration->setRequired(ZipServiceInterface::ASSETS_TO_ZIP);
         $this->stepConfiguration->setAllowedTypes(ZipServiceInterface::ASSETS_TO_ZIP, 'array');
+        $this->stepConfiguration->setDefined(ZipServiceInterface::ZIP_BASE_PATH);
+        $this->stepConfiguration->setAllowedTypes(ZipServiceInterface::ZIP_BASE_PATH, 'string');
+        $this->stepConfiguration->setDefault(ZipServiceInterface::ZIP_BASE_PATH, '/');
     }
 }

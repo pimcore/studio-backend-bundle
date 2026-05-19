@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Export;
 
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
@@ -23,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -62,7 +64,24 @@ final class ZipAssetController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[RequestBody(
-        content: new ScalarItemsJson('integer', 'assets')
+        required: true,
+        content: new JsonContent(
+            properties: [
+                new Property(
+                    property: 'assets',
+                    description: 'Asset IDs to include in the zip',
+                    type: 'array',
+                    items: new Items(type: 'integer'),
+                ),
+                new Property(
+                    property: 'parentId',
+                    description: 'ID of the parent folder for relative path resolution in the zip. Defaults to root (1).',
+                    type: 'integer',
+                    example: 1,
+                ),
+            ],
+            type: 'object',
+        )
     )]
     #[CreatedResponse(
         description: 'asset_export_zip_created_response',

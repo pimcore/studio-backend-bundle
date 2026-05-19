@@ -33,7 +33,7 @@ interface DownloadServiceInterface
         string $tempFileName,
         string $tempFolderName,
         string $mimeType,
-        string $downloadName,
+        ?string $downloadName = null,
     ): StreamedResponse;
 
     /**

@@ -65,14 +65,17 @@ final readonly class ZipService implements ZipServiceInterface
     ) {
     }
 
-    public function addFile(ZipArchive $archive, Asset $asset): void
+    public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): void
     {
         $archive->addFile(
             $asset->getLocalFile(),
-            preg_replace(
-                '@^' . preg_quote($asset->getRealPath(), '@') . '@i',
-                '',
-                $asset->getRealFullPath()
+            ltrim(
+                preg_replace(
+                    '@^' . preg_quote($basePath, '@') . '@i',
+                    '',
+                    $asset->getRealFullPath()
+                ),
+                '/'
             )
         );
     }
@@ -149,7 +152,17 @@ final readonly class ZipService implements ZipServiceInterface
     {
         $this->validateDownloadItems($parameter->getAssets());
 
-        return $this->createJobRunAndStartExecution($parameter->getAssets());
+        $parentId = $parameter->getParentId();
+        if ($parentId === 1) {
+            return $this->createJobRunAndStartExecution($parameter->getAssets(), '/', 'assets.zip');
+        }
+
+        $parentAsset = $this->assetSearchService->getAssetById($parentId);
+        $basePath = $parentAsset->getFullPath();
+        $folderName = basename($basePath);
+        $downloadFilename = ($folderName !== '' ? $folderName : 'assets') . '.zip';
+
+        return $this->createJobRunAndStartExecution($parameter->getAssets(), $basePath, $downloadFilename);
     }
 
     /**
@@ -158,9 +171,12 @@ final readonly class ZipService implements ZipServiceInterface
     public function generateZipFileForFolders(ExportFolderFileParameter $parameter): int
     {
         $folders = $parameter->getFolders();
+        $folderPaths = [];
 
         $assets = [];
         foreach ($folders as $folder) {
+            $folderAsset = $this->assetSearchService->getAssetById($folder->getId());
+            $folderPaths[] = $folderAsset->getFullPath();
 
             $ids = $this->gridSearch->searchElementIdsForUser(
                 ElementTypes::TYPE_ASSET,
@@ -176,7 +192,12 @@ final readonly class ZipService implements ZipServiceInterface
             $this->validateDownloadItems($assets);
         }
 
-        return $this->createJobRunAndStartExecution($assets);
+        $basePath = $this->resolveCommonBasePath($folderPaths);
+        $downloadFilename = count($folderPaths) === 1
+            ? (basename($folderPaths[0]) ?: 'assets') . '.zip'
+            : 'assets.zip';
+
+        return $this->createJobRunAndStartExecution($assets, $basePath, $downloadFilename);
     }
 
     /**
@@ -302,8 +323,11 @@ final readonly class ZipService implements ZipServiceInterface
         }
     }
 
-    private function createJobRunAndStartExecution(array $assets): int
-    {
+    private function createJobRunAndStartExecution(
+        array $assets,
+        string $basePath = '/',
+        string $downloadFilename = 'assets.zip',
+    ): int {
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
             steps: [
@@ -311,8 +335,14 @@ final readonly class ZipService implements ZipServiceInterface
                     JobSteps::ZIP_CREATION->value,
                     ZipDownloadMessage::class,
                     '',
-                    [self::ASSETS_TO_ZIP => $assets]
+                    [
+                        self::ASSETS_TO_ZIP => $assets,
+                        self::ZIP_BASE_PATH => $basePath,
+                    ]
                 ),
+            ],
+            environmentData: [
+                self::ZIP_DOWNLOAD_FILENAME => $downloadFilename,
             ],
         );
 
@@ -323,5 +353,34 @@ final readonly class ZipService implements ZipServiceInterface
         );
 
         return $jobRun->getId();
+    }
+
+    /**
+     * @param string[] $folderPaths
+     */
+    private function resolveCommonBasePath(array $folderPaths): string
+    {
+        if (count($folderPaths) === 1) {
+            return dirname($folderPaths[0]);
+        }
+
+        $parts = array_map(
+            static fn(string $path) => explode('/', trim($path, '/')),
+            $folderPaths
+        );
+        $common = [];
+        $minLength = min(array_map('count', $parts));
+
+        for ($i = 0; $i < $minLength; $i++) {
+            $segment = $parts[0][$i];
+            foreach ($parts as $p) {
+                if ($p[$i] !== $segment) {
+                    break 2;
+                }
+            }
+            $common[] = $segment;
+        }
+
+        return '/' . implode('/', $common);
     }
 }

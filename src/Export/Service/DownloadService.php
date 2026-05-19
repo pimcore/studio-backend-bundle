@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\Service;
 
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -40,6 +42,7 @@ final readonly class DownloadService implements DownloadServiceInterface
 
     public function __construct(
         private ExecutionEngineServiceInterface $executionEngineService,
+        private JobRunRepositoryInterface $jobRunRepository,
         private LoggerInterface $logger,
         private StorageServiceInterface $storageService,
     ) {
@@ -53,9 +56,14 @@ final readonly class DownloadService implements DownloadServiceInterface
         string $tempFileName,
         string $tempFolderName,
         string $mimeType,
-        string $downloadName,
+        ?string $downloadName = null,
     ): StreamedResponse {
         $this->executionEngineService->validateJobRun($jobRunId);
+
+        if ($downloadName === null) {
+            $downloadName = $this->resolveDownloadName($jobRunId);
+        }
+
         $fileName = $this->getTempFileName($jobRunId, $tempFileName);
         $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
         $filePath = $folderName . '/' . $fileName;
@@ -128,6 +136,21 @@ final readonly class DownloadService implements DownloadServiceInterface
         );
 
         return $response;
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    private function resolveDownloadName(int $jobRunId): string
+    {
+        try {
+            $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
+            $environmentData = $jobRun->getJob()?->getEnvironmentData() ?? [];
+
+            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ?? 'assets.zip';
+        } catch (\Exception) {
+            return 'assets.zip';
+        }
     }
 
     /**
