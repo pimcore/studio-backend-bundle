@@ -376,7 +376,22 @@ The `TwigOperator` transformer allows you to render custom HTML using Twig templ
 
 ---
 
+**Relation-Aware Nesting:**
+
+When an advanced column resolves through a relation (e.g., a `manufacturer` relation on a car object), the value is automatically nested under the relation name in the Twig context. This allows you to distinguish between fields that belong to the object itself and fields that come from a related object.
+
+- **No relation:** Access the field directly via `{{ value.fieldName }}`
+  (e.g., `{{ value.name }}` for a field `name` on the object itself)
+- **With relation:** Access the field via `{{ value.relationName.fieldName }}`
+  (e.g., `{{ value.manufacturer.name }}` for a field `name` on the related `manufacturer` object)
+
+---
+
 **Example Configuration:**
+
+In this example, `{{ value.name }} - {{ value.manufacturer.name }}` resolves to the car's own name (e.g., "E-Type"), while `{{ value.manufacturer.name }}` resolves to the manufacturer's name (e.g., "Jaguar").
+
+---
 
 ```json
 {
