@@ -239,6 +239,11 @@ final class AdvancedColumnResolver implements
             $data = $resolver->resolveForExport($subColumn, $element, $this->user);
         }
 
+        $relationName = null;
+        if ($fieldConfig instanceof RelationFieldConfig) {
+            $relationName = $fieldConfig->getRelation();
+        }
+
         if (!$data) {
             return;
         }
@@ -246,7 +251,8 @@ final class AdvancedColumnResolver implements
         $this->values[] = new AdvancedValue(
             type: $data->getFieldType(),
             value: $data->getValue(),
-            fieldName: $fieldConfig->getField()
+            fieldName: $fieldConfig->getField(),
+            relation: $relationName
         );
     }
 

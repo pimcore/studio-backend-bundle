@@ -73,9 +73,17 @@ final class TwigOperator implements TransformerInterface
         $assoc = [];
 
         foreach ($values as $item) {
-            if ($item instanceof AdvancedValue && $item->getFieldName()) {
-                $assoc[$item->getFieldName()] = $item->getValue();
+            if (!$item instanceof AdvancedValue || !$item->getFieldName()) {
+                continue;
             }
+
+            if ($item->getRelation() !== null) {
+                $assoc[$item->getRelation()][$item->getFieldName()] = $item->getValue();
+
+                continue;
+            }
+
+            $assoc[$item->getFieldName()] = $item->getValue();
         }
 
         return $assoc;
