@@ -44,7 +44,7 @@ final readonly class LogHydrator implements LogHydratorInterface
 
         return new LogEntry(
             id: $log['id'],
-            priority: $log['priority_value'],
+            priority: (int) $log['priority_value'],
             date: $date?->toIso8601String(),
             pid: $log['pid'],
             message: $log['message'],

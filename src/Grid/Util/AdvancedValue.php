@@ -18,7 +18,8 @@ final class AdvancedValue
     public function __construct(
         private string $type,
         private mixed $value,
-        private string $fieldName
+        private string $fieldName,
+        private readonly ?string $relation = null
     ) {
     }
 
@@ -50,5 +51,10 @@ final class AdvancedValue
     public function setFieldName(string $fieldName): void
     {
         $this->fieldName = $fieldName;
+    }
+
+    public function getRelation(): ?string
+    {
+        return $this->relation;
     }
 }

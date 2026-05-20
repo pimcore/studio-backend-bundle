@@ -35,4 +35,6 @@ enum HttpResponseErrorKeys: string
     case LOGIN_TOKEN_NO_PASSWORD = 'error_login_token_no_user_password';
     case GDI_PARSING_EXCEPTION = 'error_gdi_parsing_exception';
     case UID_ALREADY_EXISTS = 'error_uid_used';
+    case RECYCLE_BIN_RESTORE  = 'error_recycle_bin_restore';
+    case RECYCLE_BIN_RESTORE_MISSING_PARENT  = 'error_recycle_bin_restore_missing_parent';
 }
