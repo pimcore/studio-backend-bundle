@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInt
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RecycleBin;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\Element\Recyclebin as ElementRecycleBin;
 use Pimcore\Model\Element\Recyclebin\Item;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -125,7 +126,11 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
             $this->synchronousProcessing->enable();
             $item->restore();
         } catch (Exception $e) {
-            throw new EnvironmentException($e->getMessage());
+            $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE;
+            if (str_contains($e->getMessage(), 'ParentID is mandatory and can´t be null')) {
+                $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT;
+            }
+            throw new EnvironmentException($e->getMessage(), $errorKey->value, $e);
         } finally {
             $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
             $this->synchronousProcessing->disable();
