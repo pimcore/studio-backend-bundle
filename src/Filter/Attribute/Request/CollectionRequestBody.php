@@ -28,7 +28,8 @@ final class CollectionRequestBody extends RequestBody
         int $pageExample = 1,
         int $pageSizeExample = 50,
         string $columnFiltersExample = '[{"key":"name","type":"metadata.object","filterValue":1}]',
-        string $sortFilterExample = '{"key":"id","direction":"ASC"}'
+        string $sortFilterExample = '{"key":"id","direction":"ASC"}',
+        string $additionalFiltersExample = '[]'
     ) {
         parent::__construct(
             required: true,
@@ -38,7 +39,8 @@ final class CollectionRequestBody extends RequestBody
                         pageExample: $pageExample,
                         pageSizeExample: $pageSizeExample,
                         columnFiltersExample: $columnFiltersExample,
-                        sortFilterExample: $sortFilterExample
+                        sortFilterExample: $sortFilterExample,
+                        additionalFiltersExample: $additionalFiltersExample
                     ),
                 ],
                 type: 'object',

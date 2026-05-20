@@ -24,7 +24,8 @@ final class FilterProperty extends Property
         int $pageExample = 1,
         int $pageSizeExample = 50,
         string $columnFiltersExample = '[{"key":"name","type":"metadata.object","filterValue":1}]',
-        string $sortFilterExample = '{"key":"id","direction":"ASC"}'
+        string $sortFilterExample = '{"key":"id","direction":"ASC"}',
+        string $additionalFiltersExample = '[]'
     ) {
         parent::__construct(
             property: 'filters',
@@ -48,6 +49,11 @@ final class FilterProperty extends Property
                     property: 'sortFilter',
                     type: 'object',
                     example: $sortFilterExample
+                ),
+                new Property(
+                    property: 'additionalSortFilters',
+                    type: 'object',
+                    example: $additionalFiltersExample
                 ),
             ],
             type: 'object'
