@@ -130,6 +130,7 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
             if (str_contains($e->getMessage(), 'ParentID is mandatory and can´t be null')) {
                 $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT;
             }
+
             throw new EnvironmentException($e->getMessage(), $errorKey->value, $e);
         } finally {
             $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
