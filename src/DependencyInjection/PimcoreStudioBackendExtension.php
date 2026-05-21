@@ -160,18 +160,18 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(WidgetValidationServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);
 
-        $definition = $container->getDefinition(ElementTreeWidgetConfigRepository::class);
-
-        $definition->setArguments([
-            '$widgetConfigurations' => $config[Configuration::TREE_WIDGETS_NODE],
-            '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
-        ]);
-
         $defaultPerspective = ConfigKeyMapper::convertKeysForApp(
             $this->getParsedConfig(
                 __DIR__ . '/../../config/pimcore/default_perspective.yaml'
             )
         );
+
+        $definition = $container->getDefinition(ElementTreeWidgetConfigRepository::class);
+        $definition->setArguments([
+            '$defaultPerspective' => $defaultPerspective,
+            '$widgetConfigurations' => $config[Configuration::TREE_WIDGETS_NODE],
+            '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
+        ]);
 
         $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
         $definition->setArguments([
