@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -46,8 +47,14 @@ final readonly class Filter
             type: 'object',
             example: '{"key":"id","direction": "ASC", "locale": "en"}'
         )]
-        private array $sortFilter = []
-
+        private array $sortFilter = [],
+        #[Property(
+            description: 'Additional Sort Filters for multi-column sorting',
+            type: 'array',
+            items: new Items(type: 'object'),
+            example: '[{"key":"name","direction": "ASC"}]'
+        )]
+        private array $additionalSortFilters = [],
     ) {
     }
 
@@ -76,6 +83,11 @@ final readonly class Filter
         return $this->sortFilter;
     }
 
+    public function getAdditionalSortFilters(): array
+    {
+        return $this->additionalSortFilters;
+    }
+
     public function toArray(): array
     {
         return [
@@ -84,6 +96,7 @@ final readonly class Filter
             'includeDescendants' => $this->includeDescendants,
             'columnFilters' => $this->columnFilters,
             'sortFilter' => $this->sortFilter,
+            'additionalSortFilters' => $this->additionalSortFilters,
         ];
     }
 }

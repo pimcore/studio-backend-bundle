@@ -28,18 +28,18 @@ final class SortFilter implements FilterInterface
             return $query;
         }
 
-        $sortFilter = $parameters->getSortFilter();
+        foreach ($parameters->getSortFilters() as $sortFilter) {
+            $sortDirection = SortDirection::ASC;
 
-        $sortDirection = SortDirection::ASC;
+            if (strtolower($sortFilter->getDirection()) === SortDirection::DESC->value) {
+                $sortDirection = SortDirection::DESC;
+            }
 
-        if (strtolower($sortFilter->getDirection()) === SortDirection::DESC->value) {
-            $sortDirection = SortDirection::DESC;
+            $query->orderByField(
+                $sortFilter->getKey(),
+                $sortDirection,
+            );
         }
-
-        $query->orderByField(
-            $sortFilter->getKey(),
-            $sortDirection
-        );
 
         return $query;
     }

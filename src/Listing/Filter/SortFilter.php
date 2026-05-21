@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter as SortFilterParameter;
 use Pimcore\Model\Listing\AbstractListing;
+use function array_map;
 
 /**
  * @internal
@@ -29,9 +31,13 @@ final readonly class SortFilter implements FilterInterface
             return $listing;
         }
 
-        $sortFilter = $parameters->getSortFilter();
-        $listing->setOrderKey($sortFilter->getKey());
-        $listing->setOrder($sortFilter->getDirection());
+        $sortFilters = $parameters->getSortFilters();
+        $listing->setOrderKey(
+            array_map(static fn (SortFilterParameter $f): string => $f->getKey(), $sortFilters)
+        );
+        $listing->setOrder(
+            array_map(static fn (SortFilterParameter $f): string => $f->getDirection(), $sortFilters)
+        );
 
         return $listing;
     }

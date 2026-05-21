@@ -19,4 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 interface SortFilterParameterInterface
 {
     public function getSortFilter(): SortFilter;
+
+    /**
+     * @return SortFilter[]
+     */
+    public function getSortFilters(): array;
 }
