@@ -45,6 +45,7 @@ final readonly class PimcoreUserProvider implements DataProviderInterface
     public function findData(FilterParameter $filter): Collection
     {
         $listing = new Listing();
+        $listing->setCondition('`type` = :type', ['type' => 'user']);
 
         $idFilter = $filter->getSimpleColumnFilterByType('id');
         if ($idFilter !== null) {

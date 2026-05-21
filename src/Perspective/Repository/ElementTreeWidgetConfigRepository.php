@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetC
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget\TreeContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\ElementTreeWidgets;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -30,6 +32,7 @@ use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use function in_array;
 use function sprintf;
 
 /**
@@ -46,6 +49,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         private readonly WidgetValidationServiceInterface $validationService,
         private readonly array $widgetConfigurations,
         private readonly array $storageConfig,
+        private readonly array $defaultPerspective
     ) {
     }
 
@@ -92,6 +96,10 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
      */
     public function getConfiguration(string $widgetId): array
     {
+        if (in_array($widgetId, ElementTreeWidgets::values(), true)) {
+            return $this->defaultPerspective[Perspectives::DEFAULT_ID->value]['widgetsLeft'][$widgetId];
+        }
+
         [$configData, $dataSource] = $this->loadConfig($widgetId);
         $configData = $this->configKeyMapper->mapKeysForApp($configData);
         $configData['isWriteable'] = $this->isRepositoryWritable($widgetId, $dataSource);
@@ -139,7 +147,8 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function listConfigurations(): array
     {
         $configurations = [];
-        foreach ($this->getRepository()->fetchAllKeys() as $key) {
+        $keys = array_merge(ElementTreeWidgets::values(), $this->getRepository()->fetchAllKeys());
+        foreach ($keys as $key) {
             $configurations[] = $this->getConfiguration($key);
         }
 
