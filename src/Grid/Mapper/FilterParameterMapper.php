@@ -21,6 +21,15 @@ final readonly class FilterParameterMapper implements FilterParameterMapperInter
 {
     public function fromArray(array $filters): FilterParameter
     {
+        $additionalSortFilters = [];
+        foreach ($filters['additionalSortFilters'] ?? [] as $additionalSort) {
+            $additionalSortFilters[] = new SortFilter(
+                key: $additionalSort['key'] ?? 'id',
+                direction: $additionalSort['direction'] ?? SortDirection::ASC->value,
+                locale: $additionalSort['locale'] ?? null,
+            );
+        }
+
         return new FilterParameter(
             page:  $filters['page'] ?? 1,
             pageSize: $filters['pageSize'] ?? 50,
@@ -29,8 +38,9 @@ final readonly class FilterParameterMapper implements FilterParameterMapperInter
             sortFilter: new SortFilter(
                 key: $filters['sortFilter']['key'] ?? 'id',
                 direction: $filters['sortFilter']['direction'] ?? SortDirection::ASC->value,
-                locale: $filters['sortFilter']['locale'] ?? null
-            )
+                locale: $filters['sortFilter']['locale'] ?? null,
+            ),
+            additionalSortFilters: $additionalSortFilters,
         );
     }
 }

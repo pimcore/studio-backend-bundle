@@ -47,7 +47,8 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
                     'filterValue' => $user->getId(),
                 ],
             ],
-            sortFilter: $parameters->getSortFilter()
+            sortFilter: $parameters->getSortFilter(),
+            additionalSortFilters: $parameters->getAdditionalSortFilters(),
         );
         $this->listingFilter->applyFilters($filterParameters, $listing);
 

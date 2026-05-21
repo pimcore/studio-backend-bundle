@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -41,8 +42,14 @@ final readonly class ExportAllFilter
             type: 'object',
             example: '{"key":"id","direction": "ASC"}'
         )]
-        private array $sortFilter = []
-
+        private array $sortFilter = [],
+        #[Property(
+            description: 'Additional Sort Filters for multi-column sorting',
+            type: 'array',
+            items: new Items(type: 'object'),
+            example: '[{"key":"name","direction": "ASC"}]'
+        )]
+        private array $additionalSortFilters = [],
     ) {
     }
 
@@ -54,5 +61,10 @@ final readonly class ExportAllFilter
     public function getSortFilter(): array
     {
         return $this->sortFilter;
+    }
+
+    public function getAdditionalSortFilters(): array
+    {
+        return $this->additionalSortFilters;
     }
 }
