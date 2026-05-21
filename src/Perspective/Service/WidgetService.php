@@ -31,9 +31,12 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\ElementTreeWidgets;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
+use function in_array;
 use function sprintf;
 
 /**
@@ -128,6 +131,14 @@ final readonly class WidgetService implements WidgetServiceInterface
                 continue;
             }
             foreach ($repository->listConfigurations() as $configData) {
+                if (
+                    $skipWrapperWidgets &&
+                    $widgetType === WidgetTypes::ELEMENT_TREE->value &&
+                    in_array($configData['id'], ElementTreeWidgets::values(), true)
+                ) {
+                    continue;
+                }
+
                 $hydrated[] = $this->processRepositoryConfiguration($configData, $widgetType, $isOnlyWrapper);
             }
         }
