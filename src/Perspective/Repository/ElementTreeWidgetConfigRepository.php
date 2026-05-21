@@ -32,6 +32,7 @@ use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use function in_array;
 use function sprintf;
 
 /**
