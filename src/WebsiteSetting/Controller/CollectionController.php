@@ -64,7 +64,8 @@ final class CollectionController extends AbstractApiController
             '{"key":"name", "type":"like", "filterValue": "SettingsName"},' .
             '{"key":"type", "type":"equals", "filterValue": "text"}'
             . ']',
-        sortFilterExample: '{"key":"name", "direction":"DESC"}'
+        sortFilterExample: '{"key": "type", "direction": "ASC"}',
+        additionalFiltersExample: '[{"key":"id", "direction":"ASC"}]'
     )]
     #[SuccessResponse(
         description: 'website_settings_get_collection_success_response',

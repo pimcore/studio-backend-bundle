@@ -41,7 +41,8 @@ final class CollectionParametersMapper implements FilterMapperInterface
 
         return new FilterParameter(
             columnFilters: $columnFilters,
-            sortFilter: $filters->getSortFilter()
+            sortFilter: $filters->getSortFilter(),
+            additionalSortFilters: $filters->getAdditionalSortFilters(),
         );
     }
 

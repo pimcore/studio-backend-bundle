@@ -29,6 +29,74 @@ The grid `filter` property controls pagination and scope:
 - `pageSize` - the number of items per page
 - `includeDescendants` - whether to include child elements
 
+### Sort Filter
+
+The `sortFilter` property defines the primary sort column and direction. It is an object with the following
+properties:
+
+- `key` - the column key to sort by (default: `id`)
+- `direction` - sort direction, either `ASC` or `DESC` (default: `ASC`)
+- `locale` - optional locale for localized columns (e.g. `en`, `de`)
+
+```json
+...
+"filter": {
+  "page": 1,
+  "pageSize": 50,
+  "sortFilter": {
+    "key": "name",
+    "direction": "ASC"
+  }
+}
+...
+```
+
+#### Additional Sort Filters
+
+Use `additionalSortFilters` to add secondary sort columns as tiebreakers after the primary `sortFilter`.
+This is useful for stable pagination — when multiple rows share the same value for the primary sort column,
+additional sort filters ensure a deterministic order across pages (preventing duplicate or missing items).
+
+`additionalSortFilters` is an array of sort filter objects, each with the same structure as `sortFilter`
+(`key`, `direction`, `locale`).
+
+```json
+...
+"filter": {
+  "page": 1,
+  "pageSize": 50,
+  "sortFilter": {
+    "key": "type",
+    "direction": "ASC"
+  },
+  "additionalSortFilters": [
+    {
+      "key": "id",
+      "direction": "ASC"
+    }
+  ]
+}
+...
+```
+
+The example above sorts primarily by `type ASC`, then by `id ASC` as a tiebreaker. The resulting SQL
+would be: `ORDER BY type ASC, id ASC`.
+
+You can specify multiple additional sort filters for multi-column sorting:
+
+```json
+...
+"additionalSortFilters": [
+  { "key": "name", "direction": "DESC" },
+  { "key": "id", "direction": "ASC" }
+]
+...
+```
+
+> **Note:** The `sortFilter` and `additionalSortFilters` properties are also available on
+> collection endpoints (e.g. website settings, translations, notifications) that use the
+> `CollectionFilterParameter` request body.
+
 ### ColumnFilter
 
 Add a `columnFilter` to the `filter` property to filter by specific column values. Each column filter
