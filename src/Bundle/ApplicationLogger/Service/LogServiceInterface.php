@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
@@ -33,4 +36,10 @@ interface LogServiceInterface
     public function listComponents(): array;
 
     public function listPriorities(): array;
+
+    /**
+     * @throws NotFoundException
+     * @throws StreamResourceNotFoundException
+     */
+    public function streamFileObject(string $filePath): StreamedResponse;
 }

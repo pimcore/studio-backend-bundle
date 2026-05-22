@@ -244,6 +244,10 @@ bundle_application_logger_list_priorities_description: |
   List all available priorities for the application logger.
 bundle_application_logger_list_priorities_success_response: List of available priorities
 bundle_application_logger_list_priorities_summary: List application logger priorities
+bundle_application_logger_get_file_object_description: |
+  Stream the content of a file object from the application log storage.
+bundle_application_logger_get_file_object_success_response: File object content as plain text
+bundle_application_logger_get_file_object_summary: Get application logger file object content
 bundle_seo_redirect_add_description: |
   Add a new redirect entry. <br> See the full description of request fields with the schema <strong>BundleSeoRedirectAdd</strong>
 bundle_seo_redirect_add_success_response: New redirect data as JSON
