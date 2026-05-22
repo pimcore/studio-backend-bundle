@@ -23,15 +23,16 @@ enum MimeTypes: string
     use EnumToValueArrayTrait;
 
     case CSV = 'text/csv';
+    case GENERIC = '*/*';
     case JPEG = 'JPEG';
+    case JSON = 'application/json';
     case ORIGINAL = 'original';
-    case PRINT = 'print';
     case PJPEG = 'PJPEG';
+    case PLAIN_TEXT = 'text/plain';
+    case PRINT = 'print';
     case PNG = 'PNG';
     case PDF = 'application/pdf';
     case SOURCE = 'source';
-    case ZIP = 'application/zip';
-    case JSON = 'application/json';
     case XLSX = 'application/xlsx';
-    case GENERIC = '*/*';
+    case ZIP = 'application/zip';
 }
