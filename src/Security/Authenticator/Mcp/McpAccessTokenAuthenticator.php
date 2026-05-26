@@ -54,7 +54,7 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
     ) {
     }
 
-    public function supports(Request $request): ?bool
+    public function supports(Request $request): bool
     {
         $header = $request->headers->get(self::AUTH_HEADER, '');
 
