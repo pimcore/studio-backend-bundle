@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
@@ -163,6 +164,10 @@ final class AdvancedColumnCollector implements
     {
         $simpleFields = $this->getSystemFields();
         foreach ($groupedDefinitions as $definition) {
+            if ($definition instanceof Classificationstore) {
+                continue;
+            }
+
             if ($definition instanceof Objectbricks) {
                 $simpleFields = [
                     ...$this->buildObjectBricksFields($definition),
