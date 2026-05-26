@@ -32,35 +32,35 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
 
     public function __construct(
         private PreviewGeneratorInterface $defaultPreviewGenerator,
-        private ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver,
     ) {
     }
 
-    /**
-     * @throws Exception|NotFoundException
-     */
-    public function getPreviewUrl(PreviewParameter $previewParameter): string
+    public function getPreviewUrl(PreviewParameter $parameter, array $additionalParams = []): string
     {
         $dataObject = $this->getElement(
             $this->serviceResolver,
             ElementTypes::TYPE_OBJECT,
-            $previewParameter->getId()
+            $parameter->getId()
         );
 
         if (!$dataObject instanceof Concrete) {
-            throw new NotFoundException('Data Object', $previewParameter->getId());
+            throw new NotFoundException('Data Object', $parameter->getId());
         }
 
-        $url = $this->getPreviewGenerator($dataObject)?->generatePreviewUrl(
-            $dataObject,
-            ['preview' => true, 'context' => $this]
-        );
+        $params = array_merge(['preview' => true, 'context' => $this], $additionalParams);
+
+        try {
+            $url = $this->getPreviewGenerator($dataObject)?->generatePreviewUrl($dataObject, $params);
+        } catch (Exception) {
+            $url = null;
+        }
 
         if (!$url) {
             throw new InvalidArgumentException('Could not generate preview url');
         }
 
-        return $this->buildRedirectUrl($url, $previewParameter);
+        return $this->buildRedirectUrl($url, $parameter->getId(), $parameter->getSite());
     }
 
     /**
@@ -77,7 +77,7 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
         return $previewService;
     }
 
-    private function buildRedirectUrl(string $url, PreviewParameter $previewParameter): string
+    private function buildRedirectUrl(string $url, int $id, int $site): string
     {
         // replace all remaining % signs
         $url = str_replace('%', '%25', $url);
@@ -85,8 +85,8 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
 
         $redirectParameters = array_filter([
             'pimcore_studio_preview' => true,
-            'pimcore_object_preview' => $previewParameter->getId(),
-            'site' => $previewParameter->getSite(),
+            'pimcore_object_preview' => $id,
+            'site' => $site,
             'dc' => time(),
         ]);
 

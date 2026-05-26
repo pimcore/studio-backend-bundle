@@ -13,12 +13,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
- * @interal
+ * @internal
  */
 interface PreviewUrlServiceInterface
 {
-    public function getPreviewUrl(PreviewParameter $previewParameter): string;
+    /**
+     * @param array<string, mixed> $additionalParams
+     *
+     * @throws InvalidArgumentException|NotFoundException
+     */
+    public function getPreviewUrl(PreviewParameter $parameter, array $additionalParams = []): string;
 }

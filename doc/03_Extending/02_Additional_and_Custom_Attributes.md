@@ -184,6 +184,7 @@ For more details and frontend customization options, see the [Custom Icons & Too
 - `pre_response.data_object.dynamic_select_option`
 - `pre_response.data_object.formated_path`
 - `pre_response.data_object.layout`
+- `pre_response.data_object.preview_config_entry`
 - `pre_response.data_object_version`
 - `pre_response.dependency`
 - `pre_response.document`

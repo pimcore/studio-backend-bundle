@@ -1334,9 +1334,9 @@ data_object_list_saved_grid_configurations_description: |
 data_object_list_saved_grid_configurations_summary: List all saved grid configurations for data objects
 data_object_list_saved_grid_configurations_success_response: List of saved grid configurations for data objects
 data_object_preview_by_id_description: |
-    Preview data object by ID and site. Data Object must be stored in the session first to be able to preview it.
+    Preview data object by ID. Additional query parameters (e.g. locale, site) are forwarded to the preview generator configured on the data object class. Available parameters depend on the preview generator implementation and can be retrieved from the layout endpoint's previewConfig.
 data_object_preview_by_id_success_response: Redirect to preview URL
-data_object_preview_by_id_summary: Preview data object by ID and site
+data_object_preview_by_id_summary: Preview data object by ID
 data_object_save_grid_configuration_description: |
   Save Data Object grid configuration for a specific Class ID <strong>{classId}</strong>
 data_object_save_grid_configuration_success_response: Data Object grid configuration saved successfully

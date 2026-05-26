@@ -17,14 +17,18 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IntParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\RedirectResponse as RedirectResponseAttribute;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -33,11 +37,14 @@ final class PreviewController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private PreviewUrlServiceInterface $previewUrlService
+        private readonly PreviewUrlServiceInterface $previewUrlService,
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidArgumentException|NotFoundException
+     */
     #[Route('/data-objects/preview/{id}', name: 'pimcore_studio_api_data_objects_preview', methods: ['GET'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
@@ -48,15 +55,33 @@ final class PreviewController extends AbstractApiController
         tags: [Tags::DataObjects->value]
     )]
     #[IdParameter(type: 'data object')]
-    #[IntParameter(name: 'site', description: 'Site ID', required: false)]
+    #[IntParameter(
+        name: 'site',
+        description: 'Site ID for multi-site setups',
+        required: false,
+        example: 0,
+    )]
+    #[TextFieldParameter(
+        name: 'locale',
+        description: 'Any additional query parameter is forwarded to the preview generator.',
+        required: false,
+        example: 'en',
+    )]
     #[RedirectResponseAttribute(description: 'data_object_preview_by_id_success_response')]
     #[DefaultResponses([
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::REDIRECT,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function preview(int $id, int $site = 0): RedirectResponse
+    public function preview(int $id, Request $request): RedirectResponse
     {
+        $queryParams = $request->query->all();
+        $site = (int) ($queryParams['site'] ?? 0);
+        unset($queryParams['site']);
+
         return new RedirectResponse(
-            $this->previewUrlService->getPreviewUrl(new PreviewParameter($id, $site))
+            $this->previewUrlService->getPreviewUrl(new PreviewParameter($id, $site), $queryParams)
         );
     }
 }
