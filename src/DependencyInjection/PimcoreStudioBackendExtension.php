@@ -263,6 +263,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'stateless' => true,
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator',
                 ],
             ]);
