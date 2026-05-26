@@ -119,7 +119,8 @@ class CarTreeStyleSubscriber implements EventSubscriberInterface
 }
 ```
 
-For more details and frontend customization options, see the [Custom Icons & Tooltips extension guide](https://github.com/pimcore/pimcore/blob/2025.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/10_Custom_Icons_and_Tooltips.md).
+For more details and frontend customization options, see the 
+[Custom Icons & Tooltips extension guide](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/10_Custom_Icons_and_Tooltips.md).
 
 ### List of custom attributes
 
