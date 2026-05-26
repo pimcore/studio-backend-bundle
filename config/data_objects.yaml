@@ -43,6 +43,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewConfigServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewConfigService
+    arguments:
+      $defaultPreviewGenerator: '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator'
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator' ]

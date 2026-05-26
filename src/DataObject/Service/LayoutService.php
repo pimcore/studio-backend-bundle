@@ -18,9 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\PreviewConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\PreviewConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -33,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Util\Trait\WorkflowLayoutTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout as CoreLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
-use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -56,8 +53,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
         private ObjectLayoutHydratorInterface $hydrator,
-        private PreviewConfigHydratorInterface $previewConfigHydrator,
-        private PreviewGeneratorInterface $defaultPreviewGenerator,
+        private PreviewConfigServiceInterface $previewConfigService,
         private SecurityLayoutServiceInterface $securityLayoutService,
         private SecurityServiceInterface $securityService,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
@@ -96,7 +92,7 @@ final readonly class LayoutService implements LayoutServiceInterface
             throw new NotFoundException(type: 'class layout for data object', id: $id);
         }
 
-        $previewConfig = $this->getPreviewConfig($dataObject, $class);
+        $previewConfig = $this->previewConfigService->getPreviewConfig($dataObject, $class);
 
         return $this->hydrateLayout($layout, $previewConfig);
     }
@@ -176,36 +172,5 @@ final readonly class LayoutService implements LayoutServiceInterface
         $this->eventDispatcher->dispatch(new LayoutEvent($hydratedLayout), LayoutEvent::EVENT_NAME);
 
         return $hydratedLayout;
-    }
-
-    private function getPreviewConfig(Concrete $dataObject, ClassDefinition $class): ?array
-    {
-        $previewGenerator = $class->getPreviewGenerator();
-
-        if (!$previewGenerator && $class->getLinkGenerator()) {
-            $previewGenerator = $this->defaultPreviewGenerator;
-        }
-
-        if (!$previewGenerator) {
-            return null;
-        }
-
-        $rawConfig = $previewGenerator->getPreviewConfig($dataObject);
-
-        if (empty($rawConfig)) {
-            return null;
-        }
-
-        $previewConfig = [];
-        foreach ($rawConfig as $rawEntry) {
-            $entry = $this->previewConfigHydrator->hydratePreviewConfigEntry($rawEntry);
-            $this->eventDispatcher->dispatch(
-                new PreviewConfigEvent($entry),
-                PreviewConfigEvent::EVENT_NAME,
-            );
-            $previewConfig[] = $entry;
-        }
-
-        return $previewConfig;
     }
 }
