@@ -29,7 +29,7 @@ Data adapters are one of several backend components needed when adding a custom 
 datatype. For the full cross-layer workflow (core registration, search index adapter, data
 adapter, grid column definition, field definition resolver, and frontend dynamic types), see
 the
-[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/12.3/doc/20_Extending_Pimcore/13_Bundle_Developers_Guide/11_Adding_Object_Datatypes.md)
+[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md)
 guide.
 
 :::

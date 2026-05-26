@@ -17,7 +17,7 @@ that handles the `objectbrick` structure.
 Field definition resolvers are one of several backend components needed when adding a custom
 data object datatype. For the full cross-layer workflow (core registration, search index
 adapter, data adapter, grid column definition, and frontend dynamic types), see the
-[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/12.3/doc/20_Extending_Pimcore/13_Bundle_Developers_Guide/11_Adding_Object_Datatypes.md)
+[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md)
 guide.
 
 :::
@@ -32,7 +32,7 @@ For simple (non-container) field types like text, number, or select fields, no r
 needed. The `DefaultResolver` already handles all top-level fields. Custom non-container data
 types only need registration in the field type map, a GDI adapter, a data adapter, and a grid
 column definition, as described in
-[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/12.3/doc/20_Extending_Pimcore/13_Bundle_Developers_Guide/11_Adding_Object_Datatypes.md).
+[Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md).
 
 For dot notation usage examples, see the
 [Dot Notation reference](../../04_Development_Details/01_Dot_Notation_for_Field_Definitions.md).
