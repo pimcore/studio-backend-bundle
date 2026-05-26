@@ -46,4 +46,4 @@ This bundle requires the following dependencies:
 **Contribute features:** contact the core-team via issue before you start developing   
 **Security vulnerabilities:** please see our [security policy](https://github.com/pimcore/pimcore/security/policy)
 
-For details, please have a look at our [contributing guide](CONTRIBUTING.md).
+For details, please have a look at our [contributing guide](https://github.com/pimcore/studio-backend-bundle/blob/2026.x/CONTRIBUTING.md).

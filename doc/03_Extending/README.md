@@ -7,7 +7,7 @@ description: Extension points for the Studio Backend API layer - endpoints, even
 
 This chapter covers extension points specific to the Studio Backend API layer.
 For an overview of all Pimcore extension points across core, backend, and frontend layers,
-see [Extending Pimcore](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/README.md).
+see [Extending Pimcore](https://github.com/pimcore/pimcore/blob/12.3/doc/20_Extending_Pimcore/README.md).
 
 Most customizations follow the same pattern: implement an interface and register the service with
 the corresponding DI tag. The Studio Backend auto-discovers tagged services at runtime.

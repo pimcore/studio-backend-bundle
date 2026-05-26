@@ -16,7 +16,7 @@ service with the tag `pimcore.studio_backend.search_index.filter`.
 ## Available Search Modifiers
 
 For the full list of search modifiers, see the
-[Generic Data Index documentation](https://github.com/pimcore/generic-data-index-bundle/tree/1.x/doc/04_Searching_For_Data_In_Index/05_Search_Modifiers.md).
+[Generic Data Index documentation](https://github.com/pimcore/generic-data-index-bundle/blob/2026.x/doc/04_Searching_For_Data_In_Index/05_Search_Modifiers/README.md).
 
 
 #### Example
