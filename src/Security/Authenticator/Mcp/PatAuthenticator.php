@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -57,7 +58,19 @@ class PatAuthenticator extends AbstractAuthenticator
     {
         $authHeader = $request->headers->get(self::AUTH_HEADER, '');
 
-        return str_starts_with($authHeader, self::BEARER_PREFIX);
+        if (!str_starts_with($authHeader, self::BEARER_PREFIX)) {
+            return false;
+        }
+
+        // Bearer tokens prefixed with the MCP access-token prefix are handled by
+        // McpAccessTokenAuthenticator. Returning false here ensures Symfony's
+        // authenticator chain does not run PAT validation in parallel — which
+        // would override McpAccessTokenAuthenticator's success with a 401.
+        if (str_starts_with($authHeader, self::BEARER_PREFIX . McpAccessTokenService::TOKEN_PREFIX)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function authenticate(Request $request): Passport
