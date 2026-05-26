@@ -72,7 +72,7 @@ final class AdvancedColumnCollector implements
             $this->getClassId(),
             $this->getFolderId(),
             $this->getUser()
-        ); 
+        );
 
         if ($layoutDefinitions === null) {
             return [];
