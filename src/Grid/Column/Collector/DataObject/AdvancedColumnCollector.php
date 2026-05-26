@@ -288,7 +288,7 @@ final class AdvancedColumnCollector implements
      */
     private function intersectFieldsByKey(array $fieldsByClass): array
     {
-        if (count($fieldsByClass) === 0) {
+        if (empty($fieldsByClass)) {
             return [];
         }
 
