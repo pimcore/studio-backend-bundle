@@ -62,3 +62,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService
+
+  #Maintenance
+  Pimcore\Bundle\StudioBackendBundle\Security\Maintenance\McpAccessTokenGcTask:
+    tags:
+      - { name: pimcore.maintenance.task, type: studio_mcp_access_token_gc }
