@@ -450,7 +450,7 @@ pimcore_studio_backend:
 
 To render your widget type in perspectives, register a matching React component in the
 Studio UI's `WidgetRegistry`. See the
-[Widget Manager plugin example](https://github.com/pimcore/studio-ui-bundle/blob/1.x/doc/04_Extending/02_Plugin_Development_Examples/05_Use_the_Widget_Manager.md)
+[Widget Manager plugin example](https://github.com/pimcore/studio-ui-bundle/blob/2026.x/doc/04_Extending/02_Plugin_Development_Examples/05_Use_the_Widget_Manager.md)
 for frontend registration details, and the
 [Adding Object Datatypes](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Extending_Pimcore/03_Custom_Extension_Guides/04_Adding_Object_Datatypes.md)
 guide for an example of the full cross-layer pattern.

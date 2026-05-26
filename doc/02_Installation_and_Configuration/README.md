@@ -11,8 +11,8 @@ To install the Studio Backend Bundle, follow the five steps below:
 
 1) Make sure prerequisites are met:
 
-- [GenericExecutionEngineBundle](https://docs.pimcore.com/platform/Pimcore/Development_Tools_and_Details/Generic_Execution_Engine/) installed and activated
-- [GenericDataIndexBundle](https://docs.pimcore.com/platform/Generic_Data_Index/Installation/) installed and activated
+- [GenericExecutionEngineBundle](https://github.com/pimcore/pimcore/blob/2026.x/doc/09_Development_Tools/01_Generic_Execution_Engine/README.md) installed and activated
+- [GenericDataIndexBundle](https://github.com/pimcore/generic-data-index-bundle/blob/2026.x/doc/01_Installation/README.md) installed and activated
 
 
 2) Install the required dependencies:

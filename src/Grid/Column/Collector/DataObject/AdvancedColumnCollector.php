@@ -32,11 +32,13 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
-use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use function count;
+use function in_array;
 
 /**
  * @internal
@@ -84,7 +86,7 @@ final class AdvancedColumnCollector implements
 
         return [$this->buildColumnConfigurations(
             $this->getDefaultFields($collectedDefinitions),
-            $this->getManyToOneRelationFields($collectedDefinitions),
+            $this->getRelationFields($collectedDefinitions),
             $this->getTransformers()
         )];
     }
@@ -163,6 +165,10 @@ final class AdvancedColumnCollector implements
     {
         $simpleFields = $this->getSystemFields();
         foreach ($groupedDefinitions as $definition) {
+            if ($definition instanceof Classificationstore) {
+                continue;
+            }
+
             if ($definition instanceof Objectbricks) {
                 $simpleFields = [
                     ...$this->buildObjectBricksFields($definition),
@@ -172,7 +178,7 @@ final class AdvancedColumnCollector implements
                 continue;
             }
 
-            if (!$definition instanceof ManyToOneRelation) {
+            if (!$definition instanceof AbstractRelations) {
                 $simpleFields[] = new SimpleField(
                     name: $definition->getTitle(),
                     key: $definition->getName(),
@@ -237,14 +243,14 @@ final class AdvancedColumnCollector implements
     /**
      * @return RelationField[]
      */
-    private function getManyToOneRelationFields(
+    private function getRelationFields(
         array $groupedDefinitions,
     ): array {
         $relations = [];
         foreach ($groupedDefinitions as $definition) {
 
-            if ($definition instanceof ManyToOneRelation) {
-                $relations[] = $this->buildManyToOneRelationFields($definition);
+            if ($definition instanceof AbstractRelations) {
+                $relations[] = $this->buildRelationFields($definition);
             }
         }
 
@@ -252,22 +258,20 @@ final class AdvancedColumnCollector implements
 
     }
 
-    private function buildManyToOneRelationFields(
+    private function buildRelationFields(
         AbstractRelations $definition,
     ): RelationField {
-        $classes  = $definition->getClasses();
-        $fields = [];
+        $classes = $definition->getClasses();
         $classIds = [];
+        $fieldsByClass = [];
+
         foreach ($classes as $class) {
             $classDefinition = $this->classRepository->getClassDefinition($class['classes']);
-
             $classIds[] = $classDefinition->getId();
-
-            $fields = [
-                ...$this->buildFieldForClassName($class['classes']),
-                ...$fields,
-            ];
+            $fieldsByClass[] = $this->buildFieldForClassName($class['classes']);
         }
+
+        $fields = $this->intersectFieldsByKey($fieldsByClass);
 
         return new RelationField(
             name: $definition->getTitle(),
@@ -275,6 +279,36 @@ final class AdvancedColumnCollector implements
             classIds: $classIds,
             fields: $fields
         );
+    }
+
+    /**
+     * @param SimpleField[][] $fieldsByClass
+     *
+     * @return SimpleField[]
+     *
+     * Only fields with the same key are returned.
+     */
+    private function intersectFieldsByKey(array $fieldsByClass): array
+    {
+        if (empty($fieldsByClass)) {
+            return [];
+        }
+
+        if (count($fieldsByClass) === 1) {
+            return $fieldsByClass[0];
+        }
+
+        $keyGroups = array_map(
+            static fn (array $fields) => array_map(static fn (SimpleField $f) => $f->getKey(), $fields),
+            $fieldsByClass
+        );
+
+        $commonKeys = array_intersect(...$keyGroups);
+
+        return array_values(array_filter(
+            $fieldsByClass[0],
+            static fn (SimpleField $f) => in_array($f->getKey(), $commonKeys, true)
+        ));
     }
 
     /**
