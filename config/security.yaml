@@ -54,3 +54,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutService
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepository
