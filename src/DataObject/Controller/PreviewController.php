@@ -61,12 +61,6 @@ final class PreviewController extends AbstractApiController
         required: false,
         example: 0,
     )]
-    #[TextFieldParameter(
-        name: 'locale',
-        description: 'Any additional query parameter is forwarded to the preview generator.',
-        required: false,
-        example: 'en',
-    )]
     #[RedirectResponseAttribute(description: 'data_object_preview_by_id_success_response')]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
