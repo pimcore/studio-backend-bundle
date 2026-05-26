@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -59,6 +60,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createGridConfigurationFavoritesTable($schema);
         $this->createUserPerspectivesTable($schema);
         $this->createJobRunHiddenTable($schema);
+        $this->createMcpAccessTokenTable($schema);
         $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
@@ -91,6 +93,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(JobRunHidden::TABLE_NAME)) {
             $schema->dropTable(JobRunHidden::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {
+            $schema->dropTable(McpAccessToken::TABLE_NAME);
         }
 
         $this->removeUserPermission($schema);
@@ -374,6 +380,37 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->setPrimaryKey(['jobRunId'], 'pk_' . JobRunHidden::TABLE_NAME);
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    private function createMcpAccessTokenTable(Schema $schema): void
+    {
+        if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(McpAccessToken::TABLE_NAME);
+
+        $table->addColumn('token_hash', 'string', ['notnull' => true, 'length' => 64]);
+        $table->addColumn('user_id', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('reference', 'string', ['notnull' => true, 'length' => 255]);
+        $table->addColumn('expires_at', 'bigint', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('created_at', 'bigint', ['notnull' => true, 'unsigned' => true]);
+
+        $table->setPrimaryKey(['token_hash'], 'pk_' . McpAccessToken::TABLE_NAME);
+        $table->addIndex(['reference'], 'idx_mcp_token_reference');
+        $table->addIndex(['user_id'], 'idx_mcp_token_user');
+        $table->addIndex(['expires_at'], 'idx_mcp_token_expires');
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . McpAccessToken::TABLE_NAME . '_users'
+        );
     }
 
     /**
