@@ -39,10 +39,10 @@ class McpAccessToken
     private string $reference;
 
     #[ORM\Column(name: 'expires_at', type: 'bigint', options: ['unsigned' => true])]
-    private int $expiresAt;
+    private string $expiresAt;
 
     #[ORM\Column(name: 'created_at', type: 'bigint', options: ['unsigned' => true])]
-    private int $createdAt;
+    private string $createdAt;
 
     public function __construct(
         string $tokenHash,
@@ -54,8 +54,8 @@ class McpAccessToken
         $this->tokenHash = $tokenHash;
         $this->userId = $userId;
         $this->reference = $reference;
-        $this->expiresAt = $expiresAt;
-        $this->createdAt = $createdAt;
+        $this->expiresAt = (string) $expiresAt;
+        $this->createdAt = (string) $createdAt;
     }
 
     public function getTokenHash(): string
@@ -80,7 +80,7 @@ class McpAccessToken
 
     public function setExpiresAt(int $expiresAt): void
     {
-        $this->expiresAt = $expiresAt;
+        $this->expiresAt = (string) $expiresAt;
     }
 
     public function getCreatedAt(): int
