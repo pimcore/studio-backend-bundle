@@ -305,7 +305,7 @@ final readonly class DataService implements DataServiceInterface
             $class->getAllowInherit(),
             $class->getAllowVariants(),
             $class->getShowVariants(),
-            (bool)$class->getLinkGeneratorReference(),
+            $class->getLinkGeneratorReference() || $class->getPreviewGeneratorReference(),
             $class->getShowAppLoggerTab()
         );
     }

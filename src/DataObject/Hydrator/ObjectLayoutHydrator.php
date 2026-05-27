@@ -27,7 +27,7 @@ final readonly class ObjectLayoutHydrator implements ObjectLayoutHydratorInterfa
     ) {
     }
 
-    public function hydrateLayout(Panel $panel): Layout
+    public function hydrateLayout(Panel $panel, ?array $previewConfig = null): Layout
     {
         return new Layout(
             $panel->getName(),
@@ -47,7 +47,8 @@ final readonly class ObjectLayoutHydrator implements ObjectLayoutHydratorInterfa
             $this->iconService->getIconForLayout($panel->getIcon()),
             $panel->getLabelAlign(),
             $panel->getLabelWidth(),
-            $panel->getBorder()
+            $panel->getBorder(),
+            $previewConfig,
         );
     }
 }

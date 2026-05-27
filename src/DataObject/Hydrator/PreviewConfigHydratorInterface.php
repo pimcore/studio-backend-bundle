@@ -13,13 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
-use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\PreviewConfigEntry;
 
 /**
  * @internal
  */
-interface ObjectLayoutHydratorInterface
+interface PreviewConfigHydratorInterface
 {
-    public function hydrateLayout(Panel $panel, ?array $previewConfig = null): Layout;
+    /**
+     * @param array<string, mixed> $rawEntry
+     */
+    public function hydratePreviewConfigEntry(array $rawEntry): PreviewConfigEntry;
 }
