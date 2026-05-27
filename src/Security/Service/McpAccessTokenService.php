@@ -47,6 +47,14 @@ final readonly class McpAccessTokenService implements McpAccessTokenServiceInter
         $this->userLoader = $userLoader ?? static fn (int $id): ?User => User::getById($id);
     }
 
+    /**
+     * Mints a fresh token bound to `$userId` and `$reference`. Any existing token for the
+     * same `$reference` is removed first.
+     *
+     * Throws `McpTokenUserInvalidException` defensively when `$userId` is missing or
+     * disabled. In normal flows the caller passes the currently-authenticated user, so
+     * the check serves as an internal invariant guard rather than a user-facing path.
+     */
     public function issue(int $userId, int $ttlSeconds, string $reference): string
     {
         if (!$this->isUserValid($userId)) {
