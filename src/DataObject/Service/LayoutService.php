@@ -53,6 +53,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
         private ObjectLayoutHydratorInterface $hydrator,
+        private PreviewConfigServiceInterface $previewConfigService,
         private SecurityLayoutServiceInterface $securityLayoutService,
         private SecurityServiceInterface $securityService,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
@@ -91,7 +92,9 @@ final readonly class LayoutService implements LayoutServiceInterface
             throw new NotFoundException(type: 'class layout for data object', id: $id);
         }
 
-        return $this->hydrateLayout($layout);
+        $previewConfig = $this->previewConfigService->getPreviewConfig($dataObject, $class);
+
+        return $this->hydrateLayout($layout, $previewConfig);
     }
 
     /**
@@ -163,9 +166,9 @@ final readonly class LayoutService implements LayoutServiceInterface
         return $this->getLastLayoutId($workflows);
     }
 
-    private function hydrateLayout(Panel $layout): Layout
+    private function hydrateLayout(Panel $layout, ?array $previewConfig = null): Layout
     {
-        $hydratedLayout = $this->hydrator->hydrateLayout($layout);
+        $hydratedLayout = $this->hydrator->hydrateLayout($layout, $previewConfig);
         $this->eventDispatcher->dispatch(new LayoutEvent($hydratedLayout), LayoutEvent::EVENT_NAME);
 
         return $hydratedLayout;
