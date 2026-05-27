@@ -42,6 +42,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator: ~
 
+  Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator: ~
+
   Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator:
     arguments:
       $tokenMap: '%pimcore_studio_backend.mcp.token_map%'
@@ -54,3 +56,14 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutService
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\Repository\McpAccessTokenRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService
+
+  #Maintenance
+  Pimcore\Bundle\StudioBackendBundle\Security\Maintenance\McpAccessTokenGcTask:
+    tags:
+      - { name: pimcore.maintenance.task, type: studio_mcp_access_token_gc }

@@ -18,14 +18,15 @@ firewall is **stateless**  - each request authenticates independently, with no s
 It is separate from the `pimcore_studio` firewall to provide security isolation  - MCP authentication cannot leak to Studio
 Backend API routes and vice versa.
 
-The firewall supports two authenticators tried in order:
+The firewall supports three authenticators tried in order:
 
-| Authenticator                | Trigger                  | Use Case                                                  |
-|------------------------------|--------------------------|-----------------------------------------------------------|
-| `SessionBridgeAuthenticator` | Session cookie           | Internal: agent-server forwarding Pimcore Studio sessions |
-| `PatAuthenticator`           | `Authorization: Bearer`  | External: MCP clients (Claude Desktop, Cursor, etc.)      |
+| Authenticator                  | Trigger                          | Use Case                                                                              |
+|--------------------------------|----------------------------------|---------------------------------------------------------------------------------------|
+| `SessionBridgeAuthenticator`   | Session cookie                   | Internal: agent-server forwarding Pimcore Studio sessions                             |
+| `McpAccessTokenAuthenticator`  | `Authorization: Bearer pmcp_…`   | Internal: dynamically-issued, expiring, revocable per-chat-session tokens (Pimcore AI agent) |
+| `PatAuthenticator`             | `Authorization: Bearer`          | External: MCP clients (Claude Desktop, Cursor, etc.)                                  |
 
-Both authenticators resolve to a Pimcore `User` object. All existing Pimcore permissions (workspace ACLs, user/role
+All three authenticators resolve to a Pimcore `User` object. All existing Pimcore permissions (workspace ACLs, user/role
 permissions) apply automatically.
 
 ### SessionBridgeAuthenticator
@@ -38,6 +39,20 @@ to resolve the authenticated Pimcore user. It validates that the user exists and
 
 This authenticator returns `null` on failure (rather than an error response), allowing the next authenticator in the chain
 (PAT) to try.
+
+### McpAccessTokenAuthenticator
+
+Validates a `pmcp_`-prefixed bearer token via `McpAccessTokenService` (DB-backed, hashed at rest, TTL-bounded, revocable).
+Never reads the PHP session. On failure, returns `null` so the firewall falls through to `PatAuthenticator`. On success, the
+validated token's `reference` (chat session id) is stashed on the request attributes (`_mcp_token_reference`) so trusted
+downstream code can use it instead of any forge-able header.
+
+The studio-backend bundle owns both the validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke
+primitives (`McpAccessTokenServiceInterface` → `McpAccessTokenService`, hashed-at-rest persistence via
+`McpAccessTokenRepository`, GC via the `studio_mcp_access_token_gc` maintenance task). Consuming bundles
+(e.g. `pimcore-agent-bundle`) layer their own policy on top — for example, *when* to mint a fresh token vs. extend an
+existing one, which `reference` to bind it to (typically a chat session id), and what TTL to apply — by calling
+`issue()` / `refresh()` / `revoke()` on the injected service.
 
 ### PSR-7/PSR-17 Bridge Services
 
@@ -247,3 +262,13 @@ final readonly class MyTool
 ```
 
 Or use `SecurityServiceInterface::getCurrentUser()` which works with both session and PAT auth.
+
+### Operational notes
+
+- **Transport security.** Dynamic MCP access tokens (`Bearer pmcp_…`) are credentials. Serve Studio over HTTPS in production;
+  over plain HTTP these tokens are sniffable on the wire.
+- **Log redaction.** Tools that log raw request headers must redact `Authorization`. See `pimcore-agent-bundle` for the
+  Fastify (agent-server) and Symfony (bundle) configuration.
+- **Token lifecycle.** Tokens expire after the consuming bundle's configured TTL (default 2h for `pimcore-agent-bundle`).
+  Expired rows are removed by the `studio_mcp_access_token_gc` maintenance task. Tokens are revoked at the DB layer by an
+  `ON DELETE CASCADE` FK on `users` — deleting a Pimcore user atomically clears their tokens.
