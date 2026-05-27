@@ -58,7 +58,7 @@ final readonly class HydratorService implements HydratorServiceInterface
             $item->getPath(),
             $this->iconService->getIconForDocument($item->getType()),
             $item->getUserOwner(),
-            $item->getModificationDate(),
+            $item->getUserModification(),
             $item->getLocked(),
             $this->elementLockService->isElementLocked(
                 $item->getFullPath(),
@@ -66,7 +66,7 @@ final readonly class HydratorService implements HydratorServiceInterface
                 $item->getLocked()
             ),
             $item->getCreationDate(),
-            $item->getUserModification(),
+            $item->getModificationDate(),
             $isSite,
             $navigationExclude,
         ];
