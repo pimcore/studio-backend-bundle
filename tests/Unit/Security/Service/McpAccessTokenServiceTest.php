@@ -32,8 +32,12 @@ final class McpAccessTokenServiceTest extends Unit
         $service = $this->makeService(
             userValid: true,
             repoOverrides: [
-                'deleteByReference' => function (string $r) use (&$deletedRef): void { $deletedRef = $r; },
-                'save' => function (McpAccessToken $t) use (&$saved): void { $saved = $t; },
+                'deleteByReference' => function (string $r) use (&$deletedRef): void {
+                    $deletedRef = $r;
+                },
+                'save' => function (McpAccessToken $t) use (&$saved): void {
+                    $saved = $t;
+                },
             ],
         );
 
