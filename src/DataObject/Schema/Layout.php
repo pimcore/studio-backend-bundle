@@ -85,6 +85,13 @@ class Layout implements AdditionalAttributesInterface
         private readonly int $labelWidth = 100,
         #[Property(description: 'Border', type: 'bool', example: false)]
         private readonly bool $border = false,
+        #[Property(
+            description: 'Preview configuration for locale/site selectors',
+            type: 'array',
+            items: new Items(ref: PreviewConfigEntry::class),
+            nullable: true,
+        )]
+        private readonly ?array $previewConfig = null,
     ) {
     }
 
@@ -176,5 +183,13 @@ class Layout implements AdditionalAttributesInterface
     public function getChildren(): array
     {
         return $this->children;
+    }
+
+    /**
+     * @return array<int, PreviewConfigEntry>|null
+     */
+    public function getPreviewConfig(): ?array
+    {
+        return $this->previewConfig;
     }
 }
