@@ -47,8 +47,12 @@ Never reads the PHP session. On failure, returns `null` so the firewall falls th
 validated token's `reference` (chat session id) is stashed on the request attributes (`_mcp_token_reference`) so trusted
 downstream code can use it instead of any forge-able header.
 
-Tokens are issued, refreshed, and revoked by the consuming bundle (e.g. `pimcore-agent-bundle`); this authenticator only
-validates.
+The studio-backend bundle owns both the validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke
+primitives (`McpAccessTokenServiceInterface` → `McpAccessTokenService`, hashed-at-rest persistence via
+`McpAccessTokenRepository`, GC via the `studio_mcp_access_token_gc` maintenance task). Consuming bundles
+(e.g. `pimcore-agent-bundle`) layer their own policy on top — for example, *when* to mint a fresh token vs. extend an
+existing one, which `reference` to bind it to (typically a chat session id), and what TTL to apply — by calling
+`issue()` / `refresh()` / `revoke()` on the injected service.
 
 ### PSR-7/PSR-17 Bridge Services
 
