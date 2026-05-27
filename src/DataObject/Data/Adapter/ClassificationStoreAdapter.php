@@ -123,12 +123,12 @@ final readonly class ClassificationStoreAdapter implements
         $groupCollectionMapping = $store['groupCollectionMapping'] ?? [];
         $groupCollectionMapping = array_diff_key($groupCollectionMapping, array_flip($deletedGroupIds));
         $container = $this->getContainer($element, $key, $contextData);
-        if (!empty($groupCollectionMapping)) {
-            $this->setMapping($container, $activeGroups, $groupCollectionMapping);
-        }
         $store = array_diff_key($store, array_flip($deletedGroupIds));
         unset($store['activeGroups'], $store['groupCollectionMapping']);
-        $this->setStoreValues($element, $user, $fieldDefinition, $container, $store, $isPatch);
+        $this->setStoreValues($element, $user, $fieldDefinition, $container, $store, $activeGroups, $isPatch);
+        if (!empty($groupCollectionMapping)) {
+            $this->setMapping($container, $container->getActiveGroups(), $groupCollectionMapping);
+        }
         $this->cleanupStoreGroups($container);
 
         return $container;
@@ -303,10 +303,9 @@ final readonly class ClassificationStoreAdapter implements
         ClassificationstoreDefinition $definition,
         Classificationstore $container,
         array $store,
+        array $activeGroups,
         bool $isPatch
     ): void {
-
-        $activeGroups = [];
 
         foreach ($store as $groupId => $groupData) {
             foreach ($groupData as $language => $keys) {
