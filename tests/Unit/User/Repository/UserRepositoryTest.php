@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository;
@@ -68,5 +70,62 @@ final class UserRepositoryTest extends Unit
 
         $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
         $userRepository->deleteUser($userMock);
+    }
+
+    public function testCreateUser(): void
+    {
+        $expectedUser = new User();
+        $expectedUser->setId(42);
+
+        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
+        $userResolverMock = $this->makeEmpty(UserResolverInterface::class, [
+            'create' => Expected::once(function (array $params) use ($expectedUser) {
+                $this->assertSame(5, $params['parentId']);
+                $this->assertSame('testuser', $params['name']);
+                $this->assertSame('', $params['password']);
+                $this->assertTrue($params['active']);
+
+                return $expectedUser;
+            }),
+        ]);
+
+        $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
+        $result = $userRepository->createUser('testuser', 5);
+
+        $this->assertSame($expectedUser, $result);
+    }
+
+    public function testUpdateUserSuccess(): void
+    {
+        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
+        $userResolverMock = $this->makeEmpty(UserResolverInterface::class);
+
+        $userMock = $this->makeEmpty(UserInterface::class, [
+            'save' => Expected::once(function () use (&$userMock) {
+                return $userMock;
+            }),
+        ]);
+
+        $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
+        $userRepository->updateUser($userMock);
+    }
+
+    public function testUpdateUserThrowsDatabaseException(): void
+    {
+        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
+        $userResolverMock = $this->makeEmpty(UserResolverInterface::class);
+
+        $userMock = $this->makeEmpty(UserInterface::class, [
+            'save' => function () {
+                throw new Exception('Connection lost');
+            },
+            'getId' => 7,
+        ]);
+
+        $userRepository = new UserRepository($securityServiceMock, $userResolverMock);
+
+        $this->expectException(DatabaseException::class);
+        $this->expectExceptionMessage('Error updating user with id 7: Connection lost');
+        $userRepository->updateUser($userMock);
     }
 }
