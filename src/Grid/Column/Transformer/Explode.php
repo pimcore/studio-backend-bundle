@@ -45,12 +45,15 @@ final class Explode implements TransformerInterface
             $fieldName = $val->getFieldName();
 
             if (!is_string($data)) {
-                $results[] = new AdvancedValue($val->getType(), $data, $fieldName);
+                $results[] = $val;
 
                 continue;
             }
 
-            $results[] = new AdvancedValue('array', explode($delimiter, $data), $fieldName);
+            $value = explode($delimiter, $data);
+            foreach ($value as $item) {
+                $results[] = new AdvancedValue('string', $item, $fieldName);
+            }
         }
 
         return $results;

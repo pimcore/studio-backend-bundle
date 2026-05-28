@@ -42,5 +42,8 @@ enum StepConfig: string
     case CONFIG_TYPE_INT = 'int';
     case CONFIG_TYPE_STRING = 'string';
     case CONFIG_TYPE_BOOL = 'bool';
+    case ITEMS_TO_BATCH_DELETE = 'items_to_batch_delete';
+    case ITEMS_TO_DELETE = 'items_to_delete';
+    case ELEMENT_TYPE_TO_BATCH_DELETE = 'element_type_to_batch_delete';
     case ITEMS_TO_RESTORE = 'items_to_restore';
 }
