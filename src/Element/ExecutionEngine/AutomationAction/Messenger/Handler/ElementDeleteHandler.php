@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
@@ -107,8 +107,6 @@ final class ElementDeleteHandler extends AbstractHandler
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
     }
-
-
 
     /**
      * @throws Exception
