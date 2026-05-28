@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -116,7 +117,7 @@ final class UserRepositoryTest extends Unit
 
         $userMock = $this->makeEmpty(UserInterface::class, [
             'save' => function () {
-                throw new \Exception('Connection lost');
+                throw new Exception('Connection lost');
             },
             'getId' => 7,
         ]);
