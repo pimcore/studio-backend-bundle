@@ -99,6 +99,7 @@ final readonly class UserRepository implements UserRepositoryInterface
     public function getUserListingByRoleId(int $roleId, ?int $excludeUserId = null): UserListing
     {
         $listing = new UserListing();
+        $listing->setCondition('`type` = :type', ['type' => 'user']);
         if ($excludeUserId !== null) {
             $listing->addConditionParam('id != :excludeUser', ['excludeUser' => $excludeUserId]);
         }
@@ -174,8 +175,8 @@ final readonly class UserRepository implements UserRepositoryInterface
         try {
             $userListing = new UserListing();
             $userListing->setCondition(
-                'name LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR id = ?',
-                [$q, $q, $q, $q, (int)$searchQuery]
+                'type = ? AND (name LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR id = ?)',
+                ['user', $q, $q, $q, $q, (int)$searchQuery]
             );
             $userListing->setOrder('ASC');
             $userListing->setOrderKey('name');
@@ -204,7 +205,7 @@ final readonly class UserRepository implements UserRepositoryInterface
 
         $listing = new UserListing();
         $placeholders = implode(',', array_fill(0, count($names), '?'));
-        $listing->setCondition('name IN (' . $placeholders . ')', $names);
+        $listing->setCondition('name IN (' . $placeholders . ') AND type = ?', [...$names, 'user']);
         $listing->load();
 
         return $listing->getUsers();
