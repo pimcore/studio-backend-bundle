@@ -18,15 +18,17 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\BatchDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
@@ -67,44 +69,71 @@ final class BatchDeleteHandler extends AbstractHandler
             ));
         }
 
-        $type = $this->extractConfigFieldFromJobStepConfig(
+        $elementType = $this->extractConfigFieldFromJobStepConfig(
             $message,
-            DeleteServiceInterface::ELEMENT_TYPE_TO_DELETE
+            StepConfig::ELEMENT_TYPE_TO_BATCH_DELETE->value
         );
-        $id = $this->extractConfigFieldFromJobStepConfig($message, DeleteServiceInterface::ELEMENT_TO_DELETE);
-        $parentElement = $this->elementService->getElementById($this->getCoreElementType($type), $id);
+        $items = $this->extractConfigFieldFromJobStepConfig(
+            $message,
+            StepConfig::ITEMS_TO_BATCH_DELETE->value
+        );
+        $totalItems = count($items);
+        $stepName = $this->getJobStep($message)->getName();
 
-        if ($parentElement instanceof ElementInterface) {
-            try {
-                $this->elementDeleteService->processBatchDelete($parentElement, $user, $type);
-            } catch (Exception $exception) {
-                $this->abort($this->getAbortData(
-                    Config::ELEMENT_BATCH_DELETE_FAILED_MESSAGE->value,
-                    [
-                        'type' => $parentElement->getType(),
-                        'id' => $parentElement->getId(),
-                        'message' => $exception->getMessage(),
-                    ],
-                ));
+        foreach ($items as $elementId) {
+            $element = $this->elementService->getElementById(
+                $this->getCoreElementType($elementType),
+                $elementId
+            );
+
+            if ($element instanceof ElementInterface) {
+                $this->deleteBatchElement($element, $user, $elementType);
             }
-        }
 
-        $this->updateProgress(
-            $this->publishService,
-            $this->userTopicService,
-            $jobRun,
-            $this->getJobStep($message)->getName()
-        );
+            $this->updateProgress(
+                $this->publishService,
+                $this->userTopicService,
+                $jobRun,
+                $stepName,
+                $totalItems,
+                100,
+            );
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function deleteBatchElement(
+        ElementInterface $element,
+        UserInterface $user,
+        string $elementType
+    ): void {
+        try {
+            $this->elementDeleteService->processBatchDelete($element, $user, $elementType);
+        } catch (Exception $exception) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_BATCH_DELETE_FAILED_MESSAGE->value,
+                [
+                    'type' => $element->getType(),
+                    'id' => $element->getId(),
+                    'message' => $exception->getMessage(),
+                ],
+            ));
+        }
     }
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(DeleteServiceInterface::ELEMENT_TO_DELETE);
-        $this->stepConfiguration->setAllowedTypes(DeleteServiceInterface::ELEMENT_TO_DELETE, 'int');
-        $this->stepConfiguration->setRequired(DeleteServiceInterface::ELEMENT_TYPE_TO_DELETE);
+        $this->stepConfiguration->setRequired(StepConfig::ITEMS_TO_BATCH_DELETE->value);
         $this->stepConfiguration->setAllowedTypes(
-            DeleteServiceInterface::ELEMENT_TYPE_TO_DELETE,
-            'string'
+            StepConfig::ITEMS_TO_BATCH_DELETE->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
+        );
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TYPE_TO_BATCH_DELETE->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENT_TYPE_TO_BATCH_DELETE->value,
+            StepConfig::CONFIG_TYPE_STRING->value
         );
     }
 }

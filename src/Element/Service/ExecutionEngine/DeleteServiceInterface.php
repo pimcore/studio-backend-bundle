@@ -21,10 +21,6 @@ use Pimcore\Model\UserInterface;
  */
 interface DeleteServiceInterface
 {
-    public const string ELEMENT_TO_DELETE = 'element_to_delete';
-
-    public const string ELEMENT_TYPE_TO_DELETE = 'element_type_to_delete';
-
     public function deleteElementsWithExecutionEngine(
         ElementInterface $element,
         UserInterface $user,
