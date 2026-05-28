@@ -57,11 +57,12 @@ interface ElementDeleteServiceInterface
     ): void;
 
     /**
-     * @throws ElementDeletionFailedException|EnvironmentException
+     * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException
      */
     public function deleteElement(
         ElementInterface $element,
-        UserInterface $user
+        UserInterface $user,
+        bool $skipChildrenCheck = false
     ): void;
 
     public function addElementToRecycleBin(

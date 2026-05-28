@@ -150,7 +150,8 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
      */
     public function deleteElement(
         ElementInterface $element,
-        UserInterface $user
+        UserInterface $user,
+        bool $skipChildrenCheck = false
     ): void {
 
         /** @var User $user because of the core method */
@@ -165,14 +166,11 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         }
 
         if ($element->isLocked()) {
-            throw new ForbiddenException(sprintf('Element %s is locked', $element->getId())
-            );
+            throw new ForbiddenException(sprintf('Element %s is locked', $element->getId()));
         }
 
-        if ($this->elementService->hasElementChildren($element)) {
-            throw new EnvironmentException(
-                'Element has existing children'
-            );
+        if (!$skipChildrenCheck && $this->elementService->hasElementChildren($element)) {
+            throw new EnvironmentException('Element has existing children');
         }
 
         try {
