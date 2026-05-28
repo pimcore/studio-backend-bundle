@@ -24,9 +24,9 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\RateLimiter\LimiterInterface;
 use Symfony\Component\RateLimiter\RateLimit;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 
 /**
  * @internal
@@ -50,7 +50,7 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testRequestIsRateLimitedOnStudioPath(): void
     {
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500);
+        $subscriber = $this->createSubscriber();
         $event = $this->createRequestEvent('/pimcore-studio/api/assets/1');
 
         $subscriber->onKernelRequest($event);
@@ -65,11 +65,13 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testRequestThrowsRateLimitExceptionWhenExceeded(): void
     {
-        $subscriber = $this->createSubscriber(accepted: false, remaining: 0, limit: 500);
-        $event = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber = $this->createSubscriber(limit: 1);
+        $firstEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($firstEvent);
 
         $this->expectException(RateLimitException::class);
-        $subscriber->onKernelRequest($event);
+        $secondEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($secondEvent);
     }
 
     /**
@@ -77,16 +79,19 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testRateLimitAttributeIsSetBeforeExceptionIsThrown(): void
     {
-        $subscriber = $this->createSubscriber(accepted: false, remaining: 0, limit: 500);
-        $event = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber = $this->createSubscriber(limit: 1);
+        $firstEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($firstEvent);
+
+        $secondEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
 
         try {
-            $subscriber->onKernelRequest($event);
+            $subscriber->onKernelRequest($secondEvent);
         } catch (RateLimitException) {
             // expected
         }
 
-        $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+        $rateLimit = $secondEvent->getRequest()->attributes->get('_studio_rate_limit');
         $this->assertInstanceOf(RateLimit::class, $rateLimit);
         $this->assertSame(0, $rateLimit->getRemainingTokens());
     }
@@ -96,7 +101,7 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testNonStudioPathIsIgnored(): void
     {
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500);
+        $subscriber = $this->createSubscriber();
         $event = $this->createRequestEvent('/admin/some-route');
 
         $subscriber->onKernelRequest($event);
@@ -109,7 +114,7 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testOptionsRequestIsIgnored(): void
     {
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500);
+        $subscriber = $this->createSubscriber();
         $event = $this->createRequestEvent('/pimcore-studio/api/assets/1', 'OPTIONS');
 
         $subscriber->onKernelRequest($event);
@@ -122,7 +127,7 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testDisabledSubscriberSkipsRequest(): void
     {
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500, enabled: false);
+        $subscriber = $this->createSubscriber(enabled: false);
         $event = $this->createRequestEvent('/pimcore-studio/api/assets/1');
 
         $subscriber->onKernelRequest($event);
@@ -135,7 +140,7 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testSubRequestIsIgnored(): void
     {
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500);
+        $subscriber = $this->createSubscriber();
         $event = $this->createRequestEvent('/pimcore-studio/api/assets/1', 'GET', false);
 
         $subscriber->onKernelRequest($event);
@@ -148,21 +153,17 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testResponseHeadersAreSet(): void
     {
-        $retryAfter = new DateTimeImmutable('2026-01-01 00:00:00');
-        $rateLimit = new RateLimit(499, $retryAfter, true, 500);
-
-        $request = Request::create('/pimcore-studio/api/assets/1');
-        $request->attributes->set('_studio_rate_limit', $rateLimit);
+        $subscriber = $this->createSubscriber();
+        $requestEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($requestEvent);
 
         $response = new Response();
-        $event = $this->createResponseEvent($request, $response);
-
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500);
-        $subscriber->onKernelResponse($event);
+        $responseEvent = $this->createResponseEvent($requestEvent->getRequest(), $response);
+        $subscriber->onKernelResponse($responseEvent);
 
         $this->assertSame('500', $response->headers->get('X-RateLimit-Limit'));
         $this->assertSame('499', $response->headers->get('X-RateLimit-Remaining'));
-        $this->assertSame((string) $retryAfter->getTimestamp(), $response->headers->get('X-RateLimit-Reset'));
+        $this->assertNotNull($response->headers->get('X-RateLimit-Reset'));
     }
 
     /**
@@ -170,21 +171,25 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testResponseHeadersOnExceededRequest(): void
     {
-        $retryAfter = new DateTimeImmutable('2026-01-01 00:01:00');
-        $rateLimit = new RateLimit(0, $retryAfter, false, 500);
+        $subscriber = $this->createSubscriber(limit: 1);
+        $firstEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($firstEvent);
 
-        $request = Request::create('/pimcore-studio/api/assets/1');
-        $request->attributes->set('_studio_rate_limit', $rateLimit);
+        $secondEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+
+        try {
+            $subscriber->onKernelRequest($secondEvent);
+        } catch (RateLimitException) {
+            // expected
+        }
 
         $response = new Response('', 429);
-        $event = $this->createResponseEvent($request, $response);
+        $responseEvent = $this->createResponseEvent($secondEvent->getRequest(), $response);
+        $subscriber->onKernelResponse($responseEvent);
 
-        $subscriber = $this->createSubscriber(accepted: false, remaining: 0, limit: 500);
-        $subscriber->onKernelResponse($event);
-
-        $this->assertSame('500', $response->headers->get('X-RateLimit-Limit'));
+        $this->assertSame('1', $response->headers->get('X-RateLimit-Limit'));
         $this->assertSame('0', $response->headers->get('X-RateLimit-Remaining'));
-        $this->assertSame((string) $retryAfter->getTimestamp(), $response->headers->get('X-RateLimit-Reset'));
+        $this->assertNotNull($response->headers->get('X-RateLimit-Reset'));
     }
 
     /**
@@ -196,7 +201,7 @@ final class RateLimitSubscriberTest extends Unit
         $response = new Response();
         $event = $this->createResponseEvent($request, $response);
 
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500);
+        $subscriber = $this->createSubscriber();
         $subscriber->onKernelResponse($event);
 
         $this->assertFalse($response->headers->has('X-RateLimit-Limit'));
@@ -209,44 +214,31 @@ final class RateLimitSubscriberTest extends Unit
      */
     public function testDisabledSubscriberSkipsResponse(): void
     {
-        $retryAfter = new DateTimeImmutable('2026-01-01 00:00:00');
-        $rateLimit = new RateLimit(499, $retryAfter, true, 500);
+        $subscriber = $this->createSubscriber(enabled: false);
 
         $request = Request::create('/pimcore-studio/api/assets/1');
-        $request->attributes->set('_studio_rate_limit', $rateLimit);
+        $request->attributes->set('_studio_rate_limit', new RateLimit(499, new DateTimeImmutable(), true, 500));
 
         $response = new Response();
         $event = $this->createResponseEvent($request, $response);
-
-        $subscriber = $this->createSubscriber(accepted: true, remaining: 499, limit: 500, enabled: false);
         $subscriber->onKernelResponse($event);
 
         $this->assertFalse($response->headers->has('X-RateLimit-Limit'));
     }
 
-    /**
-     * @throws Exception
-     */
     private function createSubscriber(
-        bool $accepted,
-        int $remaining,
-        int $limit,
+        int $limit = 500,
         bool $enabled = true,
     ): RateLimitSubscriber {
-        $rateLimit = new RateLimit(
-            $remaining,
-            new DateTimeImmutable('+1 minute'),
-            $accepted,
-            $limit,
+        $factory = new RateLimiterFactory(
+            [
+                'id' => 'test_studio_api',
+                'policy' => 'sliding_window',
+                'limit' => $limit,
+                'interval' => '60 seconds',
+            ],
+            new InMemoryStorage(),
         );
-
-        $limiter = $this->makeEmpty(LimiterInterface::class, [
-            'consume' => $rateLimit,
-        ]);
-
-        $factory = $this->makeEmpty(RateLimiterFactoryInterface::class, [
-            'create' => $limiter,
-        ]);
 
         return new RateLimitSubscriber(
             self::URL_PREFIX,
@@ -255,38 +247,39 @@ final class RateLimitSubscriberTest extends Unit
         );
     }
 
-    /**
-     * @throws Exception
-     */
     private function createRequestEvent(
         string $path,
         string $method = 'GET',
         bool $isMainRequest = true,
     ): RequestEvent {
         $request = Request::create($path, $method);
-        $kernel = $this->makeEmpty(HttpKernelInterface::class);
 
         return new RequestEvent(
-            $kernel,
+            $this->createKernelStub(),
             $request,
             $isMainRequest ? HttpKernelInterface::MAIN_REQUEST : HttpKernelInterface::SUB_REQUEST,
         );
     }
 
-    /**
-     * @throws Exception
-     */
     private function createResponseEvent(
         Request $request,
         Response $response,
     ): ResponseEvent {
-        $kernel = $this->makeEmpty(HttpKernelInterface::class);
-
         return new ResponseEvent(
-            $kernel,
+            $this->createKernelStub(),
             $request,
             HttpKernelInterface::MAIN_REQUEST,
             $response,
         );
+    }
+
+    private function createKernelStub(): HttpKernelInterface
+    {
+        return new class implements HttpKernelInterface {
+            public function handle(Request $request, int $type = self::MAIN_REQUEST, bool $catch = true): Response
+            {
+                return new Response();
+            }
+        };
     }
 }

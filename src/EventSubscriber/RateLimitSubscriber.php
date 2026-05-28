@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\RateLimiter\RateLimit;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 /**
  * @internal
@@ -33,7 +33,7 @@ final class RateLimitSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private readonly string $urlPrefix,
-        private readonly RateLimiterFactoryInterface $studioApiGeneralLimiter,
+        private readonly RateLimiterFactory $studioApiGeneralLimiter,
         private readonly bool $enabled = true,
     ) {
     }
