@@ -1,5 +1,9 @@
 framework:
   rate_limiter:
+    studio_api_general:
+      policy: 'sliding_window'
+      limit: 500
+      interval: '1 minute'
     reset_password:
       policy: 'fixed_window'
       limit: 5
