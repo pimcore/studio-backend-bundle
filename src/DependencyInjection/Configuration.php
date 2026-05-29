@@ -87,6 +87,7 @@ class Configuration implements ConfigurationInterface
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
+        $this->addRateLimitingNode($rootNode);
         $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
@@ -807,6 +808,22 @@ class Configuration implements ConfigurationInterface
                         ->end()
             ->end()
             ->end();
+    }
+
+    private function addRateLimitingNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('rate_limiting')
+                ->addDefaultsIfNotSet()
+                ->info('General rate limiting configuration for all Studio API endpoints.')
+                ->children()
+                    ->booleanNode('enabled')
+                        ->info('Enable or disable general rate limiting for all Studio API endpoints.')
+                        ->defaultTrue()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 
     private function addTranslation(ArrayNodeDefinition $node): void

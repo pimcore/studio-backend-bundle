@@ -16,3 +16,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber:
     tags: [ 'kernel.event_subscriber' ]
     arguments: ["%kernel.environment%", '%pimcore_studio_backend.url_prefix%']
+
+  Pimcore\Bundle\StudioBackendBundle\EventSubscriber\RateLimitSubscriber:
+    tags: [ 'kernel.event_subscriber' ]
+    arguments:
+      $urlPrefix: '%pimcore_studio_backend.url_prefix%'
+      $studioApiGeneralLimiter: '@limiter.studio_api_general'
