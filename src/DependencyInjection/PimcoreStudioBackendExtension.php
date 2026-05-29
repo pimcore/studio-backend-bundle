@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\RateLimitSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
@@ -99,6 +100,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(CorsSubscriber::class);
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
+
+        $definition = $container->getDefinition(RateLimitSubscriber::class);
+        $definition->setArgument('$enabled', $config['rate_limiting']['enabled']);
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
