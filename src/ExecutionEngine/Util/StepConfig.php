@@ -33,6 +33,7 @@ enum StepConfig: string
     case CONFIG_FILTERS = 'filters';
     case SETTINGS_DELIMITER = 'delimiter';
     case SETTINGS_HEADER = 'header';
+    case SETTINGS_SHEET_NAME = 'sheetName';
     case SETTINGS_HEADER_NO_HEADER = 'no_header';
     case SETTINGS_HEADER_TITLE = 'title';
     case SETTINGS_HEADER_NAME = 'name';

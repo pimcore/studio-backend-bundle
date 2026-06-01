@@ -65,6 +65,7 @@ final class XlsxCreationHandler extends AbstractHandler
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
+        $sheetName = $settings[StepConfig::SETTINGS_SHEET_NAME->value] ?? null;
 
         if (!isset($jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
@@ -86,7 +87,9 @@ final class XlsxCreationHandler extends AbstractHandler
                     $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
                     $headers === StepConfig::SETTINGS_HEADER_NAME
                 ),
-                $user
+                $user,
+                null,
+                $sheetName
             );
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
