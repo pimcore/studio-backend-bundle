@@ -131,3 +131,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\CRM\ConsentFilter:
     tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
+  # Asset
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\UnreferencedFilter:
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]

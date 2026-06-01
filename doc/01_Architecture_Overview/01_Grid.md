@@ -135,6 +135,7 @@ Available filters are:
 |        classificationstore.number        |                  object                  |      `from`, `to`, `is`, `setting`      |      true      |
 |               crm.consent                |                  array                   |            `true` or `false`            |      true      |
 |           dataobject.relation            |                  array                   |    array of `type`, `ids` objects       |      true      |
+|          system.unreferenced             |                 boolean                  |  Asset grid only — unreferenced assets  |     false      |
 
 
 ### Examples:
@@ -237,6 +238,18 @@ To filter by this structure:
         "ids": [7, 9]
       }
     ]
+  }
+]
+...
+```
+
+Filter unreferenced assets (asset grid only):
+```json
+...
+"columnFilters" [
+  {
+    "type": "system.unreferenced",
+    "filterValue": true
   }
 ]
 ...
