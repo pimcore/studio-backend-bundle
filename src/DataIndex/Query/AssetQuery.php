@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdF
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\NumberFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Dependency\UnreferencedFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\MultiSelectFilter;
@@ -124,6 +125,13 @@ final class AssetQuery implements AssetQueryInterface
     public function filterMetadata(string $name, string $type, mixed $data): self
     {
         $this->search->addModifier(new AssetMetaDataFilter($name, $type, $data));
+
+        return $this;
+    }
+
+    public function filterUnreferenced(): self
+    {
+        $this->search->addModifier(new UnreferencedFilter());
 
         return $this;
     }
