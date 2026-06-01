@@ -23,6 +23,7 @@ enum ColumnType: string
     case SYSTEM_TIME = 'system.time';
     case SYSTEM_DATE = 'system.date';
     case SYSTEM_BOOLEAN = 'system.boolean';
+    case SYSTEM_UNREFERENCED = 'system.unreferenced';
     case SYSTEM_TAG = 'system.tag';
     case SYSTEM_PQL_QUERY = 'system.pql';
     case SYSTEM_NUMBER = 'system.number';

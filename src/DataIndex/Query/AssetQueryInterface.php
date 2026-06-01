@@ -22,5 +22,7 @@ interface AssetQueryInterface extends QueryInterface
 {
     public function filterMetadata(string $name, string $type, mixed $data): self;
 
+    public function filterUnreferenced(): self;
+
     public function getSearch(): AssetSearchInterface;
 }
