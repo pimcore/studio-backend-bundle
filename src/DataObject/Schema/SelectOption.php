@@ -34,7 +34,7 @@ class SelectOption implements AdditionalAttributesInterface
         #[Property(description: 'Key', type: 'string', example: 'key')]
         private readonly string $key,
         #[Property(description: 'Value', type: 'string', example: 'value')]
-        private readonly int|string $value,
+        private readonly string $value,
     ) {
     }
 
@@ -43,7 +43,7 @@ class SelectOption implements AdditionalAttributesInterface
         return $this->key;
     }
 
-    public function getValue(): string|int
+    public function getValue(): string
     {
         return $this->value;
     }
