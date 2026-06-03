@@ -37,7 +37,7 @@ class GridConfigurationFavorite
     #[ORM\Id]
     private int $folder;
 
-    #[ORM\Column(type: 'string', nullable: true, length: 10)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $classId = null;
 
     public function getUser(): int
