@@ -37,7 +37,7 @@ class GridConfiguration
     #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
     private ?int $assetFolderId = null;
 
-    #[ORM\Column(type: 'string', nullable: true, length: 10)]
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $classId = null;
 
     #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]

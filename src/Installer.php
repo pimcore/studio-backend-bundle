@@ -190,7 +190,7 @@ final class Installer extends SettingsStoreAwareInstaller
 
         $table->addColumn('classId', 'string', [
             'notnull' => false,
-            'length' => 10,
+            'length' => 50,
         ]);
 
         $table->addForeignKeyConstraint(
@@ -275,7 +275,7 @@ final class Installer extends SettingsStoreAwareInstaller
             'unsigned' => true,
         ]);
 
-        $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 10]);
+        $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
 
         $table->addColumn(
             'owner',
