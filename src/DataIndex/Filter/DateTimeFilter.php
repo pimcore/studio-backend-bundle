@@ -32,8 +32,9 @@ final class DateTimeFilter implements FilterInterface
             return $query;
         }
 
+        // Date-only filter UI — match whole days, not exact instants.
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_DATETIME->value) as $column) {
-            $query = $this->applySystemDatetimeFilter($column, $query, false);
+            $query = $this->applySystemDatetimeFilter($column, $query, true);
         }
 
         return $query;
