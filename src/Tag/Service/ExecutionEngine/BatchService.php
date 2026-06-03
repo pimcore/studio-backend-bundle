@@ -25,6 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ChunkGeneratorTrait;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Messages\BatchTagOperationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchOperationParameters;
@@ -32,7 +34,6 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Model\Element\ElementDescriptor;
 use function sprintf;
 
 /**
@@ -41,6 +42,9 @@ use function sprintf;
 final readonly class BatchService implements BatchServiceInterface
 {
     use ElementProviderTrait;
+    use ChunkGeneratorTrait;
+
+    private const int BATCH_TAG_SIZE = 500;
 
     public function __construct(
         private ElementSearchServiceInterface $elementSearchService,
@@ -69,23 +73,22 @@ final readonly class BatchService implements BatchServiceInterface
             new ElementParameters($parameters->getType(), $parameters->getId())
         );
 
+        $jobSteps = [];
+        foreach ($this->chunkGenerator($childrenIds, self::BATCH_TAG_SIZE) as $batch) {
+            $jobSteps[] = new JobStep(
+                $this->getJobStepName($parameters->getOperation()),
+                BatchTagOperationMessage::class,
+                '',
+                [
+                    StepConfig::ELEMENTS_TO_TAG->value => $batch,
+                    StepConfig::ELEMENT_TYPE_TO_TAG->value => $parameters->getType(),
+                ],
+            );
+        }
+
         $job = new Job(
             name: $this->getJobName($parameters->getOperation()),
-            steps: [
-                new JobStep(
-                    $this->getJobStepName($parameters->getOperation()),
-                    BatchTagOperationMessage::class,
-                    '',
-                    []
-                ),
-            ],
-            selectedElements: array_map(
-                static fn (int $id) => new ElementDescriptor(
-                    $parameters->getType(),
-                    $id
-                ),
-                $childrenIds
-            ),
+            steps: $jobSteps,
             environmentData: [
                 EnvironmentVariables::BATCH_TAG_OPERATION->value => $parameters->getOperation(),
                 EnvironmentVariables::TAG_IDS->value => $tagIds,

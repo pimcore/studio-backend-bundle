@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParame
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 use function sprintf;
 
 /**
@@ -56,7 +58,7 @@ final class BatchTagOperationHandler extends AbstractHandler
             return;
         }
 
-        $validatedParameters = $this->validateFullParameters(
+        $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
             $this->userResolver,
@@ -71,49 +73,63 @@ final class BatchTagOperationHandler extends AbstractHandler
         }
 
         $user = $validatedParameters->getUser();
-        $element = $validatedParameters->getSubject();
         $environmentVariables = $validatedParameters->getEnvironmentData();
         $operation = $environmentVariables[EnvironmentVariables::BATCH_TAG_OPERATION->value];
+        $tagIds = $environmentVariables[EnvironmentVariables::TAG_IDS->value];
+        $elementIds = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENTS_TO_TAG->value);
+        $elementType = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TYPE_TO_TAG->value);
 
-        try {
-            $parameters = new BatchCollectionParameters(
-                $element->getType(),
-                [$element->getId()],
-                $environmentVariables[EnvironmentVariables::TAG_IDS->value]
-            );
-            match ($operation) {
-                BatchOperations::ASSIGN->value => $this->tagService->batchAssignTagsToElements(
-                    $parameters,
-                    $user
-                ),
-                BatchOperations::REPLACE->value => $this->tagService->batchReplaceTagsToElements(
-                    $parameters,
-                    $user
-                ),
-                default => throw new Exception(
-                    sprintf(
-                        'Invalid batch operation %s',
-                        $operation
-                    )
-                ),
-            };
-        } catch (Exception $exception) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_TAG_OPERATION_FAILED_MESSAGE->value,
-                [
-                    'id' => $element->getId(),
-                    'type' => $element->getType(),
-                    'operation' => $operation,
-                    'message' => $exception->getMessage(),
-                ],
-            ));
+        $totalItems = count($elementIds);
+        $stepName = $this->getJobStep($message)->getName();
+
+        foreach ($elementIds as $elementId) {
+            $parameters = new BatchCollectionParameters($elementType, [$elementId], $tagIds);
+
+            try {
+                match ($operation) {
+                    BatchOperations::ASSIGN->value => $this->tagService->batchAssignTagsToElements(
+                        $parameters,
+                        $user
+                    ),
+                    BatchOperations::REPLACE->value => $this->tagService->batchReplaceTagsToElements(
+                        $parameters,
+                        $user
+                    ),
+                    default => throw new Exception(
+                        sprintf(
+                            'Invalid batch operation %s',
+                            $operation
+                        )
+                    ),
+                };
+            } catch (Exception $exception) {
+                $this->abort($this->getAbortData(
+                    Config::ELEMENT_TAG_OPERATION_FAILED_MESSAGE->value,
+                    [
+                        'id' => $elementId,
+                        'type' => $elementType,
+                        'operation' => $operation,
+                        'message' => $exception->getMessage(),
+                    ],
+                ));
+            }
+
+            $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $stepName, $totalItems, 100);
         }
+    }
 
-        $this->updateProgress(
-            $this->publishService,
-            $this->userTopicService,
-            $jobRun,
-            $this->getJobStep($message)->getName()
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENTS_TO_TAG->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENTS_TO_TAG->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
+        );
+
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TYPE_TO_TAG->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::ELEMENT_TYPE_TO_TAG->value,
+            StepConfig::CONFIG_TYPE_STRING->value
         );
     }
 }
