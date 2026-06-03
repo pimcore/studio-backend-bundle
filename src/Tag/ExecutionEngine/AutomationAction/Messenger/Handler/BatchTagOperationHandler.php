@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParame
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 use function sprintf;
 
 /**

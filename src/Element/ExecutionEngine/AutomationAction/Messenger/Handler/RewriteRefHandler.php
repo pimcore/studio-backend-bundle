@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
