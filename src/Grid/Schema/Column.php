@@ -54,6 +54,8 @@ final readonly class Column
             ),
             example: ['key' => 'value'])]
         private array $config,
+        #[Property(description: 'Width of the Column', type: 'integer', example: 200, nullable: true)]
+        private ?int $width = null,
     ) {
     }
 
@@ -80,6 +82,11 @@ final readonly class Column
     public function getConfig(): array
     {
         return $this->config;
+    }
+
+    public function getWidth(): ?int
+    {
+        return $this->width;
     }
 
     public function getAdvancedColumnConfig(): AdvancedColumnConfig
@@ -155,6 +162,7 @@ final readonly class Column
             'type' => $this->getType(),
             'group' => $this->getGroup(),
             'config' => $this->getConfig(),
+            'width' => $this->getWidth(),
         ];
     }
 }
