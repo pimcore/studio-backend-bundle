@@ -113,8 +113,21 @@ final readonly class GridSearch implements GridSearchInterface
         UserInterface $user
     ): AssetSearchResult|DataObjectSearchResult|DocumentSearchResult {
         $type = $this->getStudioElementType($type);
-        /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
-        $query = $this->getSearchQuery($type, $gridParameter, $user);
+
+        // When filtering by explicit IDs (relation context), skip workspace and path
+        // restrictions — the user already has a reference to these objects via the
+        // relation, so showing their field data does not expose new information.
+        $filter = $gridParameter->getFilters();
+        $byIds = $filter->getSimpleColumnFilterByType('system.ids') !== null;
+
+        if ($byIds) {
+            $query = $this->queryFactory->create($type);
+            /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
+            $query = $this->filterService->applyFilters($query, $filter, $type);
+        } else {
+            /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
+            $query = $this->getSearchQuery($type, $gridParameter, $user);
+        }
 
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),

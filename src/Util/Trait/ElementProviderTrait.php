@@ -103,7 +103,7 @@ trait ElementProviderTrait
     /**
      * @throws InvalidElementTypeException
      */
-    private function getElementType(ElementInterface $element, bool $getCoreType = false): string
+    protected function getElementType(ElementInterface $element, bool $getCoreType = false): string
     {
         return match (true) {
             $element instanceof Asset => ElementTypes::TYPE_ASSET,

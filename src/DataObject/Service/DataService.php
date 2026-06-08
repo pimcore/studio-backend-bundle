@@ -54,6 +54,7 @@ final readonly class DataService implements DataServiceInterface
         private DataAdapterServiceInterface $dataAdapterService,
         private InheritanceServiceInterface $inheritanceService,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
+        private RelationNormalizationContext $normalizationContext,
     ) {
     }
 
@@ -286,13 +287,18 @@ final readonly class DataService implements DataServiceInterface
      */
     private function getDetailObjectData(Concrete $dataObject, array $fieldDefinitions): array
     {
-        $data = [];
-        foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            $data[$key] = $this->getDetailValue(
-                $dataObject,
-                $this->getValidFieldValue($dataObject, $key),
-                $fieldDefinition
-            );
+        $this->normalizationContext->setParent($dataObject);
+        try {
+            $data = [];
+            foreach ($fieldDefinitions as $key => $fieldDefinition) {
+                $data[$key] = $this->getDetailValue(
+                    $dataObject,
+                    $this->getValidFieldValue($dataObject, $key),
+                    $fieldDefinition
+                );
+            }
+        } finally {
+            $this->normalizationContext->setParent(null);
         }
 
         return $data;

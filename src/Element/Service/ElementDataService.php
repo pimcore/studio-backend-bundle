@@ -13,31 +13,58 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\RelationNormalizationContext;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 
 /**
  * @internal
  */
-final readonly class ElementDataService implements ElementDataServiceInterface
+readonly class ElementDataService implements ElementDataServiceInterface
 {
     use ElementProviderTrait;
 
+    public function __construct(
+        protected SecurityServiceInterface $securityService,
+        protected RelationNormalizationContext $normalizationContext,
+    ) {
+    }
+
     public function getRelatedElementData(ElementInterface $element): RelatedElementData
     {
+        $hasAccess = true;
+        $canEdit = true;
+        try {
+            $user = $this->securityService->getCurrentUser();
+            /** @var User $user */
+            $hasAccess = $element->isAllowed('view', $user);
+            $parent = $this->normalizationContext->getParent();
+            if ($parent !== null) {
+                $canEdit = $parent->isAllowed('save', $user) || $parent->isAllowed('publish', $user);
+            }
+        } catch (UserNotFoundException) {
+            $hasAccess = false;
+            $canEdit = false;
+        }
+
         return new RelatedElementData(
             $element->getId(),
             $this->getElementType($element, true),
             $this->getSubType($element),
             $element->getRealFullPath(),
-            $this->getPublished($element)
+            $this->getPublished($element),
+            $hasAccess,
+            $canEdit,
         );
     }
 
-    private function getSubType(ElementInterface $element): string
+    protected function getSubType(ElementInterface $element): string
     {
         if ($element instanceof Concrete) {
             return $element->getClassName();
@@ -46,7 +73,7 @@ final readonly class ElementDataService implements ElementDataServiceInterface
         return $element->getType();
     }
 
-    private function getPublished(ElementInterface $element): ?bool
+    protected function getPublished(ElementInterface $element): ?bool
     {
         if ($element instanceof Concrete || $element instanceof Document) {
             return $element->getPublished();

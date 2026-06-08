@@ -1,5 +1,6 @@
 {
   "name": "pimcore/studio-backend-bundle",
+  "version": "2025.4.5",
   "license": "proprietary",
   "type": "pimcore-bundle",
   "description": "Pimcore Studio Backend Bundle",
