@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
@@ -42,7 +43,7 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
         private OptionsProviderResolverInterface $optionsProviderResolver,
         private SelectOptionHydratorInterface $selectOptionHydrator,
         private EventDispatcherInterface $eventDispatcher,
-
+        private DotNotationParserInterface $dotNotationParser,
     ) {
     }
 
@@ -133,7 +134,9 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
         Concrete $object
     ): Select|Multiselect {
         try {
-            $fieldDefinition = $object->getClass()->getFieldDefinition($selectOptionsParameter->getFieldName());
+            $fieldDefinition = $this->dotNotationParser
+                ->parse($object, $selectOptionsParameter->getFieldName())
+                ->getFieldDefinition();
         } catch (Exception) {
             throw new NotFoundException('class', $object->getClassId());
         }
