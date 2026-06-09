@@ -25,7 +25,6 @@ on:
 
 env:
   PIMCORE_PROJECT_ROOT: ${{ github.workspace }}
-  PRIVATE_REPO: ${{ github.event.repository.private }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
@@ -37,7 +36,6 @@ jobs:
     outputs:
       php_versions: ${{ steps.parse-php-versions.outputs.php_versions }}
       phpstan_matrix: ${{ steps.set-matrix.outputs.phpstan_matrix }}
-      private_repo: ${{ env.PRIVATE_REPO }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -79,7 +77,7 @@ jobs:
     uses: pimcore/workflows-collection-public/.github/workflows/reusable-static-analysis-unified.yaml@main
     with:
       phpstan_matrix: ${{ needs.setup-matrix.outputs.phpstan_matrix }}
-      private_repo: ${{ needs.setup-matrix.outputs.private_repo }}
+      private_repo: 'true'  # this repo depends on pimcore/ee-pimcore (private), so Composer needs SSH even though this repo itself is public
       APP_ENV: test
       PIMCORE_TEST: 1
       REQUIRE_ADMIN_BUNDLE: "true"
