@@ -76,10 +76,11 @@ jobs:
 
   static-analysis:
     needs: setup-matrix
-    uses: pimcore/workflows-collection-public/.github/workflows/reusable-static-analysis-unified.yaml@main
+    uses: pimcore/workflows-collection-public/.github/workflows/reusable-static-analysis-unified.yaml@fix/static-analysis-private-packagist-auth
+
     with:
       phpstan_matrix: ${{ needs.setup-matrix.outputs.phpstan_matrix }}
-      private_repo: ${{ needs.setup-matrix.outputs.private_repo }}
+      private_repo: 'true'
       APP_ENV: test
       PIMCORE_TEST: 1
       REQUIRE_ADMIN_BUNDLE: "true"
