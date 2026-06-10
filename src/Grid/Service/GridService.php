@@ -345,7 +345,8 @@ final class GridService implements GridServiceInterface
                     locale: $column['locale'] ?? null,
                     type: $column['type'],
                     group: $column['group'] ?? null,
-                    config: $column['config']
+                    config: $column['config'],
+                    width: $column['width'] ?? null
                 );
             } catch (Exception) {
                 throw new InvalidArgumentException('Invalid column configuration');
@@ -421,9 +422,10 @@ final class GridService implements GridServiceInterface
         }
 
         $data = [];
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
         foreach ($items as $item) {
             $data[] = $this->getGridDataForElement(
-                $this->getConfigurationFromArray($gridParameter->getColumns()),
+                $columns,
                 $item,
                 $elementType,
                 $item->getId()
