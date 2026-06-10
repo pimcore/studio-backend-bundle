@@ -34,6 +34,8 @@ readonly class ColumnSchema
         private ?string $locale,
         #[Property(description: 'Define the group structure', type: 'object', example: ['system'])]
         private array $group,
+        #[Property(description: 'Width of the Column', type: 'integer', example: 200, nullable: true)]
+        private ?int $width = null,
     ) {
     }
 
@@ -52,12 +54,18 @@ readonly class ColumnSchema
         return $this->group;
     }
 
+    public function getWidth(): ?int
+    {
+        return $this->width;
+    }
+
     public function toArray(): array
     {
         return [
             'key' => $this->key,
             'locale' => $this->locale,
             'group' => $this->group,
+            'width' => $this->width,
         ];
     }
 }
