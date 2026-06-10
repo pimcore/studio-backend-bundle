@@ -31,7 +31,7 @@ final readonly class ElementParameters
 
     public function getType(): ?string
     {
-        return $this->getElementType($this->type);
+        return $this->mapElementType($this->type);
     }
 
     public function getId(): ?int
