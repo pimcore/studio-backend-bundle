@@ -17,7 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
@@ -37,7 +37,12 @@ final readonly class SessionCloseSubscriber implements EventSubscriberInterface
     {
         return [
             LoginSuccessEvent::class => 'onLoginSuccess',
-            KernelEvents::REQUEST => 'onKernelRequest',
+            // Must run on CONTROLLER_ARGUMENTS, not REQUEST: with lazy firewalls the session
+            // is only opened when the token is first accessed, which happens in
+            // IsGrantedAttributeListener (CONTROLLER_ARGUMENTS, priority 20). Priority 0 puts
+            // us right after it, so the session is open and we can release the lock before
+            // the controller runs.
+            KernelEvents::CONTROLLER_ARGUMENTS => ['onKernelControllerArguments', 0],
         ];
     }
 
@@ -51,10 +56,14 @@ final readonly class SessionCloseSubscriber implements EventSubscriberInterface
         $this->closeSessionWrite($request->getSession());
     }
 
-    public function onKernelRequest(RequestEvent $event): void
+    public function onKernelControllerArguments(ControllerArgumentsEvent $event): void
     {
         $request = $event->getRequest();
         if (!$event->isMainRequest() || !$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)) {
+            return;
+        }
+
+        if (!$request->hasSession()) {
             return;
         }
 
