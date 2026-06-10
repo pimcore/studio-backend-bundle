@@ -90,7 +90,8 @@ final readonly class UpdateUser
         private array $documentWorkspaces,
         #[Property(
             description: 'Allowed studio perspectives',
-            type: 'object',
+            type: 'array',
+            items: new Items(type: 'string'),
             example: [Perspectives::DEFAULT_ID->value, 'some_otherPerspective_Id']
         )]
         private array $perspectives = [],
