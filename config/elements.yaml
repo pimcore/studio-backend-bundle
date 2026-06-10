@@ -51,6 +51,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\EditLockServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\EditLockService
+
   #
   # Handler
   #
@@ -80,3 +83,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ElementUsageHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydrator

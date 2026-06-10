@@ -54,4 +54,10 @@ trait ValidateElementTypeTrait
             throw new InvalidElementTypeException($elementType);
         }
     }
+
+    private function getCoreElementType(string $elementType): string
+    {
+
+        return $this->getElementType($elementType);
+    }
 }
