@@ -90,4 +90,37 @@ final class ColumnTest extends Unit
         $this->assertSame('manufacturer', $configs->getColumns()[0]->getRelation());
         $this->assertInstanceOf(RelationFieldConfig::class, $configs->getColumns()[0]);
     }
+
+    public function testWidthDefaultsToNull(): void
+    {
+        $column = new Column('id', 'en', 'system.id', ['system'], []);
+
+        $this->assertNull($column->getWidth());
+    }
+
+    public function testWidthIsSetWhenProvided(): void
+    {
+        $column = new Column('id', 'en', 'system.id', ['system'], [], 200);
+
+        $this->assertSame(200, $column->getWidth());
+    }
+
+    public function testToArrayContainsWidth(): void
+    {
+        $column = new Column('id', 'en', 'system.id', ['system'], [], 150);
+
+        $result = $column->toArray();
+
+        $this->assertSame(150, $result['width']);
+    }
+
+    public function testToArrayContainsNullWidthWhenNotProvided(): void
+    {
+        $column = new Column('id', 'en', 'system.id', ['system'], []);
+
+        $result = $column->toArray();
+
+        $this->assertArrayHasKey('width', $result);
+        $this->assertNull($result['width']);
+    }
 }
