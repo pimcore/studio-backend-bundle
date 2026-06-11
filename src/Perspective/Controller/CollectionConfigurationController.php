@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
@@ -54,7 +53,6 @@ final class CollectionConfigurationController extends AbstractApiController
      * @throws NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_get_perspectives_configurations_list', methods: ['GET'])]
-    #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_get_config_collection',
