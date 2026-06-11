@@ -55,7 +55,7 @@ final class CreateController extends AbstractApiController
      * @throws ElementExistsException|ElementSavingFailedException|NotWriteableException|UserNotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_class_definition_create', methods: ['POST'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_definition_create',
