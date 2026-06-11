@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeT
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\WorkflowPendingItemsResolverCompilerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
@@ -97,6 +98,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new PhpCodeTransformerPass());
         $container->addCompilerPass(new DataProviderPass());
         $container->addCompilerPass(new DocumentTypeAdapterPass());
+        $container->addCompilerPass(new WorkflowPendingItemsResolverCompilerPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
