@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Widget;
 use Pimcore\Bundle\StudioBackendBundle\Element\Model\ContextPermissionData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateElementTypeTrait;
 use function array_key_exists;
 use function is_bool;
 use function sprintf;
@@ -26,8 +25,6 @@ use function sprintf;
  */
 final readonly class TreeContextPermissionsService implements TreeContextPermissionsServiceInterface
 {
-    use ValidateElementTypeTrait;
-
     public function __construct(
         private ContextPermissionsServiceInterface $contextPermissionService,
     ) {

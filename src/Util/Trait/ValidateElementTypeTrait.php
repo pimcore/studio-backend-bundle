@@ -22,7 +22,7 @@ use function in_array;
  */
 trait ValidateElementTypeTrait
 {
-    private function getElementType(?string $elementType): ?string
+    private function mapElementType(?string $elementType): ?string
     {
         if ($elementType === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;
@@ -53,5 +53,11 @@ trait ValidateElementTypeTrait
         if (!in_array($elementType, ElementTypes::ALLOWED_STUDIO_TYPES, true)) {
             throw new InvalidElementTypeException($elementType);
         }
+    }
+
+    private function getCoreElementType(string $elementType): string
+    {
+
+        return $this->mapElementType($elementType);
     }
 }

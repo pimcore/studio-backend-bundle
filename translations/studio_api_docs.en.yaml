@@ -2022,3 +2022,15 @@ settings_update_description: |
   </ul>
   <strong>Note:</strong> Only the settings provided in the request body will be updated.
 settings_update_summary: Update system settings
+element_get_editlock_description: |
+  Check whether the element of the given <strong>{elementType}</strong> and <strong>{id}</strong> is currently edit-locked by another user session.
+element_get_editlock_summary: Get edit lock status for an element
+element_get_editlock_success_response: Edit lock status of the element
+element_lock_description: |
+  Create an edit lock on the element of the given <strong>{elementType}</strong> and <strong>{id}</strong> for the current user session.
+element_lock_summary: Lock an element for editing
+element_lock_success_response: Element locked successfully
+element_unlock_description: |
+  Remove the edit lock from the element of the given <strong>{elementType}</strong> and <strong>{id}</strong>.
+element_unlock_summary: Unlock an element
+element_unlock_success_response: Element unlocked successfully
