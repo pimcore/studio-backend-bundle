@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Event\PreResponse\AdminSettingsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator\SettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\UpdateSettings;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -26,14 +28,21 @@ final readonly class SettingsService implements SettingsServiceInterface
     public function __construct(
         private SettingRepositoryInterface $adminSettingRepository,
         private SettingsHydratorInterface $adminSettingsHydrator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
     public function getAdminSettings(): Settings
     {
         $config = $this->adminSettingRepository->getConfiguration();
+        $settings = $this->adminSettingsHydrator->hydrate($config);
 
-        return $this->adminSettingsHydrator->hydrate($config);
+        $this->eventDispatcher->dispatch(
+            new AdminSettingsEvent($settings),
+            AdminSettingsEvent::EVENT_NAME
+        );
+
+        return $settings;
     }
 
     public function updateAdminSettings(UpdateSettings $updateAdminSettings): void

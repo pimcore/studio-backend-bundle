@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema;
 
+use OpenApi\Attributes\AdditionalProperties;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use function array_key_exists;
 
 #[Schema(
     schema: 'UpdateAdminSettings',
@@ -29,6 +31,19 @@ final readonly class UpdateSettings
         private Branding $branding,
         #[Property(ref: Assets::class, description: 'Assets configuration')]
         private Assets $assets,
+        #[Property(
+            description: 'AdditionalAttributes',
+            type: 'object',
+            additionalProperties: new AdditionalProperties(
+                anyOf: [
+                    new Schema(type: 'string'),
+                    new Schema(type: 'number'),
+                    new Schema(type: 'boolean'),
+                    new Schema(type: 'object'),
+                ]
+            )
+        )]
+        private array $additionalAttributes = [],
     ) {
     }
 
@@ -40,5 +55,20 @@ final readonly class UpdateSettings
     public function getAssets(): Assets
     {
         return $this->assets;
+    }
+
+    public function getAdditionalAttributes(): array
+    {
+        return $this->additionalAttributes;
+    }
+
+    public function hasAdditionalAttribute(string $key): bool
+    {
+        return array_key_exists($key, $this->additionalAttributes);
+    }
+
+    public function getAdditionalAttribute(string $key): mixed
+    {
+        return $this->additionalAttributes[$key] ?? null;
     }
 }
