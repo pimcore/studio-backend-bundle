@@ -205,6 +205,7 @@ For more details and frontend customization options, see the
 - `pre_response.email.log.detail.params`
 - `pre_response.email.logList.entry`
 - `pre_response.element.context_permissions`
+- `pre_response.element_editLock`
 - `pre_response.element_locate`
 - `pre_response.element_property`
 - `pre_response.element_subtype`

@@ -26,7 +26,6 @@ use function sprintf;
  */
 final readonly class TreeContextPermissionsService implements TreeContextPermissionsServiceInterface
 {
-    use ValidateElementTypeTrait;
 
     public function __construct(
         private ContextPermissionsServiceInterface $contextPermissionService,
