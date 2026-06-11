@@ -16,11 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Controller\TokenLoginController;
+use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
@@ -28,7 +30,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use function in_array;
 
 /**
  * @internal
@@ -43,14 +47,18 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private UserRepositoryInterface $userRepository,
         private UserResolverInterface $userResolver,
         private SecurityServiceInterface $securityService,
+        private RequestStack $requestStack,
+        private SettingsProviderInterface $settingsProvider,
+        private SiteRepositoryInterface $siteRepository,
     ) {
     }
 
     /**
-     * @throws RateLimitException|DomainConfigurationException|SendMailException
+     * {@inheritdoc}
      */
     public function resetPassword(ResetPassword $resetPassword): void
     {
+        $this->validateResetPasswordUrl($resetPassword->getResetPasswordUrl());
 
         $user = $this->userResolver->getByName($resetPassword->getUsername());
 
@@ -71,7 +79,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 
             throw $exception;
         }
-
     }
 
     public function getLoginTokenUrl(int $id, TokenLink $parameter): string
@@ -103,6 +110,52 @@ final readonly class UserLoginService implements UserLoginServiceInterface
             ['token' => $token],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
+    }
+
+    private function validateResetPasswordUrl(string $url): void
+    {
+        $parsed = parse_url($url);
+
+        if ($parsed === false || !isset($parsed['scheme'], $parsed['host'])) {
+            throw new InvalidArgumentException('Invalid reset password URL provided');
+        }
+
+        $urlHost = $parsed['host'];
+
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request !== null && $urlHost === $request->getHost()) {
+            return;
+        }
+
+        if ($this->isRegisteredDomain($urlHost)) {
+            return;
+        }
+
+        throw new InvalidArgumentException(
+            'Reset password URL domain does not match any trusted domain'
+        );
+    }
+
+    private function isRegisteredDomain(string $host): bool
+    {
+        $settings = $this->settingsProvider->getSettings();
+        $mainDomain = $settings['main_domain'] ?? '';
+
+        if ($mainDomain !== '' && $host === $mainDomain) {
+            return true;
+        }
+
+        foreach ($this->siteRepository->listSites() as $site) {
+            if ($host === $site->getMainDomain()) {
+                return true;
+            }
+
+            if (in_array($host, $site->getDomains(), true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
