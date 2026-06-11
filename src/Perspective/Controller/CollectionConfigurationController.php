@@ -54,7 +54,6 @@ final class CollectionConfigurationController extends AbstractApiController
      * @throws NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_get_perspectives_configurations_list', methods: ['GET'])]
-    #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_get_config_collection',
