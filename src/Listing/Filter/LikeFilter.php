@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Model\Listing\AbstractListing;
@@ -22,6 +23,11 @@ use Pimcore\Model\Listing\AbstractListing;
  */
 final readonly class LikeFilter implements FilterInterface
 {
+    public function __construct(
+        private DbResolverInterface $dbResolver,
+    ) {
+    }
+
     public function apply(
         mixed $parameters,
         mixed $listing
@@ -39,7 +45,7 @@ final readonly class LikeFilter implements FilterInterface
         foreach ($likeColumns as $likeColumn) {
             $columnName = $likeColumn->getKey();
             $listing->addConditionParam(
-                '`' . $columnName . '` LIKE :' . $columnName,
+                $this->dbResolver->get()->quoteIdentifier($columnName) . ' LIKE :' . $columnName,
                 [$columnName => "%{$likeColumn->getFilterValue()}%"]
             );
         }
