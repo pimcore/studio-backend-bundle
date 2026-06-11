@@ -57,7 +57,7 @@ final class ImportController extends AbstractApiController
      * @throws NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_class_definition_import', methods: ['POST'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_definition_import',
