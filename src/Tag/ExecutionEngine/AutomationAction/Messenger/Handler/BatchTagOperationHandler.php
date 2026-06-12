@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerGarbageCollectionTrait;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
@@ -37,9 +39,11 @@ use function sprintf;
 #[AsMessageHandler]
 final class BatchTagOperationHandler extends AbstractHandler
 {
+    use HandlerGarbageCollectionTrait;
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly PimcoreResolverInterface $pimcoreResolver,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly TagServiceInterface $tagService,
@@ -81,6 +85,7 @@ final class BatchTagOperationHandler extends AbstractHandler
 
         $totalItems = count($elementIds);
         $stepName = $this->getJobStep($message)->getName();
+        $processedElements = 0;
 
         foreach ($elementIds as $elementId) {
             $parameters = new BatchCollectionParameters($elementType, [$elementId], $tagIds);
@@ -115,6 +120,8 @@ final class BatchTagOperationHandler extends AbstractHandler
             }
 
             $this->updateProgress($this->publishService, $this->userTopicService, $jobRun, $stepName, $totalItems, 100);
+            $processedElements++;
+            $this->collectGarbagePeriodically($this->pimcoreResolver, $processedElements);
         }
     }
 
