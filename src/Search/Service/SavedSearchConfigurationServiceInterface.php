@@ -13,17 +13,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\ConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
 
 /**
  * @internal
  */
-interface SaveConfigurationServiceInterface
+interface SavedSearchConfigurationServiceInterface
 {
     /**
      * @throws NotFoundException
+     * @throws ForbiddenException
      */
-    public function saveConfiguration(ConfigurationParameter $configuration, ?string $classId = null): Configuration;
+    public function getSavedSearchConfiguration(int $id): DetailedConfiguration;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function saveConfiguration(SavedSearchParameter $parameter): Configuration;
 }

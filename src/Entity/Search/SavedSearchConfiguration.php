@@ -17,11 +17,10 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
 
 /**
  * @internal
- * 
+ *
  * -----
  * NOTES
  * -----
@@ -32,13 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
  * - description (Textarea)
  * - createShortcut (Checkbox, shortcut handling tbd)
  * - shares (selection of user and/or roles to share the Search with, also tbd)
- * 
+ *
  * Other parts that affect the search:
- * - type filter (different between element types) -> handled by SearchGridParameter
- * - search input field -> handled by SearchGridParameter
- * - advanced search & filter (handled by grid configuration already?) -> handled by SearchGridParameter
- * - tag filters -> handled by SearchGridParameter
- * - grid configuration
+ * - type filter, search input, advanced filter, tag filters -> stored in filter (serialised FilterParameter)
+ * - grid column configuration -> stored in columns (SearchGridParameter.columns)
  */
 #[ORM\Entity]
 #[ORM\Table(name: SavedSearchConfiguration::TABLE_NAME)]
@@ -71,10 +67,10 @@ class SavedSearchConfiguration
     private bool $createMenuShortcut = false;
 
     #[ORM\Column(name: 'columns', type: 'json')]
-    private array $columns;
+    private array $columns = [];
 
-    #[ORM\Column(name: 'columns', type: 'json')]
-    private SearchGridParameter $searchParameters;
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $filter = null;
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $creationDate;
@@ -83,7 +79,7 @@ class SavedSearchConfiguration
     private DateTime $modificationDate;
 
     #[ORM\OneToMany(
-        targetEntity: savedsearchConfigurationShare::class,
+        targetEntity: SavedSearchConfigurationShare::class,
         mappedBy: 'configuration',
         cascade: ['persist'],
         orphanRemoval: true
@@ -130,6 +126,11 @@ class SavedSearchConfiguration
         return $this->columns;
     }
 
+    public function getFilter(): ?array
+    {
+        return $this->filter;
+    }
+
     public function getCreationDate(): DateTime
     {
         return $this->creationDate;
@@ -148,11 +149,6 @@ class SavedSearchConfiguration
     public function getShares(): Collection
     {
         return $this->shares;
-    }
-
-    public function getSearchParameters(): SearchGridParameter
-    {
-        return $this->searchParameters;
     }
 
     public function setName(string $name): void
@@ -185,6 +181,11 @@ class SavedSearchConfiguration
         $this->columns = $columns;
     }
 
+    public function setFilter(?array $filter): void
+    {
+        $this->filter = $filter;
+    }
+
     public function setCreated(): void
     {
         $this->creationDate = new DateTime('now');
@@ -209,10 +210,5 @@ class SavedSearchConfiguration
     public function clearShares(): void
     {
         $this->shares->clear();
-    }
-
-    public function setSearchParameters(SearchGridParameter $searchParameters): void
-    {
-        $this->searchParameters = $searchParameters;
     }
 }

@@ -27,12 +27,23 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ConfigurationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ConfigurationHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\DetailedConfigurationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\DetailedConfigurationHydrator
+
   #
   # Repositories
   #
 
   Pimcore\Bundle\StudioBackendBundle\Search\Repository\SearchRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Repository\SearchRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Repository\SavedSearchConfigurationRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Repository\SavedSearchConfigurationRepository
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
 
   #
   # Services
@@ -42,6 +53,15 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchService
     arguments:
       $previewHydratorLocator: '@search.element_preview.service_locator'
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Service\ShareServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Service\ShareService
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Service\SaveConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SaveConfigurationService
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationService
 
   #
   # Service Locator

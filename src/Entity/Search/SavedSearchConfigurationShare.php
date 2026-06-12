@@ -22,7 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: SavedSearchConfigurationShare::TABLE_NAME)]
 class SavedSearchConfigurationShare
 {
-    public const string TABLE_NAME = 'bundle_studio_grid_configuration_shares';
+    public const string TABLE_NAME = 'bundle_studio_saved_search_configuration_shares';
 
     #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
