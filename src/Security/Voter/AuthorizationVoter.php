@@ -21,7 +21,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class AuthorizationVoter extends Voter
 {
-    private const SUPPORTED_ATTRIBUTE = 'STUDIO_API';
+    private const string SUPPORTED_ATTRIBUTE = 'STUDIO_API';
 
     /**
      * {@inheritdoc}
@@ -33,10 +33,6 @@ final class AuthorizationVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if ($attribute !== self::SUPPORTED_ATTRIBUTE) {
-            return false;
-        }
-
-        return true;
+        return $attribute === self::SUPPORTED_ATTRIBUTE;
     }
 }
