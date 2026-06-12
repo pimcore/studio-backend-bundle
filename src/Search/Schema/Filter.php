@@ -21,6 +21,7 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
+    schema: 'Search Filter',
     title: 'Search Filter',
     required: ['page', 'pageSize', 'includeDescendants', 'excludeFolders'],
     type: 'object'

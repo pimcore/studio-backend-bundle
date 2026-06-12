@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 /**
  * @internal
  */
-readonly class SavedSearchParameter
+final readonly class SavedSearchParameter
 {
     public function __construct(
         #[NotBlank]
