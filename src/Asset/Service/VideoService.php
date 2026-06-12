@@ -54,12 +54,15 @@ final readonly class VideoService implements VideoServiceInterface
         }
 
         $configuration = $this->thumbnailService->getVideoThumbnailConfig($thumbnailName);
-        $thumbnail = $video->getThumbnail($configuration, ['mp4']);
 
-        $status = is_array($thumbnail) && isset($thumbnail['status'])
-            ? (string) $thumbnail['status']
+        // Read the status from the custom setting directly: Asset\Video::getThumbnail() would
+        // start a conversion as a side effect and returns null for errored conversions,
+        // which would make the error status unreachable for polling clients.
+        $customSetting = $video->getCustomSetting('thumbnails');
+        $status = is_array($customSetting)
+            ? ($customSetting[$configuration->getName()]['status'] ?? VideoThumbnailStatus::STATUS_NOT_STARTED)
             : VideoThumbnailStatus::STATUS_NOT_STARTED;
 
-        return new VideoThumbnailStatus($status);
+        return new VideoThumbnailStatus((string) $status);
     }
 }
