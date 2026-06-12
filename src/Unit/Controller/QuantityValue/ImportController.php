@@ -70,6 +70,7 @@ final class ImportController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function importUnits(Request $request): Response

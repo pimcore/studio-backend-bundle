@@ -62,6 +62,7 @@ final class CreateController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function createUnit(#[MapRequestPayload] CreateUnitParameters $parameters): JsonResponse
     {
