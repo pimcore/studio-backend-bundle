@@ -503,6 +503,50 @@ In this example, `{{ value.name }} - {{ value.manufacturer.name }}` resolves to 
 ...
 ```
 
+---
+
+**Available Twig Filters, Functions and Tags:**
+
+Templates are rendered inside a [Twig sandbox](https://twig.symfony.com/doc/3.x/api.html#sandbox-extension).
+Only the tags, filters and functions listed below are allowed; anything else (method calls, property
+access, file includes, etc.) is rejected and the template fails to render. This prevents arbitrary
+code execution through user-provided templates.
+
+- **Tags:** `if`, `for`, `set`
+- **Functions:** `date`, `max`, `min`, `random`, `range`
+- **Filters:**
+  - *Core:* `abs`, `capitalize`, `date`, `date_modify`, `default`, `escape`, `filter`, `find`,
+    `first`, `format`, `join`, `json_encode`, `keys`, `last`, `length`, `lower`, `map`, `merge`,
+    `nl2br`, `number_format`, `raw`, `reduce`, `replace`, `reverse`, `round`, `shuffle`, `slice`,
+    `sort`, `split`, `striptags`, `title`, `trim`, `upper`, `url_encode`
+  - *Localization* (require [`twig/intl-extra`](https://packagist.org/packages/twig/intl-extra)):
+    `country_name`, `currency_name`, `currency_symbol`, `format_currency`, `format_date`,
+    `format_datetime`, `format_number`, `format_time`, `language_name`, `locale_name`
+  - *String* (require [`twig/string-extra`](https://packagist.org/packages/twig/string-extra)):
+    `plural`, `singular`
+
+> **Note:** The localization and string filters depend on the corresponding Twig extra packages being
+> installed and registered (they are auto-registered by `twig/extra-bundle`). The localization filters
+> additionally require the PHP `intl` extension.
+
+The allow-list can be customized per project via the bundle configuration:
+
+```yaml
+pimcore_studio_backend:
+    twig:
+        sandbox_security_policy:
+            tags: [ 'if', 'for', 'set' ]
+            filters: [ 'upper', 'lower', 'format_date' ]
+            functions: [ 'date', 'max', 'min' ]
+```
+
+> **Security:** Be careful when extending the allow-list. Filters such as `raw` disable output
+> escaping (potential XSS if the value is rendered as HTML), and functions such as `range` combined
+> with `for` loops can be abused to build very large outputs. Do not add Twig functions like
+> `constant`, `attribute`, `include` or `source`, as they can expose internal data or read files.
+
+---
+
 #### Blur Transformer
 
 The `blur` transformer allows you to obfuscate or anonymize sensitive string data using predefined strategies such as masking, initials, partial reveal, or complete hiding. It is especially useful for protecting personal information in grid views.
