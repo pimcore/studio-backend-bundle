@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioDashboardsBundle\Schema\Widget\WidgetConfig;
 use Pimcore\Workflow\Manager;
 use Pimcore\Bundle\StudioDashboardsBundle\Schema\Widget\WorkflowPendingItemsWidgetConfig;
-use Pimcore\Bundle\StudioDashboardsBundle\Schema\WidgetData\WorkflowPendingItem;
 use Pimcore\Bundle\StudioDashboardsBundle\Resolver\Widget\DataResolverInterface;
 use Pimcore\Bundle\StudioDashboardsBundle\Service\Loader\Widget\TaggedIteratorDataResolver;
 use Pimcore\Bundle\StudioDashboardsBundle\Util\Constant\WidgetTypes;
@@ -34,7 +33,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  *
  * Enhanced version of WorkflowPendingItemsResolver with proper error handling and logging for state label resolution.
  */
-#[AutoconfigureTag(TaggedIteratorDataResolver::RESOLVER_TAG)]
+#[AutoconfigureTag(TaggedIteratorDataResolver::RESOLVER_TAG, attributes: ['priority' => 10])]
 final readonly class WorkflowPendingItemsResolverDecorator implements DataResolverInterface
 {
     public function __construct(
@@ -52,7 +51,7 @@ final readonly class WorkflowPendingItemsResolverDecorator implements DataResolv
     /**
      * @throws DatabaseException
      *
-     * @return WorkflowPendingItem[]
+     * @return array<int, array<string, mixed>>
      */
     public function resolveData(WidgetConfig $widget): array
     {
@@ -115,17 +114,17 @@ final readonly class WorkflowPendingItemsResolverDecorator implements DataResolv
             // Determine the display element type for the frontend
             $displayElementType = $ctype === 'object' ? 'data-object' : $ctype;
 
-            $result[] = new WorkflowPendingItem(
-                elementId: $cid,
-                elementType: $displayElementType,
-                path: $element->getFullPath(),
-                objectKey: $element->getKey(),
-                workflowName: $widget->getWorkflowName(),
-                stateName: $widget->getStateName(),
-                stateLabel: $stateLabel,
-                stateColor: $stateColor,
-                modificationDate: $element->getModificationDate() ?? 0,
-            );
+            $result[] = [
+                'elementId' => $cid,
+                'elementType' => $displayElementType,
+                'path' => $element->getFullPath(),
+                'objectKey' => $element->getKey(),
+                'workflowName' => $widget->getWorkflowName(),
+                'stateName' => $widget->getStateName(),
+                'stateLabel' => $stateLabel,
+                'stateColor' => $stateColor,
+                'modificationDate' => $element->getModificationDate() ?? 0,
+            ];
         }
 
         return $result;
