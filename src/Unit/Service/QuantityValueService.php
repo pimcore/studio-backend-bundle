@@ -32,7 +32,12 @@ use Pimcore\Model\DataObject\QuantityValue\Service as QuantityValueModelService;
 use Pimcore\Model\DataObject\QuantityValue\Unit;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
+use function implode;
+use function is_array;
+use function is_string;
+use function json_decode;
 use function mb_strlen;
+use function preg_match;
 use function sprintf;
 
 /**
@@ -41,6 +46,8 @@ use function sprintf;
 final readonly class QuantityValueService implements QuantityValueServiceInterface
 {
     private const int MAX_UNIT_ID_LENGTH = 50;
+
+    private const string UNIT_ID_PATTERN = '/^[a-zA-Z0-9_\-]+$/';
 
     public function __construct(
         private DownloadServiceInterface $downloadService,
@@ -95,15 +102,7 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
     {
         $id = $parameters->getId();
 
-        if (mb_strlen($id) > self::MAX_UNIT_ID_LENGTH) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'Unit ID must not exceed %d characters, provided ID has %d characters.',
-                    self::MAX_UNIT_ID_LENGTH,
-                    mb_strlen($id)
-                )
-            );
-        }
+        $this->validateUnitId($id);
 
         if ($this->quantityValueRepository->unitExists($id)) {
             throw new InvalidArgumentException(
@@ -167,6 +166,8 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
      */
     public function importUnits(string $json): void
     {
+        $this->validateImportDefinition($json);
+
         $success = $this->quantityValueModelService->importDefinitionFromJson($json);
 
         if (!$success) {
@@ -212,6 +213,76 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
         );
 
         return $hydrated;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateUnitId(string $id): void
+    {
+        if (mb_strlen($id) > self::MAX_UNIT_ID_LENGTH) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Unit ID must not exceed %d characters, provided ID has %d characters.',
+                    self::MAX_UNIT_ID_LENGTH,
+                    mb_strlen($id)
+                )
+            );
+        }
+
+        if (!preg_match(self::UNIT_ID_PATTERN, $id)) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Unit ID "%s" contains invalid characters.' .
+                    ' Allowed characters are a-z, A-Z, 0-9, "_" and "-".',
+                    $id
+                )
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateImportDefinition(string $json): void
+    {
+        $unitsArray = json_decode($json, true);
+
+        if (!is_array($unitsArray)) {
+            throw new InvalidArgumentException(
+                'Import definition must be a valid JSON array of unit definitions.'
+            );
+        }
+
+        $invalidIds = [];
+
+        foreach ($unitsArray as $unitArray) {
+            $id = is_array($unitArray) ? ($unitArray['id'] ?? null) : null;
+
+            if (!is_string($id) || $id === '') {
+                throw new InvalidArgumentException(
+                    'Each unit definition in the import must contain a non-empty string "id".'
+                );
+            }
+
+            if (
+                mb_strlen($id) > self::MAX_UNIT_ID_LENGTH ||
+                !preg_match(self::UNIT_ID_PATTERN, $id)
+            ) {
+                $invalidIds[] = $id;
+            }
+        }
+
+        if ($invalidIds !== []) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Import contains invalid unit IDs: "%s".' .
+                    ' Allowed characters are a-z, A-Z, 0-9, "_" and "-", with a maximum length of %d characters.',
+                    implode('", "', $invalidIds),
+                    self::MAX_UNIT_ID_LENGTH
+                )
+            );
+        }
     }
 
     private function applyUnitParameters(Unit $unit, UnitParametersInterface $parameters): void
