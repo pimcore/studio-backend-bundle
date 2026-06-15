@@ -47,7 +47,7 @@ final class EditLock implements AdditionalAttributesInterface
     ) {
     }
 
-    public function isLocked(): bool
+    public function getIsLocked(): bool
     {
         return $this->isLocked;
     }
