@@ -59,6 +59,7 @@ interface QuantityValueServiceInterface
     public function deleteUnit(string $id): void;
 
     /**
+     * @throws InvalidArgumentException
      * @throws EnvironmentException
      */
     public function importUnits(string $json): void;

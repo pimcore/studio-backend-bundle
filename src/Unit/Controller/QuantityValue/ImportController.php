@@ -69,6 +69,7 @@ final class ImportController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function importUnits(#[MapUploadedFile] UploadedFile $file): Response

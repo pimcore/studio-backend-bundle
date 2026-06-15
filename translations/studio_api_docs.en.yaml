@@ -1650,6 +1650,7 @@ tag_export_description: Export
 class_definition_collection_description: Get collection of all class definitions
 class_definition_collection_summary: Get class definitions collection
 class_definition_collection_success_response: List of class definitions
+class_definition_collection_creatable_widget_id_description: Optional element tree widget ID to filter classes by the widget's allowed classes configuration
 class_definition_create_description: |
   Create a new class definition configuration with the given <strong>{name}</strong> and unique ID <strong>{uid}</strong> <br>
   The <strong>{uid}</strong> must be unique and not already exist.
