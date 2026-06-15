@@ -35,10 +35,10 @@ jobs:
         steps:
 
         - name: Checkout code
-          uses: actions/checkout@v4
+          uses: actions/checkout@v5
 
         - name: Checkout reusable workflow repo
-          uses: actions/checkout@v4
+          uses: actions/checkout@v5
           with:
             repository: pimcore/workflows-collection-public
             ref: main
