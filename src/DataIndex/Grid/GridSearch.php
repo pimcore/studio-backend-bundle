@@ -152,10 +152,9 @@ final readonly class GridSearch implements GridSearchInterface
         $filter = $this->setFilterPath($filter, $type, $gridParameter->getFolderId(), $user);
 
         $query = $this->queryFactory->create($type);
-        $query = $this->filterService->applyFilters($query, $filter, $type);
         $query->setUser($user);
 
-        return $query;
+        return $this->filterService->applyFilters($query, $filter, $type);
     }
 
     private function setFilterPath(

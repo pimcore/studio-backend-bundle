@@ -17,6 +17,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -59,12 +60,21 @@ final class CreatableCollectionController extends AbstractApiController
         description: 'class_definition_collection_creatable_success_response',
         content: new CollectionJson(new GenericCollection(ClassDefinitionList::class))
     )]
+    #[StringParameter(
+        name: 'widgetId',
+        example: 'object_tree',
+        description: 'class_definition_collection_creatable_widget_id_description',
+        required: false,
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function listClasses(): JsonResponse
+    public function listClasses(?string $widgetId = null): JsonResponse
     {
-        $items = $this->classDefinitionService->getClassDefinitionCollection(true);
+        $items = $this->classDefinitionService->getClassDefinitionCollection(
+            creatableOnly: true,
+            widgetId: $widgetId,
+        );
 
         return $this->getPaginatedCollection(
             $this->serializer,

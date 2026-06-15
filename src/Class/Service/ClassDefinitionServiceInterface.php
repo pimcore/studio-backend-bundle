@@ -62,7 +62,8 @@ interface ClassDefinitionServiceInterface
      * @return ClassDefinitionList[]
      */
     public function getClassDefinitionCollection(
-        bool $creatableOnly = false
+        bool $creatableOnly = false,
+        ?string $widgetId = null,
     ): array;
 
     /**

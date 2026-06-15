@@ -24,11 +24,15 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\UpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\JsonExport;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @internal
@@ -41,6 +45,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
+        private WidgetServiceInterface $widgetService,
     ) {
     }
 
@@ -106,9 +111,20 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
      * {@inheritdoc}
      */
     public function getClassDefinitionCollection(
-        bool $creatableOnly = false
+        bool $creatableOnly = false,
+        ?string $widgetId = null,
     ): array {
-        return $this->hydrateClassDefinitionList($this->getClassDefinitions($creatableOnly));
+        $classDefinitions = $this->getClassDefinitions($creatableOnly);
+        $widgetClasses = $this->resolveWidgetClasses($widgetId);
+
+        if (!empty($widgetClasses)) {
+            $classDefinitions = array_filter(
+                $classDefinitions,
+                static fn (CoreClassDefinition $cd): bool => in_array($cd->getId(), $widgetClasses, true)
+            );
+        }
+
+        return $this->hydrateClassDefinitionList($classDefinitions);
     }
 
     /**
@@ -238,5 +254,23 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         );
 
         return $cd;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function resolveWidgetClasses(?string $widgetId): array
+    {
+        if ($widgetId === null) {
+            return [];
+        }
+
+        $widget = $this->widgetService->getWidgetConfigData(WidgetTypes::ELEMENT_TREE->value, $widgetId);
+
+        if ($widget instanceof ElementTreeWidgetConfig) {
+            return $widget->getClasses();
+        }
+
+        return [];
     }
 }
