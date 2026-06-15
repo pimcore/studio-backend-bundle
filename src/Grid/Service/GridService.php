@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\UserInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -80,6 +81,7 @@ final class GridService implements GridServiceInterface
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
+        private readonly LoggerInterface $pimcoreLogger,
     ) {
     }
 
@@ -424,12 +426,25 @@ final class GridService implements GridServiceInterface
         $data = [];
         $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
         foreach ($items as $item) {
-            $data[] = $this->getGridDataForElement(
-                $columns,
-                $item,
-                $elementType,
-                $item->getId()
-            );
+            try {
+                $data[] = $this->getGridDataForElement(
+                    $columns,
+                    $item,
+                    $elementType,
+                    $item->getId()
+                );
+            } catch (NotFoundException $exception) {
+                // ElasticSearch/DB sync lag: the index references an element that no longer
+                // exists in the database.
+                $this->pimcoreLogger->warning(
+                    'Skipping grid element missing from the database (index out of sync)',
+                    [
+                        'elementType' => $elementType,
+                        'elementId' => $item->getId(),
+                        'exception' => $exception,
+                    ]
+                );
+            }
         }
 
         return new Collection(

@@ -40,7 +40,7 @@ interface GridServiceInterface
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): ColumnCollection;
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|NotFoundException
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
