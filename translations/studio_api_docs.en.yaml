@@ -965,6 +965,16 @@ schedule_update_for_element_by_type_and_id_description: |
   See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
 schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
 schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
+saved_search_get_configuration_description: |
+  Get a saved search configuration by its <strong>{id}</strong>. <br>
+  Returns the full configuration including columns, filter state, and sharing settings.
+saved_search_get_configuration_summary: Get a saved search configuration
+saved_search_get_configuration_success_response: Saved search configuration
+saved_search_save_configuration_description: |
+  Save the current search state as a named configuration. <br>
+  Stores columns, filter state (pagination, sorting, column filters, path) and sharing options.
+saved_search_save_configuration_summary: Save a search configuration
+saved_search_save_configuration_success_response: Saved search configuration created successfully
 simple_search_get_description: |
   Search for elements based on the given <strong>{search term}</strong>. <br>
   Elements are searched with the fulltext filter applied via Generic Data Index. <br>

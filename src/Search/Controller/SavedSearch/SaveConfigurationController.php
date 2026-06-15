@@ -15,12 +15,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\SavedSearch;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Search\Attribute\Request\SavedSearchRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationServiceInterface;
@@ -62,10 +62,7 @@ final class SaveConfigurationController extends AbstractApiController
         summary: 'saved_search_save_configuration_summary',
         tags: [Tags::Search->value]
     )]
-    #[RequestBody(
-        required: true,
-        content: new JsonContent(ref: SavedSearchParameter::class)
-    )]
+    #[SavedSearchRequestBody]
     #[SuccessResponse(
         description: 'saved_search_save_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)
