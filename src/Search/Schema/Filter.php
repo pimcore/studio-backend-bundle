@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'Search Filter',
     title: 'Search Filter',
-    required: ['page', 'pageSize', 'includeDescendants', 'excludeFolders'],
+    required: ['page', 'pageSize', 'includeDescendants'],
     type: 'object'
 )]
 final readonly class Filter
@@ -36,7 +36,7 @@ final readonly class Filter
         #[Property(description: 'Include Descendant Items', type: 'boolean', example: true)]
         private bool $includeDescendants,
         #[Property(description: 'Exclude Folders', type: 'boolean', example: true)]
-        private bool $excludeFolders,
+        private bool $excludeFolders = true,
         #[Property(
             description: 'Column Filter',
             type: 'object',

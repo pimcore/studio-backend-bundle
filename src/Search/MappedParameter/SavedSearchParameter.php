@@ -25,7 +25,7 @@ final readonly class SavedSearchParameter
         #[NotBlank]
         private string $name,
         private array $columns = [],
-        private ?Filter $filter = null,
+        private ?Filter $filters = null,
         private ?string $description = null,
         private ?string $classId = null,
         private bool $shareGlobal = false,
@@ -45,9 +45,9 @@ final readonly class SavedSearchParameter
         return $this->columns;
     }
 
-    public function getFilter(): ?Filter
+    public function getFilters(): ?Filter
     {
-        return $this->filter;
+        return $this->filters;
     }
 
     public function getDescription(): ?string
