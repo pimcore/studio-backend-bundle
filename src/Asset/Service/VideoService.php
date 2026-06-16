@@ -22,6 +22,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video as VideoAsset;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Video;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_array;
 
 /**
  * @internal
