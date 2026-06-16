@@ -30,7 +30,7 @@ final class EditLockHydratorTest extends Unit
 
         $result = $hydrator->hydrateEditLock(null);
 
-        $this->assertFalse($result->isLocked());
+        $this->assertFalse($result->getIsLocked());
         $this->assertNull($result->getUserId());
         $this->assertNull($result->getDate());
         $this->assertNull($result->getUser());
@@ -51,7 +51,7 @@ final class EditLockHydratorTest extends Unit
 
         $result = $hydrator->hydrateEditLock($model);
 
-        $this->assertTrue($result->isLocked());
+        $this->assertTrue($result->getIsLocked());
         $this->assertSame(42, $result->getUserId());
         $this->assertSame(1700000000, $result->getDate());
         $this->assertNotNull($result->getUser());
@@ -70,7 +70,7 @@ final class EditLockHydratorTest extends Unit
 
         $result = $hydrator->hydrateEditLock($model);
 
-        $this->assertTrue($result->isLocked());
+        $this->assertTrue($result->getIsLocked());
         $this->assertSame(99, $result->getUserId());
         $this->assertSame(1700000000, $result->getDate());
         $this->assertNull($result->getUser());
