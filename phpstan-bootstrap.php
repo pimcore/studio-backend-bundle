@@ -18,6 +18,7 @@ include_once PIMCORE_PROJECT_ROOT . '/vendor/autoload.php';
 Bootstrap::setProjectRoot();
 Bootstrap::bootstrap();
 
+
 if (!defined('PIMCORE_TEST')) {
     define('PIMCORE_TEST', true);
 }
