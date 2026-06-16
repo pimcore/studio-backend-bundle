@@ -63,7 +63,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
             ]
         ))]
         private readonly array $columns,
-        #[Property(description: 'Filter state (FilterParameter fields)', type: 'array', items: new Items(ref: Filter::class))]
+        #[Property(description: 'Filter data', type: 'array', items: new Items(ref: Filter::class))]
         private readonly ?array $filter,
         #[Property(description: 'Modification Date', type: 'integer', example: 1634025600)]
         private readonly ?int $modificationDate = null,
