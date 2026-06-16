@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
