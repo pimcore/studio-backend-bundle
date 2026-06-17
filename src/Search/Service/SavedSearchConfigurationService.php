@@ -82,7 +82,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setDescription($parameter->getDescription());
         $configuration->setOwner($this->securityService->getCurrentUser()->getId());
         $configuration->setClassId($parameter->getClassId());
-        $configuration->setColumns($parameter->getColumns());
+        $configuration->setColumns($parameter->getColumnsAsArray());
         $configuration->setFilter($parameter->getFilters()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
 

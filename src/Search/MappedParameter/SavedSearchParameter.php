@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ColumnsAsArrayTrait;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -21,6 +24,8 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  */
 final readonly class SavedSearchParameter
 {
+    use ColumnsAsArrayTrait;
+
     public function __construct(
         #[NotBlank]
         private string $name,
@@ -40,6 +45,9 @@ final readonly class SavedSearchParameter
         return $this->name;
     }
 
+    /**
+     * @return ColumnSchema[]|Column[]
+     */
     public function getColumns(): array
     {
         return $this->columns;
