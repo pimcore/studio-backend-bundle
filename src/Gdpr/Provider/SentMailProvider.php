@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider;
 
 use Pimcore\Bundle\StudioBackendBundle\Email\Repository\EmailLogRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\Util\Trait\EmailLogFieldTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
@@ -26,6 +27,8 @@ use Pimcore\Model\Tool\Email\Log;
  */
 final readonly class SentMailProvider implements DataProviderInterface
 {
+    use EmailLogFieldTrait;
+
     public function __construct(
         private EmailLogRepositoryInterface $emailLogRepository,
         array $gdprConfig = []
@@ -39,12 +42,12 @@ final readonly class SentMailProvider implements DataProviderInterface
         $rows = array_map(
             fn (Log $entry) => new GdprDataRow([
                 'id' => $entry->getId(),
-                'from' => $entry->getFrom(),
+                'from' => $this->getFromAddress($entry),
                 'to' => $entry->getTo(),
                 'cc' => $entry->getCc(),
                 'bcc' => $entry->getBcc(),
                 'sentDate' => $entry->getSentDate(),
-                'subject' => $entry->getSubject(),
+                'subject' => $this->getSubjectLine($entry),
                 'hasHtmlLog' => $entry->getEmailLogExistsHtml() === 1,
                 'hasTextLog' => $entry->getEmailLogExistsText() === 1,
                 'hasParameters' => !empty($entry->getParams()),
@@ -69,13 +72,13 @@ final readonly class SentMailProvider implements DataProviderInterface
         $data = [
             'id' => $entry->getId(),
             'documentId' => $entry->getDocumentId(),
-            'from' => $entry->getFrom(),
+            'from' => $this->getFromAddress($entry),
             'to' => $entry->getTo(),
             'cc' => $entry->getCc(),
             'bcc' => $entry->getBcc(),
             'replyTo' => $entry->getReplyTo(),
             'sentDate' => $entry->getSentDate(),
-            'subject' => $entry->getSubject(),
+            'subject' => $this->getSubjectLine($entry),
             'params' => $entry->getParams(),
         ];
 
