@@ -30,7 +30,7 @@ class SavedSearchConfiguration
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
-    /** @phpstan-ignore property.unusedType */
+    /** @phpstan-ignore property.onlyRead */
     private int $id;
 
     #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
