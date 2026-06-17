@@ -21,10 +21,10 @@ use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column as DataObjectColumn;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\ListOfInteger;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleBoolean;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
-use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Filter;
 
 /**
  * @internal

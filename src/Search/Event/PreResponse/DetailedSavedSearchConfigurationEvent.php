@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Search\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;

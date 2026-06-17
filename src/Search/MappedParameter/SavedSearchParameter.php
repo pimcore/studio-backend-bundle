@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Filter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
