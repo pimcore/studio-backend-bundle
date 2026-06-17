@@ -20,21 +20,6 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @internal
- *
- * -----
- * NOTES
- * -----
- * Available Fields seen in UI:
- * - owner (User)
- * - modification date (Date)
- * - name (Textinput)
- * - description (Textarea)
- * - createShortcut (Checkbox, shortcut handling tbd)
- * - shares (selection of user and/or roles to share the Search with, also tbd)
- *
- * Other parts that affect the search:
- * - type filter, search input, advanced filter, tag filters -> stored in filter (serialised FilterParameter)
- * - grid column configuration -> stored in columns (SearchGridParameter.columns)
  */
 #[ORM\Entity]
 #[ORM\Table(name: SavedSearchConfiguration::TABLE_NAME)]
@@ -46,9 +31,9 @@ class SavedSearchConfiguration
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
     /** @phpstan-ignore property.unusedType */
-    private ?int $id = null;
+    private int $id;
 
-    #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
     private int $owner;
 
     #[ORM\Column(type: 'string', length: 255)]

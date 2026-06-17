@@ -27,6 +27,8 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
         array $roles
     ): DetailedConfiguration {
         return new DetailedConfiguration(
+            id: $data->getId(),
+            ownerId: $data->getOwner(),
             name: $data->getName(),
             description: $data->getDescription(),
             shareGlobal: $data->isShareGlobal(),
@@ -38,8 +40,6 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             filter: $data->getFilter(),
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),
-            ownerId: $data->getOwner(),
-            id: $data->getId(),
         );
     }
 }

@@ -27,8 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     schema: 'SavedSearchDetailedConfiguration',
-    title: 'SavedSearchDetailedConfiguration',
+    title: 'Saved Search Detailed Configuration',
     required: [
+        'id',
+        'ownerId',
         'name',
         'shareGlobal',
         'sharedUsers',
@@ -43,6 +45,10 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
+        #[Property(description: 'ID of the saved search configuration', type: 'integer', example: 42)]
+        private readonly int $id,
+        #[Property(description: 'ID of the owner', type: 'integer', example: 42)]
+        private readonly int $ownerId,
         #[Property(description: 'Name', type: 'string', example: 'My Saved Search')]
         private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'My Saved Search Description')]
@@ -70,11 +76,17 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly ?int $modificationDate = null,
         #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'ID of the owner', type: 'integer', example: 42)]
-        private readonly ?int $ownerId = null,
-        #[Property(description: 'ID of the saved search configuration', type: 'integer', example: 42)]
-        private readonly ?int $id = null,
     ) {
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getOwnerId(): int
+    {
+        return $this->ownerId;
     }
 
     public function getName(): string
@@ -130,15 +142,5 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function getCreationDate(): ?int
     {
         return $this->creationDate;
-    }
-
-    public function getOwnerId(): ?int
-    {
-        return $this->ownerId;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 }

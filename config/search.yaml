@@ -57,9 +57,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Search\Service\ShareServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Service\ShareService
 
-  Pimcore\Bundle\StudioBackendBundle\Search\Service\SaveConfigurationServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SaveConfigurationService
-
   Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationService
 

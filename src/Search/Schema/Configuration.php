@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     schema: 'SavedSearchConfiguration',
-    title: 'SavedSearchConfiguration',
+    title: 'Saved Search Configuration',
     required: ['id', 'name'],
     type: 'object'
 )]

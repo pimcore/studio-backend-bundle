@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
 
 final class SavedSearchConfigurationEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.saved_search_configuration';
+    public const string EVENT_NAME = 'pre_response.saved_search_configuration';
 
     public function __construct(
         private readonly Configuration $configuration
