@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Repository\SavedSearchConfiguratio
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -85,7 +86,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setFilter($parameter->getFilters()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
 
-        if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
+        if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {
             $configuration = $this->shareService->setShareOptions($configuration, $parameter);
         }
 

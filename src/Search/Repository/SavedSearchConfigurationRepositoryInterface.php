@@ -32,10 +32,5 @@ interface SavedSearchConfigurationRepositoryInterface
 
     public function clearShares(SavedSearchConfiguration $configuration): SavedSearchConfiguration;
 
-    /**
-     * @return SavedSearchConfiguration[]
-     */
-    public function getAll(): array;
-
     public function delete(SavedSearchConfiguration $configuration): void;
 }

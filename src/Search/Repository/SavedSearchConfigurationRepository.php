@@ -27,6 +27,19 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
     ) {
     }
 
+    /**
+     * @throws NotFoundException
+     */
+    public function getById(int $id): SavedSearchConfiguration
+    {
+        $configuration = $this->entityManager->find(SavedSearchConfiguration::class, $id);
+        if (!$configuration instanceof SavedSearchConfiguration) {
+            throw new NotFoundException('Saved Search Configuration', $id);
+        }
+
+        return $configuration;
+    }
+
     public function create(SavedSearchConfiguration $configuration): SavedSearchConfiguration
     {
         $configuration->setCreated();
@@ -55,27 +68,6 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
         $this->entityManager->flush();
 
         return $configuration;
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getById(int $id): SavedSearchConfiguration
-    {
-        $configuration = $this->entityManager->find(SavedSearchConfiguration::class, $id);
-        if (!$configuration instanceof SavedSearchConfiguration) {
-            throw new NotFoundException('Saved Search Configuration', $id);
-        }
-
-        return $configuration;
-    }
-
-    /**
-     * @return SavedSearchConfiguration[]
-     */
-    public function getAll(): array
-    {
-        return $this->entityManager->getRepository(SavedSearchConfiguration::class)->findAll();
     }
 
     public function delete(SavedSearchConfiguration $configuration): void
