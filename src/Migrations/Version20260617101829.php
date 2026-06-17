@@ -59,7 +59,7 @@ final class Version20260617101829 extends AbstractMigration
             'unsigned' => true,
         ]);
 
-        $table->addColumn('owner', 'integer', ['notnull' => false, 'unsigned' => true]);
+        $table->addColumn('owner', 'integer', ['notnull' => true, 'unsigned' => true]);
         $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
         $table->addColumn('description', 'text', ['notnull' => false]);
         $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
