@@ -94,6 +94,7 @@ final class AssetExporterTest extends Unit
     private function readZipEntries(string $zipContent): array
     {
         $file = tempnam(sys_get_temp_dir(), 'gdpr-asset-export-test');
+
         try {
             file_put_contents($file, $zipContent);
 
