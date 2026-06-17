@@ -20,6 +20,7 @@ enum HttpResponseErrorKeys: string
     use EnumToValueArrayTrait;
 
     case GENERIC_ERROR = 'error_something_generic_went_wrong';
+    case PERMISSION_DENIED = 'error_permission_denied';
     case DOCUMENT_LANGUAGE_NOT_SET = 'error_document_language_not_set';
     case ELEMENT_EXISTS = 'error_element_exists';
     case ELEMENT_NOT_FOUND = 'error_element_not_found';
