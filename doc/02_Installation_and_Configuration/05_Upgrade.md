@@ -2,11 +2,6 @@
 
 The following steps are necessary during updating to newer versions.
 
-## Upgrade to 2025.4.6
-- [GDPR Objects Export] Fixed: the data object export now includes inherited values (including inherited localized fields).
-
-> **Note:** the structure of the exported data changed slightly to align with the Studio API data structure (e.g., relations are now exported as structured element data instead of plain `id`/`type` pairs).
-
 ## Upgrade to 2025.4.5
 - [Grid Configuration] Fixed: Changed the length of `classId` column in `bundle_studio_grid_configurations` and `bundle_studio_grid_configuration_favorites` tables from 10 to 50 characters to support longer class IDs.
 

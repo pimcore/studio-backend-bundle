@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Exporter;
+namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
 use Pimcore\Model\DataObject\Concrete;
 
