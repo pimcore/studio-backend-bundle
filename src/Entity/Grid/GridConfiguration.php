@@ -17,6 +17,8 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ConfigurationShareInterface;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ShareableConfigurationInterface;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -24,7 +26,7 @@ use Pimcore\Model\UserInterface;
  */
 #[ORM\Entity]
 #[ORM\Table(name: GridConfiguration::TABLE_NAME)]
-class GridConfiguration
+class GridConfiguration implements ShareableConfigurationInterface
 {
     public const string TABLE_NAME = 'bundle_studio_grid_configurations';
 
@@ -208,9 +210,14 @@ class GridConfiguration
         $this->owner = $owner;
     }
 
-    public function addShare(GridConfigurationShare $share): void
+    public function addShare(ConfigurationShareInterface $share): void
     {
         $this->shares->add($share);
+    }
+
+    public function createShare(int $userId): GridConfigurationShare
+    {
+        return new GridConfigurationShare($userId, $this);
     }
 
     public function addFavorite(GridConfigurationFavorite $favorite): void

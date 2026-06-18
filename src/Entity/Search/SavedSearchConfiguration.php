@@ -17,13 +17,15 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ConfigurationShareInterface;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ShareableConfigurationInterface;
 
 /**
  * @internal
  */
 #[ORM\Entity]
 #[ORM\Table(name: SavedSearchConfiguration::TABLE_NAME)]
-class SavedSearchConfiguration
+class SavedSearchConfiguration implements ShareableConfigurationInterface
 {
     public const string TABLE_NAME = 'bundle_studio_saved_search_configurations';
 
@@ -187,9 +189,14 @@ class SavedSearchConfiguration
         $this->owner = $owner;
     }
 
-    public function addShare(SavedSearchConfigurationShare $share): void
+    public function addShare(ConfigurationShareInterface $share): void
     {
         $this->shares->add($share);
+    }
+
+    public function createShare(int $userId): SavedSearchConfigurationShare
+    {
+        return new SavedSearchConfigurationShare($userId, $this);
     }
 
     public function clearShares(): void

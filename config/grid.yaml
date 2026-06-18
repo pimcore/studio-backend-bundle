@@ -45,9 +45,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteService
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareService
-
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationService
 

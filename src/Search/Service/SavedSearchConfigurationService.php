@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -39,7 +40,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         private EventDispatcherInterface $eventDispatcher,
         private SavedSearchConfigurationRepositoryInterface $repository,
         private SecurityServiceInterface $securityService,
-        private ShareServiceInterface $shareService,
+        private ConfigurationShareServiceInterface $shareService,
     ) {
     }
 
@@ -52,7 +53,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration = $this->repository->getById($id);
         $currentUser = $this->securityService->getCurrentUser();
 
-        if (!$this->shareService->isConfigurationAccessibleByUser($configuration, $currentUser)) {
+        if (!$this->shareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
             throw new ForbiddenException(
                 'You are not allowed to access this saved search configuration.'
             );

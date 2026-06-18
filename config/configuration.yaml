@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareService

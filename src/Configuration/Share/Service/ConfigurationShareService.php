@@ -11,13 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ShareableConfigurationInterface;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ShareOptionsInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Model\UserInterface;
 use function count;
@@ -25,7 +24,7 @@ use function count;
 /**
  * @internal
  */
-final readonly class ShareService implements ShareServiceInterface
+final readonly class ConfigurationShareService implements ConfigurationShareServiceInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -34,18 +33,18 @@ final readonly class ShareService implements ShareServiceInterface
     }
 
     public function setShareOptions(
-        SavedSearchConfiguration $configuration,
-        SavedSearchParameter $parameter
-    ): SavedSearchConfiguration {
-        $configuration->setShareGlobal($parameter->shareGlobal());
-        $configuration = $this->addUserShares($configuration, $parameter->getSharedUsers());
+        ShareableConfigurationInterface $configuration,
+        ShareOptionsInterface $options,
+    ): ShareableConfigurationInterface {
+        $configuration->setShareGlobal($options->shareGlobal());
+        $configuration = $this->addUserShares($configuration, $options->getSharedUsers());
 
-        return $this->addRoleShares($configuration, $parameter->getSharedRoles());
+        return $this->addRoleShares($configuration, $options->getSharedRoles());
     }
 
-    public function isConfigurationAccessibleByUser(
-        SavedSearchConfiguration $configuration,
-        UserInterface $user
+    public function isConfigurationSharedWithUser(
+        ShareableConfigurationInterface $configuration,
+        UserInterface $user,
     ): bool {
         if ($configuration->isShareGlobal() || $configuration->getOwner() === $user->getId()) {
             return true;
@@ -58,11 +57,10 @@ final readonly class ShareService implements ShareServiceInterface
         return $this->isUserInSharedRoles($configuration, $user);
     }
 
-    public function getUserShares(SavedSearchConfiguration $configuration): array
+    public function getUserShares(ShareableConfigurationInterface $configuration): array
     {
-        $shares = $configuration->getShares()->getValues();
         $userShares = [];
-        foreach ($shares as $share) {
+        foreach ($configuration->getShares()->getValues() as $share) {
             try {
                 $userShares[] = $this->userRepository->getUserById($share->getUser())->getId();
             } catch (NotFoundException) {
@@ -73,11 +71,10 @@ final readonly class ShareService implements ShareServiceInterface
         return $userShares;
     }
 
-    public function getRoleShares(SavedSearchConfiguration $configuration): array
+    public function getRoleShares(ShareableConfigurationInterface $configuration): array
     {
-        $shares = $configuration->getShares()->getValues();
         $roleShares = [];
-        foreach ($shares as $share) {
+        foreach ($configuration->getShares()->getValues() as $share) {
             try {
                 $roleShares[] = $this->roleRepository->getRoleById($share->getUser())->getId();
             } catch (NotFoundException) {
@@ -88,36 +85,41 @@ final readonly class ShareService implements ShareServiceInterface
         return $roleShares;
     }
 
+    /**
+     * @throws NotFoundException
+     */
     private function addUserShares(
-        SavedSearchConfiguration $configuration,
-        array $userIds
-    ): SavedSearchConfiguration {
+        ShareableConfigurationInterface $configuration,
+        array $userIds,
+    ): ShareableConfigurationInterface {
         foreach ($userIds as $userId) {
             $user = $this->userRepository->getUserById($userId);
-            $configuration->addShare(new SavedSearchConfigurationShare($user->getId(), $configuration));
+            $configuration->addShare($configuration->createShare($user->getId()));
         }
 
         return $configuration;
     }
 
+    /**
+     * @throws NotFoundException
+     */
     private function addRoleShares(
-        SavedSearchConfiguration $configuration,
-        array $roleIds
-    ): SavedSearchConfiguration {
+        ShareableConfigurationInterface $configuration,
+        array $roleIds,
+    ): ShareableConfigurationInterface {
         foreach ($roleIds as $roleId) {
             $role = $this->roleRepository->getRoleById($roleId);
-            $configuration->addShare(new SavedSearchConfigurationShare($role->getId(), $configuration));
+            $configuration->addShare($configuration->createShare($role->getId()));
         }
 
         return $configuration;
     }
 
-    private function isUserInSharedUsers(SavedSearchConfiguration $configuration, UserInterface $user): bool
-    {
-        /** @var SavedSearchConfigurationShare[] $shares */
-        $shares = $configuration->getShares()->getValues();
-
-        foreach ($shares as $share) {
+    private function isUserInSharedUsers(
+        ShareableConfigurationInterface $configuration,
+        UserInterface $user,
+    ): bool {
+        foreach ($configuration->getShares()->getValues() as $share) {
             if ($share->getUser() === $user->getId()) {
                 return true;
             }
@@ -126,14 +128,13 @@ final readonly class ShareService implements ShareServiceInterface
         return false;
     }
 
-    private function isUserInSharedRoles(SavedSearchConfiguration $configuration, UserInterface $user): bool
-    {
-        /** @var SavedSearchConfigurationShare[] $shares */
-        $shares = $configuration->getShares()->getValues();
-
+    private function isUserInSharedRoles(
+        ShareableConfigurationInterface $configuration,
+        UserInterface $user,
+    ): bool {
         $roles = $user->getRoles();
-        foreach ($shares as $share) {
-            $filter = array_filter($roles, fn ($role) => $role === $share->getUser());
+        foreach ($configuration->getShares()->getValues() as $share) {
+            $filter = array_filter($roles, static fn ($role) => $role === $share->getUser());
             if (count($filter) > 0) {
                 return true;
             }

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ColumnsAsArrayTrait;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ShareOptionsInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -22,7 +23,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 /**
  * @internal
  */
-final readonly class SavedSearchParameter
+final readonly class SavedSearchParameter implements ShareOptionsInterface
 {
     use ColumnsAsArrayTrait;
 

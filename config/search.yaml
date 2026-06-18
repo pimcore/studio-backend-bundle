@@ -54,9 +54,6 @@ services:
     arguments:
       $previewHydratorLocator: '@search.element_preview.service_locator'
 
-  Pimcore\Bundle\StudioBackendBundle\Search\Service\ShareServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Search\Service\ShareService
-
   Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationService
 
