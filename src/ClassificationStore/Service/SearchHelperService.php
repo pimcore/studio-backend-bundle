@@ -36,7 +36,7 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
     public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, string $searchTerm): void
     {
-        if ('' === trim($searchTerm)) {
+        if (trim($searchTerm) === '') {
             return;
         }
 
@@ -55,7 +55,7 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
     public function applyKeySearchFilter(KeyConfigListing $listing, string $searchTerm): void
     {
-        if ('' === trim($searchTerm)) {
+        if (trim($searchTerm) === '') {
             return;
         }
 
@@ -69,7 +69,7 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
         KeyGroupRelationListing $listing,
         string $searchTerm,
     ): void {
-        if ('' === trim($searchTerm)) {
+        if (trim($searchTerm) === '') {
             return;
         }
 
@@ -91,7 +91,7 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
     public function getTranslatedSearchFilterTerms(string $searchTerm): array
     {
-        if ('' === trim($searchTerm)) {
+        if (trim($searchTerm) === '') {
             return [$searchTerm];
         }
 
