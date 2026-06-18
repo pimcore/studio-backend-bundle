@@ -37,11 +37,11 @@ final readonly class QuantityValueRangeAdapter implements SetterDataInterface
         ?FieldContextData $contextData = null,
         bool $isPatch = false
     ): ?QuantityValueRange {
-        $min = empty($data[$key]['minimum']) ? null : $data[$key]['minimum'];
-        $max = empty($data[$key]['maximum']) ? null : $data[$key]['maximum'];
+        $min = $data[$key]['minimum'] ?? null;
+        $max = $data[$key]['maximum'] ?? null;
         $unit = $data[$key]['unitId'] ?? null;
 
-        if (!$min && !$max) {
+        if ($min === null && $max === null) {
             return null;
         }
 

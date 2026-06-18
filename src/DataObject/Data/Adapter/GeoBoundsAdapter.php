@@ -72,7 +72,7 @@ final readonly class GeoBoundsAdapter implements SetterDataInterface
             }
 
             foreach (Coordinates::values() as $coordinate) {
-                if (empty($data[$direction][$coordinate])) {
+                if (!isset($data[$direction][$coordinate])) {
                     return false;
                 }
             }
