@@ -106,7 +106,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     }
 
     private function setDefaultGridConfigurationData(
-        GridConfiguration|DataObjectConfiguration $gridConfiguration,
+        GridConfiguration $gridConfiguration,
         ConfigurationParameter $configuration
     ): GridConfiguration {
         $gridConfiguration->setPageSize($configuration->getPageSize());
