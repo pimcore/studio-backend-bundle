@@ -44,7 +44,7 @@ final readonly class QuantityValueAdapter implements SetterDataInterface
             $unit = null;
         }
 
-        if (!$value) {
+        if ($value === null || $value === '') {
             return null;
         }
 
