@@ -39,10 +39,17 @@ final readonly class NumericRangeAdapter implements SetterDataInterface
         bool $isPatch = false
     ): ?NumericRange {
         $numericRangeData = $data[$key] ?? null;
-        if (!isset($numericRangeData['minimum'], $numericRangeData['maximum']) || !is_array($numericRangeData)) {
+        if (!is_array($numericRangeData)) {
             return null;
         }
 
-        return new NumericRange($numericRangeData['minimum'], $numericRangeData['maximum']);
+        $minimum = $numericRangeData['minimum'] ?? null;
+        $maximum = $numericRangeData['maximum'] ?? null;
+
+        if ($minimum === null && $maximum === null) {
+            return null;
+        }
+
+        return new NumericRange($minimum, $maximum);
     }
 }
