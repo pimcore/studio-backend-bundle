@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchService
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy\ObjectExporterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Gdpr\Exporter\ObjectExporterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Schema\GdprDataRow;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -140,8 +140,8 @@ final readonly class DataObjectProvider implements DataProviderInterface
         }
 
         $export = [
-            'id'            => $object->getId(),
-            'fullPath'      => $object->getFullPath(),
+            'id' => $object->getId(),
+            'fullPath' => $object->getFullPath(),
         ];
 
         $properties = $object->getProperties();

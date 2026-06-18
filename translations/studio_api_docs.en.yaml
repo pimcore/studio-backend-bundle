@@ -212,6 +212,12 @@ asset_video_stream_by_thumbnail_description: |
   List of <b>thumbnail names</b> can be obtained via the thumbnail video collection endpoint
 asset_video_stream_by_thumbnail_success_response: Video stream based on thumbnail name
 asset_video_stream_by_thumbnail_summary: Stream video asset by ID and thumbnail name
+asset_video_thumbnail_status_description: |
+  Get the conversion status of a video thumbnail based on the provided <strong>{id}</strong> and <strong>{thumbnailName}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of existing asset video <br>
+  List of <b>thumbnail names</b> can be obtained via the thumbnail video collection endpoint
+asset_video_thumbnail_status_success_response: Conversion status of the video thumbnail
+asset_video_thumbnail_status_summary: Get video thumbnail conversion status by asset ID and thumbnail name
 asset_get_search_configuration: Get asset search configuration
 asset_get_search_configuration_description: Get asset configuration
 asset_get_search_configuration_summary: Get asset search configuration
@@ -651,6 +657,7 @@ email_send_test_description: |
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
 error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
+error_permission_denied: You do not have permission to perform this action on this element.
 error_element_exists: Element already exists
 error_folder_exists: Folder already exists
 error_element_not_found: Element not found

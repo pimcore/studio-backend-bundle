@@ -23,7 +23,7 @@ final class ForbiddenException extends AbstractApiException
 {
     public function __construct(
         string $message = 'Access Denied',
-        string $errorKey = HttpResponseErrorKeys::GENERIC_ERROR->value
+        string $errorKey = HttpResponseErrorKeys::PERMISSION_DENIED->value
     ) {
         parent::__construct(
             statusCode: HttpResponseCodes::FORBIDDEN->value,

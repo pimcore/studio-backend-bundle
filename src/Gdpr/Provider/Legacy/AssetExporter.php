@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\Legacy;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
@@ -26,6 +27,11 @@ use ZipArchive;
  */
 final readonly class AssetExporter implements AssetExporterInterface
 {
+    public function __construct(
+        private AssetResolverInterface $assetResolver,
+    ) {
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -60,7 +66,7 @@ final readonly class AssetExporter implements AssetExporterInterface
         $zip->open($file, ZipArchive::OVERWRITE);
 
         foreach (array_keys($exportIds) as $id) {
-            $theAsset = Asset::getById($id);
+            $theAsset = $this->assetResolver->getById($id);
 
             $resultItem = $this->doexportAsset($theAsset);
             $resultItem = json_encode($resultItem);
