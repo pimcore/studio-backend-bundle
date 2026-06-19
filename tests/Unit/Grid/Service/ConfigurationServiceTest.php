@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Service;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
@@ -23,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -399,7 +399,7 @@ final class ConfigurationServiceTest extends Unit
             $this->makeEmpty(ColumnConfigurationServiceInterface::class),
             $this->makeEmpty(ConfigurationRepositoryInterface::class),
             $this->makeEmpty(ConfigurationHydratorInterface::class),
-            $this->makeEmpty(UserRoleShareServiceInterface::class),
+            $this->makeEmpty(ConfigurationShareServiceInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class),
             $this->makeEmpty(DetailedConfigurationHydratorInterface::class),

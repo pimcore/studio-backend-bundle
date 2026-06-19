@@ -130,10 +130,6 @@ final readonly class GroupRepository implements GroupRepositoryInterface
             return;
         }
 
-        if ($searchFilter->getFilterValue() === '' || $searchFilter->getFilterValue() === null) {
-            return;
-        }
-
         $this->searchHelperService->applySearchTermFilter($listing, $searchFilter->getFilterValue());
     }
 }

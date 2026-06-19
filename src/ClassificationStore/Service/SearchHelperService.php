@@ -34,8 +34,12 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
     ) {
     }
 
-    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, string $searchTerm): void
+    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, ?string $searchTerm): void
     {
+        if ($searchTerm === null || trim($searchTerm) === '') {
+            return;
+        }
+
         $searchTerms = $this->getTranslatedSearchFilterTerms($searchTerm);
 
         $conditions = [];
@@ -49,8 +53,12 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
         $list->addConditionParam('(' . implode(' OR ', $conditions) . ')', $preparedSearchTerms);
     }
 
-    public function applyKeySearchFilter(KeyConfigListing $listing, string $searchTerm): void
+    public function applyKeySearchFilter(KeyConfigListing $listing, ?string $searchTerm): void
     {
+        if ($searchTerm === null || trim($searchTerm) === '') {
+            return;
+        }
+
         $listing->addConditionParam(
             '(name LIKE ? OR description LIKE ?)',
             ['%' . $searchTerm . '%', '%' . $searchTerm . '%']
@@ -59,8 +67,12 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
     public function applyKeyGroupRelationSearchFilter(
         KeyGroupRelationListing $listing,
-        string $searchTerm,
+        ?string $searchTerm,
     ): void {
+        if ($searchTerm === null || trim($searchTerm) === '') {
+            return;
+        }
+
         $searchTerms = $this->getTranslatedSearchFilterTerms($searchTerm);
         $searchFilterConditions = [];
 

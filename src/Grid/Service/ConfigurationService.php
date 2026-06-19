@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -44,7 +45,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private ColumnConfigurationServiceInterface $columnConfigurationService,
         private ConfigurationRepositoryInterface $configurationRepository,
         private ConfigurationHydratorInterface $configurationHydrator,
-        private UserRoleShareServiceInterface $userRoleShareService,
+        private ConfigurationShareServiceInterface $shareService,
         private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
@@ -97,14 +98,14 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         $user = $this->securityService->getCurrentUser();
 
-        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
+        if (!$this->shareService->isConfigurationSharedWithUser($configuration, $user)) {
             return $this->getDefaultAssetGridConfiguration();
         }
 
         $configuration = $this->detailedConfigurationHydrator->hydrate(
             $configuration,
-            $this->userRoleShareService->getUserShares($configuration),
-            $this->userRoleShareService->getRoleShares($configuration),
+            $this->shareService->getUserShares($configuration),
+            $this->shareService->getRoleShares($configuration),
             $configuration->isUserFavorite($user)
         );
 
@@ -168,14 +169,14 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
         }
 
-        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
+        if (!$this->shareService->isConfigurationSharedWithUser($configuration, $user)) {
             return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
         }
 
         $configuration = $this->detailedConfigurationHydrator->hydrate(
             $configuration,
-            $this->userRoleShareService->getUserShares($configuration),
-            $this->userRoleShareService->getRoleShares($configuration),
+            $this->shareService->getUserShares($configuration),
+            $this->shareService->getRoleShares($configuration),
             $configuration->isUserFavorite($user)
         );
 
@@ -363,7 +364,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $filteredConfigurations = [];
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($configurations as $configuration) {
-            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
+            if ($this->shareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
                 $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
 
                 $this->dispatchConfigurationEvent($hydratedConfiguration);

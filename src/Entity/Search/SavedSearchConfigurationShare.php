@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Entity\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Entity\Search;
 
 use Doctrine\ORM\Mapping as ORM;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ConfigurationShareInterface;
@@ -20,23 +20,23 @@ use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ConfigurationShareInt
  * @internal
  */
 #[ORM\Entity]
-#[ORM\Table(name: GridConfigurationShare::TABLE_NAME)]
-class GridConfigurationShare implements ConfigurationShareInterface
+#[ORM\Table(name: SavedSearchConfigurationShare::TABLE_NAME)]
+class SavedSearchConfigurationShare implements ConfigurationShareInterface
 {
-    public const string TABLE_NAME = 'bundle_studio_grid_configuration_shares';
+    public const string TABLE_NAME = 'bundle_studio_saved_search_shares';
 
     #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
     private int $user;
 
-    #[ORM\ManyToOne(targetEntity: GridConfiguration::class, inversedBy: 'shares')]
+    #[ORM\ManyToOne(targetEntity: SavedSearchConfiguration::class, inversedBy: 'shares')]
     #[ORM\JoinColumn(name: 'configuration', referencedColumnName: 'id')]
     #[ORM\Id]
-    private GridConfiguration $configuration;
+    private SavedSearchConfiguration $configuration;
 
     public function __construct(
         int $user,
-        GridConfiguration $configuration
+        SavedSearchConfiguration $configuration
     ) {
         $this->user = $user;
         $this->configuration = $configuration;
@@ -47,7 +47,7 @@ class GridConfigurationShare implements ConfigurationShareInterface
         return $this->user;
     }
 
-    public function getConfiguration(): GridConfiguration
+    public function getConfiguration(): SavedSearchConfiguration
     {
         return $this->configuration;
     }
