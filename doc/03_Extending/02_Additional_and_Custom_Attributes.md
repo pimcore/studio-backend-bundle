@@ -239,6 +239,7 @@ For more details and frontend customization options, see the
 - `pre_response.quantity_value.unit_list`
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
+- `pre_response.saved_search_configuration_list_item`
 - `pre_response.saved_search_configuration`
 - `pre_response.saved_search_detailed_configuration`
 - `pre_response.schedule`

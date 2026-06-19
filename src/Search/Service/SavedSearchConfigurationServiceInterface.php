@@ -15,8 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\ConfigurationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
 
 /**
@@ -24,6 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
  */
 interface SavedSearchConfigurationServiceInterface
 {
+    /**
+     * @return Collection<ConfigurationListItem>
+     */
+    public function listConfigurations(CollectionParameters $parameters, ?string $searchTerm): Collection;
+
     /**
      * @throws NotFoundException
      * @throws ForbiddenException
