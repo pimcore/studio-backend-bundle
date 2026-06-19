@@ -34,9 +34,9 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
     ) {
     }
 
-    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, string $searchTerm): void
+    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, ?string $searchTerm): void
     {
-        if (trim($searchTerm) === '') {
+        if ($searchTerm === null || trim($searchTerm) === '') {
             return;
         }
 
@@ -53,9 +53,9 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
         $list->addConditionParam('(' . implode(' OR ', $conditions) . ')', $preparedSearchTerms);
     }
 
-    public function applyKeySearchFilter(KeyConfigListing $listing, string $searchTerm): void
+    public function applyKeySearchFilter(KeyConfigListing $listing, ?string $searchTerm): void
     {
-        if (trim($searchTerm) === '') {
+        if ($searchTerm === null || trim($searchTerm) === '') {
             return;
         }
 
@@ -67,9 +67,9 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
     public function applyKeyGroupRelationSearchFilter(
         KeyGroupRelationListing $listing,
-        string $searchTerm,
+        ?string $searchTerm,
     ): void {
-        if (trim($searchTerm) === '') {
+        if ($searchTerm === null || trim($searchTerm) === '') {
             return;
         }
 
@@ -91,10 +91,6 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
 
     public function getTranslatedSearchFilterTerms(string $searchTerm): array
     {
-        if (trim($searchTerm) === '') {
-            return [$searchTerm];
-        }
-
         try {
             $user = $this->securityService->getCurrentUser();
 

@@ -96,9 +96,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         $listing->setOrderKey('sorter');
         $this->applyGroupIdsFilter($listing, $groupIds);
 
-        if ($searchTerm !== null && $searchTerm !== '') {
-            $this->searchHelperService->applyKeyGroupRelationSearchFilter($listing, $searchTerm);
-        }
+        $this->searchHelperService->applyKeyGroupRelationSearchFilter($listing, $searchTerm);
 
         return $listing;
     }
