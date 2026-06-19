@@ -49,9 +49,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
             $this->applyCollectionIdsFilter($list, $collectionIds);
         }
 
-        if ($searchTerm !== null) {
-            $this->searchHelperService->applySearchTermFilter($list, $searchTerm);
-        }
+        $this->searchHelperService->applySearchTermFilter($list, $searchTerm);
 
         return $list->load();
     }
