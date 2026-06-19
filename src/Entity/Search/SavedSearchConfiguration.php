@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Entity\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Entity\Search;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -19,34 +19,24 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ConfigurationShareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ShareableConfigurationInterface;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 #[ORM\Entity]
-#[ORM\Table(name: GridConfiguration::TABLE_NAME)]
-class GridConfiguration implements ShareableConfigurationInterface
+#[ORM\Table(name: SavedSearchConfiguration::TABLE_NAME)]
+class SavedSearchConfiguration implements ShareableConfigurationInterface
 {
-    public const string TABLE_NAME = 'bundle_studio_grid_configurations';
+    public const string TABLE_NAME = 'bundle_studio_saved_search_configurations';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
-    /** @phpstan-ignore property.unusedType */
-    private ?int $id = null;
+    /** @phpstan-ignore property.onlyRead */
+    private int $id;
 
-    #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
-    private ?int $assetFolderId = null;
-
-    #[ORM\Column(type: 'string', length: 50, nullable: true)]
-    private ?string $classId = null;
-
-    #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
     private int $owner;
-
-    #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
-    private int $pageSize;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
@@ -57,14 +47,17 @@ class GridConfiguration implements ShareableConfigurationInterface
     #[ORM\Column(type: 'boolean')]
     private bool $shareGlobal = false;
 
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $classId = null;
+
     #[ORM\Column(type: 'boolean')]
-    private bool $saveFilter;
+    private bool $createMenuShortcut = false;
 
     #[ORM\Column(name: 'columns', type: 'json')]
-    private array $columns;
+    private array $columns = [];
 
     #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $filter;
+    private ?array $filter = null;
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $creationDate;
@@ -73,40 +66,21 @@ class GridConfiguration implements ShareableConfigurationInterface
     private DateTime $modificationDate;
 
     #[ORM\OneToMany(
-        targetEntity: GridConfigurationShare::class,
+        targetEntity: SavedSearchConfigurationShare::class,
         mappedBy: 'configuration',
         cascade: ['persist'],
         orphanRemoval: true
     )]
     private Collection $shares;
 
-    #[ORM\OneToMany(
-        targetEntity: GridConfigurationFavorite::class,
-        mappedBy: 'configuration',
-        cascade: ['persist'],
-        orphanRemoval: true
-    )]
-    private Collection $favorites;
-
     public function __construct(
     ) {
         $this->shares = new ArrayCollection();
-        $this->favorites = new ArrayCollection();
     }
 
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getAssetFolderId(): ?int
-    {
-        return $this->assetFolderId;
-    }
-
-    public function getPageSize(): int
-    {
-        return $this->pageSize;
     }
 
     public function getName(): string
@@ -124,9 +98,14 @@ class GridConfiguration implements ShareableConfigurationInterface
         return $this->shareGlobal;
     }
 
-    public function saveFilter(): bool
+    public function getClassId(): ?string
     {
-        return $this->saveFilter;
+        return $this->classId;
+    }
+
+    public function isCreateMenuShortcut(): bool
+    {
+        return $this->createMenuShortcut;
     }
 
     public function getColumns(): array
@@ -149,14 +128,14 @@ class GridConfiguration implements ShareableConfigurationInterface
         return $this->modificationDate;
     }
 
-    public function setAssetFolderId(int $assetFolderId): void
+    public function getOwner(): int
     {
-        $this->assetFolderId = $assetFolderId;
+        return $this->owner;
     }
 
-    public function setPageSize(int $pageSize): void
+    public function getShares(): Collection
     {
-        $this->pageSize = $pageSize;
+        return $this->shares;
     }
 
     public function setName(string $name): void
@@ -174,9 +153,14 @@ class GridConfiguration implements ShareableConfigurationInterface
         $this->shareGlobal = $shareGlobal;
     }
 
-    public function setSaveFilter(bool $saveFilter): void
+    public function setClassId(?string $classId): void
     {
-        $this->saveFilter = $saveFilter;
+        $this->classId = $classId;
+    }
+
+    public function setCreateMenuShortcut(bool $createMenuShortcut): void
+    {
+        $this->createMenuShortcut = $createMenuShortcut;
     }
 
     public function setColumns(array $columns): void
@@ -200,11 +184,6 @@ class GridConfiguration implements ShareableConfigurationInterface
         $this->modificationDate = new DateTime('now');
     }
 
-    public function getOwner(): int
-    {
-        return $this->owner;
-    }
-
     public function setOwner(int $owner): void
     {
         $this->owner = $owner;
@@ -215,49 +194,13 @@ class GridConfiguration implements ShareableConfigurationInterface
         $this->shares->add($share);
     }
 
-    public function createShare(int $userId): GridConfigurationShare
+    public function createShare(int $userId): SavedSearchConfigurationShare
     {
-        return new GridConfigurationShare($userId, $this);
-    }
-
-    public function addFavorite(GridConfigurationFavorite $favorite): void
-    {
-        $this->favorites->add($favorite);
+        return new SavedSearchConfigurationShare($userId, $this);
     }
 
     public function clearShares(): void
     {
         $this->shares->clear();
-    }
-
-    public function getShares(): Collection
-    {
-        return $this->shares;
-    }
-
-    public function removeFavorite(GridConfigurationFavorite $favorite): void
-    {
-        $this->favorites->removeElement($favorite);
-    }
-
-    public function isUserFavorite(UserInterface $user): bool
-    {
-        foreach ($this->favorites as $favorite) {
-            if ($favorite->getUser() === $user->getId()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function getClassId(): ?string
-    {
-        return $this->classId;
-    }
-
-    public function setClassId(?string $classId): void
-    {
-        $this->classId = $classId;
     }
 }
