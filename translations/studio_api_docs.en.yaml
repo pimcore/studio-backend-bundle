@@ -1289,6 +1289,13 @@ workflow_get_details_description: |
   Get details of the element workflows based on the given <strong>{elementType}</strong> and <strong>{elementId}</strong>.
 workflow_get_details_success_response: Detail data of element workflows
 workflow_get_details_summary: Get all workflow details of an element
+workflow_get_names_description: Get all configured workflow names in the system.
+workflow_get_names_success_response: List of all configured workflow names
+workflow_get_names_summary: Get all workflow names
+workflow_get_places_description: Get all configured places for a specific workflow.
+workflow_get_places_success_response: List of all configured place names for the workflow
+workflow_get_places_summary: Get all places for a workflow
+workflow_get_places_workflow_name: Name of the workflow
 asset_save_grid_configuration_description: |
   Save asset grid configuration for a specific folder
 asset_save_grid_configuration_success_response: Asset grid configuration saved successfully
