@@ -129,7 +129,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setOwner($this->securityService->getCurrentUser()->getId());
         $configuration->setClassId($parameter->getClassId());
         $configuration->setColumns($parameter->getColumnsAsArray());
-        $configuration->setFilter($parameter->getFilters()?->toArray());
+        $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
 
         if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {
@@ -166,7 +166,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setDescription($parameter->getDescription());
         $configuration->setClassId($parameter->getClassId());
         $configuration->setColumns($parameter->getColumnsAsArray());
-        $configuration->setFilter($parameter->getFilters()?->toArray());
+        $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
 
         if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {

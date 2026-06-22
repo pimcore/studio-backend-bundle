@@ -57,7 +57,7 @@ final class SavedSearchRequestBody extends RequestBody
                         ),
                     ),
                     new Property(
-                        property: 'filters',
+                        property: 'filter',
                         ref: Filter::class,
                         type: 'object',
                         nullable: true,
