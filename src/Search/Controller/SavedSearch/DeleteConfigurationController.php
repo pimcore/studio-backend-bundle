@@ -50,7 +50,7 @@ final class DeleteConfigurationController extends AbstractApiController
     #[Route(
         self::ROUTE,
         name: 'pimcore_studio_api_delete_saved_search_configuration',
-        methods: ['PUT'],
+        methods: ['DELETE'],
     )]
     #[IsGranted(UserPermissions::PIMCORE_USER->value)]
     #[Delete(
