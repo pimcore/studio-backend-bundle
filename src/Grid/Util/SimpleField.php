@@ -18,8 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util;
  */
 readonly class SimpleField
 {
-    public function __construct(private string $name, private string $key)
-    {
+
+    public function __construct(
+        private string $name,
+        private string $key,
+        private array $config = [],
+    ) {
     }
 
     public function getName(): string
@@ -30,5 +34,13 @@ readonly class SimpleField
     public function getKey(): string
     {
         return $this->key;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }
