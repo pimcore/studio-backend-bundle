@@ -19,8 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
- * Lightweight representation of a saved search configuration used for listings.
- *
  * @internal
  */
 #[Schema(
