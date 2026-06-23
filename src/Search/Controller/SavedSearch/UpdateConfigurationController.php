@@ -69,6 +69,7 @@ final class UpdateConfigurationController extends AbstractApiController
         description: 'saved_search_update_configuration_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

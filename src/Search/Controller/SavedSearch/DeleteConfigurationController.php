@@ -65,6 +65,7 @@ final class DeleteConfigurationController extends AbstractApiController
         description: 'saved_search_delete_configuration_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

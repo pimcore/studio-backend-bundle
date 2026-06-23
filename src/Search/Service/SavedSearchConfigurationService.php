@@ -149,8 +149,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     }
 
     /**
-     * @throws NotFoundException
-     * @throws ForbiddenException
+     * {@inheritdoc}
      */
     public function updateConfiguration(SavedSearchParameter $parameter, int $id): void
     {
