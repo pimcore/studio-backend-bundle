@@ -61,4 +61,11 @@ interface UserServiceInterface
     public function userSearch(string $searchQuery): Collection;
 
     public function getUserNameById(int $userId): ?string;
+
+    /**
+     * @param int[] $userIds
+     *
+     * @return array<int, string>
+     */
+    public function getUserNamesByIds(array $userIds): array;
 }
