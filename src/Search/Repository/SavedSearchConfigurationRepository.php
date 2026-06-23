@@ -40,6 +40,23 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
         return $configuration;
     }
 
+    public function getList(?string $searchTerm): array
+    {
+        $queryBuilder = $this->entityManager->createQueryBuilder()
+            ->select('c')
+            ->from(SavedSearchConfiguration::class, 'c')
+            ->orderBy('c.modificationDate', 'DESC');
+
+        $searchTerm = $searchTerm !== null ? trim($searchTerm) : null;
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $queryBuilder
+                ->where('LOWER(c.name) LIKE LOWER(:searchTerm)')
+                ->setParameter('searchTerm', '%' . $searchTerm . '%');
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     public function create(SavedSearchConfiguration $configuration): SavedSearchConfiguration
     {
         $configuration->setCreated();

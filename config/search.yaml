@@ -33,6 +33,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\DetailedConfigurationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\DetailedConfigurationHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ListItemHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ListItemHydrator
+
   #
   # Repositories
   #
