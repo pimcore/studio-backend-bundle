@@ -37,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UpdateConfigurationController extends AbstractApiController
 {
-    private const string ROUTE = '/search/saved/configuration/update/{configurationId}';
+    private const string ROUTE = '/search/saved/configuration/update/{id}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -64,10 +64,7 @@ final class UpdateConfigurationController extends AbstractApiController
         tags: [Tags::Search->value]
     )]
     #[SavedSearchRequestBody]
-    #[IdParameter(
-        type: 'configurationId',
-        name: 'configurationId'
-    )]
+    #[IdParameter(type: 'saved search configuration')]
     #[SuccessResponse(
         description: 'saved_search_update_configuration_success_response',
     )]
@@ -77,9 +74,9 @@ final class UpdateConfigurationController extends AbstractApiController
     ])]
     public function updateConfiguration(
         #[MapRequestPayload] SavedSearchParameter $parameter,
-        int $configurationId
+        int $id
     ): Response {
-        $this->saveConfigurationService->updateConfiguration($parameter, $configurationId);
+        $this->saveConfigurationService->updateConfiguration($parameter, $id);
 
         return new Response();
     }

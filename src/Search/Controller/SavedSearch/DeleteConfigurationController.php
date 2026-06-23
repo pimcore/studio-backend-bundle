@@ -34,7 +34,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteConfigurationController extends AbstractApiController
 {
-    private const string ROUTE = '/search/saved/configuration/delete/{configurationId}';
+    private const string ROUTE = '/search/saved/configuration/delete/{id}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -60,10 +60,7 @@ final class DeleteConfigurationController extends AbstractApiController
         summary: 'saved_search_delete_configuration_summary',
         tags: [Tags::Search->value]
     )]
-    #[IdParameter(
-        type: 'configurationId',
-        name: 'configurationId'
-    )]
+    #[IdParameter(type: 'saved search configuration')]
     #[SuccessResponse(
         description: 'saved_search_delete_configuration_success_response',
     )]
@@ -71,8 +68,10 @@ final class DeleteConfigurationController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteConfiguration(int $configurationId): Response {
-        $this->saveConfigurationService->deleteConfiguration($configurationId);
+    public function deleteConfiguration(
+        int $id
+    ): Response {
+        $this->saveConfigurationService->deleteConfiguration($id);
 
         return new Response();
     }
