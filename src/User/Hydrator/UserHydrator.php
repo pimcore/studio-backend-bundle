@@ -57,6 +57,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
             language: $user->getLanguage(),
             dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
+            theme: $user instanceof User ? $user->getTheme() : 'default',
             lastLogin: $user->getLastLogin(),
             memorizeTabs: $user->getMemorizeTabs(),
             parentId: $user->getParentId(),
