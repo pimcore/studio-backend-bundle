@@ -17,10 +17,14 @@ use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\Configuration
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Search\Event\PreResponse\DetailedSavedSearchConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Search\Event\PreResponse\SavedSearchConfigurationEvent;
+use Pimcore\Bundle\StudioBackendBundle\Search\Event\PreResponse\SavedSearchConfigurationListItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\DetailedConfigurationHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ListItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Repository\SavedSearchConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
@@ -28,6 +32,10 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_filter;
+use function array_slice;
+use function array_values;
+use function count;
 
 /**
  * @internal
@@ -37,11 +45,48 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     public function __construct(
         private ConfigurationHydratorInterface $configurationHydrator,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
+        private ListItemHydratorInterface $listItemHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private SavedSearchConfigurationRepositoryInterface $repository,
         private SecurityServiceInterface $securityService,
         private ConfigurationShareServiceInterface $shareService,
     ) {
+    }
+
+    public function listConfigurations(CollectionParameters $parameters, ?string $searchTerm): Collection
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+        $userId = $currentUser->getId();
+
+        $accessibleConfigurations = array_values(
+            array_filter(
+                $this->repository->getList($searchTerm),
+                fn (SavedSearchConfiguration $configuration): bool => $this->shareService
+                    ->isConfigurationSharedWithUser($configuration, $currentUser)
+            )
+        );
+
+        $items = [];
+        $pagedConfigurations = array_slice(
+            $accessibleConfigurations,
+            $parameters->getOffset(),
+            $parameters->getPageSize()
+        );
+        foreach ($pagedConfigurations as $configuration) {
+            $schema = $this->listItemHydrator->hydrate(
+                $configuration,
+                $configuration->getOwner() === $userId
+            );
+
+            $this->eventDispatcher->dispatch(
+                new SavedSearchConfigurationListItemEvent($schema),
+                SavedSearchConfigurationListItemEvent::EVENT_NAME
+            );
+
+            $items[] = $schema;
+        }
+
+        return new Collection(count($accessibleConfigurations), $items);
     }
 
     /**
