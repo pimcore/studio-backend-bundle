@@ -26,6 +26,11 @@ interface SavedSearchConfigurationRepositoryInterface
      */
     public function getById(int $id): SavedSearchConfiguration;
 
+    /**
+     * @return SavedSearchConfiguration[]
+     */
+    public function getList(?string $searchTerm): array;
+
     public function create(SavedSearchConfiguration $configuration): SavedSearchConfiguration;
 
     public function update(SavedSearchConfiguration $configuration): SavedSearchConfiguration;
