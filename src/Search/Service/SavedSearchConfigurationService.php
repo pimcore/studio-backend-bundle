@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Search\Event\PreResponse\DetailedSavedSearchConfigurationEvent;
