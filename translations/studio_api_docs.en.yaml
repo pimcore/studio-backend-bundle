@@ -1301,6 +1301,13 @@ version_update_by_id_summary: Update a version by ID
 workflow_action_submit_description: Submit action based on the workflow name, action name and action type.
 workflow_action_submit_success_response: Json encoded name of workflow, name and type of submitted action.
 workflow_action_submit_summary: Submit workflow action
+workflow_get_names_description: Get all configured workflow names in the system.
+workflow_get_names_success_response: List of all configured workflow names
+workflow_get_names_summary: Get all workflow names
+workflow_get_places_description: Get all configured places for a specific workflow.
+workflow_get_places_success_response: List of all configured place names for the workflow
+workflow_get_places_summary: Get all places for a workflow
+workflow_get_places_workflow_name: Name of the workflow
 workflow_get_details_description: | 
   Get details of the element workflows based on the given <strong>{elementType}</strong> and <strong>{elementId}</strong>.
 workflow_get_details_success_response: Detail data of element workflows
