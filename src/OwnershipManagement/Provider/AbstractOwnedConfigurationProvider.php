@@ -65,7 +65,8 @@ abstract readonly class AbstractOwnedConfigurationProvider implements OwnershipP
         );
 
         $items = array_map(
-            fn (object $configuration): OwnershipConfiguration => $this->hydrateConfiguration($configuration, $ownerNames),
+            fn (object $configuration): OwnershipConfiguration =>
+            $this->hydrateConfiguration($configuration, $ownerNames),
             $configurations
         );
 
