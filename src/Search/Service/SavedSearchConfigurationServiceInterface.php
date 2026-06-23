@@ -42,4 +42,16 @@ interface SavedSearchConfigurationServiceInterface
      * @throws NotFoundException
      */
     public function saveConfiguration(SavedSearchParameter $parameter): Configuration;
+
+    /**
+     * @throws NotFoundException
+     * @throws ForbiddenException
+     */
+    public function updateConfiguration(SavedSearchParameter $parameter, int $id): void;
+
+    /**
+     * @throws NotFoundException
+     * @throws ForbiddenException
+     */
+    public function deleteConfiguration(int $id): void;
 }

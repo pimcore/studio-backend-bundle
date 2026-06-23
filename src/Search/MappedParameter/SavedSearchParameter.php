@@ -31,7 +31,7 @@ final readonly class SavedSearchParameter implements ShareOptionsInterface
         #[NotBlank]
         private string $name,
         private array $columns = [],
-        private ?Filter $filters = null,
+        private ?Filter $filter = null,
         private ?string $description = null,
         private ?string $classId = null,
         private bool $shareGlobal = false,
@@ -54,9 +54,9 @@ final readonly class SavedSearchParameter implements ShareOptionsInterface
         return $this->columns;
     }
 
-    public function getFilters(): ?Filter
+    public function getFilter(): ?Filter
     {
-        return $this->filters;
+        return $this->filter;
     }
 
     public function getDescription(): ?string

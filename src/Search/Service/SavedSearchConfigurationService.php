@@ -90,8 +90,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     }
 
     /**
-     * @throws NotFoundException
-     * @throws ForbiddenException
+     * {@inheritdoc}
      */
     public function getSavedSearchConfiguration(int $id): DetailedConfiguration
     {
@@ -119,7 +118,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     }
 
     /**
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function saveConfiguration(SavedSearchParameter $parameter): Configuration
     {
@@ -129,7 +128,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setOwner($this->securityService->getCurrentUser()->getId());
         $configuration->setClassId($parameter->getClassId());
         $configuration->setColumns($parameter->getColumnsAsArray());
-        $configuration->setFilter($parameter->getFilters()?->toArray());
+        $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
 
         if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {
@@ -146,5 +145,48 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         );
 
         return $schema;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateConfiguration(SavedSearchParameter $parameter, int $id): void
+    {
+        $configuration = $this->repository->getById($id);
+
+        if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
+            throw new ForbiddenException('You are not allowed to update this configuration.');
+        }
+
+        $configuration = $this->repository->clearShares($configuration);
+
+        $configuration->setName($parameter->getName());
+        $configuration->setDescription($parameter->getDescription());
+        $configuration->setClassId($parameter->getClassId());
+        $configuration->setColumns($parameter->getColumnsAsArray());
+        $configuration->setFilter($parameter->getFilter()?->toArray());
+        $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
+
+        if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {
+            $configuration = $this->shareService->setShareOptions($configuration, $parameter);
+        }
+
+        $this->repository->update($configuration);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteConfiguration(int $id): void
+    {
+        $configuration = $this->repository->getById($id);
+
+        if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
+            throw new ForbiddenException(
+                'You are not allowed to delete this configuration. Only the owner can delete it.'
+            );
+        }
+
+        $this->repository->delete($configuration);
     }
 }
