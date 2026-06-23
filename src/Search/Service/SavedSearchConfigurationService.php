@@ -90,8 +90,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     }
 
     /**
-     * @throws NotFoundException
-     * @throws ForbiddenException
+     * {@inheritdoc}
      */
     public function getSavedSearchConfiguration(int $id): DetailedConfiguration
     {
@@ -119,7 +118,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     }
 
     /**
-     * @throws NotFoundException
+     * {@inheritdoc}
      */
     public function saveConfiguration(SavedSearchParameter $parameter): Configuration
     {
@@ -176,8 +175,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     }
 
     /**
-     * @throws NotFoundException
-     * @throws ForbiddenException
+     * {@inheritdoc}
      */
     public function deleteConfiguration(int $id): void
     {
