@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Filter\EntityCollectionFilterInterface;
 
 /**
  * @internal
@@ -24,6 +25,7 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private EntityCollectionFilterInterface $entityCollectionFilter,
     ) {
     }
 
@@ -85,6 +87,40 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
         $this->entityManager->flush();
 
         return $configuration;
+    }
+
+    public function findAllPaginated(
+        int $offset,
+        int $limit,
+        ?string $searchTerm = null,
+        array $ownerIds = [],
+        array $excludeOwnerIds = [],
+        array $sortBy = [],
+    ): array {
+        return $this->entityCollectionFilter->findAllPaginated(
+            SavedSearchConfiguration::class,
+            $offset,
+            $limit,
+            $searchTerm,
+            $ownerIds,
+            $excludeOwnerIds,
+            $sortBy,
+        );
+    }
+
+    public function countAll(?string $searchTerm = null, array $ownerIds = [], array $excludeOwnerIds = []): int
+    {
+        return $this->entityCollectionFilter->countAll(
+            SavedSearchConfiguration::class,
+            $searchTerm,
+            $ownerIds,
+            $excludeOwnerIds,
+        );
+    }
+
+    public function getDistinctOwnerIds(): array
+    {
+        return $this->entityCollectionFilter->getDistinctOwnerIds(SavedSearchConfiguration::class);
     }
 
     public function delete(SavedSearchConfiguration $configuration): void

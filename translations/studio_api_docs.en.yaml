@@ -2069,3 +2069,18 @@ element_unlock_description: |
   Remove the edit lock from the element of the given <strong>{elementType}</strong> and <strong>{id}</strong>.
 element_unlock_summary: Unlock an element
 element_unlock_success_response: Element unlocked successfully
+tag_ownership_management_description: All operations related to the administration of user-owned configurations (ownership reassignment and deletion).
+ownership_management_get_types_summary: List manageable configuration types
+ownership_management_get_types_description: Returns the list of user-owned configuration types (tabs) that can be administered, collected from all registered providers.
+ownership_management_get_types_success_response: Successfully retrieved the list of configuration types
+ownership_management_get_collection_summary: List configurations of a type
+ownership_management_get_collection_description: Returns a paginated list of all user-owned configurations of the given type across all users.
+ownership_management_get_collection_success_response: Successfully retrieved the list of configurations
+ownership_management_reassign_owner_summary: Reassign the owner of configurations
+ownership_management_reassign_owner_description: Reassigns the owner of one or more configurations of the given type to another user.
+ownership_management_reassign_owner_success_response: Owner reassigned successfully
+ownership_management_reassign_owner_created_response: A job run was created to reassign the owner asynchronously
+ownership_management_delete_configurations_summary: Delete configurations
+ownership_management_delete_configurations_description: Deletes one or more configurations of the given type.
+ownership_management_delete_configurations_success_response: Configurations deleted successfully
+ownership_management_delete_configurations_created_response: A job run was created to delete the configurations asynchronously
