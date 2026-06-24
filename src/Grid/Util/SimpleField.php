@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util;
  */
 readonly class SimpleField
 {
-
     public function __construct(
         private string $name,
         private string $key,
