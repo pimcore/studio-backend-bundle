@@ -210,4 +210,21 @@ final readonly class UserRepository implements UserRepositoryInterface
 
         return $listing->getUsers();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsersByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $listing = new UserListing();
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $listing->setCondition('id IN (' . $placeholders . ') AND type = ?', [...$ids, 'user']);
+        $listing->load();
+
+        return $listing->getUsers();
+    }
 }

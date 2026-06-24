@@ -38,4 +38,6 @@ enum Jobs: string
     case RECYCLE_BIN_RESTORE = 'studio_ee_job_recycle_bin_restore';
     case ELEMENT_USAGE_REPLACE = 'studio_ee_job_element_usage_replace';
     case BULK_IMPORT_CLASS_DEFINITIONS = 'studio_ee_job_bulk_import_class_definitions';
+    case OWNERSHIP_MANAGEMENT_REASSIGN_OWNER = 'studio_ee_job_ownership_management_reassign_owner';
+    case OWNERSHIP_MANAGEMENT_DELETE = 'studio_ee_job_ownership_management_delete';
 }

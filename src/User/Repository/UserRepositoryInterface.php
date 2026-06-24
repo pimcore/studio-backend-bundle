@@ -75,4 +75,11 @@ interface UserRepositoryInterface
      * @return UserInterface[]
      */
     public function getUsersByNames(array $names): array;
+
+    /**
+     * @param int[] $ids
+     *
+     * @return UserInterface[]
+     */
+    public function getUsersByIds(array $ids): array;
 }

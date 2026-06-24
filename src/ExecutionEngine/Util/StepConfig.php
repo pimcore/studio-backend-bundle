@@ -50,4 +50,7 @@ enum StepConfig: string
     case ITEMS_TO_DELETE = 'items_to_delete';
     case ELEMENT_TYPE_TO_BATCH_DELETE = 'element_type_to_batch_delete';
     case ITEMS_TO_RESTORE = 'items_to_restore';
+    case CONFIGURATION_IDS = 'configuration_ids';
+    case CONFIGURATION_TYPE = 'configuration_type';
+    case NEW_OWNER_ID = 'new_owner_id';
 }

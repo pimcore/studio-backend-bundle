@@ -86,6 +86,7 @@ final class ContextPermissionService implements ContextPermissionsServiceInterfa
         'cache_hidden' => false,
         'systemSettings' => true,
         'about' => true,
+        'ownershipManagement' => true,
     ];
 
     private array $searchPermissions = [
