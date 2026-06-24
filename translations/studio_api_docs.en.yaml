@@ -988,6 +988,12 @@ saved_search_get_configurations_description: |
   Optionally filter by name via <strong>searchTerm</strong> and page through the results.
 saved_search_get_configurations_summary: List saved search configurations
 saved_search_get_configurations_success_response: List of saved search configurations
+saved_search_get_menu_shortcut_configurations_description: |
+  List all saved search configurations accessible to the current user that are flagged to create a menu shortcut. <br>
+  Includes configurations owned by the user as well as those shared with them. <br>
+  The full set is returned without pagination.
+saved_search_get_menu_shortcut_configurations_summary: List saved search menu shortcut configurations
+saved_search_get_menu_shortcut_configurations_success_response: List of saved search menu shortcut configurations
 saved_search_save_configuration_description: |
   Save the current search state as a named configuration. <br>
   Stores columns, filter state (pagination, sorting, column filters, path) and sharing options.

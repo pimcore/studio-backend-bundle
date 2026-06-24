@@ -88,6 +88,37 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         return new Collection(count($accessibleConfigurations), $items);
     }
 
+    public function listMenuShortcutConfigurations(): Collection
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+        $userId = $currentUser->getId();
+
+        $accessibleConfigurations = array_values(
+            array_filter(
+                $this->repository->getMenuShortcutList(),
+                fn (SavedSearchConfiguration $configuration): bool => $this->shareService
+                    ->isConfigurationSharedWithUser($configuration, $currentUser)
+            )
+        );
+
+        $items = [];
+        foreach ($accessibleConfigurations as $configuration) {
+            $schema = $this->listItemHydrator->hydrate(
+                $configuration,
+                $configuration->getOwner() === $userId
+            );
+
+            $this->eventDispatcher->dispatch(
+                new SavedSearchConfigurationListItemEvent($schema),
+                SavedSearchConfigurationListItemEvent::EVENT_NAME
+            );
+
+            $items[] = $schema;
+        }
+
+        return new Collection(count($items), $items);
+    }
+
     /**
      * {@inheritdoc}
      */

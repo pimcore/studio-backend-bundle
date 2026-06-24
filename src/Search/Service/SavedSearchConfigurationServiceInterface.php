@@ -33,6 +33,11 @@ interface SavedSearchConfigurationServiceInterface
     public function listConfigurations(CollectionParameters $parameters, ?string $searchTerm): Collection;
 
     /**
+     * @return Collection<ConfigurationListItem>
+     */
+    public function listMenuShortcutConfigurations(): Collection;
+
+    /**
      * @throws NotFoundException
      * @throws ForbiddenException
      */
