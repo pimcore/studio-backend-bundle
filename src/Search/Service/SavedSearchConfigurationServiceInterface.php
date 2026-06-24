@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
+use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\UpdateMenuShortcutParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\ConfigurationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
@@ -53,6 +54,12 @@ interface SavedSearchConfigurationServiceInterface
      * @throws ForbiddenException
      */
     public function updateConfiguration(SavedSearchParameter $parameter, int $id): void;
+
+    /**
+     * @throws NotFoundException
+     * @throws ForbiddenException
+     */
+    public function updateMenuShortcut(UpdateMenuShortcutParameter $parameter, int $id): void;
 
     /**
      * @throws NotFoundException
