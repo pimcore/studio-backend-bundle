@@ -64,6 +64,8 @@ final class ColumnTest extends Unit
         $this->assertCount(1, $configs->getColumns());
         $this->assertSame('name', $configs->getColumns()[0]->getField());
         $this->assertInstanceOf(SimpleFieldConfig::class, $configs->getColumns()[0]);
+        $this->assertNull($configs->getColumns()[0]->getGroupId());
+        $this->assertNull($configs->getColumns()[0]->getKeyId());
     }
 
     public function testGetAdvancedColumnConfigRelationField(): void
@@ -89,6 +91,66 @@ final class ColumnTest extends Unit
         $this->assertSame('name', $configs->getColumns()[0]->getField());
         $this->assertSame('manufacturer', $configs->getColumns()[0]->getRelation());
         $this->assertInstanceOf(RelationFieldConfig::class, $configs->getColumns()[0]);
+        $this->assertNull($configs->getColumns()[0]->getGroupId());
+        $this->assertNull($configs->getColumns()[0]->getKeyId());
+    }
+
+    public function testGetAdvancedColumnConfigSimpleFieldWithClassificationStore(): void
+    {
+        $column = new Column(
+            key: 'name',
+            locale: 'de',
+            type: 'ttest',
+            group: ['test'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                        'config' => ['field' => 'csstore', 'groupId' => 5, 'keyId' => 7],
+                    ],
+                ],
+            ],
+        );
+
+        $configs = $column->getAdvancedColumnConfig();
+
+        $this->assertCount(1, $configs->getColumns());
+        $this->assertInstanceOf(SimpleFieldConfig::class, $configs->getColumns()[0]);
+        $this->assertSame('csstore', $configs->getColumns()[0]->getField());
+        $this->assertSame(5, $configs->getColumns()[0]->getGroupId());
+        $this->assertSame(7, $configs->getColumns()[0]->getKeyId());
+    }
+
+    public function testGetAdvancedColumnConfigRelationFieldWithClassificationStore(): void
+    {
+        $column = new Column(
+            key: 'name',
+            locale: 'de',
+            type: 'ttest',
+            group: ['test'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'relationField',
+                        'config' => [
+                            'relation' => 'manufacturer',
+                            'field' => 'csstore',
+                            'groupId' => 5,
+                            'keyId' => 7,
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $configs = $column->getAdvancedColumnConfig();
+
+        $this->assertCount(1, $configs->getColumns());
+        $this->assertInstanceOf(RelationFieldConfig::class, $configs->getColumns()[0]);
+        $this->assertSame('manufacturer', $configs->getColumns()[0]->getRelation());
+        $this->assertSame('csstore', $configs->getColumns()[0]->getField());
+        $this->assertSame(5, $configs->getColumns()[0]->getGroupId());
+        $this->assertSame(7, $configs->getColumns()[0]->getKeyId());
     }
 
     public function testWidthDefaultsToNull(): void

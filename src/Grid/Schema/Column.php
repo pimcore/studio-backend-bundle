@@ -101,6 +101,8 @@ final readonly class Column
                 $configs[] = new RelationFieldConfig(
                     relation: $advancedColumn['config']['relation'],
                     field: $advancedColumn['config']['field'],
+                    groupId: $advancedColumn['config']['groupId'] ?? null,
+                    keyId: $advancedColumn['config']['keyId'] ?? null,
                 );
 
                 continue;
@@ -109,6 +111,8 @@ final readonly class Column
             if ($advancedColumn['key'] === 'simpleField') {
                 $configs[] = new SimpleFieldConfig(
                     field: $advancedColumn['config']['field'],
+                    groupId: $advancedColumn['config']['groupId'] ?? null,
+                    keyId: $advancedColumn['config']['keyId'] ?? null,
                 );
 
                 continue;

@@ -166,6 +166,8 @@ final class AdvancedColumnCollector implements
         $simpleFields = $this->getSystemFields();
         foreach ($groupedDefinitions as $definition) {
             if ($definition instanceof Classificationstore) {
+                $simpleFields[] = $this->buildClassificationStoreField($definition);
+
                 continue;
             }
 
@@ -191,6 +193,18 @@ final class AdvancedColumnCollector implements
         }
 
         return $simpleFields;
+    }
+
+    private function buildClassificationStoreField(Classificationstore $definition): SimpleField
+    {
+        return new SimpleField(
+            name: $definition->getTitle(),
+            key: $definition->getName(),
+            config: [
+                'classificationStore' => true,
+                'storeId' => $definition->getStoreId(),
+            ],
+        );
     }
 
     private function getSystemFields(): array

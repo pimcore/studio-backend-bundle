@@ -29,11 +29,25 @@ final readonly class SimpleFieldConfig
     public function __construct(
         #[Property(description: 'Field getter', type: 'string', example: 'name')]
         private string $field,
+        #[Property(description: 'Classification store group id', type: 'integer', example: 1, nullable: true)]
+        private ?int $groupId = null,
+        #[Property(description: 'Classification store key id', type: 'integer', example: 1, nullable: true)]
+        private ?int $keyId = null,
     ) {
     }
 
     public function getField(): string
     {
         return $this->field;
+    }
+
+    public function getGroupId(): ?int
+    {
+        return $this->groupId;
+    }
+
+    public function getKeyId(): ?int
+    {
+        return $this->keyId;
     }
 }

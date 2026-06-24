@@ -39,7 +39,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function array_filter;
 use function array_key_exists;
+use function array_values;
 use function is_array;
 use function is_object;
 use function is_scalar;
@@ -220,6 +222,14 @@ final class AdvancedColumnResolver implements
             $this->user
         );
 
+        $config = $column->getConfig();
+        if ($resolverType === 'dataobject.classificationstore') {
+            $config = [
+                'groupId' => $fieldConfig->getGroupId(),
+                'keyId' => $fieldConfig->getKeyId(),
+            ];
+        }
+
         $resolver = $this->gridService->getColumnResolvers()[$resolverType];
 
         $subColumn = new Column(
@@ -227,7 +237,7 @@ final class AdvancedColumnResolver implements
             locale: $isLocalizable ? $column->getLocale() : null,
             type: $resolverType,
             group: $column->getGroup(),
-            config: $column->getConfig(),
+            config: $config,
         );
 
         $data = null;
@@ -265,36 +275,42 @@ final class AdvancedColumnResolver implements
         Concrete $element,
         bool $export = false
     ): void {
+        $relatedElements = $this->getRelatedElements($relationFieldConfig->getRelation(), $column, $element);
+        foreach ($relatedElements as $relationElement) {
+            $this->resolveField($relationFieldConfig, $column, $relationElement, $export);
+        }
+    }
+
+    /**
+     * @return Concrete[]
+     *
+     * @throws Exception
+     */
+    private function getRelatedElements(string $relationKey, Column $column, Concrete $element): array
+    {
         $isRelationLocalizable = $this->resolverTypeGuesser->isLocalizable(
-            $relationFieldConfig->getRelation(),
+            $relationKey,
             $element->getClassId(),
             $this->user
         );
 
         $relation = $this->getLocalizedValueFromKey(
-            $relationFieldConfig->getRelation(),
+            $relationKey,
             $isRelationLocalizable ? $column->getLocale() : null,
             $element
         );
 
         if (is_array($relation)) {
-            foreach ($relation as $relationElement) {
-                if (!$relationElement instanceof Concrete) {
-                    continue;
-                }
-
-                $this->resolveField($relationFieldConfig, $column, $relationElement, $export);
-
-            }
-
-            return;
+            return array_values(
+                array_filter($relation, static fn ($relationElement) => $relationElement instanceof Concrete)
+            );
         }
 
         if (!$relation instanceof Concrete) {
-            return;
+            return [];
         }
 
-        $this->resolveField($relationFieldConfig, $column, $relation, $export);
+        return [$relation];
     }
 
     /**
