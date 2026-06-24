@@ -31,6 +31,11 @@ interface SavedSearchConfigurationRepositoryInterface
      */
     public function getList(?string $searchTerm): array;
 
+    /**
+     * @return SavedSearchConfiguration[]
+     */
+    public function getMenuShortcutList(): array;
+
     public function create(SavedSearchConfiguration $configuration): SavedSearchConfiguration;
 
     public function update(SavedSearchConfiguration $configuration): SavedSearchConfiguration;

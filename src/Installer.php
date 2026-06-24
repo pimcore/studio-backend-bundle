@@ -288,6 +288,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
         $table->addColumn('shareGlobal', 'boolean', ['notnull' => true]);
         $table->addColumn('createMenuShortcut', 'boolean', ['notnull' => true]);
+        $table->addColumn('menuShortcutGroup', 'string', ['notnull' => false, 'length' => 255]);
         $table->addColumn('columns', 'json', ['notnull' => true]);
         $table->addColumn('filter', 'json', ['notnull' => false]);
         $table->addColumn('creationDate', 'datetime', ['notnull' => true]);

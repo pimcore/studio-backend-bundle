@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\SavedSearch;
 
-use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -22,11 +21,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParame
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Search\Attribute\Request\MenuShortcutRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\UpdateMenuShortcutParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Service\SavedSearchConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -34,9 +35,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetConfigurationController extends AbstractApiController
+final class UpdateMenuShortcutController extends AbstractApiController
 {
-    private const string ROUTE = '/search/saved/configuration/{id}';
+    private const string ROUTE = '/search/saved/configuration/update-menu-shortcut/{id}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -51,32 +52,33 @@ final class GetConfigurationController extends AbstractApiController
      */
     #[Route(
         self::ROUTE,
-        name: 'pimcore_studio_api_get_saved_search_configuration',
-        requirements: ['id' => '\d+'],
-        methods: ['GET'],
+        name: 'pimcore_studio_api_update_saved_search_menu_shortcut',
+        methods: ['PUT'],
     )]
     #[IsGranted(UserPermissions::PIMCORE_USER->value)]
-    #[Get(
+    #[Put(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'saved_search_get_configuration',
-        description: 'saved_search_get_configuration_description',
-        summary: 'saved_search_get_configuration_summary',
+        operationId: 'saved_search_update_menu_shortcut',
+        description: 'saved_search_update_menu_shortcut_description',
+        summary: 'saved_search_update_menu_shortcut_summary',
         tags: [Tags::Search->value]
     )]
+    #[MenuShortcutRequestBody]
     #[IdParameter(type: 'saved search configuration')]
     #[SuccessResponse(
-        description: 'saved_search_get_configuration_success_response',
-        content: new JsonContent(ref: DetailedConfiguration::class)
+        description: 'saved_search_update_menu_shortcut_success_response',
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getSavedSearchConfiguration(int $id): JsonResponse
-    {
-        return $this->jsonResponse(
-            $this->savedSearchConfigurationService->getSavedSearchConfiguration($id)
-        );
+    public function updateMenuShortcut(
+        #[MapRequestPayload] UpdateMenuShortcutParameter $parameter,
+        int $id
+    ): Response {
+        $this->savedSearchConfigurationService->updateMenuShortcut($parameter, $id);
+
+        return new Response();
     }
 }

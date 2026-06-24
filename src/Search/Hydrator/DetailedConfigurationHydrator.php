@@ -35,6 +35,7 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             sharedUsers: $users,
             sharedRoles: $roles,
             createMenuShortcut: $data->isCreateMenuShortcut(),
+            menuShortcutGroup: $data->getMenuShortcutGroup(),
             classId: $data->getClassId(),
             columns: $data->getColumns(),
             filter: $data->getFilter(),

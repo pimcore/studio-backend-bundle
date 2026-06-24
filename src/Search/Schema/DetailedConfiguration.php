@@ -61,6 +61,13 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly array $sharedRoles,
         #[Property(description: 'createMenuShortcut', type: 'boolean', example: false)]
         private readonly bool $createMenuShortcut,
+        #[Property(
+            description: 'Name of the group in the menu the shortcut belongs to',
+            type: 'string',
+            example: 'My Group',
+            nullable: true
+        )]
+        private readonly ?string $menuShortcutGroup,
         #[Property(description: 'Class ID for data object searches', type: 'string', example: 'car', nullable: true)]
         private readonly ?string $classId,
         #[Property(description: 'Grid display columns', type: 'array', items: new Items(
@@ -117,6 +124,11 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function isCreateMenuShortcut(): bool
     {
         return $this->createMenuShortcut;
+    }
+
+    public function getMenuShortcutGroup(): ?string
+    {
+        return $this->menuShortcutGroup;
     }
 
     public function getClassId(): ?string

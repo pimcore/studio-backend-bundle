@@ -48,6 +48,13 @@ final class ConfigurationListItem implements AdditionalAttributesInterface
         private readonly int $modificationDate,
         #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
         private readonly int $creationDate,
+        #[Property(
+            description: 'Name of the group in the menu the shortcut belongs to',
+            type: 'string',
+            example: 'My Group',
+            nullable: true
+        )]
+        private readonly ?string $menuShortcutGroup = null,
     ) {
     }
 
@@ -79,5 +86,10 @@ final class ConfigurationListItem implements AdditionalAttributesInterface
     public function getCreationDate(): int
     {
         return $this->creationDate;
+    }
+
+    public function getMenuShortcutGroup(): ?string
+    {
+        return $this->menuShortcutGroup;
     }
 }
