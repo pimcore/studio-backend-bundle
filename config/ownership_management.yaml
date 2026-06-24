@@ -1,0 +1,68 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Controller\:
+    resource: '../src/OwnershipManagement/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\OwnershipManagementServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\OwnershipManagementService
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\ProviderLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Loader\TaggedIteratorProviderLoader
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\JobServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\JobService
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Filter\InMemoryCollectionFilterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Filter\InMemoryCollectionFilter
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Filter\EntityCollectionFilterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Filter\EntityCollectionFilter
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\SortOrderResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\SortOrderResolver
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Hydrator\ConfigurationTypeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Hydrator\ConfigurationTypeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Hydrator\OwnershipConfigurationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Hydrator\OwnershipConfigurationHydrator
+
+  #
+  # Providers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Provider\GridConfigurationProvider:
+    tags: [ 'pimcore.studio_backend.ownership_provider' ]
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Provider\SavedSearchConfigurationProvider:
+    tags: [ 'pimcore.studio_backend.ownership_provider' ]
+
+  #
+  # Execution engine handlers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\ExecutionEngine\Handler\ReassignOwnerHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\ExecutionEngine\Handler\DeleteConfigurationsHandler: ~
+
+  #
+  # Event subscribers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\EventSubscriber\OwnershipManagementSubscriber: ~

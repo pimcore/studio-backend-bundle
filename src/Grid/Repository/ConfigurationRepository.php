@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Filter\EntityCollectionFilterInterface;
 
 /**
  * @internal
@@ -24,6 +25,7 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private EntityCollectionFilterInterface $entityCollectionFilter,
     ) {
     }
 
@@ -97,6 +99,40 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
     public function getByClassId(string $classId): array
     {
         return $this->entityManager->getRepository(GridConfiguration::class)->findBy(['classId' => $classId]);
+    }
+
+    public function findAllPaginated(
+        int $offset,
+        int $limit,
+        ?string $searchTerm = null,
+        array $ownerIds = [],
+        array $excludeOwnerIds = [],
+        array $sortBy = [],
+    ): array {
+        return $this->entityCollectionFilter->findAllPaginated(
+            GridConfiguration::class,
+            $offset,
+            $limit,
+            $searchTerm,
+            $ownerIds,
+            $excludeOwnerIds,
+            $sortBy,
+        );
+    }
+
+    public function countAll(?string $searchTerm = null, array $ownerIds = [], array $excludeOwnerIds = []): int
+    {
+        return $this->entityCollectionFilter->countAll(
+            GridConfiguration::class,
+            $searchTerm,
+            $ownerIds,
+            $excludeOwnerIds,
+        );
+    }
+
+    public function getDistinctOwnerIds(): array
+    {
+        return $this->entityCollectionFilter->getDistinctOwnerIds(GridConfiguration::class);
     }
 
     public function delete(GridConfiguration $configuration): void

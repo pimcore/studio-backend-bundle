@@ -37,5 +37,34 @@ interface SavedSearchConfigurationRepositoryInterface
 
     public function clearShares(SavedSearchConfiguration $configuration): SavedSearchConfiguration;
 
+    /**
+     * Returns all saved search configurations across all users, paginated.
+     *
+     * @param int[] $ownerIds
+     * @param int[] $excludeOwnerIds
+     * @param array<array{field?: string, direction?: string}> $sortBy ordered sort instructions
+     *
+     * @return SavedSearchConfiguration[]
+     */
+    public function findAllPaginated(
+        int $offset,
+        int $limit,
+        ?string $searchTerm = null,
+        array $ownerIds = [],
+        array $excludeOwnerIds = [],
+        array $sortBy = [],
+    ): array;
+
+    /**
+     * @param int[] $ownerIds
+     * @param int[] $excludeOwnerIds
+     */
+    public function countAll(?string $searchTerm = null, array $ownerIds = [], array $excludeOwnerIds = []): int;
+
+    /**
+     * @return int[]
+     */
+    public function getDistinctOwnerIds(): array;
+
     public function delete(SavedSearchConfiguration $configuration): void;
 }

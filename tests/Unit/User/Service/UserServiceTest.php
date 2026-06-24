@@ -205,6 +205,32 @@ final class UserServiceTest extends Unit
         $this->assertNull($userService->getUserNameById(999));
     }
 
+    public function testGetUserNamesByIdsReturnsMapKeyedByIdAndOmitsMissing(): void
+    {
+        $alice = new User();
+        $alice->setId(10);
+        $alice->setName('alice');
+
+        $bob = new User();
+        $bob->setId(11);
+        $bob->setName('bob');
+
+        // user 99 was requested but no longer exists, so the repository does not return it
+        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
+            'getUsersByIds' => [$alice, $bob],
+        ]);
+
+        $userService = $this->getUserService(
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $userRepositoryMock
+        );
+
+        $this->assertSame(
+            [10 => 'alice', 11 => 'bob'],
+            $userService->getUserNamesByIds([10, 11, 99])
+        );
+    }
+
     private function getUserService(
         SecurityServiceInterface $securityServiceMock,
         UserRepositoryInterface $userRepositoryMock,

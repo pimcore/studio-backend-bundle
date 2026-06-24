@@ -35,3 +35,5 @@ framework:
       Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Messenger\Messages\BulkImportMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Class\ExecutionEngine\AutomationAction\Messenger\Messages\BulkImportCleanupMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\ExecutionEngine\Messages\ReassignOwnerMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\ExecutionEngine\Messages\DeleteConfigurationsMessage: pimcore_generic_execution_engine
