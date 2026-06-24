@@ -17,12 +17,7 @@ the generic ownership-management endpoints — no new controllers or routes are 
 
 ## How It Works
 
-The generic endpoints resolve the provider by its `type` (taken from the request path) and delegate to it:
-
-- `GET /ownership-management/types` lists the available tabs (one per provider).
-- `POST /ownership-management/{type}/configurations` lists a type's configurations.
-- `PUT  /ownership-management/{type}/owner` reassigns the owner.
-- `DELETE /ownership-management/{type}/configurations` deletes configurations.
+The generic endpoints resolve the provider by its `type` (taken from the request path) and delegate to subsequent endpoints.
 
 Implement these methods on your custom provider:
 
