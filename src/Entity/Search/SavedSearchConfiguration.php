@@ -53,6 +53,9 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
     #[ORM\Column(type: 'boolean')]
     private bool $createMenuShortcut = false;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $menuShortcutGroup = null;
+
     #[ORM\Column(name: 'columns', type: 'json')]
     private array $columns = [];
 
@@ -108,6 +111,11 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
         return $this->createMenuShortcut;
     }
 
+    public function getMenuShortcutGroup(): ?string
+    {
+        return $this->menuShortcutGroup;
+    }
+
     public function getColumns(): array
     {
         return $this->columns;
@@ -161,6 +169,11 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
     public function setCreateMenuShortcut(bool $createMenuShortcut): void
     {
         $this->createMenuShortcut = $createMenuShortcut;
+    }
+
+    public function setMenuShortcutGroup(?string $menuShortcutGroup): void
+    {
+        $this->menuShortcutGroup = $menuShortcutGroup;
     }
 
     public function setColumns(array $columns): void

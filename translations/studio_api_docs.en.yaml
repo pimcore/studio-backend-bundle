@@ -988,6 +988,12 @@ saved_search_get_configurations_description: |
   Optionally filter by name via <strong>searchTerm</strong> and page through the results.
 saved_search_get_configurations_summary: List saved search configurations
 saved_search_get_configurations_success_response: List of saved search configurations
+saved_search_get_menu_shortcut_configurations_description: |
+  List all saved search configurations accessible to the current user that are flagged to create a menu shortcut. <br>
+  Includes configurations owned by the user as well as those shared with them. <br>
+  The full set is returned without pagination.
+saved_search_get_menu_shortcut_configurations_summary: List saved search menu shortcut configurations
+saved_search_get_menu_shortcut_configurations_success_response: List of saved search menu shortcut configurations
 saved_search_save_configuration_description: |
   Save the current search state as a named configuration. <br>
   Stores columns, filter state (pagination, sorting, column filters, path) and sharing options.
@@ -999,6 +1005,12 @@ saved_search_update_configuration_description: |
   Only the owner of the configuration is allowed to update it.
 saved_search_update_configuration_summary: Update a saved search configuration
 saved_search_update_configuration_success_response: Saved search configuration updated successfully
+saved_search_update_menu_shortcut_description: |
+  Update the menu shortcut information of a saved search configuration. <br>
+  Sets whether the configuration has a menu shortcut and, optionally, the name of the group it belongs to. <br>
+  Only the owner of the configuration is allowed to update it.
+saved_search_update_menu_shortcut_summary: Update a saved search menu shortcut
+saved_search_update_menu_shortcut_success_response: Saved search menu shortcut updated successfully
 simple_search_get_description: |
   Search for elements based on the given <strong>{search term}</strong>. <br>
   Elements are searched with the fulltext filter applied via Generic Data Index. <br>

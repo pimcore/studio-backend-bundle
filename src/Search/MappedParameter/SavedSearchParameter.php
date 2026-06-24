@@ -36,6 +36,7 @@ final readonly class SavedSearchParameter implements ShareOptionsInterface
         private ?string $classId = null,
         private bool $shareGlobal = false,
         private bool $createMenuShortcut = false,
+        private ?string $menuShortcutGroup = null,
         private array $sharedUsers = [],
         private array $sharedRoles = [],
     ) {
@@ -77,6 +78,11 @@ final readonly class SavedSearchParameter implements ShareOptionsInterface
     public function createMenuShortcut(): bool
     {
         return $this->createMenuShortcut;
+    }
+
+    public function getMenuShortcutGroup(): ?string
+    {
+        return $this->menuShortcutGroup;
     }
 
     public function getSharedUsers(): array
