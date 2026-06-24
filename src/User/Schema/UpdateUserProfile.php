@@ -61,6 +61,8 @@ final readonly class UpdateUserProfile
         private array $contentLanguages,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
         private array $keyBindings,
+        #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
+        private string $theme = 'default',
     ) {
     }
 
@@ -87,6 +89,11 @@ final readonly class UpdateUserProfile
     public function getDateTimeLocale(): ?string
     {
         return $this->dateTimeLocale;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 
     public function isWelcomeScreen(): bool

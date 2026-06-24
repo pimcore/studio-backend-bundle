@@ -95,6 +95,8 @@ final readonly class UpdateUser
             example: [Perspectives::DEFAULT_ID->value, 'some_otherPerspective_Id']
         )]
         private array $perspectives = [],
+        #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
+        private string $theme = 'default',
     ) {
     }
 
@@ -159,6 +161,11 @@ final readonly class UpdateUser
     public function getDateTimeLocale(): string
     {
         return $this->dateTimeLocale;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 
     public function isMemorizeTabs(): bool

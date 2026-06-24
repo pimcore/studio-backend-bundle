@@ -31,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     description: 'Information about the user',
     required: [
         'id', 'username', 'email', 'firstname', 'lastname', 'permissions', 'isAdmin', 'classes', 'docTypes',
-        'language', 'dateTimeLocale', 'welcomeScreen', 'memorizeTabs', 'allowDirtyClose', 'hasImage',
+        'language', 'dateTimeLocale', 'theme', 'welcomeScreen', 'memorizeTabs', 'allowDirtyClose', 'hasImage',
         'contentLanguages', 'keyBindings', 'twoFactorAuthentication', 'activePerspective', 'perspectives',
         'allowedLanguagesForEditingWebsiteTranslations', 'allowedLanguagesForViewingWebsiteTranslations',
     ],
@@ -76,6 +76,8 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly string $language,
         #[Property(description: 'Locale for dateTime', type: 'string', example: '')]
         private readonly ?string $dateTimeLocale,
+        #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
+        private readonly string $theme,
         #[Property(description: 'Welcome Screen', type: 'boolean', example: true)]
         private readonly bool $welcomeScreen,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
@@ -180,6 +182,11 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getDateTimeLocale(): ?string
     {
         return $this->dateTimeLocale;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 
     public function isWelcomeScreen(): bool
