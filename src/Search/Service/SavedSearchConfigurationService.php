@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ConfigurationHydratorInte
 use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\ListItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SavedSearchParameter;
+use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\UpdateMenuShortcutParameter;
 use Pimcore\Bundle\StudioBackendBundle\Search\Repository\SavedSearchConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DetailedConfiguration;
@@ -88,6 +89,37 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         return new Collection(count($accessibleConfigurations), $items);
     }
 
+    public function listMenuShortcutConfigurations(): Collection
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+        $userId = $currentUser->getId();
+
+        $accessibleConfigurations = array_values(
+            array_filter(
+                $this->repository->getMenuShortcutList(),
+                fn (SavedSearchConfiguration $configuration): bool => $this->shareService
+                    ->isConfigurationSharedWithUser($configuration, $currentUser)
+            )
+        );
+
+        $items = [];
+        foreach ($accessibleConfigurations as $configuration) {
+            $schema = $this->listItemHydrator->hydrate(
+                $configuration,
+                $configuration->getOwner() === $userId
+            );
+
+            $this->eventDispatcher->dispatch(
+                new SavedSearchConfigurationListItemEvent($schema),
+                SavedSearchConfigurationListItemEvent::EVENT_NAME
+            );
+
+            $items[] = $schema;
+        }
+
+        return new Collection(count($items), $items);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -129,6 +161,7 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setColumns($parameter->getColumnsAsArray());
         $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
+        $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
 
         if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {
             $configuration = $this->shareService->setShareOptions($configuration, $parameter);
@@ -165,10 +198,28 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
         $configuration->setColumns($parameter->getColumnsAsArray());
         $configuration->setFilter($parameter->getFilter()?->toArray());
         $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
+        $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
 
         if ($this->securityService->getCurrentUser()->isAllowed(UserPermissions::SHARE_CONFIGURATIONS->value)) {
             $configuration = $this->shareService->setShareOptions($configuration, $parameter);
         }
+
+        $this->repository->update($configuration);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateMenuShortcut(UpdateMenuShortcutParameter $parameter, int $id): void
+    {
+        $configuration = $this->repository->getById($id);
+
+        if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
+            throw new ForbiddenException('You are not allowed to update this configuration.');
+        }
+
+        $configuration->setCreateMenuShortcut($parameter->createMenuShortcut());
+        $configuration->setMenuShortcutGroup($parameter->getMenuShortcutGroup());
 
         $this->repository->update($configuration);
     }

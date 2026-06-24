@@ -59,6 +59,18 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
         return $queryBuilder->getQuery()->getResult();
     }
 
+    public function getMenuShortcutList(): array
+    {
+        return $this->entityManager->createQueryBuilder()
+            ->select('c')
+            ->from(SavedSearchConfiguration::class, 'c')
+            ->where('c.createMenuShortcut = :createMenuShortcut')
+            ->setParameter('createMenuShortcut', true)
+            ->orderBy('c.modificationDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function create(SavedSearchConfiguration $configuration): SavedSearchConfiguration
     {
         $configuration->setCreated();
