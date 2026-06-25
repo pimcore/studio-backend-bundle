@@ -42,12 +42,20 @@ final readonly class SavedSearchConfigurationRepository implements SavedSearchCo
         return $configuration;
     }
 
-    public function getList(?string $searchTerm): array
+    public function getList(?string $searchTerm, ?string $sortBy = null, ?string $sortOrder = null): array
     {
+        // Whitelist the sortable fields to keep the ORDER BY safe; default to newest first.
+        $sortField = match ($sortBy) {
+            'name' => 'c.name',
+            'modificationDate' => 'c.modificationDate',
+            default => 'c.modificationDate',
+        };
+        $direction = strtoupper((string) $sortOrder) === 'ASC' ? 'ASC' : 'DESC';
+
         $queryBuilder = $this->entityManager->createQueryBuilder()
             ->select('c')
             ->from(SavedSearchConfiguration::class, 'c')
-            ->orderBy('c.modificationDate', 'DESC');
+            ->orderBy($sortField, $direction);
 
         $searchTerm = $searchTerm !== null ? trim($searchTerm) : null;
         if ($searchTerm !== null && $searchTerm !== '') {
