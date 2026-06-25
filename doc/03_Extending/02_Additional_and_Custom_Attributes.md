@@ -269,6 +269,7 @@ For more details and frontend customization options, see the
 - `pre_response.user_tree_node`
 - `pre_response.version`
 - `pre_response.website_settings.item`
+- `pre_response.workflow_element`
 - `pre_response.workflow_details`
 - `pre_response.notification_recipient`
 - `pre_response.php_code_transformer`
