@@ -45,7 +45,7 @@ final readonly class WorkflowElementsService implements WorkflowElementsServiceI
     ) {
     }
 
-    public function getElements(WorkflowElementsParameters $parameters): Collection
+    public function getElements(WorkflowElementsParameters $parameters, string $elementType): Collection
     {
         $workflowName = $parameters->getWorkflowName();
         if ($workflowName === '') {
@@ -61,7 +61,7 @@ final readonly class WorkflowElementsService implements WorkflowElementsServiceI
         $rows = $this->elementsRepository->fetchByWorkflowState(
             $workflowName,
             $stateName,
-            $parameters->getElementType(),
+            $elementType,
         );
 
         [$stateLabel, $stateColor] = $stateName !== null && $stateName !== ''

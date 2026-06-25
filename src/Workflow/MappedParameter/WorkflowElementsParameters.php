@@ -23,7 +23,6 @@ final readonly class WorkflowElementsParameters
     public function __construct(
         private string $workflowName = '',
         private ?string $stateName = null,
-        private ?string $elementType = null,
         private int $page = 1,
         private int $pageSize = 50,
     ) {
@@ -37,11 +36,6 @@ final readonly class WorkflowElementsParameters
     public function getStateName(): ?string
     {
         return $this->stateName;
-    }
-
-    public function getElementType(): ?string
-    {
-        return $this->elementType;
     }
 
     public function getPage(): int

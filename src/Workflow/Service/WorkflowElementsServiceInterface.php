@@ -29,5 +29,5 @@ interface WorkflowElementsServiceInterface
      *
      * @return Collection<WorkflowElement>
      */
-    public function getElements(WorkflowElementsParameters $parameters): Collection;
+    public function getElements(WorkflowElementsParameters $parameters, string $elementType): Collection;
 }
