@@ -1328,6 +1328,10 @@ workflow_get_details_description: |
   Get details of the element workflows based on the given <strong>{elementType}</strong> and <strong>{elementId}</strong>.
 workflow_get_details_success_response: Detail data of element workflows
 workflow_get_details_summary: Get all workflow details of an element
+workflow_get_elements_description: |
+  Get a paginated list of elements that are currently in the given workflow and (optionally) state.
+workflow_get_elements_success_response: Paginated list of elements in the given workflow state
+workflow_get_elements_summary: Get elements in a workflow state
 asset_save_grid_configuration_description: |
   Save asset grid configuration for a specific folder
 asset_save_grid_configuration_success_response: Asset grid configuration saved successfully

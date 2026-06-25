@@ -23,6 +23,13 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphService
 
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowElementsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowElementsService
+
+  # Repositories
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepository
+
   # Hydrators
 
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface:
@@ -33,6 +40,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowElementsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowElementsHydrator
 
   # Submitters
   Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface:
