@@ -29,7 +29,7 @@ interface SavedSearchConfigurationRepositoryInterface
     /**
      * @return SavedSearchConfiguration[]
      */
-    public function getList(?string $searchTerm): array;
+    public function getList(?string $searchTerm, ?string $sortBy = null, ?string $sortOrder = null): array;
 
     /**
      * @return SavedSearchConfiguration[]

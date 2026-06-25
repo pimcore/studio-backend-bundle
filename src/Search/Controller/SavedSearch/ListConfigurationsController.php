@@ -18,6 +18,8 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortByParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortOrderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -72,6 +74,8 @@ final class ListConfigurationsController extends AbstractApiController
         description: 'Optional term to filter the saved search configurations by name.',
         required: false
     )]
+    #[SortByParameter(enum: ['name', 'modificationDate'])]
+    #[SortOrderParameter]
     #[SuccessResponse(
         description: 'saved_search_get_configurations_success_response',
         content: new CollectionJson(new GenericCollection(ConfigurationListItem::class))
@@ -81,11 +85,15 @@ final class ListConfigurationsController extends AbstractApiController
     ])]
     public function getSavedSearchConfigurations(
         #[MapQueryParameter] ?string $searchTerm = null,
+        #[MapQueryParameter] ?string $sortBy = null,
+        #[MapQueryParameter] ?string $sortOrder = null,
         #[MapQueryString] CollectionParameters $parameters = new CollectionParameters(),
     ): JsonResponse {
         $collection = $this->savedSearchConfigurationService->listConfigurations(
             $parameters,
-            $searchTerm
+            $searchTerm,
+            $sortBy,
+            $sortOrder
         );
 
         return $this->getPaginatedCollection(

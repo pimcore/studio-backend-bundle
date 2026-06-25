@@ -53,14 +53,19 @@ final readonly class SavedSearchConfigurationService implements SavedSearchConfi
     ) {
     }
 
-    public function listConfigurations(CollectionParameters $parameters, ?string $searchTerm): Collection
-    {
+    public function listConfigurations(
+        CollectionParameters $parameters,
+        ?string $searchTerm,
+        ?string $sortBy = null,
+        ?string $sortOrder = null,
+    ): Collection {
         $currentUser = $this->securityService->getCurrentUser();
         $userId = $currentUser->getId();
 
+        // The repository applies the ORDER BY; the share filter below preserves that order.
         $accessibleConfigurations = array_values(
             array_filter(
-                $this->repository->getList($searchTerm),
+                $this->repository->getList($searchTerm, $sortBy, $sortOrder),
                 fn (SavedSearchConfiguration $configuration): bool => $this->shareService
                     ->isConfigurationSharedWithUser($configuration, $currentUser)
             )
