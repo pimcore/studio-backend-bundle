@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
 use Codeception\Test\Unit;
-use LogicException;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowMetaService;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\Definition;
@@ -43,6 +42,7 @@ final class WorkflowMetaServiceTest extends Unit
         ]);
         $service = $this->createService(
             $this->make(Manager::class, [
+                'getAllWorkflows' => ['product_workflow'],
                 'getWorkflowByName' => $workflow,
             ])
         );
@@ -57,28 +57,27 @@ final class WorkflowMetaServiceTest extends Unit
         $this->assertSame([], $service->getPlaces(''));
     }
 
-    public function testGetPlacesReturnsEmptyArrayWhenWorkflowDoesNotExist(): void
+    public function testGetPlacesReturnsEmptyArrayForUnregisteredWorkflow(): void
     {
         $service = $this->createService(
             $this->make(Manager::class, [
-                'getWorkflowByName' => null,
+                'getAllWorkflows' => ['product_workflow'],
             ])
         );
 
         $this->assertSame([], $service->getPlaces('unknown_workflow'));
     }
 
-    public function testGetPlacesReturnsEmptyArrayWhenManagerThrows(): void
+    public function testGetPlacesReturnsEmptyArrayWhenWorkflowCannotBeResolved(): void
     {
         $service = $this->createService(
             $this->make(Manager::class, [
-                'getWorkflowByName' => static function (): never {
-                    throw new LogicException('workflow unknown_workflow not found');
-                },
+                'getAllWorkflows' => ['product_workflow'],
+                'getWorkflowByName' => null,
             ])
         );
 
-        $this->assertSame([], $service->getPlaces('unknown_workflow'));
+        $this->assertSame([], $service->getPlaces('product_workflow'));
     }
 
     private function createService(?Manager $workflowManager = null): WorkflowMetaService
