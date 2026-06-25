@@ -14,15 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Workflow\Manager;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Attribute\Response\Content\WorkflowStringListContent;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowMetaServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -34,7 +32,7 @@ final class NamesCollectionController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly Manager $workflowManager,
+        private readonly WorkflowMetaServiceInterface $workflowMetaService,
     ) {
         parent::__construct($serializer);
     }
@@ -50,18 +48,7 @@ final class NamesCollectionController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'workflow_get_names_success_response',
-        content: new JsonContent(
-            required: ['items'],
-            properties: [
-                new Property(
-                    property: 'items',
-                    title: 'items',
-                    type: 'array',
-                    items: new Items(type: 'string'),
-                ),
-            ],
-            type: 'object',
-        )
+        content: new WorkflowStringListContent()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -69,7 +56,7 @@ final class NamesCollectionController extends AbstractApiController
     public function getNames(): JsonResponse
     {
         return $this->jsonResponse([
-            'items' => $this->workflowManager->getAllWorkflows(),
+            'items' => $this->workflowMetaService->getWorkflowNames(),
         ]);
     }
 }

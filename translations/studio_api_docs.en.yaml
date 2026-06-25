@@ -1335,11 +1335,6 @@ workflow_get_places_description: Get all configured places for a specific workfl
 workflow_get_places_success_response: List of all configured place names for the workflow
 workflow_get_places_summary: Get all places for a workflow
 workflow_get_places_workflow_name: Name of the workflow
-workflow_get_transitions_description: Get the transitions available from a specific place of a workflow.
-workflow_get_transitions_success_response: List of transitions (name and label) available from the place
-workflow_get_transitions_summary: Get transitions available from a workflow place
-workflow_get_transitions_workflow_name: Name of the workflow
-workflow_get_transitions_state_name: Name of the place/state to list outgoing transitions for
 asset_save_grid_configuration_description: |
   Save asset grid configuration for a specific folder
 asset_save_grid_configuration_success_response: Asset grid configuration saved successfully
