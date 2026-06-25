@@ -50,6 +50,9 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $classId = null;
 
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $elementType = null;
+
     #[ORM\Column(type: 'boolean')]
     private bool $createMenuShortcut = false;
 
@@ -104,6 +107,11 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
     public function getClassId(): ?string
     {
         return $this->classId;
+    }
+
+    public function getElementType(): ?string
+    {
+        return $this->elementType;
     }
 
     public function isCreateMenuShortcut(): bool
@@ -164,6 +172,11 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
     public function setClassId(?string $classId): void
     {
         $this->classId = $classId;
+    }
+
+    public function setElementType(?string $elementType): void
+    {
+        $this->elementType = $elementType;
     }
 
     public function setCreateMenuShortcut(bool $createMenuShortcut): void

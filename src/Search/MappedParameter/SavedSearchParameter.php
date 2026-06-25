@@ -34,6 +34,7 @@ final readonly class SavedSearchParameter implements ShareOptionsInterface
         private ?Filter $filter = null,
         private ?string $description = null,
         private ?string $classId = null,
+        private ?string $elementType = null,
         private bool $shareGlobal = false,
         private bool $createMenuShortcut = false,
         private ?string $menuShortcutGroup = null,
@@ -68,6 +69,11 @@ final readonly class SavedSearchParameter implements ShareOptionsInterface
     public function getClassId(): ?string
     {
         return $this->classId;
+    }
+
+    public function getElementType(): ?string
+    {
+        return $this->elementType;
     }
 
     public function shareGlobal(): bool

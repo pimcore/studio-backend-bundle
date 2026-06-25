@@ -42,6 +42,7 @@ final class SavedSearchRequestBody extends RequestBody
                     new SingleString('name'),
                     new SingleString('description'),
                     new SingleString('classId'),
+                    new SingleString('elementType'),
                     new SingleBoolean('shareGlobal'),
                     new SingleBoolean('createMenuShortcut'),
                     new SingleString('menuShortcutGroup'),
