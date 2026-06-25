@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
@@ -41,7 +42,7 @@ final class ElementsController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const string ROUTE = '/workflows/elements';
+    private const string ROUTE = '/workflows/elements/{elementType}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -63,9 +64,9 @@ final class ElementsController extends AbstractApiController
         summary: 'workflow_get_elements_summary',
         tags: [Tags::Workflows->name]
     )]
+    #[ElementTypeParameter]
     #[StringParameter('workflowName', 'product_workflow', 'Workflow name')]
     #[StringParameter('stateName', 'in_review', 'Workflow state / place name', required: false)]
-    #[StringParameter('elementType', 'asset', 'Element type (asset or data-object)', required: false)]
     #[PageParameter]
     #[PageSizeParameter(50)]
     #[SuccessResponse(
@@ -74,12 +75,14 @@ final class ElementsController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function getElements(
+        string $elementType,
         #[MapQueryString] WorkflowElementsParameters $parameters = new WorkflowElementsParameters()
     ): JsonResponse {
-        $collection = $this->workflowElementsService->getElements($parameters);
+        $collection = $this->workflowElementsService->getElements($parameters, $elementType);
 
         return $this->getPaginatedCollection(
             $this->serializer,
