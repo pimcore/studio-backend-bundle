@@ -33,6 +33,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class PlacesCollectionController extends AbstractApiController
 {
+    private const string ROUTE = '/workflows/places';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly WorkflowMetaServiceInterface $workflowMetaService,
@@ -40,10 +42,10 @@ final class PlacesCollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/workflows/places', name: 'pimcore_studio_api_workflows_places', methods: ['GET'])]
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_workflows_places', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::PREFIX . '/workflows/places',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'workflow_get_places',
         description: 'workflow_get_places_description',
         summary: 'workflow_get_places_summary',
@@ -57,8 +59,9 @@ final class PlacesCollectionController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getPlaces(#[MapQueryString] WorkflowPlacesParameters $parameters): JsonResponse
-    {
+    public function getPlaces(
+        #[MapQueryString] WorkflowPlacesParameters $parameters = new WorkflowPlacesParameters()
+    ): JsonResponse {
         return $this->jsonResponse([
             'items' => $this->workflowMetaService->getPlaces($parameters->getWorkflowName()),
         ]);

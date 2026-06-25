@@ -30,6 +30,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class NamesCollectionController extends AbstractApiController
 {
+    private const string ROUTE = '/workflows/names';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly WorkflowMetaServiceInterface $workflowMetaService,
@@ -37,10 +39,10 @@ final class NamesCollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/workflows/names', name: 'pimcore_studio_api_workflows_names', methods: ['GET'])]
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_workflows_names', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::PREFIX . '/workflows/names',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'workflow_get_names',
         description: 'workflow_get_names_description',
         summary: 'workflow_get_names_summary',

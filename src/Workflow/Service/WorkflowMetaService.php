@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Pimcore\Workflow\Manager;
-use Throwable;
 use function array_keys;
+use function in_array;
 
 /**
  * @internal
@@ -27,23 +27,24 @@ final readonly class WorkflowMetaService implements WorkflowMetaServiceInterface
     ) {
     }
 
+    /**
+     * @return string[]
+     */
     public function getWorkflowNames(): array
     {
         return $this->workflowManager->getAllWorkflows();
     }
 
+    /**
+     * @return string[]
+     */
     public function getPlaces(string $workflowName): array
     {
-        if ($workflowName === '') {
+        if ($workflowName === '' || !in_array($workflowName, $this->workflowManager->getAllWorkflows(), true)) {
             return [];
         }
 
-        try {
-            $workflow = $this->workflowManager->getWorkflowByName($workflowName);
-        } catch (Throwable) {
-            return [];
-        }
-
+        $workflow = $this->workflowManager->getWorkflowByName($workflowName);
         if ($workflow === null) {
             return [];
         }

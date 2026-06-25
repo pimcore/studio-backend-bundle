@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter;
 final readonly class WorkflowPlacesParameters
 {
     public function __construct(
-        private string $workflowName,
+        private string $workflowName = '',
     ) {
     }
 
