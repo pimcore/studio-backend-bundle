@@ -31,6 +31,10 @@ final readonly class RelationFieldConfig
         private string $relation,
         #[Property(description: 'Field getter', type: 'string', example: 'name')]
         private string $field,
+        #[Property(description: 'Classification store group id', type: 'integer', example: 1, nullable: true)]
+        private ?int $groupId = null,
+        #[Property(description: 'Classification store key id', type: 'integer', example: 1, nullable: true)]
+        private ?int $keyId = null,
     ) {
     }
 
@@ -42,5 +46,15 @@ final readonly class RelationFieldConfig
     public function getField(): string
     {
         return $this->field;
+    }
+
+    public function getGroupId(): ?int
+    {
+        return $this->groupId;
+    }
+
+    public function getKeyId(): ?int
+    {
+        return $this->keyId;
     }
 }

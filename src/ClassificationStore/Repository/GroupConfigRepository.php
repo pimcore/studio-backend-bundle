@@ -47,9 +47,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         $listing->setOrderKey('id');
         $listing->setCondition('storeId = ?', $storeId);
 
-        if ($searchTerm !== null) {
-            $this->searchHelperService->applySearchTermFilter($listing, $searchTerm);
-        }
+        $this->searchHelperService->applySearchTermFilter($listing, $searchTerm);
 
         if ($groupIds !== null) {
             $this->applyGroupIdsFilter($listing, $groupIds);

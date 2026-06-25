@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -30,7 +31,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         private ConfigurationRepositoryInterface $gridConfigurationRepository,
         private SecurityServiceInterface $securityService,
         private FavoriteServiceInterface $favoriteService,
-        private UserRoleShareServiceInterface $userRoleShareService,
+        private ConfigurationShareServiceInterface $shareService,
     ) {
     }
 
@@ -73,7 +74,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
-            $configuration = $this->userRoleShareService->setShareOptions($configuration, $configurationParams);
+            $configuration = $this->shareService->setShareOptions($configuration, $configurationParams);
         }
 
         $this->gridConfigurationRepository->update($configuration);
@@ -126,7 +127,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
-            $configuration = $this->userRoleShareService->setShareOptions($configuration, $configurationParams);
+            $configuration = $this->shareService->setShareOptions($configuration, $configurationParams);
         }
 
         $this->gridConfigurationRepository->update($configuration);

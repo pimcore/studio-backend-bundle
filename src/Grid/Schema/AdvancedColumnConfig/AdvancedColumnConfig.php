@@ -76,7 +76,7 @@ final readonly class AdvancedColumnConfig
     }
 
     /**
-     * @return RelationFieldConfig[]|SimpleFieldConfig[]|StaticTextConfig[]
+     * @return array<RelationFieldConfig|SimpleFieldConfig|StaticTextConfig>
      */
     public function getColumns(): array
     {

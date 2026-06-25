@@ -227,10 +227,6 @@ final readonly class KeyRepository implements KeyRepositoryInterface
             return;
         }
 
-        if ($searchFilter->getFilterValue() === '' || $searchFilter->getFilterValue() === null) {
-            return;
-        }
-
         $this->searchHelperService->applyKeySearchFilter($listing, $searchFilter->getFilterValue());
     }
 }

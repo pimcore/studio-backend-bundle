@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
@@ -60,6 +61,41 @@ final class AdvancedColumnCollectorTest extends Unit
         $config = $this->getAdvancedConfig($collector);
 
         $this->assertSame([], $config->getConfig()['relationField']);
+    }
+
+    public function testGetColumnConfigurationsExposesClassificationStoreFieldAsMarkedSimpleField(): void
+    {
+        $simpleField = $this->createInput('name', 'Name', false);
+
+        $classificationStore = new Classificationstore();
+        $classificationStore->setName('csstore');
+        $classificationStore->setTitle('Classification Store');
+        $classificationStore->setStoreId(2);
+
+        $collector = $this->createCollector([$simpleField, $classificationStore]);
+
+        $config = $this->getAdvancedConfig($collector);
+
+        // Classification store is offered as part of the simple fields, flagged with a marker
+        $this->assertArrayNotHasKey('classificationStoreField', $config->getConfig());
+
+        $simpleFields = $config->getConfig()['simpleField'];
+        $this->assertContains('csstore', $this->extractFieldKeys($simpleFields));
+
+        $classificationStoreField = null;
+        foreach ($simpleFields as $field) {
+            if ($field->getKey() === 'csstore') {
+                $classificationStoreField = $field;
+
+                break;
+            }
+        }
+
+        $this->assertInstanceOf(SimpleField::class, $classificationStoreField);
+        $this->assertSame(
+            ['classificationStore' => true, 'storeId' => 2],
+            $classificationStoreField->getConfig()
+        );
     }
 
     private function createInput(string $name, string $title, bool $invisible): Input
