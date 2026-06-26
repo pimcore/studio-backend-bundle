@@ -55,6 +55,13 @@ final class ConfigurationListItem implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $menuShortcutGroup = null,
+        #[Property(
+            description: 'Element type the search targets (asset or data-object)',
+            type: 'string',
+            example: 'asset',
+            nullable: true
+        )]
+        private readonly ?string $elementType = null,
     ) {
     }
 
@@ -91,5 +98,10 @@ final class ConfigurationListItem implements AdditionalAttributesInterface
     public function getMenuShortcutGroup(): ?string
     {
         return $this->menuShortcutGroup;
+    }
+
+    public function getElementType(): ?string
+    {
+        return $this->elementType;
     }
 }

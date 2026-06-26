@@ -70,6 +70,13 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly ?string $menuShortcutGroup,
         #[Property(description: 'Class ID for data object searches', type: 'string', example: 'car', nullable: true)]
         private readonly ?string $classId,
+        #[Property(
+            description: 'Element type the search targets (asset or data-object)',
+            type: 'string',
+            example: 'asset',
+            nullable: true
+        )]
+        private readonly ?string $elementType,
         #[Property(description: 'Grid display columns', type: 'array', items: new Items(
             anyOf: [
                 new Schema(ref: AssetColumnSchema::class),
@@ -134,6 +141,11 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function getClassId(): ?string
     {
         return $this->classId;
+    }
+
+    public function getElementType(): ?string
+    {
+        return $this->elementType;
     }
 
     public function getColumns(): array
