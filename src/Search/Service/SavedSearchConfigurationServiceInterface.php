@@ -31,7 +31,12 @@ interface SavedSearchConfigurationServiceInterface
     /**
      * @return Collection<ConfigurationListItem>
      */
-    public function listConfigurations(CollectionParameters $parameters, ?string $searchTerm): Collection;
+    public function listConfigurations(
+        CollectionParameters $parameters,
+        ?string $searchTerm,
+        ?string $sortBy = null,
+        ?string $sortOrder = null,
+    ): Collection;
 
     /**
      * @return Collection<ConfigurationListItem>

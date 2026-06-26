@@ -26,6 +26,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowElementsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowElementsService
 
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowMetaServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowMetaService
+
   # Repositories
   Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepository

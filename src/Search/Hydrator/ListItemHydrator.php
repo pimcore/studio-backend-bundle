@@ -31,6 +31,7 @@ final readonly class ListItemHydrator implements ListItemHydratorInterface
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),
             menuShortcutGroup: $data->getMenuShortcutGroup(),
+            elementType: $data->getElementType(),
         );
     }
 }
