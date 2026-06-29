@@ -191,6 +191,16 @@ final readonly class UserService implements UserServiceInterface
         }
     }
 
+    public function getUserNamesByIds(array $userIds): array
+    {
+        $names = [];
+        foreach ($this->userRepository->getUsersByIds($userIds) as $user) {
+            $names[$user->getId()] = $user->getName();
+        }
+
+        return $names;
+    }
+
     /**
      * @param UserInterface[] $users
      */

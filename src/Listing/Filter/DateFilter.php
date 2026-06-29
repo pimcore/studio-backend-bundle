@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
 use Carbon\Carbon;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
@@ -23,8 +24,13 @@ use function is_array;
 /**
  * @internal
  */
-final class DateFilter implements FilterInterface
+final readonly class DateFilter implements FilterInterface
 {
+    public function __construct(
+        private DbResolverInterface $dbResolver,
+    ) {
+    }
+
     public function apply(
         mixed $parameters,
         mixed $listing
@@ -44,10 +50,11 @@ final class DateFilter implements FilterInterface
 
         $filter = $column->getFilterValue();
         $key = $column->getKey();
+        $quotedKey = $this->dbResolver->get()->quoteIdentifier($key);
         $carbonDate = new Carbon($filter['value']);
         $value = $carbonDate->toDateTimeString();
         if ($filter['operator'] === 'on') {
-            $dateCondition = '`' . $key . '` ' . ' BETWEEN :minTime AND :maxTime';
+            $dateCondition = $quotedKey . ' BETWEEN :minTime AND :maxTime';
             $listing->addConditionParam(
                 $dateCondition,
                 [
@@ -59,7 +66,7 @@ final class DateFilter implements FilterInterface
             return $listing;
         }
 
-        $dateCondition = '`' . $key . '` ' .
+        $dateCondition = $quotedKey . ' ' .
             $this->matchNumericOperator($filter['operator']) .
             ' :' . $key;
         $listing->addConditionParam(

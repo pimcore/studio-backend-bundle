@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -26,7 +27,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 {
     public function __construct(
         private ConfigurationFavoriteRepositoryInterface $gridConfigurationFavoriteRepository,
-        private UserRoleShareServiceInterface $userRoleShareService,
+        private ConfigurationShareServiceInterface $shareService,
         private SecurityServiceInterface $securityService
     ) {
     }
@@ -37,7 +38,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     ): GridConfiguration {
 
         $currentUser = $this->securityService->getCurrentUser();
-        if (!$this->userRoleShareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
+        if (!$this->shareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
             throw new ForbiddenException(
                 'You are not allowed to set this configuration as favorite.
                 You have to be the owner of the configuration or the configuration has to be shared with you.'
@@ -68,7 +69,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         int $folderId
     ): GridConfiguration {
         $currentUser = $this->securityService->getCurrentUser();
-        if (!$this->userRoleShareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
+        if (!$this->shareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
             throw new ForbiddenException(
                 'You are not allowed to set this configuration as favorite.
                 You have to be the owner of the configuration or the configuration has to be shared with you.'

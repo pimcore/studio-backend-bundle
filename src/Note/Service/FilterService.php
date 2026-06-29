@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
@@ -22,8 +23,13 @@ use Pimcore\Model\Element\Note\Listing as NoteListing;
 /**
  * @internal
  */
-final class FilterService implements FilterServiceInterface
+final readonly class FilterService implements FilterServiceInterface
 {
+    public function __construct(
+        private DbResolverInterface $dbResolver,
+    ) {
+    }
+
     public function applyFilter(NoteListing $list, NoteParameters $parameters): void
     {
         if ($parameters->getFilter()) {
@@ -61,13 +67,14 @@ final class FilterService implements FilterServiceInterface
                     );
                 }
 
+                $quotedField = $this->dbResolver->get()->quoteIdentifier($filter[$propertyKey]);
                 if ($filter['type'] === 'date' && $filter['operator'] === 'eq') {
-                    $maxTime = $value + (86400 - 1); //specifies the top point of the range used in the condition
-                    $dateCondition = '`' . $filter[$propertyKey] . '` ' . ' BETWEEN :minTime AND :maxTime';
+                    $maxTime = $value + (86400 - 1);
+                    $dateCondition = $quotedField . ' BETWEEN :minTime AND :maxTime';
                     $list->addConditionParam($dateCondition, ['minTime' => $value, 'maxTime' => $maxTime]);
                 } else {
                     $list->addConditionParam(
-                        '`' . $filter[$propertyKey] . '` ' . $operator . ' :' . $filter[$propertyKey],
+                        $quotedField . ' ' . $operator . ' :' . $filter[$propertyKey],
                         [$filter[$propertyKey] => $value]
                     );
                 }

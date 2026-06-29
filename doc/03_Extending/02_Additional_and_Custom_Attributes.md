@@ -205,6 +205,7 @@ For more details and frontend customization options, see the
 - `pre_response.email.log.detail.params`
 - `pre_response.email.logList.entry`
 - `pre_response.element.context_permissions`
+- `pre_response.element_editLock`
 - `pre_response.element_locate`
 - `pre_response.element_property`
 - `pre_response.element_subtype`
@@ -238,6 +239,9 @@ For more details and frontend customization options, see the
 - `pre_response.quantity_value.unit_list`
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
+- `pre_response.saved_search_configuration_list_item`
+- `pre_response.saved_search_configuration`
+- `pre_response.saved_search_detailed_configuration`
 - `pre_response.schedule`
 - `pre_response.schedule.action_type`
 - `pre_response.select_option.detail`
@@ -265,6 +269,7 @@ For more details and frontend customization options, see the
 - `pre_response.user_tree_node`
 - `pre_response.version`
 - `pre_response.website_settings.item`
+- `pre_response.workflow_element`
 - `pre_response.workflow_details`
 - `pre_response.notification_recipient`
 - `pre_response.php_code_transformer`

@@ -25,6 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -58,6 +60,8 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createGridConfigurationTable($schema);
         $this->createGridConfigurationSharesTable($schema);
         $this->createGridConfigurationFavoritesTable($schema);
+        $this->createSavedSearchConfigurationTable($schema);
+        $this->createSavedSearchConfigurationSharesTable($schema);
         $this->createUserPerspectivesTable($schema);
         $this->createJobRunHiddenTable($schema);
         $this->createMcpAccessTokenTable($schema);
@@ -85,6 +89,14 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(GridConfigurationFavorite::TABLE_NAME)) {
             $schema->dropTable(GridConfigurationFavorite::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(SavedSearchConfigurationShare::TABLE_NAME)) {
+            $schema->dropTable(SavedSearchConfigurationShare::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(SavedSearchConfiguration::TABLE_NAME)) {
+            $schema->dropTable(SavedSearchConfiguration::TABLE_NAME);
         }
 
         if ($schema->hasTable(UserPerspectiveData::TABLE_NAME)) {
@@ -252,6 +264,78 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->setPrimaryKey(['user', 'configuration'], 'pk_'.GridConfigurationShare::TABLE_NAME);
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    public function createSavedSearchConfigurationTable(Schema $schema): void
+    {
+        if ($schema->hasTable(SavedSearchConfiguration::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(SavedSearchConfiguration::TABLE_NAME);
+
+        $table->addColumn('id', 'integer', [
+            'autoincrement' => true,
+            'unsigned' => true,
+        ]);
+
+        $table->addColumn('owner', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
+        $table->addColumn('description', 'text', ['notnull' => false]);
+        $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
+        $table->addColumn('shareGlobal', 'boolean', ['notnull' => true]);
+        $table->addColumn('createMenuShortcut', 'boolean', ['notnull' => true]);
+        $table->addColumn('menuShortcutGroup', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('columns', 'json', ['notnull' => true]);
+        $table->addColumn('filter', 'json', ['notnull' => false]);
+        $table->addColumn('creationDate', 'datetime', ['notnull' => true]);
+        $table->addColumn('modificationDate', 'datetime', ['notnull' => true]);
+
+        $table->setPrimaryKey(['id'], 'pk_'.SavedSearchConfiguration::TABLE_NAME);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['owner'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.SavedSearchConfiguration::TABLE_NAME.'_owner_users'
+        );
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    public function createSavedSearchConfigurationSharesTable(Schema $schema): void
+    {
+        if ($schema->hasTable(SavedSearchConfigurationShare::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(SavedSearchConfigurationShare::TABLE_NAME);
+
+        $table->addColumn('user', 'integer', ['notnull' => false, 'unsigned' => true]);
+        $table->addColumn('configuration', 'integer', ['notnull' => false, 'unsigned' => true]);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.SavedSearchConfigurationShare::TABLE_NAME.'_users'
+        );
+
+        $table->addForeignKeyConstraint(
+            SavedSearchConfiguration::TABLE_NAME,
+            ['configuration'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.SavedSearchConfigurationShare::TABLE_NAME.'_configurations'
+        );
+
+        $table->setPrimaryKey(['user', 'configuration'], 'pk_'.SavedSearchConfigurationShare::TABLE_NAME);
     }
 
     /**

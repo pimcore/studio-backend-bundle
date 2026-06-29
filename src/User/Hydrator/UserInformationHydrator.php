@@ -48,6 +48,7 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             docTypes: $user->getDocTypes(),
             language: $user->getLanguage(),
             dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
+            theme: $user instanceof User ? $user->getTheme() : 'default',
             welcomeScreen: $user->getWelcomeScreen(),
             memorizeTabs: $user->getMemorizeTabs(),
             allowDirtyClose: $user->getAllowDirtyClose(),

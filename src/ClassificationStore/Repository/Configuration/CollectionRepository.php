@@ -135,10 +135,6 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
             return;
         }
 
-        if ($searchFilter->getFilterValue() === '' || $searchFilter->getFilterValue() === null) {
-            return;
-        }
-
         $this->searchHelperService->applySearchTermFilter($listing, $searchFilter->getFilterValue());
     }
 }

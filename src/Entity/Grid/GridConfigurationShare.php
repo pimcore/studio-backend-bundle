@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Entity\Grid;
 
 use Doctrine\ORM\Mapping as ORM;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\ConfigurationShareInterface;
 
 /**
  * @internal
  */
 #[ORM\Entity]
 #[ORM\Table(name: GridConfigurationShare::TABLE_NAME)]
-class GridConfigurationShare
+class GridConfigurationShare implements ConfigurationShareInterface
 {
     public const string TABLE_NAME = 'bundle_studio_grid_configuration_shares';
 

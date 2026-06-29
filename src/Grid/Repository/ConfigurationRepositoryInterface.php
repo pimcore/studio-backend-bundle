@@ -47,5 +47,34 @@ interface ConfigurationRepositoryInterface
      */
     public function getByClassId(string $classId): array;
 
+    /**
+     * Returns all grid configurations (asset and data object) across all users, paginated.
+     *
+     * @param int[] $ownerIds
+     * @param int[] $excludeOwnerIds
+     * @param array<array{field?: string, direction?: string}> $sortBy ordered sort instructions
+     *
+     * @return GridConfiguration[]
+     */
+    public function findAllPaginated(
+        int $offset,
+        int $limit,
+        ?string $searchTerm = null,
+        array $ownerIds = [],
+        array $excludeOwnerIds = [],
+        array $sortBy = [],
+    ): array;
+
+    /**
+     * @param int[] $ownerIds
+     * @param int[] $excludeOwnerIds
+     */
+    public function countAll(?string $searchTerm = null, array $ownerIds = [], array $excludeOwnerIds = []): int;
+
+    /**
+     * @return int[]
+     */
+    public function getDistinctOwnerIds(): array;
+
     public function delete(GridConfiguration $configuration): void;
 }

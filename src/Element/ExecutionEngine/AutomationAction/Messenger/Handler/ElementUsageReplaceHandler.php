@@ -15,11 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerGarbageCollectionTrait;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
@@ -36,8 +38,9 @@ use function is_array;
 #[AsMessageHandler]
 final class ElementUsageReplaceHandler extends AbstractHandler
 {
-    use HandlerProgressTrait;
     use ElementProviderTrait;
+    use HandlerGarbageCollectionTrait;
+    use HandlerProgressTrait;
 
     private ElementInterface $sourceElement;
 
@@ -45,6 +48,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
 
     public function __construct(
         private readonly ElementUsageServiceInterface $elementUsageService,
+        private readonly PimcoreResolverInterface $pimcoreResolver,
         private readonly UserResolverInterface $userResolver,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
@@ -68,6 +72,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
             $elementCount = count($elements);
         }
 
+        $processedElements = 0;
         foreach ($elements as $elementData) {
             $isArray = is_array($elementData);
             $element = $this->elementUsageService->getElementById(
@@ -113,6 +118,9 @@ final class ElementUsageReplaceHandler extends AbstractHandler
                     $this->getJobStep($message)->getName()
                 );
             }
+
+            $processedElements++;
+            $this->collectGarbagePeriodically($this->pimcoreResolver, $processedElements);
         }
     }
 

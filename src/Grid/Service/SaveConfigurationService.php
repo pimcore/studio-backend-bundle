@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolver;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\ConfigurationParameter as DataObjectConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -35,7 +36,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     public function __construct(
         private ConfigurationRepositoryInterface $gridConfigurationRepository,
         private FavoriteServiceInterface $favoriteService,
-        private UserRoleShareServiceInterface $userRoleShareService,
+        private ConfigurationShareServiceInterface $shareService,
         private AssetServiceInterface $assetService,
         private SecurityServiceInterface $securityService,
         private ConfigurationHydratorInterface $configurationHydrator,
@@ -105,7 +106,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     }
 
     private function setDefaultGridConfigurationData(
-        GridConfiguration|DataObjectConfiguration $gridConfiguration,
+        GridConfiguration $gridConfiguration,
         ConfigurationParameter $configuration
     ): GridConfiguration {
         $gridConfiguration->setPageSize($configuration->getPageSize());
@@ -120,7 +121,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
-            $gridConfiguration = $this->userRoleShareService->setShareOptions($gridConfiguration, $configuration);
+            $gridConfiguration = $this->shareService->setShareOptions($gridConfiguration, $configuration);
         }
 
         return $gridConfiguration;

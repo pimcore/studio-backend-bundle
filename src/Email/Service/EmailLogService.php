@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\ObjectParameter;
+use Pimcore\Bundle\StudioBackendBundle\Email\Util\Trait\EmailLogFieldTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -45,6 +46,7 @@ use function sprintf;
 final readonly class EmailLogService implements EmailLogServiceInterface
 {
     use ElementProviderTrait;
+    use EmailLogFieldTrait;
 
     private const string CHILDREN_PARAMS_KEY = 'children';
 
@@ -68,9 +70,9 @@ final readonly class EmailLogService implements EmailLogServiceInterface
                 $listEntry->getEmailLogExistsHtml() === 1,
                 $listEntry->getEmailLogExistsText() === 1,
                 (bool) $listEntry->getError(),
-                $this->sanitizeEmailAddress($listEntry->getFrom()),
+                $this->sanitizeEmailAddress($this->getFromAddress($listEntry)),
                 $this->sanitizeEmailAddress($listEntry->getTo()),
-                $listEntry->getSubject(),
+                $this->getSubjectLine($listEntry),
             );
 
             $this->eventDispatcher->dispatch(
@@ -108,9 +110,9 @@ final readonly class EmailLogService implements EmailLogServiceInterface
             $entry->getEmailLogExistsHtml() === 1,
             $entry->getEmailLogExistsText() === 1,
             (bool)$error,
-            $this->sanitizeEmailAddress($entry->getFrom()),
+            $this->sanitizeEmailAddress($this->getFromAddress($entry)),
             $this->sanitizeEmailAddress($entry->getTo()),
-            $entry->getSubject(),
+            $this->getSubjectLine($entry),
             $entry->getBcc(),
             $entry->getCc(),
             $error
@@ -205,8 +207,8 @@ final readonly class EmailLogService implements EmailLogServiceInterface
     public function getEmailFromLogEntry(Log $emailLogEntry): Mail
     {
         $mail = new Mail();
-        $mail->subject($emailLogEntry->getSubject());
-        $this->mailService->setMailFromAddress($emailLogEntry->getFrom(), $mail);
+        $mail->subject($this->getSubjectLine($emailLogEntry) ?? '');
+        $this->mailService->setMailFromAddress($this->getFromAddress($emailLogEntry) ?? '', $mail);
         $this->setEmailContentFromLog($emailLogEntry, $mail);
         $mail->preventDebugInformationAppending();
         $mail->setIgnoreDebugMode(true);

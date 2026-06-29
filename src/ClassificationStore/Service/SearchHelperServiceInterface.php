@@ -23,13 +23,13 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as Key
  */
 interface SearchHelperServiceInterface
 {
-    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, string $searchTerm): void;
+    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, ?string $searchTerm): void;
 
-    public function applyKeySearchFilter(KeyConfigListing $listing, string $searchTerm): void;
+    public function applyKeySearchFilter(KeyConfigListing $listing, ?string $searchTerm): void;
 
     public function applyKeyGroupRelationSearchFilter(
         KeyGroupRelationListing $listing,
-        string $searchTerm,
+        ?string $searchTerm,
     ): void;
 
     public function getTranslatedSearchFilterTerms(string $searchTerm): array;

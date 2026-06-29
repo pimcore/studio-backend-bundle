@@ -28,6 +28,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use function array_key_exists;
 use function in_array;
 use function is_null;
+use function sprintf;
 
 /**
  * @internal - This class was mostly copied from AdminClassicBundle
@@ -107,7 +108,7 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
         $validLanguages = $this->toolResolver->getValidLanguages();
 
         foreach ($validLanguages as $locale) {
-            $label = Locale::getDisplayLanguage($locale, $userLocale);
+            $label = sprintf('%s (%s)', Locale::getDisplayLanguage($locale, $userLocale), $locale);
             $locales[$label] = $locale;
         }
 

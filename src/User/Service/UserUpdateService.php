@@ -85,6 +85,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         );
         if ($user instanceof User) {
             $user->setDatetimeLocale($updateUserParameter->getDatetimeLocale());
+            $user->setTheme($updateUserParameter->getTheme());
         }
 
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
@@ -114,6 +115,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         $user->setEmail($params->getEmail());
         $user->setLanguage($params->getLanguage());
         $user->setDatetimeLocale($params->getDatetimeLocale());
+        $user->setTheme($params->getTheme());
         $user->setWelcomescreen($params->isWelcomeScreen());
         $user->setMemorizeTabs($params->isMemorizeTabs());
         $user->setContentLanguages($params->getContentLanguages());

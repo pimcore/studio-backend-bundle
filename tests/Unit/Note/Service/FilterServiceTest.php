@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Note\Service;
 
 use Codeception\Test\Unit;
+use Doctrine\DBAL\Connection;
 use JsonException;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService;
@@ -27,7 +29,15 @@ final class FilterServiceTest extends Unit
 
     public function _before(): void
     {
-        $this->filterService = new FilterService();
+        $connection = $this->makeEmpty(Connection::class, [
+            'quoteIdentifier' => function (string $identifier): string {
+                return '`' . str_replace('`', '``', $identifier) . '`';
+            },
+        ]);
+        $dbResolver = $this->makeEmpty(DbResolverInterface::class, [
+            'get' => $connection,
+        ]);
+        $this->filterService = new FilterService($dbResolver);
     }
 
     public function testApplyFilter(): void
@@ -65,7 +75,7 @@ final class FilterServiceTest extends Unit
         $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame('(`date`  BETWEEN :minTime AND :maxTime) ', $noteListing->getCondition());
+        $this->assertSame('(`date` BETWEEN :minTime AND :maxTime) ', $noteListing->getCondition());
         $this->assertSame(
             [
                 'minTime' => 1714780800,

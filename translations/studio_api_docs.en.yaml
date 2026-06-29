@@ -212,6 +212,12 @@ asset_video_stream_by_thumbnail_description: |
   List of <b>thumbnail names</b> can be obtained via the thumbnail video collection endpoint
 asset_video_stream_by_thumbnail_success_response: Video stream based on thumbnail name
 asset_video_stream_by_thumbnail_summary: Stream video asset by ID and thumbnail name
+asset_video_thumbnail_status_description: |
+  Get the conversion status of a video thumbnail based on the provided <strong>{id}</strong> and <strong>{thumbnailName}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of existing asset video <br>
+  List of <b>thumbnail names</b> can be obtained via the thumbnail video collection endpoint
+asset_video_thumbnail_status_success_response: Conversion status of the video thumbnail
+asset_video_thumbnail_status_summary: Get video thumbnail conversion status by asset ID and thumbnail name
 asset_get_search_configuration: Get asset search configuration
 asset_get_search_configuration_description: Get asset configuration
 asset_get_search_configuration_summary: Get asset search configuration
@@ -651,6 +657,7 @@ email_send_test_description: |
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
 error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
+error_permission_denied: You do not have permission to perform this action on this element.
 error_element_exists: Element already exists
 error_folder_exists: Folder already exists
 error_element_not_found: Element not found
@@ -965,6 +972,45 @@ schedule_update_for_element_by_type_and_id_description: |
   See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
 schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
 schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
+saved_search_delete_configuration_description: |
+  Delete a saved search configuration by its <strong>{id}</strong>. <br>
+  Only the owner of the configuration is allowed to delete it.
+saved_search_delete_configuration_summary: Delete a saved search configuration
+saved_search_delete_configuration_success_response: Saved search configuration deleted successfully
+saved_search_get_configuration_description: |
+  Get a saved search configuration by its <strong>{id}</strong>. <br>
+  Returns the full configuration including columns, filter state, and sharing settings.
+saved_search_get_configuration_summary: Get a saved search configuration
+saved_search_get_configuration_success_response: Saved search configuration
+saved_search_get_configurations_description: |
+  List the saved search configurations accessible to the current user. <br>
+  Includes configurations owned by the user as well as those shared with them. <br>
+  Optionally filter by name via <strong>searchTerm</strong> and page through the results.
+saved_search_get_configurations_summary: List saved search configurations
+saved_search_get_configurations_success_response: List of saved search configurations
+saved_search_get_menu_shortcut_configurations_description: |
+  List all saved search configurations accessible to the current user that are flagged to create a menu shortcut. <br>
+  Includes configurations owned by the user as well as those shared with them. <br>
+  The full set is returned without pagination.
+saved_search_get_menu_shortcut_configurations_summary: List saved search menu shortcut configurations
+saved_search_get_menu_shortcut_configurations_success_response: List of saved search menu shortcut configurations
+saved_search_save_configuration_description: |
+  Save the current search state as a named configuration. <br>
+  Stores columns, filter state (pagination, sorting, column filters, path) and sharing options.
+saved_search_save_configuration_summary: Save a search configuration
+saved_search_save_configuration_success_response: Saved search configuration created successfully
+saved_search_update_configuration_description: |
+  Update a saved search configuration by its <strong>{id}</strong>. <br>
+  Overwrites columns, filter state (pagination, sorting, column filters, path) and sharing options. <br>
+  Only the owner of the configuration is allowed to update it.
+saved_search_update_configuration_summary: Update a saved search configuration
+saved_search_update_configuration_success_response: Saved search configuration updated successfully
+saved_search_update_menu_shortcut_description: |
+  Update the menu shortcut information of a saved search configuration. <br>
+  Sets whether the configuration has a menu shortcut and, optionally, the name of the group it belongs to. <br>
+  Only the owner of the configuration is allowed to update it.
+saved_search_update_menu_shortcut_summary: Update a saved search menu shortcut
+saved_search_update_menu_shortcut_success_response: Saved search menu shortcut updated successfully
 simple_search_get_description: |
   Search for elements based on the given <strong>{search term}</strong>. <br>
   Elements are searched with the fulltext filter applied via Generic Data Index. <br>
@@ -1282,6 +1328,17 @@ workflow_get_details_description: |
   Get details of the element workflows based on the given <strong>{elementType}</strong> and <strong>{elementId}</strong>.
 workflow_get_details_success_response: Detail data of element workflows
 workflow_get_details_summary: Get all workflow details of an element
+workflow_get_elements_description: |
+  Get a paginated list of elements that are currently in the given workflow and (optionally) state.
+workflow_get_elements_success_response: Paginated list of elements in the given workflow state
+workflow_get_elements_summary: Get elements in a workflow state
+workflow_get_names_description: Get all configured workflow names in the system.
+workflow_get_names_success_response: List of all configured workflow names
+workflow_get_names_summary: Get all workflow names
+workflow_get_places_description: Get all configured places for a specific workflow.
+workflow_get_places_success_response: List of all configured place names for the workflow
+workflow_get_places_summary: Get all places for a workflow
+workflow_get_places_workflow_name: Name of the workflow
 asset_save_grid_configuration_description: |
   Save asset grid configuration for a specific folder
 asset_save_grid_configuration_success_response: Asset grid configuration saved successfully
@@ -1650,6 +1707,7 @@ tag_export_description: Export
 class_definition_collection_description: Get collection of all class definitions
 class_definition_collection_summary: Get class definitions collection
 class_definition_collection_success_response: List of class definitions
+class_definition_collection_creatable_widget_id_description: Optional element tree widget ID to filter classes by the widget's allowed classes configuration
 class_definition_create_description: |
   Create a new class definition configuration with the given <strong>{name}</strong> and unique ID <strong>{uid}</strong> <br>
   The <strong>{uid}</strong> must be unique and not already exist.
@@ -2022,3 +2080,30 @@ settings_update_description: |
   </ul>
   <strong>Note:</strong> Only the settings provided in the request body will be updated.
 settings_update_summary: Update system settings
+element_get_editlock_description: |
+  Check whether the element of the given <strong>{elementType}</strong> and <strong>{id}</strong> is currently edit-locked by another user session.
+element_get_editlock_summary: Get edit lock status for an element
+element_get_editlock_success_response: Edit lock status of the element
+element_lock_description: |
+  Create an edit lock on the element of the given <strong>{elementType}</strong> and <strong>{id}</strong> for the current user session.
+element_lock_summary: Lock an element for editing
+element_lock_success_response: Element locked successfully
+element_unlock_description: |
+  Remove the edit lock from the element of the given <strong>{elementType}</strong> and <strong>{id}</strong>.
+element_unlock_summary: Unlock an element
+element_unlock_success_response: Element unlocked successfully
+tag_ownership_management_description: All operations related to the administration of user-owned configurations (ownership reassignment and deletion).
+ownership_management_get_types_summary: List manageable configuration types
+ownership_management_get_types_description: Returns the list of user-owned configuration types (tabs) that can be administered, collected from all registered providers.
+ownership_management_get_types_success_response: Successfully retrieved the list of configuration types
+ownership_management_get_collection_summary: List configurations of a type
+ownership_management_get_collection_description: Returns a paginated list of all user-owned configurations of the given type across all users.
+ownership_management_get_collection_success_response: Successfully retrieved the list of configurations
+ownership_management_reassign_owner_summary: Reassign the owner of configurations
+ownership_management_reassign_owner_description: Reassigns the owner of one or more configurations of the given type to another user.
+ownership_management_reassign_owner_success_response: Owner reassigned successfully
+ownership_management_reassign_owner_created_response: A job run was created to reassign the owner asynchronously
+ownership_management_delete_configurations_summary: Delete configurations
+ownership_management_delete_configurations_description: Deletes one or more configurations of the given type.
+ownership_management_delete_configurations_success_response: Configurations deleted successfully
+ownership_management_delete_configurations_created_response: A job run was created to delete the configurations asynchronously

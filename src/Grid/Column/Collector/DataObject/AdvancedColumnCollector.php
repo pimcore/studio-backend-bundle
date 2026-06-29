@@ -166,6 +166,8 @@ final class AdvancedColumnCollector implements
         $simpleFields = $this->getSystemFields();
         foreach ($groupedDefinitions as $definition) {
             if ($definition instanceof Classificationstore) {
+                $simpleFields[] = $this->buildClassificationStoreField($definition);
+
                 continue;
             }
 
@@ -179,6 +181,10 @@ final class AdvancedColumnCollector implements
             }
 
             if (!$definition instanceof AbstractRelations) {
+                if ($definition->getInvisible()) {
+                    continue;
+                }
+
                 $simpleFields[] = new SimpleField(
                     name: $definition->getTitle(),
                     key: $definition->getName(),
@@ -187,6 +193,18 @@ final class AdvancedColumnCollector implements
         }
 
         return $simpleFields;
+    }
+
+    private function buildClassificationStoreField(Classificationstore $definition): SimpleField
+    {
+        return new SimpleField(
+            name: $definition->getTitle(),
+            key: $definition->getName(),
+            config: [
+                'classificationStore' => true,
+                'storeId' => $definition->getStoreId(),
+            ],
+        );
     }
 
     private function getSystemFields(): array
@@ -230,9 +248,14 @@ final class AdvancedColumnCollector implements
             );
 
             foreach ($objectBrickItems as $objectBrickItem) {
+                $fieldDefinition = $objectBrickItem->getFieldDefinition();
+                if ($fieldDefinition->getInvisible()) {
+                    continue;
+                }
+
                 $fields[] = new SimpleField(
-                    name: $objectBrickItem->getFieldDefinition()->getTitle(),
-                    key: $brick->getName() . '.' . $brickType . '.' . $objectBrickItem->getFieldDefinition()->getName()
+                    name: $fieldDefinition->getTitle(),
+                    key: $brick->getName() . '.' . $brickType . '.' . $fieldDefinition->getName()
                 );
             }
         }
@@ -250,6 +273,10 @@ final class AdvancedColumnCollector implements
         foreach ($groupedDefinitions as $definition) {
 
             if ($definition instanceof AbstractRelations) {
+                if ($definition->getInvisible()) {
+                    continue;
+                }
+
                 $relations[] = $this->buildRelationFields($definition);
             }
         }

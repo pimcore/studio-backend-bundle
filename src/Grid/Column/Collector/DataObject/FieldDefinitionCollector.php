@@ -124,7 +124,7 @@ final class FieldDefinitionCollector implements
                 continue;
             }
 
-            if ($definition->invisible) {
+            if ($definition->getInvisible()) {
                 continue;
             }
 

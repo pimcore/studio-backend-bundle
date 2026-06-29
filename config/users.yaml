@@ -22,6 +22,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginService
+    arguments:
+      $settingsProvider: '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider'
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService

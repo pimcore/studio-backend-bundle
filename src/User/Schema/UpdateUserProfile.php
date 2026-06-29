@@ -48,7 +48,7 @@ final readonly class UpdateUserProfile
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private string $language,
         #[Property(description: 'Date Time Locale for the User', type: 'string', example: '')]
-        private string $dateTimeLocale,
+        private ?string $dateTimeLocale,
         #[Property(description: 'Show Welcome Screen', type: 'boolean', example: true)]
         private bool $welcomeScreen,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
@@ -61,6 +61,8 @@ final readonly class UpdateUserProfile
         private array $contentLanguages,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
         private array $keyBindings,
+        #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
+        private string $theme = 'default',
     ) {
     }
 
@@ -84,9 +86,14 @@ final readonly class UpdateUserProfile
         return $this->language;
     }
 
-    public function getDateTimeLocale(): string
+    public function getDateTimeLocale(): ?string
     {
         return $this->dateTimeLocale;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 
     public function isWelcomeScreen(): bool

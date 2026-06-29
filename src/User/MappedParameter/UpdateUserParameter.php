@@ -54,6 +54,7 @@ final readonly class UpdateUserParameter
         private array $dataObjectWorkspaces,
         private array $documentWorkspaces,
         private array $perspectives = [],
+        private string $theme = 'default',
     ) {
     }
 
@@ -123,6 +124,11 @@ final readonly class UpdateUserParameter
     public function getDateTimeLocale(): ?string
     {
         return $this->dateTimeLocale;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
     }
 
     public function isMemorizeTabs(): bool
