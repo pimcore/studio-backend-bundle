@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Event\PreResponse\AdminSettingsEvent;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Event\PreUpdate\AdminSettingsEvent as PreUpdateAdminSettingsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Hydrator\SettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema\Settings;
@@ -47,6 +48,11 @@ final readonly class SettingsService implements SettingsServiceInterface
 
     public function updateAdminSettings(UpdateSettings $updateAdminSettings): void
     {
+        $this->eventDispatcher->dispatch(
+            new PreUpdateAdminSettingsEvent($updateAdminSettings),
+            PreUpdateAdminSettingsEvent::EVENT_NAME
+        );
+
         $dehydratedData = $this->adminSettingsHydrator->dehydrate($updateAdminSettings);
         $this->adminSettingRepository->saveConfiguration($dehydratedData);
     }
