@@ -47,7 +47,7 @@ interface ConfigurationServiceInterface
 
     public function getConfigurationsForAssets(): Collection;
 
-    public function getConfigurationsForDataObjectsByClassId(string $classId): Collection;
+    public function getConfigurationsForDataObjectsByClassId(string $classId, bool $onlyGlobal = false): Collection;
 
     /**
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException

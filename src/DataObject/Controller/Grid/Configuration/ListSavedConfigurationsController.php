@@ -15,11 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid\Configur
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SavedGridConfigurationsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -28,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -67,6 +70,12 @@ final class ListSavedConfigurationsController extends AbstractApiController
         example: 'EV',
         description: 'Class Id of the data object',
     )]
+    #[BoolParameter(
+        name: 'onlyGlobal',
+        description: 'Return only globally-shared grid configurations',
+        required: false,
+        example: false
+    )]
     #[SuccessResponse(
         description: 'data_object_list_saved_grid_configurations_success_response',
         content: new CollectionJson(new GenericCollection(Configuration::class))
@@ -76,9 +85,14 @@ final class ListSavedConfigurationsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function listDataObjectSavedGridConfigurations(string $classId): JsonResponse
-    {
-        $configurations = $this->configurationService->getConfigurationsForDataObjectsByClassId($classId);
+    public function listDataObjectSavedGridConfigurations(
+        string $classId,
+        #[MapQueryString] SavedGridConfigurationsParameters $parameters = new SavedGridConfigurationsParameters(),
+    ): JsonResponse {
+        $configurations = $this->configurationService->getConfigurationsForDataObjectsByClassId(
+            $classId,
+            $parameters->isOnlyGlobal(),
+        );
 
         return $this->jsonResponse($configurations);
     }

@@ -67,11 +67,13 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
 
-    public function getConfigurationsForDataObjectsByClassId(string $classId): Collection
+    public function getConfigurationsForDataObjectsByClassId(string $classId, bool $onlyGlobal = false): Collection
     {
         $configurations = $this->configurationRepository->getByClassId($classId);
 
-        $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
+        $filteredConfigurations = $onlyGlobal
+            ? $this->filterGlobalConfigurations($configurations)
+            : $this->filterConfigurationsForCurrentUser($configurations);
 
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
@@ -365,6 +367,27 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($configurations as $configuration) {
             if ($this->shareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
+                $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
+
+                $this->dispatchConfigurationEvent($hydratedConfiguration);
+
+                $filteredConfigurations[] = $hydratedConfiguration;
+            }
+        }
+
+        return $filteredConfigurations;
+    }
+
+    /**
+     * @param GridConfiguration[] $configurations
+     *
+     * @return Configuration[]
+     */
+    private function filterGlobalConfigurations(array $configurations): array
+    {
+        $filteredConfigurations = [];
+        foreach ($configurations as $configuration) {
+            if ($configuration->isShareGlobal()) {
                 $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
 
                 $this->dispatchConfigurationEvent($hydratedConfiguration);
