@@ -67,13 +67,20 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
 
-    public function getConfigurationsForDataObjectsByClassId(string $classId, bool $onlyGlobal = false): Collection
+    public function getConfigurationsForDataObjectsByClassId(string $classId): Collection
     {
         $configurations = $this->configurationRepository->getByClassId($classId);
 
-        $filteredConfigurations = $onlyGlobal
-            ? $this->filterGlobalConfigurations($configurations)
-            : $this->filterConfigurationsForCurrentUser($configurations);
+        $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
+
+        return new Collection(count($filteredConfigurations), $filteredConfigurations);
+    }
+
+    public function getGlobalConfigurationsForDataObjectsByClassId(string $classId): Collection
+    {
+        $configurations = $this->configurationRepository->getByClassId($classId);
+
+        $filteredConfigurations = $this->filterGlobalConfigurations($configurations);
 
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }

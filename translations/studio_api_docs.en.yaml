@@ -1390,6 +1390,10 @@ data_object_list_saved_grid_configurations_description: |
     List all saved grid configurations for data objects for given class ID
 data_object_list_saved_grid_configurations_summary: List all saved grid configurations for data objects
 data_object_list_saved_grid_configurations_success_response: List of saved grid configurations for data objects
+data_object_list_global_grid_configurations_description: |
+    List all globally-shared grid configurations for data objects for given class ID
+data_object_list_global_grid_configurations_summary: List all globally-shared grid configurations for data objects
+data_object_list_global_grid_configurations_success_response: List of globally-shared grid configurations for data objects
 data_object_preview_by_id_description: |
   Preview data object by ID. Any additional query parameters (e.g. locale, site) are forwarded to the preview generator configured on the data object class. <br>
   Available parameters depend on the preview generator implementation and can be retrieved from the layout endpoint's previewConfig.

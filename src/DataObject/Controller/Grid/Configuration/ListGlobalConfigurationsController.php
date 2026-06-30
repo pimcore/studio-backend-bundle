@@ -35,9 +35,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ListSavedConfigurationsController extends AbstractApiController
+final class ListGlobalConfigurationsController extends AbstractApiController
 {
-    private const string ROUTE = '/data-object/grid/configurations/{classId}';
+    private const string ROUTE = '/data-object/grid/configurations-global/{classId}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -51,15 +51,15 @@ final class ListSavedConfigurationsController extends AbstractApiController
      */
     #[Route(
         self::ROUTE,
-        name: 'pimcore_studio_api_get_data_objects_saved_grid_configurations',
+        name: 'pimcore_studio_api_get_data_objects_global_grid_configurations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'data_object_list_saved_grid_configurations',
-        description: 'data_object_list_saved_grid_configurations_description',
-        summary: 'data_object_list_saved_grid_configurations_summary',
+        operationId: 'data_object_list_global_grid_configurations',
+        description: 'data_object_list_global_grid_configurations_description',
+        summary: 'data_object_list_global_grid_configurations_summary',
         tags: [Tags::DataObjectsGrid->value]
     )]
     #[StringParameter(
@@ -68,7 +68,7 @@ final class ListSavedConfigurationsController extends AbstractApiController
         description: 'Class Id of the data object',
     )]
     #[SuccessResponse(
-        description: 'data_object_list_saved_grid_configurations_success_response',
+        description: 'data_object_list_global_grid_configurations_success_response',
         content: new CollectionJson(new GenericCollection(Configuration::class))
     )]
     #[DefaultResponses([
@@ -76,9 +76,9 @@ final class ListSavedConfigurationsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function listDataObjectSavedGridConfigurations(string $classId): JsonResponse
+    public function listDataObjectGlobalGridConfigurations(string $classId): JsonResponse
     {
-        $configurations = $this->configurationService->getConfigurationsForDataObjectsByClassId($classId);
+        $configurations = $this->configurationService->getGlobalConfigurationsForDataObjectsByClassId($classId);
 
         return $this->jsonResponse($configurations);
     }
