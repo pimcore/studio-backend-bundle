@@ -5,20 +5,20 @@ description: Shared infrastructure for Model Context Protocol servers including 
 
 # MCP Server Infrastructure (Experimental)
 
-Pimcore Studio Backend provides shared infrastructure for [Model Context Protocol](https://modelcontextprotocol.io/) (MCP)
-servers across bundles. This includes a dedicated security firewall, PSR-7/PSR-17 bridge services, and a multi-authenticator
-security system supporting both internal agent use and external MCP clients.
+Pimcore Studio Backend provides shared infrastructure for [Model Context Protocol](https://modelcontextprotocol.io/)
+(MCP) servers across bundles. This includes a dedicated security firewall, PSR-7/PSR-17 bridge services, and a
+multi-authenticator security system supporting both internal agent use and external MCP clients.
 
 ## The `pimcore_mcp` Firewall
 
-All MCP endpoints use the URL prefix `/pimcore-mcp/` and are protected by a dedicated Symfony firewall (`pimcore_mcp`). This
-firewall is **stateless** - each request authenticates independently, with no session migration or security token persistence.
-It is separate from the `pimcore_studio` firewall to provide security isolation - MCP authentication cannot leak to Studio
-Backend API routes and vice versa.
+All MCP endpoints use the URL prefix `/pimcore-mcp/` and are protected by a dedicated Symfony firewall (`pimcore_mcp`).
+This firewall is **stateless** - each request authenticates independently, with no session migration or security token
+persistence. It is separate from the `pimcore_studio` firewall to provide security isolation - MCP authentication cannot
+leak to Studio Backend API routes and vice versa.
 
 All authenticators resolve to a Pimcore `User` object, and all existing Pimcore permissions (workspace ACLs, user/role
-permissions) apply automatically. There are no MCP-specific scopes: if a user cannot edit a data object via the admin UI,
-they cannot edit it via MCP tools either.
+permissions) apply automatically. There are no MCP-specific scopes: if a user cannot edit a data object via Pimcore
+Studio, they cannot edit it via MCP tools either.
 
 ### Who calls MCP endpoints, and with which credential
 
@@ -30,9 +30,9 @@ they cannot edit it via MCP tools either.
 
 The **primary internal path is the MCP access token** (`Bearer pmcp_…`): the Pimcore AI agent-server mints one dynamic,
 expiring, revocable token per chat session (see [Minting MCP access tokens](#minting-mcp-access-tokens)) and sends it on
-every `/pimcore-mcp/` request. The bearer binds each request to a specific chat session and stays valid across browser-session
-expiry, which matters for long-running agent runs. `SessionBridgeAuthenticator` handles requests that instead carry a Pimcore
-Studio session cookie.
+every `/pimcore-mcp/` request. The bearer binds each request to a specific chat session and stays valid across
+browser-session expiry, which matters for long-running agent runs. `SessionBridgeAuthenticator` handles requests that
+instead carry a Pimcore Studio session cookie.
 
 ### Authenticator chain
 
@@ -46,14 +46,14 @@ The firewall tries these authenticators in order; each returns `null` on failure
 
 ### `McpAccessTokenAuthenticator` (primary internal)
 
-Validates a `pmcp_`-prefixed bearer token via `McpAccessTokenService` (DB-backed, hashed at rest, TTL-bounded, revocable).
-It **never reads the PHP session**. On success, the validated token's `reference` (the chat session id) is stashed on the
-request attributes (`_mcp_token_reference`) so trusted downstream code can use it instead of any forge-able header. On
-failure it returns `null`, so the firewall falls through to `PatAuthenticator`.
+Validates a `pmcp_`-prefixed bearer token via `McpAccessTokenService` (DB-backed, hashed at rest, TTL-bounded,
+revocable). It **never reads the PHP session**. On success, the validated token's `reference` (the chat session id) is
+stashed on the request attributes (`_mcp_token_reference`) so trusted downstream code can use it instead of any
+forge-able header. On failure it returns `null`, so the firewall falls through to `PatAuthenticator`.
 
-The studio-backend bundle owns both validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke primitives.
-Consuming bundles (e.g. `pimcore-agent-bundle`) call those primitives to mint tokens for their own MCP servers — see
-[Minting MCP access tokens](#minting-mcp-access-tokens).
+The studio-backend bundle owns both validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke
+primitives. Consuming bundles (e.g. `pimcore-agent-bundle`) call those primitives to mint tokens for their own MCP
+servers - see [Minting MCP access tokens](#minting-mcp-access-tokens).
 
 ### `PatAuthenticator` (external clients)
 
@@ -72,10 +72,10 @@ pimcore_studio_backend:
                     - '%env(MCP_TOKEN_EDITOR)%'
 ```
 
-Each key is a Pimcore username, and the value is a list of accepted tokens for that user. Tokens can reference environment
-variables to keep secrets out of YAML files. The `PatAuthenticator` extracts the bearer token from the `Authorization`
-header, looks up the username in the token map, loads the Pimcore `User`, validates it is active, and creates a
-`SelfValidatingPassport`.
+Each key is a Pimcore username, and the value is a list of accepted tokens for that user. Tokens can reference
+environment variables to keep secrets out of YAML files. The `PatAuthenticator` extracts the bearer token from the
+`Authorization` header, looks up the username in the token map, loads the Pimcore `User`, validates it is active, and
+creates a `SelfValidatingPassport`.
 
 **Client configuration example (Claude Desktop / Cursor):**
 
@@ -95,20 +95,20 @@ header, looks up the username in the token map, loads the Pimcore `User`, valida
 ### `SessionBridgeAuthenticator` (session cookie)
 
 Authenticates an MCP request against an existing Pimcore Studio session. It reads `_security_pimcore_admin` from the PHP
-session (cross-context) via `AuthenticationResolverInterface::authenticateSession()`, validates that the user exists and is
-active, and creates a `SelfValidatingPassport`. It returns `null` on failure so the next authenticator can try.
+session (cross-context) via `AuthenticationResolverInterface::authenticateSession()`, validates that the user exists and
+is active, and creates a `SelfValidatingPassport`. It returns `null` on failure so the next authenticator can try.
 
-It applies to requests that arrive with a Studio session cookie. The agent-server's own MCP calls use the `pmcp_…` bearer
-instead (see the credential table above).
+It applies to requests that arrive with a Studio session cookie. The agent-server's own MCP calls use the `pmcp_…`
+bearer instead (see the credential table above).
 
 ## Minting MCP access tokens
 
-`McpAccessTokenService` (behind `McpAccessTokenServiceInterface`) is the API a bundle uses to mint and manage dynamic MCP
-access tokens for its own MCP servers. Inject the interface and call:
+`McpAccessTokenService` (behind `McpAccessTokenServiceInterface`) is the API a bundle uses to mint and manage dynamic
+MCP access tokens for its own MCP servers. Inject the interface and call:
 
 | Method | Purpose |
 |--------|---------|
-| `issue(int $userId, int $ttlSeconds, string $reference): string` | Mint a token for a user, bound to `reference`, valid for `ttlSeconds`. Returns the raw `pmcp_…` token — the only time it is available in clear text. |
+| `issue(int $userId, int $ttlSeconds, string $reference): string` | Mint a token for a user, bound to `reference`, valid for `ttlSeconds`. Returns the raw `pmcp_…` token - the only time it is available in clear text. |
 | `refresh(string $reference, int $ttlSeconds): bool` | Extend the live token for `reference` by a fresh `ttlSeconds` window. Returns `false` if no live token exists or the user is no longer valid. |
 | `revoke(string $reference): void` | Delete the token for `reference`. |
 | `revokeByUser(int $userId): void` | Delete all tokens for a user. |
@@ -116,16 +116,17 @@ access tokens for its own MCP servers. Inject the interface and call:
 
 ### Semantics
 
-- **`reference` is your correlation key.** An opaque string the bundle chooses — the Pimcore AI agent-server uses the chat
-  session id. It is what `refresh()` / `revoke()` operate on, and it is exposed to authenticated tool code via the
+- **`reference` is your correlation key.** An opaque string the bundle chooses - the Pimcore AI agent-server uses the
+  chat session id. It is what `refresh()` / `revoke()` operate on, and it is exposed to authenticated tool code via the
   `_mcp_token_reference` request attribute.
-- **One live token per `reference`.** `issue()` deletes any existing token for the same `reference` before creating the new
-  one, so re-issuing rotates the token rather than accumulating rows.
-- **TTL is a sliding window.** `refresh()` moves the expiry to `now + ttlSeconds`; a caller keeps a long-running session alive
-  by refreshing on a timer.
-- **The raw token is returned once.** Only its SHA-256 hash is stored, so a lost token cannot be recovered — only re-issued.
-- **Validation re-checks the user.** `validate()` rejects a token whose user is no longer valid, so deactivating or deleting a
-  user immediately stops their tokens working, independent of expiry.
+- **One live token per `reference`.** `issue()` deletes any existing token for the same `reference` before creating the
+  new one, so re-issuing rotates the token rather than accumulating rows.
+- **TTL is a sliding window.** `refresh()` moves the expiry to `now + ttlSeconds`; a caller keeps a long-running session
+  alive by refreshing on a timer.
+- **The raw token is returned once.** Only its SHA-256 hash is stored, so a lost token cannot be recovered - only
+  re-issued.
+- **Validation re-checks the user.** `validate()` rejects a token whose user is no longer valid, so deactivating or
+  deleting a user immediately stops their tokens working, independent of expiry.
 
 ### Token format and storage
 
@@ -136,13 +137,14 @@ access tokens for its own MCP servers. Inject the interface and call:
 | At rest | SHA-256 hash only, in table `bundle_studio_mcp_access_token` (`token_hash`, `user_id`, `reference`, `expires_at`, `created_at`) |
 | Expiry | `expires_at` (unix seconds); expired rows are pruned by the `studio_mcp_access_token_gc` maintenance task |
 
-For a worked example of a mint / refresh / re-mint / revoke policy on top of these primitives — including *when* to mint vs.
-extend and how a client paces refreshes — see the Pimcore Agent Bundle's *MCP Integration → Token lifecycle* documentation.
+For a worked example of a mint / refresh / re-mint / revoke policy on top of these primitives - including *when* to mint
+vs. extend and how a client paces refreshes - see the Pimcore Agent Bundle's *MCP Integration → Token lifecycle*
+documentation.
 
 ## PSR-7/PSR-17 Bridge Services
 
-Studio Backend Bundle provides the PSR-7/PSR-17 bridge services required by MCP controllers globally. Bundles that implement
-MCP servers do not need to register these services themselves:
+Studio Backend Bundle provides the PSR-7/PSR-17 bridge services required by MCP controllers globally. Bundles that
+implement MCP servers do not need to register these services themselves:
 
 - `Psr\Http\Message\ResponseFactoryInterface`
 - `Psr\Http\Message\StreamFactoryInterface`
@@ -163,7 +165,7 @@ pimcore_studio_backend:
                     - '<token-string-or-env-ref>'
 ```
 
-The firewall is automatically configured by the bundle extension. To enable it, add the following to your
+The firewall is automatically configured by the bundle extension. To enable it, add this to your
 `config/packages/security.yaml` (see also [Installation](../02_Installation_and_Configuration/README.md)):
 
 ```yaml
@@ -174,9 +176,9 @@ security:
         - { path: ^/pimcore-mcp/, roles: ROLE_PIMCORE_USER }
 ```
 
-No manual firewall configuration beyond this is needed - the parameter contains the full firewall definition including the
-authenticator chain, user provider, and stateless flag. Dynamic MCP access tokens (`Bearer pmcp_…`) need no configuration
-here; they are issued at runtime by the consuming bundle.
+No manual firewall configuration beyond this is needed - the parameter contains the full firewall definition including
+the authenticator chain, user provider, and stateless flag. Dynamic MCP access tokens (`Bearer pmcp_…`) need no
+configuration here; they are issued at runtime by the consuming bundle.
 
 ## Implementing an MCP Server in a Bundle
 
@@ -268,8 +270,8 @@ final readonly class McpController
 }
 ```
 
-The `pimcore_mcp` firewall automatically handles authentication for any route matching `^/pimcore-mcp/`. No custom auth code
-is needed in your bundle.
+The `pimcore_mcp` firewall automatically handles authentication for any route matching `^/pimcore-mcp/`. No custom auth
+code is needed in your bundle.
 
 ### Step 5: Get the Current User (Optional)
 
@@ -303,6 +305,7 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
 - **Log redaction.** Tools that log raw request headers must redact `Authorization`. See `pimcore-agent-bundle` for the
   Fastify (agent-server) and Symfony (bundle) configuration.
 - **Token lifecycle.** MCP access tokens expire after the consuming bundle's configured TTL (default 2h for
-  `pimcore-agent-bundle`); expired rows are pruned by the `studio_mcp_access_token_gc` maintenance task. A token also stops
-  working the moment its user is deactivated or removed — `validate()` re-checks the user on every request — and a bundle can
-  drop a user's tokens explicitly with `revokeByUser()`. See [Minting MCP access tokens](#minting-mcp-access-tokens).
+  `pimcore-agent-bundle`); expired rows are pruned by the `studio_mcp_access_token_gc` maintenance task. A token also
+  stops working the moment its user is deactivated or removed - `validate()` re-checks the user on every request - and a
+  bundle can drop a user's tokens explicitly with `revokeByUser()`. See [Minting MCP access
+  tokens](#minting-mcp-access-tokens).
