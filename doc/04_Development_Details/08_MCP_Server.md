@@ -26,14 +26,13 @@ they cannot edit it via MCP tools either.
 |--------|------------|---------------|
 | Pimcore AI agent-server (internal, per chat session) | `Authorization: Bearer pmcp_…` | `McpAccessTokenAuthenticator` |
 | External MCP client (Claude Desktop, Cursor, …) | `Authorization: Bearer <static PAT>` | `PatAuthenticator` |
-| Legacy / session-bridged internal call | Pimcore session cookie (`PHPSESSID`) | `SessionBridgeAuthenticator` |
+| Caller presenting a Pimcore Studio session cookie | Pimcore session cookie (`PHPSESSID`) | `SessionBridgeAuthenticator` |
 
-The **primary internal path is the MCP access token** (`Bearer pmcp_…`). The Pimcore AI agent-server mints one dynamic,
-expiring, revocable token per chat session and sends it on every `/pimcore-mcp/` request. Earlier versions forwarded the
-browser's `PHPSESSID` cookie instead; the agent-server no longer does this for MCP calls (a bearer token survives browser
-session expiry during long-running agent runs and binds the request to a specific chat session). `SessionBridgeAuthenticator`
-remains registered for backward compatibility and for any caller that still presents a Pimcore Studio session cookie, but it
-is no longer the agent-server's MCP mechanism.
+The **primary internal path is the MCP access token** (`Bearer pmcp_…`): the Pimcore AI agent-server mints one dynamic,
+expiring, revocable token per chat session (see [Minting MCP access tokens](#minting-mcp-access-tokens)) and sends it on
+every `/pimcore-mcp/` request. The bearer binds each request to a specific chat session and stays valid across browser-session
+expiry, which matters for long-running agent runs. `SessionBridgeAuthenticator` handles requests that instead carry a Pimcore
+Studio session cookie.
 
 ### Authenticator chain
 
@@ -41,7 +40,7 @@ The firewall tries these authenticators in order; each returns `null` on failure
 
 | Order | Authenticator | Trigger | Use case |
 |-------|---------------|---------|----------|
-| 1 | `SessionBridgeAuthenticator` | Pimcore session cookie present | Legacy / callers that forward a Studio session |
+| 1 | `SessionBridgeAuthenticator` | Pimcore session cookie present | Requests that carry a Pimcore Studio session cookie |
 | 2 | `McpAccessTokenAuthenticator` | `Authorization: Bearer pmcp_…` | Internal: dynamically-issued, expiring, revocable per-chat-session tokens (Pimcore AI agent) |
 | 3 | `PatAuthenticator` | `Authorization: Bearer <other>` | External: MCP clients (Claude Desktop, Cursor, etc.) |
 
@@ -52,11 +51,9 @@ It **never reads the PHP session**. On success, the validated token's `reference
 request attributes (`_mcp_token_reference`) so trusted downstream code can use it instead of any forge-able header. On
 failure it returns `null`, so the firewall falls through to `PatAuthenticator`.
 
-The studio-backend bundle owns both validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke primitives
-(`McpAccessTokenServiceInterface` → `McpAccessTokenService`, hashed-at-rest persistence via `McpAccessTokenRepository`,
-GC via the `studio_mcp_access_token_gc` maintenance task). Consuming bundles (e.g. `pimcore-agent-bundle`) layer their own
-policy on top - *when* to mint a fresh token vs. extend an existing one, which `reference` to bind it to (typically a chat
-session id), and what TTL to apply - by calling `issue()` / `refresh()` / `revoke()` on the injected service.
+The studio-backend bundle owns both validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke primitives.
+Consuming bundles (e.g. `pimcore-agent-bundle`) call those primitives to mint tokens for their own MCP servers — see
+[Minting MCP access tokens](#minting-mcp-access-tokens).
 
 ### `PatAuthenticator` (external clients)
 
@@ -95,14 +92,52 @@ header, looks up the username in the token map, loads the Pimcore `User`, valida
 }
 ```
 
-### `SessionBridgeAuthenticator` (legacy / session context)
+### `SessionBridgeAuthenticator` (session cookie)
 
 Authenticates an MCP request against an existing Pimcore Studio session. It reads `_security_pimcore_admin` from the PHP
 session (cross-context) via `AuthenticationResolverInterface::authenticateSession()`, validates that the user exists and is
 active, and creates a `SelfValidatingPassport`. It returns `null` on failure so the next authenticator can try.
 
-This was the original internal mechanism (agent-server forwarding the browser's `PHPSESSID`); it is retained for backward
-compatibility but is no longer how the agent-server authenticates MCP calls - see the credential table above.
+It applies to requests that arrive with a Studio session cookie. The agent-server's own MCP calls use the `pmcp_…` bearer
+instead (see the credential table above).
+
+## Minting MCP access tokens
+
+`McpAccessTokenService` (behind `McpAccessTokenServiceInterface`) is the API a bundle uses to mint and manage dynamic MCP
+access tokens for its own MCP servers. Inject the interface and call:
+
+| Method | Purpose |
+|--------|---------|
+| `issue(int $userId, int $ttlSeconds, string $reference): string` | Mint a token for a user, bound to `reference`, valid for `ttlSeconds`. Returns the raw `pmcp_…` token — the only time it is available in clear text. |
+| `refresh(string $reference, int $ttlSeconds): bool` | Extend the live token for `reference` by a fresh `ttlSeconds` window. Returns `false` if no live token exists or the user is no longer valid. |
+| `revoke(string $reference): void` | Delete the token for `reference`. |
+| `revokeByUser(int $userId): void` | Delete all tokens for a user. |
+| `validate(string $token): ?ValidatedAccessToken` | Resolve a raw token to its `{ user, reference }` (used by `McpAccessTokenAuthenticator`). |
+
+### Semantics
+
+- **`reference` is your correlation key.** An opaque string the bundle chooses — the Pimcore AI agent-server uses the chat
+  session id. It is what `refresh()` / `revoke()` operate on, and it is exposed to authenticated tool code via the
+  `_mcp_token_reference` request attribute.
+- **One live token per `reference`.** `issue()` deletes any existing token for the same `reference` before creating the new
+  one, so re-issuing rotates the token rather than accumulating rows.
+- **TTL is a sliding window.** `refresh()` moves the expiry to `now + ttlSeconds`; a caller keeps a long-running session alive
+  by refreshing on a timer.
+- **The raw token is returned once.** Only its SHA-256 hash is stored, so a lost token cannot be recovered — only re-issued.
+- **Validation re-checks the user.** `validate()` rejects a token whose user is no longer valid, so deactivating or deleting a
+  user immediately stops their tokens working, independent of expiry.
+
+### Token format and storage
+
+| Aspect | Value |
+|--------|-------|
+| Prefix | `pmcp_` (`McpAccessTokenService::TOKEN_PREFIX`) |
+| Entropy | 32 random bytes, hex-encoded |
+| At rest | SHA-256 hash only, in table `bundle_studio_mcp_access_token` (`token_hash`, `user_id`, `reference`, `expires_at`, `created_at`) |
+| Expiry | `expires_at` (unix seconds); expired rows are pruned by the `studio_mcp_access_token_gc` maintenance task |
+
+For a worked example of a mint / refresh / re-mint / revoke policy on top of these primitives — including *when* to mint vs.
+extend and how a client paces refreshes — see the Pimcore Agent Bundle's *MCP Integration → Token lifecycle* documentation.
 
 ## PSR-7/PSR-17 Bridge Services
 
@@ -268,5 +303,6 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
 - **Log redaction.** Tools that log raw request headers must redact `Authorization`. See `pimcore-agent-bundle` for the
   Fastify (agent-server) and Symfony (bundle) configuration.
 - **Token lifecycle.** MCP access tokens expire after the consuming bundle's configured TTL (default 2h for
-  `pimcore-agent-bundle`). Expired rows are removed by the `studio_mcp_access_token_gc` maintenance task. Tokens are revoked
-  at the DB layer by an `ON DELETE CASCADE` FK on `users` - deleting a Pimcore user atomically clears their tokens.
+  `pimcore-agent-bundle`); expired rows are pruned by the `studio_mcp_access_token_gc` maintenance task. A token also stops
+  working the moment its user is deactivated or removed — `validate()` re-checks the user on every request — and a bundle can
+  drop a user's tokens explicitly with `revokeByUser()`. See [Minting MCP access tokens](#minting-mcp-access-tokens).
