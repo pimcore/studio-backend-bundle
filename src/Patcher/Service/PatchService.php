@@ -145,7 +145,7 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
-        $previousCoauthorContext = $this->activateCoauthorContext($elementPatchData);
+        $coauthorSnapshot = $this->activateCoauthorContext($elementPatchData);
 
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
@@ -179,7 +179,7 @@ final readonly class PatchService implements PatchServiceInterface
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         } finally {
-            $this->restoreCoauthorContext($previousCoauthorContext);
+            $this->restoreCoauthorContext($coauthorSnapshot);
         }
     }
 

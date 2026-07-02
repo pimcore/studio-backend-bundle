@@ -81,7 +81,7 @@ final readonly class UpdateService implements UpdateServiceInterface
             $adapter->update($element, $data);
         }
 
-        $previousCoauthorContext = $this->activateCoauthorContext($data);
+        $coauthorSnapshot = $this->activateCoauthorContext($data);
 
         try {
             $this->elementSaveService->save($element, $user, $task);
@@ -98,7 +98,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         } finally {
-            $this->restoreCoauthorContext($previousCoauthorContext);
+            $this->restoreCoauthorContext($coauthorSnapshot);
         }
     }
 

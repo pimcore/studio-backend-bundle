@@ -55,8 +55,7 @@ final class PatchDataObjectRequestBody extends RequestBody
                                 new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
                                 new Property(
                                     property: 'coauthorType',
-                                    description: 'Optional coauthor type stored on versions created by this save '
-                                        . '(e.g. agent)',
+                                    description: 'Optional coauthor type stored on versions created by this save',
                                     type: 'string',
                                     example: 'agent'
                                 ),

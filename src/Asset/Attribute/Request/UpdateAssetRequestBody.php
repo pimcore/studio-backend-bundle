@@ -45,8 +45,7 @@ final class UpdateAssetRequestBody extends RequestBody
                             new UpdateStringProperty('locked'),
                             new Property(
                                 property: 'coauthorType',
-                                description: 'Optional coauthor type stored on versions created by this save '
-                                    . '(e.g. agent)',
+                                description: 'Optional coauthor type stored on versions created by this save',
                                 type: 'string',
                                 example: 'agent'
                             ),
