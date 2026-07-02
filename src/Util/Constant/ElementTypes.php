@@ -37,6 +37,8 @@ final readonly class ElementTypes
 
     public const string DOC_TYPE = 'docType';
 
+    public const string CLASS_TYPE = 'class';
+
     public const array ALLOWED_TYPES = [
         self::TYPE_DATA_OBJECT,
         self::TYPE_OBJECT,

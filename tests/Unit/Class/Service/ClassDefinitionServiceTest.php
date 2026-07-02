@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @internal
@@ -96,8 +97,12 @@ final class ClassDefinitionServiceTest extends Unit
         $widget = $this->createElementTreeWidget(['Car', 'News']);
 
         $currentUser = $this->makeEmpty(UserInterface::class, [
-            'isAllowed' => function (string $classId): bool {
-                return $classId === 'Car' || $classId === 'Event';
+            'isAllowed' => static function (string $key, string $type = 'permission'): bool {
+                if ($type !== ElementTypes::CLASS_TYPE) {
+                    return false; // mirrors Pimcore\Model\User::isAllowed fallthrough for unknown types
+                }
+
+                return in_array($key, ['Car', 'Event'], true);
             },
         ]);
 
@@ -138,8 +143,12 @@ final class ClassDefinitionServiceTest extends Unit
     public function testGetCollectionCreatableOnlyFiltersWithoutWidget(): void
     {
         $currentUser = $this->makeEmpty(UserInterface::class, [
-            'isAllowed' => function (string $classId): bool {
-                return $classId === 'News';
+            'isAllowed' => static function (string $key, string $type = 'permission'): bool {
+                if ($type !== ElementTypes::CLASS_TYPE) {
+                    return false; // mirrors Pimcore\Model\User::isAllowed fallthrough for unknown types
+                }
+
+                return $key === 'News';
             },
         ]);
 

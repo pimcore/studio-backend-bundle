@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfi
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition as CoreClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -233,7 +233,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
             if (
                 !$currentUser->isAllowed(
                     $definition->getId(),
-                    UserPermissions::CLASS_DEFINITION->value
+                    ElementTypes::CLASS_TYPE
                 )
             ) {
                 continue;
