@@ -21,6 +21,8 @@ final readonly class UpdateVersionParameter
     public function __construct(
         private ?bool $public = null,
         private ?string $note = null,
+        private ?string $coauthorType = null,
+        private ?string $coauthor = null,
     ) {
     }
 
@@ -32,5 +34,15 @@ final readonly class UpdateVersionParameter
     public function getNote(): ?string
     {
         return $this->note;
+    }
+
+    public function getCoauthorType(): ?string
+    {
+        return $this->coauthorType;
+    }
+
+    public function getCoauthor(): ?string
+    {
+        return $this->coauthor;
     }
 }

@@ -26,7 +26,11 @@ final readonly class UpdateVersion
         #[Property(description: 'Public', type: 'boolean', example: null)]
         private ?bool $public,
         #[Property(description: 'Note', type: 'string', example: null)]
-        private ?string $note
+        private ?string $note,
+        #[Property(description: 'Coauthor type', type: 'string', example: null)]
+        private ?string $coauthorType = null,
+        #[Property(description: 'Coauthor', type: 'string', example: null)]
+        private ?string $coauthor = null
     ) {
     }
 
@@ -38,5 +42,15 @@ final readonly class UpdateVersion
     public function getNote(): ?string
     {
         return $this->note;
+    }
+
+    public function getCoauthorType(): ?string
+    {
+        return $this->coauthorType;
+    }
+
+    public function getCoauthor(): ?string
+    {
+        return $this->coauthor;
     }
 }
