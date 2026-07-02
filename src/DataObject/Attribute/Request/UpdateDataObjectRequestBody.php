@@ -46,6 +46,19 @@ final class UpdateDataObjectRequestBody extends RequestBody
                             new UpdateStringProperty('key'),
                             new UpdateBooleanProperty(UpdateServiceInterface::USE_DRAFT_DATA_KEY),
                             new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
+                            new Property(
+                                property: 'coauthorType',
+                                description: 'Optional coauthor type stored on versions created by this save '
+                                    . '(e.g. agent)',
+                                type: 'string',
+                                example: 'agent'
+                            ),
+                            new Property(
+                                property: 'coauthor',
+                                description: 'Optional coauthor identifier stored on versions created by this save',
+                                type: 'string',
+                                example: 'product-data-agent'
+                            ),
                             new UpdateStringProperty('locked'),
                             new UpdateStringProperty('childrenSortBy'),
                             new UpdateStringProperty('childrenSortOrder'),

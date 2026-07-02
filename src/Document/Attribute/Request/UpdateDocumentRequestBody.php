@@ -45,6 +45,19 @@ final class UpdateDocumentRequestBody extends RequestBody
                             new UpdateIntegerProperty('index', 0),
                             new UpdateStringProperty('key'),
                             new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
+                            new Property(
+                                property: 'coauthorType',
+                                description: 'Optional coauthor type stored on versions created by this save '
+                                    . '(e.g. agent)',
+                                type: 'string',
+                                example: 'agent'
+                            ),
+                            new Property(
+                                property: 'coauthor',
+                                description: 'Optional coauthor identifier stored on versions created by this save',
+                                type: 'string',
+                                example: 'product-data-agent'
+                            ),
                             new UpdateStringProperty('locked'),
                             new UpdateBooleanProperty('published'),
                             new UpdateObjectProperty(DocumentFieldKeys::EDITABLE_DATA->value),

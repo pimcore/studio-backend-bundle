@@ -43,6 +43,19 @@ final class UpdateAssetRequestBody extends RequestBody
                             new UpdateIntegerProperty('parentId'),
                             new UpdateStringProperty('key'),
                             new UpdateStringProperty('locked'),
+                            new Property(
+                                property: 'coauthorType',
+                                description: 'Optional coauthor type stored on versions created by this save '
+                                    . '(e.g. agent)',
+                                type: 'string',
+                                example: 'agent'
+                            ),
+                            new Property(
+                                property: 'coauthor',
+                                description: 'Optional coauthor identifier stored on versions created by this save',
+                                type: 'string',
+                                example: 'product-data-agent'
+                            ),
                             new UpdateStringProperty('data'),
                             new UpdateStringProperty('dataUri'),
                             new UpdateCustomMetadata(),

@@ -34,6 +34,8 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
+use Pimcore\Model\Version\CoauthorContextInterface;
+use function is_string;
 use function sprintf;
 
 /**
@@ -52,6 +54,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
+        private CoauthorContextInterface $coauthorContext,
     ) {
     }
 
@@ -78,6 +81,8 @@ final readonly class UpdateService implements UpdateServiceInterface
             $adapter->update($element, $data);
         }
 
+        $previousCoauthorContext = $this->activateCoauthorContext($data);
+
         try {
             $this->elementSaveService->save($element, $user, $task);
 
@@ -92,7 +97,46 @@ final readonly class UpdateService implements UpdateServiceInterface
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
+        } finally {
+            $this->restoreCoauthorContext($previousCoauthorContext);
         }
+    }
+
+    /**
+     * @return array{type: ?string, coauthor: ?string}|null Snapshot of the previous context,
+     *                                                      or null if nothing was activated
+     */
+    private function activateCoauthorContext(array $data): ?array
+    {
+        $coauthorType = $data[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE] ?? null;
+        $coauthor = $data[ElementSaveServiceInterface::INDEX_COAUTHOR] ?? null;
+
+        if (!is_string($coauthorType) || $coauthorType === '' || !is_string($coauthor) || $coauthor === '') {
+            return null;
+        }
+
+        $previous = [
+            'type' => $this->coauthorContext->getType(),
+            'coauthor' => $this->coauthorContext->getCoauthor(),
+        ];
+        $this->coauthorContext->set($coauthorType, $coauthor);
+
+        return $previous;
+    }
+
+    private function restoreCoauthorContext(?array $previous): void
+    {
+        if ($previous === null) {
+            return;
+        }
+
+        if ($previous['type'] !== null && $previous['coauthor'] !== null) {
+            $this->coauthorContext->set($previous['type'], $previous['coauthor']);
+
+            return;
+        }
+
+        $this->coauthorContext->clear();
     }
 
     private function getLatestElement(

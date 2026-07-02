@@ -45,8 +45,10 @@ use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version\CoauthorContextInterface;
 use function array_key_exists;
 use function count;
+use function is_string;
 use function sprintf;
 
 /**
@@ -62,7 +64,8 @@ final readonly class PatchService implements PatchServiceInterface
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementIndexServiceInterface $indexService,
-        private ElementSaveServiceInterface $elementSaveService
+        private ElementSaveServiceInterface $elementSaveService,
+        private CoauthorContextInterface $coauthorContext,
     ) {
     }
 
@@ -142,6 +145,8 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
+        $previousCoauthorContext = $this->activateCoauthorContext($elementPatchData);
+
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
                 $this->patchEditableData(
@@ -173,7 +178,46 @@ final readonly class PatchService implements PatchServiceInterface
             );
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
+        } finally {
+            $this->restoreCoauthorContext($previousCoauthorContext);
         }
+    }
+
+    /**
+     * @return array{type: ?string, coauthor: ?string}|null Snapshot of the previous context,
+     *                                                      or null if nothing was activated
+     */
+    private function activateCoauthorContext(array $elementPatchData): ?array
+    {
+        $coauthorType = $elementPatchData[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE] ?? null;
+        $coauthor = $elementPatchData[ElementSaveServiceInterface::INDEX_COAUTHOR] ?? null;
+
+        if (!is_string($coauthorType) || $coauthorType === '' || !is_string($coauthor) || $coauthor === '') {
+            return null;
+        }
+
+        $previous = [
+            'type' => $this->coauthorContext->getType(),
+            'coauthor' => $this->coauthorContext->getCoauthor(),
+        ];
+        $this->coauthorContext->set($coauthorType, $coauthor);
+
+        return $previous;
+    }
+
+    private function restoreCoauthorContext(?array $previous): void
+    {
+        if ($previous === null) {
+            return;
+        }
+
+        if ($previous['type'] !== null && $previous['coauthor'] !== null) {
+            $this->coauthorContext->set($previous['type'], $previous['coauthor']);
+
+            return;
+        }
+
+        $this->coauthorContext->clear();
     }
 
     public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array
