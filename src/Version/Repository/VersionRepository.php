@@ -136,10 +136,11 @@ final readonly class VersionRepository implements VersionRepositoryInterface
         }
 
         if ($parameter->getCoauthorType() !== null) {
-            $version->setCoauthorType($parameter->getCoauthorType());
+            $version->setCoauthorType($parameter->getCoauthorType() === '' ? null : $parameter->getCoauthorType());
         }
+
         if ($parameter->getCoauthor() !== null) {
-            $version->setCoauthor($parameter->getCoauthor());
+            $version->setCoauthor($parameter->getCoauthor() === '' ? null : $parameter->getCoauthor());
         }
 
         try {
