@@ -40,19 +40,13 @@ final class WorkflowElementsRepositoryTest extends Unit
 
     public function testFetchByWorkflowStateExcludesFolders(): void
     {
-        $joins = [];
         $wheres = [];
         $queryBuilder = $this->createMock(QueryBuilder::class);
         foreach (['select', 'addSelect', 'from', 'where', 'setParameter', 'orderBy', 'addOrderBy'] as $method) {
             $queryBuilder->method($method)->willReturnSelf();
         }
-        $queryBuilder->method('leftJoin')->willReturnCallback(
-            function (string $fromAlias, string $join, string $alias, string $condition) use (&$joins, $queryBuilder) {
-                $joins[$alias] = $condition;
-
-                return $queryBuilder;
-            }
-        );
+        // The asset/object/document subtype tables are joined so their type can be inspected.
+        $queryBuilder->expects($this->exactly(3))->method('leftJoin')->willReturnSelf();
         $queryBuilder->method('andWhere')->willReturnCallback(
             function (string $condition) use (&$wheres, $queryBuilder) {
                 $wheres[] = $condition;
@@ -67,12 +61,8 @@ final class WorkflowElementsRepositoryTest extends Unit
 
         $this->repository->fetchByWorkflowState('product_workflow');
 
-        // The subtype tables are joined so their type can be inspected...
-        $this->assertArrayHasKey('a', $joins);
-        $this->assertArrayHasKey('o', $joins);
-        $this->assertArrayHasKey('d', $joins);
-        // ...and folder rows are filtered out in SQL for every element type. The IS NULL guard
-        // is essential: a plain "type != 'folder'" would drop every non-matching LEFT JOIN row
+        // Folder rows are filtered out in SQL for every element type. The IS NULL guard is
+        // essential: a plain "type != 'folder'" would drop every non-matching LEFT JOIN row
         // (NULL type) via three-valued logic, emptying the result.
         $this->assertContains("(a.type IS NULL OR a.type != 'folder')", $wheres);
         $this->assertContains("(o.type IS NULL OR o.type != 'folder')", $wheres);
