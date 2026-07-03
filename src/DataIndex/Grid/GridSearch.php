@@ -35,6 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInter
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
 
@@ -163,6 +165,15 @@ final readonly class GridSearch implements GridSearchInterface
         int $folderId,
         ?UserInterface $user
     ): FilterParameter {
+        // The root folder is not necessarily visible in the search index (restricted user
+        // workspaces exclude "/"); its path is fixed, so no lookup is needed. Results stay
+        // permission-filtered by the search query itself.
+        if ($folderId === ElementFolderIds::ROOT->value) {
+            $filter->setPath(ElementFolderPaths::ROOT->value);
+
+            return $filter;
+        }
+
         $folder = match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById($folderId, $user),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->getDataObjectById($folderId, $user),
