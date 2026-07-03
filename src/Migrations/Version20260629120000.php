@@ -29,10 +29,6 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20260629120000 extends AbstractMigration
 {
-    private const TABLE_NAME = 'users';
-
-    private const COLUMN_NAME = 'theme';
-
     public function getDescription(): string
     {
         return 'Add the theme column to the users table (per-user theme selection)';
@@ -40,26 +36,21 @@ final class Version20260629120000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->skipIf(
-            $schema->getTable(self::TABLE_NAME)->hasColumn(self::COLUMN_NAME),
-            'Column users.theme already exists'
-        );
-
-        $this->addSql(
-            'ALTER TABLE `' . self::TABLE_NAME . '` '
-            . 'ADD COLUMN `' . self::COLUMN_NAME . "` VARCHAR(255) NOT NULL DEFAULT 'default'"
-        );
+        $table = $schema->getTable('users');
+        if (!$table->hasColumn('theme')) {
+            $table->addColumn('theme', 'string', [
+                'length' => 255,
+                'notnull' => true,
+                'default' => 'default',
+            ]);
+        }
     }
 
     public function down(Schema $schema): void
     {
-        $this->skipIf(
-            !$schema->getTable(self::TABLE_NAME)->hasColumn(self::COLUMN_NAME),
-            'Column users.theme does not exist'
-        );
-
-        $this->addSql(
-            'ALTER TABLE `' . self::TABLE_NAME . '` DROP COLUMN `' . self::COLUMN_NAME . '`'
-        );
+        $table = $schema->getTable('users');
+        if ($table->hasColumn('theme')) {
+            $table->dropColumn('theme');
+        }
     }
 }
