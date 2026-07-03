@@ -38,11 +38,7 @@ final class Version20260629120000 extends AbstractMigration
     {
         $table = $schema->getTable('users');
         if (!$table->hasColumn('theme')) {
-            $table->addColumn('theme', 'string', [
-                'length' => 255,
-                'notnull' => true,
-                'default' => 'default',
-            ]);
+            $table->addColumn('theme', 'string', ['length' => 255, 'notnull' => true, 'default' => 'default']);
         }
     }
 
