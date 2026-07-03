@@ -14,16 +14,29 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
 use function array_filter;
+use function array_values;
+use function in_array;
 
 /**
  * @internal
  */
 trait PermissionSanitationTrait
 {
-    // In some cases, the permissions array contains and array with empty strings as values
-    // This method removes those empty strings
-    private function sanitizePermissions(array $permissions): array
+    // In some cases, the permissions array contains an array with empty strings as values.
+    // This method removes those empty strings and, when $availablePermissions is provided,
+    // also filters out any permission key that is not in the list of known permissions.
+    // array_values() re-indexes the result so it always serializes as a JSON array, not an object.
+    private function sanitizePermissions(array $permissions, array $availablePermissions = []): array
     {
-        return array_filter($permissions, static fn ($permission) => $permission !== '');
+        $permissions = array_filter($permissions, static fn ($permission) => $permission !== '');
+
+        if (!empty($availablePermissions)) {
+            $permissions = array_filter(
+                $permissions,
+                static fn ($permission) => in_array($permission, $availablePermissions, true)
+            );
+        }
+
+        return array_values($permissions);
     }
 }

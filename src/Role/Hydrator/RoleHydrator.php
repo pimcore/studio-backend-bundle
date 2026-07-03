@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
 use Pimcore\Model\User\UserRoleInterface;
@@ -28,7 +29,8 @@ final readonly class RoleHydrator implements RoleHydratorInterface
 
     public function __construct(
         private WorkspaceHydratorInterface $workspaceHydrator,
-        private UserPerspectiveServiceInterface $userPerspectiveService
+        private UserPerspectiveServiceInterface $userPerspectiveService,
+        private PermissionRepositoryInterface $permissionRepository
     ) {
     }
 
@@ -39,7 +41,10 @@ final readonly class RoleHydrator implements RoleHydratorInterface
             name: $role->getName(),
             classes: $role->getClasses(),
             parentId: $role->getParentId(),
-            permissions: $this->sanitizePermissions($role->getPermissions()),
+            permissions: $this->sanitizePermissions(
+                $role->getPermissions(),
+                array_map(static fn ($definition) => $definition->getKey(), $this->permissionRepository->getAvailablePermissions())
+            ),
             docTypes: $role->getDocTypes(),
             websiteTranslationLanguagesEdit: $role->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $role->getWebsiteTranslationLanguagesView(),
