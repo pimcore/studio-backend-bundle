@@ -64,7 +64,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             parentId: $user->getParentId(),
             permissions: $this->sanitizePermissions(
                 $user->getPermissions(),
-                array_map(static fn ($definition) => $definition->getKey(), $this->permissionRepository->getAvailablePermissions())
+                $this->permissionRepository->getAvailablePermissions()
             ),
             roles: $user->getRoles(),
             twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
