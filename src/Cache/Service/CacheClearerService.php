@@ -21,7 +21,6 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\KernelInterface;
-use function in_array;
 
 /**
  * @internal
@@ -67,18 +66,14 @@ final readonly class CacheClearerService implements CacheClearerServiceInterface
     ): void {
         $environments = $environments ?? [$this->kernel->getEnvironment()];
 
-        if (in_array($this->kernel->getEnvironment(), $environments, true)) {
-            foreach ($this->eventDispatcher->getListeners(KernelEvents::TERMINATE) as $listener) {
-                $this->eventDispatcher->removeListener(KernelEvents::TERMINATE, $listener);
-            }
-
-            foreach ($this->eventDispatcher->getListeners(KernelEvents::EXCEPTION) as $listener) {
-                $this->eventDispatcher->removeListener(KernelEvents::EXCEPTION, $listener);
-            }
-        }
-
-        foreach ($environments as $environment) {
-            $this->cacheClearer->clear($environment);
-        }
+        $this->eventDispatcher->addListener(
+            KernelEvents::TERMINATE,
+            function () use ($environments): void {
+                foreach ($environments as $environment) {
+                    $this->cacheClearer->clear($environment);
+                }
+            },
+            -9999,
+        );
     }
 }
