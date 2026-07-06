@@ -119,4 +119,29 @@ final class SortFilterTest extends Unit
         $sortFilter->apply($parameter, $query);
         $this->assertSame(2, $callCount);
     }
+
+    public function testSortByClassnameColumnKeyMapsToIndexField(): void
+    {
+        $sortFilter = new SortFilter();
+        $sortFilterParam = new SortFilterParameter('classname', 'asc');
+        $parameter = $this->makeEmpty(SortFilterParameterInterface::class, [
+            'getSortFilter' => function () use ($sortFilterParam) {
+                return $sortFilterParam;
+            },
+            'getSortFilters' => function () use ($sortFilterParam) {
+                return [$sortFilterParam];
+            },
+        ]);
+
+        $query = $this->makeEmpty(AssetQueryInterface::class, [
+            'orderByField' => Expected::once(function ($key, $direction) {
+                $this->assertSame('className', $key);
+                $this->assertSame(SortDirection::ASC, $direction);
+
+                return $this->makeEmpty(AssetQueryInterface::class);
+            }),
+        ]);
+
+        $sortFilter->apply($parameter, $query);
+    }
 }
