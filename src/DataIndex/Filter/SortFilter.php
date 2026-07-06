@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
  */
 final class SortFilter implements FilterInterface
 {
+    use MapsSystemColumnFieldTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$parameters instanceof SortFilterParameterInterface) {
@@ -36,7 +38,7 @@ final class SortFilter implements FilterInterface
             }
 
             $query->orderByField(
-                $sortFilter->getKey(),
+                $this->mapColumnKeyToIndexField($sortFilter->getKey()),
                 $sortDirection,
             );
         }

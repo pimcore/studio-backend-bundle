@@ -26,6 +26,7 @@ use function is_string;
 final class StringFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
+    use MapsSystemColumnFieldTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -48,7 +49,7 @@ final class StringFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for this filter must be a string');
         }
 
-        $query->wildcardSearch($column->getKey(), $column->getFilterValue());
+        $query->wildcardSearch($this->mapColumnKeyToIndexField($column->getKey()), $column->getFilterValue());
 
         return $query;
     }
