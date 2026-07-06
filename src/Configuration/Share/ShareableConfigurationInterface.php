@@ -20,7 +20,7 @@ use Doctrine\Common\Collections\Collection;
  */
 interface ShareableConfigurationInterface
 {
-    public function getOwner(): int;
+    public function getOwner(): ?int;
 
     public function isShareGlobal(): bool;
 

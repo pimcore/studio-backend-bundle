@@ -43,7 +43,7 @@ class GridConfiguration implements ShareableConfigurationInterface
     private ?string $classId = null;
 
     #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
-    private int $owner;
+    private ?int $owner = null;
 
     #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     private int $pageSize;
@@ -200,7 +200,7 @@ class GridConfiguration implements ShareableConfigurationInterface
         $this->modificationDate = new DateTime('now');
     }
 
-    public function getOwner(): int
+    public function getOwner(): ?int
     {
         return $this->owner;
     }
