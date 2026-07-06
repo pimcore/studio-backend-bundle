@@ -103,18 +103,20 @@ final readonly class SavedSearchConfigurationProvider extends AbstractOwnedConfi
     protected function extractOwnerId(object $configuration): int
     {
         /** @var SavedSearchConfiguration $configuration */
-        return $configuration->getOwner();
+        return $configuration->getOwner() ?? 0;
     }
 
     protected function hydrateConfiguration(object $configuration, array $ownerNames): OwnershipConfiguration
     {
         /** @var SavedSearchConfiguration $configuration */
+        $ownerId = $configuration->getOwner();
+
         return $this->ownershipConfigurationHydrator->hydrate(
             (string) $configuration->getId(),
             self::TYPE,
             $configuration->getName(),
-            $configuration->getOwner(),
-            $ownerNames[$configuration->getOwner()] ?? null,
+            $ownerId ?? 0,
+            $ownerId === null ? null : ($ownerNames[$ownerId] ?? null),
             $configuration->getCreationDate()->getTimestamp(),
             $configuration->getModificationDate()->getTimestamp(),
         );
