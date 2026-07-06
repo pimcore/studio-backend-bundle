@@ -35,8 +35,8 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
     /** @phpstan-ignore property.onlyRead */
     private int $id;
 
-    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
-    private int $owner;
+    #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
+    private ?int $owner = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
@@ -144,7 +144,7 @@ class SavedSearchConfiguration implements ShareableConfigurationInterface
         return $this->modificationDate;
     }
 
-    public function getOwner(): int
+    public function getOwner(): ?int
     {
         return $this->owner;
     }

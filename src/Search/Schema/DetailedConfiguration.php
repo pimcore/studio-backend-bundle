@@ -47,8 +47,13 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'ID of the saved search configuration', type: 'integer', example: 42)]
         private readonly int $id,
-        #[Property(description: 'ID of the owner', type: 'integer', example: 42)]
-        private readonly int $ownerId,
+        #[Property(
+            description: 'ID of the owner. Null when the owner has been deleted.',
+            type: 'integer',
+            example: 42,
+            nullable: true
+        )]
+        private readonly ?int $ownerId,
         #[Property(description: 'Name', type: 'string', example: 'My Saved Search')]
         private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'My Saved Search Description')]
@@ -98,7 +103,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         return $this->id;
     }
 
-    public function getOwnerId(): int
+    public function getOwnerId(): ?int
     {
         return $this->ownerId;
     }
