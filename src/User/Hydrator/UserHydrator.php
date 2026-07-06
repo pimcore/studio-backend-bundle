@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
@@ -34,7 +35,8 @@ final readonly class UserHydrator implements UserHydratorInterface
         private ObjectDependenciesServiceInterface $objectDependenciesService,
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
-        private UserPerspectiveServiceInterface $userPerspectiveService
+        private UserPerspectiveServiceInterface $userPerspectiveService,
+        private PermissionRepositoryInterface $permissionRepository
     ) {
     }
 
@@ -60,7 +62,10 @@ final readonly class UserHydrator implements UserHydratorInterface
             lastLogin: $user->getLastLogin(),
             memorizeTabs: $user->getMemorizeTabs(),
             parentId: $user->getParentId(),
-            permissions: $this->sanitizePermissions($user->getPermissions()),
+            permissions: $this->sanitizePermissions(
+                $user->getPermissions(),
+                $this->permissionRepository->getAvailablePermissions()
+            ),
             roles: $user->getRoles(),
             twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
             websiteTranslationLanguagesEdit: $user->getWebsiteTranslationLanguagesEdit(),
