@@ -45,6 +45,7 @@ final readonly class RoleHydrator implements RoleHydratorInterface
                 $role->getPermissions(),
                 $this->permissionRepository->getAvailablePermissions()
             ),
+            
             docTypes: $role->getDocTypes(),
             websiteTranslationLanguagesEdit: $role->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $role->getWebsiteTranslationLanguagesView(),
