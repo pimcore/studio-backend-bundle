@@ -159,7 +159,7 @@ final readonly class IconService implements IconServiceInterface
             }
         }
 
-        if ($dataObject->getClassDefinitionIcon() !== null) {
+        if ($dataObject instanceof DataObjectSearchResultItem && $dataObject->getClassDefinitionIcon() !== null) {
             return new ElementIcon(
                 $this->guessIconType($dataObject->getClassDefinitionIcon()),
                 $dataObject->getClassDefinitionIcon()
