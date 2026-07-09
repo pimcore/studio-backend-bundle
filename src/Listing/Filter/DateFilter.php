@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
+use Pimcore\Model\Element\Recyclebin\Item\Listing as RecycleBinListing;
 use Pimcore\Model\Listing\AbstractListing;
 use function is_array;
 
@@ -26,6 +27,16 @@ use function is_array;
  */
 final readonly class DateFilter implements FilterInterface
 {
+    /**
+     * Listings whose date columns are stored as Unix timestamps (integer) rather than a
+     * native DATE/DATETIME/TIMESTAMP. Such columns must be compared against an integer
+     * timestamp instead of a datetime string, otherwise MySQL coerces the string to a
+     * number and the comparison never matches. Keyed by listing class => column keys.
+     */
+    private const UNIX_TIMESTAMP_COLUMNS = [
+        RecycleBinListing::class => ['date'],
+    ];
+
     public function __construct(
         private DbResolverInterface $dbResolver,
     ) {
@@ -35,46 +46,71 @@ final readonly class DateFilter implements FilterInterface
         mixed $parameters,
         mixed $listing
     ): mixed {
+        $index = 0;
         foreach ($parameters->getColumnFilterByType(FilterType::DATE->value) as $column) {
-            $listing = $this->applyDateFilter($column, $listing);
+            $listing = $this->applyDateFilter($column, $listing, $index);
+            $index++;
         }
 
         return $listing;
     }
 
-    private function applyDateFilter(ColumnFilter $column, mixed $listing): mixed
+    private function applyDateFilter(ColumnFilter $column, mixed $listing, int $index): mixed
     {
         if (!is_array($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for date must be an array');
         }
 
         $filter = $column->getFilterValue();
-        $key = $column->getKey();
-        $quotedKey = $this->dbResolver->get()->quoteIdentifier($key);
+        $quotedKey = $this->dbResolver->get()->quoteIdentifier($column->getKey());
         $carbonDate = new Carbon($filter['value']);
-        $value = $carbonDate->toDateTimeString();
+        $isUnixTimestamp = $this->isUnixTimestampColumn($listing, $column->getKeyWithOutLocale());
+
+        // The bind parameter name must be unique per applied filter. Deriving it from the
+        // column key collides when the same column is filtered twice (a "between" range is
+        // sent as `from` + `to` on the same key), silently dropping the first value.
         if ($filter['operator'] === 'on') {
-            $dateCondition = $quotedKey . ' BETWEEN :minTime AND :maxTime';
+            $dateCondition = $quotedKey . ' BETWEEN :minTime_' . $index . ' AND :maxTime_' . $index;
             $listing->addConditionParam(
                 $dateCondition,
                 [
-                    'minTime' => $value,
-                    'maxTime' => $carbonDate->addDay()->subSecond()->toDateTimeString(),
+                    'minTime_' . $index => $this->formatValue($carbonDate, $isUnixTimestamp),
+                    'maxTime_' . $index => $this->formatValue(
+                        $carbonDate->copy()->addDay()->subSecond(),
+                        $isUnixTimestamp
+                    ),
                 ]
             );
 
             return $listing;
         }
 
+        $parameterName = 'filter_' . $index;
         $dateCondition = $quotedKey . ' ' .
             $this->matchNumericOperator($filter['operator']) .
-            ' :' . $key;
+            ' :' . $parameterName;
         $listing->addConditionParam(
             $dateCondition,
-            [$key => $value]
+            [$parameterName => $this->formatValue($carbonDate, $isUnixTimestamp)]
         );
 
         return $listing;
+    }
+
+    private function formatValue(Carbon $date, bool $asUnixTimestamp): int|string
+    {
+        return $asUnixTimestamp ? $date->getTimestamp() : $date->toDateTimeString();
+    }
+
+    private function isUnixTimestampColumn(mixed $listing, string $key): bool
+    {
+        foreach (self::UNIX_TIMESTAMP_COLUMNS as $listingClass => $columns) {
+            if ($listing instanceof $listingClass && in_array($key, $columns, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function supports(mixed $listing): bool
