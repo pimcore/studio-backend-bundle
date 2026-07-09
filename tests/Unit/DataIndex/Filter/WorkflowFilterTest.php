@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Repository\WorkflowElementsRepositoryInterface;
 use Psr\Log\LoggerInterface;
+use stdClass;
 
 /**
  * @internal
@@ -45,7 +46,7 @@ final class WorkflowFilterTest extends Unit
         $query->expects($this->never())->method('searchByIds');
         $this->repository->expects($this->never())->method('fetchByWorkflowState');
 
-        self::assertSame($query, $this->filter->apply(new \stdClass(), $query));
+        self::assertSame($query, $this->filter->apply(new stdClass(), $query));
     }
 
     public function testItResolvesObjectIdsForTheWorkflowPlaceAndSearchesByThem(): void
