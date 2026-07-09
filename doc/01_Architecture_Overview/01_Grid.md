@@ -136,6 +136,7 @@ Available filters are:
 |               crm.consent                |                  array                   |            `true` or `false`            |      true      |
 |           dataobject.relation            |                  array                   |    array of `type`, `ids` objects       |      true      |
 |          system.unreferenced             |                 boolean                  |  Asset grid only — unreferenced assets  |     false      |
+|                 workflow                 |              string or null              | place name; omit/`null` = all states of the workflow |      true      |
 
 
 ### Examples:
@@ -250,6 +251,23 @@ Filter unreferenced assets (asset grid only):
   {
     "type": "system.unreferenced",
     "filterValue": true
+  }
+]
+...
+```
+
+Filter by Workflow place:
+The `workflow` filter restricts an element grid to the elements currently in a given workflow place.
+The `key` is the workflow name and `filterValue` is the place name; omit `filterValue` (or send `null`)
+to include the elements in **all** states of the workflow. Folders are excluded, and the matching
+element ids are resolved server-side (asset and data-object grids).
+```json
+...
+"columnFilters" [
+  {
+    "key": "product_workflow",
+    "type": "workflow",
+    "filterValue": "in_review"
   }
 ]
 ...
