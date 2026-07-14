@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportCo
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDataSourceConfig;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
@@ -25,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 interface ColumnServiceInterface
 {
     /**
-     * @throws DatabaseException|EnvironmentException|NotFoundException
+     * @throws DatabaseException|EnvironmentException|ForbiddenException|NotFoundException
      *
      * @return CustomReportColumnInformation[]
      */

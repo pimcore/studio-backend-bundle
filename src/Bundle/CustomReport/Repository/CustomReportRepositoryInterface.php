@@ -40,6 +40,11 @@ interface CustomReportRepositoryInterface
     public function loadByNameForCurrentUser(string $name): ?Config;
 
     /**
+     * @throws NotFoundException
+     */
+    public function loadByNameForUser(string $name, User $user): ?Config;
+
+    /**
      * @throws NotWriteableException
      */
     public function create(string $name): Config;

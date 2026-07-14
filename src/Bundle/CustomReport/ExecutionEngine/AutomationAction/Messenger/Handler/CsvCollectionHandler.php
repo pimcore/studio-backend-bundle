@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
@@ -38,7 +39,8 @@ final class CsvCollectionHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly CustomReportConfigServiceInterface $customReportConfigService,
-        private readonly AdapterServiceInterface $customReportAdapterService
+        private readonly AdapterServiceInterface $customReportAdapterService,
+        private readonly UserResolverInterface $userResolver
     ) {
         parent::__construct();
     }
@@ -52,12 +54,30 @@ final class CsvCollectionHandler extends AbstractHandler
         if (!$this->shouldBeExecuted($jobRun)) {
             return;
         }
-        $name = '';
+
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        if ($user === null) {
+            $this->abort($this->getAbortData(
+                Config::USER_NOT_FOUND_MESSAGE->value,
+                ['userId' => $jobRun->getOwnerId()]
+            ));
+        }
+
+        $stepData = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value);
+        $name = $stepData['name'];
+        $reportConfig = $this->customReportConfigService->getAllowedReportForUser($name, $user);
+
+        if ($reportConfig === null) {
+            $this->abort($this->getAbortData(
+                Config::REPORT_PERMISSION_MISSING_MESSAGE->value,
+                [
+                    'userId' => $user->getId(),
+                    'name' => $name,
+                ]
+            ));
+        }
 
         try {
-
-            $stepData = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value);
-            $reportConfig = $this->customReportConfigService->getCustomReportByName($stepData['name']);
             $exportFields = $this->customReportConfigService->getFieldsForExport($reportConfig);
             $stepData['fields'] = $exportFields;
             $exportParameter = ExportParameter::fromArray($stepData);

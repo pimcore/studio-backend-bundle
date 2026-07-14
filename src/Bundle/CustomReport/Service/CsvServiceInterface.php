@@ -14,11 +14,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 
 /**
  * @internal
  */
 interface CsvServiceInterface
 {
+    /**
+     * @throws ForbiddenException
+     */
     public function generateCsvFile(ExportParameter $exportParameter): int;
 }
