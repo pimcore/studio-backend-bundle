@@ -67,6 +67,8 @@ final class CsvCollectionHandler extends AbstractHandler
         $stepData = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value);
         $name = $stepData['name'];
 
+        $reportConfig = null;
+
         try {
             $reportConfig = $this->customReportConfigService->getAllowedReportForUser($name, $user);
         } catch (NotFoundException $e) {
