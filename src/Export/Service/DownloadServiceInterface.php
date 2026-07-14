@@ -37,6 +37,15 @@ interface DownloadServiceInterface
     ): StreamedResponse;
 
     /**
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
+     */
+    public function isResourceAvailableByJobRunId(
+        int $jobRunId,
+        string $tempFileName,
+        string $tempFolderName,
+    ): bool;
+
+    /**
      * @throws EnvironmentException|NotFoundException
      */
     public function cleanupDataByJobRunId(
