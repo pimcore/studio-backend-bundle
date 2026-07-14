@@ -19,6 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Attribute\Request\Cha
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
@@ -46,6 +48,9 @@ final class ExportController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_report_export_csv', methods: ['Post'])]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
     #[Post(

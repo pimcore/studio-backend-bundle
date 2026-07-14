@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\Autom
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -65,7 +66,18 @@ final class CsvCollectionHandler extends AbstractHandler
 
         $stepData = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value);
         $name = $stepData['name'];
-        $reportConfig = $this->customReportConfigService->getAllowedReportForUser($name, $user);
+
+        try {
+            $reportConfig = $this->customReportConfigService->getAllowedReportForUser($name, $user);
+        } catch (NotFoundException $e) {
+            $this->abort($this->getAbortData(
+                Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
+                [
+                    'id' => $name,
+                    'message' => $e->getMessage(),
+                ]
+            ));
+        }
 
         if ($reportConfig === null) {
             $this->abort($this->getAbortData(

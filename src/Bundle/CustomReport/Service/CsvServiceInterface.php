@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
@@ -22,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 interface CsvServiceInterface
 {
     /**
-     * @throws ForbiddenException
+     * @throws ForbiddenException|NotFoundException
      */
     public function generateCsvFile(ExportParameter $exportParameter): int;
 }
