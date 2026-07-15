@@ -19,6 +19,7 @@ use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Constants\TableConstants;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Asset\FolderPreviewSetting;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
@@ -65,6 +66,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createUserPerspectivesTable($schema);
         $this->createJobRunHiddenTable($schema);
         $this->createMcpAccessTokenTable($schema);
+        $this->createFolderPreviewSettingTable($schema);
         $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
@@ -109,6 +111,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {
             $schema->dropTable(McpAccessToken::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(FolderPreviewSetting::TABLE_NAME)) {
+            $schema->dropTable(FolderPreviewSetting::TABLE_NAME);
         }
 
         $this->removeUserPermission($schema);
@@ -499,6 +505,24 @@ final class Installer extends SettingsStoreAwareInstaller
             ['onDelete' => 'CASCADE'],
             'fk_' . McpAccessToken::TABLE_NAME . '_users'
         );
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    public function createFolderPreviewSettingTable(Schema $schema): void
+    {
+        if ($schema->hasTable(FolderPreviewSetting::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(FolderPreviewSetting::TABLE_NAME);
+
+        $table->addColumn('user', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('assetFolderId', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('imageSize', 'string', ['notnull' => true, 'length' => 10]);
+
+        $table->setPrimaryKey(['user', 'assetFolderId'], 'pk_' . FolderPreviewSetting::TABLE_NAME);
     }
 
     /**
