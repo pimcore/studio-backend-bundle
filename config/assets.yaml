@@ -15,6 +15,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\FolderPreviewSettingHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\FolderPreviewSettingHydrator
+
   # Encoder
   Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder
