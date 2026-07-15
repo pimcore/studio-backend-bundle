@@ -18,6 +18,16 @@ asset_clone_description: |
   Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
 asset_clone_success_response: Successfully copied asset
 asset_clone_summary: Clone a specific asset
+asset_get_folder_preview_setting_description: |
+  Returns the stored image display size for the folder preview of the given <strong>{folderId}</strong>
+  for the current user. Falls back to <strong>small</strong> when nothing has been stored yet.
+asset_get_folder_preview_setting_success_response: Successfully returned the folder preview image size
+asset_get_folder_preview_setting_summary: Get the folder preview image size
+asset_update_folder_preview_setting_description: |
+  Stores the image display size for the folder preview of the given <strong>{folderId}</strong>
+  for the current user so it persists across sessions
+asset_update_folder_preview_setting_success_response: Successfully stored the folder preview image size
+asset_update_folder_preview_setting_summary: Update the folder preview image size
 asset_export_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
 asset_export_zip_asset_description: |
   Creating a ZIP file for assets based on the provided asset IDs in <strong>{assets}</strong> parameter. <br>
