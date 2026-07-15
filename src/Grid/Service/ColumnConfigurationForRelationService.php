@@ -100,9 +100,15 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
                 continue;
             }
 
-            $classId = $this->classDefinitionResolver->getByName(
+            $classDefinition = $this->classDefinitionResolver->getByName(
                 $class['classes'],
-            )->getId();
+            );
+
+            if (!$classDefinition) {
+                continue;
+            }
+
+            $classId = $classDefinition->getId();
 
             $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
                 ->getAvailableDataObjectColumnConfiguration(
@@ -126,9 +132,19 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         AdvancedManyToManyObjectRelation $fieldDefinition,
         UserInterface $user
     ): array {
-        $classId = $this->classDefinitionResolver->getByName(
-            $fieldDefinition->getAllowedClassId()
-        )->getId();
+        $allowedClassId = $fieldDefinition->getAllowedClassId();
+
+        if ($allowedClassId === ElementTypes::TYPE_FOLDER) {
+            return [];
+        }
+
+        $classDefinition = $this->classDefinitionResolver->getByName($allowedClassId);
+
+        if (!$classDefinition) {
+            return [];
+        }
+
+        $classId = $classDefinition->getId();
 
         $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
             ->getAvailableDataObjectColumnConfiguration(

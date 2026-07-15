@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\UserInterface;
 
@@ -63,6 +64,95 @@ final class ColumnConfigurationForRelationServiceTest extends Unit
 
         $this->assertArrayHasKey('id', $result);
         $this->assertSame('id', $result['id']->getKey());
+    }
+
+    public function testGetAvailableDataObjectColumnConfigurationForRelationSkipsUnresolvableClass(): void
+    {
+        $fieldDefinition = new ManyToManyObjectRelation();
+        $fieldDefinition->setName('relatedCars');
+        $fieldDefinition->setClasses([
+            ['classes' => 'DeletedClass'],
+            ['classes' => 'Car'],
+        ]);
+        $fieldDefinition->setVisibleFields('id');
+
+        $carClassDefinition = new ClassDefinition();
+        $carClassDefinition->setId('123');
+
+        $service = $this->createService(
+            classDefinitionResolver: $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => new ClassDefinition(),
+                'getByName' => static fn (string $name): ?ClassDefinition => $name === 'DeletedClass' ? null : $carClassDefinition,
+            ]),
+            dotNotationParser: $this->makeEmpty(DotNotationParserInterface::class, [
+                'parseByClassId' => new FieldDefinitionWrapper($fieldDefinition, 'object', 'relatedCars'),
+            ]),
+            columnConfigurationService: $this->makeEmpty(ColumnConfigurationServiceInterface::class, [
+                'getAvailableDataObjectColumnConfiguration' => [$this->createColumnConfiguration('id')],
+            ]),
+        );
+
+        $result = $service->getAvailableDataObjectColumnConfigurationForRelation(
+            'CAR',
+            'relatedCars',
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertArrayHasKey('id', $result);
+        $this->assertSame('id', $result['id']->getKey());
+    }
+
+    public function testGetAvailableDataObjectColumnConfigurationForRelationSkipsFolderPseudoClassForAdvancedRelation(): void
+    {
+        $fieldDefinition = new AdvancedManyToManyObjectRelation();
+        $fieldDefinition->setName('relatedCars');
+        $fieldDefinition->setAllowedClassId('folder');
+        $fieldDefinition->setVisibleFields('id');
+
+        $service = $this->createService(
+            classDefinitionResolver: $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => new ClassDefinition(),
+            ]),
+            dotNotationParser: $this->makeEmpty(DotNotationParserInterface::class, [
+                'parseByClassId' => new FieldDefinitionWrapper($fieldDefinition, 'object', 'relatedCars'),
+            ]),
+            columnConfigurationService: $this->makeEmpty(ColumnConfigurationServiceInterface::class),
+        );
+
+        $result = $service->getAvailableDataObjectColumnConfigurationForRelation(
+            'CAR',
+            'relatedCars',
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertSame([], $result);
+    }
+
+    public function testGetAvailableDataObjectColumnConfigurationForRelationSkipsUnresolvableClassForAdvancedRelation(): void
+    {
+        $fieldDefinition = new AdvancedManyToManyObjectRelation();
+        $fieldDefinition->setName('relatedCars');
+        $fieldDefinition->setAllowedClassId('DeletedClass');
+        $fieldDefinition->setVisibleFields('id');
+
+        $service = $this->createService(
+            classDefinitionResolver: $this->makeEmpty(ClassDefinitionResolverInterface::class, [
+                'getById' => new ClassDefinition(),
+                'getByName' => static fn (): ?ClassDefinition => null,
+            ]),
+            dotNotationParser: $this->makeEmpty(DotNotationParserInterface::class, [
+                'parseByClassId' => new FieldDefinitionWrapper($fieldDefinition, 'object', 'relatedCars'),
+            ]),
+            columnConfigurationService: $this->makeEmpty(ColumnConfigurationServiceInterface::class),
+        );
+
+        $result = $service->getAvailableDataObjectColumnConfigurationForRelation(
+            'CAR',
+            'relatedCars',
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertSame([], $result);
     }
 
     private function createService(
