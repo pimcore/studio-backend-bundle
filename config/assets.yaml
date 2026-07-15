@@ -19,6 +19,10 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder
 
+  # Repositories
+  Pimcore\Bundle\StudioBackendBundle\Asset\Repository\FolderPreviewSettingRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Repository\FolderPreviewSettingRepository
+
   # Services
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetService
