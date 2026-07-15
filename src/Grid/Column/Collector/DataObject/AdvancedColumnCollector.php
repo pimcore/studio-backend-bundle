@@ -293,6 +293,10 @@ final class AdvancedColumnCollector implements
         $fieldsByClass = [];
 
         foreach ($classes as $class) {
+            if ($this->isFolderPseudoClass($class['classes'])) {
+                continue;
+            }
+
             $classDefinition = $this->classRepository->getClassDefinition($class['classes']);
             $classIds[] = $classDefinition->getId();
             $fieldsByClass[] = $this->buildFieldForClassName($class['classes']);
@@ -306,6 +310,11 @@ final class AdvancedColumnCollector implements
             classIds: $classIds,
             fields: $fields
         );
+    }
+
+    private function isFolderPseudoClass(string $className): bool
+    {
+        return $className === ElementTypes::TYPE_FOLDER;
     }
 
     /**

@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException as ApiParseE
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\UserInterface;
@@ -95,6 +96,10 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         $availableConfigurationsForRelation = [];
 
         foreach ($classes as $class) {
+            if ($class['classes'] === ElementTypes::TYPE_FOLDER) {
+                continue;
+            }
+
             $classId = $this->classDefinitionResolver->getByName(
                 $class['classes'],
             )->getId();
