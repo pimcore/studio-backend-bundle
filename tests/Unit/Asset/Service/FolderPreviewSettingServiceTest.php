@@ -80,7 +80,7 @@ final class FolderPreviewSettingServiceTest extends Unit
     {
         $repository = $this->makeEmpty(FolderPreviewSettingRepositoryInterface::class, [
             'getByUserAndFolder' => null,
-            'save' => Expected::once(),
+            'save' => Expected::once(static fn (FolderPreviewSettingEntity $setting): FolderPreviewSettingEntity => $setting),
         ]);
 
         $service = new FolderPreviewSettingService(
