@@ -54,6 +54,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\EditLockServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\EditLockService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\BatchDeleteInfoServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\BatchDeleteInfoService
+
   #
   # Handler
   #

@@ -574,6 +574,10 @@ documents_list_available_sites_summary: List all available sites
 document_get_search_description: Document grid for search
 document_get_search_summary: Get document data for search
 document_get_search_success_response: Documents for search grid
+element_batch_delete_info_description: |
+  Get aggregated delete info for the given <strong>{elementType}</strong> and the provided list of <strong>ids</strong>. <br> Returns whether any of the selected elements has dependencies (child elements or references to it) and whether the whole selection can still use the recycle bin.
+element_batch_delete_info_success_response: Batch delete info for the given elements
+element_batch_delete_info_summary: Get batch delete info for multiple elements by id list and element type
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |
