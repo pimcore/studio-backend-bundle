@@ -31,23 +31,25 @@ final class Version20260715120000 extends AbstractMigration
         return 'Add table to persist asset folder preview image size per user and folder';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
-        if ($schema->hasTable(FolderPreviewSetting::TABLE_NAME)) {
-            return;
-        }
-
-        $table = $schema->createTable(FolderPreviewSetting::TABLE_NAME);
-        $table->addColumn('user', 'integer', ['notnull' => true, 'unsigned' => true]);
-        $table->addColumn('assetFolderId', 'integer', ['notnull' => true, 'unsigned' => true]);
-        $table->addColumn('imageSize', 'string', ['notnull' => true, 'length' => 10]);
-        $table->setPrimaryKey(['user', 'assetFolderId'], 'pk_' . FolderPreviewSetting::TABLE_NAME);
+        $this->addSql('
+            CREATE TABLE IF NOT EXISTS ' . FolderPreviewSetting::TABLE_NAME . ' (
+                user INT UNSIGNED NOT NULL,
+                assetFolderId INT UNSIGNED NOT NULL,
+                imageSize VARCHAR(10) NOT NULL,
+                PRIMARY KEY (user, assetFolderId)
+            )
+        ');
     }
 
     public function down(Schema $schema): void
     {
-        if ($schema->hasTable(FolderPreviewSetting::TABLE_NAME)) {
-            $schema->dropTable(FolderPreviewSetting::TABLE_NAME);
-        }
+        $this->addSql('DROP TABLE IF EXISTS ' . FolderPreviewSetting::TABLE_NAME);
     }
 }
