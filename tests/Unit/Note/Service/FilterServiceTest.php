@@ -75,11 +75,11 @@ final class FilterServiceTest extends Unit
         $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame('(`date` BETWEEN :minTime AND :maxTime) ', $noteListing->getCondition());
+        $this->assertSame('(`date` BETWEEN :minTime_0 AND :maxTime_0) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'minTime' => 1714780800,
-                'maxTime' => 1714867199,
+                'minTime_0' => 1714780800,
+                'maxTime_0' => 1714867199,
             ],
             $noteListing->getConditionVariables()
         );
@@ -102,10 +102,10 @@ final class FilterServiceTest extends Unit
         $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame('(`numeric` = :numeric) ', $noteListing->getCondition());
+        $this->assertSame('(`numeric` = :filter_0) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'numeric' => 10,
+                'filter_0' => 10,
             ],
             $noteListing->getConditionVariables()
         );
@@ -128,10 +128,10 @@ final class FilterServiceTest extends Unit
         $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame('(`boolean` = :boolean) ', $noteListing->getCondition());
+        $this->assertSame('(`boolean` = :filter_0) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'boolean' => 1,
+                'filter_0' => 1,
             ],
             $noteListing->getConditionVariables()
         );
@@ -154,16 +154,20 @@ final class FilterServiceTest extends Unit
         $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame('(`list` = :list) ', $noteListing->getCondition());
+        $this->assertSame('(`list` = :filter_0) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'list' => 'list',
+                'filter_0' => 'list',
             ],
             $noteListing->getConditionVariables()
         );
     }
 
     /**
+     * The Studio UI sends the user column as `userName` (matching the Note schema) with a
+     * string `like` operator. It must be translated into a subquery against `users`.`name`
+     * and must NOT emit a bogus `` `userName` `` column condition (there is no such column).
+     *
      * @throws JsonException
      */
     public function testApplyFieldFiltersUser(): void
@@ -171,9 +175,9 @@ final class FilterServiceTest extends Unit
         $noteListing = $this->getNoteListing();
         $filters = json_encode([
             [
-                'field' => 'user',
-                'type' => 'user',
-                'operator' => 'user',
+                'field' => 'userName',
+                'type' => 'string',
+                'operator' => 'like',
                 'value' => 'admin',
             ],
         ], JSON_THROW_ON_ERROR);
@@ -181,12 +185,53 @@ final class FilterServiceTest extends Unit
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame(
-            '(`user` IN (SELECT `id` FROM `users` WHERE `name` = :user))  AND (`user` = :user) ',
+            '(`user` IN (SELECT `id` FROM `users` WHERE `name` LIKE :filter_0)) ',
             $noteListing->getCondition()
         );
         $this->assertSame(
             [
-                'user' => 'admin',
+                'filter_0' => '%admin%',
+            ],
+            $noteListing->getConditionVariables()
+        );
+    }
+
+    /**
+     * Regression test for the "Between" date operator (#1923). The UI decomposes a
+     * between-range into two conditions on the same `date` field (gt from + lt to).
+     * The bind parameters must be unique per condition, otherwise the second value
+     * overwrites the first and the query collapses to `date > to AND date < to`.
+     *
+     * @throws JsonException
+     */
+    public function testApplyFieldFiltersDateBetween(): void
+    {
+        $noteListing = $this->getNoteListing();
+        $filters = json_encode([
+            [
+                'field' => 'date',
+                'type' => 'date',
+                'operator' => 'gt',
+                'value' => '05/04/2024',
+            ],
+            [
+                'field' => 'date',
+                'type' => 'date',
+                'operator' => 'lt',
+                'value' => '05/06/2024',
+            ],
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
+        $this->filterService->applyFieldFilters($noteListing, $noteParameters);
+
+        $this->assertSame(
+            '(`date` > :filter_0)  AND (`date` < :filter_1) ',
+            $noteListing->getCondition()
+        );
+        $this->assertSame(
+            [
+                'filter_0' => 1714780800,
+                'filter_1' => 1714953600,
             ],
             $noteListing->getConditionVariables()
         );
