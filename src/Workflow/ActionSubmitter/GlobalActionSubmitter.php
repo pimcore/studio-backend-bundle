@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionNotAllowedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionException;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
@@ -46,6 +47,13 @@ final readonly class GlobalActionSubmitter implements GlobalActionSubmitterInter
         );
         if (!$globalAction) {
             throw new WorkflowActionNotFoundException(
+                $actionName,
+                $workflowName
+            );
+        }
+
+        if (!$globalAction->isGuardValid($workflow, $element)) {
+            throw new WorkflowActionNotAllowedException(
                 $actionName,
                 $workflowName
             );
