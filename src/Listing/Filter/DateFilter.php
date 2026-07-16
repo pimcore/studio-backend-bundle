@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Model\Element\Recyclebin\Item\Listing as RecycleBinListing;
 use Pimcore\Model\Listing\AbstractListing;
+use function in_array;
 use function is_array;
 
 /**
