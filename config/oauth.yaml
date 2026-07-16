@@ -1,0 +1,25 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    #
+    # Embedded OAuth 2.1 authorization-server module.
+    #
+    # Self-contained and isolated: this file registers only the module's own
+    # services and must not wire anything into Symfony's global security config
+    # (providers / firewall map). The resource-server authenticator is added to
+    # the existing pimcore_mcp firewall chain later, gated on the
+    # `pimcore_studio_backend.oauth.enabled` parameter.
+    #
+
+    # Resource registry; $resources is populated from bundle config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry
+        arguments:
+            $resources: []
+
+    # Embedded identity resolution (subject = Pimcore user id).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Identity\EmbeddedIdentityResolver

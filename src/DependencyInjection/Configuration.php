@@ -88,6 +88,7 @@ class Configuration implements ConfigurationInterface
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
+        $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
         $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
@@ -781,6 +782,95 @@ class Configuration implements ConfigurationInterface
                                 ->useAttributeAsKey('username')
                                 ->arrayPrototype()
                                     ->scalarPrototype()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    private function addOAuthNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('oauth')
+                ->addDefaultsIfNotSet()
+                ->info(
+                    'Embedded OAuth 2.1 authorization server (experimental; opt-in). '
+                    . 'Isolated from the application\'s global security configuration.'
+                )
+                ->children()
+                    ->booleanNode('enabled')
+                        ->info('Master switch for the embedded OAuth authorization server. Default off.')
+                        ->defaultFalse()
+                    ->end()
+                    ->scalarNode('issuer')
+                        ->info(
+                            'Issuer identifier (iss) advertised in metadata and stamped on tokens, '
+                            . 'e.g. "https://pimcore.example.com". Null derives it from the request.'
+                        )
+                        ->defaultNull()
+                    ->end()
+                    ->arrayNode('keys')
+                        ->addDefaultsIfNotSet()
+                        ->info('Signing/encryption key material. Reference via env vars; never commit secrets.')
+                        ->children()
+                            ->scalarNode('private_key')
+                                ->info('Path or contents of the JWT signing private key.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('public_key')
+                                ->info('Path or contents of the JWT signing public key.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('passphrase')
+                                ->info('Passphrase for the private key, if any.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('encryption_key')
+                                ->info('Encryption key for auth codes and refresh tokens.')
+                                ->defaultNull()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('clients')
+                        ->info('Pre-registered first-party clients (e.g. Pimcore Agent, Studio MCP).')
+                        ->useAttributeAsKey('identifier')
+                        ->arrayPrototype()
+                            ->children()
+                                ->scalarNode('name')->isRequired()->end()
+                                ->arrayNode('redirect_uris')
+                                    ->isRequired()
+                                    ->scalarPrototype()->end()
+                                ->end()
+                                ->booleanNode('confidential')->defaultFalse()->end()
+                                ->scalarNode('secret')
+                                    ->info('Only for confidential clients; reference via env var.')
+                                    ->defaultNull()
+                                ->end()
+                                ->arrayNode('scopes')
+                                    ->scalarPrototype()->end()
+                                    ->defaultValue([])
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('resources')
+                        ->info('Protected resources (audiences). Each entry is one endpoint bound as a token audience.')
+                        ->arrayPrototype()
+                            ->children()
+                                ->scalarNode('uri')
+                                    ->isRequired()
+                                    ->info('Canonical resource URI (audience).')
+                                ->end()
+                                ->arrayNode('scopes_supported')
+                                    ->scalarPrototype()->end()
+                                    ->defaultValue(['mcp:read'])
+                                ->end()
+                                ->arrayNode('authorization_servers')
+                                    ->scalarPrototype()->end()
+                                    ->defaultValue([])
                                 ->end()
                             ->end()
                         ->end()

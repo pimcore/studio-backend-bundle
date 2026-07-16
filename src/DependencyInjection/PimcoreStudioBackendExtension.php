@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
@@ -212,6 +213,19 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             'pimcore_studio_backend.notifications.channels',
             $config['notifications']['channels']
         );
+
+        // Embedded OAuth authorization server. Expose the config as parameters
+        // (route/authenticator activation gates on `oauth.enabled`) and seed the
+        // resource registry. Kept isolated: only parameters and the module's own
+        // services, no changes to the global security configuration.
+        $container->setParameter('pimcore_studio_backend.oauth.enabled', $config['oauth']['enabled']);
+        $container->setParameter('pimcore_studio_backend.oauth.issuer', $config['oauth']['issuer']);
+        $container->setParameter('pimcore_studio_backend.oauth.keys', $config['oauth']['keys']);
+        $container->setParameter('pimcore_studio_backend.oauth.clients', $config['oauth']['clients']);
+        $container->setParameter('pimcore_studio_backend.oauth.resources', $config['oauth']['resources']);
+
+        $container->getDefinition(ResourceRegistryInterface::class)
+            ->setArgument('$resources', $config['oauth']['resources']);
 
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([
