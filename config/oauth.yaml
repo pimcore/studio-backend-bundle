@@ -23,3 +23,21 @@ services:
     # Embedded identity resolution (subject = Pimcore user id).
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Identity\EmbeddedIdentityResolver
+
+    # Revocation check; the null implementation stands in until token persistence exists.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\NullTokenRevocationChecker
+
+    # Resource-server JWT validator. $publicKey and $issuer come from bundle config
+    # (set in the extension).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\EmbeddedTokenValidator
+        arguments:
+            $publicKey: null
+            $issuer: null
+
+    # Resource-server authenticator added to the pimcore_mcp firewall chain.
+    # $enabled is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator:
+        arguments:
+            $enabled: false

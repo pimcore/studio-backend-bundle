@@ -35,7 +35,9 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
@@ -227,6 +229,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(ResourceRegistryInterface::class)
             ->setArgument('$resources', $config['oauth']['resources']);
 
+        $container->getDefinition(TokenValidatorInterface::class)
+            ->setArgument('$publicKey', $config['oauth']['keys']['public_key'])
+            ->setArgument('$issuer', $config['oauth']['issuer']);
+
+        $container->getDefinition(OAuthAccessTokenAuthenticator::class)
+            ->setArgument('$enabled', $config['oauth']['enabled']);
+
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([
             '$adminConfig' => [
@@ -322,6 +331,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator',
+                    // Must precede PatAuthenticator: it claims JWT-shaped bearers and
+                    // yields (returns null on failure) to Pat for opaque tokens.
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator',
                 ],
             ]);
