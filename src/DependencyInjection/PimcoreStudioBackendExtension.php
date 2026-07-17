@@ -36,6 +36,10 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChanne
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
@@ -239,6 +243,22 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+
+        // Authorization server (token issuance).
+        $container->getDefinition(ClientRepository::class)
+            ->setArgument('$clients', $config['oauth']['clients']);
+
+        $container->getDefinition(AccessTokenRepository::class)
+            ->setArgument('$issuer', $config['oauth']['issuer']);
+
+        $container->getDefinition(AuthorizationServerFactory::class)
+            ->setArgument('$privateKey', $config['oauth']['keys']['private_key'])
+            ->setArgument('$passphrase', $config['oauth']['keys']['passphrase'])
+            ->setArgument('$encryptionKey', $config['oauth']['keys']['encryption_key'])
+            ->setArgument('$accessTokenTtl', $config['oauth']['access_token_ttl']);
+
+        $container->getDefinition(AuthorizationServerMetadataController::class)
+            ->setArgument('$issuer', $config['oauth']['issuer']);
 
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([

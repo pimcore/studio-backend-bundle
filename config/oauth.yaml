@@ -52,3 +52,35 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController:
         public: true
         tags: ['controller.service_arguments']
+
+    #
+    # Authorization server (token issuance). Standalone league instance built by
+    # the factory; repositories and keys come from bundle config (set in the
+    # extension). Endpoints are routed in config/pimcore/routing.yaml.
+    #
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository:
+        arguments:
+            $clients: []
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository:
+        arguments:
+            $issuer: null
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory:
+        arguments:
+            $privateKey: null
+            $passphrase: null
+            $encryptionKey: null
+            $accessTokenTtl: 3600
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController:
+        public: true
+        tags: ['controller.service_arguments']
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $issuer: null

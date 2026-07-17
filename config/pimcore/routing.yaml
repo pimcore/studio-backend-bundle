@@ -15,3 +15,16 @@ pimcore_studio_oauth_protected_resource_metadata:
         resourcePath: '(/.*)?'
     defaults:
         resourcePath: ''
+
+# RFC 8414 Authorization Server Metadata (root-level, public discovery).
+pimcore_studio_oauth_authorization_server_metadata:
+    path:       /.well-known/oauth-authorization-server
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController
+    methods:    [GET]
+
+# OAuth token endpoint. Lives under the dedicated /pimcore-oauth prefix, outside
+# the Studio API prefix and the pimcore_mcp firewall.
+pimcore_studio_oauth_token:
+    path:       /pimcore-oauth/token
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController
+    methods:    [POST]
