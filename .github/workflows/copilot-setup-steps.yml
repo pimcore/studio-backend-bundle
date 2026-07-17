@@ -13,6 +13,9 @@ on:
 
 jobs:
   # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  # The steps MUST be defined inline here: the Copilot coding agent only reads `steps`
+  # (plus permissions/runs-on/services/snapshot/timeout-minutes) from this job, so a
+  # reusable-workflow `uses:` call would be ignored by Copilot.
   copilot-setup-steps:
     runs-on: ubuntu-latest
 
@@ -26,13 +29,7 @@ jobs:
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
-          php-version: "8.3"
-
-      - name: Install SSH Key # this is necessary for Composer to be able to clone source from pimcore/ee-pimcore
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER }}
-          known_hosts: ".... we add this in the next step ;-)"
+          php-version: "8.4"
 
       - name: "Add authentication for private pimcore packages"
         run: |
@@ -41,3 +38,9 @@ jobs:
 
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@v3"
+        with:
+          composer-options: "--no-scripts --ignore-platform-reqs"
+
+      - name: Restore composer.json
+        if: ${{ always() }}
+        run: git restore composer.json
