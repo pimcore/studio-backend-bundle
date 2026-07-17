@@ -38,6 +38,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
+use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
@@ -236,6 +237,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
             ->setArgument('$enabled', $config['oauth']['enabled']);
 
+        $container->getDefinition(McpAuthenticationEntryPoint::class)
+            ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([
             '$adminConfig' => [
@@ -328,6 +332,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'login_throttling' => [
                     'limiter' => 'Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface',
                 ],
+                'entry_point' =>
+                    'Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint',
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator',

@@ -4,3 +4,14 @@ pimcore_studio_api:
     prefix:   '%pimcore_studio_backend.url_prefix%'
     options:
         expose: true
+
+# RFC 9728 Protected Resource Metadata. Root-level (not under the API prefix),
+# so it is declared explicitly rather than via the prefixed attribute loader.
+pimcore_studio_oauth_protected_resource_metadata:
+    path:       /.well-known/oauth-protected-resource{resourcePath}
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController
+    methods:    [GET]
+    requirements:
+        resourcePath: '(/.*)?'
+    defaults:
+        resourcePath: ''

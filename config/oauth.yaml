@@ -41,3 +41,14 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator:
         arguments:
             $enabled: false
+
+    # Entry point for the pimcore_mcp firewall (401 + RFC 9728 challenge).
+    # $oauthEnabled is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint:
+        arguments:
+            $oauthEnabled: false
+
+    # RFC 9728 discovery endpoint controller (routed in config/pimcore/routing.yaml).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController:
+        public: true
+        tags: ['controller.service_arguments']
