@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Token;
 use Codeception\Test\Unit;
 use DateTimeImmutable;
 use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha256 as HmacSha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface;
@@ -101,6 +102,60 @@ final class EmbeddedTokenValidatorTest extends Unit
         $this->assertNull($this->validator($this->keyPair()['public'])->validate('not-a-jwt', self::RESOURCE));
     }
 
+    public function testRejectsTokenWithoutExpiration(): void
+    {
+        $keys = $this->keyPair();
+        $noExpiry = $this->mint($keys, ['exp' => null]);
+
+        $this->assertNull($this->validator($keys['public'], new User())->validate($noExpiry, self::RESOURCE));
+    }
+
+    public function testRejectsAlgorithmConfusionHs256(): void
+    {
+        $keys = $this->keyPair();
+
+        // Classic RS->HS confusion: the attacker HMAC-signs with the RSA public
+        // key as the shared secret, hoping the RS verifies HS256 with that key.
+        $config = Configuration::forSymmetricSigner(new HmacSha256(), InMemory::plainText($keys['public']));
+        $forged = $config->builder()
+            ->issuedBy(self::ISSUER)
+            ->relatedTo('42')
+            ->identifiedBy('jti-1')
+            ->permittedFor(self::RESOURCE)
+            ->issuedAt(new DateTimeImmutable('2026-07-15T12:00:00+00:00'))
+            ->expiresAt(new DateTimeImmutable('2026-07-15T13:00:00+00:00'))
+            ->withClaim('scope', 'mcp:read')
+            ->getToken($config->signer(), $config->signingKey())
+            ->toString();
+
+        $this->assertNull($this->validator($keys['public'], new User())->validate($forged, self::RESOURCE));
+    }
+
+    public function testRejectsUnsecuredNoneToken(): void
+    {
+        $keys = $this->keyPair();
+
+        // Hand-crafted alg=none token with an empty signature (the way an attacker
+        // would forge one), rather than via the library which no longer mints them.
+        $segment = static fn (array $data): string => rtrim(
+            strtr(base64_encode(json_encode($data, JSON_THROW_ON_ERROR)), '+/', '-_'),
+            '='
+        );
+        $forged = $segment(['alg' => 'none', 'typ' => 'JWT'])
+            . '.' . $segment([
+                'iss' => self::ISSUER,
+                'sub' => '42',
+                'jti' => 'jti-1',
+                'aud' => self::RESOURCE,
+                'iat' => 1_752_580_800,
+                'exp' => 1_752_584_400,
+                'scope' => 'mcp:read',
+            ])
+            . '.';
+
+        $this->assertNull($this->validator($keys['public'], new User())->validate($forged, self::RESOURCE));
+    }
+
     public function testReturnsNullWhenNoPublicKeyConfigured(): void
     {
         $validator = new EmbeddedTokenValidator(
@@ -127,7 +182,7 @@ final class EmbeddedTokenValidatorTest extends Unit
 
     /**
      * @param array{private: string, public: string} $keys
-     * @param array<string, string> $overrides
+     * @param array<string, string|null> $overrides pass ['exp' => null] to omit the expiry claim
      */
     private function mint(array $keys, array $overrides = []): string
     {
@@ -137,18 +192,21 @@ final class EmbeddedTokenValidatorTest extends Unit
             InMemory::plainText($keys['public']),
         );
 
-        $token = $config->builder()
+        $builder = $config->builder()
             ->issuedBy($overrides['iss'] ?? self::ISSUER)
             ->relatedTo($overrides['sub'] ?? '42')
             ->identifiedBy($overrides['jti'] ?? 'jti-1')
             ->permittedFor($overrides['aud'] ?? self::RESOURCE)
             ->issuedAt(new DateTimeImmutable($overrides['iat'] ?? '2026-07-15T12:00:00+00:00'))
-            ->expiresAt(new DateTimeImmutable($overrides['exp'] ?? '2026-07-15T13:00:00+00:00'))
             ->withClaim('scope', $overrides['scope'] ?? 'mcp:read mcp:write')
-            ->withClaim('client_id', $overrides['client_id'] ?? 'studio-mcp')
-            ->getToken($config->signer(), $config->signingKey());
+            ->withClaim('client_id', $overrides['client_id'] ?? 'studio-mcp');
 
-        return $token->toString();
+        // array_key_exists (not ??) so an explicit null omits the claim entirely.
+        if (!array_key_exists('exp', $overrides) || $overrides['exp'] !== null) {
+            $builder = $builder->expiresAt(new DateTimeImmutable($overrides['exp'] ?? '2026-07-15T13:00:00+00:00'));
+        }
+
+        return $builder->getToken($config->signer(), $config->signingKey())->toString();
     }
 
     /**

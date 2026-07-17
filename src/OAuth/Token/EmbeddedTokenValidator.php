@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Token;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
@@ -29,10 +30,12 @@ use Symfony\Component\Clock\NativeClock;
 use Throwable;
 use function array_filter;
 use function array_values;
-use function explode;
 use function is_array;
 use function is_string;
+use function preg_split;
 use function str_contains;
+use function trim;
+use const PREG_SPLIT_NO_EMPTY;
 
 /**
  * Validates a JWT access token minted by the embedded authorization server:
@@ -89,6 +92,12 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
         }
 
         $claims = $token->claims();
+
+        // Fail closed: LooseValidAt only checks time claims that are present, so
+        // a token without an expiry would otherwise never expire.
+        if (!$claims->has(RegisteredClaims::EXPIRATION_TIME)) {
+            return null;
+        }
 
         $tokenId = $claims->get('jti');
         if (is_string($tokenId) && $this->revocationChecker->isRevoked($tokenId)) {
@@ -162,7 +171,10 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return [];
         }
 
-        return explode(' ', $scope);
+        // Split on any run of whitespace so double spaces don't yield empty scopes.
+        $scopes = preg_split('/\s+/', trim($scope), -1, PREG_SPLIT_NO_EMPTY);
+
+        return $scopes === false ? [] : $scopes;
     }
 
     /**
