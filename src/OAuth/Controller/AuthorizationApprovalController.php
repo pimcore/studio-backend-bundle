@@ -14,17 +14,28 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
+use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Schema\AuthorizationRedirect;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\UserEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\SingleParameterRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Security\User\User as SecurityUser;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 use function rawurlencode;
 use function str_contains;
@@ -36,9 +47,12 @@ use function str_contains;
  *
  * @internal
  */
-final class AuthorizationApprovalController
+final class AuthorizationApprovalController extends AbstractApiController
 {
+    private const string ROUTE = '/oauth/authorizations/{id}';
+
     public function __construct(
+        SerializerInterface $serializer,
         private readonly PendingAuthorizationStore $pendingAuthorizationStore,
         private readonly AuthorizationRequestValidator $authorizationRequestValidator,
         private readonly AuthorizationServerFactory $authorizationServerFactory,
@@ -46,28 +60,42 @@ final class AuthorizationApprovalController
         private readonly Security $security,
         private readonly ?string $issuer,
     ) {
+        parent::__construct($serializer);
     }
 
-    #[Route(
-        path: '/oauth/authorizations/{id}',
-        name: 'pimcore_studio_api_oauth_authorization_approve',
-        methods: ['POST'],
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_oauth_authorization_approve', methods: ['POST'])]
+    #[Post(
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'oauth_authorization_approve',
+        description: 'Approve or deny a pending OAuth authorization and get the redirect location',
+        summary: 'Complete OAuth authorization',
+        tags: [Tags::Oauth->value],
     )]
-    public function __invoke(string $id, Request $request): JsonResponse
+    #[StringParameter('id', 'a1b2c3', 'Opaque id of the pending authorization')]
+    #[SingleParameterRequestBody('approved', true, 'boolean')]
+    #[SuccessResponse(
+        description: 'The location to redirect the browser to',
+        content: new JsonContent(ref: AuthorizationRedirect::class),
+    )]
+    #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
+    ])]
+    public function __invoke(string $id, Request $request): Response
     {
         $params = $this->pendingAuthorizationStore->get($id);
         if ($params === null) {
-            return new JsonResponse(['error' => 'unknown_authorization'], Response::HTTP_NOT_FOUND);
+            throw new NotFoundException('authorization', $id);
         }
 
         $user = $this->security->getUser();
         if (!$user instanceof SecurityUser) {
-            return new JsonResponse(['error' => 'unauthorized'], Response::HTTP_UNAUTHORIZED);
+            throw new NotFoundException('authorization', $id);
         }
 
         $authorizationRequest = $this->authorizationRequestValidator->validate($params);
         if ($authorizationRequest === null) {
-            return new JsonResponse(['error' => 'invalid_authorization'], Response::HTTP_BAD_REQUEST);
+            throw new NotFoundException('authorization', $id);
         }
 
         try {
@@ -92,9 +120,9 @@ final class AuthorizationApprovalController
 
         $this->pendingAuthorizationStore->remove($id);
 
-        return new JsonResponse([
-            'location' => $this->withIssuer($psrResponse->getHeaderLine('Location'), $request),
-        ]);
+        return $this->jsonResponse(
+            new AuthorizationRedirect($this->withIssuer($psrResponse->getHeaderLine('Location'), $request)),
+        );
     }
 
     private function withIssuer(string $location, Request $request): string
