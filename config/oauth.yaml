@@ -104,7 +104,7 @@ services:
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore:
         arguments:
-            $cache: '@cache.app'
+            $cache: '@pimcore_studio_backend.oauth.pending_authorization'
             $ttl: 600
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator: ~

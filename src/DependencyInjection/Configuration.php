@@ -875,6 +875,15 @@ class Configuration implements ConfigurationInterface
                                     ->defaultValue([])
                                 ->end()
                             ->end()
+                            ->validate()
+                                ->ifTrue(static fn (array $client): bool =>
+                                    ($client['service_user'] ?? null) !== null
+                                    && (($client['confidential'] ?? false) !== true
+                                        || ($client['secret'] ?? null) === null))
+                                ->thenInvalid(
+                                    'An OAuth client with a "service_user" must be confidential and define a "secret".'
+                                )
+                            ->end()
                         ->end()
                     ->end()
                     ->arrayNode('resources')

@@ -63,9 +63,12 @@ final class ClientRepository implements ClientRepositoryInterface
             return false;
         }
 
-        // Public clients authenticate without a secret (PKCE covers them).
+        // Public clients authenticate via PKCE on the auth-code flow and carry no
+        // secret. They MUST NOT be accepted for client_credentials, which requires
+        // client authentication — otherwise a public client with a service_user
+        // could obtain a service-account token with only its (public) client id.
         if (($client['confidential'] ?? false) === false) {
-            return true;
+            return $grantType !== 'client_credentials';
         }
 
         $secret = $client['secret'] ?? null;

@@ -64,6 +64,13 @@ final class ClientRepositoryTest extends Unit
         $this->assertTrue($this->repository()->validateClient('public-client', null, 'authorization_code'));
     }
 
+    public function testPublicClientCannotUseClientCredentials(): void
+    {
+        // A public client has no secret and must not obtain a service-account
+        // token via client_credentials with only its client id.
+        $this->assertFalse($this->repository()->validateClient('public-client', null, 'client_credentials'));
+    }
+
     public function testUnknownClientDoesNotValidate(): void
     {
         $this->assertFalse($this->repository()->validateClient('nope', 'x', 'client_credentials'));

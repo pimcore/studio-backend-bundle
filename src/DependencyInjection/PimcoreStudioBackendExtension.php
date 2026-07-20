@@ -306,6 +306,22 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
      */
     public function prepend(ContainerBuilder $container): void
     {
+        if ($container->hasExtension('framework')) {
+            // Dedicated shared cache pool for pending OAuth authorizations, so the
+            // authorize request and the later consent approval (possibly different
+            // workers) hit the same store regardless of the project's cache.app
+            // adapter (a per-process adapter such as APCu would lose the request).
+            $container->prependExtensionConfig('framework', [
+                'cache' => [
+                    'pools' => [
+                        'pimcore_studio_backend.oauth.pending_authorization' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
+                    ],
+                ],
+            ]);
+        }
+
         // Load bundles
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config/prepend'));
         if ($container->hasExtension('pimcore_application_logger')) {

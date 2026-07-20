@@ -18,8 +18,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * RFC 8414 Authorization Server Metadata (GET /.well-known/oauth-authorization-server).
- * Advertises only what the server currently offers; the authorization endpoint
- * and PKCE metadata are added when the auth-code flow lands.
+ * Advertises the authorization and token endpoints, the supported grants, the
+ * S256 PKCE method, and the token-endpoint auth methods (including `none` for
+ * public PKCE clients).
  *
  * @internal
  */
@@ -41,7 +42,7 @@ final class AuthorizationServerMetadataController
             'grant_types_supported' => ['authorization_code', 'client_credentials', 'refresh_token'],
             'response_types_supported' => ['code'],
             'code_challenge_methods_supported' => ['S256'],
-            'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic'],
+            'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic', 'none'],
             'scopes_supported' => ['mcp:read', 'mcp:write'],
             'authorization_response_iss_parameter_supported' => true,
         ]);
