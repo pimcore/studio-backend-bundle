@@ -92,7 +92,17 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
     private function collect(iterable $taggedDescriptors): array
     {
         $descriptors = [];
+
+        // The catch-all is added directly rather than being picked up by tag. Every
+        // notification ever written falls into it, so its presence must not depend on service
+        // wiring — and it is the only type a bare installation has.
+        $descriptors[$this->generalDescriptor->getTypeId()] = $this->generalDescriptor;
+
         foreach ($taggedDescriptors as $descriptor) {
+            if ($descriptor === $this->generalDescriptor) {
+                continue;
+            }
+
             $typeId = $descriptor->getTypeId();
 
             if (strlen($typeId) > self::MAX_TYPE_ID_LENGTH) {

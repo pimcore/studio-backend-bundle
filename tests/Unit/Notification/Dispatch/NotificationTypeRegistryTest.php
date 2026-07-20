@@ -46,6 +46,33 @@ final class NotificationTypeRegistryTest extends Unit
         $this->assertSame(['early', 'a.type', 'b.type', 'info'], $ids);
     }
 
+    /**
+     * Regression: the catch-all was expected to arrive by service tag, so when the tag was not
+     * applied a bare installation reported no subscribable types at all and the preferences
+     * screen came up empty. Its presence must not depend on wiring.
+     */
+    public function testCatchAllIsPresentEvenWhenNoDescriptorIsTagged(): void
+    {
+        $general = new GeneralNotificationDescriptor();
+        $registry = new NotificationTypeRegistry([], $general);
+
+        $this->assertTrue($registry->hasDescriptor('info'));
+        $this->assertTrue($registry->hasOnlyGeneralDescriptor());
+        $this->assertCount(1, $registry->getDescriptors());
+    }
+
+    /**
+     * It is legitimately reachable twice — added directly and, if a bundle wires it, by tag —
+     * which must not trip the duplicate guard.
+     */
+    public function testCatchAllIsNotDuplicatedWhenAlsoTagged(): void
+    {
+        $general = new GeneralNotificationDescriptor();
+        $registry = new NotificationTypeRegistry([$general], $general);
+
+        $this->assertCount(1, $registry->getDescriptors());
+    }
+
     public function testDuplicateTypeIdIsRejected(): void
     {
         $general = new GeneralNotificationDescriptor();

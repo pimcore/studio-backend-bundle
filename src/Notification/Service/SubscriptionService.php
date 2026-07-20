@@ -36,7 +36,7 @@ use function sprintf;
  */
 final readonly class SubscriptionService implements SubscriptionServiceInterface
 {
-    private const string CHANNEL_TRANSLATION_PREFIX = 'notification.channel.';
+    private const string CHANNEL_TRANSLATION_PREFIX = 'notifications.channel.';
 
     public function __construct(
         private NotificationTypeRegistryInterface $typeRegistry,

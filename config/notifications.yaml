@@ -48,8 +48,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepository
 
-  # The catch-all every untyped notification falls into. Registered explicitly as well as by
-  # tag, because the type registry needs it as its fallback.
+  # The catch-all every untyped notification falls into. The registry adds it unconditionally
+  # — its presence is not something wiring should be able to break — so this definition only
+  # needs to exist for injection.
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor: ~
 
 
