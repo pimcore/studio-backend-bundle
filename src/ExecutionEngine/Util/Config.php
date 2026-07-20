@@ -23,6 +23,7 @@ enum Config: string
     case ENVIRONMENT_VARIABLE_NOT_FOUND = 'studio_ee_environment_variable_not_found';
     case ELEMENT_LOCKED_MESSAGE = 'studio_ee_element_locked';
     case ELEMENT_PERMISSION_MISSING_MESSAGE = 'studio_ee_element_permission_missing';
+    case REPORT_PERMISSION_MISSING_MESSAGE = 'studio_ee_report_permission_missing';
     case ELEMENT_HAS_CHILDREN_MESSAGE = 'studio_ee_element_has_existing_children';
     case ELEMENT_DELETE_FAILED_MESSAGE = 'studio_ee_element_delete_failed';
     case ELEMENT_BATCH_DELETE_FAILED_MESSAGE = 'studio_ee_element_batch_delete_failed';

@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
@@ -49,7 +50,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_config_update', methods: ['PUT'])]
     #[IsGranted(CustomReportPermissions::REPORTS_CONFIG->value)]
