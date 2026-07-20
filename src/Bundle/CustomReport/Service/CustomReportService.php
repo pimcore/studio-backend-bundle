@@ -69,7 +69,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
     public function getDrillDownOptions(DrillDownParameter $parameters): array
     {
         $options = [];
-        $config = $this->customReportRepository->loadByName($parameters->getName());
+        $config = $this->getAllowedReport($parameters->getName());
         $adapter = $this->adapterService->getAdapter($config);
 
         try {

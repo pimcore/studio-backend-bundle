@@ -19,6 +19,8 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\Util\JobSteps as CustomReportJobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -33,12 +35,18 @@ final readonly class CsvService implements CsvServiceInterface
 {
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private CustomReportConfigServiceInterface $customReportConfigService
     ) {
     }
 
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
     public function generateCsvFile(ExportParameter $exportParameter): int
     {
+        $this->customReportConfigService->getAllowedReport($exportParameter->getName());
+
         $collectionSettings = [
             StepConfig::CUSTOM_REPORT_CONFIG->value => $exportParameter,
         ];
