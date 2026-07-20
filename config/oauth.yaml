@@ -24,9 +24,13 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Identity\EmbeddedIdentityResolver
 
-    # Revocation check; the null implementation stands in until token persistence exists.
+    # Token record store (revocation / reuse detection) and the store-backed
+    # resource-server revocation check.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStore
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInterface:
-        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\NullTokenRevocationChecker
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\StoredTokenRevocationChecker
 
     # Resource-server JWT validator. $publicKey and $issuer come from bundle config
     # (set in the extension).

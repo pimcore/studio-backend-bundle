@@ -16,13 +16,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
+use function ctype_digit;
 
 /**
- * Mints access-token entities. Tokens are self-contained JWTs, so there is no
- * persistence yet; a store for revocation and refresh-token reuse detection is
- * added alongside the refresh-token grant.
+ * Mints access-token entities and records their identifiers so they can be
+ * revoked. The tokens themselves are self-contained JWTs.
  *
  * @internal
  */
@@ -30,6 +31,7 @@ final class AccessTokenRepository implements AccessTokenRepositoryInterface
 {
     public function __construct(
         private readonly ?string $issuer,
+        private readonly TokenRecordStoreInterface $tokenRecordStore,
     ) {
     }
 
@@ -64,16 +66,24 @@ final class AccessTokenRepository implements AccessTokenRepositoryInterface
 
     public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity): void
     {
-        // No-op: stateless JWTs. Persistence lands with the revocation store.
+        $subject = $accessTokenEntity->getUserIdentifier();
+
+        $this->tokenRecordStore->persist(
+            $accessTokenEntity->getIdentifier(),
+            OAuthTokenRecord::TYPE_ACCESS,
+            $accessTokenEntity->getExpiryDateTime()->getTimestamp(),
+            $subject !== null && ctype_digit($subject) ? (int) $subject : null,
+            $accessTokenEntity->getClient()->getIdentifier(),
+        );
     }
 
     public function revokeAccessToken(string $tokenId): void
     {
-        // No-op until the revocation store exists.
+        $this->tokenRecordStore->revoke($tokenId);
     }
 
     public function isAccessTokenRevoked(string $tokenId): bool
     {
-        return false;
+        return $this->tokenRecordStore->isRevoked($tokenId);
     }
 }
