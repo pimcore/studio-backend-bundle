@@ -16,9 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 use DateInterval;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
+use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
+use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
 use RuntimeException;
 use function sprintf;
@@ -36,10 +40,14 @@ final class AuthorizationServerFactory
         private readonly ClientRepository $clientRepository,
         private readonly AccessTokenRepository $accessTokenRepository,
         private readonly ScopeRepository $scopeRepository,
+        private readonly AuthCodeRepository $authCodeRepository,
+        private readonly RefreshTokenRepository $refreshTokenRepository,
         private readonly ?string $privateKey,
         private readonly ?string $passphrase,
         private readonly ?string $encryptionKey,
         private readonly int $accessTokenTtl,
+        private readonly int $authCodeTtl,
+        private readonly int $refreshTokenTtl,
     ) {
     }
 
@@ -62,10 +70,22 @@ final class AuthorizationServerFactory
             $this->encryptionKey,
         );
 
-        $server->enableGrantType(
-            new ClientCredentialsGrant(),
-            new DateInterval(sprintf('PT%dS', $this->accessTokenTtl)),
+        $accessTokenTtl = new DateInterval(sprintf('PT%dS', $this->accessTokenTtl));
+        $refreshTokenTtl = new DateInterval(sprintf('PT%dS', $this->refreshTokenTtl));
+
+        $server->enableGrantType(new ClientCredentialsGrant(), $accessTokenTtl);
+
+        $authCodeGrant = new AuthCodeGrant(
+            $this->authCodeRepository,
+            $this->refreshTokenRepository,
+            new DateInterval(sprintf('PT%dS', $this->authCodeTtl)),
         );
+        $authCodeGrant->setRefreshTokenTTL($refreshTokenTtl);
+        $server->enableGrantType($authCodeGrant, $accessTokenTtl);
+
+        $refreshTokenGrant = new RefreshTokenGrant($this->refreshTokenRepository);
+        $refreshTokenGrant->setRefreshTokenTTL($refreshTokenTtl);
+        $server->enableGrantType($refreshTokenGrant, $accessTokenTtl);
 
         return $server;
     }

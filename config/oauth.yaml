@@ -72,12 +72,18 @@ services:
         arguments:
             $issuer: null
 
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository: ~
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory:
         arguments:
             $privateKey: null
             $passphrase: null
             $encryptionKey: null
             $accessTokenTtl: 3600
+            $authCodeTtl: 600
+            $refreshTokenTtl: 2592000
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController:
         public: true

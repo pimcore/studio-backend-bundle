@@ -255,7 +255,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$privateKey', $config['oauth']['keys']['private_key'])
             ->setArgument('$passphrase', $config['oauth']['keys']['passphrase'])
             ->setArgument('$encryptionKey', $config['oauth']['keys']['encryption_key'])
-            ->setArgument('$accessTokenTtl', $config['oauth']['access_token_ttl']);
+            ->setArgument('$accessTokenTtl', $config['oauth']['access_token_ttl'])
+            ->setArgument('$authCodeTtl', $config['oauth']['auth_code_ttl'])
+            ->setArgument('$refreshTokenTtl', $config['oauth']['refresh_token_ttl']);
 
         $container->getDefinition(AuthorizationServerMetadataController::class)
             ->setArgument('$issuer', $config['oauth']['issuer']);
