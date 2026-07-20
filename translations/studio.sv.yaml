@@ -4,6 +4,7 @@ studio_ee_user_not_found: Användare med ID %userId% hittades inte
 studio_ee_environment_variable_not_found: Miljövariabel %variable% hittades inte
 studio_ee_element_locked: Element av typ %type% med ID %id% är låst
 studio_ee_element_permission_missing: Användare med ID %userId% saknar behörighet %permission% för element av typ %type% med ID %id%
+studio_ee_report_permission_missing: Användare med ID %userId% har inte åtkomst till rapporten %name%
 studio_ee_element_delete_failed: 'Element av typ %type% med ID %id% kunde inte tas bort: %message%'
 studio_ee_element_batch_delete_failed: 'Massborttagning av element av typ %type% med ID %id% och dess underordnade element misslyckades: %message%'
 studio_ee_zip_file_copy_failed: 'ZIP-filen kunde inte kopieras: %message%'

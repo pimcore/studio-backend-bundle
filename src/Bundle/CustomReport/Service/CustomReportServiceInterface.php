@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -25,12 +26,12 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 interface CustomReportServiceInterface
 {
     /**
-     * @throws NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getChartData(ChartDataParameter $parameters): Collection;
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws DatabaseException|ForbiddenException|NotFoundException
      */
     public function getDrillDownOptions(DrillDownParameter $parameters): array;
 }

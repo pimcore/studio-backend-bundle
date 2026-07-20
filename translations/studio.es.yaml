@@ -4,6 +4,7 @@ studio_ee_user_not_found: Usuario con ID %userId% no encontrado
 studio_ee_environment_variable_not_found: Variable de entorno %variable% no encontrada
 studio_ee_element_locked: El elemento de tipo %type% con ID %id% está bloqueado
 studio_ee_element_permission_missing: El usuario con ID %userId% no tiene el permiso %permission% sobre el elemento de tipo %type% con ID %id%
+studio_ee_report_permission_missing: El usuario con ID %userId% no tiene acceso al informe %name%
 studio_ee_element_delete_failed: 'El elemento de tipo %type% con ID %id% no se pudo eliminar: %message%'
 studio_ee_element_batch_delete_failed: 'La eliminación por lotes del elemento de tipo %type% con ID %id% y sus elementos secundarios falló: %message%'
 studio_ee_zip_file_copy_failed: 'El archivo ZIP no se pudo copiar: %message%'

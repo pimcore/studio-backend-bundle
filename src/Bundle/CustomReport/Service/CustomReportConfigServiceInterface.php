@@ -20,9 +20,11 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -42,17 +44,17 @@ interface CustomReportConfigServiceInterface
     public function createCustomReport(CustomReportAdd $parameters): CustomReportDetails;
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     public function updateCustomReport(string $name, CustomReportUpdate $parameters): CustomReportDetails;
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails;
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     public function deleteCustomReport(string $name): void;
 
@@ -60,6 +62,16 @@ interface CustomReportConfigServiceInterface
      * @throws NotFoundException
      */
     public function getCustomReportByName(string $reportName): Config;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function getAllowedReport(string $reportName): Config;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getAllowedReportForUser(string $reportName, User $user): ?Config;
 
     /**
      * @throws NotFoundException

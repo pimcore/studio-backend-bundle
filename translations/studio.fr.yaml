@@ -4,6 +4,7 @@ studio_ee_user_not_found: Utilisateur avec l'ID %userId% introuvable
 studio_ee_environment_variable_not_found: Variable d'environnement %variable% introuvable
 studio_ee_element_locked: L'élément de type %type% avec l'ID %id% est verrouillé
 studio_ee_element_permission_missing: L'utilisateur avec l'ID %userId% n'a pas la permission %permission% sur l'élément de type %type% avec l'ID %id%
+studio_ee_report_permission_missing: L'utilisateur avec l'ID %userId% n'a pas accès au rapport %name%
 studio_ee_element_delete_failed: "L'élément de type %type% avec l'ID %id% n'a pas pu être supprimé : %message%"
 studio_ee_element_batch_delete_failed: "La suppression par lot de l'élément de type %type% avec l'ID %id% et de ses éléments enfants a échoué : %message%"
 studio_ee_zip_file_copy_failed: "Le fichier ZIP n'a pas pu être copié : %message%"
