@@ -94,3 +94,33 @@ services:
         tags: ['controller.service_arguments']
         arguments:
             $issuer: null
+
+    #
+    # Authorize + consent flow (auth-code). The authorize endpoint redirects to
+    # the Studio UI, which drives the consent API below.
+    #
+    Psr\Http\Message\ServerRequestFactoryInterface:
+        alias: pimcore_studio_backend.mcp.psr17_factory
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore:
+        arguments:
+            $cache: '@cache.app'
+            $ttl: 600
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $consentPath: '/pimcore-studio/#/oauth/consent'
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationDetailsController:
+        public: true
+        tags: ['controller.service_arguments']
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $issuer: null

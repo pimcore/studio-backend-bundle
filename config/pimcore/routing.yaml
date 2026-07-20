@@ -28,3 +28,9 @@ pimcore_studio_oauth_token:
     path:       /pimcore-oauth/token
     controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController
     methods:    [POST]
+
+# OAuth authorization endpoint (browser entry point; redirects to the consent UI).
+pimcore_studio_oauth_authorize:
+    path:       /pimcore-oauth/authorize
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController
+    methods:    [GET]
