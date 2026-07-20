@@ -13,13 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\EventSubscriber;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Pimcore\Event\Model\NotificationEvent;
 use Pimcore\Event\NotificationEvents;
+use Pimcore\Model\Notification;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -33,6 +37,8 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
         private NotificationHydratorInterface $notificationHydrator,
         private NotificationRepositoryInterface $notificationRepository,
         private PublishServiceInterface $publishService,
+        private NotificationTypeRegistryInterface $typeRegistry,
+        private SubscriptionResolverInterface $subscriptionResolver,
     ) {
     }
 
@@ -56,8 +62,37 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
                 'unreadNotificationsCount' => $this->notificationRepository->getUnreadCountByUser(
                     $notification->getRecipient()
                 ),
-                'notification' => $this->notificationHydrator->hydrateMinimal($notification),
+                'notification' => $this->notificationHydrator->hydrateMinimal(
+                    $notification,
+                    $this->wantsPopup($notification)
+                ),
             ]
         );
+    }
+
+    /**
+     * Resolved here rather than by the producer, which is what gives every existing producer a
+     * working pop-up toggle without touching it: a notification written straight through the
+     * model falls into the general bucket and honours that bucket's preference.
+     *
+     * Failing to resolve must not cost the user their notification, so any error falls back to
+     * showing the toast — the behaviour before this setting existed.
+     */
+    private function wantsPopup(Notification $notification): bool
+    {
+        $recipientId = $notification->getRecipient()?->getId();
+
+        if ($recipientId === null) {
+            return true;
+        }
+
+        try {
+            return $this->subscriptionResolver->resolve(
+                $recipientId,
+                $this->typeRegistry->resolveBucket($notification->getType())
+            )->wantsPopup();
+        } catch (Exception) {
+            return true;
+        }
     }
 }

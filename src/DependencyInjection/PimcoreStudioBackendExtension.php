@@ -195,6 +195,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $config['gdpr_data_extractor']
         );
 
+        $container->setParameter(
+            'pimcore_studio_backend.notifications.channels',
+            $config['notifications']['channels']
+        );
+
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([
             '$adminConfig' => [

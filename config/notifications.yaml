@@ -24,6 +24,34 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserService
 
+  Pimcore\Bundle\StudioBackendBundle\Notification\Service\SubscriptionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\SubscriptionService
+
+  #
+  # Dispatch — the generic notification framework
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcher
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistry
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry
+    arguments:
+      $channelConfig: '%pimcore_studio_backend.notifications.channels%'
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolver
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepository
+
+  # The catch-all every untyped notification falls into. Registered explicitly as well as by
+  # tag, because the type registry needs it as its fallback.
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor: ~
+
 
   #
   # Hydrators
@@ -34,6 +62,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\RecipientHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\RecipientHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydrator
 
   #
   # Repository

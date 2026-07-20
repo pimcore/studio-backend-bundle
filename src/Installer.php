@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
@@ -65,6 +66,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createUserPerspectivesTable($schema);
         $this->createJobRunHiddenTable($schema);
         $this->createMcpAccessTokenTable($schema);
+        $this->createNotificationSubscriptionTable($schema);
         $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
@@ -109,6 +111,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {
             $schema->dropTable(McpAccessToken::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {
+            $schema->dropTable(NotificationSubscription::TABLE_NAME);
         }
 
         $this->removeUserPermission($schema);
@@ -473,6 +479,37 @@ final class Installer extends SettingsStoreAwareInstaller
     /**
      * @throws SchemaException
      */
+    /**
+     * Per-user notification preferences. A missing row means "use the type's defaults", so
+     * only deliberate choices are stored and the table stays small.
+     *
+     * Channels are a JSON set rather than columns: a bundle contributing a new channel then
+     * needs no migration, the id simply appears in the set.
+     */
+    private function createNotificationSubscriptionTable(Schema $schema): void
+    {
+        if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(NotificationSubscription::TABLE_NAME);
+
+        $table->addColumn('user_id', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('type_id', 'string', ['notnull' => true, 'length' => 190]);
+        $table->addColumn('subscribed', 'boolean', ['notnull' => true, 'default' => true]);
+        $table->addColumn('channels', 'json', ['notnull' => false]);
+
+        $table->setPrimaryKey(['user_id', 'type_id'], 'pk_' . NotificationSubscription::TABLE_NAME);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . NotificationSubscription::TABLE_NAME . '_users'
+        );
+    }
+
     private function createMcpAccessTokenTable(Schema $schema): void
     {
         if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {

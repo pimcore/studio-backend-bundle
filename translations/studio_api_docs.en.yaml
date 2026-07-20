@@ -2127,3 +2127,9 @@ ownership_management_delete_configurations_summary: Delete configurations
 ownership_management_delete_configurations_description: Deletes one or more configurations of the given type.
 ownership_management_delete_configurations_success_response: Configurations deleted successfully
 ownership_management_delete_configurations_created_response: A job run was created to delete the configurations asynchronously
+notification_get_subscriptions_description: Get the current user's notification preferences, merged with the defaults of every registered notification type
+notification_get_subscriptions_summary: Get notification preferences for the current user
+notification_get_subscriptions_success_response: Notification preferences for the current user
+notification_update_subscriptions_description: Store the current user's notification preferences. Sent as a single bulk request; the stored state is returned so the client can re-seed from the server.
+notification_update_subscriptions_summary: Update notification preferences for the current user
+notification_update_subscriptions_success_response: The stored notification preferences for the current user

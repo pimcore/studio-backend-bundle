@@ -75,6 +75,7 @@ class Configuration implements ConfigurationInterface
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
+        $this->addNotificationsNode($rootNode);
         $this->addClassMapping($rootNode, 'asset_metadata_adapter_mapping');
         $this->addClassMapping($rootNode, 'data_object_data_adapter_mapping');
         $this->addClassMapping($rootNode, 'document_type_adapter_mapping');
@@ -357,6 +358,41 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
+    }
+
+    /**
+     * The administrator's only lever over notification delivery: switching a channel off for
+     * the whole installation.
+     *
+     * Deliberately not a per-type matrix. A disabled channel disappears from the API entirely,
+     * so the preferences screen omits its column rather than showing a row of locks — which
+     * means there is no "locked" state to model anywhere, in the API or the UI.
+     */
+    private function addNotificationsNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('notifications')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('channels')
+                        ->info(
+                            'Enable or disable notification delivery channels contributed by ' .
+                            'bundles, keyed by channel name.'
+                        )
+                        ->useAttributeAsKey('name')
+                        ->arrayPrototype()
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->booleanNode('enabled')
+                                    ->defaultTrue()
+                                    ->info('Disabling removes the channel from the preferences screen.')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 
     private function addNoteTypes(ArrayNodeDefinition $node): void
