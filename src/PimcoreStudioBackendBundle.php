@@ -19,6 +19,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBun
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DataIndexFilterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DataProviderPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\NotificationDispatchPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DocumentTypeAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FieldDefinitionResolverPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterMapperPass;
@@ -97,6 +98,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new PhpCodeTransformerPass());
         $container->addCompilerPass(new DataProviderPass());
         $container->addCompilerPass(new DocumentTypeAdapterPass());
+        $container->addCompilerPass(new NotificationDispatchPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
