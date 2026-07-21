@@ -84,6 +84,83 @@ final class GridServiceTest extends Unit
         $this->assertSame(2, $result->getTotalItems());
     }
 
+    /**
+     * Relation preview grids with no configured visible fields fall back to default columns
+     * (id / fullpath / classname) that the frontend sends without a `type` or `config`. These
+     * must resolve to their system column types instead of failing the whole grid request with
+     * a 422 "Invalid column configuration".
+     */
+    public function testGetDataObjectGridResolvesTypelessSystemColumns(): void
+    {
+        $searchResult = new DataObjectSearchResult(
+            items: [$this->makeEmpty(StudioElementInterface::class, ['getId' => 100])],
+            currentPage: 1,
+            pageSize: 10,
+            totalItems: 1,
+        );
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => $searchResult,
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => $this->makeEmpty(AbstractObject::class),
+            ]),
+        );
+
+        // Default relation-grid fallback columns: only a key, no type/config.
+        $gridParameter = new GridParameter(
+            folderId: 1,
+            columns: [
+                ['key' => 'id'],
+                ['key' => 'fullpath'],
+                ['key' => 'classname'],
+            ],
+            filters: null,
+        );
+
+        // Previously threw InvalidArgumentException (422); now completes normally.
+        $result = $service->getDataObjectGrid($gridParameter, null);
+
+        $this->assertCount(1, $result->getItems());
+        $this->assertSame(1, $result->getTotalItems());
+    }
+
+    /**
+     * A single column whose type is missing and cannot be resolved as a system column must be
+     * skipped (and logged), not abort the whole grid request.
+     */
+    public function testGetDataObjectGridSkipsColumnWithUnresolvableType(): void
+    {
+        $searchResult = new DataObjectSearchResult(
+            items: [$this->makeEmpty(StudioElementInterface::class, ['getId' => 100])],
+            currentPage: 1,
+            pageSize: 10,
+            totalItems: 1,
+        );
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => $searchResult,
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => $this->makeEmpty(AbstractObject::class),
+            ]),
+            // The unresolvable column must produce exactly one warning.
+            logger: $this->makeEmpty(LoggerInterface::class, ['warning' => Expected::once()]),
+        );
+
+        $gridParameter = new GridParameter(
+            folderId: 1,
+            columns: [['key' => 'someUnknownColumn']],
+            filters: null,
+        );
+
+        $result = $service->getDataObjectGrid($gridParameter, null);
+
+        $this->assertCount(1, $result->getItems());
+    }
+
     private function createService(
         ?GridSearchInterface $gridSearch = null,
         ?ServiceResolverInterface $serviceResolver = null,

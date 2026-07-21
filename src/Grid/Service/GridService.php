@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
@@ -341,13 +342,30 @@ final class GridService implements GridServiceInterface
 
         $columns = [];
         foreach ($config as $column) {
+            if (!isset($column['key'])) {
+                throw new InvalidArgumentException('Invalid column configuration');
+            }
+
+            $type = $column['type'] ?? $this->resolveSystemColumnType($column['key']);
+            if ($type === null) {
+                // The frontend may send default fallback columns without a type (e.g. relation
+                // preview grids with no configured visible fields). Skip a single column that
+                // cannot be resolved instead of failing the whole grid request.
+                $this->pimcoreLogger->warning(
+                    'Skipping grid column with unresolvable type',
+                    ['columnKey' => $column['key']]
+                );
+
+                continue;
+            }
+
             try {
                 $columns[] = new Column(
                     key: $column['key'],
                     locale: $column['locale'] ?? null,
-                    type: $column['type'],
+                    type: $type,
                     group: $column['group'] ?? null,
-                    config: $column['config'],
+                    config: $column['config'] ?? [],
                     width: $column['width'] ?? null
                 );
             } catch (Exception) {
@@ -356,6 +374,19 @@ final class GridService implements GridServiceInterface
         }
 
         return new ColumnCollection($columns);
+    }
+
+    /**
+     * Resolve the column type for well-known system columns that the frontend may send without
+     * an explicit type (default relation-grid fallback columns).
+     */
+    private function resolveSystemColumnType(string $key): ?string
+    {
+        return match ($key) {
+            'id' => ColumnType::SYSTEM_ID->value,
+            'fullpath', 'classname' => ColumnType::SYSTEM_STRING->value,
+            default => null,
+        };
     }
 
     private function supports(Column $column, string $elementType): bool
