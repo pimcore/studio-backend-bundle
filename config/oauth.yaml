@@ -113,7 +113,7 @@ services:
         public: true
         tags: ['controller.service_arguments']
         arguments:
-            $consentPath: '/pimcore-studio/#/oauth/consent'
+            $consentPath: '/pimcore-studio/oauth/consent'
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationDetailsController:
         public: true

@@ -826,7 +826,7 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->scalarNode('consent_path')
                         ->info('Studio UI route the authorize endpoint redirects to for login/consent.')
-                        ->defaultValue('/pimcore-studio/#/oauth/consent')
+                        ->defaultValue('/pimcore-studio/oauth/consent')
                     ->end()
                     ->arrayNode('keys')
                         ->addDefaultsIfNotSet()
