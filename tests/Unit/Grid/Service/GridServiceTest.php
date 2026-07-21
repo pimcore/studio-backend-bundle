@@ -20,7 +20,11 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolver
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\IdResolver;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\StringResolver;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface;
@@ -106,6 +110,15 @@ final class GridServiceTest extends Unit
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
                 'getElementById' => $this->makeEmpty(AbstractObject::class),
             ]),
+            // No column should be skipped: all three must resolve to a system type.
+            logger: $this->makeEmpty(LoggerInterface::class, ['warning' => Expected::never()]),
+            // Real resolvers keyed by the types resolveSystemColumnType() must produce.
+            columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                'loadColumnResolvers' => [
+                    ColumnType::SYSTEM_ID->value => new IdResolver(),
+                    ColumnType::SYSTEM_STRING->value => new StringResolver(),
+                ],
+            ]),
         );
 
         // Default relation-grid fallback columns: only a key, no type/config.
@@ -124,6 +137,24 @@ final class GridServiceTest extends Unit
 
         $this->assertCount(1, $result->getItems());
         $this->assertSame(1, $result->getTotalItems());
+
+        // The typeless columns were actually resolved (mapped to their system types) and used,
+        // not silently skipped: assert the resulting column keys and field types.
+        /** @var ColumnData[] $columns */
+        $columns = $result->getItems()[0]['columns'];
+        $this->assertCount(3, $columns);
+        $this->assertSame(
+            ['id', 'fullpath', 'classname'],
+            array_map(static fn (ColumnData $column): string => $column->getKey(), $columns)
+        );
+        $this->assertSame(
+            [
+                ColumnType::SYSTEM_ID->value,
+                ColumnType::SYSTEM_STRING->value,
+                ColumnType::SYSTEM_STRING->value,
+            ],
+            array_map(static fn (ColumnData $column): mixed => $column->getFieldType(), $columns)
+        );
     }
 
     /**
@@ -165,10 +196,11 @@ final class GridServiceTest extends Unit
         ?GridSearchInterface $gridSearch = null,
         ?ServiceResolverInterface $serviceResolver = null,
         ?LoggerInterface $logger = null,
+        ?ColumnResolverLoaderInterface $columnResolverLoader = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
-            $this->makeEmpty(ColumnResolverLoaderInterface::class),
+            $columnResolverLoader ?? $this->makeEmpty(ColumnResolverLoaderInterface::class),
             $this->makeEmpty(ColumnCollectorLoaderInterface::class),
             $gridSearch ?? $this->makeEmpty(GridSearchInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class),
