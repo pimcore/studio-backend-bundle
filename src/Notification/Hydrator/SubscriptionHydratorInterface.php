@@ -17,6 +17,9 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\Notifica
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\SubscribableType;
 
+/**
+ * @internal
+ */
 interface SubscriptionHydratorInterface
 {
     /**

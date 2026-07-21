@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 
+/**
+ * @internal
+ */
 interface SubscriptionRepositoryInterface
 {
     /**

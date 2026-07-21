@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 
+/**
+ * @internal
+ */
 interface NotificationTypeRegistryInterface
 {
     /**

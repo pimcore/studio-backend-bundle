@@ -20,6 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\Notifica
  * Merges stored preferences over descriptor defaults and narrows the result to what the type
  * and the installation can currently offer. The single place that rule lives — the dispatcher,
  * the Mercure publisher and the preferences API all read through it, so they cannot drift.
+ *
+ * @internal
  */
 interface SubscriptionResolverInterface
 {

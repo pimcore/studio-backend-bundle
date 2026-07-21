@@ -20,6 +20,8 @@ use function in_array;
  * What a user's preferences actually amount to for one notification type, after the stored
  * row has been merged over the descriptor defaults and narrowed to what the type and the
  * installation can currently offer.
+ *
+ * @internal
  */
 final readonly class EffectiveSubscription
 {

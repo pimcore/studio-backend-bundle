@@ -19,6 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\Subscrip
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\UpdateSubscriptionsParameters;
 use Pimcore\Model\UserInterface;
 
+/**
+ * @internal
+ */
 interface SubscriptionServiceInterface
 {
     /**

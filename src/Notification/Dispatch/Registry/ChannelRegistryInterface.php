@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 
+/**
+ * @internal
+ */
 interface ChannelRegistryInterface
 {
     /**
