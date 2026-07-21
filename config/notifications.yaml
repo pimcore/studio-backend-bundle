@@ -42,6 +42,14 @@ services:
     arguments:
       $channelConfig: '%pimcore_studio_backend.notifications.channels%'
 
+  # Email delivery channel. Registered so the NotificationDispatchPass tags it as a
+  # ChannelInterface (the interface attribute does not tag in Pimcore's container). Its async
+  # send message is routed to the pimcore_core transport in the bundle extension.
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel: ~
+
+  # $fromEmail is set from studio_from_default_email in the bundle extension, mirroring MailService.
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler: ~
+
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolver
 

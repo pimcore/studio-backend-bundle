@@ -32,6 +32,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailMessage;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
@@ -158,6 +160,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(MailServiceInterface::class);
         $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
 
+        $definition = $container->getDefinition(SendNotificationEmailHandler::class);
+        $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
+        $definition->setArgument('$template', $config['notifications']['email']['template']);
+
         $definition = $container->getDefinition(WidgetServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);
 
@@ -239,6 +245,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $loader->load('bundle_seo.yaml');
         }
         $loader->load('rate_limiter.yaml');
+
+        // The email channel's send message rides the existing pimcore_core transport, so the
+        // standard "messenger:consume pimcore_core" worker delivers it and a slow or unreachable
+        // mail server never blocks the request that produced the notification.
+        $container->prependExtensionConfig('framework', [
+            'messenger' => [
+                'routing' => [
+                    SendNotificationEmailMessage::class => 'pimcore_core',
+                ],
+            ],
+        ]);
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,

@@ -390,6 +390,22 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->arrayNode('email')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('template')
+                                ->defaultValue('@PimcoreStudioBackend/notification/email.html.twig')
+                                ->cannotBeEmpty()
+                                ->info(
+                                    'Twig template for notification emails. Point this at your own ' .
+                                    'template to brand them, or override the default in place by ' .
+                                    'dropping a file at ' .
+                                    'templates/bundles/PimcoreStudioBackendBundle/notification/email.html.twig. ' .
+                                    'The template receives: title, message, link, name, locale.'
+                                )
+                            ->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end()
         ->end();
