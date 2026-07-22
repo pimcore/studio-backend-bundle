@@ -31,7 +31,7 @@ use function sprintf;
  */
 final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInterface
 {
-    private const string METADATA_PATH = '/.well-known/oauth-protected-resource/pimcore-mcp';
+    private const string METADATA_PREFIX = '/.well-known/oauth-protected-resource';
 
     private const string DEFAULT_SCOPE = 'mcp:read';
 
@@ -49,7 +49,7 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
                 'WWW-Authenticate',
                 sprintf(
                     'Bearer resource_metadata="%s", scope="%s"',
-                    $request->getSchemeAndHttpHost() . self::METADATA_PATH,
+                    $request->getSchemeAndHttpHost() . self::METADATA_PREFIX . $request->getPathInfo(),
                     self::DEFAULT_SCOPE,
                 )
             );
