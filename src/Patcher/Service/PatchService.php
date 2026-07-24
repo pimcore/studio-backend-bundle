@@ -35,11 +35,14 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -62,7 +65,8 @@ final readonly class PatchService implements PatchServiceInterface
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementIndexServiceInterface $indexService,
-        private ElementSaveServiceInterface $elementSaveService
+        private ElementSaveServiceInterface $elementSaveService,
+        private SecurityServiceInterface $securityService
     ) {
     }
 
@@ -134,7 +138,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ForbiddenException
      */
     public function patchElement(
         ElementInterface $element,
@@ -142,6 +146,12 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
+        if ($element instanceof Concrete) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+        } elseif ($element instanceof Asset) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        }
+
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
                 $this->patchEditableData(

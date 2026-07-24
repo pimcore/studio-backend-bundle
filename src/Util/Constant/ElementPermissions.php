@@ -22,6 +22,8 @@ final class ElementPermissions
 
     public const string VIEW_PERMISSION = 'view';
 
+    public const string SAVE_PERMISSION = 'save';
+
     public const string  PUBLISH_PERMISSION = 'publish';
 
     public const string UNPUBLISH_PERMISSION = 'unpublish';
