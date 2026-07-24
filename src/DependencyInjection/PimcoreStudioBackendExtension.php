@@ -215,6 +215,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(AdminLanguageServiceInterface::class);
         $definition->setArgument('$translationsPath', $config['translations']['path']);
         $definition->setArgument('$defaultTranslationsPath', '%translator.default_path%');
+
+        $container->setParameter(
+            'pimcore_studio_backend.translations.auto_create_missing_keys',
+            $config['translations']['auto_create_missing_keys']
+        );
     }
 
     /**

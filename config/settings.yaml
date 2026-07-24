@@ -51,6 +51,8 @@ services:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
+    arguments:
+      $autoCreateTranslations: '%pimcore_studio_backend.translations.auto_create_missing_keys%'
     tags: [
       'pimcore.studio_backend.settings_provider',
       'pimcore.studio_backend.update_settings_provider'
