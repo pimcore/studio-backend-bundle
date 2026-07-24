@@ -146,9 +146,13 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
-        if ($element instanceof Concrete) {
+        // Writing object field data requires the workspace `save` permission. Publish/unpublish
+        // (PublishAdapter) and the other adapters enforce their own permissions inside the try
+        // below; their ForbiddenException is re-thrown so it is not masked as a 500.
+        if ($element instanceof Concrete && isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY])) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         } elseif ($element instanceof Asset) {
+            // Assets have no workspace `save` permission; `publish` is their edit/write permission.
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
         }
 
@@ -181,6 +185,8 @@ final readonly class PatchService implements PatchServiceInterface
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
+        } catch (ForbiddenException $exception) {
+            throw $exception;
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }

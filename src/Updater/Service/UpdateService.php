@@ -103,6 +103,10 @@ final readonly class UpdateService implements UpdateServiceInterface
             );
         } catch (ValidationException $e) {
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
+        } catch (ForbiddenException $e) {
+            // Publish/unpublish permission is checked inside elementSaveService->save();
+            // re-throw so it stays a 403 instead of being masked as a 500 below.
+            throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         }
