@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
-
 /**
  * @internal
  */
@@ -32,7 +31,7 @@ final class UserResolver implements ColumnResolverInterface, CoreElementColumnRe
     use ColumnDataTrait;
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException 
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
