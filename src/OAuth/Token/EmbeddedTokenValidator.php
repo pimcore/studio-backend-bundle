@@ -71,23 +71,8 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
-        try {
-            $token = $configuration->parser()->parse($rawToken);
-
-            $constraints = [
-                new SignedWith($configuration->signer(), $configuration->verificationKey()),
-                new LooseValidAt($this->clock),
-            ];
-            if ($this->issuer !== null) {
-                $constraints[] = new IssuedBy($this->issuer);
-            }
-
-            $configuration->validator()->assert($token, ...$constraints);
-        } catch (Throwable) {
-            return null;
-        }
-
-        if (!$token instanceof UnencryptedToken) {
+        $token = $this->parseVerifiedToken($configuration, $rawToken);
+        if ($token === null) {
             return null;
         }
 
@@ -129,9 +114,31 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
         );
     }
 
+    private function parseVerifiedToken(Configuration $configuration, string $rawToken): ?UnencryptedToken
+    {
+        try {
+            $token = $configuration->parser()->parse($rawToken);
+
+            $constraints = [
+                new SignedWith($configuration->signer(), $configuration->verificationKey()),
+                new LooseValidAt($this->clock),
+            ];
+            if ($this->issuer !== null) {
+                $constraints[] = new IssuedBy($this->issuer);
+            }
+
+            $configuration->validator()->assert($token, ...$constraints);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $token instanceof UnencryptedToken ? $token : null;
+    }
+
     /**
      * Endpoint-vs-audience check. Currently accepts any audience; resource
-     * binding is enforced additively later.
+     * binding is enforced additively later, so the parameters are retained as
+     * the seam for that check.
      *
      * @param list<string> $audience
      */
@@ -155,7 +162,9 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
 
         // Verification only: the signer/verification key are used to check the
         // signature; the same public key fills the (unused) signing-key slot.
-        return $this->configuration = Configuration::forAsymmetricSigner(new Sha256(), $key, $key);
+        $this->configuration = Configuration::forAsymmetricSigner(new Sha256(), $key, $key);
+
+        return $this->configuration;
     }
 
     /**
@@ -172,7 +181,7 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
         }
 
         // Split on any run of whitespace so double spaces don't yield empty scopes.
-        $scopes = preg_split('/\s+/', trim($scope), -1, PREG_SPLIT_NO_EMPTY);
+        $scopes = preg_split('/\s+/u', trim($scope), -1, PREG_SPLIT_NO_EMPTY);
 
         return $scopes === false ? [] : $scopes;
     }

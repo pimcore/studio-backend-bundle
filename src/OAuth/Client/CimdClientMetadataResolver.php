@@ -79,7 +79,9 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
             return $this->memo[$clientId];
         }
 
-        return $this->memo[$clientId] = $this->doResolve($clientId);
+        $this->memo[$clientId] = $this->doResolve($clientId);
+
+        return $this->memo[$clientId];
     }
 
     private function doResolve(string $clientId): ?ClientMetadata

@@ -18,13 +18,13 @@ use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
-use RuntimeException;
 use function sprintf;
 
 /**
@@ -55,7 +55,7 @@ final class AuthorizationServerFactory
     public function create(): AuthorizationServer
     {
         if ($this->privateKey === null || $this->encryptionKey === null) {
-            throw new RuntimeException(
+            throw new MissingKeyMaterialException(
                 'The embedded OAuth server needs a signing key and an encryption key '
                 . '(pimcore_studio_backend.oauth.keys.private_key / encryption_key).'
             );
@@ -71,15 +71,15 @@ final class AuthorizationServerFactory
             $this->encryptionKey,
         );
 
-        $accessTokenTtl = new DateInterval(sprintf('PT%dS', $this->accessTokenTtl));
-        $refreshTokenTtl = new DateInterval(sprintf('PT%dS', $this->refreshTokenTtl));
+        $accessTokenTtl = $this->secondsInterval($this->accessTokenTtl);
+        $refreshTokenTtl = $this->secondsInterval($this->refreshTokenTtl);
 
         $server->enableGrantType(new ClientCredentialsGrant(), $accessTokenTtl);
 
         $authCodeGrant = new LoopbackAuthCodeGrant(
             $this->authCodeRepository,
             $this->refreshTokenRepository,
-            new DateInterval(sprintf('PT%dS', $this->authCodeTtl)),
+            $this->secondsInterval($this->authCodeTtl),
             $this->allowLocalhostLoopback,
         );
         $authCodeGrant->setRefreshTokenTTL($refreshTokenTtl);
@@ -90,5 +90,10 @@ final class AuthorizationServerFactory
         $server->enableGrantType($refreshTokenGrant, $accessTokenTtl);
 
         return $server;
+    }
+
+    private function secondsInterval(int $seconds): DateInterval
+    {
+        return new DateInterval(sprintf('PT%dS', $seconds));
     }
 }

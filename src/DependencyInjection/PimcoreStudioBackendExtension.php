@@ -34,10 +34,10 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
@@ -82,6 +82,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
     private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
 
+    private const string ARG_ISSUER = '$issuer';
+
+    private const string ARG_ENABLED = '$enabled';
+
     /**
      * {@inheritdoc}
      *
@@ -116,7 +120,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
 
         $definition = $container->getDefinition(RateLimitSubscriber::class);
-        $definition->setArgument('$enabled', $config['rate_limiting']['enabled']);
+        $definition->setArgument(self::ARG_ENABLED, $config['rate_limiting']['enabled']);
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
@@ -240,10 +244,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $container->getDefinition(TokenValidatorInterface::class)
             ->setArgument('$publicKey', $config['oauth']['keys']['public_key'])
-            ->setArgument('$issuer', $config['oauth']['issuer']);
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
-            ->setArgument('$enabled', $config['oauth']['enabled']);
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
@@ -253,7 +257,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$clients', $config['oauth']['clients']);
 
         $container->getDefinition(AccessTokenRepository::class)
-            ->setArgument('$issuer', $config['oauth']['issuer']);
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(AuthorizationServerFactory::class)
             ->setArgument('$privateKey', $config['oauth']['keys']['private_key'])
@@ -268,11 +272,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->setParameter('pimcore_studio_backend.oauth.cimd_enabled', $cimd['enabled']);
 
         $container->getDefinition(AuthorizationServerMetadataController::class)
-            ->setArgument('$issuer', $config['oauth']['issuer'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer'])
             ->setArgument('$clientIdMetadataDocumentSupported', $cimd['enabled']);
 
         $container->getDefinition(CimdClientMetadataResolver::class)
-            ->setArgument('$enabled', $cimd['enabled'])
+            ->setArgument(self::ARG_ENABLED, $cimd['enabled'])
             ->setArgument('$allowedHosts', $cimd['allowed_hosts'])
             ->setArgument('$allowInsecure', $cimd['allow_insecure'])
             ->setArgument('$cacheTtl', $cimd['cache_ttl']);
@@ -284,7 +288,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$ttl', $config['oauth']['auth_code_ttl']);
 
         $container->getDefinition(AuthorizationApprovalController::class)
-            ->setArgument('$issuer', $config['oauth']['issuer']);
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([

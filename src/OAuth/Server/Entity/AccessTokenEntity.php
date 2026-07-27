@@ -84,9 +84,12 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
 
     private function getScopeString(): string
     {
-        return implode(' ', array_map(
-            static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
-            $this->getScopes(),
-        ));
+        return implode(
+            ' ',
+            array_map(
+                static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
+                $this->getScopes(),
+            ),
+        );
     }
 }

@@ -838,36 +838,7 @@ class Configuration implements ConfigurationInterface
                         )
                         ->defaultTrue()
                     ->end()
-                    ->arrayNode('client_id_metadata_documents')
-                        ->addDefaultsIfNotSet()
-                        ->info(
-                            'Client ID Metadata Documents (CIMD): accept an HTTPS URL as the client_id and '
-                            . 'fetch the client metadata from it, instead of pre-registration. No registration '
-                            . 'endpoint is exposed. Opt-in; default off.'
-                        )
-                        ->children()
-                            ->booleanNode('enabled')
-                                ->info('Resolve URL-form client_ids and advertise support in metadata.')
-                                ->defaultFalse()
-                            ->end()
-                            ->arrayNode('allowed_hosts')
-                                ->info('If non-empty, a client_id URL must be hosted on one of these hosts.')
-                                ->scalarPrototype()->end()
-                                ->defaultValue([])
-                            ->end()
-                            ->booleanNode('allow_insecure')
-                                ->info(
-                                    'Dev only: permit http and private/loopback client_id URLs. '
-                                    . 'Never enable in production.'
-                                )
-                                ->defaultFalse()
-                            ->end()
-                            ->integerNode('cache_ttl')
-                                ->info('Seconds to cache a fetched client metadata document.')
-                                ->defaultValue(300)
-                            ->end()
-                        ->end()
-                    ->end()
+                    ->append($this->addOAuthClientIdMetadataDocumentsNode())
                     ->arrayNode('keys')
                         ->addDefaultsIfNotSet()
                         ->info('Signing/encryption key material. Reference via env vars; never commit secrets.')
@@ -948,6 +919,42 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+    private function addOAuthClientIdMetadataDocumentsNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('client_id_metadata_documents'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'Client ID Metadata Documents (CIMD): accept an HTTPS URL as the client_id and '
+                . 'fetch the client metadata from it, instead of pre-registration. No registration '
+                . 'endpoint is exposed. Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Resolve URL-form client_ids and advertise support in metadata.')
+                    ->defaultFalse()
+                ->end()
+                ->arrayNode('allowed_hosts')
+                    ->info('If non-empty, a client_id URL must be hosted on one of these hosts.')
+                    ->scalarPrototype()->end()
+                    ->defaultValue([])
+                ->end()
+                ->booleanNode('allow_insecure')
+                    ->info(
+                        'Dev only: permit http and private/loopback client_id URLs. '
+                        . 'Never enable in production.'
+                    )
+                    ->defaultFalse()
+                ->end()
+                ->integerNode('cache_ttl')
+                    ->info('Seconds to cache a fetched client metadata document.')
+                    ->defaultValue(300)
+                ->end()
+            ->end();
+
+        return $node;
     }
 
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
