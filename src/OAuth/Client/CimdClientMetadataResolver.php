@@ -153,7 +153,10 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
             ]);
 
             if ($response->getStatusCode() !== 200) {
-                $this->logger->warning('CIMD document fetch returned non-200', ['url' => $url, 'status' => $response->getStatusCode()]);
+                $this->logger->warning(
+                    'CIMD document fetch returned non-200',
+                    ['url' => $url, 'status' => $response->getStatusCode()],
+                );
 
                 return null;
             }

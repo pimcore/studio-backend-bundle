@@ -37,12 +37,12 @@ final class LoopbackRedirectUriValidator implements RedirectUriValidatorInterfac
     /**
      * @var string[]
      */
-    private array $allowedRedirectUris;
+    private readonly array $allowedRedirectUris;
 
     /**
      * @var list<string>
      */
-    private array $loopbackHosts;
+    private readonly array $loopbackHosts;
 
     /**
      * @param string[]|string $allowedRedirectUris

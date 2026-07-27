@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 
+use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
+
 /**
  * Tracking store for issued OAuth artifacts, backing revocation and reuse
  * detection. Revocation is a blocklist: an identifier not on record counts as
@@ -24,7 +26,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 interface TokenRecordStoreInterface
 {
     /**
-     * @throws \League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException on a duplicate identifier
+     * @throws UniqueTokenIdentifierConstraintViolationException on a duplicate identifier
      */
     public function persist(string $identifier, string $type, int $expiresAt, ?int $userId, ?string $clientId): void;
 

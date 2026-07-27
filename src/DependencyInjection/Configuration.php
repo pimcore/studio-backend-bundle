@@ -856,7 +856,10 @@ class Configuration implements ConfigurationInterface
                                 ->defaultValue([])
                             ->end()
                             ->booleanNode('allow_insecure')
-                                ->info('Dev only: permit http and private/loopback client_id URLs. Never enable in production.')
+                                ->info(
+                                    'Dev only: permit http and private/loopback client_id URLs. '
+                                    . 'Never enable in production.'
+                                )
                                 ->defaultFalse()
                             ->end()
                             ->integerNode('cache_ttl')

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Identity;
 
 use Codeception\Test\Unit;
+use LogicException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Identity\EmbeddedIdentityResolver;
 use Pimcore\Model\User;
@@ -28,7 +29,7 @@ final class EmbeddedIdentityResolverTest extends Unit
         $authResolver = $this->createMock(AuthenticationResolverInterface::class);
         $authResolver->method('isValidUser')->willReturn(true);
 
-        $resolver = new EmbeddedIdentityResolver($authResolver, static fn (int $id): ?User => $user);
+        $resolver = new EmbeddedIdentityResolver($authResolver, static fn (int $id): User => $user);
 
         $this->assertSame($user, $resolver->resolve('42'));
     }
@@ -39,7 +40,7 @@ final class EmbeddedIdentityResolverTest extends Unit
         $authResolver = $this->createMock(AuthenticationResolverInterface::class);
         $authResolver->method('isValidUser')->willReturn(false);
 
-        $resolver = new EmbeddedIdentityResolver($authResolver, static fn (int $id): ?User => $user);
+        $resolver = new EmbeddedIdentityResolver($authResolver, static fn (int $id): User => $user);
 
         $this->assertNull($resolver->resolve('42'));
     }
@@ -52,7 +53,7 @@ final class EmbeddedIdentityResolverTest extends Unit
 
         $resolver = new EmbeddedIdentityResolver(
             $authResolver,
-            static fn (int $id): ?User => throw new \LogicException('loader must not be called')
+            static fn (int $id): User => throw new LogicException('loader must not be called')
         );
 
         $this->assertNull($resolver->resolve('admin'));
