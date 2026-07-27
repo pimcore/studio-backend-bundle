@@ -17,10 +17,12 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Configuration\Share\Service\ConfigurationShareServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
@@ -392,13 +394,72 @@ final class ConfigurationServiceTest extends Unit
         $this->assertSame([], $result->getFilter());
     }
 
+    public function testGetGlobalConfigurationsReturnsOnlyGloballySharedConfigurations(): void
+    {
+        $service = $this->createService(
+            configurationRepository: $this->makeEmpty(ConfigurationRepositoryInterface::class, [
+                'getByClassId' => [
+                    $this->createGridConfiguration(1, 'Global A', true),
+                    $this->createGridConfiguration(2, 'Personal', false),
+                    $this->createGridConfiguration(3, 'Global B', true),
+                ],
+            ]),
+            configurationHydrator: $this->makeEmpty(ConfigurationHydratorInterface::class, [
+                'hydrate' => static fn (GridConfiguration $configuration): Configuration => new Configuration(
+                    $configuration->getId(),
+                    $configuration->getName(),
+                    null,
+                ),
+            ]),
+        );
+
+        $result = $service->getGlobalConfigurationsForDataObjectsByClassId('CAR');
+
+        $this->assertSame(2, $result->getTotalItems());
+        $names = array_map(static fn (Configuration $c): string => $c->getName(), $result->getItems());
+        $this->assertSame(['Global A', 'Global B'], $names);
+    }
+
+    public function testGetGlobalConfigurationsReturnsEmptyWhenNoneAreGloballyShared(): void
+    {
+        $service = $this->createService(
+            configurationRepository: $this->makeEmpty(ConfigurationRepositoryInterface::class, [
+                'getByClassId' => [
+                    $this->createGridConfiguration(1, 'Personal A', false),
+                    $this->createGridConfiguration(2, 'Personal B', false),
+                ],
+            ]),
+        );
+
+        $result = $service->getGlobalConfigurationsForDataObjectsByClassId('CAR');
+
+        $this->assertSame(0, $result->getTotalItems());
+        $this->assertSame([], $result->getItems());
+    }
+
+    public function testGetGlobalConfigurationsReturnsEmptyForEmptyRepositoryResult(): void
+    {
+        $service = $this->createService(
+            configurationRepository: $this->makeEmpty(ConfigurationRepositoryInterface::class, [
+                'getByClassId' => [],
+            ]),
+        );
+
+        $result = $service->getGlobalConfigurationsForDataObjectsByClassId('CAR');
+
+        $this->assertSame(0, $result->getTotalItems());
+        $this->assertSame([], $result->getItems());
+    }
+
     private function createService(
         ?ClassDefinitionResolverInterface $classDefinitionResolver = null,
+        ?ConfigurationRepositoryInterface $configurationRepository = null,
+        ?ConfigurationHydratorInterface $configurationHydrator = null,
     ): ConfigurationService {
         return new ConfigurationService(
             $this->makeEmpty(ColumnConfigurationServiceInterface::class),
-            $this->makeEmpty(ConfigurationRepositoryInterface::class),
-            $this->makeEmpty(ConfigurationHydratorInterface::class),
+            $configurationRepository ?? $this->makeEmpty(ConfigurationRepositoryInterface::class),
+            $configurationHydrator ?? $this->makeEmpty(ConfigurationHydratorInterface::class),
             $this->makeEmpty(ConfigurationShareServiceInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class),
@@ -410,6 +471,15 @@ final class ConfigurationServiceTest extends Unit
             [],
             [],
         );
+    }
+
+    private function createGridConfiguration(int $id, string $name, bool $shareGlobal): GridConfiguration
+    {
+        return $this->makeEmpty(GridConfiguration::class, [
+            'getId' => $id,
+            'getName' => $name,
+            'isShareGlobal' => $shareGlobal,
+        ]);
     }
 
     private function createColumnConfiguration(

@@ -17,6 +17,7 @@ use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -44,7 +45,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_config_delete', methods: ['DELETE'])]
     #[IsGranted(CustomReportPermissions::REPORTS_CONFIG->value)]

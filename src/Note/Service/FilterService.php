@@ -52,7 +52,7 @@ final readonly class FilterService implements FilterServiceInterface
 
             $propertyKey = 'field';
 
-            foreach ($parameters->getFieldFiltersArray() as $filter) {
+            foreach ($parameters->getFieldFiltersArray() as $index => $filter) {
                 $operator = $this->findOperator($filter['type'], $filter['operator']);
                 $value = $this->prepareValue($filter['type'], $filter['operator'], $filter['value']);
 
@@ -60,22 +60,31 @@ final readonly class FilterService implements FilterServiceInterface
                     $value = '%' . $value . '%';
                 }
 
-                if ($filter[$propertyKey] === 'user') {
+                // Use index to ensure unique bind parameters for fields with multiple
+                // usages (e.g. a date "between" range sends `gt` and `lt` on `date`)
+                $parameterName = 'filter_' . $index;
+
+                if ($filter[$propertyKey] === 'userName') {
                     $list->addConditionParam(
-                        '`user` IN (SELECT `id` FROM `users` WHERE `name` ' . $operator . ' :user)',
-                        ['user' => $value]
+                        '`user` IN (SELECT `id` FROM `users` WHERE `name` ' . $operator . ' :' . $parameterName . ')',
+                        [$parameterName => $value]
                     );
+
+                    continue;
                 }
 
                 $quotedField = $this->dbResolver->get()->quoteIdentifier($filter[$propertyKey]);
                 if ($filter['type'] === 'date' && $filter['operator'] === 'eq') {
                     $maxTime = $value + (86400 - 1);
-                    $dateCondition = $quotedField . ' BETWEEN :minTime AND :maxTime';
-                    $list->addConditionParam($dateCondition, ['minTime' => $value, 'maxTime' => $maxTime]);
+                    $dateCondition = $quotedField . ' BETWEEN :minTime_' . $index . ' AND :maxTime_' . $index;
+                    $list->addConditionParam(
+                        $dateCondition,
+                        ['minTime_' . $index => $value, 'maxTime_' . $index => $maxTime]
+                    );
                 } else {
                     $list->addConditionParam(
-                        $quotedField . ' ' . $operator . ' :' . $filter[$propertyKey],
-                        [$filter[$propertyKey] => $value]
+                        $quotedField . ' ' . $operator . ' :' . $parameterName,
+                        [$parameterName => $value]
                     );
                 }
             }

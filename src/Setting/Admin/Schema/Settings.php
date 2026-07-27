@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
     schema: 'AdminSettings',
@@ -22,15 +24,17 @@ use OpenApi\Attributes\Schema;
     required: ['branding', 'assets', 'writeable'],
     type: 'object'
 )]
-final readonly class Settings
+final class Settings implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(ref: Branding::class, description: 'Branding configuration')]
-        private Branding $branding,
+        private readonly Branding $branding,
         #[Property(ref: Assets::class, description: 'Assets configuration')]
-        private Assets $assets,
+        private readonly Assets $assets,
         #[Property(description: 'Whether the settings are writeable', type: 'boolean', example: true)]
-        private bool $writeable,
+        private readonly bool $writeable,
     ) {
     }
 

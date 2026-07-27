@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
@@ -61,6 +62,67 @@ final class AdvancedColumnCollectorTest extends Unit
         $config = $this->getAdvancedConfig($collector);
 
         $this->assertSame([], $config->getConfig()['relationField']);
+    }
+
+    public function testGetColumnConfigurationsSkipsFolderPseudoClassInRelationField(): void
+    {
+        $relation = new ManyToManyObjectRelation();
+        $relation->setName('relatedItems');
+        $relation->setTitle('Related Items');
+        $relation->setClasses([['classes' => 'folder']]);
+
+        $collector = $this->createCollector([$relation]);
+
+        $config = $this->getAdvancedConfig($collector);
+        $relationFields = $config->getConfig()['relationField'];
+
+        $this->assertCount(1, $relationFields);
+        $this->assertSame([], $relationFields[0]->getClassIds());
+        $this->assertSame([], $relationFields[0]->getFields());
+    }
+
+    public function testGetColumnConfigurationsProcessesRealClassAlongsideSkippedFolder(): void
+    {
+        $relation = new ManyToManyObjectRelation();
+        $relation->setName('relatedItems');
+        $relation->setTitle('Related Items');
+        $relation->setClasses([
+            ['classes' => 'folder'],
+            ['classes' => 'Car'],
+        ]);
+
+        $realClassDefinition = new ClassDefinition();
+        $realClassDefinition->setId('123');
+
+        $layout = $this->makeEmpty(Layout::class, [
+            'getChildren' => [$relation],
+        ]);
+
+        $collector = new AdvancedColumnCollector(
+            $this->makeEmpty(ClassDefinitionServiceInterface::class, [
+                'getFilteredLayoutDefinitions' => $layout,
+            ]),
+            $this->makeEmpty(ClassDefinitionRepositoryInterface::class, [
+                'getClassDefinition' => $realClassDefinition,
+            ]),
+            $this->makeEmpty(TransformerLoaderInterface::class, [
+                'loadTransformers' => [],
+            ]),
+            $this->makeEmpty(DefinitionResolverInterface::class),
+            $this->makeEmpty(ObjectBrickServiceInterface::class),
+            $this->makeEmpty(SystemColumnServiceInterface::class, [
+                'getSystemColumnsForDataObjects' => [],
+            ]),
+        );
+        $collector->setClassId('CAR');
+        $collector->setFolderId(1);
+        $collector->setUser($this->makeEmpty(UserInterface::class));
+
+        $config = $this->getAdvancedConfig($collector);
+        $relationFields = $config->getConfig()['relationField'];
+
+        $this->assertCount(1, $relationFields);
+        $this->assertSame(['123'], $relationFields[0]->getClassIds());
     }
 
     public function testGetColumnConfigurationsExposesClassificationStoreFieldAsMarkedSimpleField(): void

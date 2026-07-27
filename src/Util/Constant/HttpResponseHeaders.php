@@ -23,6 +23,7 @@ enum HttpResponseHeaders: string
     case HEADER_CONTENT_LENGTH = 'Content-Length';
     case HEADER_CONTENT_ENCODING = 'Content-Encoding';
     case HEADER_ACCEPT_RANGES = 'Accept-Ranges';
+    case HEADER_CACHE_CONTROL = 'Cache-Control';
     case ATTACHMENT_TYPE = 'attachment';
     case INLINE_TYPE = 'inline';
 }

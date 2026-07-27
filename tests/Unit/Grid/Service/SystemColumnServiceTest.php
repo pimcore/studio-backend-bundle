@@ -56,6 +56,8 @@ final class SystemColumnServiceTest extends Unit
             'classname' => 'string',
             'index' => 'integer',
             'type' => 'string',
+            'userModification' => 'user',
+            'userOwner' => 'user',
         ], $systemColumnService->getSystemColumnsForDataObjects());
     }
 }

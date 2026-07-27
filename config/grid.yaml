@@ -96,6 +96,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IntegerDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\UserDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IdDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
@@ -306,6 +309,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\IntegerResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\UserResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\FileSizeResolver:

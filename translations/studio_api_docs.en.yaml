@@ -77,6 +77,10 @@ asset_download_zip_description: |
   Download the ZIP archive with assets based on the given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_download_zip_success_response: ZIP archive as attachment
 asset_download_zip_summary: Download ZIP archive for assets
+asset_download_zip_available_description: |
+  Checks whether the ZIP archive for the given job run id is still available for download.
+asset_download_zip_available_success_response: Availability flag for the ZIP archive
+asset_download_zip_available_summary: Check ZIP archive availability for job run id
 asset_get_available_grid_columns_description: |
   Get all available grid columns for assets
 asset_get_available_grid_columns_success_response: All available grid column configurations for assets
@@ -570,6 +574,10 @@ documents_list_available_sites_summary: List all available sites
 document_get_search_description: Document grid for search
 document_get_search_summary: Get document data for search
 document_get_search_success_response: Documents for search grid
+element_batch_delete_info_description: |
+  Get aggregated delete info for the given <strong>{elementType}</strong> and the provided list of <strong>ids</strong>. <br> Returns whether any of the selected elements has dependencies (child elements or references to it) and whether the whole selection can still use the recycle bin.
+element_batch_delete_info_success_response: Batch delete info for the given elements
+element_batch_delete_info_summary: Get batch delete info for multiple elements by id list and element type
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |
@@ -712,6 +720,10 @@ export_download_csv_description: |
   The folder export first collects all elements and then creates a child job run to export them.
 export_download_csv_success_response: CSV File as attachment
 export_download_csv_summary: Download CSV file for job run id
+export_download_csv_available_description: |
+  Checks whether the CSV export for the given job run id is still available for download.
+export_download_csv_available_success_response: Availability flag for the CSV export
+export_download_csv_available_summary: Check CSV export availability for job run id
 export_delete_xlsx_description: |
   Delete the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
 export_delete_xlsx_summary: Delete XLSX export file based on jobRunId
@@ -721,6 +733,10 @@ export_download_xlsx_description: |
   The folder export first collects all elements and then creates a child job run to export them.
 export_download_xlsx_success_response: XLSX File as attachment
 export_download_xlsx_summary: Download XLSX file for job run id
+export_download_xlsx_available_description: |
+  Checks whether the XLSX export for the given job run id is still available for download.
+export_download_xlsx_available_success_response: Availability flag for the XLSX export
+export_download_xlsx_available_summary: Check XLSX export availability for job run id
 export_xlsx_created_response: Successfully created <strong>jobRun</strong> for
   XLSX export
 export_xlsx_description: |
@@ -1390,6 +1406,10 @@ data_object_list_saved_grid_configurations_description: |
     List all saved grid configurations for data objects for given class ID
 data_object_list_saved_grid_configurations_summary: List all saved grid configurations for data objects
 data_object_list_saved_grid_configurations_success_response: List of saved grid configurations for data objects
+data_object_list_global_grid_configurations_description: |
+    List all globally-shared grid configurations for data objects for given class ID
+data_object_list_global_grid_configurations_summary: List all globally-shared grid configurations for data objects
+data_object_list_global_grid_configurations_success_response: List of globally-shared grid configurations for data objects
 data_object_preview_by_id_description: |
   Preview data object by ID. Any additional query parameters (e.g. locale, site) are forwarded to the preview generator configured on the data object class. <br>
   Available parameters depend on the preview generator implementation and can be retrieved from the layout endpoint's previewConfig.

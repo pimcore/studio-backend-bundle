@@ -47,6 +47,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\MultipleIdFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\WorkflowFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IntegerFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 

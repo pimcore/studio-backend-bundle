@@ -69,4 +69,27 @@ final class StringFilterTest extends Unit
         $stringFilter = new StringFilter();
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
+
+    public function testApplyStringFilterMapsClassnameColumnKeyToIndexField(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'wildcardSearch' => Expected::once(function ($key, $value) {
+                $this->assertSame('className', $key);
+                $this->assertSame('Car', $value);
+
+                return $this->makeEmpty(AssetQueryInterface::class);
+            }),
+        ]);
+
+        $columnFilterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
+            'getColumnFilterByType' => function () {
+                return [
+                    new ColumnFilter('classname', 'system.string', 'Car'),
+                ];
+            },
+        ]);
+
+        $stringFilter = new StringFilter();
+        $stringFilter->apply($columnFilterMock, $queryMock);
+    }
 }

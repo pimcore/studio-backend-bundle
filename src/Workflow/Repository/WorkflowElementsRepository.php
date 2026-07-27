@@ -49,6 +49,12 @@ final readonly class WorkflowElementsRepository implements WorkflowElementsRepos
                     'ews', 'documents', 'd', "ews.ctype = 'document' AND d.id = ews.cid"
                 )
                 ->where('ews.workflow = :workflow')
+                // Folders share their element's ctype but are never workflow subjects the widgets
+                // should list. Exclude only rows that positively resolve to a folder; the IS NULL
+                // guard keeps non-matching joins and orphaned states (element deleted) unaffected.
+                ->andWhere("(a.type IS NULL OR a.type != 'folder')")
+                ->andWhere("(o.type IS NULL OR o.type != 'folder')")
+                ->andWhere("(d.type IS NULL OR d.type != 'folder')")
                 ->setParameter('workflow', $workflowName)
                 ->orderBy('modificationDate', 'ASC')
                 ->addOrderBy('ews.cid', 'ASC')

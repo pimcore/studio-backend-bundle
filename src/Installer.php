@@ -282,7 +282,7 @@ final class Installer extends SettingsStoreAwareInstaller
             'unsigned' => true,
         ]);
 
-        $table->addColumn('owner', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('owner', 'integer', ['notnull' => false, 'unsigned' => true]);
         $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
         $table->addColumn('description', 'text', ['notnull' => false]);
         $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
@@ -296,11 +296,13 @@ final class Installer extends SettingsStoreAwareInstaller
 
         $table->setPrimaryKey(['id'], 'pk_'.SavedSearchConfiguration::TABLE_NAME);
 
+        // Keep configurations when their owner is deleted: they may be shared with other users.
+        // The owner is set to NULL instead and surfaced as a deleted owner in the UI.
         $table->addForeignKeyConstraint(
             'users',
             ['owner'],
             ['id'],
-            ['onDelete' => 'CASCADE'],
+            ['onDelete' => 'SET NULL'],
             'fk_'.SavedSearchConfiguration::TABLE_NAME.'_owner_users'
         );
     }
@@ -384,11 +386,13 @@ final class Installer extends SettingsStoreAwareInstaller
 
         $table->setPrimaryKey(['id'], 'pk_'.GridConfiguration::TABLE_NAME);
 
+        // Keep configurations when their owner is deleted: they may be shared with other users.
+        // The owner is set to NULL instead and surfaced as a deleted owner in the UI.
         $table->addForeignKeyConstraint(
             'users',
             ['owner'],
             ['id'],
-            ['onDelete' => 'CASCADE'],
+            ['onDelete' => 'SET NULL'],
             'fk_'.GridConfiguration::TABLE_NAME.'_owner_users'
         );
 

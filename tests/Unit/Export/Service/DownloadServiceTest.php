@@ -542,6 +542,64 @@ final class DownloadServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testIsResourceAvailableReturnsTrueWhenTempFileExists(): void
+    {
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'tempFileExists' => true,
+            ]),
+        );
+
+        $this->assertTrue(
+            $service->isResourceAvailableByJobRunId(23, 'download-csv-{id}.csv', 'download-csv-{id}')
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testIsResourceAvailableReturnsFalseWhenTempFileMissing(): void
+    {
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'tempFileExists' => false,
+            ]),
+        );
+
+        $this->assertFalse(
+            $service->isResourceAvailableByJobRunId(23, 'download-csv-{id}.csv', 'download-csv-{id}')
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testIsResourceAvailableSubstitutesJobRunIdInFilePath(): void
+    {
+        $checkedPath = null;
+
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'tempFileExists' => function (string $location) use (&$checkedPath) {
+                    $checkedPath = $location;
+
+                    return true;
+                },
+            ]),
+        );
+
+        $service->isResourceAvailableByJobRunId(42, 'download-csv-{id}.csv', 'download-csv-{id}');
+
+        $this->assertSame(
+            'download-csv-42/download-csv-42.csv',
+            $checkedPath,
+            'Job run ID must be substituted into both folder and file name placeholders'
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     private function createService(
         ?ExecutionEngineServiceInterface $executionEngineService = null,
         ?StorageServiceInterface $storageService = null,

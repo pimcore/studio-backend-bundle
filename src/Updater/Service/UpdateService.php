@@ -23,10 +23,14 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
@@ -34,8 +38,12 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
+<<<<<<< HEAD
 use Pimcore\Model\Version\CoauthorContextInterface;
 use function is_string;
+=======
+use function in_array;
+>>>>>>> origin/2026.x
 use function sprintf;
 
 /**
@@ -59,13 +67,21 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
         $user = $this->securityService->getCurrentUser();
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
+
+        if ($element instanceof Concrete && $this->requiresSavePermission($task)) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+        }
+
+        if ($element instanceof Asset) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        }
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
             $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
@@ -95,6 +111,10 @@ final readonly class UpdateService implements UpdateServiceInterface
             );
         } catch (ValidationException $e) {
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
+        } catch (ForbiddenException $e) {
+            // Publish/unpublish permission is checked inside elementSaveService->save();
+            // re-throw so it stays a 403 instead of being masked as a 500 below.
+            throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         } finally {
@@ -103,6 +123,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+<<<<<<< HEAD
      * @return array{type: ?string, coauthor: ?string}|null Snapshot of the previous context,
      *                                                      or null if nothing was activated
      */
@@ -137,6 +158,18 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         $this->coauthorContext->clear();
+=======
+     * Persisting object data (save, autoSave, version or an untasked write) requires the workspace
+     * `save` permission. Publishing/unpublishing is gated separately by ElementSaveService.
+     */
+    private function requiresSavePermission(?string $task): bool
+    {
+        return !in_array(
+            $task,
+            [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
+            true
+        );
+>>>>>>> origin/2026.x
     }
 
     private function getLatestElement(

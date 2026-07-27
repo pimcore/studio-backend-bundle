@@ -39,7 +39,7 @@ final readonly class ColumnService implements ColumnServiceInterface
      */
     public function getColumnConfig(string $name, CustomReportDataSourceConfig $dataSourceConfig): array
     {
-        $report = $this->customReportConfigService->getCustomReportByName($name);
+        $report = $this->customReportConfigService->getAllowedReport($name);
         $columns = $this->adapterService->getAdapterColumns($dataSourceConfig->getConfiguration());
         $hydrated = [];
 

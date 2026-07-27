@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException as ApiParseE
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\UserInterface;
@@ -95,9 +96,19 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         $availableConfigurationsForRelation = [];
 
         foreach ($classes as $class) {
-            $classId = $this->classDefinitionResolver->getByName(
+            if ($class['classes'] === ElementTypes::TYPE_FOLDER) {
+                continue;
+            }
+
+            $classDefinition = $this->classDefinitionResolver->getByName(
                 $class['classes'],
-            )->getId();
+            );
+
+            if (!$classDefinition) {
+                continue;
+            }
+
+            $classId = $classDefinition->getId();
 
             $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
                 ->getAvailableDataObjectColumnConfiguration(
@@ -121,9 +132,19 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         AdvancedManyToManyObjectRelation $fieldDefinition,
         UserInterface $user
     ): array {
-        $classId = $this->classDefinitionResolver->getByName(
-            $fieldDefinition->getAllowedClassId()
-        )->getId();
+        $allowedClassId = $fieldDefinition->getAllowedClassId();
+
+        if ($allowedClassId === ElementTypes::TYPE_FOLDER) {
+            return [];
+        }
+
+        $classDefinition = $this->classDefinitionResolver->getByName($allowedClassId);
+
+        if (!$classDefinition) {
+            return [];
+        }
+
+        $classId = $classDefinition->getId();
 
         $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
             ->getAvailableDataObjectColumnConfiguration(

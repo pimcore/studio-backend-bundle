@@ -95,6 +95,23 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
+     */
+    public function isResourceAvailableByJobRunId(
+        int $jobRunId,
+        string $tempFileName,
+        string $tempFolderName,
+    ): bool {
+        $this->executionEngineService->validateJobRun($jobRunId);
+
+        $fileName = $this->getTempFileName($jobRunId, $tempFileName);
+        $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
+        $filePath = $folderName . '/' . $fileName;
+
+        return $this->storageService->tempFileExists($filePath);
+    }
+
+    /**
      * @throws EnvironmentException|NotFoundException
      */
     public function cleanupDataByJobRunId(

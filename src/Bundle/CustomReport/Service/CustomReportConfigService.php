@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUp
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
+use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function sprintf;
 
@@ -120,7 +121,7 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
             );
         }
 
-        $reportToClone = $this->getCustomReportByName($reportName);
+        $reportToClone = $this->getAllowedReport($reportName);
         $config = $this->customReportRepository->cloneConfig($reportToClone, $newName);
 
         return $this->customReportHydrator->extractReportDetails($config);
@@ -131,7 +132,7 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
      */
     public function deleteCustomReport(string $name): void
     {
-        $customReport = $this->getCustomReportByName($name);
+        $customReport = $this->getAllowedReport($name);
         $this->customReportRepository->delete($customReport);
     }
 
@@ -315,9 +316,9 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
     }
 
     /**
-     * @throws ForbiddenException
+     * {@inheritdoc}
      */
-    private function getAllowedReport(string $reportName): Config
+    public function getAllowedReport(string $reportName): Config
     {
         $report = $this->customReportRepository->loadByNameForCurrentUser($reportName);
 
@@ -326,5 +327,13 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
         }
 
         return $report;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAllowedReportForUser(string $reportName, User $user): ?Config
+    {
+        return $this->customReportRepository->loadByNameForUser($reportName, $user);
     }
 }

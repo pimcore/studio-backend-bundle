@@ -35,11 +35,14 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -65,7 +68,11 @@ final readonly class PatchService implements PatchServiceInterface
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
+<<<<<<< HEAD
         private CoauthorContextInterface $coauthorContext,
+=======
+        private SecurityServiceInterface $securityService
+>>>>>>> origin/2026.x
     ) {
     }
 
@@ -137,7 +144,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ForbiddenException
      */
     public function patchElement(
         ElementInterface $element,
@@ -145,7 +152,19 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
+<<<<<<< HEAD
         $coauthorSnapshot = $this->activateCoauthorContext($elementPatchData);
+=======
+        // Writing object field data requires the workspace `save` permission. Publish/unpublish
+        // (PublishAdapter) and the other adapters enforce their own permissions inside the try
+        // below; their ForbiddenException is re-thrown so it is not masked as a 500.
+        if ($element instanceof Concrete && isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY])) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+        } elseif ($element instanceof Asset) {
+            // Assets have no workspace `save` permission; `publish` is their edit/write permission.
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        }
+>>>>>>> origin/2026.x
 
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
@@ -176,6 +195,8 @@ final readonly class PatchService implements PatchServiceInterface
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
+        } catch (ForbiddenException $exception) {
+            throw $exception;
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         } finally {

@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDr
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -48,7 +49,7 @@ final class DrillDownOptionsController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws DatabaseException|ForbiddenException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_reports_drill_down_options_list', methods: ['POST'])]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
