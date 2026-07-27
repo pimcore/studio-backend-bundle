@@ -25,8 +25,11 @@ final class McpAuthenticationEntryPointTest extends Unit
         $response = (new McpAuthenticationEntryPoint(true))->start($this->mcpRequest());
 
         $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
+        // The metadata URL is derived from the request path, so it points at the
+        // protected resource for the endpoint that was actually requested.
         $this->assertSame(
-            'Bearer resource_metadata="https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp",'
+            'Bearer resource_metadata='
+            . '"https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp/message",'
             . ' scope="mcp:read"',
             $response->headers->get('WWW-Authenticate'),
         );
