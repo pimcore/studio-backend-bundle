@@ -42,6 +42,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CoauthorContextTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
@@ -51,7 +52,6 @@ use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContextInterface;
 use function array_key_exists;
 use function count;
-use function is_string;
 use function sprintf;
 
 /**
@@ -59,6 +59,7 @@ use function sprintf;
  */
 final readonly class PatchService implements PatchServiceInterface
 {
+    use CoauthorContextTrait;
     use ValidateObjectDataTrait;
 
     public function __construct(
@@ -68,11 +69,8 @@ final readonly class PatchService implements PatchServiceInterface
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
-<<<<<<< HEAD
+        private SecurityServiceInterface $securityService,
         private CoauthorContextInterface $coauthorContext,
-=======
-        private SecurityServiceInterface $securityService
->>>>>>> origin/2026.x
     ) {
     }
 
@@ -144,7 +142,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|ForbiddenException
+     * @throws ElementSavingFailedException|ForbiddenException|InvalidArgumentException
      */
     public function patchElement(
         ElementInterface $element,
@@ -152,9 +150,6 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
-<<<<<<< HEAD
-        $coauthorSnapshot = $this->activateCoauthorContext($elementPatchData);
-=======
         // Writing object field data requires the workspace `save` permission. Publish/unpublish
         // (PublishAdapter) and the other adapters enforce their own permissions inside the try
         // below; their ForbiddenException is re-thrown so it is not masked as a 500.
@@ -164,7 +159,8 @@ final readonly class PatchService implements PatchServiceInterface
             // Assets have no workspace `save` permission; `publish` is their edit/write permission.
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
         }
->>>>>>> origin/2026.x
+
+        $coauthor = $this->extractPayloadCoauthor($elementPatchData);
 
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
@@ -182,15 +178,19 @@ final readonly class PatchService implements PatchServiceInterface
                 $adapter->patch($element, $elementPatchData, $user);
             }
 
-            $this->elementSaveService->save(
-                $element,
-                $user,
-                $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
-            );
+            $save = function () use ($element, $user, $elementPatchData): void {
+                $this->elementSaveService->save(
+                    $element,
+                    $user,
+                    $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+                );
 
-            if (isset($elementPatchData['index'])) {
-                $this->indexService->indexRelatedElements($element, $elementPatchData['index']);
-            }
+                if (isset($elementPatchData['index'])) {
+                    $this->indexService->indexRelatedElements($element, $elementPatchData['index']);
+                }
+            };
+
+            $this->runWithCoauthor($this->coauthorContext, $coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
@@ -199,46 +199,7 @@ final readonly class PatchService implements PatchServiceInterface
             throw $exception;
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
-        } finally {
-            $this->restoreCoauthorContext($coauthorSnapshot);
         }
-    }
-
-    /**
-     * @return array{type: ?string, coauthor: ?string}|null Snapshot of the previous context,
-     *                                                      or null if nothing was activated
-     */
-    private function activateCoauthorContext(array $elementPatchData): ?array
-    {
-        $coauthorType = $elementPatchData[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE] ?? null;
-        $coauthor = $elementPatchData[ElementSaveServiceInterface::INDEX_COAUTHOR] ?? null;
-
-        if (!is_string($coauthorType) || $coauthorType === '' || !is_string($coauthor) || $coauthor === '') {
-            return null;
-        }
-
-        $previous = [
-            'type' => $this->coauthorContext->getType(),
-            'coauthor' => $this->coauthorContext->getCoauthor(),
-        ];
-        $this->coauthorContext->set($coauthorType, $coauthor);
-
-        return $previous;
-    }
-
-    private function restoreCoauthorContext(?array $previous): void
-    {
-        if ($previous === null) {
-            return;
-        }
-
-        if ($previous['type'] !== null && $previous['coauthor'] !== null) {
-            $this->coauthorContext->set($previous['type'], $previous['coauthor']);
-
-            return;
-        }
-
-        $this->coauthorContext->clear();
     }
 
     public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array

@@ -24,11 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CoauthorContextTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
@@ -38,12 +40,8 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
-<<<<<<< HEAD
 use Pimcore\Model\Version\CoauthorContextInterface;
-use function is_string;
-=======
 use function in_array;
->>>>>>> origin/2026.x
 use function sprintf;
 
 /**
@@ -51,6 +49,7 @@ use function sprintf;
  */
 final readonly class UpdateService implements UpdateServiceInterface
 {
+    use CoauthorContextTrait;
     use ElementProviderTrait;
     use ValidateObjectDataTrait;
 
@@ -67,7 +66,8 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
@@ -97,14 +97,18 @@ final readonly class UpdateService implements UpdateServiceInterface
             $adapter->update($element, $data);
         }
 
-        $coauthorSnapshot = $this->activateCoauthorContext($data);
+        $coauthor = $this->extractPayloadCoauthor($data);
 
         try {
-            $this->elementSaveService->save($element, $user, $task);
+            $save = function () use ($element, $user, $task, $data): void {
+                $this->elementSaveService->save($element, $user, $task);
 
-            if (isset($data['index'])) {
-                $this->indexService->indexRelatedElements($element, $data['index']);
-            }
+                if (isset($data['index'])) {
+                    $this->indexService->indexRelatedElements($element, $data['index']);
+                }
+            };
+
+            $this->runWithCoauthor($this->coauthorContext, $coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
@@ -117,48 +121,10 @@ final readonly class UpdateService implements UpdateServiceInterface
             throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
-        } finally {
-            $this->restoreCoauthorContext($coauthorSnapshot);
         }
     }
 
     /**
-<<<<<<< HEAD
-     * @return array{type: ?string, coauthor: ?string}|null Snapshot of the previous context,
-     *                                                      or null if nothing was activated
-     */
-    private function activateCoauthorContext(array $data): ?array
-    {
-        $coauthorType = $data[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE] ?? null;
-        $coauthor = $data[ElementSaveServiceInterface::INDEX_COAUTHOR] ?? null;
-
-        if (!is_string($coauthorType) || $coauthorType === '' || !is_string($coauthor) || $coauthor === '') {
-            return null;
-        }
-
-        $previous = [
-            'type' => $this->coauthorContext->getType(),
-            'coauthor' => $this->coauthorContext->getCoauthor(),
-        ];
-        $this->coauthorContext->set($coauthorType, $coauthor);
-
-        return $previous;
-    }
-
-    private function restoreCoauthorContext(?array $previous): void
-    {
-        if ($previous === null) {
-            return;
-        }
-
-        if ($previous['type'] !== null && $previous['coauthor'] !== null) {
-            $this->coauthorContext->set($previous['type'], $previous['coauthor']);
-
-            return;
-        }
-
-        $this->coauthorContext->clear();
-=======
      * Persisting object data (save, autoSave, version or an untasked write) requires the workspace
      * `save` permission. Publishing/unpublishing is gated separately by ElementSaveService.
      */
@@ -169,7 +135,6 @@ final readonly class UpdateService implements UpdateServiceInterface
             [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
             true
         );
->>>>>>> origin/2026.x
     }
 
     private function getLatestElement(

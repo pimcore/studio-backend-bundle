@@ -20,6 +20,8 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\CoauthorProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\CoauthorTypeProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 
@@ -46,18 +48,8 @@ final class PatchAssetRequestBody extends RequestBody
                                 new UpdateIntegerProperty('parentId'),
                                 new UpdateStringProperty('key'),
                                 new UpdateStringProperty('locked'),
-                                new Property(
-                                    property: 'coauthorType',
-                                    description: 'Optional coauthor type stored on versions created by this save',
-                                    type: 'string',
-                                    example: 'agent'
-                                ),
-                                new Property(
-                                    property: 'coauthor',
-                                    description: 'Optional coauthor identifier stored on versions created by this save',
-                                    type: 'string',
-                                    example: 'product-data-agent'
-                                ),
+                                new CoauthorTypeProperty(),
+                                new CoauthorProperty(),
                                 new CustomMetadata(PatchCustomMetadata::class),
                             ],
                             type: 'object',
