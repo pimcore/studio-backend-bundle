@@ -16,9 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 use DateInterval;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
-use League\OAuth2\Server\Grant\AuthCodeGrant;
 use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
@@ -48,6 +48,7 @@ final class AuthorizationServerFactory
         private readonly int $accessTokenTtl,
         private readonly int $authCodeTtl,
         private readonly int $refreshTokenTtl,
+        private readonly bool $allowLocalhostLoopback,
     ) {
     }
 
@@ -75,10 +76,11 @@ final class AuthorizationServerFactory
 
         $server->enableGrantType(new ClientCredentialsGrant(), $accessTokenTtl);
 
-        $authCodeGrant = new AuthCodeGrant(
+        $authCodeGrant = new LoopbackAuthCodeGrant(
             $this->authCodeRepository,
             $this->refreshTokenRepository,
             new DateInterval(sprintf('PT%dS', $this->authCodeTtl)),
+            $this->allowLocalhostLoopback,
         );
         $authCodeGrant->setRefreshTokenTTL($refreshTokenTtl);
         $server->enableGrantType($authCodeGrant, $accessTokenTtl);

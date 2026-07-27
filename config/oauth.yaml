@@ -65,6 +65,20 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository:
         arguments:
             $clients: []
+            # $clientMetadataResolver autowired from the interface binding below.
+
+    # Client ID Metadata Documents (CIMD). $enabled/$allowedHosts/$allowInsecure/
+    # $cacheTtl come from bundle config (set in the extension).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver:
+        arguments:
+            $cache: '@pimcore_studio_backend.oauth.client_metadata'
+            $enabled: false
+            $allowedHosts: []
+            $allowInsecure: false
+            $cacheTtl: 300
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 
@@ -84,6 +98,7 @@ services:
             $accessTokenTtl: 3600
             $authCodeTtl: 600
             $refreshTokenTtl: 2592000
+            $allowLocalhostLoopback: true
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController:
         public: true

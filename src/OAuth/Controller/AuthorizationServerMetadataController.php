@@ -28,6 +28,7 @@ final class AuthorizationServerMetadataController
 {
     public function __construct(
         private readonly ?string $issuer,
+        private readonly bool $clientIdMetadataDocumentSupported = false,
     ) {
     }
 
@@ -45,6 +46,8 @@ final class AuthorizationServerMetadataController
             'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic', 'none'],
             'scopes_supported' => ['mcp:read', 'mcp:write'],
             'authorization_response_iss_parameter_supported' => true,
+            // CIMD: clients may present an HTTPS URL as client_id (no registration).
+            'client_id_metadata_document_supported' => $this->clientIdMetadataDocumentSupported,
         ]);
     }
 }

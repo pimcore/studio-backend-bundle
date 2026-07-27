@@ -828,6 +828,43 @@ class Configuration implements ConfigurationInterface
                         ->info('Studio UI route the authorize endpoint redirects to for login/consent.')
                         ->defaultValue('/pimcore-studio/oauth/consent')
                     ->end()
+                    ->booleanNode('allow_localhost_loopback_redirect')
+                        ->info(
+                            'Also accept http://localhost:{port} loopback redirect URIs (any port), alongside the '
+                            . 'RFC 8252 IP literals 127.0.0.1/[::1]. RFC 8252 marks "localhost" as NOT RECOMMENDED, '
+                            . 'but some native clients use it; see '
+                            . 'https://github.com/anthropics/claude-code/issues/42765. Set to false to require IP '
+                            . 'literals (RFC-strict).'
+                        )
+                        ->defaultTrue()
+                    ->end()
+                    ->arrayNode('client_id_metadata_documents')
+                        ->addDefaultsIfNotSet()
+                        ->info(
+                            'Client ID Metadata Documents (CIMD): accept an HTTPS URL as the client_id and '
+                            . 'fetch the client metadata from it, instead of pre-registration. No registration '
+                            . 'endpoint is exposed. Opt-in; default off.'
+                        )
+                        ->children()
+                            ->booleanNode('enabled')
+                                ->info('Resolve URL-form client_ids and advertise support in metadata.')
+                                ->defaultFalse()
+                            ->end()
+                            ->arrayNode('allowed_hosts')
+                                ->info('If non-empty, a client_id URL must be hosted on one of these hosts.')
+                                ->scalarPrototype()->end()
+                                ->defaultValue([])
+                            ->end()
+                            ->booleanNode('allow_insecure')
+                                ->info('Dev only: permit http and private/loopback client_id URLs. Never enable in production.')
+                                ->defaultFalse()
+                            ->end()
+                            ->integerNode('cache_ttl')
+                                ->info('Seconds to cache a fetched client metadata document.')
+                                ->defaultValue(300)
+                            ->end()
+                        ->end()
+                    ->end()
                     ->arrayNode('keys')
                         ->addDefaultsIfNotSet()
                         ->info('Signing/encryption key material. Reference via env vars; never commit secrets.')

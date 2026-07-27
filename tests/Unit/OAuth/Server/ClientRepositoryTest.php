@@ -14,27 +14,55 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ClientMetadata;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 
 final class ClientRepositoryTest extends Unit
 {
-    private function repository(): ClientRepository
+    /**
+     * @param array<string, ClientMetadata> $resolvable
+     */
+    private function repository(array $resolvable = []): ClientRepository
     {
-        return new ClientRepository([
-            'studio-mcp' => [
-                'name' => 'Studio MCP',
-                'redirect_uris' => ['https://localhost/callback'],
-                'confidential' => true,
-                'secret' => 'top-secret',
-                'service_user' => 21,
+        return new ClientRepository(
+            [
+                'studio-mcp' => [
+                    'name' => 'Studio MCP',
+                    'redirect_uris' => ['https://localhost/callback'],
+                    'confidential' => true,
+                    'secret' => 'top-secret',
+                    'service_user' => 21,
+                ],
+                'public-client' => [
+                    'name' => 'Public Client',
+                    'redirect_uris' => ['https://localhost/cb'],
+                    'confidential' => false,
+                ],
             ],
-            'public-client' => [
-                'name' => 'Public Client',
-                'redirect_uris' => ['https://localhost/cb'],
-                'confidential' => false,
-            ],
-        ]);
+            $this->resolver($resolvable),
+        );
+    }
+
+    /**
+     * @param array<string, ClientMetadata> $resolvable
+     */
+    private function resolver(array $resolvable): ClientMetadataResolverInterface
+    {
+        return new class ($resolvable) implements ClientMetadataResolverInterface {
+            /**
+             * @param array<string, ClientMetadata> $resolvable
+             */
+            public function __construct(private array $resolvable)
+            {
+            }
+
+            public function resolve(string $clientId): ?ClientMetadata
+            {
+                return $this->resolvable[$clientId] ?? null;
+            }
+        };
     }
 
     public function testResolvesClientEntityWithServiceUser(): void
@@ -74,5 +102,38 @@ final class ClientRepositoryTest extends Unit
     public function testUnknownClientDoesNotValidate(): void
     {
         $this->assertFalse($this->repository()->validateClient('nope', 'x', 'client_credentials'));
+    }
+
+    public function testResolvesCimdClientFromUrl(): void
+    {
+        $url = 'https://app.example/client.json';
+        $repo = $this->repository([
+            $url => new ClientMetadata($url, 'CIMD App', ['https://app.example/cb']),
+        ]);
+
+        $client = $repo->getClientEntity($url);
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertSame($url, $client->getIdentifier());
+        // CIMD clients are public and carry no service user.
+        $this->assertFalse($client->isConfidential());
+        $this->assertNull($client->getServiceUserId());
+        $this->assertTrue($repo->validateClient($url, null, 'authorization_code'));
+    }
+
+    public function testUnresolvableCimdUrlIsRejected(): void
+    {
+        $repo = $this->repository();
+        $this->assertNull($repo->getClientEntity('https://unknown.example/client.json'));
+        $this->assertFalse($repo->validateClient('https://unknown.example/client.json', null, 'authorization_code'));
+    }
+
+    public function testCimdClientCannotUseClientCredentials(): void
+    {
+        $url = 'https://app.example/client.json';
+        $repo = $this->repository([
+            $url => new ClientMetadata($url, 'CIMD App', ['https://app.example/cb']),
+        ]);
+
+        $this->assertFalse($repo->validateClient($url, null, 'client_credentials'));
     }
 }

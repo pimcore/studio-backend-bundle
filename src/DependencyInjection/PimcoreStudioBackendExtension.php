@@ -37,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\S
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
@@ -260,10 +261,21 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$encryptionKey', $config['oauth']['keys']['encryption_key'])
             ->setArgument('$accessTokenTtl', $config['oauth']['access_token_ttl'])
             ->setArgument('$authCodeTtl', $config['oauth']['auth_code_ttl'])
-            ->setArgument('$refreshTokenTtl', $config['oauth']['refresh_token_ttl']);
+            ->setArgument('$refreshTokenTtl', $config['oauth']['refresh_token_ttl'])
+            ->setArgument('$allowLocalhostLoopback', $config['oauth']['allow_localhost_loopback_redirect']);
+
+        $cimd = $config['oauth']['client_id_metadata_documents'];
+        $container->setParameter('pimcore_studio_backend.oauth.cimd_enabled', $cimd['enabled']);
 
         $container->getDefinition(AuthorizationServerMetadataController::class)
-            ->setArgument('$issuer', $config['oauth']['issuer']);
+            ->setArgument('$issuer', $config['oauth']['issuer'])
+            ->setArgument('$clientIdMetadataDocumentSupported', $cimd['enabled']);
+
+        $container->getDefinition(CimdClientMetadataResolver::class)
+            ->setArgument('$enabled', $cimd['enabled'])
+            ->setArgument('$allowedHosts', $cimd['allowed_hosts'])
+            ->setArgument('$allowInsecure', $cimd['allow_insecure'])
+            ->setArgument('$cacheTtl', $cimd['cache_ttl']);
 
         $container->getDefinition(AuthorizeController::class)
             ->setArgument('$consentPath', $config['oauth']['consent_path']);
@@ -315,6 +327,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'cache' => [
                     'pools' => [
                         'pimcore_studio_backend.oauth.pending_authorization' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
+                        // Cache for fetched Client ID Metadata Documents (CIMD).
+                        'pimcore_studio_backend.oauth.client_metadata' => [
                             'adapter' => 'cache.adapter.filesystem',
                         ],
                     ],
