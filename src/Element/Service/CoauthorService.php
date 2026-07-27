@@ -11,9 +11,8 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Version\CoauthorContextInterface;
@@ -22,22 +21,19 @@ use function mb_strlen;
 use function sprintf;
 
 /**
- * Shared handling of the optional `coauthorType`/`coauthor` keys carried by element save payloads.
- *
  * @internal
  */
-trait CoauthorContextTrait
+final readonly class CoauthorService implements CoauthorServiceInterface
 {
+    public function __construct(
+        private CoauthorContextInterface $coauthorContext,
+    ) {
+    }
+
     /**
-     * Reads and validates the coauthor pair from a save payload. Extraction is deliberately kept
-     * separate from running the save so that callers can validate before entering their
-     * save try/catch, where an InvalidArgumentException would be masked as a save failure.
-     *
-     * @return array{type: string, coauthor: string}|null Null when the payload carries no complete pair
-     *
-     * @throws InvalidArgumentException
+     * {@inheritdoc}
      */
-    private function extractPayloadCoauthor(array $payload): ?array
+    public function extractFromPayload(array $payload): ?array
     {
         $coauthorType = $payload[ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE] ?? null;
         $coauthor = $payload[ElementSaveServiceInterface::INDEX_COAUTHOR] ?? null;
@@ -61,27 +57,17 @@ trait CoauthorContextTrait
     }
 
     /**
-     * Runs $callback with $coauthor applied to the version coauthor context, restoring the
-     * previous context afterwards. A null $coauthor runs the callback unchanged.
-     *
-     * @param array{type: string, coauthor: string}|null $coauthor
-     *
-     * @param-immediately-invoked-callable $callback
-     *
-     * @param callable(): void $callback
+     * {@inheritdoc}
      */
-    private function runWithCoauthor(
-        CoauthorContextInterface $coauthorContext,
-        ?array $coauthor,
-        callable $callback
-    ): void {
+    public function runWithCoauthor(?array $coauthor, callable $callback): void
+    {
         if ($coauthor === null) {
             $callback();
 
             return;
         }
 
-        $coauthorContext->withCoauthor($coauthor['type'], $coauthor['coauthor'], $callback);
+        $this->coauthorContext->withCoauthor($coauthor['type'], $coauthor['coauthor'], $callback);
     }
 
     /**

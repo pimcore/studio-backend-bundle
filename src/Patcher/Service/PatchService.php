@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -42,14 +43,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CoauthorContextTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use Pimcore\Model\Version\CoauthorContextInterface;
 use function array_key_exists;
 use function count;
 use function sprintf;
@@ -59,7 +58,6 @@ use function sprintf;
  */
 final readonly class PatchService implements PatchServiceInterface
 {
-    use CoauthorContextTrait;
     use ValidateObjectDataTrait;
 
     public function __construct(
@@ -70,7 +68,7 @@ final readonly class PatchService implements PatchServiceInterface
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
         private SecurityServiceInterface $securityService,
-        private CoauthorContextInterface $coauthorContext,
+        private CoauthorServiceInterface $coauthorService,
     ) {
     }
 
@@ -160,7 +158,7 @@ final readonly class PatchService implements PatchServiceInterface
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
         }
 
-        $coauthor = $this->extractPayloadCoauthor($elementPatchData);
+        $coauthor = $this->coauthorService->extractFromPayload($elementPatchData);
 
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
@@ -190,7 +188,7 @@ final readonly class PatchService implements PatchServiceInterface
                 }
             };
 
-            $this->runWithCoauthor($this->coauthorContext, $coauthor, $save);
+            $this->coauthorService->runWithCoauthor($coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())

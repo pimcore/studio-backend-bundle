@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -241,7 +242,7 @@ final class UpdateServiceTest extends Unit
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
                 'save' => $onSave,
             ]),
-            coauthorContext: $this->coauthorContext,
+            coauthorService: new CoauthorService($this->coauthorContext),
         );
     }
 }

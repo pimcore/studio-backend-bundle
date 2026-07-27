@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
@@ -30,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CoauthorContextTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
@@ -40,7 +40,6 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
-use Pimcore\Model\Version\CoauthorContextInterface;
 use function in_array;
 use function sprintf;
 
@@ -49,7 +48,6 @@ use function sprintf;
  */
 final readonly class UpdateService implements UpdateServiceInterface
 {
-    use CoauthorContextTrait;
     use ElementProviderTrait;
     use ValidateObjectDataTrait;
 
@@ -61,7 +59,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
-        private CoauthorContextInterface $coauthorContext,
+        private CoauthorServiceInterface $coauthorService,
     ) {
     }
 
@@ -97,7 +95,7 @@ final readonly class UpdateService implements UpdateServiceInterface
             $adapter->update($element, $data);
         }
 
-        $coauthor = $this->extractPayloadCoauthor($data);
+        $coauthor = $this->coauthorService->extractFromPayload($data);
 
         try {
             $save = function () use ($element, $user, $task, $data): void {
@@ -108,7 +106,7 @@ final readonly class UpdateService implements UpdateServiceInterface
                 }
             };
 
-            $this->runWithCoauthor($this->coauthorContext, $coauthor, $save);
+            $this->coauthorService->runWithCoauthor($coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Patcher\Service;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -244,7 +245,7 @@ final class PatchServiceTest extends Unit
                 'save' => $onSave,
             ]),
             securityService: $this->makeEmpty(SecurityServiceInterface::class),
-            coauthorContext: $this->coauthorContext,
+            coauthorService: new CoauthorService($this->coauthorContext),
         );
     }
 }
