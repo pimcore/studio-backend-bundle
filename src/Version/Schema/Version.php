@@ -49,7 +49,11 @@ final class Version implements AdditionalAttributesInterface
         #[Property(description: 'user', type: VersionUser::class, example: '{"id":2,"name":"John Doe"}')]
         private readonly VersionUser $user,
         #[Property(description: 'scheduled', type: 'integer', example: null)]
-        private readonly ?int $scheduled
+        private readonly ?int $scheduled,
+        #[Property(description: 'coauthor type', type: 'string', example: 'agent')]
+        private readonly ?string $coauthorType = null,
+        #[Property(description: 'coauthor', type: 'string', example: 'product-data-agent')]
+        private readonly ?string $coauthor = null
     ) {
 
     }
@@ -107,5 +111,15 @@ final class Version implements AdditionalAttributesInterface
     public function getScheduled(): ?int
     {
         return $this->scheduled;
+    }
+
+    public function getCoauthorType(): ?string
+    {
+        return $this->coauthorType;
+    }
+
+    public function getCoauthor(): ?string
+    {
+        return $this->coauthor;
     }
 }
