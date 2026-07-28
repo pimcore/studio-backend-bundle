@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthClientRecord;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
-use function time;
 
 /**
  * Doctrine-backed {@see DynamicClientStoreInterface}.
@@ -41,8 +40,6 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
                 $client->scopes,
                 $client->confidential,
                 $client->secretHash,
-                $client->confidential ? 'client_secret_basic' : 'none',
-                time(),
             )
         );
         $this->entityManager->flush();

@@ -89,10 +89,9 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
+        // Audience (resource) binding per RFC 8707 is captured here but not yet
+        // enforced; $resourceUri is the seam where that check is added (#1309/#1310).
         $audience = $this->toStringList($claims->get('aud', []));
-        if (!$this->isAudienceAllowed($audience, $resourceUri)) {
-            return null;
-        }
 
         $subject = $claims->get('sub');
         if (!is_string($subject)) {
@@ -133,18 +132,6 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
         }
 
         return $token instanceof UnencryptedToken ? $token : null;
-    }
-
-    /**
-     * Endpoint-vs-audience check. Currently accepts any audience; resource
-     * binding is enforced additively later, so the parameters are retained as
-     * the seam for that check.
-     *
-     * @param list<string> $audience
-     */
-    private function isAudienceAllowed(array $audience, string $resourceUri): bool
-    {
-        return true;
     }
 
     private function configuration(): ?Configuration

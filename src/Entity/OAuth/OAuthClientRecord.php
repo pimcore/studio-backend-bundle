@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Entity\OAuth;
 
 use Doctrine\ORM\Mapping as ORM;
+use function time;
 
 /**
  * A client created at runtime through RFC 7591 Dynamic Client Registration,
@@ -79,8 +80,6 @@ class OAuthClientRecord
         array $scopes,
         bool $confidential,
         ?string $secretHash,
-        string $tokenEndpointAuthMethod,
-        int $createdAt,
     ) {
         $this->clientId = $clientId;
         $this->name = $name;
@@ -89,8 +88,9 @@ class OAuthClientRecord
         $this->scopes = $scopes;
         $this->confidential = $confidential;
         $this->secretHash = $secretHash;
-        $this->tokenEndpointAuthMethod = $tokenEndpointAuthMethod;
-        $this->createdAt = (string) $createdAt;
+        // Public clients authenticate via PKCE; confidential ones via their secret.
+        $this->tokenEndpointAuthMethod = $confidential ? 'client_secret_basic' : 'none';
+        $this->createdAt = (string) time();
     }
 
     public function getClientId(): string

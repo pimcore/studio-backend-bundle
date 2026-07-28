@@ -203,7 +203,7 @@ final readonly class ClientRegistrar
             throw new ClientRegistrationException('invalid_client_metadata', 'scope must be a space-delimited string.');
         }
 
-        $requested = preg_split('/\s+/', trim($value)) ?: [];
+        $requested = preg_split('/\s+/u', trim($value)) ?: [];
         foreach ($requested as $scope) {
             if (!in_array($scope, self::SUPPORTED_SCOPES, true)) {
                 throw new ClientRegistrationException('invalid_client_metadata', 'Unsupported scope: ' . $scope);
