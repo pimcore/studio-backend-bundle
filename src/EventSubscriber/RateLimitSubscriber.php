@@ -31,6 +31,8 @@ final class RateLimitSubscriber implements EventSubscriberInterface
 
     private const string RATE_LIMIT_ATTRIBUTE = '_studio_rate_limit';
 
+    private const string MCP_PATH_PREFIX = '/pimcore-mcp/';
+
     public function __construct(
         private readonly string $urlPrefix,
         private readonly RateLimiterFactory $studioApiGeneralLimiter,
@@ -59,7 +61,7 @@ final class RateLimitSubscriber implements EventSubscriberInterface
 
         if (
             $request->getMethod() === 'OPTIONS' ||
-            !$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)
+            !$this->isRateLimitedPath($request->getPathInfo())
         ) {
             return;
         }
@@ -73,6 +75,17 @@ final class RateLimitSubscriber implements EventSubscriberInterface
         if (!$rateLimit->isAccepted()) {
             throw new RateLimitException();
         }
+    }
+
+    /**
+     * The MCP firewall (see PimcoreStudioBackendExtension::MCP_FIREWALL_PATTERN) serves a
+     * separate path space from the Studio API url_prefix, so it needs listing explicitly
+     * or every MCP endpoint escapes the general limiter.
+     */
+    private function isRateLimitedPath(string $path): bool
+    {
+        return $this->isStudioBackendPath($path, $this->urlPrefix)
+            || str_starts_with($path, self::MCP_PATH_PREFIX);
     }
 
     public function onKernelResponse(ResponseEvent $event): void

@@ -110,6 +110,53 @@ final class RateLimitSubscriberTest extends Unit
     }
 
     /**
+     * The MCP firewall lives at /pimcore-mcp/, a separate path space from the Studio
+     * API url_prefix, so without an explicit branch it escapes this limiter entirely.
+     *
+     * @throws Exception
+     */
+    public function testMcpPathIsRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent('/pimcore-mcp/agent/documents');
+
+        $subscriber->onKernelRequest($event);
+
+        $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        $this->assertSame(499, $rateLimit->getRemainingTokens());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testMcpOptionsRequestIsIgnored(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent('/pimcore-mcp/agent/documents', 'OPTIONS');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * Guards against matching a bare "/pimcore-mcp" prefix, which would also swallow
+     * unrelated sibling routes.
+     *
+     * @throws Exception
+     */
+    public function testPathMerelyResemblingTheMcpPrefixIsIgnored(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent('/pimcore-mcp-something-else/route');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
      * @throws Exception
      */
     public function testOptionsRequestIsIgnored(): void
