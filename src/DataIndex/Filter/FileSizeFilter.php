@@ -67,8 +67,10 @@ final class FileSizeFilter implements FilterInterface
             $lower = $toBytes($filterValue['is']);
 
             // One-unit-wide band, so "is 1 MB" matches everything that reads as 1-point-something MB
-            // (the byte-precise value would practically never match on its own).
-            return $query->filterNumberRange($field, $lower, $lower + $multiplier - 1);
+            // (the byte-precise value would practically never match on its own). filterNumberRange
+            // bounds are exclusive (gt/lt), so widen by one byte on each side to make the band
+            // [lower, lower + unit - 1] inclusive.
+            return $query->filterNumberRange($field, $lower - 1, $lower + $multiplier);
         }
 
         if ($setting === 'less' && isset($filterValue['to'])) {
