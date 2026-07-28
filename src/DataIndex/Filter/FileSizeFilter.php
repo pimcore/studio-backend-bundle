@@ -79,8 +79,12 @@ final class FileSizeFilter implements FilterInterface
             return $query->filterNumberRange($field, $toBytes($filterValue['from']), null);
         }
 
-        if ($setting === 'between' && isset($filterValue['from'], $filterValue['to'])) {
-            return $query->filterNumberRange($field, $toBytes($filterValue['from']), $toBytes($filterValue['to']));
+        if ($setting === 'between' && (isset($filterValue['from']) || isset($filterValue['to']))) {
+            return $query->filterNumberRange(
+                $field,
+                isset($filterValue['from']) ? $toBytes($filterValue['from']) : null,
+                isset($filterValue['to']) ? $toBytes($filterValue['to']) : null
+            );
         }
 
         throw new InvalidArgumentException('Unable to apply file size filter, no correct setting given');
