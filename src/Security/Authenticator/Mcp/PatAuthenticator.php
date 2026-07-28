@@ -17,7 +17,6 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationR
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -40,6 +39,8 @@ use function in_array;
  */
 class PatAuthenticator extends AbstractAuthenticator
 {
+    use McpThrottlingResponseTrait;
+
     private const string AUTH_HEADER = 'Authorization';
 
     private const string BEARER_PREFIX = 'Bearer ';
@@ -143,10 +144,7 @@ class PatAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception
     ): ?Response {
-        return new JsonResponse(
-            ['error' => $exception->getMessageKey()],
-            Response::HTTP_UNAUTHORIZED
-        );
+        return $this->throttlingResponse($exception);
     }
 
     private function resolveUsername(string $token): ?string

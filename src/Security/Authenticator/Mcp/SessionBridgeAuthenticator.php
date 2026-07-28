@@ -36,6 +36,8 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
  */
 class SessionBridgeAuthenticator extends AbstractAuthenticator
 {
+    use McpThrottlingResponseTrait;
+
     public function __construct(
         private readonly AuthenticationResolverInterface $authenticationResolver,
     ) {
@@ -78,7 +80,6 @@ class SessionBridgeAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception
     ): ?Response {
-        // Return null to let the next authenticator try (PAT)
-        return null;
+        return $this->throttlingResponse($exception);
     }
 }

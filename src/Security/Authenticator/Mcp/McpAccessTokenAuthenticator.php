@@ -44,6 +44,8 @@ use function substr;
  */
 final class McpAccessTokenAuthenticator extends AbstractAuthenticator
 {
+    use McpThrottlingResponseTrait;
+
     public const string REQUEST_ATTR_REFERENCE = '_mcp_token_reference';
 
     private const string AUTH_HEADER = 'Authorization';
@@ -113,7 +115,6 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception,
     ): ?Response {
-        // Return null so the next authenticator (PatAuthenticator) can try.
-        return null;
+        return $this->throttlingResponse($exception);
     }
 }
