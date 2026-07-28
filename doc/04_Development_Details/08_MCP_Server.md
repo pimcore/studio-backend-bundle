@@ -336,16 +336,30 @@ The budget is **not** reset by a successful authentication: Symfony skips that r
 A blocked request still counts against the limiter, so a client that keeps retrying while throttled extends its own
 lockout rather than shortening it. Honour `Retry-After` instead of polling.
 
-Retune it in the host application's `security.yaml`, which already consumes the firewall settings parameter:
+To retune it, define the whole `pimcore_studio_backend.mcp_firewall_settings` parameter in the application. The bundle
+only sets that parameter when it is not already defined, so an application-supplied value wins:
 
 ```yaml
-security:
-    firewalls:
-        pimcore_mcp:
-            login_throttling:
-                max_attempts: 10
-                interval: '5 minutes'
+# config/packages/security.yaml (or any file loaded before the bundle's extension runs)
+parameters:
+    pimcore_studio_backend.mcp_firewall_settings:
+        pattern: '^/pimcore-mcp/'
+        user_checker: Pimcore\Security\User\UserChecker
+        provider: pimcore_studio_backend
+        stateless: true
+        login_throttling:
+            max_attempts: 10
+            interval: '5 minutes'
+        custom_authenticators:
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator
 ```
+
+The firewall itself is declared as a whole-value substitution -
+`pimcore_mcp: '%pimcore_studio_backend.mcp_firewall_settings%'` - so it cannot be partially overridden under
+`security.firewalls.pimcore_mcp`. Writing only `login_throttling` there **replaces** the entire firewall definition
+and drops the pattern, provider and authenticators with it. Copy the block above and change what you need.
 
 The client IP comes from `Request::getClientIp()`. Configure `framework.trusted_proxies` /
 `framework.trusted_headers` if the application sits behind a reverse proxy or load balancer; otherwise every client
