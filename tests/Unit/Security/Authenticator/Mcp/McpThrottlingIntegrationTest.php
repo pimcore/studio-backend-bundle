@@ -96,9 +96,10 @@ final class McpThrottlingIntegrationTest extends Unit
         // A legitimate dynamic token from the same IP must still be let through to
         // validation. If every dynamic token shared one throttle identifier, the peek
         // above would already have exhausted this client's bucket too.
+        // Reaching here without TooManyLoginAttemptsAuthenticationException is the
+        // assertion: a distinct token must not inherit a guesser's bucket.
+        $this->expectNotToPerformAssertions();
         $this->attempt($listener, $authenticator, 'pmcp_the-real-token');
-
-        $this->assertTrue(true, 'A valid dynamic token must not inherit a guesser\'s bucket.');
     }
 
     /**
@@ -135,7 +136,6 @@ final class McpThrottlingIntegrationTest extends Unit
     private function createStack(): array
     {
         $this->requestStack = new RequestStack();
-        $requestStack = $this->requestStack;
 
         $limiter = new DefaultLoginRateLimiter(
             $this->createLimiterFactory('global', self::GLOBAL_MAX_ATTEMPTS),
@@ -149,7 +149,7 @@ final class McpThrottlingIntegrationTest extends Unit
             $this->makeEmpty(McpAccessTokenServiceInterface::class, ['validate' => null])
         );
 
-        return [new LoginThrottlingListener($requestStack, $limiter), $authenticator];
+        return [new LoginThrottlingListener($this->requestStack, $limiter), $authenticator];
     }
 
     private function createLimiterFactory(string $id, int $limit): RateLimiterFactory

@@ -36,7 +36,8 @@ instead carry a Pimcore Studio session cookie.
 
 ### Authenticator chain
 
-The firewall tries these authenticators in order; each returns `null` on failure so the next one can try:
+The firewall tries these authenticators in order. The first two return `null` on failure so the next one can try;
+`PatAuthenticator` is last and therefore owns the terminal response, answering `401` (or `429` when throttled):
 
 | Order | Authenticator | Trigger | Use case |
 |-------|---------------|---------|----------|
@@ -333,8 +334,10 @@ other clients behind it. Configure trusted proxies (below) so the address is the
 The budget is **not** reset by a successful authentication: Symfony skips that reset for peekable limiters, which
 `DefaultLoginRateLimiter` is, so failures decay only when the fixed window rolls over.
 
-A blocked request still counts against the limiter, so a client that keeps retrying while throttled extends its own
-lockout rather than shortening it. Honour `Retry-After` instead of polling.
+Retrying while throttled does not extend the lockout on the tier that is already exhausted - the fixed-window limiter
+declines an over-limit request without recording it - but the throttler consumes from both tiers on every attempt, so
+a client blocked locally keeps draining the shared global per-IP budget and can end up throttling other clients on the
+same address. Honour `Retry-After` instead of polling.
 
 To retune it, define the whole `pimcore_studio_backend.mcp_firewall_settings` parameter in the application. The bundle
 only sets that parameter when it is not already defined, so an application-supplied value wins:

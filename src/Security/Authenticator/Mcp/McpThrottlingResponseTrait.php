@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
@@ -49,13 +50,15 @@ trait McpThrottlingResponseTrait
 
         // getMessageData() reports the threshold in minutes, and it may be null.
         $minutes = $exception->getMessageData()['%minutes%'] ?? null;
+        // The threshold is ceil((resetTime - now) / 60) and is 0 at a window boundary,
+        // which would advertise "Retry-After: 0" and invite an immediate retry.
         $retryAfter = is_numeric($minutes)
-            ? (int) $minutes * self::SECONDS_PER_MINUTE
+            ? max(1, (int) $minutes) * self::SECONDS_PER_MINUTE
             : self::FALLBACK_RETRY_AFTER_SECONDS;
 
         $response = new JsonResponse(
             ['error' => 'Too many failed authentication attempts. Please try again later.'],
-            JsonResponse::HTTP_TOO_MANY_REQUESTS
+            HttpResponseCodes::TOO_MANY_REQUESTS->value
         );
         $response->headers->set('Retry-After', (string) $retryAfter);
 

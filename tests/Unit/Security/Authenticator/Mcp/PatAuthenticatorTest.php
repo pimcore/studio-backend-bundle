@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticat
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
@@ -45,8 +46,8 @@ final class PatAuthenticatorTest extends Unit
 
         $this->assertTrue((bool) $auth->supports($this->requestWith('Bearer static-pat')));
         // pmcp_-prefixed tokens belong to McpAccessTokenAuthenticator.
-        $this->assertFalse((bool) $auth->supports($this->requestWith('Bearer pmcp_abc')));
-        $this->assertFalse((bool) $auth->supports($this->requestWith('')));
+        $this->assertSame(false, $auth->supports($this->requestWith('Bearer pmcp_abc')));
+        $this->assertSame(false, $auth->supports($this->requestWith('')));
     }
 
     public function testAuthenticateReturnsAPassportEvenForAnUnknownToken(): void
@@ -112,6 +113,33 @@ final class PatAuthenticatorTest extends Unit
 
         $this->expectException(AuthenticationException::class);
         $auth->authenticate($this->requestWith('Bearer '));
+    }
+
+    public function testOrdinaryFailureStillReturnsA401(): void
+    {
+        // PatAuthenticator is the last authenticator on the MCP firewall - the other two
+        // return null to fall through to it - so it owns the terminal response. Returning
+        // null here would let an invalid PAT continue unauthenticated and leave the 401 to
+        // whatever role check a consumer bundle happens to have.
+        $response = $this->makeAuthenticator([])->onAuthenticationFailure(
+            $this->requestWith('Bearer wrong'),
+            new AuthenticationException('nope')
+        );
+
+        $this->assertNotNull($response);
+        $this->assertSame(401, $response->getStatusCode());
+    }
+
+    public function testThrottlingFailureReturnsA429NotA401(): void
+    {
+        $response = $this->makeAuthenticator([])->onAuthenticationFailure(
+            $this->requestWith('Bearer wrong'),
+            new TooManyLoginAttemptsAuthenticationException(5)
+        );
+
+        $this->assertNotNull($response);
+        $this->assertSame(429, $response->getStatusCode());
+        $this->assertSame('300', $response->headers->get('Retry-After'));
     }
 
     /**

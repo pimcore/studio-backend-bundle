@@ -28,6 +28,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use function str_starts_with;
+use function hash;
 use function strlen;
 use function substr;
 
@@ -59,6 +60,13 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
     private const string IDENTIFIER_PREFIX = 'mcp-token:';
 
     private const int IDENTIFIER_LENGTH = 16;
+
+    /**
+     * Domain separator. Without it the digest would be a prefix of the very value
+     * McpAccessTokenService stores as the token's server-side verifier, and this digest
+     * is written to the request's LAST_USERNAME attribute where it is far more exposed.
+     */
+    private const string IDENTIFIER_DOMAIN = 'mcp-throttle|';
 
     public function __construct(
         private readonly McpAccessTokenServiceInterface $accessTokenService,
@@ -101,7 +109,8 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
      */
     private function throttleIdentifier(string $token): string
     {
-        return self::IDENTIFIER_PREFIX . substr(hash('sha256', $token), 0, self::IDENTIFIER_LENGTH);
+        return self::IDENTIFIER_PREFIX
+            . substr(hash('sha256', self::IDENTIFIER_DOMAIN . $token), 0, self::IDENTIFIER_LENGTH);
     }
 
     /**

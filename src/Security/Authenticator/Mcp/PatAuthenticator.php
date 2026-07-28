@@ -15,8 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -144,7 +146,14 @@ class PatAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception
     ): ?Response {
-        return $this->throttlingResponse($exception);
+        // This is the last authenticator on the MCP firewall - the other two return null
+        // to fall through to it - so it owns the terminal response. Returning null for an
+        // ordinary failure would let an invalid credential continue unauthenticated and
+        // leave the 401 to whatever role check the consuming bundle happens to declare.
+        return $this->throttlingResponse($exception) ?? new JsonResponse(
+            ['error' => $exception->getMessageKey()],
+            HttpResponseCodes::UNAUTHORIZED->value
+        );
     }
 
     private function resolveUsername(string $token): ?string
