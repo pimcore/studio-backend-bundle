@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -44,6 +45,14 @@ class PatAuthenticator extends AbstractAuthenticator
     private const string BEARER_PREFIX = 'Bearer ';
 
     private const int BEARER_PREFIX_LENGTH = 7;
+
+    /**
+     * Throttle bucket identifier for a credential that resolves to no user. Deliberately
+     * constant: DefaultLoginRateLimiter keys its local limiter on identifier+IP, so a
+     * per-token identifier would give every guess a fresh bucket and leave only the
+     * global per-IP tier doing any work.
+     */
+    public const string INVALID_IDENTIFIER = '__invalid__';
 
     /**
      * @param array<string, list<string>> $tokenMap username => [token, ...]
@@ -82,26 +91,44 @@ class PatAuthenticator extends AbstractAuthenticator
             throw new AuthenticationException('Bearer token is empty.');
         }
 
+        // The username comes from an in-memory token map, so it is known without any
+        // database work. Building the badge here - rather than after the lookup - is what
+        // lets LoginThrottlingListener::checkPassport() block a throttled client:
+        // AuthenticatorManager dispatches CheckPassportEvent only *after* authenticate()
+        // returns, so an authenticator that throws here can never be throttled.
         $username = $this->resolveUsername($token);
+
+        return new SelfValidatingPassport(
+            new UserBadge(
+                $username ?? self::INVALID_IDENTIFIER,
+                fn (): SecurityUser => $this->loadUser($username)
+            )
+        );
+    }
+
+    /**
+     * Performs the actual lookup when the badge is resolved, which Symfony does during
+     * CheckPassportEvent - after the throttling peek (priority 2080) and before the
+     * controller runs.
+     *
+     * @throws UserNotFoundException
+     */
+    private function loadUser(?string $username): SecurityUser
+    {
         if ($username === null) {
-            throw new AuthenticationException('Invalid bearer token.');
+            throw new UserNotFoundException('Invalid bearer token.');
         }
 
         $pimcoreUser = User::getByName($username);
         if (!$pimcoreUser instanceof User) {
-            throw new AuthenticationException('User not found for token.');
+            throw new UserNotFoundException('User not found for token.');
         }
 
         if (!$this->authenticationResolver->isValidUser($pimcoreUser)) {
-            throw new AuthenticationException('User is not active.');
+            throw new UserNotFoundException('User is not active.');
         }
 
-        $userBadge = new UserBadge(
-            $pimcoreUser->getUsername(),
-            static fn () => new SecurityUser($pimcoreUser)
-        );
-
-        return new SelfValidatingPassport($userBadge);
+        return new SecurityUser($pimcoreUser);
     }
 
     public function onAuthenticationSuccess(
