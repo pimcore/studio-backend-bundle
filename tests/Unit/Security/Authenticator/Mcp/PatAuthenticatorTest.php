@@ -56,8 +56,10 @@ final class PatAuthenticatorTest extends Unit
         $passport = $auth->authenticate($this->requestWith('Bearer unknown-token'));
 
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
-        $this->assertSame(
-            PatAuthenticator::INVALID_IDENTIFIER,
+        // LoginThrottlingListener writes this identifier to the request's LAST_USERNAME
+        // attribute, so it must never be the raw credential.
+        $this->assertNotSame(
+            'unknown-token',
             $passport->getBadge(UserBadge::class)->getUserIdentifier()
         );
     }

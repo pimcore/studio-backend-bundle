@@ -52,6 +52,14 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
 
     private const string BEARER_PREFIX = 'Bearer ';
 
+    /**
+     * Marks a throttling identifier as a token digest rather than a username, so the two
+     * can never collide in a limiter bucket.
+     */
+    private const string IDENTIFIER_PREFIX = 'mcp-token:';
+
+    private const int IDENTIFIER_LENGTH = 16;
+
     public function __construct(
         private readonly McpAccessTokenServiceInterface $accessTokenService,
     ) {
@@ -68,18 +76,32 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
     {
         $token = substr($request->headers->get(self::AUTH_HEADER, ''), strlen(self::BEARER_PREFIX));
 
-        // validate() *is* the lookup, so no real identifier exists before it runs. The
-        // badge is still built first: AuthenticatorManager dispatches CheckPassportEvent
-        // only after authenticate() returns, so throwing here would put this
-        // authenticator out of reach of LoginThrottlingListener's blocking peek. Every
-        // request therefore carries the placeholder identifier and relies on the global
-        // per-IP tier, which is exactly the breadth-first defence it exists for.
+        // The badge is built before the lookup: AuthenticatorManager dispatches
+        // CheckPassportEvent only after authenticate() returns, so throwing here would put
+        // this authenticator out of reach of LoginThrottlingListener's blocking peek.
+        //
+        // validate() *is* the lookup, so the real user is unknown at this point. The
+        // identifier is therefore derived from the token itself rather than shared across
+        // all dynamic tokens: one shared placeholder would put valid and guessed tokens in
+        // the same bucket, so a handful of wrong guesses would lock out a legitimate token
+        // from the same IP. Guessing is bounded instead by the global per-IP tier, which
+        // is the breadth-first defence that tier exists for.
         return new SelfValidatingPassport(
             new UserBadge(
-                PatAuthenticator::INVALID_IDENTIFIER,
+                $this->throttleIdentifier($token),
                 fn (): SecurityUser => $this->loadUser($token, $request)
             ),
         );
+    }
+
+    /**
+     * A stable, non-secret stand-in for the user identifier, used only to key the login
+     * throttling buckets. LoginThrottlingListener writes it to the request's LAST_USERNAME
+     * attribute, so it must never be the raw credential.
+     */
+    private function throttleIdentifier(string $token): string
+    {
+        return self::IDENTIFIER_PREFIX . substr(hash('sha256', $token), 0, self::IDENTIFIER_LENGTH);
     }
 
     /**

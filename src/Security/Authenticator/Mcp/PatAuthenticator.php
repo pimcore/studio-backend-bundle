@@ -53,7 +53,7 @@ class PatAuthenticator extends AbstractAuthenticator
      * per-token identifier would give every guess a fresh bucket and leave only the
      * global per-IP tier doing any work.
      */
-    public const string INVALID_IDENTIFIER = '__invalid__';
+    private const string INVALID_IDENTIFIER = '__invalid__';
 
     /**
      * @param array<string, list<string>> $tokenMap username => [token, ...]

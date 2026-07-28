@@ -317,10 +317,21 @@ Failed authentication attempts on the MCP firewall are throttled per client IP u
 **25 per 5 minutes** per IP. A throttled client receives `429 Too Many Requests` with a `Retry-After` header in
 seconds; ordinary authentication failures remain `401`.
 
-Credentials that resolve to no user share a single throttle identifier, so guessing tokens exhausts one bucket rather
-than opening a fresh one per guess. Because valid credentials are keyed on the real username instead, **a client
-guessing tokens cannot lock out legitimate users from the same IP** - their buckets are separate. Successful
-authentication resets the budget.
+Two tiers are in play, and which one stops a given attack depends on how the credential is keyed:
+
+- **Static PATs** resolve to a username before any lookup, so a valid PAT keys on that username while every
+  unrecognised PAT shares one placeholder bucket. Repeated wrong PATs are stopped by the tighter local tier.
+- **Dynamic tokens** (`pmcp_…`) cannot be resolved before validation, so each keys on a non-secret digest of the token
+  itself. Repeating one wrong token is caught by the local tier; sweeping through many distinct tokens lands in a fresh
+  local bucket each time and is bounded by the global per-IP tier instead. Per-token keying is deliberate: a single
+  shared bucket for all dynamic tokens would let a handful of wrong guesses evict a legitimate token holder on the
+  same IP.
+
+The global tier is per-IP and shared by every identifier on that address, so a sustained attack **can** still throttle
+other clients behind it. Configure trusted proxies (below) so the address is the real client rather than a shared one.
+
+The budget is **not** reset by a successful authentication: Symfony skips that reset for peekable limiters, which
+`DefaultLoginRateLimiter` is, so failures decay only when the fixed window rolls over.
 
 A blocked request still counts against the limiter, so a client that keeps retrying while throttled extends its own
 lockout rather than shortening it. Honour `Retry-After` instead of polling.
