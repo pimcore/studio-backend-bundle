@@ -322,6 +322,9 @@ than opening a fresh one per guess. Because valid credentials are keyed on the r
 guessing tokens cannot lock out legitimate users from the same IP** - their buckets are separate. Successful
 authentication resets the budget.
 
+A blocked request still counts against the limiter, so a client that keeps retrying while throttled extends its own
+lockout rather than shortening it. Honour `Retry-After` instead of polling.
+
 Retune it in the host application's `security.yaml`, which already consumes the firewall settings parameter:
 
 ```yaml
