@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 use function is_array;
+use function is_string;
 
 /**
  * Filters the asset file size (stored in bytes). The client sends a value plus a size unit
