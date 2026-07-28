@@ -17,14 +17,17 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
+use function hash;
 use function hash_equals;
 use function is_string;
 use function str_starts_with;
 
 /**
- * Serves clients from two sources: the pre-registered first-party clients in
- * bundle configuration, and clients identified by a URL-form client_id resolved
- * on demand from a Client ID Metadata Document (CIMD). Config clients win.
+ * Serves clients from three sources, in precedence order: the pre-registered
+ * first-party clients in bundle configuration; clients identified by a URL-form
+ * client_id resolved on demand from a Client ID Metadata Document (CIMD); and
+ * clients created at runtime via Dynamic Client Registration (looked up through
+ * the store).
  *
  * @internal
  */
@@ -42,6 +45,7 @@ final class ClientRepository implements ClientRepositoryInterface
     public function __construct(
         private readonly array $clients,
         private readonly ClientMetadataResolverInterface $clientMetadataResolver,
+        private readonly DynamicClientStoreInterface $dynamicClientStore,
     ) {
     }
 
@@ -58,17 +62,29 @@ final class ClientRepository implements ClientRepositoryInterface
             );
         }
 
-        if (!$this->looksLikeUrl($clientIdentifier)) {
+        // A URL-form client_id is a CIMD client; anything else may be a
+        // dynamically registered client. Both are public and never a service user.
+        if ($this->looksLikeUrl($clientIdentifier)) {
+            $metadata = $this->clientMetadataResolver->resolve($clientIdentifier);
+            if ($metadata === null) {
+                return null;
+            }
+
+            return new ClientEntity($metadata->clientId, $metadata->name, $metadata->redirectUris, false, null);
+        }
+
+        $dynamic = $this->dynamicClientStore->find($clientIdentifier);
+        if ($dynamic === null) {
             return null;
         }
 
-        $metadata = $this->clientMetadataResolver->resolve($clientIdentifier);
-        if ($metadata === null) {
-            return null;
-        }
-
-        // CIMD clients are public and never act as a service user.
-        return new ClientEntity($metadata->clientId, $metadata->name, $metadata->redirectUris, false, null);
+        return new ClientEntity(
+            $dynamic->identifier,
+            $dynamic->name,
+            $dynamic->redirectUris,
+            $dynamic->confidential,
+            null,
+        );
     }
 
     public function validateClient(string $clientIdentifier, ?string $clientSecret, ?string $grantType): bool
@@ -88,16 +104,30 @@ final class ClientRepository implements ClientRepositoryInterface
             return is_string($secret) && $secret !== '' && hash_equals($secret, (string) $clientSecret);
         }
 
-        if (!$this->looksLikeUrl($clientIdentifier)) {
+        // CIMD clients are public: PKCE, no secret, never client_credentials.
+        if ($this->looksLikeUrl($clientIdentifier)) {
+            return $grantType !== 'client_credentials'
+                && $this->clientMetadataResolver->resolve($clientIdentifier) !== null;
+        }
+
+        $dynamic = $this->dynamicClientStore->find($clientIdentifier);
+        if ($dynamic === null) {
             return false;
         }
 
-        // CIMD clients are public: PKCE, no secret, never client_credentials.
+        // Dynamic clients are self-registered and have no service user, so they are
+        // limited to the interactive grants and never valid for client_credentials.
         if ($grantType === 'client_credentials') {
             return false;
         }
 
-        return $this->clientMetadataResolver->resolve($clientIdentifier) !== null;
+        // Public dynamic clients authenticate via PKCE and carry no secret.
+        if (!$dynamic->confidential) {
+            return true;
+        }
+
+        return $dynamic->secretHash !== null
+            && hash_equals($dynamic->secretHash, hash('sha256', (string) $clientSecret));
     }
 
     private function looksLikeUrl(string $clientIdentifier): bool

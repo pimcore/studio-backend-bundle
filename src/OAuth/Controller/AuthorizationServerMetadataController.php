@@ -29,6 +29,7 @@ final class AuthorizationServerMetadataController
     public function __construct(
         private readonly ?string $issuer,
         private readonly bool $clientIdMetadataDocumentSupported = false,
+        private readonly bool $registrationEnabled = false,
     ) {
     }
 
@@ -36,7 +37,7 @@ final class AuthorizationServerMetadataController
     {
         $base = $this->issuer ?? $request->getSchemeAndHttpHost();
 
-        return new JsonResponse([
+        $metadata = [
             'issuer' => $base,
             'authorization_endpoint' => $base . '/pimcore-oauth/authorize',
             'token_endpoint' => $base . '/pimcore-oauth/token',
@@ -48,6 +49,14 @@ final class AuthorizationServerMetadataController
             'authorization_response_iss_parameter_supported' => true,
             // CIMD: clients may present an HTTPS URL as client_id (no registration).
             'client_id_metadata_document_supported' => $this->clientIdMetadataDocumentSupported,
-        ]);
+        ];
+
+        // Only advertised when Dynamic Client Registration is enabled, so clients
+        // that key off this field don't attempt to register when it is off.
+        if ($this->registrationEnabled) {
+            $metadata['registration_endpoint'] = $base . '/pimcore-oauth/register';
+        }
+
+        return new JsonResponse($metadata);
     }
 }

@@ -839,6 +839,7 @@ class Configuration implements ConfigurationInterface
                         ->defaultTrue()
                     ->end()
                     ->append($this->addOAuthClientIdMetadataDocumentsNode())
+                    ->append($this->addOAuthDynamicClientRegistrationNode())
                     ->arrayNode('keys')
                         ->addDefaultsIfNotSet()
                         ->info('Signing/encryption key material. Reference via env vars; never commit secrets.')
@@ -951,6 +952,26 @@ class Configuration implements ConfigurationInterface
                 ->integerNode('cache_ttl')
                     ->info('Seconds to cache a fetched client metadata document.')
                     ->defaultValue(300)
+                ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function addOAuthDynamicClientRegistrationNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('dynamic_client_registration'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'RFC 7591 Dynamic Client Registration. Exposes an open (unauthenticated) '
+                . 'registration endpoint so clients without prior credentials can self-register. '
+                . 'Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Expose POST /pimcore-oauth/register and advertise it in metadata.')
+                    ->defaultFalse()
                 ->end()
             ->end();
 

@@ -65,7 +65,8 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository:
         arguments:
             $clients: []
-            # $clientMetadataResolver autowired from the interface binding below.
+            # $clientMetadataResolver and $dynamicClientStore autowired from the
+            # interface bindings below.
 
     # Client ID Metadata Documents (CIMD). $enabled/$allowedHosts/$allowInsecure/
     # $cacheTtl come from bundle config (set in the extension).
@@ -79,6 +80,20 @@ services:
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver
+
+    # Dynamic Client Registration (RFC 7591). Store + registrar + endpoint.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStore: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStore
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $enabled: false
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 

@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
@@ -271,15 +272,22 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $cimd = $config['oauth']['client_id_metadata_documents'];
         $container->setParameter('pimcore_studio_backend.oauth.cimd_enabled', $cimd['enabled']);
 
+        $dcrEnabled = $config['oauth']['dynamic_client_registration']['enabled'];
+        $container->setParameter('pimcore_studio_backend.oauth.dcr_enabled', $dcrEnabled);
+
         $container->getDefinition(AuthorizationServerMetadataController::class)
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer'])
-            ->setArgument('$clientIdMetadataDocumentSupported', $cimd['enabled']);
+            ->setArgument('$clientIdMetadataDocumentSupported', $cimd['enabled'])
+            ->setArgument('$registrationEnabled', $dcrEnabled);
 
         $container->getDefinition(CimdClientMetadataResolver::class)
             ->setArgument(self::ARG_ENABLED, $cimd['enabled'])
             ->setArgument('$allowedHosts', $cimd['allowed_hosts'])
             ->setArgument('$allowInsecure', $cimd['allow_insecure'])
             ->setArgument('$cacheTtl', $cimd['cache_ttl']);
+
+        $container->getDefinition(ClientRegistrationController::class)
+            ->setArgument(self::ARG_ENABLED, $dcrEnabled);
 
         $container->getDefinition(AuthorizeController::class)
             ->setArgument('$consentPath', $config['oauth']['consent_path']);
