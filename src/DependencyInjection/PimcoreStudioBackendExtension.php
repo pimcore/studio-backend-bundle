@@ -270,6 +270,16 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'user_checker' => 'Pimcore\Security\User\UserChecker',
                 'provider' => 'pimcore_studio_backend',
                 'stateless' => true,
+                // Brute-force protection for MCP bearer credentials. The bearer
+                // authenticators build their UserBadge before performing any lookup, so
+                // LoginThrottlingListener::checkPassport() (CheckPassportEvent, priority
+                // 2080) can reject a throttled client before any database work happens.
+                // Symfony derives a second, 5x looser per-IP limiter from max_attempts
+                // automatically.
+                'login_throttling' => [
+                    'max_attempts' => 5,
+                    'interval' => '5 minutes',
+                ],
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator',
