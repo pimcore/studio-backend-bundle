@@ -309,3 +309,33 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
   stops working the moment its user is deactivated or removed - `validate()` re-checks the user on every request - and a
   bundle can drop a user's tokens explicitly with `revokeByUser()`. See [Minting MCP access
   tokens](#minting-mcp-access-tokens).
+
+### Brute-force protection
+
+Failed authentication attempts on the MCP firewall are throttled per client IP using Symfony's standard
+`login_throttling`: **5 failures per 5 minutes** per identifier+IP, plus an automatically derived global limiter at
+**25 per 5 minutes** per IP. A throttled client receives `429 Too Many Requests` with a `Retry-After` header in
+seconds; ordinary authentication failures remain `401`.
+
+Credentials that resolve to no user share a single throttle identifier, so guessing tokens exhausts one bucket rather
+than opening a fresh one per guess. Because valid credentials are keyed on the real username instead, **a client
+guessing tokens cannot lock out legitimate users from the same IP** - their buckets are separate. Successful
+authentication resets the budget.
+
+Retune it in the host application's `security.yaml`, which already consumes the firewall settings parameter:
+
+```yaml
+security:
+    firewalls:
+        pimcore_mcp:
+            login_throttling:
+                max_attempts: 10
+                interval: '5 minutes'
+```
+
+The client IP comes from `Request::getClientIp()`. Configure `framework.trusted_proxies` /
+`framework.trusted_headers` if the application sits behind a reverse proxy or load balancer; otherwise every client
+behind the proxy shares one bucket keyed on the proxy's own IP.
+
+MCP endpoints are additionally covered by the general Studio API rate limiter (`studio_api_general`, 500 requests per
+minute per IP), which reports `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` on every response.
