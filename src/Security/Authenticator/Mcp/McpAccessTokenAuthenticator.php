@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -64,22 +65,40 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
     public function authenticate(Request $request): Passport
     {
         $token = substr($request->headers->get(self::AUTH_HEADER, ''), strlen(self::BEARER_PREFIX));
+
+        // validate() *is* the lookup, so no real identifier exists before it runs. The
+        // badge is still built first: AuthenticatorManager dispatches CheckPassportEvent
+        // only after authenticate() returns, so throwing here would put this
+        // authenticator out of reach of LoginThrottlingListener's blocking peek. Every
+        // request therefore carries the placeholder identifier and relies on the global
+        // per-IP tier, which is exactly the breadth-first defence it exists for.
+        return new SelfValidatingPassport(
+            new UserBadge(
+                PatAuthenticator::INVALID_IDENTIFIER,
+                fn (): SecurityUser => $this->loadUser($token, $request)
+            ),
+        );
+    }
+
+    /**
+     * Resolves the token when the badge is resolved - during CheckPassportEvent, after
+     * the throttling peek and before the controller runs.
+     *
+     * @throws UserNotFoundException
+     */
+    private function loadUser(string $token, Request $request): SecurityUser
+    {
         $validated = $this->accessTokenService->validate($token);
 
-        if ($validated === null) {
-            throw new AuthenticationException('Invalid or expired MCP access token.');
+        if ($validated === null || !$validated->user instanceof User) {
+            throw new UserNotFoundException('Invalid or expired MCP access token.');
         }
 
-        $user = $validated->user;
-        if (!$user instanceof User) {
-            throw new AuthenticationException('Invalid or expired MCP access token.');
-        }
-
+        // Bind the token's own reference so HasChatSession can trust it over any forged
+        // X-Chat-Session-Id header. Only ever set for a token that actually validated.
         $request->attributes->set(self::REQUEST_ATTR_REFERENCE, $validated->reference);
 
-        return new SelfValidatingPassport(
-            new UserBadge($user->getUsername(), static fn () => new SecurityUser($user)),
-        );
+        return new SecurityUser($validated->user);
     }
 
     public function onAuthenticationSuccess(

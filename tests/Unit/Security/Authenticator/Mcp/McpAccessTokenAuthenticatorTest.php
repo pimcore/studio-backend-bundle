@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInt
 use Pimcore\Model\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 final class McpAccessTokenAuthenticatorTest extends Unit
@@ -43,17 +45,51 @@ final class McpAccessTokenAuthenticatorTest extends Unit
         $request = $this->requestWith('Bearer pmcp_valid');
         $passport = $auth->authenticate($request);
 
+        // The lookup - and with it the binding - now happens when the badge resolves,
+        // which Symfony does during CheckPassportEvent: after the throttling peek and
+        // still before the controller runs.
+        $passport->getBadge(UserBadge::class)->getUser();
+
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
         // Binds the token's reference on the request so downstream code (HasChatSession
         // trait) can trust it and ignore any forged X-Chat-Session-Id header.
         $this->assertSame('chat-1', $request->attributes->get('_mcp_token_reference'));
     }
 
-    public function testAuthenticateThrowsForInvalidToken(): void
+    public function testAuthenticateReturnsAPassportForAnInvalidToken(): void
+    {
+        // Must not throw: AuthenticatorManager dispatches CheckPassportEvent only after
+        // authenticate() returns, so an authenticator that throws here is unreachable by
+        // LoginThrottlingListener's blocking peek. See PatAuthenticatorTest.
+        $auth = $this->makeAuthenticator(null);
+
+        $passport = $auth->authenticate($this->requestWith('Bearer pmcp_invalid'));
+
+        $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
+    }
+
+    public function testResolvingTheBadgeForAnInvalidTokenFails(): void
     {
         $auth = $this->makeAuthenticator(null);
-        $this->expectException(AuthenticationException::class);
-        $auth->authenticate($this->requestWith('Bearer pmcp_invalid'));
+        $passport = $auth->authenticate($this->requestWith('Bearer pmcp_invalid'));
+
+        $this->expectException(UserNotFoundException::class);
+        $passport->getBadge(UserBadge::class)->getUser();
+    }
+
+    public function testInvalidTokensAreNotBoundAsAReference(): void
+    {
+        $auth = $this->makeAuthenticator(null);
+        $request = $this->requestWith('Bearer pmcp_invalid');
+
+        $passport = $auth->authenticate($request);
+        try {
+            $passport->getBadge(UserBadge::class)->getUser();
+        } catch (UserNotFoundException) {
+            // expected
+        }
+
+        $this->assertNull($request->attributes->get('_mcp_token_reference'));
     }
 
     public function testFailureReturnsNullToFallThrough(): void
