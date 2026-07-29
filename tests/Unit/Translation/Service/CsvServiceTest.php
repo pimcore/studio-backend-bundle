@@ -77,6 +77,31 @@ final class CsvServiceTest extends Unit
         $this->assertSame("key;en\r\ngreeting;\"say \"\"hi\"\"\"\r\n", $csv);
     }
 
+    public function testBackslashBeforeQuoteIsDoubledNotEscaped(): void
+    {
+        $csv = $this->buildCsvContent(
+            [['key' => 'greeting', 'en' => 'back\\"slash']],
+            ['key', 'en']
+        );
+
+        // The backslash stays literal data and the quote is doubled. With League\Csv's default
+        // escape character the quote would be left single, which standards-compliant readers
+        // interpret as the end of the field.
+        $this->assertSame("key;en\r\ngreeting;\"back\\\"\"slash\"\r\n", $csv);
+    }
+
+    public function testTrailingBackslashIsWrittenLiterally(): void
+    {
+        $csv = $this->buildCsvContent(
+            [['key' => 'greeting', 'en' => 'trailing \\']],
+            ['key', 'en']
+        );
+
+        // A value ending in a backslash produces a literal backslash before the closing enclosure.
+        // This is valid RFC 4180; readers must not treat the backslash as an escape character.
+        $this->assertSame("key;en\r\ngreeting;\"trailing \\\"\r\n", $csv);
+    }
+
     public function testDelimiterInValueIsEnclosed(): void
     {
         $csv = $this->buildCsvContent(

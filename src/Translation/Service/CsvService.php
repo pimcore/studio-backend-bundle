@@ -132,6 +132,9 @@ final readonly class CsvService implements CsvServiceInterface
         try {
             $csv = Writer::fromString();
             $csv->setDelimiter(';');
+            // Disable the proprietary escape character so quotes are always doubled per RFC 4180
+            // instead of being escaped with a backslash, which standards-compliant readers ignore.
+            $csv->setEscape('');
             $csv->setEndOfLine("\r\n");
 
             $csv->insertOne($columns);
@@ -141,7 +144,7 @@ final readonly class CsvService implements CsvServiceInterface
 
             return $csv->toString();
         } catch (CannotInsertRecord | CsvException $e) {
-            throw new EnvironmentException($e->getMessage());
+            throw new EnvironmentException(message: $e->getMessage(), previous: $e);
         }
     }
 
