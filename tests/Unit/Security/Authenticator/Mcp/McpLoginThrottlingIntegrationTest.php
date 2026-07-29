@@ -78,7 +78,12 @@ final class McpLoginThrottlingIntegrationTest extends Unit
         [$listener, $authenticator] = $this->createStack();
 
         for ($i = 0; $i < self::MAX_ATTEMPTS * 4; ++$i) {
-            $this->attempt($listener, $authenticator, 'guess-' . $i, charge: true);
+            try {
+                $this->attempt($listener, $authenticator, 'guess-' . $i, charge: true);
+            } catch (TooManyLoginAttemptsAuthenticationException) {
+                // Blocked from attempt six onwards, and an attacker keeps hammering anyway.
+                // The point of this test is what that does to *another* client, not to them.
+            }
         }
 
         // Reaching the end without TooManyLoginAttemptsAuthenticationException is the
