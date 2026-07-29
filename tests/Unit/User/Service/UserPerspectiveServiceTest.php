@@ -70,9 +70,13 @@ final class UserPerspectiveServiceTest extends Unit
             'isAdmin' => true,
         ]);
 
+        // Uses a real, still-configured perspective ID (one of the two in the mocked full set),
+        // not a fake one - otherwise this test would pass even without the isAdmin() bypass in
+        // getActivePerspective(), since a nonexistent stale ID can never match the full set either
+        // way and the bug would go unnoticed.
         $service = $this->createService(
-            listUserPerspectives: ['stale-perspective'],
-            getUserActivePerspective: 'stale-perspective',
+            listUserPerspectives: ['other-perspective'],
+            getUserActivePerspective: 'other-perspective',
         );
 
         $result = $service->getActivePerspective($user);

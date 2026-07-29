@@ -79,6 +79,10 @@ final readonly class UserPerspectiveService implements UserPerspectiveServiceInt
 
     public function getActivePerspective(UserInterface $user): string
     {
+        if ($user->isAdmin()) {
+            return Perspectives::DEFAULT_ID->value;
+        }
+
         $activePerspective = $this->repository->getUserActivePerspective($user->getId());
         $userPerspectives = $this->getAllUserPerspectives($user);
         if (empty($userPerspectives)) {
