@@ -316,11 +316,17 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
 Guesses at a **static PAT** are throttled per client IP: **5 failures per 5 minutes**. A throttled client receives
 `429 Too Many Requests` with a `Retry-After` header in seconds; an ordinary authentication failure stays `401`.
 
-A successful authentication is never throttled. That is a property of how the buckets are keyed, not a threshold to
-tune. `PatAuthenticator` puts the resolved username on the passport when a bearer token matches the configured token
-map, and a shared placeholder identifier when it matches nothing. `McpLoginRateLimiter` hands out a bucket for the
-placeholder only, so a credential that resolves to a user is exempt from both the block and the count - there is no
+A credential that resolves to a user is never throttled. That is a property of how the buckets are keyed, not a
+threshold to tune. `PatAuthenticator` puts the resolved username on the passport when a bearer token matches the
+configured token map, and a shared placeholder identifier when it matches nothing. `McpLoginRateLimiter` hands out a
+bucket for the placeholder only, so a recognised credential is exempt from both the block and the count - there is no
 bucket it could be rejected from.
+
+The guarantee is per credential, not per request. `AuthenticatorManager` keeps running authenticators after one has
+already succeeded, so a request that presents an unrecognised PAT *alongside* a valid Studio session cookie is still
+judged on the PAT and can be answered with the throttled response. Such a request already failed before throttling
+existed - `PatAuthenticator` owns the terminal response and answered it with `401` - so what changes is the status
+code, not whether the request works. Send one credential per request.
 
 `McpLoginRateLimiter` is supplied as `login_throttling.limiter`, which makes Symfony skip the `DefaultLoginRateLimiter`
 it would otherwise build for the firewall. That default derives a second limiter keyed on IP alone, and that tier is

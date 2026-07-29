@@ -22,7 +22,7 @@ The per-endpoint limits are layered on top of the general limit. For example, th
 
 MCP endpoints are the exception: they use `studio_mcp_general` **instead of** `studio_api_general`, not on top of it. The two budgets are separate because MCP carries machine traffic, where a single agent server can serve every chat in an installation from one address, while the Studio number is sized for a browser UI.
 
-`studio_mcp_login` is not a request limiter - it counts failed authentication attempts on the MCP firewall and is driven by the security layer rather than by the general subscriber. See [MCP Server](../04_Development_Details/08_MCP_Server.md#throttling-guessed-credentials) for how it is keyed and why a successful authentication is never affected by it.
+`studio_mcp_login` is not a request limiter - it counts failed authentication attempts on the MCP firewall and is driven by the security layer rather than by the general subscriber. See [MCP Server](../04_Development_Details/08_MCP_Server.md#throttling-guessed-credentials) for how it is keyed and why a recognised credential is never affected by it.
 
 ## Response Headers
 
@@ -49,7 +49,7 @@ pimcore_studio_backend:
         enabled: false
 ```
 
-This switches off both `studio_api_general` and `studio_mcp_general`, and with them the `X-RateLimit-*` headers. It does **not** affect `studio_mcp_login`, which lives on the MCP firewall rather than in this subscriber - remove `login_throttling` from `pimcore_studio_backend.mcp_firewall_settings` to turn that off.
+This switches off both `studio_api_general` and `studio_mcp_general`, and with them the `X-RateLimit-*` headers. It does **not** affect `studio_mcp_login`, which lives on the MCP firewall rather than in this subscriber. To turn that off, redefine `pimcore_studio_backend.mcp_firewall_settings` without its `login_throttling` key - the parameter is substituted whole, so it has to be restated in full rather than patched. See [MCP Server](../04_Development_Details/08_MCP_Server.md#throttling-guessed-credentials).
 
 ### Customizing Limits
 

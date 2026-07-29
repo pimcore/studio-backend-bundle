@@ -156,6 +156,18 @@ final class RateLimitSubscriberTest extends Unit
     /**
      * @throws Exception
      */
+    public function testMcpOverflowThrowsRateLimitException(): void
+    {
+        $subscriber = $this->createSubscriber(mcpLimit: 1);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::MCP_PATH));
+
+        $this->expectException(RateLimitException::class);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::MCP_PATH));
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testMcpOptionsRequestIsIgnored(): void
     {
         $subscriber = $this->createSubscriber();

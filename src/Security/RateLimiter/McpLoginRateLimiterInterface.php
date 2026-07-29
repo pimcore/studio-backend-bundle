@@ -25,10 +25,15 @@ use Symfony\Component\HttpFoundation\RateLimiter\PeekableRequestRateLimiterInter
  * every client on it, so a guesser can push a valid credential into a 429.
  *
  * This limiter has a single tier and only ever hands out a bucket for a credential that
- * resolved to no user at all. A credential that resolves to a user - which is every
- * credential that can go on to authenticate - is answered with no limiters, so it cannot be
- * blocked and cannot be charged. Rejecting a successful authentication is therefore not a
- * matter of tuning: no bucket exists to reject it from.
+ * resolved to no user at all. A credential that resolves to a user is answered with no
+ * limiters, so it can neither be blocked nor charged on its own account - that is a property
+ * of the keying, not a threshold.
+ *
+ * The guarantee is per credential, not per request. AuthenticatorManager keeps running
+ * authenticators after one has already succeeded, so a request that presents a *second*,
+ * unrecognised credential alongside a good one is still judged on the unrecognised one and
+ * can be answered with the throttled response. That is pre-existing chain behaviour - the
+ * same request already lost to a terminal 401 - and the status code is what changes here.
  *
  * @internal
  */
@@ -41,7 +46,10 @@ interface McpLoginRateLimiterInterface extends PeekableRequestRateLimiterInterfa
      * one. With a constant identifier the bucket collapses to "unknown credentials from this
      * IP", which is the only shape that bounds a sweep.
      *
-     * Nothing that authenticates successfully ever carries it, so it can never lock anyone out.
+     * The leading NUL keeps it out of the namespace of real identifiers: PatAuthenticator
+     * takes the username straight from the configured token map, so a plain "__invalid__"
+     * would collide with a Pimcore user of that name and drag their valid PAT into the
+     * guess bucket. No username can contain a NUL, so no recognised credential can carry it.
      */
-    public const string UNKNOWN_CREDENTIAL_IDENTIFIER = '__invalid__';
+    public const string UNKNOWN_CREDENTIAL_IDENTIFIER = "\0__invalid__";
 }

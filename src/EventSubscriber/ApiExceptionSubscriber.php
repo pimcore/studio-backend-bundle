@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,11 +49,14 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
         $path = $request->getPathInfo();
 
-        // MCP paths are listed alongside the Studio API prefix because RateLimitSubscriber
-        // now raises RateLimitException on them too; without this the 429 would fall through
-        // to Symfony's default error rendering instead of the JSON envelope every other
-        // Studio error uses.
-        if (!$this->isStudioBackendPath($path, $this->urlPrefix) && !$this->isMcpPath($path)) {
+        // MCP is JSON-RPC and owns its own error shapes, so only the one exception this
+        // bundle raises there is claimed: RateLimitSubscriber's 429, which would otherwise
+        // fall through to Symfony's default error rendering rather than the JSON envelope
+        // every other Studio error uses. Anything else the MCP server produces is left alone.
+        if (
+            !$this->isStudioBackendPath($path, $this->urlPrefix)
+            && !($this->isMcpPath($path) && $exception instanceof RateLimitException)
+        ) {
             return;
         }
 
