@@ -313,43 +313,26 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
 
 ### Throttling guessed credentials
 
-Guesses at a **static PAT** are throttled per client IP: **5 failures per 5 minutes**. A throttled client receives
-`429 Too Many Requests` with a `Retry-After` header in seconds; an ordinary authentication failure stays `401`.
+Guesses at a **static PAT** are throttled per client IP: **5 failures per 5 minutes**, after which the client receives
+`429 Too Many Requests` with a `Retry-After` header in seconds. An ordinary authentication failure stays `401`. Honour
+`Retry-After` rather than polling.
 
-A credential that resolves to a user is never throttled. That is a property of how the buckets are keyed, not a
-threshold to tune. `PatAuthenticator` puts the resolved username on the passport when a bearer token matches the
-configured token map, and a shared placeholder identifier when it matches nothing. `McpLoginRateLimiter` hands out a
-bucket for the placeholder only, so a recognised credential is exempt from both the block and the count - there is no
-bucket it could be rejected from.
+Only unrecognised tokens are counted. `PatAuthenticator` puts the resolved username on the passport when a token
+matches the configured token map and a shared placeholder when it matches nothing, and `McpLoginRateLimiter` only ever
+hands out a bucket for the placeholder. A recognised credential is therefore neither blocked nor counted.
 
-The guarantee is per credential, not per request. `AuthenticatorManager` keeps running authenticators after one has
-already succeeded, so a request that presents an unrecognised PAT *alongside* a valid Studio session cookie is still
-judged on the PAT and can be answered with the throttled response. Such a request already failed before throttling
-existed - `PatAuthenticator` owns the terminal response and answered it with `401` - so what changes is the status
-code, not whether the request works. Send one credential per request.
+**Dynamic tokens** (`pmcp_…`) and **session bridge** requests are not throttled at all. A dynamic token is 32 random
+bytes, so guessing one is not a reachable attack; its protection is entropy, a short TTL and `revokeByUser()` - see
+[Minting MCP access tokens](#minting-mcp-access-tokens).
 
-`McpLoginRateLimiter` is supplied as `login_throttling.limiter`, which makes Symfony skip the `DefaultLoginRateLimiter`
-it would otherwise build for the firewall. That default derives a second limiter keyed on IP alone, and that tier is
-charged by every client on an address and peeked by every client on it - so guesses aimed at one credential can push an
-unrelated valid credential into a `429`.
+Send one credential per request. The firewall runs every authenticator that matches, so a request carrying an
+unrecognised PAT *alongside* a valid session cookie is judged on the PAT. Such a request already failed with `401`
+before throttling existed; once the budget is gone it fails with `429` instead.
 
-Two credential types are deliberately **not** throttled:
+The client IP comes from `Request::getClientIp()`. Configure `framework.trusted_proxies` behind a reverse proxy, or
+every client shares one bucket keyed on the proxy's address.
 
-- **Dynamic tokens** (`pmcp_…`) are 32 random bytes. Guessing one is not a reachable attack, so a counter adds nothing,
-  while a shared bucket for them would let guesses interfere with a live chat session. Their protection is entropy,
-  short TTLs, SHA-256 storage and `revokeByUser()` - see [Minting MCP access tokens](#minting-mcp-access-tokens).
-- **Session bridge** requests authenticate against an existing Pimcore Studio session, which has its own protections.
-
-The budget is not reset by a successful authentication: Symfony skips that reset for peekable limiters, so failures
-decay when the fixed window rolls over. Retrying while throttled does not extend the lockout, because the fixed-window
-limiter declines an over-limit request without recording it - but honour `Retry-After` rather than polling. Because the
-threshold is reported in whole minutes, `Retry-After` rounds up to the next minute.
-
-The client IP comes from `Request::getClientIp()`. Configure `framework.trusted_proxies` / `framework.trusted_headers`
-if the application sits behind a reverse proxy or load balancer; otherwise every client behind the proxy shares one
-bucket keyed on the proxy's own address.
-
-To change the threshold, redefine the limiter in the application:
+To change the threshold, redefine the limiter:
 
 ```yaml
 # config/packages/framework.yaml
@@ -361,8 +344,9 @@ framework:
             interval: '5 minutes'
 ```
 
-To replace the mechanism entirely, define the whole `pimcore_studio_backend.mcp_firewall_settings` parameter. The
-bundle only sets it when it is not already defined, so an application-supplied value wins:
+To change anything else about the firewall, redefine `pimcore_studio_backend.mcp_firewall_settings` in full. It is
+substituted as a whole value, so a partial override under `security.firewalls.pimcore_mcp` silently drops the pattern,
+provider and authenticators. The bundle only sets the parameter when it is not already defined:
 
 ```yaml
 # config/packages/security.yaml (or any file loaded before the bundle's extension runs)
@@ -380,29 +364,10 @@ parameters:
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator
 ```
 
-`login_throttling.max_attempts` and `login_throttling.interval` have no effect while `limiter` is set - Symfony only
-reads them when it has to build a limiter itself.
-
-The firewall is declared as a whole-value substitution -
-`pimcore_mcp: '%pimcore_studio_backend.mcp_firewall_settings%'` - so it cannot be partially overridden under
-`security.firewalls.pimcore_mcp`. Writing only `login_throttling` there **replaces** the entire firewall definition and
-drops the pattern, provider and authenticators with it. Copy the block above and change what you need.
-
 ### Request rate limiting
 
-MCP endpoints are covered by their own limiter, `studio_mcp_general`: **3000 requests per minute per client IP**,
-reported through `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` on every response. Exceeding it
-returns `429` with the standard Studio error body.
+MCP endpoints have their own limiter, `studio_mcp_general`: **3000 requests per minute per client IP**, reported
+through `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`, and answered with `429` on overflow.
 
-It is deliberately separate from `studio_api_general`, which covers the Studio API and is sized for a browser UI. MCP
-carries machine traffic, and a single agent server can serve every chat in an installation from one address, so the
-ceiling here guards against denial of service rather than metering individual users. Retune it the same way as above:
-
-```yaml
-framework:
-    rate_limiter:
-        studio_mcp_general:
-            policy: 'sliding_window'
-            limit: 10000
-            interval: '1 minute'
-```
+It is separate from `studio_api_general` because MCP carries machine traffic - a single agent server can serve every
+chat in an installation from one address - while the Studio budget is sized for a browser UI. Retune it the same way.
