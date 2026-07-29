@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Exception;
 
 use InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\ObjectParameterNormalizer;
 
 /**
  * An MCP tool argument the caller got wrong, described in terms of that argument.

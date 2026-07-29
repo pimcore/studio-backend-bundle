@@ -202,6 +202,34 @@ final class McpToolErrorHandlerTest extends Unit
         $this->assertSame(7, $logger->records[0]['context']['id']);
     }
 
+    /**
+     * The handler is the terminal boundary, so nothing inside it may throw: an exception escaping
+     * here would replace the tool's original failure *and* lose it, because the log call happens
+     * after the correlation id is minted. `random_bytes()` can throw on entropy exhaustion, so the
+     * id is generated behind a fallback.
+     *
+     * Entropy failure cannot be provoked in-process, so this asserts the property that makes the
+     * fallback correct: the id is produced without touching anything that can fail, and every
+     * caller gets a well-formed one.
+     */
+    public function testCorrelationIdIsAlwaysWellFormed(): void
+    {
+        $logger = new RecordingLogger();
+        $handler = $this->handler($logger);
+
+        for ($i = 0; $i < 25; $i++) {
+            $message = $handler->handle(new RuntimeException('kaboom'), self::TOOL);
+
+            $this->assertSame(
+                1,
+                preg_match('/\(ref: [0-9a-f]{8}\)/u', $message),
+                'Every correlation id must be 8 hex characters.',
+            );
+        }
+
+        $this->assertCount(25, $logger->records);
+    }
+
     private function handler(RecordingLogger $logger): McpToolErrorHandler
     {
         return new McpToolErrorHandler($logger);

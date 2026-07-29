@@ -17,8 +17,11 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Exception\InvalidMcpToolArgumentExcep
 use Psr\Log\LoggerInterface;
 use Throwable;
 use function bin2hex;
+use function hash;
+use function hrtime;
 use function random_bytes;
 use function sprintf;
+use function substr;
 
 /**
  * Default {@see McpToolErrorHandlerInterface}: the terminal `catch` of an MCP tool.
@@ -74,6 +77,11 @@ use function sprintf;
  */
 final readonly class McpToolErrorHandler implements McpToolErrorHandlerInterface
 {
+    /**
+     * Bytes of entropy behind a correlation id; rendered as twice as many hex characters.
+     */
+    private const int REF_BYTES = 4;
+
     private const string CODE_BAD_ARGUMENT = 'invalid_argument';
 
     private const string CODE_INTERNAL = 'internal_error';
@@ -120,7 +128,7 @@ final readonly class McpToolErrorHandler implements McpToolErrorHandlerInterface
      */
     private function handleUnexpected(Throwable $exception, string $toolName, array $context): string
     {
-        $ref = bin2hex(random_bytes(4));
+        $ref = $this->correlationId();
 
         $this->logger->error(
             sprintf('Unhandled exception in %s (ref: %s)', $toolName, $ref),
@@ -138,5 +146,26 @@ final readonly class McpToolErrorHandler implements McpToolErrorHandlerInterface
         );
 
         return sprintf(self::MSG_INTERNAL, $toolName, $ref);
+    }
+
+    /**
+     * A short token shared between the returned sentence and the log record, so an operator can grep
+     * one to find the other.
+     *
+     * It is not a secret and carries no authority: it only has to be unique enough to grep within a
+     * log file. `random_bytes()` is used because it is the source that does not raise Sonar's
+     * weak-randomness hotspot, but it can throw when the system runs out of entropy — and this is
+     * the terminal error boundary, so a throw here would lose the very exception the handler exists
+     * to record, and escape in its place. The fallback keeps that impossible.
+     */
+    private function correlationId(): string
+    {
+        try {
+            return bin2hex(random_bytes(self::REF_BYTES));
+        } catch (Throwable) {
+            // Monotonic, non-blocking and cannot throw. Collisions are irrelevant: neighbouring
+            // records are distinguished by the exception and context logged alongside the ref.
+            return substr(hash('xxh128', (string) hrtime(true)), 0, self::REF_BYTES * 2);
+        }
     }
 }

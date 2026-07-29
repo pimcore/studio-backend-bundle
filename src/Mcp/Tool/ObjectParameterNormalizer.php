@@ -32,6 +32,21 @@ use function sprintf;
  *
  * The value is returned unchanged rather than coerced: a tool may distinguish "not supplied" (null)
  * from "supplied but empty", and collapsing the two would change its behaviour.
+ *
+ * ## Known limitation: object keys must not be sequential integers from zero
+ *
+ * `{"0":"a","1":"b"}` is rejected, even though the advertised schema says `object`. That is not a
+ * choice this class can make differently. `Mcp\JsonRpc\MessageFactory` decodes the payload with
+ * `json_decode($input, true)` before any tool is reached, and PHP casts numeric string keys to
+ * integers, so `{"0":"a","1":"b"}` and `["a","b"]` decode to *identical* values — `===` returns
+ * true. No inspection downstream can tell them apart, so a guard that rejects populated lists
+ * necessarily rejects that one object shape too.
+ *
+ * In practice this costs nothing: the parameters worth guarding are maps keyed by names the caller
+ * chose — editable names, field names, workflow options, tool arguments — and `"0"` is not one of
+ * them. A map with any non-integer key, or with integer keys that are not sequential from zero
+ * (`{"0":"a","2":"b"}`), passes normally. Do not use this guard for a parameter whose keys are
+ * genuinely arbitrary integers; give that parameter an `array` schema and validate it in the tool.
  */
 final class ObjectParameterNormalizer
 {

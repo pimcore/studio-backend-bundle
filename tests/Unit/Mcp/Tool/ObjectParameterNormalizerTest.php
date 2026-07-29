@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Tool;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Exception\InvalidMcpToolArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\ObjectParameterNormalizer;
+use function json_decode;
 
 /**
  * @internal
@@ -72,6 +73,37 @@ final class ObjectParameterNormalizerTest extends Unit
     public function testAMapWithNonSequentialKeysIsNotAList(): void
     {
         $value = [2 => 'b', 0 => 'a'];
+
+        $this->assertSame($value, ObjectParameterNormalizer::normalize($value, 'filter'));
+    }
+
+    /**
+     * Pins the documented limitation rather than pretending it away.
+     *
+     * `{"0":"a","1":"b"}` and `["a","b"]` decode to identical PHP values, because MessageFactory
+     * decodes associatively and PHP casts numeric string keys to integers. Nothing downstream can
+     * distinguish them, so the guard necessarily rejects that one object shape. Asserting the
+     * identity here means the test fails if that upstream behaviour ever changes, which is exactly
+     * when the limitation could be lifted.
+     */
+    public function testAnObjectWithSequentialNumericKeysIsIndistinguishableFromAListAndIsRejected(): void
+    {
+        $asObject = json_decode('{"0":"a","1":"b"}', true);
+        $asList = json_decode('["a","b"]', true);
+
+        $this->assertSame($asList, $asObject, 'Associative decoding collapses the two shapes.');
+
+        $this->expectException(InvalidMcpToolArgumentException::class);
+        ObjectParameterNormalizer::normalize($asObject, 'filter');
+    }
+
+    /**
+     * The escape hatch from that limitation: any non-integer key, anywhere, makes it an object
+     * again — including the mixed shape a caller is far more likely to send.
+     */
+    public function testAnObjectWithAnyStringKeyIsAccepted(): void
+    {
+        $value = json_decode('{"0":"a","label":"b"}', true);
 
         $this->assertSame($value, ObjectParameterNormalizer::normalize($value, 'filter'));
     }
