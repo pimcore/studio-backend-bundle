@@ -322,9 +322,10 @@ map, and a shared placeholder identifier when it matches nothing. `McpLoginRateL
 placeholder only, so a credential that resolves to a user is exempt from both the block and the count - there is no
 bucket it could be rejected from.
 
-This replaces Symfony's `DefaultLoginRateLimiter`, which is wired in through `login_throttling.limiter`. The default
-derives a second limiter keyed on IP alone; that tier is charged by every client on an address and peeked by every
-client on it, so guesses aimed at one credential can push an unrelated valid credential into a `429`.
+`McpLoginRateLimiter` is supplied as `login_throttling.limiter`, which makes Symfony skip the `DefaultLoginRateLimiter`
+it would otherwise build for the firewall. That default derives a second limiter keyed on IP alone, and that tier is
+charged by every client on an address and peeked by every client on it - so guesses aimed at one credential can push an
+unrelated valid credential into a `429`.
 
 Two credential types are deliberately **not** throttled:
 
