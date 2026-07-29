@@ -139,6 +139,10 @@ final readonly class UserPerspectiveService implements UserPerspectiveServiceInt
 
     private function getAllUserPerspectives(UserInterface|UserRoleInterface $user): array
     {
+        if ($user instanceof UserInterface && $user->isAdmin()) {
+            return [];
+        }
+
         $userPerspectives = $this->repository->listUserPerspectives($user->getId());
         if (!$user instanceof UserInterface) {
             return $userPerspectives;
