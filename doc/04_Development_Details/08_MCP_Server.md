@@ -36,7 +36,8 @@ instead carry a Pimcore Studio session cookie.
 
 ### Authenticator chain
 
-The firewall tries these authenticators in order; each returns `null` on failure so the next one can try:
+The firewall tries these authenticators in order. The first two return `null` on failure so the next one can try;
+`PatAuthenticator` is last and therefore owns the terminal response, answering `401` (or `429` when throttled):
 
 | Order | Authenticator | Trigger | Use case |
 |-------|---------------|---------|----------|
@@ -309,3 +310,64 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
   stops working the moment its user is deactivated or removed - `validate()` re-checks the user on every request - and a
   bundle can drop a user's tokens explicitly with `revokeByUser()`. See [Minting MCP access
   tokens](#minting-mcp-access-tokens).
+
+### Throttling guessed credentials
+
+Guesses at a **static PAT** are throttled per client IP: **5 failures per 5 minutes**, after which the client receives
+`429 Too Many Requests` with a `Retry-After` header in seconds. An ordinary authentication failure stays `401`. Honour
+`Retry-After` rather than polling.
+
+Only unrecognised tokens are counted. `PatAuthenticator` puts the resolved username on the passport when a token
+matches the configured token map and a shared placeholder when it matches nothing, and `McpLoginRateLimiter` only ever
+hands out a bucket for the placeholder. A recognised credential is therefore neither blocked nor counted.
+
+**Dynamic tokens** (`pmcp_…`) and **session bridge** requests are not throttled at all. A dynamic token is 32 random
+bytes, so guessing one is not a reachable attack; its protection is entropy, a short TTL and `revokeByUser()` - see
+[Minting MCP access tokens](#minting-mcp-access-tokens).
+
+Send one credential per request. The firewall runs every authenticator that matches, so a request carrying an
+unrecognised PAT *alongside* a valid session cookie is judged on the PAT. Such a request already failed with `401`
+before throttling existed; once the budget is gone it fails with `429` instead.
+
+The client IP comes from `Request::getClientIp()`. Configure `framework.trusted_proxies` behind a reverse proxy, or
+every client shares one bucket keyed on the proxy's address.
+
+To change the threshold, redefine the limiter:
+
+```yaml
+# config/packages/framework.yaml
+framework:
+    rate_limiter:
+        studio_mcp_login:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '5 minutes'
+```
+
+To change anything else about the firewall, redefine `pimcore_studio_backend.mcp_firewall_settings` in full. It is
+substituted as a whole value, so a partial override under `security.firewalls.pimcore_mcp` silently drops the pattern,
+provider and authenticators. The bundle only sets the parameter when it is not already defined:
+
+```yaml
+# config/packages/security.yaml (or any file loaded before the bundle's extension runs)
+parameters:
+    pimcore_studio_backend.mcp_firewall_settings:
+        pattern: '^/pimcore-mcp/'
+        user_checker: Pimcore\Security\User\UserChecker
+        provider: pimcore_studio_backend
+        stateless: true
+        login_throttling:
+            limiter: Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface
+        custom_authenticators:
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator
+```
+
+### Request rate limiting
+
+MCP endpoints have their own limiter, `studio_mcp_general`: **3000 requests per minute per client IP**, reported
+through `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`, and answered with `429` on overflow.
+
+It is separate from `studio_api_general` because MCP carries machine traffic - a single agent server can serve every
+chat in an installation from one address - while the Studio budget is sized for a browser UI. Retune it the same way.

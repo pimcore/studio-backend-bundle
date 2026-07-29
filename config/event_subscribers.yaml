@@ -26,3 +26,4 @@ services:
     arguments:
       $urlPrefix: '%pimcore_studio_backend.url_prefix%'
       $studioApiGeneralLimiter: '@limiter.studio_api_general'
+      $studioMcpGeneralLimiter: '@limiter.studio_mcp_general'
