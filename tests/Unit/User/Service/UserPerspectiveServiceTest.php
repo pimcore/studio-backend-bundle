@@ -89,7 +89,9 @@ final class UserPerspectiveServiceTest extends Unit
 
         $service = $this->createService(listUserPerspectives: ['stale-perspective']);
 
-        $service->validatePerspectiveAccess($user, 'some-other-perspective');
+        // 'other-perspective' is one of the two IDs createService() wires up as the full,
+        // unrestricted set - i.e. a perspective outside the stale assignment.
+        $service->validatePerspectiveAccess($user, 'other-perspective');
         $this->addToAssertionCount(1);
     }
 
