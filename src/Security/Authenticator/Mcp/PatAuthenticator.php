@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Model\User;
@@ -23,12 +24,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use function in_array;
+use function is_numeric;
+use function max;
 
 /**
  * Authenticates MCP requests via Personal Access Tokens (config-based).
@@ -41,21 +45,19 @@ use function in_array;
  */
 class PatAuthenticator extends AbstractAuthenticator
 {
-    use McpThrottlingResponseTrait;
-
     private const string AUTH_HEADER = 'Authorization';
 
     private const string BEARER_PREFIX = 'Bearer ';
 
     private const int BEARER_PREFIX_LENGTH = 7;
 
+    private const int SECONDS_PER_MINUTE = 60;
+
     /**
-     * Throttle bucket identifier for a credential that resolves to no user. Deliberately
-     * constant: DefaultLoginRateLimiter keys its local limiter on identifier+IP, so a
-     * per-token identifier would give every guess a fresh bucket and leave only the
-     * global per-IP tier doing any work.
+     * Used when the throttling exception carries no threshold. Deliberately a separate
+     * constant from SECONDS_PER_MINUTE despite the equal value - they mean different things.
      */
-    private const string INVALID_IDENTIFIER = '__invalid__';
+    private const int FALLBACK_RETRY_AFTER_SECONDS = 60;
 
     /**
      * @param array<string, list<string>> $tokenMap username => [token, ...]
@@ -99,11 +101,15 @@ class PatAuthenticator extends AbstractAuthenticator
         // lets LoginThrottlingListener::checkPassport() block a throttled client:
         // AuthenticatorManager dispatches CheckPassportEvent only *after* authenticate()
         // returns, so an authenticator that throws here can never be throttled.
+        //
+        // An unrecognised token carries the shared unknown-credential identifier, which is
+        // the only identifier McpLoginRateLimiter hands a bucket to. A token that resolves
+        // to a username carries that username instead and is therefore exempt.
         $username = $this->resolveUsername($token);
 
         return new SelfValidatingPassport(
             new UserBadge(
-                $username ?? self::INVALID_IDENTIFIER,
+                $username ?? McpLoginRateLimiterInterface::UNKNOWN_CREDENTIAL_IDENTIFIER,
                 fn (): SecurityUser => $this->loadUser($username)
             )
         );
@@ -154,6 +160,42 @@ class PatAuthenticator extends AbstractAuthenticator
             ['error' => $exception->getMessageKey()],
             HttpResponseCodes::UNAUTHORIZED->value
         );
+    }
+
+    /**
+     * Maps login throttling to a machine-readable 429.
+     *
+     * TooManyLoginAttemptsAuthenticationException is an ordinary AuthenticationException, so
+     * without this it would render as a bare 401 - telling an MCP client its credential is
+     * wrong when the truth is "back off". MCP clients are programs that act on Retry-After.
+     */
+    private function throttlingResponse(AuthenticationException $exception): ?JsonResponse
+    {
+        if (!$exception instanceof TooManyLoginAttemptsAuthenticationException) {
+            return null;
+        }
+
+        $response = new JsonResponse(
+            ['error' => 'Too many failed authentication attempts. Please try again later.'],
+            HttpResponseCodes::TOO_MANY_REQUESTS->value
+        );
+        $response->headers->set('Retry-After', (string) $this->retryAfterSeconds($exception));
+
+        return $response;
+    }
+
+    /**
+     * getMessageData() reports the threshold in minutes and it may be null. The threshold is
+     * ceil((resetTime - now) / 60), which is 0 at a window boundary - advertising
+     * "Retry-After: 0" would invite an immediate retry, so it is floored at one minute.
+     */
+    private function retryAfterSeconds(TooManyLoginAttemptsAuthenticationException $exception): int
+    {
+        $minutes = $exception->getMessageData()['%minutes%'] ?? null;
+
+        return is_numeric($minutes)
+            ? max(1, (int) $minutes) * self::SECONDS_PER_MINUTE
+            : self::FALLBACK_RETRY_AFTER_SECONDS;
     }
 
     private function resolveUsername(string $token): ?string

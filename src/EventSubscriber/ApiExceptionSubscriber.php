@@ -46,8 +46,13 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
     {
         $exception = $event->getThrowable();
         $request = $event->getRequest();
+        $path = $request->getPathInfo();
 
-        if (!$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)) {
+        // MCP paths are listed alongside the Studio API prefix because RateLimitSubscriber
+        // now raises RateLimitException on them too; without this the 429 would fall through
+        // to Symfony's default error rendering instead of the JSON envelope every other
+        // Studio error uses.
+        if (!$this->isStudioBackendPath($path, $this->urlPrefix) && !$this->isMcpPath($path)) {
             return;
         }
 

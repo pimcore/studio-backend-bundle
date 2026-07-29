@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\Authenticator\M
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
+use Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -72,12 +73,19 @@ final class PatAuthenticatorTest extends Unit
         $first = $auth->authenticate($this->requestWith('Bearer guess-one'));
         $second = $auth->authenticate($this->requestWith('Bearer guess-two'));
 
-        // DefaultLoginRateLimiter keys its local limiter on identifier+IP. A per-token
-        // identifier would hand every guess a fresh bucket, leaving only the global
-        // per-IP tier doing any work.
+        // A per-token identifier would hand every guess a fresh bucket, so a sweep would
+        // never fill one. The shared identifier is what collapses the bucket to "unknown
+        // credentials from this IP".
         $this->assertSame(
             $first->getBadge(UserBadge::class)->getUserIdentifier(),
             $second->getBadge(UserBadge::class)->getUserIdentifier()
+        );
+
+        // McpLoginRateLimiter hands out a bucket for exactly this identifier, so the two
+        // classes have to agree on it.
+        $this->assertSame(
+            McpLoginRateLimiterInterface::UNKNOWN_CREDENTIAL_IDENTIFIER,
+            $first->getBadge(UserBadge::class)->getUserIdentifier()
         );
     }
 
@@ -139,7 +147,33 @@ final class PatAuthenticatorTest extends Unit
 
         $this->assertNotNull($response);
         $this->assertSame(429, $response->getStatusCode());
+        // The exception reports minutes; Retry-After is defined in seconds.
         $this->assertSame('300', $response->headers->get('Retry-After'));
+    }
+
+    public function testRetryAfterIsFlooredAtOneMinuteAtAWindowBoundary(): void
+    {
+        // LoginThrottlingListener computes the threshold as ceil((resetTime - now) / 60),
+        // which is 0 when the window is about to roll. Advertising "Retry-After: 0" would
+        // invite an immediate retry.
+        $response = $this->makeAuthenticator([])->onAuthenticationFailure(
+            $this->requestWith('Bearer wrong'),
+            new TooManyLoginAttemptsAuthenticationException(0)
+        );
+
+        $this->assertNotNull($response);
+        $this->assertSame('60', $response->headers->get('Retry-After'));
+    }
+
+    public function testRetryAfterFallsBackWhenNoThresholdIsGiven(): void
+    {
+        $response = $this->makeAuthenticator([])->onAuthenticationFailure(
+            $this->requestWith('Bearer wrong'),
+            new TooManyLoginAttemptsAuthenticationException()
+        );
+
+        $this->assertNotNull($response);
+        $this->assertSame('60', $response->headers->get('Retry-After'));
     }
 
     /**

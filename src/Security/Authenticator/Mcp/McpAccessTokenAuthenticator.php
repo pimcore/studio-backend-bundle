@@ -22,13 +22,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use function str_starts_with;
-use function hash;
 use function strlen;
 use function substr;
 
@@ -45,28 +43,11 @@ use function substr;
  */
 final class McpAccessTokenAuthenticator extends AbstractAuthenticator
 {
-    use McpThrottlingResponseTrait;
-
     public const string REQUEST_ATTR_REFERENCE = '_mcp_token_reference';
 
     private const string AUTH_HEADER = 'Authorization';
 
     private const string BEARER_PREFIX = 'Bearer ';
-
-    /**
-     * Marks a throttling identifier as a token digest rather than a username, so the two
-     * can never collide in a limiter bucket.
-     */
-    private const string IDENTIFIER_PREFIX = 'mcp-token:';
-
-    private const int IDENTIFIER_LENGTH = 16;
-
-    /**
-     * Domain separator. Without it the digest would be a prefix of the very value
-     * McpAccessTokenService stores as the token's server-side verifier, and this digest
-     * is written to the request's LAST_USERNAME attribute where it is far more exposed.
-     */
-    private const string IDENTIFIER_DOMAIN = 'mcp-throttle|';
 
     public function __construct(
         private readonly McpAccessTokenServiceInterface $accessTokenService,
@@ -83,55 +64,22 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
     public function authenticate(Request $request): Passport
     {
         $token = substr($request->headers->get(self::AUTH_HEADER, ''), strlen(self::BEARER_PREFIX));
-
-        // The badge is built before the lookup: AuthenticatorManager dispatches
-        // CheckPassportEvent only after authenticate() returns, so throwing here would put
-        // this authenticator out of reach of LoginThrottlingListener's blocking peek.
-        //
-        // validate() *is* the lookup, so the real user is unknown at this point. The
-        // identifier is therefore derived from the token itself rather than shared across
-        // all dynamic tokens: one shared placeholder would put valid and guessed tokens in
-        // the same bucket, so a handful of wrong guesses would lock out a legitimate token
-        // from the same IP. Guessing is bounded instead by the global per-IP tier, which
-        // is the breadth-first defence that tier exists for.
-        return new SelfValidatingPassport(
-            new UserBadge(
-                $this->throttleIdentifier($token),
-                fn (): SecurityUser => $this->loadUser($token, $request)
-            ),
-        );
-    }
-
-    /**
-     * A stable, non-secret stand-in for the user identifier, used only to key the login
-     * throttling buckets. LoginThrottlingListener writes it to the request's LAST_USERNAME
-     * attribute, so it must never be the raw credential.
-     */
-    private function throttleIdentifier(string $token): string
-    {
-        return self::IDENTIFIER_PREFIX
-            . substr(hash('sha256', self::IDENTIFIER_DOMAIN . $token), 0, self::IDENTIFIER_LENGTH);
-    }
-
-    /**
-     * Resolves the token when the badge is resolved - during CheckPassportEvent, after
-     * the throttling peek and before the controller runs.
-     *
-     * @throws UserNotFoundException
-     */
-    private function loadUser(string $token, Request $request): SecurityUser
-    {
         $validated = $this->accessTokenService->validate($token);
 
-        if ($validated === null || !$validated->user instanceof User) {
-            throw new UserNotFoundException('Invalid or expired MCP access token.');
+        if ($validated === null) {
+            throw new AuthenticationException('Invalid or expired MCP access token.');
         }
 
-        // Bind the token's own reference so HasChatSession can trust it over any forged
-        // X-Chat-Session-Id header. Only ever set for a token that actually validated.
+        $user = $validated->user;
+        if (!$user instanceof User) {
+            throw new AuthenticationException('Invalid or expired MCP access token.');
+        }
+
         $request->attributes->set(self::REQUEST_ATTR_REFERENCE, $validated->reference);
 
-        return new SecurityUser($validated->user);
+        return new SelfValidatingPassport(
+            new UserBadge($user->getUsername(), static fn () => new SecurityUser($user)),
+        );
     }
 
     public function onAuthenticationSuccess(
@@ -146,6 +94,7 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception,
     ): ?Response {
-        return $this->throttlingResponse($exception);
+        // Return null so the next authenticator (PatAuthenticator) can try.
+        return null;
     }
 }

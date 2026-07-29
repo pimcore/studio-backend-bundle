@@ -270,15 +270,20 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'user_checker' => 'Pimcore\Security\User\UserChecker',
                 'provider' => 'pimcore_studio_backend',
                 'stateless' => true,
-                // Brute-force protection for MCP bearer credentials. The bearer
-                // authenticators build their UserBadge before performing any lookup, so
-                // LoginThrottlingListener::checkPassport() (CheckPassportEvent, priority
-                // 2080) can reject a throttled client before any database work happens.
-                // Symfony derives a second, 5x looser per-IP limiter from max_attempts
-                // automatically.
+                // Throttles guesses at MCP bearer credentials. PatAuthenticator builds its
+                // UserBadge before performing any lookup, so LoginThrottlingListener
+                // (CheckPassportEvent, priority 2080) can reject a throttled client before
+                // any database work happens.
+                //
+                // A limiter service is supplied deliberately: without it Symfony builds a
+                // DefaultLoginRateLimiter whose derived per-IP tier is peeked by every
+                // client on an address, so guesses against one credential can push an
+                // unrelated valid credential into a 429. McpLoginRateLimiter has a single
+                // tier and exempts anything that resolves to a user. max_attempts and
+                // interval are ignored when limiter is set - tune limiter.studio_mcp_login
+                // via framework.rate_limiter instead.
                 'login_throttling' => [
-                    'max_attempts' => 5,
-                    'interval' => '5 minutes',
+                    'limiter' => 'Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface',
                 ],
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',

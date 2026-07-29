@@ -35,6 +35,10 @@ final class RateLimitSubscriberTest extends Unit
 {
     private const string URL_PREFIX = '/pimcore-studio/api';
 
+    private const string MCP_PATH = '/pimcore-mcp/agent/documents';
+
+    private const int MCP_LIMIT = 3000;
+
     public function testGetSubscribedEvents(): void
     {
         $events = RateLimitSubscriber::getSubscribedEvents();
@@ -118,11 +122,33 @@ final class RateLimitSubscriberTest extends Unit
     public function testMcpPathIsRateLimited(): void
     {
         $subscriber = $this->createSubscriber();
-        $event = $this->createRequestEvent('/pimcore-mcp/agent/documents');
+        $event = $this->createRequestEvent(self::MCP_PATH);
 
         $subscriber->onKernelRequest($event);
 
         $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        // The MCP budget, not the Studio one - MCP carries machine traffic and is sized
+        // separately.
+        $this->assertSame(self::MCP_LIMIT, $rateLimit->getLimit());
+        $this->assertSame(self::MCP_LIMIT - 1, $rateLimit->getRemainingTokens());
+    }
+
+    /**
+     * The two limiters must not share a bucket, or MCP traffic would silently eat the
+     * Studio UI's budget - which is the coupling this separation exists to remove.
+     *
+     * @throws Exception
+     */
+    public function testMcpTrafficDoesNotConsumeTheStudioBudget(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $subscriber->onKernelRequest($this->createRequestEvent(self::MCP_PATH));
+
+        $studioEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($studioEvent);
+
+        $rateLimit = $studioEvent->getRequest()->attributes->get('_studio_rate_limit');
         $this->assertInstanceOf(RateLimit::class, $rateLimit);
         $this->assertSame(499, $rateLimit->getRemainingTokens());
     }
@@ -133,7 +159,7 @@ final class RateLimitSubscriberTest extends Unit
     public function testMcpOptionsRequestIsIgnored(): void
     {
         $subscriber = $this->createSubscriber();
-        $event = $this->createRequestEvent('/pimcore-mcp/agent/documents', 'OPTIONS');
+        $event = $this->createRequestEvent(self::MCP_PATH, 'OPTIONS');
 
         $subscriber->onKernelRequest($event);
 
@@ -276,21 +302,26 @@ final class RateLimitSubscriberTest extends Unit
     private function createSubscriber(
         int $limit = 500,
         bool $enabled = true,
+        int $mcpLimit = self::MCP_LIMIT,
     ): RateLimitSubscriber {
-        $factory = new RateLimiterFactory(
+        return new RateLimitSubscriber(
+            self::URL_PREFIX,
+            $this->createLimiterFactory('test_studio_api', $limit),
+            $this->createLimiterFactory('test_studio_mcp', $mcpLimit),
+            $enabled,
+        );
+    }
+
+    private function createLimiterFactory(string $id, int $limit): RateLimiterFactory
+    {
+        return new RateLimiterFactory(
             [
-                'id' => 'test_studio_api',
+                'id' => $id,
                 'policy' => 'sliding_window',
                 'limit' => $limit,
                 'interval' => '60 seconds',
             ],
             new InMemoryStorage(),
-        );
-
-        return new RateLimitSubscriber(
-            self::URL_PREFIX,
-            $factory,
-            $enabled,
         );
     }
 
