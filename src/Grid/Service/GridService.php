@@ -248,32 +248,13 @@ final class GridService implements GridServiceInterface
                 continue;
             }
 
-            $resolver = $this->getColumnResolvers()[$column->getType()];
-
-            if ($databaseElement !== null
-                && !$this->isLocaleViewableForElement($databaseElement, $column->getLocale(), $user)
-            ) {
-                $columnData = new ColumnData(
-                    key: $column->getKey(),
-                    locale: $column->getLocale(),
-                    value: null,
-                    fieldType: $column->getType(),
-                );
-            } else {
-                $columnData = match (true) {
-                    $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
-                        $resolver->resolveForExport($column, $databaseElement, $user),
-                    $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
-                        $resolver->resolveForCoreElement($column, $databaseElement),
-                    $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
-                        $resolver->resolveForStudioElement($column, $element),
-                    default =>
-                        throw new InvalidArgumentException(
-                            'Resolver must implement either StudioElementColumnResolverInterface or
-                            CoreElementColumnResolverInterface'
-                        ),
-                };
-            }
+            $columnData = $this->resolveColumnDataRespectingLocalePermission(
+                $column,
+                $databaseElement,
+                $element,
+                $isExport,
+                $user
+            );
 
             $this->eventDispatcher->dispatch(
                 new GridColumnDataEvent($columnData),
@@ -287,6 +268,41 @@ final class GridService implements GridServiceInterface
         }
 
         return $data;
+    }
+
+    private function resolveColumnDataRespectingLocalePermission(
+        Column $column,
+        ?ElementInterface $databaseElement,
+        ?StudioElementInterface $element,
+        bool $isExport,
+        ?UserInterface $user,
+    ): ColumnData {
+        if ($databaseElement !== null
+            && !$this->isLocaleViewableForElement($databaseElement, $column->getLocale(), $user)
+        ) {
+            return new ColumnData(
+                key: $column->getKey(),
+                locale: $column->getLocale(),
+                value: null,
+                fieldType: $column->getType(),
+            );
+        }
+
+        $resolver = $this->getColumnResolvers()[$column->getType()];
+
+        return match (true) {
+            $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
+                $resolver->resolveForExport($column, $databaseElement, $user),
+            $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
+                $resolver->resolveForCoreElement($column, $databaseElement),
+            $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
+                $resolver->resolveForStudioElement($column, $element),
+            default =>
+                throw new InvalidArgumentException(
+                    'Resolver must implement either StudioElementColumnResolverInterface or
+                    CoreElementColumnResolverInterface'
+                ),
+        };
     }
 
     /**
