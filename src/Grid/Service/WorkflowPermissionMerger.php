@@ -19,6 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Workflow\Manager;
+use Symfony\Component\Workflow\Exception\LogicException;
+use function array_merge;
+use function count;
 
 /**
  * @internal
@@ -32,18 +35,24 @@ final readonly class WorkflowPermissionMerger implements WorkflowPermissionMerge
 
     public function mergeWorkflowPermissions(Permissions $permissions, ElementInterface $element): Permissions
     {
-        $view = $permissions->isView() && !$this->isDenied($element, 'view');
-        $publish = $permissions->isPublish() && !$this->isDenied($element, 'publish');
-        $delete = $permissions->isDelete() && !$this->isDenied($element, 'delete');
-        $rename = $permissions->isRename() && !$this->isDenied($element, 'rename');
-        $settings = $permissions->isSettings() && !$this->isDenied($element, 'settings');
-        $versions = $permissions->isVersions() && !$this->isDenied($element, 'versions');
-        $properties = $permissions->isProperties() && !$this->isDenied($element, 'properties');
+        $workflowPermissions = $this->getWorkflowUserPermissions($element);
+
+        if (count($workflowPermissions) === 0) {
+            return $permissions;
+        }
+
+        $view = $permissions->isView() && !$this->isDenied($workflowPermissions, 'view');
+        $publish = $permissions->isPublish() && !$this->isDenied($workflowPermissions, 'publish');
+        $delete = $permissions->isDelete() && !$this->isDenied($workflowPermissions, 'delete');
+        $rename = $permissions->isRename() && !$this->isDenied($workflowPermissions, 'rename');
+        $settings = $permissions->isSettings() && !$this->isDenied($workflowPermissions, 'settings');
+        $versions = $permissions->isVersions() && !$this->isDenied($workflowPermissions, 'versions');
+        $properties = $permissions->isProperties() && !$this->isDenied($workflowPermissions, 'properties');
 
         return match (true) {
             $permissions instanceof DataObjectPermissions => new DataObjectPermissions(
-                save: $permissions->isSave() && !$this->isDenied($element, 'save'),
-                unpublish: $permissions->isUnpublish() && !$this->isDenied($element, 'unpublish'),
+                save: $permissions->isSave() && !$this->isDenied($workflowPermissions, 'save'),
+                unpublish: $permissions->isUnpublish() && !$this->isDenied($workflowPermissions, 'unpublish'),
                 localizedEdit: $permissions->getLocalizedEdit(),
                 localizedView: $permissions->getLocalizedView(),
                 list: $permissions->isList(),
@@ -57,8 +66,8 @@ final readonly class WorkflowPermissionMerger implements WorkflowPermissionMerge
                 properties: $properties,
             ),
             $permissions instanceof DocumentPermissions => new DocumentPermissions(
-                save: $permissions->isSave() && !$this->isDenied($element, 'save'),
-                unpublish: $permissions->isUnpublish() && !$this->isDenied($element, 'unpublish'),
+                save: $permissions->isSave() && !$this->isDenied($workflowPermissions, 'save'),
+                unpublish: $permissions->isUnpublish() && !$this->isDenied($workflowPermissions, 'unpublish'),
                 list: $permissions->isList(),
                 view: $view,
                 publish: $publish,
@@ -94,8 +103,53 @@ final readonly class WorkflowPermissionMerger implements WorkflowPermissionMerge
         };
     }
 
-    private function isDenied(ElementInterface $element, string $permissionType): bool
+    /**
+     * Evaluates the element's workflow state once and returns the merged place permission map.
+     *
+     * Mirrors the merge semantics of the private \Pimcore\Workflow\Manager::getWorkflowUserPermissions()
+     * (which backs Manager::isDeniedInWorkflow()) so a grid row triggers a single workflow evaluation
+     * instead of one per permission type.
+     *
+     * @return array<string, mixed>
+     */
+    private function getWorkflowUserPermissions(ElementInterface $element): array
     {
-        return $this->workflowManager->isDeniedInWorkflow($element, $permissionType);
+        $userPermissions = [];
+        foreach ($this->workflowManager->getAllWorkflows() as $workflowName) {
+            $workflow = $this->workflowManager->getWorkflowIfExists($element, $workflowName);
+
+            if ($workflow === null) {
+                continue;
+            }
+
+            try {
+                $marking = $workflow->getMarking($element);
+            } catch (LogicException) {
+                continue;
+            }
+
+            if (count($marking->getPlaces()) === 0) {
+                continue;
+            }
+
+            foreach ($this->workflowManager->getOrderedPlaceConfigs($workflow, $marking) as $placeConfig) {
+                if (count($placeConfig->getPermissions($workflow, $element)) > 0) {
+                    $userPermissions = array_merge(
+                        $userPermissions,
+                        $placeConfig->getUserPermissions($workflow, $element)
+                    );
+                }
+            }
+        }
+
+        return $userPermissions;
+    }
+
+    /**
+     * @param array<string, mixed> $workflowPermissions
+     */
+    private function isDenied(array $workflowPermissions, string $permissionType): bool
+    {
+        return ($workflowPermissions[$permissionType] ?? null) === false;
     }
 }

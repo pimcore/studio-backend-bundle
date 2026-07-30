@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -266,7 +267,7 @@ final class GridService implements GridServiceInterface
 
         $permissions = $element->getPermissions();
 
-        if (!$element->getHasWorkflowWithPermissions()) {
+        if (!$element instanceof WorkflowPermissionsAwareInterface || !$element->getHasWorkflowWithPermissions()) {
             return $permissions;
         }
 

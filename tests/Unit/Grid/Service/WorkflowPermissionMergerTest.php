@@ -19,6 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMerger;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Workflow\Manager;
+use Pimcore\Workflow\Place\PlaceConfig;
+use Symfony\Component\Workflow\Marking;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
  * @internal
@@ -26,12 +29,13 @@ use Pimcore\Workflow\Manager;
 final class WorkflowPermissionMergerTest extends Unit
 {
     /**
-     * A permission that the user is allowed but the workflow denies must become denied.
+     * A permission that the user is allowed but the workflow denies must become denied,
+     * and the workflow state must be evaluated only once per element.
      */
     public function testWorkflowDenialRestrictsUserPermissions(): void
     {
         $merger = new WorkflowPermissionMerger(
-            $this->createManagerDenying(['delete', 'save'])
+            $this->createManagerDenying(['delete' => false, 'save' => false])
         );
 
         $merged = $merger->mergeWorkflowPermissions(
@@ -92,16 +96,31 @@ final class WorkflowPermissionMergerTest extends Unit
     }
 
     /**
-     * @param array<int, string> $deniedPermissions
+     * Builds a Manager whose single workflow place returns the given permission map. The map is
+     * merged exactly once per element (asserted via the expectation on getAllWorkflows()).
+     *
+     * @param array<string, bool> $placePermissions
      */
-    private function createManagerDenying(array $deniedPermissions): Manager
+    private function createManagerDenying(array $placePermissions): Manager
     {
         $manager = $this->createMock(Manager::class);
-        $manager->method('isDeniedInWorkflow')
-            ->willReturnCallback(
-                static fn (ElementInterface $element, string $permissionType): bool
-                    => in_array($permissionType, $deniedPermissions, true)
-            );
+        $manager->expects($this->once())->method('getAllWorkflows')->willReturn(
+            $placePermissions === [] ? [] : ['test_workflow']
+        );
+
+        if ($placePermissions === []) {
+            return $manager;
+        }
+
+        $workflow = $this->createMock(WorkflowInterface::class);
+        $workflow->method('getMarking')->willReturn(new Marking(['test_place' => 1]));
+
+        $placeConfig = $this->createMock(PlaceConfig::class);
+        $placeConfig->method('getPermissions')->willReturn($placePermissions);
+        $placeConfig->method('getUserPermissions')->willReturn($placePermissions);
+
+        $manager->method('getWorkflowIfExists')->willReturn($workflow);
+        $manager->method('getOrderedPlaceConfigs')->willReturn([$placeConfig]);
 
         return $manager;
     }

@@ -38,6 +38,4 @@ interface StudioElementInterface
     public function getIsLocked(): bool;
 
     public function getPermissions(): Permissions;
-
-    public function getHasWorkflowWithPermissions(): bool;
 }
