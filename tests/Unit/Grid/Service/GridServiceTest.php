@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterfa
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
@@ -99,6 +100,7 @@ final class GridServiceTest extends Unit
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            $this->makeEmpty(WorkflowPermissionMergerInterface::class),
             $logger ?? $this->makeEmpty(LoggerInterface::class),
         );
     }

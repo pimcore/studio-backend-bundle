@@ -120,6 +120,11 @@ class Element implements StudioElementInterface
         return new Permissions();
     }
 
+    public function getHasWorkflowWithPermissions(): bool
+    {
+        return false;
+    }
+
     public function getElementType(): string
     {
         return $this->elementType;
