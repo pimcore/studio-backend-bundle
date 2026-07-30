@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
@@ -87,6 +88,7 @@ final class GridService implements GridServiceInterface
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
         private readonly LoggerInterface $pimcoreLogger,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly ToolResolverInterface $toolResolver,
     ) {
     }
 
@@ -115,7 +117,26 @@ final class GridService implements GridServiceInterface
             return true;
         }
 
-        return array_key_exists($locale, $allowedView);
+        if (!array_key_exists($locale, $allowedView)) {
+            return false;
+        }
+
+        // An empty value for an allowed locale can silently fall back to the default language
+        // (LocalizedValueTrait::getLocalizedValue()). If that fallback language isn't permitted,
+        // the column must be treated as not viewable - otherwise a denied language's value could
+        // still leak out through the fallback.
+        if ($this->localizedFieldResolver->doGetFallbackValues()) {
+            $defaultLanguage = $this->toolResolver->getDefaultLanguage();
+            $fallbackLanguageIsDenied = $defaultLanguage !== null
+                && $defaultLanguage !== $locale
+                && !array_key_exists($defaultLanguage, $allowedView);
+
+            if ($fallbackLanguageIsDenied) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

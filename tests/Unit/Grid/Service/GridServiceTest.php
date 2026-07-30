@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Service;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
@@ -115,6 +116,65 @@ final class GridServiceTest extends Unit
         );
 
         self::assertFalse($service->isLocaleViewableForElement($element, 'de', $user));
+        self::assertTrue($service->isLocaleViewableForElement($element, 'en', $user));
+    }
+
+    /**
+     * An allowed locale with an empty value can silently fall back to the default language
+     * (LocalizedValueTrait::getLocalizedValue()). If that fallback language is not itself
+     * permitted, the column must be denied - otherwise a restricted language's value could leak
+     * out through the fallback even though the requested locale was legitimately allowed.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testIsLocaleViewableForElementReturnsFalseWhenFallbackLanguageIsDenied(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                // Only "en" is allowed - "de" (the system default language) is not.
+                'getLanguagePermissions' => ['en' => 1],
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user,
+            ]),
+            localizedFieldResolver: $this->makeEmpty(LocalizedFieldResolverInterface::class, [
+                'doGetFallbackValues' => true,
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'getDefaultLanguage' => 'de',
+            ]),
+        );
+
+        self::assertFalse($service->isLocaleViewableForElement($element, 'en', $user));
+    }
+
+    /**
+     * When fallback is enabled but the default language is itself allowed (or is the same as
+     * the requested locale), there is no additional exposure and the column stays viewable.
+     */
+    public function testIsLocaleViewableForElementReturnsTrueWhenFallbackLanguageIsAllowed(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['en' => 1, 'de' => 1],
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user,
+            ]),
+            localizedFieldResolver: $this->makeEmpty(LocalizedFieldResolverInterface::class, [
+                'doGetFallbackValues' => true,
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'getDefaultLanguage' => 'de',
+            ]),
+        );
+
         self::assertTrue($service->isLocaleViewableForElement($element, 'en', $user));
     }
 
@@ -296,6 +356,8 @@ final class GridServiceTest extends Unit
         ?DataObjectServiceResolverInterface $dataObjectServiceResolver = null,
         ?SecurityServiceInterface $securityService = null,
         ?ColumnResolverLoaderInterface $columnResolverLoader = null,
+        ?LocalizedFieldResolverInterface $localizedFieldResolver = null,
+        ?ToolResolverInterface $toolResolver = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -306,9 +368,10 @@ final class GridServiceTest extends Unit
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
-            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            $localizedFieldResolver ?? $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $logger ?? $this->makeEmpty(LoggerInterface::class),
             $dataObjectServiceResolver ?? $this->makeEmpty(DataObjectServiceResolverInterface::class),
+            $toolResolver ?? $this->makeEmpty(ToolResolverInterface::class),
         );
     }
 }
