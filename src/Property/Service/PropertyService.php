@@ -51,8 +51,14 @@ final readonly class PropertyService implements PropertyServiceInterface
     public function createPredefinedProperty(): PredefinedProperty
     {
         $predefined = $this->propertyRepository->createPredefinedProperty();
+        $predefinedProperty = $this->propertyHydrator->hydratePredefinedProperty($predefined);
 
-        return $this->getPredefinedProperty($predefined->getId());
+        $this->eventDispatcher->dispatch(
+            new PredefinedPropertyEvent($predefinedProperty),
+            PredefinedPropertyEvent::EVENT_NAME
+        );
+
+        return $predefinedProperty;
     }
 
     /**
@@ -131,9 +137,17 @@ final readonly class PropertyService implements PropertyServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty
     {
-        $this->propertyRepository->updatePredefinedProperty($id, $property);
+        $predefined = $this->propertyRepository->updatePredefinedProperty($id, $property);
+        $predefinedProperty = $this->propertyHydrator->hydratePredefinedProperty($predefined);
+
+        $this->eventDispatcher->dispatch(
+            new PredefinedPropertyEvent($predefinedProperty),
+            PredefinedPropertyEvent::EVENT_NAME
+        );
+
+        return $predefinedProperty;
     }
 
     /**
