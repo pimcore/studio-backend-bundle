@@ -72,8 +72,6 @@ final class UpdateController extends AbstractApiController
         string $id,
         #[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty
     ): JsonResponse {
-        $this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty);
-
-        return $this->jsonResponse($this->propertyService->getPredefinedProperty($id));
+        return $this->jsonResponse($this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty));
     }
 }
