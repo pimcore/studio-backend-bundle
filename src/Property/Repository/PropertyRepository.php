@@ -101,7 +101,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined
     {
         $predefined = $this->getPredefinedProperty($id);
 
@@ -115,6 +115,8 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         $predefined->setInheritable($property->isInheritable());
 
         $predefined->save();
+
+        return $predefined;
     }
 
     /**

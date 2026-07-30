@@ -51,7 +51,7 @@ interface PropertyServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void;
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty;
 
     /**
      * @throws NotFoundException
