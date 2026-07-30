@@ -260,9 +260,13 @@ final class GridService implements GridServiceInterface
         string $elementType,
         int $elementId,
     ): ?Permissions {
-        $permissions = $element?->getPermissions();
+        if ($element === null) {
+            return null;
+        }
 
-        if ($permissions === null || $element === null || !$element->getHasWorkflowWithPermissions()) {
+        $permissions = $element->getPermissions();
+
+        if (!$element->getHasWorkflowWithPermissions()) {
             return $permissions;
         }
 
