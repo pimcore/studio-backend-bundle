@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Service;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
@@ -28,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -84,10 +87,142 @@ final class GridServiceTest extends Unit
         $this->assertSame(2, $result->getTotalItems());
     }
 
+    /**
+     * A non-admin user restricted to "en" for viewing must not receive values for other
+     * locales, regardless of which column resolver would have produced them.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testIsLocaleViewableForElementReturnsFalseWhenLocaleNotAllowed(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['en' => 1],
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user,
+            ]),
+        );
+
+        self::assertFalse($service->isLocaleViewableForElement($element, 'de', $user));
+        self::assertTrue($service->isLocaleViewableForElement($element, 'en', $user));
+    }
+
+    /**
+     * No workspace language restriction configured (null permission set) means every locale
+     * stays viewable - this mirrors the pre-existing Object Editor behaviour.
+     */
+    public function testIsLocaleViewableForElementReturnsTrueWhenNoRestrictionConfigured(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => null,
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user,
+            ]),
+        );
+
+        self::assertTrue($service->isLocaleViewableForElement($element, 'de', $user));
+    }
+
+    /**
+     * Admins are exempt from language-view restrictions.
+     */
+    public function testIsLocaleViewableForElementReturnsTrueForAdminUser(): void
+    {
+        $user = $this->buildUser(isAdmin: true);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => Expected::never(),
+            ]),
+        );
+
+        self::assertTrue($service->isLocaleViewableForElement($element, 'de', $user));
+    }
+
+    /**
+     * Columns without a locale (e.g. system columns) are never subject to language filtering.
+     */
+    public function testIsLocaleViewableForElementReturnsTrueWhenColumnHasNoLocale(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => Expected::never(),
+            ]),
+        );
+
+        self::assertTrue($service->isLocaleViewableForElement($element, null, $user));
+    }
+
+    /**
+     * Only concrete data objects carry per-locale workspace permissions; other element types
+     * (assets, documents) are unaffected by this check.
+     */
+    public function testIsLocaleViewableForElementReturnsTrueForNonDataObjectElements(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(AbstractObject::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => Expected::never(),
+            ]),
+        );
+
+        self::assertTrue($service->isLocaleViewableForElement($element, 'de', $user));
+    }
+
+    /**
+     * When no user is passed explicitly, the current session user is resolved and used for
+     * the permission check - this is what the default grid-browsing path relies on.
+     */
+    public function testIsLocaleViewableForElementFallsBackToCurrentUser(): void
+    {
+        $currentUser = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['en' => 1],
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $currentUser,
+            ]),
+        );
+
+        self::assertFalse($service->isLocaleViewableForElement($element, 'de'));
+    }
+
+    /**
+     * User is final and cannot be doubled - a real instance with just the admin flag set is
+     * enough for the permission checks under test here.
+     */
+    private function buildUser(bool $isAdmin): User
+    {
+        $user = new User();
+        $user->setAdmin($isAdmin);
+
+        return $user;
+    }
+
     private function createService(
         ?GridSearchInterface $gridSearch = null,
         ?ServiceResolverInterface $serviceResolver = null,
         ?LoggerInterface $logger = null,
+        ?DataObjectServiceResolverInterface $dataObjectServiceResolver = null,
+        ?SecurityServiceInterface $securityService = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -95,11 +230,12 @@ final class GridServiceTest extends Unit
             $this->makeEmpty(ColumnCollectorLoaderInterface::class),
             $gridSearch ?? $this->makeEmpty(GridSearchInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class),
-            $this->makeEmpty(SecurityServiceInterface::class),
+            $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $this->makeEmpty(LocalizedFieldResolverInterface::class),
             $logger ?? $this->makeEmpty(LoggerInterface::class),
+            $dataObjectServiceResolver ?? $this->makeEmpty(DataObjectServiceResolverInterface::class),
         );
     }
 }

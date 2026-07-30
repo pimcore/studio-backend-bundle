@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -38,6 +39,17 @@ interface GridServiceInterface
     public function getDocumentGridColumns(): ColumnCollection;
 
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): ColumnCollection;
+
+    /**
+     * Whether the given (or, if omitted, the current) user is allowed to view the given locale
+     * for the given element, based on the "Viewable Languages" workspace permission. Non-object
+     * elements and columns without a locale are always considered viewable.
+     */
+    public function isLocaleViewableForElement(
+        ElementInterface $element,
+        ?string $locale,
+        ?UserInterface $user = null,
+    ): bool;
 
     /**
      * @throws InvalidArgumentException|NotFoundException

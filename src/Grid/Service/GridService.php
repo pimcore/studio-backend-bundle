@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
@@ -43,6 +44,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -82,7 +86,36 @@ final class GridService implements GridServiceInterface
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
         private readonly LoggerInterface $pimcoreLogger,
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
     ) {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isLocaleViewableForElement(
+        ElementInterface $element,
+        ?string $locale,
+        ?UserInterface $user = null,
+    ): bool {
+        if ($locale === null || !$element instanceof Concrete) {
+            return true;
+        }
+
+        $user ??= $this->securityService->getCurrentUser();
+
+        /** @var User $user */
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        $allowedView = $this->dataObjectServiceResolver->getLanguagePermissions($element, $user, 'lView');
+
+        if ($allowedView === null) {
+            return true;
+        }
+
+        return array_key_exists($locale, $allowedView);
     }
 
     /**
@@ -217,19 +250,30 @@ final class GridService implements GridServiceInterface
 
             $resolver = $this->getColumnResolvers()[$column->getType()];
 
-            $columnData = match (true) {
-                $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
-                    $resolver->resolveForExport($column, $databaseElement, $user),
-                $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
-                    $resolver->resolveForCoreElement($column, $databaseElement),
-                $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
-                    $resolver->resolveForStudioElement($column, $element),
-                default =>
-                    throw new InvalidArgumentException(
-                        'Resolver must implement either StudioElementColumnResolverInterface or
-                        CoreElementColumnResolverInterface'
-                    ),
-            };
+            if ($databaseElement !== null
+                && !$this->isLocaleViewableForElement($databaseElement, $column->getLocale(), $user)
+            ) {
+                $columnData = new ColumnData(
+                    key: $column->getKey(),
+                    locale: $column->getLocale(),
+                    value: null,
+                    fieldType: $column->getType(),
+                );
+            } else {
+                $columnData = match (true) {
+                    $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
+                        $resolver->resolveForExport($column, $databaseElement, $user),
+                    $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
+                        $resolver->resolveForCoreElement($column, $databaseElement),
+                    $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
+                        $resolver->resolveForStudioElement($column, $element),
+                    default =>
+                        throw new InvalidArgumentException(
+                            'Resolver must implement either StudioElementColumnResolverInterface or
+                            CoreElementColumnResolverInterface'
+                        ),
+                };
+            }
 
             $this->eventDispatcher->dispatch(
                 new GridColumnDataEvent($columnData),

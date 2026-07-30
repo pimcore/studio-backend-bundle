@@ -53,6 +53,7 @@ final class AdvancedColumnResolverTest extends Unit
             $this->makeEmpty(TransformerLoaderInterface::class, ['loadTransformers' => []]),
             $this->makeEmpty(GridServiceInterface::class, [
                 'getColumnResolvers' => ['dataobject.classificationstore' => $classificationStoreResolver],
+                'isLocaleViewableForElement' => true,
             ]),
             $this->makeEmpty(ResolverTypeGuesserInterface::class, [
                 'guessType' => 'dataobject.classificationstore',
