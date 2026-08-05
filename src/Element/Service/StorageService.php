@@ -148,6 +148,8 @@ final readonly class StorageService implements StorageServiceInterface
         string $localFilePath,
         string $targetPath,
     ): void {
+        $stream = null;
+
         try {
             $stream = fopen($localFilePath, 'rb');
             $this->getTempStorage()->writeStream(
@@ -165,6 +167,10 @@ final readonly class StorageService implements StorageServiceInterface
                     $fileName
                 )
             );
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
         }
     }
 

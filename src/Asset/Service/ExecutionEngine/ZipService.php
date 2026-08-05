@@ -250,6 +250,8 @@ final readonly class ZipService implements ZipServiceInterface
             );
         }
 
+        $stream = null;
+
         try {
             $folderName = $this->getTempFilePath($id, $folderName);
             $storage->createDirectory($folderName);
@@ -269,6 +271,10 @@ final readonly class ZipService implements ZipServiceInterface
                     $archiveFileName
                 )
             );
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
         }
     }
 
