@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\TypeAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function get_class;
 use function sprintf;
 
@@ -27,7 +27,7 @@ use function sprintf;
 final readonly class TaggedIteratorTypeAdapter implements TypeAdapterLoaderInterface
 {
     public function __construct(
-        #[TaggedIterator(AdapterLoader::DOCUMENT_TYPE_ADAPTER_TAG->value)]
+        #[AutowireIterator(AdapterLoader::DOCUMENT_TYPE_ADAPTER_TAG->value)]
         private iterable $taggedAdapter,
     ) {
     }

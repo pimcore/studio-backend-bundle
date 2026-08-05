@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Filters;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -31,13 +31,13 @@ final class TaggedIteratorAdapter implements FilterLoaderInterface
     public const FILTER_DOCUMENT_TAG = 'pimcore.studio_backend.search_index.document.filter';
 
     public function __construct(
-        #[TaggedIterator(self::FILTER_TAG)]
+        #[AutowireIterator(self::FILTER_TAG)]
         private readonly iterable $taggedFilters,
-        #[TaggedIterator(self::FILTER_ASSET_TAG)]
+        #[AutowireIterator(self::FILTER_ASSET_TAG)]
         private readonly iterable $taggedAssetFilters,
-        #[TaggedIterator(self::FILTER_DATA_OBJECT_TAG)]
+        #[AutowireIterator(self::FILTER_DATA_OBJECT_TAG)]
         private readonly iterable $taggedDataObjectFilters,
-        #[TaggedIterator(self::FILTER_DOCUMENT_TAG)]
+        #[AutowireIterator(self::FILTER_DOCUMENT_TAG)]
         private readonly iterable $taggedDocumentFilters
     ) {
     }

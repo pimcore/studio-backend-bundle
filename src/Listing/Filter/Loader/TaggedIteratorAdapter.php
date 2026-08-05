@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Loader;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Filters;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ final class TaggedIteratorAdapter implements FilterLoaderInterface
     public const FILTER_TAG = 'pimcore.studio_backend.listing.filter';
 
     public function __construct(
-        #[TaggedIterator(self::FILTER_TAG)]
+        #[AutowireIterator(self::FILTER_TAG)]
         private readonly iterable $taggedFilters,
     ) {
     }
