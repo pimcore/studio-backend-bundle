@@ -52,6 +52,13 @@ services:
         arguments:
             $oauthEnabled: false
 
+    # CORS for the browser-facing OAuth endpoints (autoconfigured as an event
+    # subscriber). $enabled/$allowedOrigins are set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber:
+        arguments:
+            $enabled: false
+            $allowedOrigins: []
+
     # RFC 9728 discovery endpoint controller (routed in config/pimcore/routing.yaml).
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController:
         public: true

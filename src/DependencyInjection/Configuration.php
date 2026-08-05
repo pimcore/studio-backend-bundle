@@ -838,6 +838,15 @@ class Configuration implements ConfigurationInterface
                         )
                         ->defaultTrue()
                     ->end()
+                    ->arrayNode('cors_allowed_origins')
+                        ->info(
+                            'Browser origins allowed to call the OAuth endpoints cross-origin (discovery, '
+                            . 'token, register). Empty = any origin (wildcard); list to restrict. Credentials '
+                            . 'are never sent, so a wildcard stays CORS-valid.'
+                        )
+                        ->scalarPrototype()->end()
+                        ->defaultValue([])
+                    ->end()
                     ->append($this->addOAuthClientIdMetadataDocumentsNode())
                     ->append($this->addOAuthDynamicClientRegistrationNode())
                     ->arrayNode('keys')

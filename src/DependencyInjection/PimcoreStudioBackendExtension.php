@@ -41,6 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalCon
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
@@ -252,6 +253,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+
+        $container->getDefinition(OAuthCorsSubscriber::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument('$allowedOrigins', $config['oauth']['cors_allowed_origins']);
 
         // Authorization server (token issuance).
         $container->getDefinition(ClientRepository::class)
