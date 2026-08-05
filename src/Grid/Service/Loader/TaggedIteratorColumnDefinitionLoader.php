@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ final readonly class TaggedIteratorColumnDefinitionLoader implements ColumnDefin
      * @param iterable<ColumnDefinitionInterface> $taggedColumnDefinitions
      */
     public function __construct(
-        #[TaggedIterator(self::COLUMN_DEFINITION_TAG)]
+        #[AutowireIterator(self::COLUMN_DEFINITION_TAG)]
         private iterable $taggedColumnDefinitions,
     ) {
     }
