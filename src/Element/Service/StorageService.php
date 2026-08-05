@@ -149,10 +149,14 @@ final readonly class StorageService implements StorageServiceInterface
         string $targetPath,
     ): void {
         try {
+            $stream = fopen($localFilePath, 'rb');
             $this->getTempStorage()->writeStream(
                 $targetPath . '/' . $fileName,
-                fopen($localFilePath, 'rb')
+                $stream
             );
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
             @unlink($localFilePath);
         } catch (FilesystemException) {
             throw new EnvironmentException(

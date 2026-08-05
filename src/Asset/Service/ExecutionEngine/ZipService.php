@@ -253,10 +253,14 @@ final readonly class ZipService implements ZipServiceInterface
         try {
             $folderName = $this->getTempFilePath($id, $folderName);
             $storage->createDirectory($folderName);
+            $stream = fopen($localPath, 'rb');
             $storage->writeStream(
                 $folderName . '/' . $archiveFileName,
-                fopen($localPath, 'rb')
+                $stream
             );
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
             @unlink($localPath);
         } catch (FilesystemException) {
             throw new EnvironmentException(
