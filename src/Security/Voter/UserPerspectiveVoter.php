@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
@@ -50,7 +51,7 @@ final class UserPerspectiveVoter extends Voter
     /**
      * @throws ForbiddenException|UserNotFoundException|NoRequestException
      */
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         $user = $this->securityService->getCurrentUser();
         if ($user->isAllowed(UserPermissions::PERSPECTIVE_EDITOR->value)) {
