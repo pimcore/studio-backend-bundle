@@ -37,10 +37,9 @@ final readonly class TelemetryService implements TelemetryServiceInterface
 
     public function getNextBatch(): ?OutboxBatch
     {
-        // Without a relay endpoint the browser would have nowhere to forward to, so do not even
-        // claim/lease a batch (mirrors the maintenance RelayClient::isConfigured() guard). This
-        // keeps the default config (empty relay_endpoint) from churning leases with no delivery.
-        if ($this->relayEndpoint === '' || !$this->telemetryOutbox->isReady()) {
+        // An instance that is not identified or has no product key cannot produce a decryptable
+        // batch, so do not claim/lease one (mirrors the maintenance drain task's guard).
+        if (!$this->telemetryOutbox->isReady()) {
             return null;
         }
 

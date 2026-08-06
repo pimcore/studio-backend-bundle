@@ -24,3 +24,13 @@ services:
     #
     Pimcore\Bundle\StudioBackendBundle\Telemetry\Hydrator\TelemetryHydratorInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Telemetry\Hydrator\TelemetryHydrator
+
+    #
+    # Statistics — accelerate the heavy element-stats collectors via the Generic Data Index by
+    # decorating the core SQL provider; falls back to it (the decorated @.inner) when the search
+    # index is unavailable, errors, or is empty.
+    #
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\Statistics\GdiElementStatisticsProvider:
+        decorates: Pimcore\Telemetry\Snapshot\Statistics\ElementStatisticsProviderInterface
+        arguments:
+            $inner: '@.inner'
