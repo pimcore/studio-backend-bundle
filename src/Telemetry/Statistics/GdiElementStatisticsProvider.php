@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Telemetry\Statistics;
 
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\FieldCategory\SystemField;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\IndexName;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\DefaultSearch\Aggregation\Aggregation;
@@ -25,7 +26,6 @@ use Pimcore\Telemetry\Snapshot\Statistics\ElementKind;
 use Pimcore\Telemetry\Snapshot\Statistics\ElementStatisticsProviderInterface;
 use Pimcore\Telemetry\Snapshot\Statistics\TreeDepth;
 use Psr\Log\LoggerInterface;
-use Throwable;
 
 /**
  * Search-index-backed {@see ElementStatisticsProviderInterface} that decorates the core SQL provider.
@@ -37,7 +37,9 @@ use Throwable;
  *
  * It is instance-wide by design, so it uses the low-level {@see SearchIndexServiceInterface} (not the
  * permission/workspace-scoped element search services). Each accelerated method degrades to the
- * decorated SQL provider ($inner) when the index is unavailable, errors, or is empty - so telemetry
+ * decorated SQL provider ($inner) on an `Exception` - an unreachable cluster, a rejected query, an
+ * empty index. Errors are deliberately not caught: a defect here should surface at the snapshot
+ * boundary rather than masquerade as a healthy SQL-derived number - so telemetry
  * keeps working on instances without a healthy search cluster, and an index that lags the DB only
  * affects the always-bucketed values within one bucket.
  *
@@ -80,7 +82,7 @@ final readonly class GdiElementStatisticsProvider implements ElementStatisticsPr
 
             // An empty result means the index isn't populated for this kind - prefer the SQL truth.
             return $byType === [] ? $this->inner->typeCounts($kind) : new ElementTypeCounts($byType);
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             $this->logFallback('typeCounts', $e);
 
             return $this->inner->typeCounts($kind);
@@ -131,7 +133,7 @@ final readonly class GdiElementStatisticsProvider implements ElementStatisticsPr
             $buckets = $result->getAggregation('topParent')?->getBuckets() ?? [];
 
             return $buckets === [] ? $this->inner->maxObjectFanout() : $buckets[0]->getDocCount();
-        } catch (Throwable $e) {
+        } catch (Exception $e) {
             $this->logFallback('maxObjectFanout', $e);
 
             return $this->inner->maxObjectFanout();
@@ -160,7 +162,7 @@ final readonly class GdiElementStatisticsProvider implements ElementStatisticsPr
         });
     }
 
-    private function logFallback(string $operation, Throwable $e): void
+    private function logFallback(string $operation, Exception $e): void
     {
         $this->logger->info('Telemetry: GDI statistics unavailable for {op}, falling back to SQL: {msg}', [
             'op' => $operation,
