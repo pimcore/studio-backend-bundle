@@ -72,7 +72,10 @@ final readonly class GdiElementStatisticsProvider implements ElementStatisticsPr
     {
         try {
             $result = $this->aggregate($kind, [
-                new Aggregation('byType', ['terms' => ['field' => SystemField::TYPE->getPath(), 'size' => self::TERMS_SIZE]]),
+                new Aggregation(
+                    'byType',
+                    ['terms' => ['field' => SystemField::TYPE->getPath(), 'size' => self::TERMS_SIZE]]
+                ),
             ]);
 
             $byType = [];
