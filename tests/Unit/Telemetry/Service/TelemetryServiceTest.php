@@ -108,8 +108,10 @@ final class TelemetryServiceTest extends Unit
     }
 
     /**
-     * A storage failure is converted to 0 by the core outbox rather than thrown, so the endpoint
-     * answers "nothing was acked" instead of failing the request.
+     * 0 is the row count of a DELETE that matched nothing - an unknown nonce, or one whose lease
+     * expired and was released back to pending - not an error. It is reported as-is so the caller
+     * can tell "removed" from "already gone": a client that treats 0 as success would go on
+     * draining against a lease it no longer holds. A genuine storage failure throws instead.
      */
     public function testAnAckThatRemovedNothingIsReportedAsZero(): void
     {
