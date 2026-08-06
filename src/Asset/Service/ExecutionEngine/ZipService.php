@@ -47,6 +47,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 use function count;
 use function dirname;
+use function is_resource;
 use function sprintf;
 
 /**

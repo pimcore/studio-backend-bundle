@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
 use Symfony\Component\Filesystem\Filesystem;
+use function is_resource;
 use function sprintf;
 
 /**
