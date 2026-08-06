@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -42,7 +42,7 @@ final class ResetPasswordController extends AbstractApiController
         SerializerInterface $serializer,
         private readonly UserLoginServiceInterface $loginService,
         private readonly RateLimiterInterface $rateLimiter,
-        private readonly RateLimiterFactory $resetPasswordLimiter,
+        private readonly RateLimiterFactoryInterface $resetPasswordLimiter,
     ) {
         parent::__construct($serializer);
     }

@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 final readonly class RateLimiter implements RateLimiterInterface
 {
@@ -32,7 +32,7 @@ final readonly class RateLimiter implements RateLimiterInterface
      * @throws RateLimitException
      */
     public function check(
-        RateLimiterFactory $rateLimiterFactory,
+        RateLimiterFactoryInterface $rateLimiterFactory,
     ): void {
         $request = $this->getCurrentRequest($this->requestStack);
 

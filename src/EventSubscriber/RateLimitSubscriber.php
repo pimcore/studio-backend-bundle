@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\RateLimiter\RateLimit;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * @internal
@@ -33,8 +33,8 @@ final class RateLimitSubscriber implements EventSubscriberInterface
 
     public function __construct(
         private readonly string $urlPrefix,
-        private readonly RateLimiterFactory $studioApiGeneralLimiter,
-        private readonly RateLimiterFactory $studioMcpGeneralLimiter,
+        private readonly RateLimiterFactoryInterface $studioApiGeneralLimiter,
+        private readonly RateLimiterFactoryInterface $studioMcpGeneralLimiter,
         private readonly bool $enabled = true,
     ) {
     }
@@ -83,7 +83,7 @@ final class RateLimitSubscriber implements EventSubscriberInterface
      * traffic, where a single agent server can serve every chat in the installation from one
      * address, so the Studio UI's per-user budget does not describe them.
      */
-    private function resolveLimiterFactory(string $path): ?RateLimiterFactory
+    private function resolveLimiterFactory(string $path): ?RateLimiterFactoryInterface
     {
         return match (true) {
             $this->isStudioBackendPath($path, $this->urlPrefix) => $this->studioApiGeneralLimiter,

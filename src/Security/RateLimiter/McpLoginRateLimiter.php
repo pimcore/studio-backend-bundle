@@ -17,7 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter;
 use Symfony\Component\HttpFoundation\RateLimiter\AbstractRequestRateLimiter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\LimiterInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
 /**
@@ -28,7 +28,7 @@ final class McpLoginRateLimiter extends AbstractRequestRateLimiter implements Mc
     private const string UNKNOWN_CLIENT = 'unknown';
 
     public function __construct(
-        private readonly RateLimiterFactory $limiterFactory,
+        private readonly RateLimiterFactoryInterface $limiterFactory,
     ) {
     }
 

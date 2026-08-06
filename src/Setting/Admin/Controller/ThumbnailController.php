@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Service\ThumbnailServiceInt
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -41,7 +41,7 @@ final class ThumbnailController extends AbstractApiController
         SerializerInterface $serializer,
         private readonly ThumbnailServiceInterface $thumbnailService,
         private readonly RateLimiterInterface $rateLimiter,
-        private readonly RateLimiterFactory $settingAdminThumbnailLimiter,
+        private readonly RateLimiterFactoryInterface $settingAdminThumbnailLimiter,
     ) {
         parent::__construct($serializer);
     }
