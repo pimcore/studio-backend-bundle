@@ -78,6 +78,34 @@ final class GdiElementStatisticsProviderTest extends Unit
         $this->assertSame(9, $this->provider($this->serviceReturning($result))->maxObjectFanout());
     }
 
+    /**
+     * A reachable but unpopulated index answers with an empty aggregation rather than an error. That
+     * must not be read as "this instance has no assets" - the SQL truth wins.
+     */
+    public function testTypeCountsFallsBackToInnerOnAnEmptyIndex(): void
+    {
+        $emptyIndex = $this->serviceReturning($this->resultWith([
+            new SearchResultAggregation('byType', [], 0, 0, []),
+        ]));
+
+        $counts = $this->provider($emptyIndex, $this->innerReturningSentinels())->typeCounts(ElementKind::Asset);
+
+        $this->assertSame(7, $counts->ofType('sentinel'), 'an empty index must not shadow the SQL count');
+    }
+
+    public function testMaxObjectFanoutFallsBackToInnerOnAnEmptyIndex(): void
+    {
+        $emptyIndex = $this->serviceReturning($this->resultWith([
+            new SearchResultAggregation('topParent', [], 0, 0, []),
+        ]));
+
+        $this->assertSame(
+            333,
+            $this->provider($emptyIndex, $this->innerReturningSentinels())->maxObjectFanout(),
+            'an empty index must not report a fan-out of zero'
+        );
+    }
+
     public function testDegradesToInnerWhenTheIndexThrows(): void
     {
         $service = $this->createMock(SearchIndexServiceInterface::class);
