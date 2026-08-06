@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use ZipArchive;
 use function count;
 
 /**
@@ -84,6 +85,7 @@ final class ZipUploadHandler extends AbstractHandler
         $localExtractTargetPath = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' .
             $extractTargetPath . '/' .
             self::LOCAL_ZIP_FOLDER_NAME;
+        $archive = null;
 
         try {
             $this->fileSystem->mkdir($localExtractTargetPath);
@@ -161,6 +163,11 @@ final class ZipUploadHandler extends AbstractHandler
                 ['message' => $exception->getMessage()],
             ));
         } finally {
+            if ($archive instanceof ZipArchive) {
+                // close the archive before removing the local folder, an open handle
+                // prevents removing the folder on network based file systems
+                @$archive->close();
+            }
             $this->storageService->cleanUpLocalFolder($localExtractTargetPath);
         }
     }
