@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
 use Symfony\Component\Filesystem\Filesystem;
+use function is_resource;
 use function sprintf;
 
 /**
@@ -148,11 +149,17 @@ final readonly class StorageService implements StorageServiceInterface
         string $localFilePath,
         string $targetPath,
     ): void {
+        $stream = null;
+
         try {
+            $stream = fopen($localFilePath, 'rb');
             $this->getTempStorage()->writeStream(
                 $targetPath . '/' . $fileName,
-                fopen($localFilePath, 'rb')
+                $stream
             );
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
             @unlink($localFilePath);
         } catch (FilesystemException) {
             throw new EnvironmentException(
@@ -161,6 +168,10 @@ final readonly class StorageService implements StorageServiceInterface
                     $fileName
                 )
             );
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
         }
     }
 
