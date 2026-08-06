@@ -1133,6 +1133,7 @@ tag_schedule_description: Get schedules for an element
 tag_settings_description: Get System Settings
 tag_tags_description: Tag operations to get/list/create/update/delete tags
 tag_tags_for_element_description: Tag operations to get tags for an element
+tag_telemetry_description: Telemetry outbox operations to drain and acknowledge spooled telemetry batches
 tag_translation_description: Get translations either for a single key or multiple
   keys
 tag_unassign_from_element_description: |
@@ -1151,6 +1152,17 @@ tag_versions_description: Versions operations to get/list/publish/delete and cle
   versions
 tag_website_settings_description: Website settings operations to list/update/create/delete website settings
 tag_workflows_description: Workflows operations to get element workflow details
+telemetry_outbox_ack_description: |
+  Acknowledge a telemetry outbox batch that the relay has accepted, identified by the given <strong>{nonce}</strong>. <br>
+  Acknowledged events are permanently removed from the outbox pool.
+telemetry_outbox_ack_success_response: Number of spooled events removed from the outbox
+telemetry_outbox_ack_summary: Acknowledge a drained telemetry batch
+telemetry_outbox_next_batch_description: |
+  Get the next encrypted telemetry batch from the outbox so the browser can forward it to the relay. <br>
+  Returns <strong>204 No Content</strong> when the outbox is not ready or the pool is empty.
+telemetry_outbox_next_batch_no_content_response: No telemetry batch is currently available to drain
+telemetry_outbox_next_batch_success_response: Next encrypted telemetry batch ready to forward to the relay
+telemetry_outbox_next_batch_summary: Get the next telemetry outbox batch
 thumbnail_image_get_collection_description: |
   Get collection of thumbnails for images. <br>
   The thumbnails have to be defined as downloadable in order to be listed in the collection.
