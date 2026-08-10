@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -104,7 +105,15 @@ final readonly class ElementService implements ElementServiceInterface
         UserInterface $user
     ): ElementInterface {
         $element = $this->getElementByPath($this->serviceResolver, $elementType, $elementPath);
-        $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
+
+        // The tree root is a traversal anchor, not an element a user gets a workspace on: element
+        // permissions are resolved from the workspaces relevant for the requested path, and no
+        // workspace below "/" is relevant for "/" itself, so the root always resolves to "no
+        // permissions" for non-admins. ElementTreeWidgetConfigHydrator::isDefaultRootFolder()
+        // already skips the lookup for the root path for the same reason.
+        if ($elementPath !== ElementFolderPaths::ROOT->value) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
+        }
 
         return $element;
     }
