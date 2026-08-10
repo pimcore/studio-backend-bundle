@@ -38,7 +38,11 @@ final readonly class RelatedElementData
         private string $fullPath,
         #[Property(description: 'Is the element published', type: 'boolean', example: true)]
         private ?bool $isPublished = null,
-        #[Property(description: 'Whether the current user is allowed to view the element', type: 'boolean', example: true)]
+        #[Property(
+            description: 'Whether the current user is allowed to view the element',
+            type: 'boolean',
+            example: true
+        )]
         private bool $hasAccess = true,
     ) {
     }

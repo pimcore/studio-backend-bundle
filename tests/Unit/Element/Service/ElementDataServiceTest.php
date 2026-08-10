@@ -15,13 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Element\Service;
 
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
@@ -35,12 +33,12 @@ final class ElementDataServiceTest extends Unit
      */
     public function testHasAccessTrueWhenViewIsAllowed(): void
     {
-        $service = $this->createService(isAllowed: true, calls: $calls);
+        $service = $this->createService();
 
-        $data = $service->getRelatedElementData($this->makeAsset());
+        $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
         $this->assertTrue($data->getHasAccess());
-        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, 83]], $calls);
+        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
         $this->assertSame(83, $data->getId());
         $this->assertSame('asset', $data->getType());
         $this->assertSame('image', $data->getSubtype());
@@ -53,12 +51,12 @@ final class ElementDataServiceTest extends Unit
      */
     public function testHasAccessFalseWhenViewIsDenied(): void
     {
-        $service = $this->createService(isAllowed: false, calls: $calls);
+        $service = $this->createService();
 
-        $data = $service->getRelatedElementData($this->makeAsset());
+        $data = $service->getRelatedElementData($this->makeAsset(isAllowed: false, calls: $calls));
 
         $this->assertFalse($data->getHasAccess());
-        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, 83]], $calls);
+        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
     }
 
     /**
@@ -71,14 +69,12 @@ final class ElementDataServiceTest extends Unit
                 throw new UserNotFoundException();
             },
         ]);
-        $service = new ElementDataService(
-            $securityService,
-            $this->makeEmpty(ElementPermissionServiceInterface::class)
-        );
+        $service = new ElementDataService($securityService);
 
-        $data = $service->getRelatedElementData($this->makeAsset());
+        $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
         $this->assertFalse($data->getHasAccess());
+        $this->assertSame([], $calls);
     }
 
     /**
@@ -89,53 +85,44 @@ final class ElementDataServiceTest extends Unit
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => $this->makeEmpty(UserInterface::class),
         ]);
-        $service = new ElementDataService(
-            $securityService,
-            $this->makeEmpty(ElementPermissionServiceInterface::class)
-        );
+        $service = new ElementDataService($securityService);
 
-        $data = $service->getRelatedElementData($this->makeAsset());
+        $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
         $this->assertFalse($data->getHasAccess());
+        $this->assertSame([], $calls);
     }
 
     /**
-     * @param array<int, array{string, int}>|null $calls
-     *
      * @throws Exception
      */
-    private function createService(bool $isAllowed, ?array &$calls = null): ElementDataService
+    private function createService(): ElementDataService
     {
-        $calls = [];
-
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => new User(),
         ]);
 
-        $elementPermissionService = $this->makeEmpty(ElementPermissionServiceInterface::class, [
-            'isAllowed' => function (
-                string $permission,
-                ElementInterface $element,
-                User $user
-            ) use (&$calls, $isAllowed): bool {
-                $calls[] = [$permission, $element->getId()];
-
-                return $isAllowed;
-            },
-        ]);
-
-        return new ElementDataService($securityService, $elementPermissionService);
+        return new ElementDataService($securityService);
     }
 
     /**
+     * @param array<int, array{string, bool}>|null $calls
+     *
      * @throws Exception
      */
-    private function makeAsset(): Asset
+    private function makeAsset(bool $isAllowed, ?array &$calls = null): Asset
     {
+        $calls = [];
+
         return $this->makeEmpty(Asset::class, [
             'getId' => 83,
             'getType' => 'image',
             'getRealFullPath' => '/path/to/asset.jpg',
+            'isAllowed' => function (string $type, ?User $user = null) use (&$calls, $isAllowed): bool {
+                $calls[] = [$type, $user instanceof User];
+
+                return $isAllowed;
+            },
         ]);
     }
 }

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -33,7 +32,6 @@ final readonly class ElementDataService implements ElementDataServiceInterface
 
     public function __construct(
         private SecurityServiceInterface $securityService,
-        private ElementPermissionServiceInterface $elementPermissionService,
     ) {
     }
 
@@ -61,11 +59,9 @@ final readonly class ElementDataService implements ElementDataServiceInterface
             return false;
         }
 
-        return $this->elementPermissionService->isAllowed(
-            ElementPermissions::VIEW_PERMISSION,
-            $element,
-            $user
-        );
+        // Intentionally the core check, not the GDI permission seam: this runs per relation row,
+        // and the GDI check normalizes the whole element per call (see PR #1983).
+        return $element->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
     }
 
     private function getSubType(ElementInterface $element): string
