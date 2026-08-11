@@ -44,16 +44,8 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
         $allowsExternalDelivery = false;
 
         foreach ($container->getDefinitions() as $id => $definition) {
-            if ($definition->isAbstract() || $definition->isSynthetic()) {
-                continue;
-            }
-
-            $class = $definition->getClass();
-            if ($class === null || !class_exists($class)) {
-                continue;
-            }
-
-            if ((new ReflectionClass($class))->isAbstract()) {
+            $class = $this->concreteClass($definition);
+            if ($class === null) {
                 continue;
             }
 
@@ -68,23 +60,49 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
             }
         }
 
-        // A transport channel (email today) only makes sense when at least one notification type can
-        // be delivered externally. With just the built-in 'info' catch-all — which never allows it —
-        // a core-only install would otherwise carry a dead channel: an extra column on the
-        // preferences screen and an instantiated mailer no notification could ever reach. So the
-        // channels are registered only when a consumer exists; the in-app 'popup' substrate is
-        // always available and is not a tagged channel, so it is unaffected. Installing a bundle
-        // that contributes an externally-deliverable type brings the channels back automatically.
-        if (!$allowsExternalDelivery) {
-            foreach ($channelIds as $id) {
-                $container->removeDefinition($id);
-            }
+        $this->applyTransportChannels($container, $channelIds, $allowsExternalDelivery);
+    }
 
-            return;
+    /**
+     * The concrete, autoloadable class a definition instantiates, or null when the definition is not
+     * a real service to classify (abstract, synthetic, classless or an abstract class).
+     */
+    private function concreteClass(Definition $definition): ?string
+    {
+        if ($definition->isAbstract() || $definition->isSynthetic()) {
+            return null;
         }
 
+        $class = $definition->getClass();
+        if ($class === null || !class_exists($class)) {
+            return null;
+        }
+
+        return (new ReflectionClass($class))->isAbstract() ? null : $class;
+    }
+
+    /**
+     * A transport channel (email today) only makes sense when at least one notification type can be
+     * delivered externally. With just the built-in 'info' catch-all — which never allows it — a
+     * core-only install would otherwise carry a dead channel: an extra column on the preferences
+     * screen and an instantiated mailer no notification could ever reach. So the channels are tagged
+     * (collected) only when a consumer exists, and dropped otherwise. The in-app 'popup' substrate
+     * is always available and is not a tagged channel, so it is unaffected. Installing a bundle that
+     * contributes an externally-deliverable type brings the channels back automatically.
+     *
+     * @param string[] $channelIds
+     */
+    private function applyTransportChannels(
+        ContainerBuilder $container,
+        array $channelIds,
+        bool $allowsExternalDelivery,
+    ): void {
         foreach ($channelIds as $id) {
-            $this->tag($container->getDefinition($id), ChannelInterface::TAG);
+            if ($allowsExternalDelivery) {
+                $this->tag($container->getDefinition($id), ChannelInterface::TAG);
+            } else {
+                $container->removeDefinition($id);
+            }
         }
     }
 
