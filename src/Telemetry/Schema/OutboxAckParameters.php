@@ -28,7 +28,11 @@ use OpenApi\Attributes\Schema;
 final readonly class OutboxAckParameters
 {
     public function __construct(
-        #[Property(description: 'Lease nonce of the batch the relay has accepted', type: 'string')]
+        #[Property(
+            description: 'Lease nonce of the batch the relay has accepted',
+            type: 'string',
+            example: '9b1c4f7a2e6d40318c5a7b9e0d2f4a61'
+        )]
         private string $nonce,
     ) {
     }
