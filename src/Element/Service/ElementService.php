@@ -106,11 +106,9 @@ final readonly class ElementService implements ElementServiceInterface
     ): ElementInterface {
         $element = $this->getElementByPath($this->serviceResolver, $elementType, $elementPath);
 
-        // The tree root is a traversal anchor, not an element a user gets a workspace on: element
-        // permissions are resolved from the workspaces relevant for the requested path, and no
-        // workspace below "/" is relevant for "/" itself, so the root always resolves to "no
-        // permissions" for non-admins. ElementTreeWidgetConfigHydrator::isDefaultRootFolder()
-        // already skips the lookup for the root path for the same reason.
+        // The root is used as a traversal anchor by tree operations. Descendant workspaces are not
+        // relevant to "/" itself, so users with access only to descendants cannot pass the root check.
+        // ElementTreeWidgetConfigHydrator::isDefaultRootFolder() already skips this lookup.
         if ($elementPath !== ElementFolderPaths::ROOT->value) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
         }
