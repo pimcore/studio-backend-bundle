@@ -75,5 +75,8 @@ studio_ee_job_element_usage_replace: Erstatt elementbruk
 preview_generator_locale: Language
 main_site: 'Main Site'
 preview_generator_site: Site
+notifications.email.greeting: 'Hei %name%,'
+notifications.email.cta: 'Vis i Pimcore Studio'
+notifications.email.footer: 'Du mottar denne e-posten fordi du har abonnert på disse varslene i Pimcore Studio.'
 ownership_management_type_grid_configuration: Grid-konfigurasjoner
 ownership_management_type_saved_search: Lagrede søk

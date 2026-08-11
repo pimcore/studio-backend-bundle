@@ -75,5 +75,8 @@ studio_ee_job_element_usage_replace: Reemplazar uso del elemento
 preview_generator_locale: Idioma
 main_site: Sitio Principal
 preview_generator_site: Web
+notifications.email.greeting: 'Hola %name%,'
+notifications.email.cta: 'Ver en Pimcore Studio'
+notifications.email.footer: 'Recibes este correo electrónico porque te suscribiste a estas notificaciones en Pimcore Studio.'
 ownership_management_type_grid_configuration: Configuraciones de Grid
 ownership_management_type_saved_search: Búsquedas guardadas

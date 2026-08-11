@@ -83,8 +83,6 @@ studio_ee_job_element_usage_replace: Element Usage Replace
 preview_generator_locale: Language
 main_site: 'Main Site'
 preview_generator_site: Site
-
-# Notification delivery — email channel chrome (the title and message come from the notification)
 notifications.email.greeting: 'Hi %name%,'
 notifications.email.cta: 'View in Pimcore Studio'
 notifications.email.footer: 'You are receiving this email because you subscribed to these notifications in Pimcore Studio.'
