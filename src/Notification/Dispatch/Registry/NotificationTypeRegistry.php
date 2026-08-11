@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function count;
 use function sprintf;
 use function strlen;
@@ -38,7 +38,7 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
      * @throws InvalidNotificationTypeException
      */
     public function __construct(
-        #[TaggedIterator(NotificationTypeDescriptorInterface::TAG)]
+        #[AutowireIterator(NotificationTypeDescriptorInterface::TAG)]
         iterable $taggedDescriptors,
         private GeneralNotificationDescriptor $generalDescriptor,
     ) {

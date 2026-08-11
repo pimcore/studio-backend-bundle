@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationChannelException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function sprintf;
 
 /**
@@ -36,7 +36,7 @@ final readonly class ChannelRegistry implements ChannelRegistryInterface
      * @throws InvalidNotificationChannelException
      */
     public function __construct(
-        #[TaggedIterator(ChannelInterface::TAG)]
+        #[AutowireIterator(ChannelInterface::TAG)]
         iterable $taggedChannels,
         array $channelConfig = [],
     ) {
