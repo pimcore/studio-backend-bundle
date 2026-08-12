@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
@@ -82,7 +83,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private ElementSaveServiceInterface $elementSaveService
+        private ElementSaveServiceInterface $elementSaveService,
+        private DraftElementResolverInterface $draftElementResolver
     ) {
     }
 
@@ -325,8 +327,10 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     private function getObjectDetailData(DataObjectFolder|DataObjectDetail $dataObject): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
-        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-        $element = $this->getVersionData($element, $version);
+        $user = $this->securityService->getCurrentUser();
+        // version = draft identity for `draftData`; element state comes from the resolver
+        $version = $this->getLatestVersionForUser($element, $user);
+        $element = $this->draftElementResolver->resolve($element, $user);
 
         if (!$element instanceof DataObjectModel) {
             return;

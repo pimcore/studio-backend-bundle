@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as 
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\VersionDraftElementResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -243,6 +244,7 @@ final class UpdateServiceTest extends Unit
                 'save' => $onSave,
             ]),
             coauthorService: new CoauthorService($this->coauthorContext),
+            draftElementResolver: new VersionDraftElementResolver(),
         );
     }
 }

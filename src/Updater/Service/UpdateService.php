@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface a
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
@@ -60,6 +61,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
         private CoauthorServiceInterface $coauthorService,
+        private DraftElementResolverInterface $draftElementResolver,
     ) {
     }
 
@@ -162,8 +164,6 @@ final readonly class UpdateService implements UpdateServiceInterface
             return $element;
         }
 
-        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-
-        return $this->getVersionData($element, $version);
+        return $this->draftElementResolver->resolve($element, $this->securityService->getCurrentUser());
     }
 }

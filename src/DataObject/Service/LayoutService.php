@@ -20,12 +20,12 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryIn
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface as SecurityLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Util\Trait\WorkflowLayoutTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -43,7 +43,6 @@ use function sprintf;
  */
 final readonly class LayoutService implements LayoutServiceInterface
 {
-    use ElementProviderTrait;
     use WorkflowLayoutTrait;
 
     public function __construct(
@@ -57,6 +56,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         private SecurityLayoutServiceInterface $securityLayoutService,
         private SecurityServiceInterface $securityService,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
+        private DraftElementResolverInterface $draftElementResolver,
     ) {
     }
 
@@ -71,8 +71,7 @@ final readonly class LayoutService implements LayoutServiceInterface
             $id
         );
 
-        $version = $this->getLatestVersionForUser($dataObject, $user);
-        $dataObject = $this->getVersionData($dataObject, $version);
+        $dataObject = $this->draftElementResolver->resolve($dataObject, $user);
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(

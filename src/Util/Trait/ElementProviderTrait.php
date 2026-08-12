@@ -63,6 +63,11 @@ trait ElementProviderTrait
         return $element;
     }
 
+    /**
+     * The draft IDENTITY reported as `draftData` (the version row the UI labels and deletes by).
+     * Element STATE is resolved separately via DraftElementResolverInterface; the two coincide
+     * by default and are allowed to diverge.
+     */
     private function getLatestVersionForUser(
         ElementInterface $element,
         ?UserInterface $user,
@@ -74,17 +79,7 @@ trait ElementProviderTrait
             return null;
         }
 
-        // check for latest version
         return $element->getLatestVersion($user?->getId());
-    }
-
-    private function getVersionData(ElementInterface $element, ?Version $version): ElementInterface
-    {
-        if (!$version) {
-            return $element;
-        }
-
-        return $version->getData();
     }
 
     /**

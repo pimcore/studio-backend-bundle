@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -41,7 +42,8 @@ final readonly class PropertyService implements PropertyServiceInterface
         private PropertyHydratorInterface $propertyHydrator,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private DraftElementResolverInterface $draftElementResolver
     ) {
     }
 
@@ -115,8 +117,7 @@ final readonly class PropertyService implements PropertyServiceInterface
             'properties'
         );
 
-        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-        $element = $this->getVersionData($element, $version);
+        $element = $this->draftElementResolver->resolve($element, $this->securityService->getCurrentUser());
         $hydratedProperties = [];
 
         foreach ($element->getProperties() as $property) {

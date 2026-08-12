@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -58,6 +59,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private DraftElementResolverInterface $draftElementResolver,
     ) {
     }
 
@@ -180,8 +182,10 @@ final readonly class DocumentService implements DocumentServiceInterface
     private function getDocumentDetailData(DocumentDetail $document): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $document->getId());
-        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-        $element = $this->getVersionData($element, $version);
+        $user = $this->securityService->getCurrentUser();
+        // version = draft identity for `draftData`; element state comes from the resolver
+        $version = $this->getLatestVersionForUser($element, $user);
+        $element = $this->draftElementResolver->resolve($element, $user);
 
         if (!$element instanceof DocumentModel) {
             return;
