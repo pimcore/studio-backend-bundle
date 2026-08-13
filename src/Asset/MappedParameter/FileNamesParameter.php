@@ -39,9 +39,6 @@ final readonly class FileNamesParameter
     private array $fileNames;
 
     /**
-     * The payload is bound straight from the request body, so the items are not
-     * guaranteed to be strings until they have been validated below.
-     *
      * @param array<mixed> $fileNames
      *
      * @throws InvalidArgumentException
