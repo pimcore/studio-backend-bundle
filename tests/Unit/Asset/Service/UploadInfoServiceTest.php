@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\UserInterface;
+use function in_array;
 
 /**
  * @internal
