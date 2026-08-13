@@ -40,12 +40,13 @@ final readonly class FileNamesParameter
             throw new InvalidArgumentException('fileNames array cannot be empty.');
         }
 
-        if (count($this->fileNames) > self::MAX_FILE_NAMES) {
+        $fileNamesCount = count($this->fileNames);
+        if ($fileNamesCount > self::MAX_FILE_NAMES) {
             throw new InvalidArgumentException(
                 sprintf(
                     'fileNames array cannot contain more than %d items, %d given.',
                     self::MAX_FILE_NAMES,
-                    count($this->fileNames)
+                    $fileNamesCount
                 )
             );
         }
