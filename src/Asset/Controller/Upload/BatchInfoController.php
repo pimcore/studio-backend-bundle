@@ -13,7 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\FileNamesParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetBatchInfo;
@@ -21,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -69,7 +71,20 @@ final class BatchInfoController extends AbstractApiController
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[RequestBody(
-        content: new ScalarItemsJson('string', 'fileNames')
+        required: true,
+        content: new JsonContent(
+            required: ['fileNames'],
+            properties: [
+                new Property(
+                    property: 'fileNames',
+                    type: 'array',
+                    minItems: 1,
+                    maxItems: FileNamesParameter::MAX_FILE_NAMES,
+                    items: new Items(type: 'string')
+                ),
+            ],
+            type: 'object'
+        )
     )]
     #[SuccessResponse(
         description: 'asset_upload_batch_info_success_response',
