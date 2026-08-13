@@ -39,7 +39,7 @@ final readonly class FileNamesParameter
     private array $fileNames;
 
     /**
-     * @param array<string> $fileNames
+     * @param array<mixed> $fileNames
      *
      * @throws InvalidArgumentException
      */
@@ -60,6 +60,7 @@ final readonly class FileNamesParameter
             );
         }
 
+        $validatedFileNames = [];
         foreach ($fileNames as $fileName) {
             if (!is_string($fileName) || $fileName === '') {
                 throw new InvalidArgumentException('Each fileNames item must be a non-empty string.');
@@ -68,9 +69,11 @@ final readonly class FileNamesParameter
             if (str_contains($fileName, '/') || str_contains($fileName, '\\')) {
                 throw new InvalidArgumentException('Each fileNames item must be a single asset key.');
             }
+
+            $validatedFileNames[] = $fileName;
         }
 
-        $this->fileNames = $fileNames;
+        $this->fileNames = $validatedFileNames;
     }
 
     /**
