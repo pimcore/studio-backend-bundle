@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoService;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\UserInterface;
@@ -112,15 +113,44 @@ final class UploadInfoServiceTest extends Unit
     }
 
     /**
-     * @param array<string> $existingNames names that resolve as already taken
-     * @param array<string> $deniedNames   names the user may not view
+     * An asset can be deleted between the path lookup and loading it. That name is
+     * free again, and it must not take the rest of the batch down with it.
      *
      * @throws Exception
      */
-    private function getUploadInfoService(array $existingNames, array $deniedNames = []): UploadInfoServiceInterface
+    public function testFilesExistReportsVanishedNameAsFreeWithoutFailingTheBatch(): void
     {
+        $result = $this->getUploadInfoService(['taken.jpg', 'vanished.jpg'], [], ['vanished.jpg'])->filesExist(
+            self::PARENT_ID,
+            ['vanished.jpg', 'taken.jpg'],
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertCount(2, $result);
+
+        $this->assertFalse($result[0]->isExists());
+        $this->assertFalse($result[0]->isAccessDenied());
+        $this->assertNull($result[0]->getAssetId());
+
+        $this->assertTrue($result[1]->isExists());
+        $this->assertSame(self::EXISTING_ASSET_ID, $result[1]->getAssetId());
+    }
+
+    /**
+     * @param array<string> $existingNames  names that resolve as already taken
+     * @param array<string> $deniedNames    names the user may not view
+     * @param array<string> $vanishedNames  names that no longer load after the path lookup
+     *
+     * @throws Exception
+     */
+    private function getUploadInfoService(
+        array $existingNames,
+        array $deniedNames = [],
+        array $vanishedNames = []
+    ): UploadInfoServiceInterface {
         $existingPaths = array_map(static fn (string $n) => self::PARENT_PATH . '/' . $n, $existingNames);
         $deniedPaths = array_map(static fn (string $n) => self::PARENT_PATH . '/' . $n, $deniedNames);
+        $vanishedPaths = array_map(static fn (string $n) => self::PARENT_PATH . '/' . $n, $vanishedNames);
 
         $parent = $this->makeEmpty(Folder::class, [
             'getRealFullPath' => self::PARENT_PATH,
@@ -136,9 +166,13 @@ final class UploadInfoServiceTest extends Unit
                 'getAssetElementByPath' => static function (
                     UserInterface $user,
                     string $path
-                ) use ($deniedPaths, $existingAsset) {
+                ) use ($deniedPaths, $vanishedPaths, $existingAsset) {
                     if (in_array($path, $deniedPaths, true)) {
                         throw new ForbiddenException();
+                    }
+
+                    if (in_array($path, $vanishedPaths, true)) {
+                        throw new NotFoundException('asset', 0);
                     }
 
                     return $existingAsset;

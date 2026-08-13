@@ -65,6 +65,12 @@ final readonly class UploadInfoService implements UploadInfoServiceInterface
                 $result[] = new AssetBatchInfo($fileName, false, null, true);
 
                 continue;
+            } catch (NotFoundException) {
+                // The asset was deleted between the path lookup and loading it, so as far
+                // as this upload is concerned the name is free.
+                $result[] = new AssetBatchInfo($fileName, false);
+
+                continue;
             }
 
             $result[] = new AssetBatchInfo($fileName, true, $asset->getId());
