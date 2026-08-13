@@ -20,10 +20,8 @@ use function sprintf;
 use function str_contains;
 
 /**
- * Checks the shape of the request body only. Turning a name into an asset key
- * needs the element service, which cannot be reached from here — the serializer
- * builds this object from the payload, so nothing can be injected into it — and
- * happens in UploadInfoService instead.
+ * Validates the shape of the body. Resolving names to asset keys needs the
+ * element service and happens in UploadInfoService.
  *
  * @internal
  */

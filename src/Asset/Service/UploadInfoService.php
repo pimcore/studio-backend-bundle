@@ -53,8 +53,8 @@ final readonly class UploadInfoService implements UploadInfoServiceInterface
         $result = [];
 
         foreach ($fileNames as $fileName) {
-            // The name is checked against the key an upload would actually create,
-            // so a name Pimcore would rewrite is not reported as free.
+            // Checked as the key an upload would create, so a name Pimcore would
+            // rewrite is not reported as free.
             $fileKey = $this->serviceResolver->getValidKey($fileName, ElementTypes::TYPE_ASSET);
 
             if ($fileKey === '') {

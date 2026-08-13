@@ -138,9 +138,7 @@ final class UploadInfoServiceTest extends Unit
     }
 
     /**
-     * The name is looked up as the key an upload would create, so a name Pimcore
-     * would rewrite is not reported as free. The reply still carries what was sent,
-     * since the caller pairs entries with its own files by position.
+     * The reply carries the name as sent, since callers pair entries by position.
      *
      * @throws Exception
      */
@@ -203,8 +201,6 @@ final class UploadInfoServiceTest extends Unit
                 'pathExists' => static fn (string $path) => in_array($path, $existingPaths, true),
             ]),
             $this->makeEmpty(ServiceResolverInterface::class, [
-                // Stands in for the element service: spaces become dashes, which is
-                // enough to show the lookup runs against the key, not the raw name.
                 'getValidKey' => static fn (string $key) => str_replace(' ', '-', $key),
             ]),
         );
