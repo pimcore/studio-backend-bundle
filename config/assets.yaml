@@ -44,6 +44,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoService
+
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\VideoServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\VideoService
 
