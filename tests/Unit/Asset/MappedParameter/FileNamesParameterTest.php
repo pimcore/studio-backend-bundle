@@ -66,4 +66,12 @@ final class FileNamesParameterTest extends Unit
         $this->expectException(InvalidArgumentException::class);
         new FileNamesParameter(['file.jpg', 'subfolder/another.jpg']);
     }
+
+    public function testNormalizesEntriesUsingAssetKeyRules(): void
+    {
+        $this->assertSame(
+            ['my-test.jpg'],
+            (new FileNamesParameter(['my test.jpg']))->getFileNames()
+        );
+    }
 }

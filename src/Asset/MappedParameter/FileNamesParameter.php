@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Element\Service as ElementService;
 use function count;
 use function is_string;
 use function sprintf;
@@ -51,7 +53,7 @@ final readonly class FileNamesParameter
             );
         }
 
-        foreach ($this->fileNames as $fileName) {
+        foreach ($this->fileNames as $index => $fileName) {
             if (!is_string($fileName) || $fileName === '') {
                 throw new InvalidArgumentException('Each fileNames item must be a non-empty string.');
             }
@@ -59,6 +61,13 @@ final readonly class FileNamesParameter
             if (str_contains($fileName, '/') || str_contains($fileName, '\\')) {
                 throw new InvalidArgumentException('Each fileNames item must be a single asset key.');
             }
+
+            $validFileName = ElementService::getValidKey($fileName, ElementTypes::TYPE_ASSET);
+            if ($validFileName === '') {
+                throw new InvalidArgumentException('Each fileNames item must be a valid asset key.');
+            }
+
+            $this->fileNames[$index] = $validFileName;
         }
     }
 
