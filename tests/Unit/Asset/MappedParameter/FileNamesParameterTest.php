@@ -67,10 +67,14 @@ final class FileNamesParameterTest extends Unit
         new FileNamesParameter(['file.jpg', 'subfolder/another.jpg']);
     }
 
-    public function testNormalizesEntriesUsingAssetKeyRules(): void
+    /**
+     * Names are handed on as sent. Rewriting one into an asset key needs the element
+     * service, so that belongs to UploadInfoService, which can be given a resolver.
+     */
+    public function testKeepsEntriesAsGiven(): void
     {
         $this->assertSame(
-            ['my-test.jpg'],
+            ['my test.jpg'],
             (new FileNamesParameter(['my test.jpg']))->getFileNames()
         );
     }

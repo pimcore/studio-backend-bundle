@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetBatchInfo;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
@@ -28,6 +30,7 @@ final readonly class UploadInfoService implements UploadInfoServiceInterface
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetServiceResolverInterface $assetServiceResolver,
+        private ServiceResolverInterface $serviceResolver,
     ) {
     }
 
@@ -37,6 +40,7 @@ final readonly class UploadInfoService implements UploadInfoServiceInterface
      * @return array<AssetBatchInfo>
      *
      * @throws ForbiddenException
+     * @throws InvalidArgumentException
      * @throws NotFoundException
      */
     public function filesExist(
@@ -49,7 +53,15 @@ final readonly class UploadInfoService implements UploadInfoServiceInterface
         $result = [];
 
         foreach ($fileNames as $fileName) {
-            $filePath = $parentPath . '/' . $fileName;
+            // The name is checked against the key an upload would actually create,
+            // so a name Pimcore would rewrite is not reported as free.
+            $fileKey = $this->serviceResolver->getValidKey($fileName, ElementTypes::TYPE_ASSET);
+
+            if ($fileKey === '') {
+                throw new InvalidArgumentException('Each fileNames item must be a valid asset key.');
+            }
+
+            $filePath = $parentPath . '/' . $fileKey;
 
             if ($this->assetServiceResolver->pathExists($filePath, ElementTypes::TYPE_ASSET) === false) {
                 $result[] = new AssetBatchInfo($fileName, false);

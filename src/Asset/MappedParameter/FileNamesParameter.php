@@ -14,14 +14,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Element\Service as ElementService;
 use function count;
 use function is_string;
 use function sprintf;
 use function str_contains;
 
 /**
+ * Checks the shape of the request body only. Turning a name into an asset key
+ * needs the element service, which cannot be reached from here — the serializer
+ * builds this object from the payload, so nothing can be injected into it — and
+ * happens in UploadInfoService instead.
+ *
  * @internal
  */
 final readonly class FileNamesParameter
@@ -33,16 +36,22 @@ final readonly class FileNamesParameter
     public const int MAX_FILE_NAMES = 100;
 
     /**
-     * @param array<string> $fileNames
+     * @var array<string>
      */
-    public function __construct(
-        private array $fileNames
-    ) {
-        if (empty($this->fileNames)) {
+    private array $fileNames;
+
+    /**
+     * @param array<string> $fileNames
+     *
+     * @throws InvalidArgumentException
+     */
+    public function __construct(array $fileNames)
+    {
+        if (empty($fileNames)) {
             throw new InvalidArgumentException('fileNames array cannot be empty.');
         }
 
-        $fileNamesCount = count($this->fileNames);
+        $fileNamesCount = count($fileNames);
         if ($fileNamesCount > self::MAX_FILE_NAMES) {
             throw new InvalidArgumentException(
                 sprintf(
@@ -53,7 +62,7 @@ final readonly class FileNamesParameter
             );
         }
 
-        foreach ($this->fileNames as $index => $fileName) {
+        foreach ($fileNames as $fileName) {
             if (!is_string($fileName) || $fileName === '') {
                 throw new InvalidArgumentException('Each fileNames item must be a non-empty string.');
             }
@@ -61,14 +70,9 @@ final readonly class FileNamesParameter
             if (str_contains($fileName, '/') || str_contains($fileName, '\\')) {
                 throw new InvalidArgumentException('Each fileNames item must be a single asset key.');
             }
-
-            $validFileName = ElementService::getValidKey($fileName, ElementTypes::TYPE_ASSET);
-            if ($validFileName === '') {
-                throw new InvalidArgumentException('Each fileNames item must be a valid asset key.');
-            }
-
-            $this->fileNames[$index] = $validFileName;
         }
+
+        $this->fileNames = $fileNames;
     }
 
     /**

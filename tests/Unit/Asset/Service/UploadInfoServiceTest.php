@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Asset\Service;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoService;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadInfoServiceInterface;
@@ -137,6 +138,26 @@ final class UploadInfoServiceTest extends Unit
     }
 
     /**
+     * The name is looked up as the key an upload would create, so a name Pimcore
+     * would rewrite is not reported as free. The reply still carries what was sent,
+     * since the caller pairs entries with its own files by position.
+     *
+     * @throws Exception
+     */
+    public function testFilesExistLooksUpTheAssetKeyRatherThanTheRawName(): void
+    {
+        $result = $this->getUploadInfoService(['my-test.jpg'])->filesExist(
+            self::PARENT_ID,
+            ['my test.jpg'],
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertTrue($result[0]->isExists());
+        $this->assertSame(self::EXISTING_ASSET_ID, $result[0]->getAssetId());
+        $this->assertSame('my test.jpg', $result[0]->getFileName());
+    }
+
+    /**
      * @param array<string> $existingNames  names that resolve as already taken
      * @param array<string> $deniedNames    names the user may not view
      * @param array<string> $vanishedNames  names that no longer load after the path lookup
@@ -180,6 +201,11 @@ final class UploadInfoServiceTest extends Unit
             ]),
             $this->makeEmpty(AssetServiceResolverInterface::class, [
                 'pathExists' => static fn (string $path) => in_array($path, $existingPaths, true),
+            ]),
+            $this->makeEmpty(ServiceResolverInterface::class, [
+                // Stands in for the element service: spaces become dashes, which is
+                // enough to show the lookup runs against the key, not the raw name.
+                'getValidKey' => static fn (string $key) => str_replace(' ', '-', $key),
             ]),
         );
     }
