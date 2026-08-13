@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use function count;
+use function is_string;
 use function sprintf;
+use function str_contains;
 
 /**
  * @internal
@@ -46,6 +48,16 @@ final readonly class FileNamesParameter
                     count($this->fileNames)
                 )
             );
+        }
+
+        foreach ($this->fileNames as $fileName) {
+            if (!is_string($fileName) || $fileName === '') {
+                throw new InvalidArgumentException('Each fileNames item must be a non-empty string.');
+            }
+
+            if (str_contains($fileName, '/') || str_contains($fileName, '\\')) {
+                throw new InvalidArgumentException('Each fileNames item must be a single asset key.');
+            }
         }
     }
 

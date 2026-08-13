@@ -48,4 +48,22 @@ final class FileNamesParameterTest extends Unit
 
         $this->assertSame($fileNames, (new FileNamesParameter($fileNames))->getFileNames());
     }
+
+    public function testThrowsInvalidArgumentExceptionWhenFileNameIsNotString(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new FileNamesParameter(['file.jpg', 1]);
+    }
+
+    public function testThrowsInvalidArgumentExceptionWhenFileNameIsEmpty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new FileNamesParameter(['file.jpg', '']);
+    }
+
+    public function testThrowsInvalidArgumentExceptionWhenFileNameContainsPathSeparator(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new FileNamesParameter(['file.jpg', 'subfolder/another.jpg']);
+    }
 }
