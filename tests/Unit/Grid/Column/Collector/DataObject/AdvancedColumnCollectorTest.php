@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Column\Collector\Da
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
@@ -125,6 +126,33 @@ final class AdvancedColumnCollectorTest extends Unit
         $this->assertSame(['123'], $relationFields[0]->getClassIds());
     }
 
+    public function testGetColumnConfigurationsSkipsRelationClassesThatNoLongerExist(): void
+    {
+        // A relation still listing a class name that was since renamed away,
+        // e.g. leftover from https://github.com/pimcore/platform-version/issues/171
+        $relation = new ManyToManyObjectRelation();
+        $relation->setName('manufacturer');
+        $relation->setTitle('Manufacturer');
+        $relation->setClasses([
+            ['classes' => 'MissingClass'],
+        ]);
+
+        $classRepository = $this->makeEmpty(ClassDefinitionRepositoryInterface::class, [
+            'getClassDefinition' => function (string $className): ClassDefinition {
+                throw new NotFoundException('class definition', $className, 'class name');
+            },
+        ]);
+
+        $collector = $this->createCollector([$relation], $classRepository);
+
+        $config = $this->getAdvancedConfig($collector);
+
+        $relationFields = $config->getConfig()['relationField'];
+        $this->assertCount(1, $relationFields);
+        $this->assertSame([], $relationFields[0]->getClassIds());
+        $this->assertSame([], $relationFields[0]->getFields());
+    }
+
     public function testGetColumnConfigurationsExposesClassificationStoreFieldAsMarkedSimpleField(): void
     {
         $simpleField = $this->createInput('name', 'Name', false);
@@ -173,8 +201,10 @@ final class AdvancedColumnCollectorTest extends Unit
     /**
      * @param array<int, mixed> $children
      */
-    private function createCollector(array $children): AdvancedColumnCollector
-    {
+    private function createCollector(
+        array $children,
+        ?ClassDefinitionRepositoryInterface $classRepository = null,
+    ): AdvancedColumnCollector {
         $layout = $this->makeEmpty(Layout::class, [
             'getChildren' => $children,
         ]);
@@ -183,7 +213,7 @@ final class AdvancedColumnCollectorTest extends Unit
             $this->makeEmpty(ClassDefinitionServiceInterface::class, [
                 'getFilteredLayoutDefinitions' => $layout,
             ]),
-            $this->makeEmpty(ClassDefinitionRepositoryInterface::class),
+            $classRepository ?? $this->makeEmpty(ClassDefinitionRepositoryInterface::class),
             $this->makeEmpty(TransformerLoaderInterface::class, [
                 'loadTransformers' => [],
             ]),
