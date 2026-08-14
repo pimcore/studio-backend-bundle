@@ -95,9 +95,15 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         $availableConfigurationsForRelation = [];
 
         foreach ($classes as $class) {
-            $classId = $this->classDefinitionResolver->getByName(
-                $class['classes'],
-            )->getId();
+            $classDefinition = $this->classDefinitionResolver->getByName($class['classes']);
+
+            if ($classDefinition === null) {
+                // The class configured on this relation no longer exists (e.g. it was renamed
+                // without updating other classes' relation field configuration) - skip it.
+                continue;
+            }
+
+            $classId = $classDefinition->getId();
 
             $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
                 ->getAvailableDataObjectColumnConfiguration(
@@ -121,9 +127,17 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         AdvancedManyToManyObjectRelation $fieldDefinition,
         UserInterface $user
     ): array {
-        $classId = $this->classDefinitionResolver->getByName(
+        $classDefinition = $this->classDefinitionResolver->getByName(
             $fieldDefinition->getAllowedClassId()
-        )->getId();
+        );
+
+        if ($classDefinition === null) {
+            // The class configured on this relation no longer exists (e.g. it was renamed
+            // without updating other classes' relation field configuration).
+            return [];
+        }
+
+        $classId = $classDefinition->getId();
 
         $availableConfigurationsForRelation[$classId] = $this->columnConfigurationService
             ->getAvailableDataObjectColumnConfiguration(
