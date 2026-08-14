@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
@@ -297,7 +298,14 @@ final class AdvancedColumnCollector implements
                 continue;
             }
 
-            $classDefinition = $this->classRepository->getClassDefinition($class['classes']);
+            try {
+                $classDefinition = $this->classRepository->getClassDefinition($class['classes']);
+            } catch (NotFoundException) {
+                // The class configured on this relation no longer exists (e.g. it was renamed
+                // without updating other classes' relation field configuration) - skip it.
+                continue;
+            }
+
             $classIds[] = $classDefinition->getId();
             $fieldsByClass[] = $this->buildFieldForClassName($class['classes']);
         }
