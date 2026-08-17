@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use ReflectionClass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -24,6 +26,8 @@ use function class_exists;
 use function is_a;
 use function is_int;
 use function is_scalar;
+use function sprintf;
+use function strlen;
 
 /**
  * Tags every notification type descriptor so the registry collects them, and registers the delivery
@@ -34,14 +38,24 @@ use function is_scalar;
  * bundle's extension has loaded, so a descriptor or channel contributed by any bundle — the only
  * way the framework is extensible — is picked up without that bundle needing to know the tag name.
  *
+ * It also rejects an unusable type id here, where the failure is a build error a contributing
+ * bundle sees immediately. That check is best effort by construction: a descriptor can only be
+ * read at compile time when it is statically constructible, which is the normal case but not a
+ * guarantee. {@see NotificationTypeRegistry} therefore repeats it over the fully-resolved set and
+ * remains the authoritative check.
+ *
  * @internal
  */
 final readonly class NotificationDispatchPass implements CompilerPassInterface
 {
+    /**
+     * @throws InvalidNotificationTypeException
+     */
     public function process(ContainerBuilder $container): void
     {
         $channelIds = [];
         $allowsExternalDelivery = false;
+        $seenTypeIds = [];
 
         foreach ($container->getDefinitions() as $id => $definition) {
             $class = $this->concreteClass($definition);
@@ -51,8 +65,18 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
 
             if (is_a($class, NotificationTypeDescriptorInterface::class, true)) {
                 $this->tag($definition, NotificationTypeDescriptorInterface::TAG);
+
+                $descriptor = $this->materialise($definition, $class);
+
+                // An opaque descriptor is assumed external-capable, so a transport channel a
+                // bundle actually wants is never stripped on a false negative.
                 $allowsExternalDelivery = $allowsExternalDelivery
-                    || $this->descriptorAllowsExternalDelivery($definition, $class);
+                    || $descriptor === null
+                    || $descriptor->allowsExternalDelivery();
+
+                if ($descriptor !== null) {
+                    $this->validateTypeId($descriptor->getTypeId(), $id, $seenTypeIds);
+                }
             }
 
             if (is_a($class, ChannelInterface::class, true)) {
@@ -61,6 +85,45 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
         }
 
         $this->applyTransportChannels($container, $channelIds, $allowsExternalDelivery);
+    }
+
+    /**
+     * The id is persisted in `notifications`.`type` (VARCHAR(20)) and in the subscription row, so
+     * an over-long or duplicated id is a defect that must never reach a running installation.
+     *
+     * @param array<string, string> $seenTypeIds type id => the service id that first claimed it
+     *
+     * @throws InvalidNotificationTypeException
+     */
+    private function validateTypeId(string $typeId, string $serviceId, array &$seenTypeIds): void
+    {
+        if (strlen($typeId) > NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH) {
+            throw new InvalidNotificationTypeException(
+                sprintf(
+                    'Notification type id "%s" (service "%s") is %d characters; the ' .
+                    'notifications.type column allows at most %d. Choose a shorter id — it is ' .
+                    'persisted and cannot be renamed later without breaking stored notifications.',
+                    $typeId,
+                    $serviceId,
+                    strlen($typeId),
+                    NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH
+                )
+            );
+        }
+
+        if (isset($seenTypeIds[$typeId])) {
+            throw new InvalidNotificationTypeException(
+                sprintf(
+                    'Notification type id "%s" is registered more than once: by service "%s" and ' .
+                    'by service "%s".',
+                    $typeId,
+                    $seenTypeIds[$typeId],
+                    $serviceId
+                )
+            );
+        }
+
+        $seenTypeIds[$typeId] = $serviceId;
     }
 
     /**
@@ -118,26 +181,31 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
     }
 
     /**
-     * Materialises the descriptor to read its runtime answer. Only purely positional, scalar
-     * arguments can be built at compile time; a descriptor wired with service references,
-     * parameters or named arguments — or one that fails to construct — is assumed external-capable,
-     * so a transport channel a bundle actually wants is never stripped on a false negative.
+     * Materialises the descriptor so its own answers can be read at compile time, or null when it
+     * cannot be built here. Only purely positional, scalar arguments can be resolved at this point;
+     * a descriptor wired with service references, parameters or named arguments — or one that fails
+     * to construct — cannot be read, and the caller decides what to assume in its absence.
+     *
+     * A descriptor is a bag of constants and normally takes no arguments at all, so this resolves
+     * in practice; the null path exists so an unusual one degrades instead of breaking the build.
+     * Note the consequence for contributors: a descriptor's constructor runs during container
+     * compilation and must therefore be free of side effects.
      */
-    private function descriptorAllowsExternalDelivery(Definition $definition, string $class): bool
+    private function materialise(Definition $definition, string $class): ?NotificationTypeDescriptorInterface
     {
         foreach ($definition->getArguments() as $key => $value) {
             if (!is_int($key) || (!is_scalar($value) && $value !== null && !is_array($value))) {
-                return true;
+                return null;
             }
         }
 
         try {
             /** @var NotificationTypeDescriptorInterface $descriptor */
             $descriptor = (new ReflectionClass($class))->newInstanceArgs($definition->getArguments());
-        } catch (Throwable) {
-            return true;
-        }
 
-        return $descriptor->allowsExternalDelivery();
+            return $descriptor;
+        } catch (Throwable) {
+            return null;
+        }
     }
 }

@@ -79,9 +79,13 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
     }
 
     /**
-     * Uniqueness and the id-length budget are validated here rather than in a compiler pass:
-     * they are properties of the collected set, not of an individual service, and this is the
-     * only place the whole set exists.
+     * Uniqueness and the id-length budget are authoritative here: this is the only place the
+     * fully-resolved set exists, whatever a descriptor's arguments look like.
+     *
+     * {@see NotificationDispatchPass} runs the same two checks at container build so a
+     * contributing bundle normally sees the failure as a build error rather than a broken
+     * preferences screen. That check can only read statically-constructible descriptors, so it
+     * catches the common case rather than every case — hence this one stays.
      *
      * @param iterable<NotificationTypeDescriptorInterface> $taggedDescriptors
      *

@@ -15,8 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\NotificationDispatchPass;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -131,6 +133,69 @@ final class NotificationDispatchPassTest extends Unit
         (new NotificationDispatchPass())->process($container);
 
         $this->assertCount(1, $container->getDefinition('a.descriptor')->getTag(NotificationTypeDescriptorInterface::TAG));
+    }
+
+    /**
+     * The id is persisted in a VARCHAR(20) column. Catching it here turns what would otherwise be
+     * a 500 on the preferences screen — long after deployment — into a build error the
+     * contributing bundle sees immediately.
+     */
+    public function testRejectsATypeIdLongerThanTheColumnAllows(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setDefinition('long.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments(['acme_crm.deal_won_late']);
+
+        $this->expectException(InvalidNotificationTypeException::class);
+        $this->expectExceptionMessageMatches('/acme_crm\.deal_won_late/');
+
+        (new NotificationDispatchPass())->process($container);
+    }
+
+    public function testRejectsTwoDescriptorsClaimingTheSameTypeId(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setDefinition('first.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments(['a.type']);
+        $container->setDefinition('second.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments(['a.type']);
+
+        $this->expectException(InvalidNotificationTypeException::class);
+        // Both service ids are named, because "registered twice" is useless without them.
+        $this->expectExceptionMessageMatches('/first\.descriptor.*second\.descriptor/s');
+
+        (new NotificationDispatchPass())->process($container);
+    }
+
+    /**
+     * The build check is best effort by construction. A descriptor that cannot be built at compile
+     * time must pass through rather than fail the build on a guess — NotificationTypeRegistry is
+     * the authoritative check and catches it with the fully-resolved set.
+     */
+    public function testDoesNotValidateADescriptorItCannotConstruct(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setDefinition('opaque.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments([new Reference('some.service')]);
+
+        (new NotificationDispatchPass())->process($container);
+
+        $this->assertTrue(
+            $container->getDefinition('opaque.descriptor')->hasTag(NotificationTypeDescriptorInterface::TAG)
+        );
+    }
+
+    public function testAcceptsATypeIdExactlyAtTheLimit(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setDefinition('boundary.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments([str_repeat('a', NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH)]);
+
+        (new NotificationDispatchPass())->process($container);
+
+        $this->assertTrue(
+            $container->getDefinition('boundary.descriptor')->hasTag(NotificationTypeDescriptorInterface::TAG)
+        );
     }
 
     public function testSkipsAbstractDefinitions(): void

@@ -24,7 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Pimcore\Event\Model\NotificationEvent;
 use Pimcore\Event\NotificationEvents;
 use Pimcore\Model\Notification;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -39,6 +41,7 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
         private PublishServiceInterface $publishService,
         private NotificationTypeRegistryInterface $typeRegistry,
         private SubscriptionResolverInterface $subscriptionResolver,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -76,7 +79,9 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
      * model falls into the general bucket and honours that bucket's preference.
      *
      * Failing to resolve must not cost the user their notification, so any error falls back to
-     * showing the toast — the behaviour before this setting existed.
+     * showing the toast — the behaviour before this setting existed. It is logged rather than
+     * discarded: a misconfigured descriptor makes the preferences screen unusable while this path
+     * keeps working, so without the log the only symptom would be one screen failing in isolation.
      */
     private function wantsPopup(Notification $notification): bool
     {
@@ -91,7 +96,17 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
                 $recipientId,
                 $this->typeRegistry->resolveBucket($notification->getType())
             )->wantsPopup();
-        } catch (Exception) {
+        } catch (Exception $e) {
+            $this->logger->error(
+                sprintf(
+                    'Could not resolve the notification pop-up preference for user %d, ' .
+                    'defaulting to showing it: %s',
+                    $recipientId,
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
+
             return true;
         }
     }
