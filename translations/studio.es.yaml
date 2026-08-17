@@ -78,5 +78,11 @@ preview_generator_site: Web
 notifications.email.greeting: 'Hola %name%,'
 notifications.email.cta: 'Ver en Pimcore Studio'
 notifications.email.footer: 'Recibes este correo electrónico porque te suscribiste a estas notificaciones en Pimcore Studio.'
+notifications.channel.popup: 'Ventana emergente'
+notifications.channel.email: 'Correo electrónico'
+notification.type.general.label: 'Todo lo demás'
+notification.type.general.description: 'Pasos de flujos de trabajo, mensajes del sistema, notificaciones de otros bundles. Siempre llegan a tus notificaciones; elige si además aparecen como ventana emergente.'
+notification.type.general.solo_label: 'Todas las notificaciones'
+notification.type.general.solo_description: 'Todo lo que Pimcore te envía: pasos de flujos de trabajo, mensajes del sistema, notificaciones de otros bundles. Siempre llegan a tus notificaciones; elige si además aparecen como ventana emergente.'
 ownership_management_type_grid_configuration: Configuraciones de Grid
 ownership_management_type_saved_search: Búsquedas guardadas
