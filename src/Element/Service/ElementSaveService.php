@@ -25,7 +25,6 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
-use function sprintf;
 
 /**
  * @internal
@@ -143,9 +142,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     private function hasWorkflowPermission(Concrete|Document $element, string $permission): void
     {
         if ($this->workflowManager->isDeniedInWorkflow($element, $permission)) {
-            throw new ForbiddenException(
-                sprintf('The current workflow state does not allow the "%s" permission', $permission)
-            );
+            throw new ForbiddenException();
         }
     }
 }
