@@ -22,6 +22,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Pimcore\Security\User\User as SecurityUser;
+use Pimcore\Workflow\Manager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use function sprintf;
 
@@ -34,6 +35,7 @@ final readonly class SecurityService implements SecurityServiceInterface
         private ElementPermissionServiceInterface $elementPermissionService,
         private AuthenticationResolverInterface $authenticationResolver,
         private TokenStorageInterface $tokenStorage,
+        private Manager $workflowManager,
     ) {
     }
 
@@ -87,6 +89,10 @@ final readonly class SecurityService implements SecurityServiceInterface
             throw new ForbiddenException(
                 sprintf('You dont have %s permission', $permission)
             );
+        }
+
+        if ($this->workflowManager->isDeniedInWorkflow($element, $permission)) {
+            throw new ForbiddenException();
         }
     }
 

@@ -24,7 +24,6 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use Pimcore\Workflow\Manager;
 
 /**
  * @internal
@@ -33,8 +32,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
 {
     public function __construct(
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
-        private SecurityServiceInterface $securityService,
-        private Manager $workflowManager
+        private SecurityServiceInterface $securityService
     ) {
     }
 
@@ -116,7 +114,6 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     private function publishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
-        $this->hasWorkflowPermission($element, ElementPermissions::PUBLISH_PERMISSION);
         $element->setPublished(true);
         $element->save();
         $element->deleteAutoSaveVersions($user->getId());
@@ -128,21 +125,10 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
-        $this->hasWorkflowPermission($element, ElementPermissions::UNPUBLISH_PERMISSION);
         if ($element instanceof Concrete) {
             $element->setOmitMandatoryCheck(true);
         }
         $element->setPublished(false);
         $element->save();
-    }
-
-    /**
-     * @throws ForbiddenException
-     */
-    private function hasWorkflowPermission(Concrete|Document $element, string $permission): void
-    {
-        if ($this->workflowManager->isDeniedInWorkflow($element, $permission)) {
-            throw new ForbiddenException();
-        }
     }
 }

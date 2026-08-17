@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\User as PimcoreUser;
+use Pimcore\Workflow\Manager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 final class SecurityServiceTest extends Unit
@@ -73,14 +74,55 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testHasElementPermissionThrowsWhenWorkflowDenies(): void
+    {
+        $securityService = $this->mockSecurityService(
+            true,
+            true,
+            true
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $securityService->hasElementPermission(
+            new Asset(),
+            new PimcoreUser(),
+            'publish'
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testHasElementPermissionSucceedsWhenAllowedAndWorkflowDoesNotDeny(): void
+    {
+        $securityService = $this->mockSecurityService(
+            true,
+            true,
+            false
+        );
+
+        $securityService->hasElementPermission(
+            new Asset(),
+            new PimcoreUser(),
+            'publish'
+        );
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @throws Exception
+     */
     private function mockSecurityService(
         bool $withUser = true,
         bool $hasPermission = true,
+        bool $isDeniedInWorkflow = false,
     ): SecurityServiceInterface {
         return new SecurityService(
             $this->mockElementPermissionService($hasPermission),
             $this->mockAuthenticationResolver($withUser),
-            $this->mockTokenStorage()
+            $this->mockTokenStorage(),
+            $this->mockWorkflowManager($isDeniedInWorkflow)
         );
     }
 
@@ -88,6 +130,13 @@ final class SecurityServiceTest extends Unit
     {
         return $this->makeEmpty(ElementPermissionServiceInterface::class, [
             'isAllowed' => $hasPermission,
+        ]);
+    }
+
+    private function mockWorkflowManager(bool $isDeniedInWorkflow): Manager
+    {
+        return $this->makeEmpty(Manager::class, [
+            'isDeniedInWorkflow' => $isDeniedInWorkflow,
         ]);
     }
 
