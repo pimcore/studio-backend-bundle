@@ -26,8 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\Availabl
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\SubscriptionCollection;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\UpdateSubscriptionsParameters;
 use Pimcore\Model\UserInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function array_diff;
 use function array_values;
+use function implode;
 use function in_array;
 use function sprintf;
 
@@ -45,6 +48,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         private SubscriptionRepositoryInterface $subscriptionRepository,
         private SubscriptionHydratorInterface $subscriptionHydrator,
         private EventDispatcherInterface $eventDispatcher,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -92,20 +96,11 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     ): SubscriptionCollection {
         $userId = $user->getId();
         $stored = $this->subscriptionRepository->getByUser($userId);
-        $availableChannelIds = $this->channelRegistry->getAvailableChannelIds();
 
         $preferences = [];
         foreach ($parameters->getItems() as $item) {
-            $descriptor = $this->typeRegistry->getDescriptor($item->getTypeId());
+            $descriptor = $this->resolveDescriptor($item->getTypeId());
             $subscribed = $this->resolveSubscribed($descriptor, $item->isSubscribed());
-
-            foreach ($item->getChannels() as $channelId) {
-                if (!in_array($channelId, $availableChannelIds, true)) {
-                    throw new InvalidArgumentException(
-                        sprintf('Unknown notification channel "%s".', $channelId)
-                    );
-                }
-            }
 
             $preferences[$item->getTypeId()] = [
                 'subscribed' => $subscribed,
@@ -121,6 +116,25 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         $this->subscriptionRepository->save($userId, $preferences);
 
         return $this->getSubscriptions($user);
+    }
+
+    /**
+     * A type id the server does not know is not a race an administrator could have caused, and
+     * returning the stored state cannot repair a client asking about something that has never
+     * existed — so unlike an unavailable channel this is rejected. It is a bad field in a request
+     * body rather than a missing resource, hence 400 rather than the registry's 404.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function resolveDescriptor(string $typeId): NotificationTypeDescriptorInterface
+    {
+        if (!$this->typeRegistry->hasDescriptor($typeId)) {
+            throw new InvalidArgumentException(
+                sprintf('Unknown notification type "%s".', $typeId)
+            );
+        }
+
+        return $this->typeRegistry->getDescriptor($typeId);
     }
 
     /**
@@ -145,9 +159,12 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     /**
      * Two things happen here that the client cannot be trusted to do.
      *
-     * A channel the type cannot use is dropped rather than rejected: an administrator may
-     * disable a channel between the screen loading and the user saving, and that should not
-     * fail their whole save.
+     * A channel the type cannot use — or that the installation no longer offers at all — is
+     * dropped rather than rejected. An administrator may disable a channel, or a bundle
+     * providing one may be uninstalled, between the screen loading and the user saving; that is
+     * a race, not a client error, and failing the whole bulk save over it would cost the user
+     * every other row. The endpoint returns the stored state, so what was dropped is visible in
+     * the response rather than silent — and it is logged for anyone debugging a client.
      *
      * Channel ids that are currently unresolvable are preserved. A bundle providing a channel
      * may be temporarily disabled, in which case the client never saw that id — replacing the
@@ -176,12 +193,36 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
             static fn (string $channel): bool => in_array($channel, $supported, true)
         );
 
+        $this->logDroppedChannels($descriptor->getTypeId(), $requested, $kept);
+
         $unresolvable = array_filter(
             $previouslyStored,
             static fn (string $channel): bool => !in_array($channel, $availableChannelIds, true)
         );
 
         return array_values(array_unique([...$kept, ...$unresolvable]));
+    }
+
+    /**
+     * @param string[] $requested
+     * @param string[] $kept
+     */
+    private function logDroppedChannels(string $typeId, array $requested, array $kept): void
+    {
+        $dropped = array_diff($requested, $kept);
+
+        if ($dropped === []) {
+            return;
+        }
+
+        $this->logger->warning(
+            sprintf(
+                'Dropped notification channel(s) "%s" requested for type "%s": not offered by ' .
+                'this installation, or not usable by that type.',
+                implode('", "', $dropped),
+                $typeId
+            )
+        );
     }
 
     /**
