@@ -17,6 +17,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionSe
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
@@ -24,6 +25,7 @@ use Pimcore\Model\UserInterface;
 use Pimcore\Security\User\User as SecurityUser;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use function in_array;
 use function sprintf;
 
 /**
@@ -91,9 +93,18 @@ final readonly class SecurityService implements SecurityServiceInterface
             );
         }
 
-        if ($this->workflowManager->isDeniedInWorkflow($element, $permission)) {
+        if ($this->isWorkflowGatedPermission($permission) && $this->workflowManager->isDeniedInWorkflow($element, $permission)) {
             throw new ForbiddenException();
         }
+    }
+
+    private function isWorkflowGatedPermission(string $permission): bool
+    {
+        return in_array(
+            $permission,
+            [ElementPermissions::PUBLISH_PERMISSION, ElementPermissions::UNPUBLISH_PERMISSION],
+            true
+        );
     }
 
     /**

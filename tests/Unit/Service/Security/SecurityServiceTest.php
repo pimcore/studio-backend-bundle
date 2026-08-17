@@ -113,6 +113,26 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testHasElementPermissionIgnoresWorkflowDenialForOtherPermissions(): void
+    {
+        $securityService = $this->mockSecurityService(
+            true,
+            true,
+            true
+        );
+
+        $securityService->hasElementPermission(
+            new Asset(),
+            new PimcoreUser(),
+            'view'
+        );
+
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @throws Exception
+     */
     private function mockSecurityService(
         bool $withUser = true,
         bool $hasPermission = true,
