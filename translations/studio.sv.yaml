@@ -80,9 +80,9 @@ notifications.email.cta: 'Visa i Pimcore Studio'
 notifications.email.footer: 'Du får det här e-postmeddelandet eftersom du prenumererar på dessa aviseringar i Pimcore Studio.'
 notifications.channel.popup: 'Pop-up'
 notifications.channel.email: 'E-post'
-notification.type.general.label: 'Allt annat'
-notification.type.general.description: 'Arbetsflödessteg, systemmeddelanden, aviseringar från andra bundles. De hamnar alltid bland dina aviseringar — välj om de även ska visas som pop-up.'
-notification.type.general.solo_label: 'Alla aviseringar'
-notification.type.general.solo_description: 'Allt som Pimcore skickar till dig: arbetsflödessteg, systemmeddelanden, aviseringar från andra bundles. De hamnar alltid bland dina aviseringar; välj om de även ska visas som pop-up.'
+notifications.type.general.label: 'Allt annat'
+notifications.type.general.description: 'Arbetsflödessteg, systemmeddelanden, aviseringar från andra bundles. De hamnar alltid bland dina aviseringar — välj om de även ska visas som pop-up.'
+notifications.type.general.solo_label: 'Alla aviseringar'
+notifications.type.general.solo_description: 'Allt som Pimcore skickar till dig: arbetsflödessteg, systemmeddelanden, aviseringar från andra bundles. De hamnar alltid bland dina aviseringar; välj om de även ska visas som pop-up.'
 ownership_management_type_grid_configuration: Grid-konfigurationer
 ownership_management_type_saved_search: Sparade sökningar

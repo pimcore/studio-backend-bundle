@@ -32,13 +32,13 @@ final class GeneralNotificationDescriptor extends AbstractNotificationTypeDescri
 
     private const string GROUP = 'general';
 
-    private const string TRANSLATION_KEY = 'notification.type.general.label';
+    private const string TRANSLATION_KEY = 'notifications.type.general.label';
 
-    private const string DESCRIPTION_KEY = 'notification.type.general.description';
+    private const string DESCRIPTION_KEY = 'notifications.type.general.description';
 
-    private const string SOLO_TRANSLATION_KEY = 'notification.type.general.solo_label';
+    private const string SOLO_TRANSLATION_KEY = 'notifications.type.general.solo_label';
 
-    private const string SOLO_DESCRIPTION_KEY = 'notification.type.general.solo_description';
+    private const string SOLO_DESCRIPTION_KEY = 'notifications.type.general.solo_description';
 
     public function getTypeId(): string
     {

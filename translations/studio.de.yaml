@@ -80,9 +80,9 @@ notifications.email.cta: 'In Pimcore Studio ansehen'
 notifications.email.footer: 'Sie erhalten diese E-Mail, weil Sie diese Benachrichtigungen in Pimcore Studio abonniert haben.'
 notifications.channel.popup: 'Pop-up'
 notifications.channel.email: 'E-Mail'
-notification.type.general.label: 'Sonstiges'
-notification.type.general.description: 'Workflow-Schritte, Systemmeldungen, Benachrichtigungen aus anderen Bundles. Diese erscheinen immer in Ihren Benachrichtigungen — wählen Sie, ob sie zusätzlich als Pop-up angezeigt werden.'
-notification.type.general.solo_label: 'Alle Benachrichtigungen'
-notification.type.general.solo_description: 'Alles, was Pimcore Ihnen sendet — Workflow-Schritte, Systemmeldungen, Benachrichtigungen aus anderen Bundles. Diese erscheinen immer in Ihren Benachrichtigungen; wählen Sie, ob sie zusätzlich als Pop-up angezeigt werden.'
+notifications.type.general.label: 'Sonstiges'
+notifications.type.general.description: 'Workflow-Schritte, Systemmeldungen, Benachrichtigungen aus anderen Bundles. Diese erscheinen immer in Ihren Benachrichtigungen — wählen Sie, ob sie zusätzlich als Pop-up angezeigt werden.'
+notifications.type.general.solo_label: 'Alle Benachrichtigungen'
+notifications.type.general.solo_description: 'Alles, was Pimcore Ihnen sendet — Workflow-Schritte, Systemmeldungen, Benachrichtigungen aus anderen Bundles. Diese erscheinen immer in Ihren Benachrichtigungen; wählen Sie, ob sie zusätzlich als Pop-up angezeigt werden.'
 ownership_management_type_grid_configuration: Grid-Konfigurationen
 ownership_management_type_saved_search: Gespeicherte Suchen
