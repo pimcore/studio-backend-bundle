@@ -22,13 +22,15 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * bundle needs. Any bundle may contribute one; tagged services are collected automatically and
  * a matching column appears in the preferences screen with no frontend change.
  *
- * This bundle ships no implementation on purpose. A channel is only reachable by types that
- * return true from allowsExternalDelivery(), and the only type here — the general catch-all —
- * deliberately does not: a bucket of unclassified notifications is not something to email.
- * Whichever bundle first contributes such a type contributes the channel alongside it.
+ * {@see EmailChannel} is the implementation shipped here. A channel is only reachable by types
+ * that return true from allowsExternalDelivery(), and the only type this bundle registers — the
+ * general catch-all — deliberately does not: a bucket of unclassified notifications is not
+ * something to email. So on a core-only install every registered channel is untagged again by
+ * NotificationDispatchPass, and installing a bundle with an externally-deliverable type brings
+ * them back.
  *
- * The in-app pop-up is NOT a transport and has no implementation here either — it is a
- * preference read when the notification is published over Mercure.
+ * The in-app pop-up is NOT a transport and has no implementation here — it is a preference read
+ * when the notification is published over Mercure.
  */
 #[AutoconfigureTag(ChannelInterface::TAG)]
 interface ChannelInterface

@@ -95,7 +95,7 @@ A **channel** delivers a notification outside the bell. Implement `ChannelInterf
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
 use Pimcore\Model\Notification;
-use Pimcore\Model\User\UserInterface;
+use Pimcore\Model\UserInterface;
 
 final class SlackChannel implements ChannelInterface
 {
@@ -141,3 +141,9 @@ By default a typed notification renders as its title and message in the bell. To
 excerpt, an action, a deep link — register a renderer on the frontend `DynamicTypeNotificationRegistry`
 in **pimcore/studio-ui-bundle** (see its notification module). The `payload` you pass to
 `DispatchableNotification` is what that renderer receives.
+
+:::warning
+The payload is published over Mercure on a topic every signed-in Studio client subscribes to, so keep
+it to the identifiers and hints a renderer needs — a task id, a discussion id, a deep link. Anything a
+recipient's colleagues should not see does not belong in it.
+:::

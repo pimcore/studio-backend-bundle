@@ -22,8 +22,6 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Throwable;
-use function class_exists;
-use function is_a;
 use function is_int;
 use function is_scalar;
 use function sprintf;
@@ -56,12 +54,12 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
         $seenTypeIds = [];
 
         foreach ($container->getDefinitions() as $id => $definition) {
-            $class = $this->concreteClass($definition);
+            $class = $this->concreteClass($container, $definition);
             if ($class === null) {
                 continue;
             }
 
-            if (is_a($class, NotificationTypeDescriptorInterface::class, true)) {
+            if ($class->implementsInterface(NotificationTypeDescriptorInterface::class)) {
                 $this->tag($definition, NotificationTypeDescriptorInterface::TAG);
 
                 $descriptor = $this->materialise($definition, $class);
@@ -77,7 +75,7 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
                 }
             }
 
-            if (is_a($class, ChannelInterface::class, true)) {
+            if ($class->implementsInterface(ChannelInterface::class)) {
                 $channelIds[] = $id;
             }
         }
@@ -122,21 +120,25 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
     }
 
     /**
-     * The concrete, autoloadable class a definition instantiates, or null when the definition is not
-     * a real service to classify (abstract, synthetic, classless or an abstract class).
+     * The concrete class a definition instantiates, or null when the definition is not a real
+     * service to classify (abstract, synthetic, classless or an abstract class).
+     *
+     * getReflectionClass() rather than class_exists(): every definition in the container passes
+     * through here, so it matters that it resolves a class name given as a container parameter,
+     * contains the fatal a class with a missing parent would otherwise raise mid-build, and
+     * reuses the reflection the rest of the compilation has already done.
+     *
+     * @return ReflectionClass<object>|null
      */
-    private function concreteClass(Definition $definition): ?string
+    private function concreteClass(ContainerBuilder $container, Definition $definition): ?ReflectionClass
     {
         if ($definition->isAbstract() || $definition->isSynthetic()) {
             return null;
         }
 
-        $class = $definition->getClass();
-        if ($class === null || !class_exists($class)) {
-            return null;
-        }
+        $class = $container->getReflectionClass($definition->getClass(), false);
 
-        return (new ReflectionClass($class))->isAbstract() ? null : $class;
+        return $class === null || $class->isAbstract() ? null : $class;
     }
 
     /**
@@ -187,9 +189,13 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
      * The descriptor instance, or null when it cannot be built at compile time — only positional
      * scalar arguments resolve here. Its constructor runs during container compilation, so it
      * must be free of side effects.
+     *
+     * @param ReflectionClass<object> $class
      */
-    private function materialise(Definition $definition, string $class): ?NotificationTypeDescriptorInterface
-    {
+    private function materialise(
+        Definition $definition,
+        ReflectionClass $class,
+    ): ?NotificationTypeDescriptorInterface {
         foreach ($definition->getArguments() as $key => $value) {
             if (!is_int($key) || (!is_scalar($value) && $value !== null && !is_array($value))) {
                 return null;
@@ -197,7 +203,7 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
         }
 
         try {
-            $descriptor = (new ReflectionClass($class))->newInstanceArgs($definition->getArguments());
+            $descriptor = $class->newInstanceArgs($definition->getArguments());
         } catch (Throwable) {
             return null;
         }

@@ -134,6 +134,27 @@ final class EmailChannelTest extends Unit
     }
 
     /**
+     * "//host" passes a leading-slash check but is protocol-relative, and the host prefix is empty
+     * in a worker with no configured domain — which is exactly where it would have escaped.
+     */
+    public function testProtocolRelativeDeepLinkIsIgnoredWithoutAHost(): void
+    {
+        $toolResolver = $this->createMock(ToolResolverInterface::class);
+        $toolResolver->method('getHostname')->willReturn(null);
+
+        $captured = null;
+        $channel = new EmailChannel($this->capturingBus($captured), new RequestStack(), $toolResolver);
+
+        $notification = $this->notification('t', 'm');
+        $notification->setPayload((string) json_encode(['deepLink' => '//evil.example/phish']));
+
+        $channel->send($notification, $this->recipient(self::EMAIL, 'Jane', 'en'));
+
+        self::assertNotNull($captured);
+        self::assertSame('/pimcore-studio/', $captured->getLink());
+    }
+
+    /**
      * With no active request (a CLI-triggered notification) the host falls back to the configured
      * domain rather than producing a broken absolute link.
      */

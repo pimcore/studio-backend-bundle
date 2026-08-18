@@ -126,7 +126,13 @@ final readonly class EmailChannel implements ChannelInterface
         $payload = json_decode($notification->getPayload() ?? '[]', true);
         $link = is_array($payload) ? ($payload['deepLink'] ?? null) : null;
 
-        return is_string($link) && str_starts_with($link, '/') ? $link : null;
+        if (!is_string($link) || !str_starts_with($link, '/')) {
+            return null;
+        }
+
+        // "//host" is protocol-relative once the host prefix is empty, which resolveHostUrl()
+        // legitimately is in a worker with no configured domain.
+        return str_starts_with($link, '//') ? null : $link;
     }
 
     /**

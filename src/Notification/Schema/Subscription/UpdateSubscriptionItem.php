@@ -35,6 +35,7 @@ final readonly class UpdateSubscriptionItem
         private string $typeId,
         #[Property(description: 'whether the user wants this type at all', type: 'bool', example: true)]
         private bool $subscribed,
+        #[Assert\All([new Assert\Type('string')])]
         #[Property(
             description: 'enabled channel ids',
             type: 'array',

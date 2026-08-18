@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Service;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
@@ -137,6 +138,51 @@ final class SubscriptionServiceTest extends Unit
         $this->assertNull($captured, 'Nothing should be persisted when the payload is rejected.');
     }
 
+    /**
+     * The channel switches say nothing while a type is muted, so muting must not overwrite the
+     * stored set — otherwise turning a type off and on again leaves the user subscribed to
+     * something that delivers nowhere, not even the pop-up.
+     */
+    public function testUnsubscribingKeepsTheStoredChannelsForWhenTheTypeComesBack(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured,
+            stored: ['test.type' => new NotificationSubscription(self::USER_ID, 'test.type', true, ['popup', 'email'])]
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', false, []),
+            ])
+        );
+
+        $this->assertFalse($captured['test.type']['subscribed']);
+        $this->assertSame(['popup', 'email'], $captured['test.type']['channels']);
+    }
+
+    /**
+     * Null is "never chosen" and must stay that way, so the descriptor defaults still apply if
+     * the type is switched back on.
+     */
+    public function testUnsubscribingATypeTheUserNeverChoseLeavesTheChannelsUnset(): void
+    {
+        $captured = null;
+        $service = $this->service([new TestNotificationTypeDescriptor('test.type')], [], $captured);
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', false, []),
+            ])
+        );
+
+        $this->assertNull($captured['test.type']['channels']);
+    }
+
     public function testALockedTypeCannotBeUnsubscribedFrom(): void
     {
         $captured = null;
@@ -155,12 +201,14 @@ final class SubscriptionServiceTest extends Unit
     /**
      * @param TestNotificationTypeDescriptor[] $descriptors
      * @param array<string, array{enabled: bool}> $channelConfig
+     * @param array<string, NotificationSubscription> $stored rows the user already has
      */
     private function service(
         array $descriptors,
         array $channelConfig,
         ?array &$captured,
         ?LoggerInterface $logger = null,
+        array $stored = [],
     ): SubscriptionService {
         $general = new GeneralNotificationDescriptor();
         $typeRegistry = new NotificationTypeRegistry($descriptors, $general);
@@ -169,7 +217,7 @@ final class SubscriptionServiceTest extends Unit
         $repository = $this->makeEmpty(
             SubscriptionRepositoryInterface::class,
             [
-                'getByUser' => [],
+                'getByUser' => $stored,
                 'save' => static function (int $userId, array $preferences) use (&$captured): void {
                     $captured = $preferences;
                 },

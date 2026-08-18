@@ -108,7 +108,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
                     $descriptor,
                     $subscribed,
                     $item->getChannels(),
-                    ($stored[$item->getTypeId()] ?? null)?->getChannels() ?? []
+                    ($stored[$item->getTypeId()] ?? null)?->getChannels()
                 ),
             ];
         }
@@ -167,18 +167,20 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
      * set wholesale would silently discard a preference the user still holds.
      *
      * @param string[] $requested
-     * @param string[] $previouslyStored
+     * @param string[]|null $previouslyStored null when the user has never chosen for this type
      *
-     * @return string[]
+     * @return string[]|null
      */
     private function resolveChannels(
         NotificationTypeDescriptorInterface $descriptor,
         bool $subscribed,
         array $requested,
-        array $previouslyStored,
-    ): array {
+        ?array $previouslyStored,
+    ): ?array {
+        // The switches say nothing while a type is muted, so the stored set is kept rather than
+        // overwritten with them — re-subscribing restores what the user had.
         if (!$subscribed) {
-            return [];
+            return $previouslyStored;
         }
 
         $availableChannelIds = $this->channelRegistry->getAvailableChannelIds();
@@ -192,7 +194,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         $this->logDroppedChannels($descriptor->getTypeId(), $requested, $kept);
 
         $unresolvable = array_filter(
-            $previouslyStored,
+            $previouslyStored ?? [],
             static fn (string $channel): bool => !in_array($channel, $availableChannelIds, true)
         );
 
