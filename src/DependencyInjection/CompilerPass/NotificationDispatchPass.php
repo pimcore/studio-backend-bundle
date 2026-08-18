@@ -144,9 +144,15 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
      * delivered externally. With just the built-in 'info' catch-all — which never allows it — a
      * core-only install would otherwise carry a dead channel: an extra column on the preferences
      * screen and an instantiated mailer no notification could ever reach. So the channels are tagged
-     * (collected) only when a consumer exists, and dropped otherwise. The in-app 'popup' substrate
+     * (collected) only when a consumer exists, and untagged otherwise. The in-app 'popup' substrate
      * is always available and is not a tagged channel, so it is unaffected. Installing a bundle that
      * contributes an externally-deliverable type brings the channels back automatically.
+     *
+     * The gate clears the tag rather than removing the definition. Untagging is enough — the
+     * registry collects by tag, and an untagged private service nothing references is dropped by
+     * Symfony's own unused-definition pass, so no dead mailer is instantiated either way. Removing
+     * the definition would additionally break any bundle that aliases or injects its own channel,
+     * which is exactly what the documented extension path invites it to do.
      *
      * @param string[] $channelIds
      */
@@ -156,11 +162,17 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
         bool $allowsExternalDelivery,
     ): void {
         foreach ($channelIds as $id) {
+            $definition = $container->getDefinition($id);
+
             if ($allowsExternalDelivery) {
-                $this->tag($container->getDefinition($id), ChannelInterface::TAG);
-            } else {
-                $container->removeDefinition($id);
+                $this->tag($definition, ChannelInterface::TAG);
+
+                continue;
             }
+
+            // clearTag only strips this tag, so a bundle that tagged its channel explicitly is
+            // gated the same way rather than being left half-registered.
+            $definition->clearTag(ChannelInterface::TAG);
         }
     }
 
