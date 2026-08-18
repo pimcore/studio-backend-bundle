@@ -87,7 +87,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
         $widget = $widgetElementData->getWidgetConfig();
         $element = $widgetElementData->getResultItem();
         $treeLevelData = [];
-        $parents = $this->getParentElements($widget, $element);
+        $parents = $this->getParentElements($widget, $element, $user);
         if (empty($parents)) {
             return [new TreeLevelData(parentId: 1, elementId: $element->getId(), pageNumber: 1)];
         }
@@ -111,7 +111,8 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
      */
     private function getParentElements(
         ElementTreeWidgetConfig $widget,
-        ElementSearchResultItemInterface $element
+        ElementSearchResultItemInterface $element,
+        UserInterface $user
     ): array {
         $levels = $this->pathService->getAllParentPaths([$element->getFullPath()]);
         $levels = $this->filterParentPaths($levels, $widget->getRootFolder()->getFullPath());

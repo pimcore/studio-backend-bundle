@@ -59,7 +59,8 @@ final readonly class TreeQuery implements TreeQueryInterface
                 $type,
                 $widget->getRootFolder()->getFullPath(),
                 $widget->isShowRoot(),
-                $query
+                $query,
+                $user
             );
 
             return $query;
@@ -121,7 +122,8 @@ final readonly class TreeQuery implements TreeQueryInterface
         string $type,
         string $rootPath,
         bool $includeParent,
-        QueryInterface $query
+        QueryInterface $query,
+        UserInterface $user
     ): void {
         // The widget root is only navigated through here, its children sorting is applied to the
         // query - so it is resolved without a view permission check, see
