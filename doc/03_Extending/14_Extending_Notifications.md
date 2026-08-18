@@ -65,7 +65,7 @@ final class DealWonDescriptor extends AbstractNotificationTypeDescriptor
 |---|---|
 | `getTypeId()` | Stable id, persisted in `notifications.type`. **Max 20 characters** (see below). |
 | `getTranslationKey()` / `getDescriptionKey()` | Studio translation keys for the preferences row. |
-| `getGroup()` | Groups related types on the preferences screen. |
+| `getGroup()` | Groups related types on the preferences screen. Ship a label for it — see below. |
 | `getSortOrder()` | Order within the group. |
 | `allowsExternalDelivery()` | Whether the type may leave the app (email, chat). `false` ⇒ pop-up only. |
 | `getDefaultChannels()` | Channels pre-enabled for a new user (e.g. `['popup']`). |
@@ -86,6 +86,15 @@ is authoritative.
 :::info
 **A descriptor's constructor runs during container compilation** — the pass constructs it to read
 its id and `allowsExternalDelivery()` — so keep it free of side effects.
+:::
+
+:::warning
+The row label and description come from the keys above, which the API sends to the frontend. The
+**group heading does not** — the preferences screen composes it as
+`notifications.settings.group.<group>`, so a new `getGroup()` value needs that key added to the
+`studio` domain (a `translations/studio.<locale>.yaml` in your bundle, same as here). Group headings
+only appear once a second group exists, so the first bundle to contribute a type is also the first
+to see a missing one — as the raw key, in place of the heading.
 :::
 
 ## Delivery Channels
