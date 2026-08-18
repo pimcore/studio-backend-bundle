@@ -34,8 +34,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcherInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcher
 
-  # Writing the bell row is its own collaborator so the dispatcher's routing decisions can be
-  # tested without a database — Notification::save() goes through a Dao.
+  # Own collaborator so the dispatcher can be tested without a database.
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationWriterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationWriter
 

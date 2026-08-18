@@ -32,17 +32,14 @@ use function in_array;
 
 /**
  * What the dispatcher decides: who is skipped, who gets a bell row, and which channels are handed
- * the result. Writing the row itself goes through NotificationWriter, which is stubbed here — the
- * seam exists precisely so these decisions can be pinned without a database.
+ * the result. The write itself is stubbed, so no database is needed.
  */
 final class NotificationDispatcherTest extends Unit
 {
     private const string TYPE_ID = 'test.type';
 
     /**
-     * A producer naming a type nobody registered is a wiring mistake, and silently writing an
-     * unroutable notification would hide it. Unlike a per-recipient failure this is raised, and
-     * before anything is written.
+     * A wiring mistake, so unlike a per-recipient failure it is raised — before anything is written.
      */
     public function testUnknownTypeIsRejected(): void
     {
@@ -89,10 +86,6 @@ final class NotificationDispatcherTest extends Unit
         $this->assertSame(7, $email->sent[0]['recipient']->getId());
     }
 
-    /**
-     * The pop-up is a presentation preference resolved when the notification is published, never
-     * something to hand a transport.
-     */
     public function testAPopupOnlySubscriptionInvokesNoTransportChannel(): void
     {
         $writer = new TestNotificationWriter();
@@ -153,8 +146,7 @@ final class NotificationDispatcherTest extends Unit
     }
 
     /**
-     * A channel is contributed by another bundle and may be broken, slow or misconfigured. None of
-     * that may stop the other channels — the guarantee ChannelInterface::send() documents.
+     * The guarantee ChannelInterface::send() documents.
      */
     public function testABrokenChannelIsLoggedAndTheOtherChannelStillDelivers(): void
     {
@@ -178,10 +170,6 @@ final class NotificationDispatcherTest extends Unit
         $this->assertSame([7], $writer->writtenRecipientIds());
     }
 
-    /**
-     * Recipients are independent. A bell row that cannot be written for one of them used to abort
-     * the loop, delivering to everyone before it and silently skipping everyone after.
-     */
     public function testAFailedWriteForOneRecipientDoesNotCostTheOthersTheirNotification(): void
     {
         $writer = new TestNotificationWriter(failForRecipientIds: [8]);

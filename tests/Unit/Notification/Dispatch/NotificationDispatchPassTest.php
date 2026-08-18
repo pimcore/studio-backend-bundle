@@ -52,9 +52,7 @@ final class NotificationDispatchPassTest extends Unit
     }
 
     /**
-     * The whole point of the gate: with only types that never allow external delivery (a core-only
-     * install has just the 'info' catch-all), a transport channel is dead weight. Untagging is what
-     * gates it — the registry collects by tag — and the definition is deliberately left in place.
+     * Untagging is what gates the channel; the definition is deliberately left in place.
      */
     public function testUntagsTransportChannelsWhenNoTypeAllowsExternalDelivery(): void
     {
@@ -73,10 +71,6 @@ final class NotificationDispatchPassTest extends Unit
         );
     }
 
-    /**
-     * A channel a bundle tagged itself is gated the same way, rather than being left registered
-     * and half-active.
-     */
     public function testUntagsAChannelThatWasTaggedExplicitly(): void
     {
         $container = new ContainerBuilder();
@@ -92,9 +86,8 @@ final class NotificationDispatchPassTest extends Unit
     }
 
     /**
-     * The reason the gate untags rather than removing. A bundle contributing a channel is expected
-     * to alias the interface to it — that is what the extending doc shows — and removing the
-     * definition leaves the alias pointing at nothing, so the container no longer compiles.
+     * Why the gate untags rather than removes: a bundle is expected to alias the interface to its
+     * channel, and removing the definition leaves the alias pointing at nothing.
      */
     public function testAGatedChannelStillLeavesTheContainerCompilable(): void
     {

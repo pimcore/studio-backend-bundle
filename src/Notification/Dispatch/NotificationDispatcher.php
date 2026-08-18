@@ -53,10 +53,7 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
             try {
                 $this->dispatchToRecipient($notification, $descriptor, $recipientId, $sender);
             } catch (Exception $e) {
-                // Recipients are independent of one another. Writing the bell row was the only
-                // step not already isolated, so a failure part-way through a fan-out used to
-                // deliver to the recipients before it, silently skip everyone after it, and
-                // surface as an exception the producer could do nothing useful with.
+                // Recipients are independent: one failing row must not cost the others theirs.
                 $this->logger->error(
                     sprintf(
                         'Notification could not be dispatched to user %d: %s',

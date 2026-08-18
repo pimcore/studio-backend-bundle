@@ -17,9 +17,6 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription;
 
-/**
- * The value object is final readonly, so it is constructed directly rather than mocked.
- */
 final class EffectiveSubscriptionTest extends Unit
 {
     public function testItSeparatesThePopupPreferenceFromTransports(): void

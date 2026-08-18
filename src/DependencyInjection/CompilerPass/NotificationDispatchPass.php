@@ -148,11 +148,8 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
      * is always available and is not a tagged channel, so it is unaffected. Installing a bundle that
      * contributes an externally-deliverable type brings the channels back automatically.
      *
-     * The gate clears the tag rather than removing the definition. Untagging is enough — the
-     * registry collects by tag, and an untagged private service nothing references is dropped by
-     * Symfony's own unused-definition pass, so no dead mailer is instantiated either way. Removing
-     * the definition would additionally break any bundle that aliases or injects its own channel,
-     * which is exactly what the documented extension path invites it to do.
+     * The gate clears the tag rather than removing the definition: removing it would break any
+     * bundle that aliases or injects its own channel.
      *
      * @param string[] $channelIds
      */
@@ -170,8 +167,7 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
                 continue;
             }
 
-            // clearTag only strips this tag, so a bundle that tagged its channel explicitly is
-            // gated the same way rather than being left half-registered.
+            // Only strips this tag, so a channel a bundle tagged itself is gated the same way.
             $definition->clearTag(ChannelInterface::TAG);
         }
     }

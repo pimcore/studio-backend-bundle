@@ -22,10 +22,7 @@ use function in_array;
 
 /**
  * Stands in for the bell-row write. Records who was written for, and can be told to fail for
- * specific recipients so the dispatcher's per-recipient isolation can be exercised.
- *
- * Returning a bare Notification is safe: constructing the model touches no database, only
- * save() does — which is exactly why the real writer is a separate collaborator.
+ * specific recipients. Constructing a Notification touches no database; only save() does.
  */
 final class TestNotificationWriter implements NotificationWriterInterface
 {

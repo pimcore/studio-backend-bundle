@@ -16,9 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotification;
 
-/**
- * The value object is final readonly, so it is constructed directly rather than mocked.
- */
 final class DispatchableNotificationTest extends Unit
 {
     public function testItDefaultsToNoSenderElementOrPayload(): void
