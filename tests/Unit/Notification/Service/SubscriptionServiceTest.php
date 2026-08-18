@@ -196,6 +196,46 @@ final class SubscriptionServiceTest extends Unit
         $this->assertSame([], $captured['test.type']['channels']);
     }
 
+    /**
+     * A channel the account cannot use is still offered — the preference is real and will work the
+     * moment an address exists — but the collection says why it will not deliver today, so the
+     * screen can show that rather than leaving a switch that silently does nothing.
+     */
+    public function testAChannelThatCannotReachTheUserReportsWhy(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured,
+            channels: [new TestChannel('email', unavailableReason: 'notifications.channel.email.no-address')]
+        );
+
+        $channels = $service->getSubscriptions($this->user())->getAvailableChannels();
+        $byId = [];
+        foreach ($channels as $channel) {
+            $byId[$channel->getId()] = $channel->getUnavailableReasonKey();
+        }
+
+        $this->assertSame('notifications.channel.email.no-address', $byId['email']);
+        // The in-app pop-up is not a transport, so it has no account to be missing.
+        $this->assertNull($byId['popup']);
+    }
+
+    public function testAReachableChannelReportsNoReason(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured
+        );
+
+        foreach ($service->getSubscriptions($this->user())->getAvailableChannels() as $channel) {
+            $this->assertNull($channel->getUnavailableReasonKey());
+        }
+    }
+
     public function testALockedTypeCannotBeUnsubscribedFrom(): void
     {
         $captured = null;
@@ -222,10 +262,11 @@ final class SubscriptionServiceTest extends Unit
         ?array &$captured,
         ?LoggerInterface $logger = null,
         array $stored = [],
+        ?array $channels = null,
     ): SubscriptionService {
         $general = new GeneralNotificationDescriptor();
         $typeRegistry = new NotificationTypeRegistry($descriptors, $general);
-        $channelRegistry = new ChannelRegistry([new TestChannel('email')], $channelConfig);
+        $channelRegistry = new ChannelRegistry($channels ?? [new TestChannel('email')], $channelConfig);
 
         $repository = $this->makeEmpty(
             SubscriptionRepositoryInterface::class,

@@ -67,12 +67,26 @@ final class EmailChannelTest extends Unit
         self::assertSame('Jane wrote: ping', $captured->getMessage());
     }
 
-    public function testSendWithoutARecipientEmailEnqueuesNothing(): void
+    /**
+     * A user who switched the email channel on but has no address on their account gets nothing —
+     * and would have no way to tell that from the channel being broken, so it is logged.
+     */
+    public function testSendWithoutARecipientEmailEnqueuesNothingAndSaysWhy(): void
     {
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $channel = new EmailChannel($bus, $this->stackWithHost(), $this->createMock(ToolResolverInterface::class), $this->createMock(LoggerInterface::class));
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('info')
+            ->with(self::stringContains('no email address'));
+
+        $channel = new EmailChannel(
+            $bus,
+            $this->stackWithHost(),
+            $this->createMock(ToolResolverInterface::class),
+            $logger
+        );
 
         $channel->send($this->notification('t', 'm'), $this->recipient(null, 'Jane', 'en'));
     }

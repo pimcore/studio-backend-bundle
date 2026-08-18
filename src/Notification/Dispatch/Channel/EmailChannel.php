@@ -51,6 +51,8 @@ final readonly class EmailChannel implements ChannelInterface
 
     private const int SORT_ORDER = 100;
 
+    private const string NO_ADDRESS_KEY = 'notifications.channel.email.no-address';
+
     /**
      * The Studio UI serves element deep links under this prefix; it matches the default of the
      * UI bundle's pimcore_studio_ui.url_path. Kept as a constant rather than coupling the backend
@@ -77,10 +79,27 @@ final readonly class EmailChannel implements ChannelInterface
         return self::SORT_ORDER;
     }
 
+    public function unavailableReasonFor(UserInterface $recipient): ?string
+    {
+        $address = $recipient->getEmail();
+
+        return $address === null || $address === '' ? self::NO_ADDRESS_KEY : null;
+    }
+
     public function send(Notification $notification, UserInterface $recipient): void
     {
         $address = $recipient->getEmail();
         if ($address === null || $address === '') {
+            // The user switched this channel on, so silence here reads as the channel being
+            // broken rather than the account simply having no address on it.
+            $this->logger->info(
+                sprintf(
+                    'Notification email skipped: user %d has the email channel enabled but no ' .
+                    'email address set.',
+                    $recipient->getId()
+                )
+            );
+
             return;
         }
 

@@ -29,6 +29,17 @@ final readonly class AvailableChannel
         private string $id,
         #[Property(description: 'translation key for the column label', type: 'string')]
         private string $translationKey,
+        /**
+         * Set when the channel cannot reach this user at all — an email channel with no address on
+         * the account, say. The switch still stores, so the screen explains rather than hides it.
+         */
+        #[Property(
+            description: 'translation key explaining why this channel cannot reach the caller, null when it can',
+            type: 'string',
+            nullable: true,
+            example: 'notifications.channel.email.no-address'
+        )]
+        private ?string $unavailableReasonKey = null,
     ) {
     }
 
@@ -40,5 +51,10 @@ final readonly class AvailableChannel
     public function getTranslationKey(): string
     {
         return $this->translationKey;
+    }
+
+    public function getUnavailableReasonKey(): ?string
+    {
+        return $this->unavailableReasonKey;
     }
 }

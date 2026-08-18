@@ -111,6 +111,13 @@ final class SlackChannel implements ChannelInterface
     public function getName(): string   { return 'slack'; }   // 'popup' is reserved
     public function getSortOrder(): int { return 200; }        // column order on the preferences screen
 
+    // Null when you can reach them. A translation key when you cannot — no linked account, no
+    // address — and the preferences screen explains the switch instead of leaving it silent.
+    public function unavailableReasonFor(UserInterface $recipient): ?string
+    {
+        return $this->slackIdFor($recipient) === null ? 'acme.channel.slack.not-linked' : null;
+    }
+
     public function send(Notification $notification, UserInterface $recipient): void
     {
         // Must not block on the network — queue it (dispatch a Messenger message and deliver from

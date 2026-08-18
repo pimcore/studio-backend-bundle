@@ -49,6 +49,17 @@ interface ChannelInterface
     public function getSortOrder(): int;
 
     /**
+     * Why this channel cannot reach the given user right now, as a translation key — or null when
+     * it can.
+     *
+     * A switch the user has turned on but that silently delivers nothing is indistinguishable from
+     * a broken channel, so the preferences screen says which it is. The account, not the
+     * subscription, is what is missing: an email channel with no address on the account, a chat
+     * channel with no linked account.
+     */
+    public function unavailableReasonFor(UserInterface $recipient): ?string;
+
+    /**
      * IMPORTANT: this runs inside the request that produced the notification. It MUST NOT
      * block on the network — dispatch a Messenger message and return, so the transport's own
      * latency and retry policy stay its business rather than the producer's.

@@ -33,6 +33,7 @@ final class TestChannel implements ChannelInterface
         private readonly string $name = 'test',
         private readonly int $sortOrder = 100,
         private readonly bool $throwOnSend = false,
+        private readonly ?string $unavailableReason = null,
     ) {
     }
 
@@ -44,6 +45,11 @@ final class TestChannel implements ChannelInterface
     public function getSortOrder(): int
     {
         return $this->sortOrder;
+    }
+
+    public function unavailableReasonFor(UserInterface $recipient): ?string
+    {
+        return $this->unavailableReason;
     }
 
     public function send(Notification $notification, UserInterface $recipient): void

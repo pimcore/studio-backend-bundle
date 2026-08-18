@@ -73,9 +73,10 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
 
         $collection = new SubscriptionCollection(
             array_map(
-                static fn (string $channelId): AvailableChannel => new AvailableChannel(
+                fn (string $channelId): AvailableChannel => new AvailableChannel(
                     $channelId,
-                    self::CHANNEL_TRANSLATION_PREFIX . $channelId
+                    self::CHANNEL_TRANSLATION_PREFIX . $channelId,
+                    $this->channelRegistry->getEnabledChannel($channelId)?->unavailableReasonFor($user)
                 ),
                 $availableChannelIds
             ),
