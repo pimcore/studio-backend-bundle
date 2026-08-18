@@ -25,8 +25,14 @@ interface NotificationDispatcherInterface
      * Recipients who are not subscribed to the type, or who lack the notifications
      * permission, are skipped silently — that is the point of a subscription.
      *
-     * Channel failures never propagate: a broken transport must not take down the action that
-     * produced the notification.
+     * Failures never propagate, and recipients are independent: a broken transport, or a bell
+     * row that cannot be written for one recipient, is logged and the fan-out continues. A
+     * broken transport must not take down the action that produced the notification, and one
+     * bad recipient must not cost the others their notification.
+     *
+     * The single exception is an unregistered type id, which is a wiring mistake in the
+     * producing bundle rather than a runtime condition, and is raised before any recipient is
+     * processed.
      *
      * @throws NotFoundException when the type id is not registered
      */

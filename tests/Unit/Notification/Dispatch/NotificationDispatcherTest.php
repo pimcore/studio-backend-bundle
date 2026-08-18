@@ -16,100 +16,257 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotification;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcher;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationWriter;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Model\UserInterface;
+use Psr\Log\LoggerInterface;
+use function in_array;
 
 /**
- * Covers what the dispatcher decides. Writing the bell row itself goes through the Pimcore
- * notification model, which is exercised in the integration tests rather than mocked here.
+ * What the dispatcher decides: who is skipped, who gets a bell row, and which channels are handed
+ * the result. Writing the row itself goes through NotificationWriter, which is stubbed here — the
+ * seam exists precisely so these decisions can be pinned without a database.
  */
 final class NotificationDispatcherTest extends Unit
 {
+    private const string TYPE_ID = 'test.type';
+
     /**
      * A producer naming a type nobody registered is a wiring mistake, and silently writing an
-     * unroutable notification would hide it.
+     * unroutable notification would hide it. Unlike a per-recipient failure this is raised, and
+     * before anything is written.
      */
     public function testUnknownTypeIsRejected(): void
     {
-        $registry = $this->makeEmpty(
-            \Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface::class,
-            [
-                'getDescriptor' => static function (string $typeId): never {
-                    throw new NotFoundException('Notification type', $typeId, 'type id');
-                },
-            ]
-        );
+        $writer = new TestNotificationWriter();
 
-        $dispatcher = new \Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcher(
-            $registry,
-            new ChannelRegistry([], []),
-            $this->makeEmpty(SubscriptionResolverInterface::class),
-            $this->makeEmpty(\Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface::class),
-            $this->makeEmpty(\Psr\Log\LoggerInterface::class),
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            typeRegistry: $this->makeEmpty(
+                NotificationTypeRegistryInterface::class,
+                [
+                    'getDescriptor' => static function (string $typeId): never {
+                        throw new NotFoundException('Notification type', $typeId, 'type id');
+                    },
+                ]
+            )
         );
 
         $this->expectException(NotFoundException::class);
 
-        $dispatcher->dispatch(
-            new DispatchableNotification('unregistered.type', [1], 'Title', 'Message')
+        try {
+            $dispatcher->dispatch(new DispatchableNotification('unregistered.type', [1], 'Title', 'Message'));
+        } finally {
+            $this->assertSame([], $writer->written);
+        }
+    }
+
+    public function testSubscribedRecipientIsWrittenAndHandedToEveryTransportChannel(): void
+    {
+        $writer = new TestNotificationWriter();
+        $email = new TestChannel('email');
+        $teams = new TestChannel('teams', sortOrder: 200);
+
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            channels: [$email, $teams],
+            subscription: new EffectiveSubscription(self::TYPE_ID, true, ['popup', 'email', 'teams'])
+        );
+
+        $dispatcher->dispatch($this->notification([7]));
+
+        $this->assertSame([7], $writer->writtenRecipientIds());
+        $this->assertCount(1, $email->sent);
+        $this->assertCount(1, $teams->sent);
+        $this->assertSame(7, $email->sent[0]['recipient']->getId());
+    }
+
+    /**
+     * The pop-up is a presentation preference resolved when the notification is published, never
+     * something to hand a transport.
+     */
+    public function testAPopupOnlySubscriptionInvokesNoTransportChannel(): void
+    {
+        $writer = new TestNotificationWriter();
+        $email = new TestChannel('email');
+
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            channels: [$email],
+            subscription: new EffectiveSubscription(self::TYPE_ID, true, ['popup'])
+        );
+
+        $dispatcher->dispatch($this->notification([7]));
+
+        $this->assertSame([7], $writer->writtenRecipientIds(), 'The bell row is still written.');
+        $this->assertSame([], $email->sent);
+    }
+
+    public function testRecipientWithoutTheNotificationsPermissionIsSkipped(): void
+    {
+        $writer = new TestNotificationWriter();
+        $email = new TestChannel('email');
+
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            channels: [$email],
+            allowedUserIds: []
+        );
+
+        $dispatcher->dispatch($this->notification([7]));
+
+        $this->assertSame([], $writer->written);
+        $this->assertSame([], $email->sent);
+    }
+
+    public function testUnsubscribedRecipientIsSkipped(): void
+    {
+        $writer = new TestNotificationWriter();
+
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            subscription: new EffectiveSubscription(self::TYPE_ID, false, [])
+        );
+
+        $dispatcher->dispatch($this->notification([7]));
+
+        $this->assertSame([], $writer->written);
+    }
+
+    public function testAnUnknownRecipientIsSkippedAndTheRestStillReceive(): void
+    {
+        $writer = new TestNotificationWriter();
+
+        $dispatcher = $this->dispatcher(writer: $writer, knownUserIds: [7, 9]);
+
+        $dispatcher->dispatch($this->notification([7, 404, 9]));
+
+        $this->assertSame([7, 9], $writer->writtenRecipientIds());
+    }
+
+    /**
+     * A channel is contributed by another bundle and may be broken, slow or misconfigured. None of
+     * that may stop the other channels — the guarantee ChannelInterface::send() documents.
+     */
+    public function testABrokenChannelIsLoggedAndTheOtherChannelStillDelivers(): void
+    {
+        $writer = new TestNotificationWriter();
+        $broken = new TestChannel('broken', sortOrder: 10, throwOnSend: true);
+        $working = new TestChannel('working', sortOrder: 20);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error')->with($this->stringContains('broken'));
+
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            channels: [$broken, $working],
+            subscription: new EffectiveSubscription(self::TYPE_ID, true, ['broken', 'working']),
+            logger: $logger
+        );
+
+        $dispatcher->dispatch($this->notification([7]));
+
+        $this->assertCount(1, $working->sent, 'The working channel must still have delivered.');
+        $this->assertSame([7], $writer->writtenRecipientIds());
+    }
+
+    /**
+     * Recipients are independent. A bell row that cannot be written for one of them used to abort
+     * the loop, delivering to everyone before it and silently skipping everyone after.
+     */
+    public function testAFailedWriteForOneRecipientDoesNotCostTheOthersTheirNotification(): void
+    {
+        $writer = new TestNotificationWriter(failForRecipientIds: [8]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error')->with($this->stringContains('user 8'));
+
+        $dispatcher = $this->dispatcher(
+            writer: $writer,
+            knownUserIds: [7, 8, 9],
+            logger: $logger
+        );
+
+        $dispatcher->dispatch($this->notification([7, 8, 9]));
+
+        $this->assertSame([7, 9], $writer->writtenRecipientIds());
+    }
+
+    private function notification(array $recipientIds): DispatchableNotification
+    {
+        return new DispatchableNotification(self::TYPE_ID, $recipientIds, 'Title', 'Message');
+    }
+
+    /**
+     * @param TestChannel[] $channels
+     * @param int[] $knownUserIds
+     * @param int[]|null $allowedUserIds null means every known user is allowed
+     */
+    private function dispatcher(
+        TestNotificationWriter $writer,
+        array $channels = [],
+        ?EffectiveSubscription $subscription = null,
+        array $knownUserIds = [7],
+        ?array $allowedUserIds = null,
+        ?LoggerInterface $logger = null,
+        ?NotificationTypeRegistryInterface $typeRegistry = null,
+    ): NotificationDispatcher {
+        $descriptor = new TestNotificationTypeDescriptor(self::TYPE_ID, allowsExternalDelivery: true);
+
+        return new NotificationDispatcher(
+            $typeRegistry ?? $this->makeEmpty(
+                NotificationTypeRegistryInterface::class,
+                ['getDescriptor' => $descriptor]
+            ),
+            new ChannelRegistry($channels, []),
+            $this->makeEmpty(
+                SubscriptionResolverInterface::class,
+                [
+                    'resolve' => $subscription
+                        ?? new EffectiveSubscription(self::TYPE_ID, true, ['popup', 'email']),
+                ]
+            ),
+            $writer,
+            $this->userRepository($knownUserIds, $allowedUserIds),
+            $logger ?? $this->createMock(LoggerInterface::class),
         );
     }
 
     /**
-     * The value object is final readonly, so it is constructed directly rather than mocked.
+     * @param int[] $knownUserIds
+     * @param int[]|null $allowedUserIds
      */
-    public function testDispatchableNotificationDefaultsToNoSenderElementOrPayload(): void
+    private function userRepository(array $knownUserIds, ?array $allowedUserIds): UserRepositoryInterface
     {
-        $notification = new DispatchableNotification('test.type', [1, 2], 'Title', 'Message');
+        return $this->makeEmpty(
+            UserRepositoryInterface::class,
+            [
+                'getUserById' => function (int $userId) use ($knownUserIds, $allowedUserIds): UserInterface {
+                    if (!in_array($userId, $knownUserIds, true)) {
+                        throw new NotFoundException('User', $userId);
+                    }
 
-        $this->assertSame('test.type', $notification->getTypeId());
-        $this->assertSame([1, 2], $notification->getRecipientIds());
-        $this->assertNull($notification->getSenderId());
-        $this->assertNull($notification->getLinkedElement());
-        $this->assertSame([], $notification->getPayload());
-    }
+                    $allowed = $allowedUserIds === null || in_array($userId, $allowedUserIds, true);
 
-    public function testEffectiveSubscriptionSeparatesPopupFromTransports(): void
-    {
-        $subscription = new EffectiveSubscription('test.type', true, ['popup', 'email', 'teams']);
+                    $user = $this->createMock(UserInterface::class);
+                    $user->method('getId')->willReturn($userId);
+                    $user->method('isAllowed')
+                        ->willReturnCallback(
+                            static fn (string $key): bool => $allowed
+                                && $key === UserPermissions::NOTIFICATIONS->value
+                        );
 
-        $this->assertTrue($subscription->wantsPopup());
-        $this->assertSame(['email', 'teams'], $subscription->getTransportChannels());
-        $this->assertTrue($subscription->hasChannel('email'));
-        $this->assertFalse($subscription->hasChannel('sms'));
-    }
-
-    public function testUnsubscribedEffectiveSubscriptionNeverWantsAPopup(): void
-    {
-        $subscription = new EffectiveSubscription('test.type', false, []);
-
-        $this->assertFalse($subscription->wantsPopup());
-        $this->assertSame([], $subscription->getTransportChannels());
-    }
-
-    /**
-     * A channel is contributed by another bundle and may be broken, slow or misconfigured.
-     * None of that may reach the action that produced the notification.
-     */
-    public function testBrokenChannelDoesNotPreventOtherChannelsFromDelivering(): void
-    {
-        $broken = new TestChannel('broken', sortOrder: 10, throwOnSend: true);
-        $working = new TestChannel('working', sortOrder: 20);
-
-        $registry = new ChannelRegistry([$broken, $working], []);
-
-        $this->assertNotNull($registry->getEnabledChannel('broken'));
-        $this->assertNotNull($registry->getEnabledChannel('working'));
-
-        // Both are offered to a type that allows external delivery; the dispatcher iterates
-        // them independently and logs rather than aborting on the first failure.
-        $descriptor = new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true);
-        $this->assertSame(
-            ['popup', 'broken', 'working'],
-            $registry->getSupportedChannelIds($descriptor)
+                    return $user;
+                },
+            ]
         );
     }
 }

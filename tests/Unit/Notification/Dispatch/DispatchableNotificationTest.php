@@ -1,0 +1,36 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch;
+
+use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotification;
+
+/**
+ * The value object is final readonly, so it is constructed directly rather than mocked.
+ */
+final class DispatchableNotificationTest extends Unit
+{
+    public function testItDefaultsToNoSenderElementOrPayload(): void
+    {
+        $notification = new DispatchableNotification('test.type', [1, 2], 'Title', 'Message');
+
+        $this->assertSame('test.type', $notification->getTypeId());
+        $this->assertSame([1, 2], $notification->getRecipientIds());
+        $this->assertSame('Title', $notification->getTitle());
+        $this->assertSame('Message', $notification->getMessage());
+        $this->assertNull($notification->getSenderId());
+        $this->assertNull($notification->getLinkedElement());
+        $this->assertSame([], $notification->getPayload());
+    }
+}
