@@ -47,9 +47,9 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use function sprintf;
@@ -225,6 +225,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(AdminLanguageServiceInterface::class);
         $definition->setArgument('$translationsPath', $config['translations']['path']);
         $definition->setArgument('$defaultTranslationsPath', '%translator.default_path%');
+
+        $container->setParameter(
+            'pimcore_studio_backend.translations.auto_create_missing_keys',
+            $config['translations']['auto_create_missing_keys']
+        );
     }
 
     /**
@@ -277,6 +282,21 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'user_checker' => 'Pimcore\Security\User\UserChecker',
                 'provider' => 'pimcore_studio_backend',
                 'stateless' => true,
+                // Throttles guesses at MCP bearer credentials. PatAuthenticator builds its
+                // UserBadge before performing any lookup, so LoginThrottlingListener
+                // (CheckPassportEvent, priority 2080) can reject a throttled client before
+                // any database work happens.
+                //
+                // A limiter service is supplied deliberately: without it Symfony builds a
+                // DefaultLoginRateLimiter whose derived per-IP tier is peeked by every
+                // client on an address, so guesses against one credential can push an
+                // unrelated valid credential into a 429. McpLoginRateLimiter has a single
+                // tier and exempts anything that resolves to a user. max_attempts and
+                // interval are ignored when limiter is set - tune limiter.studio_mcp_login
+                // via framework.rate_limiter instead.
+                'login_throttling' => [
+                    'limiter' => 'Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface',
+                ],
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator',

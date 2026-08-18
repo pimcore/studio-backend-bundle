@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ final readonly class TaggedIteratorColumnCollectorLoader implements ColumnCollec
      * @param iterable<ColumnCollectorInterface> $taggedColumnCollectors
      */
     public function __construct(
-        #[TaggedIterator(self::GRID_COLUMN_COLLECTOR_TAG)]
+        #[AutowireIterator(self::GRID_COLUMN_COLLECTOR_TAG)]
         private iterable $taggedColumnCollectors,
     ) {
     }

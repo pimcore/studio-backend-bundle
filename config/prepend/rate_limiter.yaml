@@ -12,3 +12,18 @@ framework:
       policy: 'fixed_window'
       limit: 60
       interval: '1 minutes'
+    # Failed MCP authentication attempts, keyed on client IP. Only a request whose bearer
+    # credential resolved to no user ever reaches this limiter - see McpLoginRateLimiter -
+    # so a successful authentication cannot be blocked by it.
+    studio_mcp_login:
+      policy: 'fixed_window'
+      limit: 5
+      interval: '5 minutes'
+    # Request volume on /pimcore-mcp/, kept separate from studio_api_general because it is
+    # sized for machine clients rather than the Studio UI: a single agent server can serve
+    # every chat in the installation from one address, so this is a denial-of-service
+    # ceiling, not a per-user quota.
+    studio_mcp_general:
+      policy: 'sliding_window'
+      limit: 3000
+      interval: '1 minute'

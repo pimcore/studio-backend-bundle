@@ -1,0 +1,36 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # controllers are imported separately to make sure they're public
+    # and have a tag that allows actions to type-hint services
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\Controller\:
+        resource: '../src/Telemetry/Controller'
+        public: true
+        tags: [ 'controller.service_arguments' ]
+
+    #
+    # Services
+    #
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\Service\TelemetryServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Telemetry\Service\TelemetryService
+        arguments:
+            $relayEndpoint: '%pimcore.telemetry.relay_endpoint%'
+
+    #
+    # Hydrators
+    #
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\Hydrator\TelemetryHydratorInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Telemetry\Hydrator\TelemetryHydrator
+
+    #
+    # Statistics — accelerate the heavy element-stats collectors via the Generic Data Index by
+    # decorating the core SQL provider; falls back to it (the decorated @.inner) when the search
+    # index is unavailable, errors, or is empty.
+    #
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\Statistics\GdiElementStatisticsProvider:
+        decorates: Pimcore\Telemetry\Snapshot\Statistics\ElementStatisticsProviderInterface
+        arguments:
+            $inner: '@.inner'

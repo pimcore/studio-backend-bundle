@@ -28,3 +28,12 @@ services:
 
     Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
         alias: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
+
+    # --- Shared MCP tool boundary ---
+    # Terminal-catch error handling for MCP tools, in this bundle so that every bundle exposing MCP
+    # tools shares one policy about what may leave the Pimcore boundary. The handler forwards no
+    # exception message except InvalidMcpToolArgumentException; a tool that can say something useful
+    # about a failure type-catches it and composes that sentence itself.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandlerInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler

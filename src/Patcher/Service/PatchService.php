@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -35,11 +36,14 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -62,7 +66,9 @@ final readonly class PatchService implements PatchServiceInterface
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementIndexServiceInterface $indexService,
-        private ElementSaveServiceInterface $elementSaveService
+        private ElementSaveServiceInterface $elementSaveService,
+        private SecurityServiceInterface $securityService,
+        private CoauthorServiceInterface $coauthorService,
     ) {
     }
 
@@ -134,7 +140,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ForbiddenException|InvalidArgumentException
      */
     public function patchElement(
         ElementInterface $element,
@@ -142,6 +148,18 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
+        // Writing object field data requires the workspace `save` permission. Publish/unpublish
+        // (PublishAdapter) and the other adapters enforce their own permissions inside the try
+        // below; their ForbiddenException is re-thrown so it is not masked as a 500.
+        if ($element instanceof Concrete && isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY])) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+        } elseif ($element instanceof Asset) {
+            // Assets have no workspace `save` permission; `publish` is their edit/write permission.
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        }
+
+        $coauthor = $this->coauthorService->extractFromPayload($elementPatchData);
+
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
                 $this->patchEditableData(
@@ -158,19 +176,25 @@ final readonly class PatchService implements PatchServiceInterface
                 $adapter->patch($element, $elementPatchData, $user);
             }
 
-            $this->elementSaveService->save(
-                $element,
-                $user,
-                $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
-            );
+            $save = function () use ($element, $user, $elementPatchData): void {
+                $this->elementSaveService->save(
+                    $element,
+                    $user,
+                    $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+                );
 
-            if (isset($elementPatchData['index'])) {
-                $this->indexService->indexRelatedElements($element, $elementPatchData['index']);
-            }
+                if (isset($elementPatchData['index'])) {
+                    $this->indexService->indexRelatedElements($element, $elementPatchData['index']);
+                }
+            };
+
+            $this->coauthorService->runWithCoauthor($coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
+        } catch (ForbiddenException $exception) {
+            throw $exception;
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }

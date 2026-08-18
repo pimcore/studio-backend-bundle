@@ -920,6 +920,7 @@ class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('path')->defaultNull()->end()
+                        ->booleanNode('auto_create_missing_keys')->defaultTrue()->end()
                     ->end()
                 ->end()
             ->end();

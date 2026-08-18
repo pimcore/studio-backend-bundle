@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ final readonly class TaggedIteratorColumnResolverLoader implements ColumnResolve
      * @param iterable<ColumnResolverInterface> $taggedColumnResolvers
      */
     public function __construct(
-        #[TaggedIterator(self::COLUMN_RESOLVER_TAG)]
+        #[AutowireIterator(self::COLUMN_RESOLVER_TAG)]
         private iterable $taggedColumnResolvers,
     ) {
     }

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Setting\Service\UpdateSettingProviderLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ final class UpdateSettingsTaggedIteratorAdapter implements UpdateSettingProvider
     public const string UPDATE_SETTINGS_PROVIDER_TAG = 'pimcore.studio_backend.update_settings_provider';
 
     public function __construct(
-        #[TaggedIterator(self::UPDATE_SETTINGS_PROVIDER_TAG)]
+        #[AutowireIterator(self::UPDATE_SETTINGS_PROVIDER_TAG)]
         private readonly iterable $taggedSettingProviders,
     ) {
     }

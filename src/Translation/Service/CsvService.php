@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Exception;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception as CsvException;
+use League\Csv\Writer;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -121,56 +124,45 @@ final readonly class CsvService implements CsvServiceInterface
         return array_values($columns);
     }
 
+    /**
+     * @throws EnvironmentException
+     */
     private function buildCsvContent(array $translations, array $columns): string
     {
-        $csv = $this->buildHeaderRow($columns);
-        $csv .= $this->buildDataRows($translations, $columns);
+        try {
+            $csv = Writer::fromString();
+            $csv->setDelimiter(';');
+            // Disable the proprietary escape character so quotes are always doubled per RFC 4180
+            // instead of being escaped with a backslash, which standards-compliant readers ignore.
+            $csv->setEscape('');
+            $csv->setEndOfLine("\r\n");
 
-        return $csv;
-    }
-
-    private function buildHeaderRow(array $columns): string
-    {
-        $headerRow = [];
-        foreach ($columns as $column) {
-            $headerRow[] = '"' . $column . '"';
-        }
-
-        return implode(';', $headerRow) . "\r\n";
-    }
-
-    private function buildDataRows(array $translations, array $columns): string
-    {
-        $rows = '';
-        foreach ($translations as $translation) {
-            $tempRow = [];
-            foreach ($columns as $column) {
-                $value = $translation[$column] ?? null;
-                $tempRow[$column] = $this->formatCellValue($value);
+            $csv->insertOne($columns);
+            foreach ($translations as $translation) {
+                $csv->insertOne($this->buildRecord($translation, $columns));
             }
-            $rows .= implode(';', $tempRow) . "\r\n";
-        }
 
-        return $rows;
+            return $csv->toString();
+        } catch (CannotInsertRecord | CsvException $e) {
+            throw new EnvironmentException(message: $e->getMessage(), previous: $e);
+        }
     }
 
-    private function formatCellValue(mixed $value): string
+    /**
+     * Maps a translation to a record aligned with $columns. Embedded line breaks and quotes are
+     * preserved: League\Csv\Writer applies RFC 4180 quoting/escaping instead of stripping them.
+     *
+     * @return list<string>
+     */
+    private function buildRecord(array $translation, array $columns): array
     {
-        if (!is_string($value)) {
-            return (string) $value;
+        $record = [];
+        foreach ($columns as $column) {
+            $value = $translation[$column] ?? '';
+            $record[] = is_string($value) ? $value : (string) $value;
         }
 
-        $value = $this->removeLineBreaks($value);
-        $value = str_replace('"', '&quot;', $value);
-
-        return '"' . $value . '"';
-    }
-
-    private function removeLineBreaks(string $text): string
-    {
-        $text = str_replace(["\r\n", "\n", "\r", "\t"], ' ', $text);
-
-        return preg_replace(pattern: '# +#', replacement: ' ', subject: $text);
+        return $record;
     }
 
     /**

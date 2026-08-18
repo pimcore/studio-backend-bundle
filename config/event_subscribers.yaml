@@ -17,6 +17,10 @@ services:
     tags: [ 'kernel.event_subscriber' ]
     arguments: ['%pimcore_studio_backend.url_prefix%']
 
+  # captures studio.login_succeeded telemetry on interactive Studio logins (TelemetryInterface autowired)
+  Pimcore\Bundle\StudioBackendBundle\EventSubscriber\LoginTelemetrySubscriber:
+    tags: [ 'kernel.event_subscriber' ]
+
   Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber:
     tags: [ 'kernel.event_subscriber' ]
     arguments: ["%kernel.environment%", '%pimcore_studio_backend.url_prefix%']
@@ -26,3 +30,4 @@ services:
     arguments:
       $urlPrefix: '%pimcore_studio_backend.url_prefix%'
       $studioApiGeneralLimiter: '@limiter.studio_api_general'
+      $studioMcpGeneralLimiter: '@limiter.studio_mcp_general'

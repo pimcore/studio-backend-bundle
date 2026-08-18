@@ -18,15 +18,21 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
@@ -34,6 +40,7 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
+use function in_array;
 use function sprintf;
 
 /**
@@ -52,17 +59,27 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
+        private CoauthorServiceInterface $coauthorService,
     ) {
     }
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
         $user = $this->securityService->getCurrentUser();
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
+
+        if ($element instanceof Concrete && $this->requiresSavePermission($task)) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
+        }
+
+        if ($element instanceof Asset) {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        }
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
             $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
@@ -78,21 +95,44 @@ final readonly class UpdateService implements UpdateServiceInterface
             $adapter->update($element, $data);
         }
 
-        try {
-            $this->elementSaveService->save($element, $user, $task);
+        $coauthor = $this->coauthorService->extractFromPayload($data);
 
-            if (isset($data['index'])) {
-                $this->indexService->indexRelatedElements($element, $data['index']);
-            }
+        try {
+            $save = function () use ($element, $user, $task, $data): void {
+                $this->elementSaveService->save($element, $user, $task);
+
+                if (isset($data['index'])) {
+                    $this->indexService->indexRelatedElements($element, $data['index']);
+                }
+            };
+
+            $this->coauthorService->runWithCoauthor($coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
         } catch (ValidationException $e) {
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
+        } catch (ForbiddenException $e) {
+            // Publish/unpublish permission is checked inside elementSaveService->save();
+            // re-throw so it stays a 403 instead of being masked as a 500 below.
+            throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         }
+    }
+
+    /**
+     * Persisting object data (save, autoSave, version or an untasked write) requires the workspace
+     * `save` permission. Publishing/unpublishing is gated separately by ElementSaveService.
+     */
+    private function requiresSavePermission(?string $task): bool
+    {
+        return !in_array(
+            $task,
+            [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
+            true
+        );
     }
 
     private function getLatestElement(

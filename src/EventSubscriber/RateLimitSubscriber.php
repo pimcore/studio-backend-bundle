@@ -34,6 +34,7 @@ final class RateLimitSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly string $urlPrefix,
         private readonly RateLimiterFactory $studioApiGeneralLimiter,
+        private readonly RateLimiterFactory $studioMcpGeneralLimiter,
         private readonly bool $enabled = true,
     ) {
     }
@@ -57,22 +58,38 @@ final class RateLimitSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        if (
-            $request->getMethod() === 'OPTIONS' ||
-            !$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)
-        ) {
+        if ($request->getMethod() === 'OPTIONS') {
+            return;
+        }
+
+        $limiterFactory = $this->resolveLimiterFactory($request->getPathInfo());
+
+        if ($limiterFactory === null) {
             return;
         }
 
         $key = $request->getClientIp() ?? 'unknown';
-        $limiter = $this->studioApiGeneralLimiter->create($key);
-        $rateLimit = $limiter->consume();
+        $rateLimit = $limiterFactory->create($key)->consume();
 
         $request->attributes->set(self::RATE_LIMIT_ATTRIBUTE, $rateLimit);
 
         if (!$rateLimit->isAccepted()) {
             throw new RateLimitException();
         }
+    }
+
+    /**
+     * MCP endpoints get their own limiter rather than the Studio API one: they carry machine
+     * traffic, where a single agent server can serve every chat in the installation from one
+     * address, so the Studio UI's per-user budget does not describe them.
+     */
+    private function resolveLimiterFactory(string $path): ?RateLimiterFactory
+    {
+        return match (true) {
+            $this->isStudioBackendPath($path, $this->urlPrefix) => $this->studioApiGeneralLimiter,
+            $this->isMcpPath($path) => $this->studioMcpGeneralLimiter,
+            default => null,
+        };
     }
 
     public function onKernelResponse(ResponseEvent $event): void
