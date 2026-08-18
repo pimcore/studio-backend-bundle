@@ -14,20 +14,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Notification;
-use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
-use function json_encode;
 use function sprintf;
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @internal
@@ -38,6 +35,7 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
         private NotificationTypeRegistryInterface $typeRegistry,
         private ChannelRegistryInterface $channelRegistry,
         private SubscriptionResolverInterface $subscriptionResolver,
+        private NotificationWriterInterface $notificationWriter,
         private UserRepositoryInterface $userRepository,
         private LoggerInterface $logger,
     ) {
@@ -53,25 +51,49 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
 
         foreach ($notification->getRecipientIds() as $recipientId) {
             try {
-                $recipient = $this->userRepository->getUserById($recipientId);
-            } catch (NotFoundException) {
-                continue;
+                $this->dispatchToRecipient($notification, $descriptor, $recipientId, $sender);
+            } catch (Exception $e) {
+                // Recipients are independent: one failing row must not cost the others theirs.
+                $this->logger->error(
+                    sprintf(
+                        'Notification could not be dispatched to user %d: %s',
+                        $recipientId,
+                        $e->getMessage()
+                    ),
+                    ['exception' => $e]
+                );
             }
-
-            if (!$recipient->isAllowed(UserPermissions::NOTIFICATIONS->value)) {
-                continue;
-            }
-
-            $subscription = $this->subscriptionResolver->resolve($recipientId, $descriptor);
-
-            if (!$subscription->isSubscribed()) {
-                continue;
-            }
-
-            $stored = $this->write($notification, $recipient, $sender);
-
-            $this->deliver($stored, $recipient, $subscription->getTransportChannels());
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function dispatchToRecipient(
+        DispatchableNotification $notification,
+        NotificationTypeDescriptorInterface $descriptor,
+        int $recipientId,
+        ?UserInterface $sender,
+    ): void {
+        try {
+            $recipient = $this->userRepository->getUserById($recipientId);
+        } catch (NotFoundException) {
+            return;
+        }
+
+        if (!$recipient->isAllowed(UserPermissions::NOTIFICATIONS->value)) {
+            return;
+        }
+
+        $subscription = $this->subscriptionResolver->resolve($recipientId, $descriptor);
+
+        if (!$subscription->isSubscribed()) {
+            return;
+        }
+
+        $stored = $this->notificationWriter->write($notification, $recipient, $sender);
+
+        $this->deliver($stored, $recipient, $subscription->getTransportChannels());
     }
 
     private function resolveSender(?int $senderId): ?UserInterface
@@ -84,37 +106,6 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
             return $this->userRepository->getUserById($senderId);
         } catch (NotFoundException) {
             return null;
-        }
-    }
-
-    /**
-     * @throws DatabaseException
-     */
-    private function write(
-        DispatchableNotification $notification,
-        UserInterface $recipient,
-        ?UserInterface $sender,
-    ): Notification {
-        try {
-            $stored = new Notification();
-            /** @var User $recipient */
-            $stored->setRecipient($recipient);
-            /** @var User|null $sender */
-            $stored->setSender($sender);
-            $stored->setType($notification->getTypeId());
-            $stored->setTitle($notification->getTitle());
-            $stored->setMessage($notification->getMessage());
-            $stored->setLinkedElement($notification->getLinkedElement());
-            $stored->setPayload(json_encode($notification->getPayload(), JSON_THROW_ON_ERROR));
-            $stored->setIsStudio(true);
-            $stored->save();
-
-            return $stored;
-        } catch (Exception $e) {
-            throw new DatabaseException(
-                sprintf('Failed to write notification: %s', $e->getMessage()),
-                $e
-            );
         }
     }
 

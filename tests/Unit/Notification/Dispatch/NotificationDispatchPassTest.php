@@ -52,10 +52,9 @@ final class NotificationDispatchPassTest extends Unit
     }
 
     /**
-     * The whole point of the gate: with only types that never allow external delivery (a core-only
-     * install has just the 'info' catch-all), a transport channel is dead weight and is removed.
+     * Untagging is what gates the channel; the definition is deliberately left in place.
      */
-    public function testRemovesTransportChannelsWhenNoTypeAllowsExternalDelivery(): void
+    public function testUntagsTransportChannelsWhenNoTypeAllowsExternalDelivery(): void
     {
         $container = new ContainerBuilder();
         $container->setDefinition('a.descriptor', new Definition(TestNotificationTypeDescriptor::class))
@@ -64,11 +63,44 @@ final class NotificationDispatchPassTest extends Unit
 
         (new NotificationDispatchPass())->process($container);
 
-        $this->assertFalse($container->hasDefinition('a.channel'));
+        $this->assertTrue($container->hasDefinition('a.channel'), 'The definition must survive.');
+        $this->assertFalse($container->getDefinition('a.channel')->hasTag(ChannelInterface::TAG));
         // The descriptor itself is still contributed — only the channel is gated.
         $this->assertTrue(
             $container->getDefinition('a.descriptor')->hasTag(NotificationTypeDescriptorInterface::TAG)
         );
+    }
+
+    public function testUntagsAChannelThatWasTaggedExplicitly(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setDefinition('a.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments(['a.type', false]);
+        $definition = new Definition(TestChannel::class);
+        $definition->addTag(ChannelInterface::TAG);
+        $container->setDefinition('a.channel', $definition);
+
+        (new NotificationDispatchPass())->process($container);
+
+        $this->assertFalse($container->getDefinition('a.channel')->hasTag(ChannelInterface::TAG));
+    }
+
+    /**
+     * Why the gate untags rather than removes: a bundle is expected to alias the interface to its
+     * channel, and removing the definition leaves the alias pointing at nothing.
+     */
+    public function testAGatedChannelStillLeavesTheContainerCompilable(): void
+    {
+        $container = new ContainerBuilder();
+        $container->setDefinition('a.descriptor', new Definition(TestNotificationTypeDescriptor::class))
+            ->setArguments(['a.type', false]);
+        $container->setDefinition('a.channel', new Definition(TestChannel::class))->setPublic(true);
+        $container->setAlias(ChannelInterface::class, 'a.channel')->setPublic(true);
+
+        (new NotificationDispatchPass())->process($container);
+        $container->compile();
+
+        $this->assertInstanceOf(TestChannel::class, $container->get(ChannelInterface::class));
     }
 
     /**
