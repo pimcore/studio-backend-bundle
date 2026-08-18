@@ -139,11 +139,44 @@ final class SubscriptionServiceTest extends Unit
     }
 
     /**
-     * The channel switches say nothing while a type is muted, so muting must not overwrite the
-     * stored set — otherwise turning a type off and on again leaves the user subscribed to
-     * something that delivers nowhere, not even the pop-up.
+     * A channel id this installation does not currently offer was never on screen, so the client
+     * could not have meant to clear it. Switching the type off must not drop it either — that is
+     * the one thing an unsubscribe is not entitled to decide.
      */
-    public function testUnsubscribingKeepsTheStoredChannelsForWhenTheTypeComesBack(): void
+    public function testUnsubscribingKeepsAChannelTheClientCouldNotSee(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured,
+            stored: [
+                'test.type' => new NotificationSubscription(
+                    self::USER_ID,
+                    'test.type',
+                    true,
+                    ['popup', 'email', 'teams']
+                ),
+            ]
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', false, []),
+            ])
+        );
+
+        // popup and email are on screen and go; teams is contributed by no installed bundle.
+        $this->assertFalse($captured['test.type']['subscribed']);
+        $this->assertSame(['teams'], $captured['test.type']['channels']);
+    }
+
+    /**
+     * The visible channels are cleared, matching what the preferences screen does locally when a
+     * row is muted. Both sides agreeing is what keeps the saved state and the screen the same.
+     */
+    public function testUnsubscribingClearsTheChannelsTheClientCanSee(): void
     {
         $captured = null;
         $service = $this->service(
@@ -160,27 +193,7 @@ final class SubscriptionServiceTest extends Unit
             ])
         );
 
-        $this->assertFalse($captured['test.type']['subscribed']);
-        $this->assertSame(['popup', 'email'], $captured['test.type']['channels']);
-    }
-
-    /**
-     * Null is "never chosen" and must stay that way, so the descriptor defaults still apply if
-     * the type is switched back on.
-     */
-    public function testUnsubscribingATypeTheUserNeverChoseLeavesTheChannelsUnset(): void
-    {
-        $captured = null;
-        $service = $this->service([new TestNotificationTypeDescriptor('test.type')], [], $captured);
-
-        $service->updateSubscriptions(
-            $this->user(),
-            new UpdateSubscriptionsParameters([
-                new UpdateSubscriptionItem('test.type', false, []),
-            ])
-        );
-
-        $this->assertNull($captured['test.type']['channels']);
+        $this->assertSame([], $captured['test.type']['channels']);
     }
 
     public function testALockedTypeCannotBeUnsubscribedFrom(): void

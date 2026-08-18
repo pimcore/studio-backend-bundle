@@ -72,8 +72,10 @@ final class UpdateSubscriptionsController extends AbstractApiController
         description: 'notification_update_subscriptions_success_response',
         content: new JsonContent(ref: SubscriptionCollection::class)
     )]
+    // Both rejections — an unknown type id and unsubscribing a locked type — are
+    // InvalidArgumentException, which this bundle maps to 422, not 400.
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function updateSubscriptions(

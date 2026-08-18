@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\S
 use Pimcore\Model\Asset;
 use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\Envelope;
@@ -71,7 +72,7 @@ final class EmailChannelTest extends Unit
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::never())->method('dispatch');
 
-        $channel = new EmailChannel($bus, $this->stackWithHost(), $this->createMock(ToolResolverInterface::class));
+        $channel = new EmailChannel($bus, $this->stackWithHost(), $this->createMock(ToolResolverInterface::class), $this->createMock(LoggerInterface::class));
 
         $channel->send($this->notification('t', 'm'), $this->recipient(null, 'Jane', 'en'));
     }
@@ -143,7 +144,7 @@ final class EmailChannelTest extends Unit
         $toolResolver->method('getHostname')->willReturn(null);
 
         $captured = null;
-        $channel = new EmailChannel($this->capturingBus($captured), new RequestStack(), $toolResolver);
+        $channel = new EmailChannel($this->capturingBus($captured), new RequestStack(), $toolResolver, $this->createMock(LoggerInterface::class));
 
         $notification = $this->notification('t', 'm');
         $notification->setPayload((string) json_encode(['deepLink' => '//evil.example/phish']));
@@ -152,6 +153,41 @@ final class EmailChannelTest extends Unit
 
         self::assertNotNull($captured);
         self::assertSame('/pimcore-studio/', $captured->getLink());
+    }
+
+    /**
+     * A Pimcore user need not have a first or last name, and the greeting is "Hi %name%," — an
+     * empty one reads "Hi ,".
+     */
+    public function testGreetingNameFallsBackToTheUsername(): void
+    {
+        $channel = $this->channel($this->stackWithHost(), $captured);
+
+        $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, '', 'en'));
+
+        self::assertNotNull($captured);
+        self::assertSame('jane.doe', $captured->getToName());
+    }
+
+    /**
+     * No request and no configured domain means the button in the email cannot be made absolute,
+     * so it will not resolve for the recipient. Nothing better can be emitted, but it must not be
+     * silent.
+     */
+    public function testAnUnresolvableHostIsLogged(): void
+    {
+        $toolResolver = $this->createMock(ToolResolverInterface::class);
+        $toolResolver->method('getHostname')->willReturn(null);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with(self::stringContains('pimcore.general.domain'));
+
+        $captured = null;
+        $channel = new EmailChannel($this->capturingBus($captured), new RequestStack(), $toolResolver, $logger);
+
+        $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, 'Jane', 'en'));
     }
 
     /**
@@ -167,7 +203,7 @@ final class EmailChannelTest extends Unit
         $captured = null;
         $bus = $this->capturingBus($captured);
 
-        $channel = new EmailChannel($bus, new RequestStack(), $toolResolver);
+        $channel = new EmailChannel($bus, new RequestStack(), $toolResolver, $this->createMock(LoggerInterface::class));
         $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, 'Jane', 'en'));
 
         self::assertNotNull($captured);
@@ -179,7 +215,8 @@ final class EmailChannelTest extends Unit
         return new EmailChannel(
             $this->capturingBus($captured),
             $requestStack,
-            $this->createMock(ToolResolverInterface::class)
+            $this->createMock(ToolResolverInterface::class),
+            $this->createMock(LoggerInterface::class)
         );
     }
 
@@ -224,6 +261,7 @@ final class EmailChannelTest extends Unit
         $recipient = $this->createMock(UserInterface::class);
         $recipient->method('getEmail')->willReturn($email);
         $recipient->method('getFullName')->willReturn($fullName);
+        $recipient->method('getUsername')->willReturn('jane.doe');
         $recipient->method('getLanguage')->willReturn($language);
 
         return $recipient;

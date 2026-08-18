@@ -22,6 +22,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\MessageBusInterface;
 use function is_array;
@@ -62,6 +63,7 @@ final readonly class EmailChannel implements ChannelInterface
         private MessageBusInterface $messageBus,
         private RequestStack $requestStack,
         private ToolResolverInterface $toolResolver,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -85,7 +87,9 @@ final readonly class EmailChannel implements ChannelInterface
         $this->messageBus->dispatch(
             new SendNotificationEmailMessage(
                 to: $address,
-                toName: $recipient->getFullName(),
+                // A Pimcore user need not have a first or last name, and the greeting reads
+                // "Hi ," when it does not.
+                toName: $recipient->getFullName() ?: (string) $recipient->getUsername(),
                 locale: $recipient->getLanguage(),
                 subject: $notification->getTitle() ?? '',
                 title: $notification->getTitle() ?? '',
@@ -150,9 +154,12 @@ final readonly class EmailChannel implements ChannelInterface
     }
 
     /**
-     * The mail is composed in a worker where there may be no request, so the request host is
-     * used when present and the configured domain is the fallback. An empty result yields a
-     * host-relative link rather than a broken absolute one.
+     * The request host when there is a request, the configured domain otherwise — a notification
+     * dispatched from a command or a consumer has neither a request nor, unless the installation
+     * sets pimcore.general.domain, a host to fall back on.
+     *
+     * That case yields a host-relative link, which in an email is simply a dead button. There is
+     * nothing better to emit, so it is logged rather than left to be discovered by the recipient.
      */
     private function resolveHostUrl(): string
     {
@@ -163,6 +170,11 @@ final readonly class EmailChannel implements ChannelInterface
 
         $hostname = $this->toolResolver->getHostname();
         if ($hostname === null || $hostname === '') {
+            $this->logger->warning(
+                'Notification email links cannot be made absolute: no request is available and ' .
+                'pimcore.general.domain is not set, so the link in the email will not resolve.'
+            );
+
             return '';
         }
 

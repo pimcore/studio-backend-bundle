@@ -119,8 +119,8 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     }
 
     /**
-     * Unlike an unavailable channel this is rejected: a bad field in a request body, so 400
-     * rather than the registry's 404.
+     * Unlike an unavailable channel this is rejected: a bad field in a request body, so the
+     * bundle's InvalidArgumentException (422) rather than the registry's NotFoundException (404).
      *
      * @throws InvalidArgumentException
      */
@@ -169,21 +169,28 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
      * @param string[] $requested
      * @param string[]|null $previouslyStored null when the user has never chosen for this type
      *
-     * @return string[]|null
+     * @return string[]
      */
     private function resolveChannels(
         NotificationTypeDescriptorInterface $descriptor,
         bool $subscribed,
         array $requested,
         ?array $previouslyStored,
-    ): ?array {
-        // The switches say nothing while a type is muted, so the stored set is kept rather than
-        // overwritten with them — re-subscribing restores what the user had.
+    ): array {
+        $availableChannelIds = $this->channelRegistry->getAvailableChannelIds();
+
+        // Held in both branches: an id the client never saw is not the client's to clear.
+        $unresolvable = array_filter(
+            $previouslyStored ?? [],
+            static fn (string $channel): bool => !in_array($channel, $availableChannelIds, true)
+        );
+
+        // Switching a type off clears the channels the client can see, which is what the
+        // preferences screen already does locally when the row is muted.
         if (!$subscribed) {
-            return $previouslyStored;
+            return array_values($unresolvable);
         }
 
-        $availableChannelIds = $this->channelRegistry->getAvailableChannelIds();
         $supported = $this->channelRegistry->getSupportedChannelIds($descriptor);
 
         $kept = array_filter(
@@ -192,11 +199,6 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         );
 
         $this->logDroppedChannels($descriptor->getTypeId(), $requested, $kept);
-
-        $unresolvable = array_filter(
-            $previouslyStored ?? [],
-            static fn (string $channel): bool => !in_array($channel, $availableChannelIds, true)
-        );
 
         return array_values(array_unique([...$kept, ...$unresolvable]));
     }

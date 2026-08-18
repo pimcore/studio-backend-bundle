@@ -39,7 +39,7 @@ interface SubscriptionRepositoryInterface
     /**
      * Insert or update in one go, flushed once.
      *
-     * @param array<string, array{subscribed: bool, channels: string[]|null}> $preferences keyed by type id
+     * @param array<string, array{subscribed: bool, channels: string[]}> $preferences keyed by type id
      *
      * @throws DatabaseException
      */
