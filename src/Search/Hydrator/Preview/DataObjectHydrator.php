@@ -61,7 +61,9 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 
     private function hydratePreviewDetailData(DataObject $dataObject): array
     {
-        $versionData = $this->draftElementResolver->resolve($dataObject, $this->securityService->getCurrentUser());
+        $versionData = $this->draftElementResolver
+            ->resolve($dataObject, $this->securityService->getCurrentUser())
+            ->getElement();
 
         if (!$versionData instanceof Concrete) {
             return [];

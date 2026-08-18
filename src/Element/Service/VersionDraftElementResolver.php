@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\ResolvedDraft;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document\PageSnippet;
@@ -27,14 +28,21 @@ use Pimcore\Model\Version;
  */
 final readonly class VersionDraftElementResolver implements DraftElementResolverInterface
 {
-    public function resolve(ElementInterface $element, ?UserInterface $user): ElementInterface
+    public function resolve(ElementInterface $element, ?UserInterface $user): ResolvedDraft
     {
         $version = $this->getLatestVersionForUser($element, $user);
         if ($version === null) {
-            return $element;
+            return new ResolvedDraft($element);
         }
 
-        return $version->getData();
+        // Version::loadData() answers null for an unreadable payload — a pruned storage file, or
+        // an __PHP_Incomplete_Class after the class was renamed. Rendering published beats a 500.
+        $data = $version->getData();
+        if (!$data instanceof ElementInterface) {
+            return new ResolvedDraft($element);
+        }
+
+        return new ResolvedDraft($data, $version);
     }
 
     private function getLatestVersionForUser(ElementInterface $element, ?UserInterface $user): ?Version

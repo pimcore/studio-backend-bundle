@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Model\ResolvedDraft;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
@@ -29,8 +30,10 @@ interface DraftElementResolverInterface
     /**
      * $element as $user should see it: their draft state if any, otherwise unchanged.
      *
-     * Must be side-effect free — several run per request, and $element is usually the
-     * runtime-cached instance the write path will go on to use.
+     * Must not mutate $element — several of these run per request, and $element is usually the
+     * runtime-cached instance the write path will go on to use. (Loading a version payload does
+     * clear Pimcore's runtime cache via Version::loadData(), so this is not a promise that
+     * calling it is free; it is a promise that the argument comes back untouched.)
      */
-    public function resolve(ElementInterface $element, ?UserInterface $user): ElementInterface;
+    public function resolve(ElementInterface $element, ?UserInterface $user): ResolvedDraft;
 }

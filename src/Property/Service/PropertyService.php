@@ -117,7 +117,9 @@ final readonly class PropertyService implements PropertyServiceInterface
             'properties'
         );
 
-        $element = $this->draftElementResolver->resolve($element, $this->securityService->getCurrentUser());
+        $element = $this->draftElementResolver
+            ->resolve($element, $this->securityService->getCurrentUser())
+            ->getElement();
         $hydratedProperties = [];
 
         foreach ($element->getProperties() as $property) {

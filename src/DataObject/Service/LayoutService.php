@@ -71,7 +71,7 @@ final readonly class LayoutService implements LayoutServiceInterface
             $id
         );
 
-        $dataObject = $this->draftElementResolver->resolve($dataObject, $user);
+        $dataObject = $this->draftElementResolver->resolve($dataObject, $user)->getElement();
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(

@@ -112,6 +112,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
             $elementType,
             $elementId,
         );
-        return $this->draftElementResolver->resolve($element, $user);
+
+        return $this->draftElementResolver->resolve($element, $user)->getElement();
     }
 }

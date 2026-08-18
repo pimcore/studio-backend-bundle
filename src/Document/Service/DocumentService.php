@@ -182,16 +182,14 @@ final readonly class DocumentService implements DocumentServiceInterface
     private function getDocumentDetailData(DocumentDetail $document): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $document->getId());
-        $user = $this->securityService->getCurrentUser();
-        // version = draft identity for `draftData`; element state comes from the resolver
-        $version = $this->getLatestVersionForUser($element, $user);
-        $element = $this->draftElementResolver->resolve($element, $user);
+        $draft = $this->draftElementResolver->resolve($element, $this->securityService->getCurrentUser());
+        $element = $draft->getElement();
 
         if (!$element instanceof DocumentModel) {
             return;
         }
 
-        $this->dataService->setDocumentDetailData($document, $element, $version);
+        $this->dataService->setDocumentDetailData($document, $element, $draft->getVersion());
     }
 
     private function setTreeSorting(DocumentQueryInterface $documentQuery, bool $includeParent): void
