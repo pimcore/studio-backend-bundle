@@ -200,12 +200,14 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
         }
 
         try {
-            /** @var NotificationTypeDescriptorInterface $descriptor */
             $descriptor = (new ReflectionClass($class))->newInstanceArgs($definition->getArguments());
-
-            return $descriptor;
         } catch (Throwable) {
             return null;
         }
+
+        // The caller only reaches this for a class that already passed an is_a() check, so the
+        // instanceof is a formality — but it narrows newInstanceArgs()'s `object` honestly,
+        // which a @var annotation would only have asserted.
+        return $descriptor instanceof NotificationTypeDescriptorInterface ? $descriptor : null;
     }
 }
