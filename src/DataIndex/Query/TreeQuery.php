@@ -59,8 +59,7 @@ final readonly class TreeQuery implements TreeQueryInterface
                 $type,
                 $widget->getRootFolder()->getFullPath(),
                 $widget->isShowRoot(),
-                $query,
-                $user
+                $query
             );
 
             return $query;
@@ -122,10 +121,12 @@ final readonly class TreeQuery implements TreeQueryInterface
         string $type,
         string $rootPath,
         bool $includeParent,
-        QueryInterface $query,
-        UserInterface $user
+        QueryInterface $query
     ): void {
-        $parent = $this->elementService->getAllowedElementByPath($type, $rootPath, $user);
+        // The widget root is only navigated through here, its children sorting is applied to the
+        // query - so it is resolved without a view permission check, see
+        // ElementServiceInterface::getNavigableElementByPath().
+        $parent = $this->elementService->getNavigableElementByPath($type, $rootPath);
 
         if (!$parent instanceof DataObject) {
             throw new NotFoundException(

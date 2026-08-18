@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\TreeLevelData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetElementData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
@@ -88,7 +87,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
         $widget = $widgetElementData->getWidgetConfig();
         $element = $widgetElementData->getResultItem();
         $treeLevelData = [];
-        $parents = $this->getParentElements($widget, $element, $user);
+        $parents = $this->getParentElements($widget, $element);
         if (empty($parents)) {
             return [new TreeLevelData(parentId: 1, elementId: $element->getId(), pageNumber: 1)];
         }
@@ -107,23 +106,25 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws NotFoundException
      *
      */
     private function getParentElements(
         ElementTreeWidgetConfig $widget,
-        ElementSearchResultItemInterface $element,
-        UserInterface $user
+        ElementSearchResultItemInterface $element
     ): array {
         $levels = $this->pathService->getAllParentPaths([$element->getFullPath()]);
         $levels = $this->filterParentPaths($levels, $widget->getRootFolder()->getFullPath());
 
         $parents = [];
         foreach ($levels as $level) {
-            $parents[] = $this->elementService->getAllowedElementByPath(
+            // The tree levels above the requested element are only navigated through, they are not
+            // opened - so they are resolved without a view permission check, see
+            // ElementServiceInterface::getNavigableElementByPath(). The element itself is checked in
+            // ElementLocationService::getElementLocation().
+            $parents[] = $this->elementService->getNavigableElementByPath(
                 $widget->getElementType(),
-                $level,
-                $user
+                $level
             )->getId();
         }
 

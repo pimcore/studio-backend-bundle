@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -105,15 +104,19 @@ final readonly class ElementService implements ElementServiceInterface
         UserInterface $user
     ): ElementInterface {
         $element = $this->getElementByPath($this->serviceResolver, $elementType, $elementPath);
-
-        // The root is used as a traversal anchor by tree operations. Descendant workspaces are not
-        // relevant to "/" itself, so users with access only to descendants cannot pass the root check.
-        // ElementTreeWidgetConfigHydrator::isDefaultRootFolder() already skips this lookup.
-        if ($elementPath !== ElementFolderPaths::ROOT->value) {
-            $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
-        }
+        $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
 
         return $element;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getNavigableElementByPath(
+        string $elementType,
+        string $elementPath
+    ): ElementInterface {
+        return $this->getElementByPath($this->serviceResolver, $elementType, $elementPath);
     }
 
     public function hasElementChildren(ElementInterface $element): bool
