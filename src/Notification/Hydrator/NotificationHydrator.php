@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationMinimal;
 use Pimcore\Model\Notification as NotificationModel;
 use Pimcore\Model\User;
+use function date_default_timezone_get;
 
 /**
  * @internal
@@ -33,7 +34,7 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             $notification->getTitle(),
             $notification->isRead(),
             (bool)$notification->getLinkedElementType(),
-            (new Carbon($notification->getCreationDate(), 'UTC'))->getTimeStamp(),
+            $this->getCreationTimestamp($notification),
             $this->getRecipientName($notification->getSender()),
         );
     }
@@ -45,7 +46,7 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             $notification->getType() ?? 'info',
             $notification->getTitle(),
             $notification->isRead(),
-            (new Carbon($notification->getCreationDate(), 'UTC'))->getTimeStamp(),
+            $this->getCreationTimestamp($notification),
             $notification->getRecipient()?->getId() ?? 0,
             $this->getRecipientName($notification->getSender()),
         );
@@ -59,7 +60,7 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             $notification->getTitle(),
             $notification->isRead(),
             (bool)$notification->getLinkedElementType(),
-            (new Carbon($notification->getCreationDate(), 'UTC'))->getTimeStamp(),
+            $this->getCreationTimestamp($notification),
             $this->getRecipientName($notification->getSender()),
             $notification->getMessage(),
             $notification->getPayload(),
@@ -67,6 +68,16 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             $notification->getLinkedElement()?->getId(),
             $notification->getLinkedElement()?->getRealFullPath()
         );
+    }
+
+    /**
+     * Notification\Dao::save() stores creationDate as a naive wall-clock string in the
+     * application's default timezone (general.timezone), so it has to be parsed in that
+     * same timezone instead of UTC to end up with the correct epoch.
+     */
+    private function getCreationTimestamp(NotificationModel $notification): int
+    {
+        return (new Carbon($notification->getCreationDate(), date_default_timezone_get()))->getTimestamp();
     }
 
     private function getRecipientName(?User $recipient): ?string
