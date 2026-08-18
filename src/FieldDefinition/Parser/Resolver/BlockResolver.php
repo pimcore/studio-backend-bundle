@@ -63,12 +63,11 @@ final class BlockResolver extends AbstractResolver
             throw new ParseException('Class Definition has to be of type Block');
         }
 
-        $item = array_filter($fd->getChildren(), function (Data $field) use ($dotNotationParts) {
-            return $field->getName() === $dotNotationParts[1];
-        });
-        $item = reset($item);
+        // Blocks can contain layout components, therefore the children have to be flattened
+        // before looking up the data component by name
+        $item = $fd->getFieldDefinition($dotNotationParts[1]);
 
-        if (!$item) {
+        if ($item === null) {
             throw new ParseException(sprintf('Block field definition "%s" does not exist', $dotNotationParts[1]));
         }
 
