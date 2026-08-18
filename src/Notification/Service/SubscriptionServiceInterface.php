@@ -34,9 +34,7 @@ interface SubscriptionServiceInterface
      * re-seed from the server rather than trusting its own optimistic view.
      *
      * A channel the installation no longer offers, or that the type cannot use, is dropped from
-     * the stored set rather than rejected — an administrator disabling a channel while the
-     * screen is open is a race, and it must not cost the user their whole save. The returned
-     * state is what was actually stored, so a dropped channel is visible to the client.
+     * the stored set rather than rejected. The returned state is what was actually stored.
      *
      * @throws DatabaseException
      * @throws InvalidArgumentException on an unknown type, or an attempt to unsubscribe from a

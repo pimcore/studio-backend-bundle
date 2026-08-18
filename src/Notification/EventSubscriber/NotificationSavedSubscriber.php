@@ -79,9 +79,8 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
      * model falls into the general bucket and honours that bucket's preference.
      *
      * Failing to resolve must not cost the user their notification, so any error falls back to
-     * showing the toast — the behaviour before this setting existed. It is logged rather than
-     * discarded: a misconfigured descriptor makes the preferences screen unusable while this path
-     * keeps working, so without the log the only symptom would be one screen failing in isolation.
+     * showing the toast — the behaviour before this setting existed. Logged, not discarded: this
+     * path keeps working when the preferences screen cannot, so it would otherwise fail silently.
      */
     private function wantsPopup(Notification $notification): bool
     {

@@ -38,11 +38,9 @@ use function strlen;
  * bundle's extension has loaded, so a descriptor or channel contributed by any bundle — the only
  * way the framework is extensible — is picked up without that bundle needing to know the tag name.
  *
- * It also rejects an unusable type id here, where the failure is a build error a contributing
- * bundle sees immediately. That check is best effort by construction: a descriptor can only be
- * read at compile time when it is statically constructible, which is the normal case but not a
- * guarantee. {@see NotificationTypeRegistry} therefore repeats it over the fully-resolved set and
- * remains the authoritative check.
+ * Type ids are also validated here so a bad one fails the build. Best effort: only a statically
+ * constructible descriptor can be read at compile time, so NotificationTypeRegistry repeats the
+ * checks and stays authoritative.
  *
  * @internal
  */
@@ -88,9 +86,6 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
     }
 
     /**
-     * The id is persisted in `notifications`.`type` (VARCHAR(20)) and in the subscription row, so
-     * an over-long or duplicated id is a defect that must never reach a running installation.
-     *
      * @param array<string, string> $seenTypeIds type id => the service id that first claimed it
      *
      * @throws InvalidNotificationTypeException
@@ -181,15 +176,9 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
     }
 
     /**
-     * Materialises the descriptor so its own answers can be read at compile time, or null when it
-     * cannot be built here. Only purely positional, scalar arguments can be resolved at this point;
-     * a descriptor wired with service references, parameters or named arguments — or one that fails
-     * to construct — cannot be read, and the caller decides what to assume in its absence.
-     *
-     * A descriptor is a bag of constants and normally takes no arguments at all, so this resolves
-     * in practice; the null path exists so an unusual one degrades instead of breaking the build.
-     * Note the consequence for contributors: a descriptor's constructor runs during container
-     * compilation and must therefore be free of side effects.
+     * The descriptor instance, or null when it cannot be built at compile time — only positional
+     * scalar arguments resolve here. Its constructor runs during container compilation, so it
+     * must be free of side effects.
      */
     private function materialise(Definition $definition, string $class): ?NotificationTypeDescriptorInterface
     {
@@ -205,9 +194,7 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
             return null;
         }
 
-        // The caller only reaches this for a class that already passed an is_a() check, so the
-        // instanceof is a formality — but it narrows newInstanceArgs()'s `object` honestly,
-        // which a @var annotation would only have asserted.
+        // Narrows newInstanceArgs()'s `object`; the caller has already checked is_a().
         return $descriptor instanceof NotificationTypeDescriptorInterface ? $descriptor : null;
     }
 }

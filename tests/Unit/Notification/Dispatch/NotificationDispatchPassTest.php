@@ -135,11 +135,6 @@ final class NotificationDispatchPassTest extends Unit
         $this->assertCount(1, $container->getDefinition('a.descriptor')->getTag(NotificationTypeDescriptorInterface::TAG));
     }
 
-    /**
-     * The id is persisted in a VARCHAR(20) column. Catching it here turns what would otherwise be
-     * a 500 on the preferences screen — long after deployment — into a build error the
-     * contributing bundle sees immediately.
-     */
     public function testRejectsATypeIdLongerThanTheColumnAllows(): void
     {
         $container = new ContainerBuilder();
@@ -161,16 +156,15 @@ final class NotificationDispatchPassTest extends Unit
             ->setArguments(['a.type']);
 
         $this->expectException(InvalidNotificationTypeException::class);
-        // Both service ids are named, because "registered twice" is useless without them.
+        // Both service ids are named: "registered twice" is useless without them.
         $this->expectExceptionMessageMatches('/first\.descriptor.*second\.descriptor/s');
 
         (new NotificationDispatchPass())->process($container);
     }
 
     /**
-     * The build check is best effort by construction. A descriptor that cannot be built at compile
-     * time must pass through rather than fail the build on a guess — NotificationTypeRegistry is
-     * the authoritative check and catches it with the fully-resolved set.
+     * Best effort: a descriptor that cannot be built here passes through, and the registry
+     * catches it instead.
      */
     public function testDoesNotValidateADescriptorItCannotConstruct(): void
     {

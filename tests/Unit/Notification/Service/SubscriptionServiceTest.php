@@ -32,18 +32,16 @@ use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
- * What the service decides on a bulk save. The registries, resolver and hydrator are real — they
- * are the thing under test as much as the service is, and mocking them would only pin the mocks.
- * Only the repository is stubbed, so what would have been persisted can be asserted.
+ * What the service decides on a bulk save. Only the repository is stubbed, so what would have
+ * been persisted can be asserted.
  */
 final class SubscriptionServiceTest extends Unit
 {
     private const int USER_ID = 7;
 
     /**
-     * An administrator can disable a channel while the preferences screen is open. Rejecting the
-     * save would cost the user every other row on the screen for something they cannot influence,
-     * so the unavailable channel is dropped and the rest is stored.
+     * Rejecting would cost the user every other row on the screen for something they cannot
+     * influence.
      */
     public function testAChannelDisabledByTheAdministratorDoesNotFailTheSave(): void
     {
@@ -66,8 +64,7 @@ final class SubscriptionServiceTest extends Unit
     }
 
     /**
-     * The same treatment for a channel the type structurally cannot use — previously this case was
-     * dropped while the administrator case threw, for no reason a caller could have predicted.
+     * Same treatment as an unavailable channel; these two used to be handled inconsistently.
      */
     public function testAChannelTheTypeCannotUseIsDropped(): void
     {
@@ -89,8 +86,7 @@ final class SubscriptionServiceTest extends Unit
     }
 
     /**
-     * Dropping is not silent: the response carries the stored state, and anyone debugging a client
-     * gets a log line naming what went and why.
+     * Dropping is not silent.
      */
     public function testDroppingAChannelIsLogged(): void
     {
@@ -116,10 +112,8 @@ final class SubscriptionServiceTest extends Unit
     }
 
     /**
-     * Unlike an unavailable channel, an unknown type is not a race an administrator could have
-     * caused, and returning the stored state cannot repair the client — so it is still rejected.
-     * As a bad field in a request body it must be a 400, not the registry's 404: the caller did
-     * not ask for a missing resource.
+     * Still rejected, unlike an unavailable channel — but as a bad request body field (400),
+     * not the registry's 404.
      */
     public function testAnUnknownTypeIdIsRejectedAsABadRequestRatherThanANotFound(): void
     {
@@ -143,9 +137,6 @@ final class SubscriptionServiceTest extends Unit
         $this->assertNull($captured, 'Nothing should be persisted when the payload is rejected.');
     }
 
-    /**
-     * The catch-all is locked on so no preference can make a notification vanish without trace.
-     */
     public function testALockedTypeCannotBeUnsubscribedFrom(): void
     {
         $captured = null;
