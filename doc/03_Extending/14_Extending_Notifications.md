@@ -77,15 +77,6 @@ final class DealWonDescriptor extends AbstractNotificationTypeDescriptor
 must be at most 20 characters**, and no two types may share one. Use a short vendor prefix
 (`acme_crm.deal_won` is 17; `acme_crm.deal_won_late` is 22 and is rejected). Ids are persisted in both
 the notification row and the subscription row, so renaming later is a breaking change.
-
-Checked twice: the compiler pass rejects a bad id at container build, but can only read descriptors
-it can construct at compile time. The registry repeats both checks over the fully-resolved set and
-is authoritative.
-:::
-
-:::info
-**A descriptor's constructor runs during container compilation** — the pass constructs it to read
-its id and `allowsExternalDelivery()` — so keep it free of side effects.
 :::
 
 :::warning
