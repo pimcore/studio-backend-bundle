@@ -37,6 +37,19 @@ $this->dispatcher->dispatch(new DispatchableNotification(
 ));
 ```
 
+### Why a separate dispatcher?
+
+Pimcore's own `NotificationService` writes the bell entry unconditionally — it knows nothing about
+types, preferences or channels. The dispatcher is where those are enforced: it checks the
+recipient's subscription **before** anything is written (an unsubscribed user simply gets no
+entry), and then delivers to the channels that user enabled. Both paths write the same
+`notifications` table and feed the same bell — the dispatcher is a front door, not a second system.
+
+Use the dispatcher for anything that should be subscribable. Existing code that uses
+`NotificationService` or writes the model directly keeps working unchanged; those notifications
+fall into the built-in `info` type, which cannot be unsubscribed from — users can only turn its
+pop-up off.
+
 ## Adding a Notification Type
 
 A **descriptor** describes one type: its id, labels, group and defaults. Extend
