@@ -14,11 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailMessage;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\DataObject;
-use Pimcore\Model\Document;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
@@ -41,6 +39,8 @@ use function str_starts_with;
  */
 final readonly class EmailChannel implements ChannelInterface
 {
+    use ElementProviderTrait;
+
     private const string CHANNEL_NAME = 'email';
 
     private const int SORT_ORDER = 100;
@@ -142,14 +142,17 @@ final readonly class EmailChannel implements ChannelInterface
         return str_starts_with($link, '//') ? null : $link;
     }
 
+    /**
+     * The Studio route segment for the element, via the bundle's canonical element→type mapping.
+     * A type that mapping doesn't cover yields no segment, so the link falls back to the base URL.
+     */
     private function studioElementType(ElementInterface $element): ?string
     {
-        return match (true) {
-            $element instanceof Asset => ElementTypes::TYPE_ASSET,
-            $element instanceof Document => ElementTypes::TYPE_DOCUMENT,
-            $element instanceof DataObject => ElementTypes::TYPE_DATA_OBJECT,
-            default => null,
-        };
+        try {
+            return $this->getElementType($element);
+        } catch (InvalidElementTypeException) {
+            return null;
+        }
     }
 
     /**
