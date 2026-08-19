@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Model\Element\Recyclebin\Item\Listing as RecycleBinListing;
 use Pimcore\Model\Listing\AbstractListing;
+use Pimcore\Model\Notification\Listing as NotificationListing;
 use function in_array;
 use function is_array;
 
@@ -36,6 +37,16 @@ final readonly class DateFilter implements FilterInterface
      */
     private const UNIX_TIMESTAMP_COLUMNS = [
         RecycleBinListing::class => ['date'],
+    ];
+
+    /**
+     * Listings whose date columns are stored in UTC (established by the pimcore core
+     * migration Version20230321133700). The filter value arrives as a wall-clock date in
+     * the application timezone and must be converted before comparing, otherwise the
+     * filtered window is shifted by the timezone offset. Keyed by listing class => column keys.
+     */
+    private const UTC_DATETIME_COLUMNS = [
+        NotificationListing::class => ['creationDate', 'modificationDate'],
     ];
 
     public function __construct(
@@ -66,6 +77,7 @@ final readonly class DateFilter implements FilterInterface
         $quotedKey = $this->dbResolver->get()->quoteIdentifier($column->getKey());
         $carbonDate = new Carbon($filter['value']);
         $isUnixTimestamp = $this->isUnixTimestampColumn($listing, $column->getKeyWithOutLocale());
+        $isUtcColumn = $this->isUtcDatetimeColumn($listing, $column->getKeyWithOutLocale());
 
         // The bind parameter name must be unique per applied filter. Deriving it from the
         // column key collides when the same column is filtered twice (a "between" range is
@@ -75,10 +87,11 @@ final readonly class DateFilter implements FilterInterface
             $listing->addConditionParam(
                 $dateCondition,
                 [
-                    'minTime_' . $index => $this->formatValue($carbonDate, $isUnixTimestamp),
+                    'minTime_' . $index => $this->formatValue($carbonDate, $isUnixTimestamp, $isUtcColumn),
                     'maxTime_' . $index => $this->formatValue(
                         $carbonDate->copy()->addDay()->subSecond(),
-                        $isUnixTimestamp
+                        $isUnixTimestamp,
+                        $isUtcColumn
                     ),
                 ]
             );
@@ -92,20 +105,44 @@ final readonly class DateFilter implements FilterInterface
             ' :' . $parameterName;
         $listing->addConditionParam(
             $dateCondition,
-            [$parameterName => $this->formatValue($carbonDate, $isUnixTimestamp)]
+            [$parameterName => $this->formatValue($carbonDate, $isUnixTimestamp, $isUtcColumn)]
         );
 
         return $listing;
     }
 
-    private function formatValue(Carbon $date, bool $asUnixTimestamp): int|string
+    private function formatValue(Carbon $date, bool $asUnixTimestamp, bool $asUtc = false): int|string
     {
-        return $asUnixTimestamp ? $date->getTimestamp() : $date->toDateTimeString();
+        if ($asUnixTimestamp) {
+            return $date->getTimestamp();
+        }
+
+        // Day boundaries are calculated in the application timezone first, so DST-length
+        // local days (23h/25h) stay intact - only the finished boundary is converted to
+        // the storage timezone.
+        if ($asUtc) {
+            return $date->copy()->setTimezone('UTC')->toDateTimeString();
+        }
+
+        return $date->toDateTimeString();
     }
 
     private function isUnixTimestampColumn(mixed $listing, string $key): bool
     {
-        foreach (self::UNIX_TIMESTAMP_COLUMNS as $listingClass => $columns) {
+        return $this->isListedColumn(self::UNIX_TIMESTAMP_COLUMNS, $listing, $key);
+    }
+
+    private function isUtcDatetimeColumn(mixed $listing, string $key): bool
+    {
+        return $this->isListedColumn(self::UTC_DATETIME_COLUMNS, $listing, $key);
+    }
+
+    /**
+     * @param array<class-string, string[]> $map
+     */
+    private function isListedColumn(array $map, mixed $listing, string $key): bool
+    {
+        foreach ($map as $listingClass => $columns) {
             if ($listing instanceof $listingClass && in_array($key, $columns, true)) {
                 return true;
             }
