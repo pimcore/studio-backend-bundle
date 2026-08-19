@@ -22,8 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 interface SubscriptionRepositoryInterface
 {
     /**
-     * Stored rows for a user, keyed by type id. Types the user never touched are absent —
-     * callers merge over the descriptor defaults.
+     * Stored rows for a user, keyed by type id; types the user never touched are absent.
      *
      * @return array<string, NotificationSubscription>
      *
@@ -37,8 +36,6 @@ interface SubscriptionRepositoryInterface
     public function getByUserAndType(int $userId, string $typeId): ?NotificationSubscription;
 
     /**
-     * Insert or update in one go, flushed once.
-     *
      * @param array<string, array{subscribed: bool, channels: string[]}> $preferences keyed by type id
      *
      * @throws DatabaseException

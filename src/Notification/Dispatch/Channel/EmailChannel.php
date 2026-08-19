@@ -32,16 +32,10 @@ use function sprintf;
 use function str_starts_with;
 
 /**
- * Delivers a notification as an email through the existing Pimcore mailer.
- *
- * send() runs inside the request that produced the notification, so it only does the cheap work
- * — resolve the recipient's address, language and the absolute deep link — and hands a fully
- * resolved {@see SendNotificationEmailMessage} to the pimcore_core transport. The blocking
- * network send happens later in the worker, so a slow or unreachable mail server never delays
- * the comment, assignment or invite that triggered the notification.
- *
- * The email deliberately mirrors the bell entry: the notification's own title and message plus a
- * deep link, and nothing from the payload. If it is not in the bell, it is not in the inbox.
+ * Delivers a notification as an email: send() only resolves address, language and deep link,
+ * then queues a fully resolved {@see SendNotificationEmailMessage} — the blocking network send
+ * happens on the pimcore_core worker. The email mirrors the bell entry (title, message, link)
+ * and renders nothing from the payload.
  *
  * @internal
  */
@@ -53,12 +47,7 @@ final readonly class EmailChannel implements ChannelInterface
 
     private const string NO_ADDRESS_KEY = 'notifications.channel.email.no-address';
 
-    /**
-     * The Studio UI serves element deep links under this prefix; it matches the default of the
-     * UI bundle's pimcore_studio_ui.url_path. Kept as a constant rather than coupling the backend
-     * to the UI bundle's parameter — a customised url_path would only affect the link, never
-     * whether the mail is sent.
-     */
+    // matches the default of pimcore_studio_ui.url_path; deliberately not coupled to that parameter
     private const string STUDIO_PATH = '/pimcore-studio';
 
     public function __construct(
@@ -90,8 +79,7 @@ final readonly class EmailChannel implements ChannelInterface
     {
         $address = $recipient->getEmail();
         if ($address === null || $address === '') {
-            // The user switched this channel on, so silence here reads as the channel being
-            // broken rather than the account simply having no address on it.
+            // logged: the user switched this channel on, so silence would read as a broken channel
             $this->logger->info(
                 sprintf(
                     'Notification email skipped: user %d has the email channel enabled but no ' .
@@ -106,8 +94,7 @@ final readonly class EmailChannel implements ChannelInterface
         $this->messageBus->dispatch(
             new SendNotificationEmailMessage(
                 to: $address,
-                // A Pimcore user need not have a first or last name, and the greeting reads
-                // "Hi ," when it does not.
+                // a user without first/last name would otherwise be greeted "Hi ,"
                 toName: $recipient->getFullName() ?: (string) $recipient->getUsername(),
                 locale: $recipient->getLanguage(),
                 subject: $notification->getTitle() ?? '',
@@ -122,11 +109,9 @@ final readonly class EmailChannel implements ChannelInterface
     {
         $host = $this->resolveHostUrl();
 
-        // A producer that knows a better destination than the linked element — Collab pointing at
-        // a task or discussion in its overview, for instance — supplies an app-relative path in the
-        // payload. It is the one navigation hint the email reads from the payload; no payload
-        // content is ever rendered. Only host-relative paths are honoured, so a payload can never
-        // turn the button into an off-site or "javascript:" link.
+        // A producer may supply a better destination as an app-relative path in the payload —
+        // the one navigation hint read from it. Only host-relative paths are honoured, so a
+        // payload can never turn the button into an off-site or "javascript:" link.
         $producerLink = $this->producerDeepLink($notification);
         if ($producerLink !== null) {
             return $host . $producerLink;
@@ -153,15 +138,10 @@ final readonly class EmailChannel implements ChannelInterface
             return null;
         }
 
-        // "//host" is protocol-relative once the host prefix is empty, which resolveHostUrl()
-        // legitimately is in a worker with no configured domain.
+        // "//host" would be protocol-relative when the host prefix is legitimately empty
         return str_starts_with($link, '//') ? null : $link;
     }
 
-    /**
-     * The Studio element route segment ('asset', 'document', 'data-object'), or null for an
-     * element type that has no such route.
-     */
     private function studioElementType(ElementInterface $element): ?string
     {
         return match (true) {
@@ -173,12 +153,8 @@ final readonly class EmailChannel implements ChannelInterface
     }
 
     /**
-     * The request host when there is a request, the configured domain otherwise — a notification
-     * dispatched from a command or a consumer has neither a request nor, unless the installation
-     * sets pimcore.general.domain, a host to fall back on.
-     *
-     * That case yields a host-relative link, which in an email is simply a dead button. There is
-     * nothing better to emit, so it is logged rather than left to be discovered by the recipient.
+     * The request host, falling back to pimcore.general.domain outside a request. Without
+     * either the link stays host-relative — a dead button in an email — hence the warning.
      */
     private function resolveHostUrl(): string
     {

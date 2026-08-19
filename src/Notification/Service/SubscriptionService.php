@@ -120,8 +120,8 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     }
 
     /**
-     * Unlike an unavailable channel this is rejected: a bad field in a request body, so the
-     * bundle's InvalidArgumentException (422) rather than the registry's NotFoundException (404).
+     * A bad request-body field, so the bundle's InvalidArgumentException (422) rather than
+     * the registry's NotFoundException (404).
      *
      * @throws InvalidArgumentException
      */
@@ -156,16 +156,10 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     }
 
     /**
-     * Two things happen here that the client cannot be trusted to do.
-     *
-     * A channel the type cannot use, or that the installation no longer offers, is dropped
-     * rather than rejected: an administrator disabling one mid-edit is a race, not a client
-     * error, and must not cost the user their whole bulk save. The response carries the stored
-     * state, so a drop is visible.
-     *
-     * Channel ids that are currently unresolvable are preserved. A bundle providing a channel
-     * may be temporarily disabled, in which case the client never saw that id — replacing the
-     * set wholesale would silently discard a preference the user still holds.
+     * A channel the type cannot use, or the installation no longer offers, is dropped rather
+     * than rejected — an admin disabling one mid-edit must not fail the whole bulk save.
+     * Stored ids the installation currently does not offer are preserved: the client never
+     * saw them, so they are not the client's to clear.
      *
      * @param string[] $requested
      * @param string[]|null $previouslyStored null when the user has never chosen for this type
@@ -180,14 +174,12 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     ): array {
         $availableChannelIds = $this->availableChannelIds();
 
-        // Held in both branches: an id the client never saw is not the client's to clear.
         $unresolvable = array_filter(
             $previouslyStored ?? [],
             static fn (string $channel): bool => !in_array($channel, $availableChannelIds, true)
         );
 
-        // Switching a type off clears the channels the client can see, which is what the
-        // preferences screen already does locally when the row is muted.
+        // switching a type off clears the channels the client can see
         if (!$subscribed) {
             return array_values($unresolvable);
         }
@@ -242,8 +234,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     }
 
     /**
-     * The catch-all is "everything else" only when there is something else. On its own it is
-     * simply all notifications, and says so.
+     * The catch-all is "everything else" only when there is something else.
      */
     private function resolveTranslationKey(NotificationTypeDescriptorInterface $descriptor): string
     {

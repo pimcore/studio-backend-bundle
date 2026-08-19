@@ -17,9 +17,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 
 /**
- * Merges stored preferences over descriptor defaults and narrows the result to what the type
- * and the installation can currently offer. The single place that rule lives — the dispatcher,
- * the Mercure publisher and the preferences API all read through it, so they cannot drift.
+ * Merges stored preferences over descriptor defaults and narrows to what is currently
+ * offerable. The single place that rule lives — dispatcher, Mercure publisher and preferences
+ * API all read through it.
  *
  * @internal
  */

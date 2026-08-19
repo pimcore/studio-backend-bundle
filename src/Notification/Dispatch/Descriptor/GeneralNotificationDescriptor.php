@@ -14,15 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor;
 
 /**
- * The catch-all every notification falls into when its type is unknown, empty or the legacy
- * `info` default — workflow transitions, user-to-user messages, anything a bundle writes
- * directly through the notification model.
- *
- * Two deliberate properties:
- *  - Its subscription is locked on, so no preference can make a notification silently vanish.
- *    Pop-up is the only control, which is exactly the one that was missing.
- *  - It allows no external delivery. A bucket of unclassified notifications is not something
- *    to email; a type that wants that should describe itself properly.
+ * The catch-all for notifications with an unknown, empty or legacy `info` type. Locked on, so
+ * no preference can make a notification silently vanish (pop-up is the only control), and
+ * never delivered externally — a type that wants that should describe itself properly.
  *
  * @internal
  */
@@ -56,8 +50,7 @@ final class GeneralNotificationDescriptor extends AbstractNotificationTypeDescri
     }
 
     /**
-     * Label used when this is the only registered type: there is then nothing for it to be
-     * "everything else" to, so it presents as all notifications instead.
+     * Label used when this is the only registered type ("all notifications").
      */
     public function getSoloTranslationKey(): string
     {
@@ -74,9 +67,7 @@ final class GeneralNotificationDescriptor extends AbstractNotificationTypeDescri
         return self::GROUP;
     }
 
-    /**
-     * Always last: it is the residual bucket.
-     */
+    // always last: it is the residual bucket
     public function getSortOrder(): int
     {
         return PHP_INT_MAX;

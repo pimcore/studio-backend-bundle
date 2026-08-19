@@ -361,12 +361,8 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * The administrator's only lever over notification delivery: switching a channel off for
-     * the whole installation.
-     *
-     * Deliberately not a per-type matrix. A disabled channel disappears from the API entirely,
-     * so the preferences screen omits its column rather than showing a row of locks — which
-     * means there is no "locked" state to model anywhere, in the API or the UI.
+     * The administrator's only lever: switching a channel off installation-wide. Deliberately
+     * not a per-type matrix — a disabled channel disappears from the API entirely.
      */
     private function addNotificationsNode(ArrayNodeDefinition $node): void
     {
@@ -397,11 +393,8 @@ class Configuration implements ConfigurationInterface
                                 ->defaultValue('@PimcoreStudioBackend/notification/email.html.twig')
                                 ->cannotBeEmpty()
                                 ->info(
-                                    'Twig template for notification emails. Point this at your own ' .
-                                    'template to brand them, or override the default in place by ' .
-                                    'dropping a file at ' .
-                                    'templates/bundles/PimcoreStudioBackendBundle/notification/email.html.twig. ' .
-                                    'The template receives: title, message, link, name, locale.'
+                                    'Twig template for notification emails. ' .
+                                    'Receives: title, message, link, name, locale.'
                                 )
                             ->end()
                         ->end()

@@ -41,9 +41,7 @@ final class Version20260720120000 extends AbstractMigration
         $table->addColumn('user_id', 'integer', ['notnull' => true, 'unsigned' => true]);
         $table->addColumn('type_id', 'string', ['notnull' => true, 'length' => 190]);
         $table->addColumn('subscribed', 'boolean', ['notnull' => true, 'default' => true]);
-        // Null means "never chosen" and falls back to the type defaults; an empty array is a
-        // deliberate "no channels". Collapsing the two would resurrect defaults for anyone who
-        // switched everything off.
+        // nullable: null = "never chosen", [] = deliberate "none" (see the entity)
         $table->addColumn('channels', 'json', ['notnull' => false]);
 
         $table->setPrimaryKey(['user_id', 'type_id'], 'pk_' . NotificationSubscription::TABLE_NAME);

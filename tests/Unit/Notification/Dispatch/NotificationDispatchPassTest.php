@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInte
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
+use stdClass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
@@ -49,7 +50,7 @@ final class NotificationDispatchPassTest extends Unit
     public function testLeavesUnrelatedServicesAlone(): void
     {
         $container = new ContainerBuilder();
-        $container->setDefinition('unrelated', new Definition(\stdClass::class));
+        $container->setDefinition('unrelated', new Definition(stdClass::class));
 
         (new NotificationDispatchPass())->process($container);
 

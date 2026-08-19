@@ -16,8 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 
 /**
- * Sensible defaults so a contributing bundle only states what is actually specific to its
- * type. Subscribed and popping up by default, no external delivery.
+ * Defaults so a contributing bundle only states what is specific to its type: subscribed and
+ * popping up by default, no external delivery.
  */
 abstract class AbstractNotificationTypeDescriptor implements NotificationTypeDescriptorInterface
 {

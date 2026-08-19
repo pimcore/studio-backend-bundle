@@ -17,11 +17,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Describes a subscribable notification type. Any bundle may contribute one; tagged services
- * are collected automatically.
- *
- * Note the deliberate absence of a "supported channels" list. A descriptor declares only
- * WHETHER it may leave the application, never through which channel — otherwise a bundle
- * shipping a new channel could never make existing types support it without editing them.
+ * are collected automatically. Deliberately no "supported channels" list — a descriptor says
+ * only WHETHER it may leave the application, so new channels light up for existing types.
  */
 #[AutoconfigureTag(NotificationTypeDescriptorInterface::TAG)]
 interface NotificationTypeDescriptorInterface
@@ -29,9 +26,8 @@ interface NotificationTypeDescriptorInterface
     public const string TAG = 'pimcore.studio_backend.notification_type';
 
     /**
-     * Dotted, stable, and at most 20 characters — the `notifications`.`type` column is
-     * VARCHAR(20) and MySQL truncates silently outside strict mode. Persisted in both the
-     * notification row and the subscription row, so renaming one is a breaking change.
+     * Dotted, stable, at most 20 characters (the `notifications`.`type` column). Persisted in
+     * notification and subscription rows, so renaming is a breaking change.
      */
     public function getTypeId(): string;
 
@@ -45,20 +41,17 @@ interface NotificationTypeDescriptorInterface
     public function getGroup(): string;
 
     /**
-     * Drives both group order and order within a group. Never rely on service tag iteration
-     * order, which is not stable across container rebuilds.
+     * Drives group order and order within a group; tag iteration order is not stable.
      */
     public function getSortOrder(): int;
 
     /**
-     * Whether this type may be delivered outside the application at all. False means no
-     * transport channel is ever offered for it, however many are registered.
+     * Whether this type may be delivered outside the application at all.
      */
     public function allowsExternalDelivery(): bool;
 
     /**
-     * Channel ids enabled when the user has expressed no preference. Separate axis from
-     * capability: a channel registered later is available but stays off until chosen.
+     * Channel ids enabled when the user has expressed no preference.
      *
      * @return string[]
      */

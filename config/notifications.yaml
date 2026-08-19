@@ -46,9 +46,7 @@ services:
     arguments:
       $channelConfig: '%pimcore_studio_backend.notifications.channels%'
 
-  # Email delivery channel. Registered so the NotificationDispatchPass tags it as a
-  # ChannelInterface (the interface attribute does not tag in Pimcore's container). Its async
-  # send message is routed to the pimcore_core transport in the bundle extension.
+  # Tagged by NotificationDispatchPass; its async send message rides the pimcore_core transport.
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel: ~
 
   # $fromEmail is set from studio_from_default_email in the bundle extension, mirroring MailService.
@@ -60,9 +58,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepository
 
-  # The catch-all every untyped notification falls into. The registry adds it unconditionally
-  # — its presence is not something wiring should be able to break — so this definition only
-  # needs to exist for injection.
+  # The catch-all; the registry adds it unconditionally, this definition exists for injection.
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor: ~
 
 

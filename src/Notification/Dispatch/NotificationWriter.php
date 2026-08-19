@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch;
 
+use const JSON_THROW_ON_ERROR;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\Notification;
@@ -20,7 +21,6 @@ use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function json_encode;
 use function sprintf;
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @internal

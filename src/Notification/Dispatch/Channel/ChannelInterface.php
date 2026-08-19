@@ -18,19 +18,9 @@ use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
- * A transport that delivers a notification outside the application — email, chat, whatever a
- * bundle needs. Any bundle may contribute one; tagged services are collected automatically and
- * a matching column appears in the preferences screen with no frontend change.
- *
- * {@see EmailChannel} is the implementation shipped here. A channel is only reachable by types
- * that return true from allowsExternalDelivery(), and the only type this bundle registers — the
- * general catch-all — deliberately does not: a bucket of unclassified notifications is not
- * something to email. So on a core-only install every registered channel is untagged again by
- * NotificationDispatchPass, and installing a bundle with an externally-deliverable type brings
- * them back.
- *
- * The in-app pop-up is NOT a transport and has no implementation here — it is a preference read
- * when the notification is published over Mercure.
+ * A transport that delivers a notification outside the application. Any bundle may contribute
+ * one; tagged services are collected automatically. The in-app pop-up is not a transport — it
+ * is a preference read when the notification is published over Mercure.
  */
 #[AutoconfigureTag(ChannelInterface::TAG)]
 interface ChannelInterface
@@ -38,8 +28,7 @@ interface ChannelInterface
     public const string TAG = 'pimcore.studio_backend.notification_channel';
 
     /**
-     * Stable channel id, e.g. `email`. Stored in the user's subscription row and used as the
-     * column key in the preferences screen.
+     * Stable channel id, e.g. `email` — stored in the user's subscription row.
      */
     public function getName(): string;
 
@@ -49,24 +38,15 @@ interface ChannelInterface
     public function getSortOrder(): int;
 
     /**
-     * Why this channel cannot reach the given user right now, as a translation key — or null when
-     * it can.
-     *
-     * A switch the user has turned on but that silently delivers nothing is indistinguishable from
-     * a broken channel, so the preferences screen says which it is. The account, not the
-     * subscription, is what is missing: an email channel with no address on the account, a chat
-     * channel with no linked account.
+     * Why this channel cannot reach the given user right now (e.g. no email address on the
+     * account), as a translation key — or null when it can.
      */
     public function unavailableReasonFor(UserInterface $recipient): ?string;
 
     /**
-     * IMPORTANT: this runs inside the request that produced the notification. It MUST NOT
-     * block on the network — dispatch a Messenger message and return, so the transport's own
-     * latency and retry policy stay its business rather than the producer's.
-     *
-     * Throwing is safe: the dispatcher logs and continues, so a failing channel can never
-     * break the action that produced the notification, nor prevent other channels from
-     * delivering.
+     * Runs inside the request that produced the notification, so it must not block on the
+     * network — dispatch a Messenger message and return. Throwing is safe: the dispatcher
+     * logs and continues.
      */
     public function send(Notification $notification, UserInterface $recipient): void;
 }

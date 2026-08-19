@@ -17,9 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelReg
 use function in_array;
 
 /**
- * What a user's preferences actually amount to for one notification type, after the stored
- * row has been merged over the descriptor defaults and narrowed to what the type and the
- * installation can currently offer.
+ * What a user's preferences amount to for one type, merged and narrowed by the resolver.
  *
  * @internal
  */
@@ -59,8 +57,7 @@ final readonly class EffectiveSubscription
     }
 
     /**
-     * Whether an incoming notification of this type should raise a toast for this user. False
-     * when unsubscribed, so a muted type cannot pop up on its way into the bell.
+     * Whether an incoming notification of this type should raise a toast for this user.
      */
     public function wantsPopup(): bool
     {
@@ -68,8 +65,7 @@ final readonly class EffectiveSubscription
     }
 
     /**
-     * Transport channels only — the pop-up is a presentation preference, not something to
-     * deliver through.
+     * Transport channels only — the pop-up is not something to deliver through.
      *
      * @return string[]
      */

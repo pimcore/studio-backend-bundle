@@ -54,8 +54,8 @@ final readonly class SubscriptionResolver implements SubscriptionResolverInterfa
     }
 
     /**
-     * Merge order: a stored row wins over the descriptor default, then the result is narrowed
-     * to what is actually offerable.
+     * A stored row wins over the descriptor default; the result is narrowed to what is
+     * actually offerable.
      */
     private function merge(
         NotificationTypeDescriptorInterface $descriptor,
@@ -65,8 +65,7 @@ final readonly class SubscriptionResolver implements SubscriptionResolverInterfa
             ? true
             : ($stored?->isSubscribed() ?? $descriptor->isSubscribedByDefault());
 
-        // Null means never chosen, so fall back to defaults. An empty array is a deliberate
-        // "none" and must survive.
+        // null = never chosen (defaults apply); [] = deliberate "none" and must survive
         $chosen = $stored?->getChannels() ?? $descriptor->getDefaultChannels();
 
         if (!$subscribed) {

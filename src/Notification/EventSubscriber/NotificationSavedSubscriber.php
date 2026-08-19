@@ -74,13 +74,9 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
     }
 
     /**
-     * Resolved here rather than by the producer, which is what gives every existing producer a
-     * working pop-up toggle without touching it: a notification written straight through the
-     * model falls into the general bucket and honours that bucket's preference.
-     *
-     * Failing to resolve must not cost the user their notification, so any error falls back to
-     * showing the toast — the behaviour before this setting existed. Logged, not discarded: this
-     * path keeps working when the preferences screen cannot, so it would otherwise fail silently.
+     * Resolved here rather than by the producer, so every existing producer gets a working
+     * pop-up toggle untouched. Any resolution error falls back to showing the toast — the
+     * behaviour before this setting existed.
      */
     private function wantsPopup(Notification $notification): bool
     {

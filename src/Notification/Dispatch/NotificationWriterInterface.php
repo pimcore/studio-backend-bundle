@@ -18,9 +18,8 @@ use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
 
 /**
- * Writes the bell entry for one recipient. Split out of the dispatcher so its routing decisions
- * can be tested without a database — Notification::save() goes through a Dao, and Dao-proxied
- * calls silently no-op on a mock rather than failing.
+ * Writes the bell entry for one recipient. Split out so the dispatcher's routing can be tested
+ * without a database (Dao-proxied save() silently no-ops on a mocked model).
  *
  * @internal
  */

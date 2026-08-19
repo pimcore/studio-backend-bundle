@@ -90,10 +90,6 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
     }
 
     /**
-     * Authoritative check: this is the only place the fully-resolved set exists.
-     * NotificationDispatchPass runs the same two checks at build time, but can only read
-     * statically-constructible descriptors, so it catches the common case rather than every one.
-     *
      * @param iterable<NotificationTypeDescriptorInterface> $taggedDescriptors
      *
      * @return array<string, NotificationTypeDescriptorInterface>
@@ -104,9 +100,7 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
     {
         $descriptors = [];
 
-        // The catch-all is added directly rather than being picked up by tag. Every
-        // notification ever written falls into it, so its presence must not depend on service
-        // wiring — and it is the only type a bare installation has.
+        // added directly, not by tag: the catch-all's presence must not depend on wiring
         $descriptors[$this->generalDescriptor->getTypeId()] = $this->generalDescriptor;
 
         foreach ($taggedDescriptors as $descriptor) {
@@ -120,8 +114,7 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
                 throw new InvalidNotificationTypeException(
                     sprintf(
                         'Notification type id "%s" is %d characters; the notifications.type ' .
-                        'column allows at most %d. Choose a shorter id — it is persisted and ' .
-                        'cannot be renamed later without breaking stored notifications.',
+                        'column allows at most %d.',
                         $typeId,
                         strlen($typeId),
                         self::MAX_TYPE_ID_LENGTH

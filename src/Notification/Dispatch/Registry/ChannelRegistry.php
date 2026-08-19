@@ -64,8 +64,7 @@ final readonly class ChannelRegistry implements ChannelRegistryInterface
 
     /**
      * A channel the administrator has switched off is dropped here rather than flagged, so it
-     * never reaches the API. The preferences screen then omits the column entirely instead of
-     * rendering switches that could not do anything.
+     * never reaches the API and the preferences screen omits its column.
      *
      * @param iterable<ChannelInterface> $taggedChannels
      * @param array<string, array{enabled: bool}> $channelConfig

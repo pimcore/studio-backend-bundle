@@ -22,14 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 interface NotificationDispatcherInterface
 {
     /**
-     * Recipients who are not subscribed to the type, or who lack the notifications
-     * permission, are skipped silently — that is the point of a subscription.
+     * Unsubscribed or unpermitted recipients are skipped; per-recipient failures are logged
+     * and the fan-out continues.
      *
-     * Failures never propagate and recipients are independent: a broken transport, or a bell row
-     * that cannot be written for one recipient, is logged and the fan-out continues. The one
-     * exception is an unregistered type id, raised before any recipient is processed.
-     *
-     * @throws NotFoundException when the type id is not registered
+     * @throws NotFoundException when the type id is not registered — raised before any
+     *                           recipient is processed
      */
     public function dispatch(DispatchableNotification $notification): void;
 }

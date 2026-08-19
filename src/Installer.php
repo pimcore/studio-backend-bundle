@@ -477,11 +477,7 @@ final class Installer extends SettingsStoreAwareInstaller
     }
 
     /**
-     * Per-user notification preferences. A missing row means "use the type's defaults", so
-     * only deliberate choices are stored and the table stays small.
-     *
-     * Channels are a JSON set rather than columns: a bundle contributing a new channel then
-     * needs no migration, the id simply appears in the set.
+     * Per-user notification preferences; see the NotificationSubscription entity.
      *
      * @throws SchemaException
      */

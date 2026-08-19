@@ -48,8 +48,7 @@ final class UpdateSubscriptionsController extends AbstractApiController
     }
 
     /**
-     * Bulk on purpose: the preferences screen saves every row at once, so one save action is
-     * one request.
+     * Bulk on purpose: one save action on the preferences screen is one request.
      *
      * @throws DatabaseException
      * @throws InvalidArgumentException
@@ -72,8 +71,6 @@ final class UpdateSubscriptionsController extends AbstractApiController
         description: 'notification_update_subscriptions_success_response',
         content: new JsonContent(ref: SubscriptionCollection::class)
     )]
-    // Both rejections — an unknown type id and unsubscribing a locked type — are
-    // InvalidArgumentException, which this bundle maps to 422, not 400.
     #[DefaultResponses([
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
         HttpResponseCodes::UNAUTHORIZED,

@@ -20,9 +20,8 @@ use Symfony\Component\Mime\Address;
 use Twig\Environment;
 
 /**
- * Renders and sends one notification email. Runs on the pimcore_core worker, so the blocking
- * network send is off the request path; a failure bubbles up and Messenger retries it per that
- * transport's policy, while Pimcore logs the attempt either way.
+ * Renders and sends one notification email on the pimcore_core worker; a failure bubbles up
+ * and Messenger retries per that transport's policy.
  *
  * @internal
  */
@@ -30,9 +29,7 @@ use Twig\Environment;
 final readonly class SendNotificationEmailHandler
 {
     /**
-     * @param string $template the configured email template — the shipped default, an app-level
-     *                         override at templates/bundles/PimcoreStudioBackendBundle/…, or a
-     *                         custom template named in pimcore_studio_backend.notifications.email
+     * @param string $template configured via pimcore_studio_backend.notifications.email
      */
     public function __construct(
         private Environment $twig,
@@ -58,9 +55,8 @@ final readonly class SendNotificationEmailHandler
         $mail->subject($message->getSubject());
         $mail->html($body);
 
-        // The body and subject are already fully rendered above, so Pimcore's document/
-        // placeholder pass is skipped — a literal "%" in a title must not be read as a
-        // placeholder. Logging, the block-list and the debug-mode redirect still apply.
+        // already fully rendered: skip Pimcore's placeholder pass so a literal "%" in a title
+        // is not read as a placeholder; logging, block-list and debug redirect still apply
         $mail->sendWithoutRendering($this->mailer);
     }
 }

@@ -17,11 +17,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Entity\Notification;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * One row per (user, notification type). A missing row means "use the descriptor defaults",
- * which keeps the table small — only deliberate choices are stored.
- *
- * Channels are a JSON set rather than columns so that a bundle contributing a new channel
- * needs no migration: the id simply appears in the set.
+ * One row per (user, notification type); a missing row means "use the descriptor defaults".
+ * Channels are a JSON set rather than columns so a new channel needs no migration.
  *
  * @internal
  */
@@ -43,9 +40,8 @@ class NotificationSubscription
     private bool $subscribed;
 
     /**
-     * Enabled channel ids. Null means "never chosen" and falls back to the descriptor
-     * defaults; an empty array means the user deliberately turned everything off. Collapsing
-     * those two would silently resurrect defaults for anyone who opted out of everything.
+     * Enabled channel ids. Null means "never chosen" (descriptor defaults apply); an empty
+     * array is a deliberate "none" — collapsing the two would resurrect defaults.
      *
      * @var string[]|null
      */

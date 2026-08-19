@@ -39,11 +39,7 @@ final readonly class NotificationMinimal
         private int $recipient,
         #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin')]
         private ?string $sender = null,
-        /**
-         * Resolved from the recipient's preferences when the notification is published, so the
-         * frontend only has to decide whether to raise a toast, not why. Defaults to true so a
-         * client that has not adopted this field behaves exactly as before.
-         */
+        // resolved from the recipient's preferences at publish time; true keeps the pre-field behaviour
         #[Property(description: 'whether to show a toast on screen', type: 'bool', example: true)]
         private bool $popup = true,
         #[Property(description: 'type specific payload as JSON', type: 'string', example: '{"threadId":42}')]

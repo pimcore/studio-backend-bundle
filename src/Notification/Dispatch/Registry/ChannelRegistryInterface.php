@@ -22,28 +22,23 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\Notifica
 interface ChannelRegistryInterface
 {
     /**
-     * The in-app pop-up. A channel from the user's point of view — it has a column in the
-     * preferences screen and lives in the same stored set — but not a transport: it is read
-     * when the notification is published over Mercure rather than sent anywhere.
+     * The in-app pop-up: a channel from the user's point of view, but not a transport — it is
+     * read when the notification is published over Mercure rather than sent anywhere.
      */
     public const string POPUP_CHANNEL = 'popup';
 
     public function getEnabledChannel(string $name): ?ChannelInterface;
 
     /**
-     * Every channel id offerable anywhere in this installation: the pop-up, plus the enabled
-     * transports. Drives the preferences screen's column set — when no transport is enabled
-     * the screen renders no channel column at all rather than a column of dead switches.
+     * Every channel id offerable in this installation: the pop-up plus the enabled transports.
      *
      * @return string[]
      */
     public function getAvailableChannelIds(): array;
 
     /**
-     * Channel ids a specific type can offer: always the pop-up, plus every enabled transport
-     * if the type allows external delivery. Note the capability is derived, never enumerated
-     * by the descriptor — that is what lets a newly installed channel light up for existing
-     * types without touching the bundles that own them.
+     * Channel ids a specific type can offer: the pop-up, plus every enabled transport if the
+     * type allows external delivery. Derived, never enumerated by the descriptor.
      *
      * @return string[]
      */

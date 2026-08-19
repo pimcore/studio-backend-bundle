@@ -44,8 +44,8 @@ final class GetSubscriptionsController extends AbstractApiController
     }
 
     /**
-     * The literal path is safe beside /notifications/{id} because that route constrains its id
-     * to digits. Keep that requirement in place.
+     * The literal path is safe beside /notifications/{id} only while that route constrains its
+     * id to digits.
      *
      * @throws DatabaseException
      */

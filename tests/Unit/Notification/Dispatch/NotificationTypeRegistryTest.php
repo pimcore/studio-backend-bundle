@@ -158,6 +158,7 @@ final class NotificationTypeRegistryTest extends Unit
         );
         $this->assertFalse($withOthers->hasOnlyGeneralDescriptor());
     }
+
     public function testHasExternallyDeliverableTypeReflectsTheDescriptors(): void
     {
         $general = new GeneralNotificationDescriptor();

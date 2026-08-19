@@ -16,9 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
- * What a producer hands to the dispatcher. Carries no presentation state: whether a
- * notification pops up is a per-recipient preference resolved at publish time, not something
- * the producer decides.
+ * What a producer hands to the dispatcher. Carries no presentation state — whether it pops up
+ * is a per-recipient preference resolved at publish time.
  */
 final readonly class DispatchableNotification
 {

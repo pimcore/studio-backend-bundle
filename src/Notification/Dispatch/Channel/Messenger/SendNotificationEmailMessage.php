@@ -14,10 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger;
 
 /**
- * One notification email, fully resolved at dispatch time so the handler needs no lookups: the
- * recipient address and language, the subject and body text, and the absolute deep link are all
- * carried here. Everything is a scalar the message can be serialised to and back, because it
- * rides the pimcore_core transport into a separate worker.
+ * One notification email, fully resolved at dispatch time so the handler needs no lookups.
+ * Scalars only — it rides the pimcore_core transport into a separate worker.
  *
  * @internal
  */

@@ -20,11 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
- * Everything the preferences screen needs in one response: the column set and the rows, each
- * already merged and narrowed for the calling user.
- *
- * Not readonly: the pre-response event lets listeners attach additional attributes, which the
- * trait stores.
+ * Everything the preferences screen needs in one response: the column set and the rows, merged
+ * and narrowed for the calling user. Not readonly — the pre-response event mutates it.
  */
 #[Schema(
     schema: 'NotificationSubscriptionCollection',

@@ -1,7 +1,5 @@
-# The email channel's send message rides the existing pimcore_core transport, so the standard
-# "messenger:consume pimcore_core" worker delivers it and a slow or unreachable mail server never
-# blocks the request that produced the notification. Unlike the execution-engine actions it is a
-# plain fire-and-forget message, not a job, so it does not go through pimcore_generic_execution_engine.
+# Rides the existing pimcore_core transport so the standard worker delivers it and a slow mail
+# server never blocks the request that produced the notification.
 framework:
     messenger:
         routing:

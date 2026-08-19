@@ -43,8 +43,7 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
 
     public function dispatch(DispatchableNotification $notification): void
     {
-        // Unregistered type is a programming error in the producing bundle, so it surfaces
-        // rather than silently writing an unroutable notification.
+        // an unregistered type is a programming error in the producing bundle - let it surface
         $descriptor = $this->typeRegistry->getDescriptor($notification->getTypeId());
 
         $sender = $this->resolveSender($notification->getSenderId());
@@ -53,7 +52,7 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
             try {
                 $this->dispatchToRecipient($notification, $descriptor, $recipientId, $sender);
             } catch (Exception $e) {
-                // Recipients are independent: one failing row must not cost the others theirs.
+                // recipients are independent: one failing row must not cost the others theirs
                 $this->logger->error(
                     sprintf(
                         'Notification could not be dispatched to user %d: %s',
@@ -110,9 +109,8 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
     }
 
     /**
-     * A channel that throws is logged and skipped. External delivery is best effort by
-     * design: it must never break the action that produced the notification, and one broken
-     * transport must not stop the others.
+     * Best effort: a throwing channel is logged and skipped, so delivery never breaks the
+     * action that produced the notification.
      *
      * @param string[] $channelIds
      */
