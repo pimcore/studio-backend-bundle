@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscript
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
+use function array_unique;
 use function array_values;
 use function in_array;
 
@@ -74,13 +75,17 @@ final readonly class SubscriptionResolver implements SubscriptionResolverInterfa
 
         $supported = $this->channelRegistry->getSupportedChannelIds($type);
 
+        // array_unique guards against a type declaring duplicate default channels — the dispatcher
+        // iterates the transport channels, so a duplicate id would deliver the same email twice.
         return new EffectiveSubscription(
             $type->getTypeId(),
             true,
             array_values(
-                array_filter(
-                    $chosen,
-                    static fn (string $channel): bool => in_array($channel, $supported, true)
+                array_unique(
+                    array_filter(
+                        $chosen,
+                        static fn (string $channel): bool => in_array($channel, $supported, true)
+                    )
                 )
             )
         );

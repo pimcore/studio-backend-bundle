@@ -113,7 +113,7 @@ final class SubscriptionServiceTest extends Unit
     }
 
     /**
-     * Still rejected, unlike an unavailable channel — but as a bad request body field (400),
+     * Still rejected, unlike an unavailable channel — but as an invalid request body (422),
      * not the registry's 404.
      */
     public function testAnUnknownTypeIdIsRejectedAsABadRequestRatherThanANotFound(): void

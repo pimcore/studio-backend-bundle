@@ -46,13 +46,16 @@ final readonly class EmailChannel implements ChannelInterface
 
     private const string NO_ADDRESS_KEY = 'notifications.channel.email.no-address';
 
-    // matches the default of pimcore_studio_ui.url_path; deliberately not coupled to that parameter
-    private const string STUDIO_PATH = '/pimcore-studio';
-
+    /**
+     * @param string $studioPath the Studio UI base path, wired from pimcore_studio_ui.url_path so a
+     *                          customised install still gets working links; the default is that
+     *                          parameter's own default for a studio-ui-less setup.
+     */
     public function __construct(
         private MessageBusInterface $messageBus,
         private ToolResolverInterface $toolResolver,
         private LoggerInterface $logger,
+        private string $studioPath = '/pimcore-studio',
     ) {
     }
 
@@ -115,7 +118,7 @@ final readonly class EmailChannel implements ChannelInterface
             return $host . $producerLink;
         }
 
-        $base = $host . self::STUDIO_PATH;
+        $base = $host . $this->studioPath;
 
         $element = $notification->getLinkedElement();
         $type = $element instanceof ElementInterface ? $this->studioElementType($element) : null;

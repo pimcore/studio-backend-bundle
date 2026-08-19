@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
@@ -162,6 +163,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(SendNotificationEmailHandler::class);
         $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
         $definition->setArgument('$template', $config['notifications']['email']['template']);
+
+        // Email deep links use the Studio UI base path. Read it from the studio-ui parameter so a
+        // customised url_path is honoured; default it here since studio-ui is not a hard dependency.
+        if (!$container->hasParameter('pimcore_studio_ui.url_path')) {
+            $container->setParameter('pimcore_studio_ui.url_path', '/pimcore-studio');
+        }
+        $container->getDefinition(EmailChannel::class)
+            ->setArgument('$studioPath', '%pimcore_studio_ui.url_path%');
 
         $definition = $container->getDefinition(WidgetServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);

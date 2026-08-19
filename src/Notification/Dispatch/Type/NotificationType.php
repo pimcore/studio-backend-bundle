@@ -17,9 +17,8 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelReg
 
 /**
  * One subscribable notification type. Plain data — the constructor defaults are the framework
- * defaults, so a contributing bundle only states what is specific to its type.
- *
- * @internal
+ * defaults, so a contributing bundle only states what is specific to its type. Constructed by
+ * contributing bundles' NotificationTypeProviderInterface, so it is a public extension point.
  */
 final readonly class NotificationType
 {
