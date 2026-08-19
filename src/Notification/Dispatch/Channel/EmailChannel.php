@@ -21,7 +21,6 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\MessageBusInterface;
 use function is_array;
 use function is_string;
@@ -52,7 +51,6 @@ final readonly class EmailChannel implements ChannelInterface
 
     public function __construct(
         private MessageBusInterface $messageBus,
-        private RequestStack $requestStack,
         private ToolResolverInterface $toolResolver,
         private LoggerInterface $logger,
     ) {
@@ -156,26 +154,20 @@ final readonly class EmailChannel implements ChannelInterface
     }
 
     /**
-     * The request host, falling back to pimcore.general.domain outside a request. Without
-     * either the link stays host-relative — a dead button in an email — hence the warning.
+     * The current request's host, falling back to pimcore.general.domain and then to '' — via the
+     * same Tool::getHostUrl() the core workflow-notification mail uses. An empty result means the
+     * link cannot be made absolute (no request, no domain); logged rather than left silent.
      */
     private function resolveHostUrl(): string
     {
-        $request = $this->requestStack->getMainRequest();
-        if ($request !== null) {
-            return $request->getSchemeAndHttpHost();
-        }
-
-        $hostname = $this->toolResolver->getHostname();
-        if ($hostname === null || $hostname === '') {
+        $hostUrl = $this->toolResolver->getHostUrl();
+        if ($hostUrl === '') {
             $this->logger->warning(
                 'Notification email links cannot be made absolute: no request is available and ' .
                 'pimcore.general.domain is not set, so the link in the email will not resolve.'
             );
-
-            return '';
         }
 
-        return $this->toolResolver->getRequestScheme() . '://' . $hostname;
+        return $hostUrl;
     }
 }

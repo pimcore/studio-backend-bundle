@@ -21,16 +21,15 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Notification;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * The channel's job is to turn a notification into a queued email without ever touching the
  * network: it resolves the recipient address, language and an absolute deep link, and enqueues a
- * fully-resolved message. The mail itself is composed in the handler and exercised end-to-end,
- * because Pimcore\Mail cannot be sent without a booted kernel.
+ * fully-resolved message. The host comes from ToolResolver::getHostUrl() (the same
+ * Tool::getHostUrl() the core workflow-notification mail uses). The mail itself is composed in the
+ * handler and exercised end-to-end, because Pimcore\Mail cannot be sent without a booted kernel.
  *
  * @internal
  */
@@ -38,22 +37,25 @@ final class EmailChannelTest extends Unit
 {
     private const string HOST = 'https://demo.example';
 
+    private const string STUDIO_ROOT = self::HOST . '/pimcore-studio/';
+
     private const string EMAIL = 'jane@example.com';
 
     public function testNameAndSortOrderAreStable(): void
     {
-        $channel = $this->channel(new RequestStack(), $captured);
+        $channel = $this->channel($captured);
 
         self::assertSame('email', $channel->getName());
-        self::assertIsInt($channel->getSortOrder());
+        self::assertSame(100, $channel->getSortOrder());
     }
 
     public function testSendEnqueuesAMessageMirroringTheBellEntry(): void
     {
-        $channel = $this->channel($this->stackWithHost(), $captured);
+        $channel = $this->channel($captured);
 
+        $title = 'You were mentioned';
         $channel->send(
-            $this->notification('You were mentioned', 'Jane wrote: ping'),
+            $this->notification($title, 'Jane wrote: ping'),
             $this->recipient(self::EMAIL, 'Jane Doe', 'de')
         );
 
@@ -62,8 +64,8 @@ final class EmailChannelTest extends Unit
         self::assertSame('Jane Doe', $captured->getToName());
         self::assertSame('de', $captured->getLocale());
         // Subject and body are the notification's own title and message — nothing more.
-        self::assertSame('You were mentioned', $captured->getSubject());
-        self::assertSame('You were mentioned', $captured->getTitle());
+        self::assertSame($title, $captured->getSubject());
+        self::assertSame($title, $captured->getTitle());
         self::assertSame('Jane wrote: ping', $captured->getMessage());
     }
 
@@ -81,19 +83,14 @@ final class EmailChannelTest extends Unit
             ->method('info')
             ->with(self::stringContains('no email address'));
 
-        $channel = new EmailChannel(
-            $bus,
-            $this->stackWithHost(),
-            $this->createMock(ToolResolverInterface::class),
-            $logger
-        );
+        $channel = new EmailChannel($bus, $this->toolResolver(self::HOST), $logger);
 
         $channel->send($this->notification('t', 'm'), $this->recipient(null, 'Jane', 'en'));
     }
 
     public function testDeepLinkPointsAtTheLinkedElement(): void
     {
-        $channel = $this->channel($this->stackWithHost(), $captured);
+        $channel = $this->channel($captured);
 
         $asset = $this->createMock(Asset::class);
         $asset->method('getId')->willReturn(42);
@@ -106,12 +103,12 @@ final class EmailChannelTest extends Unit
 
     public function testDeepLinkFallsBackToStudioRootWithoutALinkedElement(): void
     {
-        $channel = $this->channel($this->stackWithHost(), $captured);
+        $channel = $this->channel($captured);
 
         $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, 'Jane', 'en'));
 
         self::assertNotNull($captured);
-        self::assertSame(self::HOST . '/pimcore-studio/', $captured->getLink());
+        self::assertSame(self::STUDIO_ROOT, $captured->getLink());
     }
 
     /**
@@ -120,7 +117,7 @@ final class EmailChannelTest extends Unit
      */
     public function testProducerDeepLinkFromThePayloadIsUsed(): void
     {
-        $channel = $this->channel($this->stackWithHost(), $captured);
+        $channel = $this->channel($captured);
 
         $notification = $this->notification('t', 'm');
         $notification->setPayload((string) json_encode(['deepLink' => '/pimcore-studio/?collabThread=42']));
@@ -137,7 +134,7 @@ final class EmailChannelTest extends Unit
      */
     public function testNonHostRelativeDeepLinkIsIgnored(): void
     {
-        $channel = $this->channel($this->stackWithHost(), $captured);
+        $channel = $this->channel($captured);
 
         $notification = $this->notification('t', 'm');
         $notification->setPayload((string) json_encode(['deepLink' => 'https://evil.example/phish']));
@@ -145,20 +142,21 @@ final class EmailChannelTest extends Unit
         $channel->send($notification, $this->recipient(self::EMAIL, 'Jane', 'en'));
 
         self::assertNotNull($captured);
-        self::assertSame(self::HOST . '/pimcore-studio/', $captured->getLink());
+        self::assertSame(self::STUDIO_ROOT, $captured->getLink());
     }
 
     /**
      * "//host" passes a leading-slash check but is protocol-relative, and the host prefix is empty
-     * in a worker with no configured domain — which is exactly where it would have escaped.
+     * with no request and no configured domain — which is exactly where it would have escaped.
      */
     public function testProtocolRelativeDeepLinkIsIgnoredWithoutAHost(): void
     {
-        $toolResolver = $this->createMock(ToolResolverInterface::class);
-        $toolResolver->method('getHostname')->willReturn(null);
-
         $captured = null;
-        $channel = new EmailChannel($this->capturingBus($captured), new RequestStack(), $toolResolver, $this->createMock(LoggerInterface::class));
+        $channel = new EmailChannel(
+            $this->capturingBus($captured),
+            $this->toolResolver(''),
+            $this->createMock(LoggerInterface::class)
+        );
 
         $notification = $this->notification('t', 'm');
         $notification->setPayload((string) json_encode(['deepLink' => '//evil.example/phish']));
@@ -175,7 +173,7 @@ final class EmailChannelTest extends Unit
      */
     public function testGreetingNameFallsBackToTheUsername(): void
     {
-        $channel = $this->channel($this->stackWithHost(), $captured);
+        $channel = $this->channel($captured);
 
         $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, '', 'en'));
 
@@ -190,48 +188,51 @@ final class EmailChannelTest extends Unit
      */
     public function testAnUnresolvableHostIsLogged(): void
     {
-        $toolResolver = $this->createMock(ToolResolverInterface::class);
-        $toolResolver->method('getHostname')->willReturn(null);
-
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())
             ->method('warning')
             ->with(self::stringContains('pimcore.general.domain'));
 
         $captured = null;
-        $channel = new EmailChannel($this->capturingBus($captured), new RequestStack(), $toolResolver, $logger);
+        $channel = new EmailChannel($this->capturingBus($captured), $this->toolResolver(''), $logger);
 
         $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, 'Jane', 'en'));
     }
 
     /**
-     * With no active request (a CLI-triggered notification) the host falls back to the configured
-     * domain rather than producing a broken absolute link.
+     * With no active request (a CLI-triggered notification) getHostUrl() falls back to the
+     * configured domain rather than producing a broken absolute link.
      */
     public function testDeepLinkUsesTheConfiguredDomainWithoutARequest(): void
     {
-        $toolResolver = $this->createMock(ToolResolverInterface::class);
-        $toolResolver->method('getHostname')->willReturn('cli.example');
-        $toolResolver->method('getRequestScheme')->willReturn('https');
-
         $captured = null;
-        $bus = $this->capturingBus($captured);
+        $channel = new EmailChannel(
+            $this->capturingBus($captured),
+            $this->toolResolver('https://cli.example'),
+            $this->createMock(LoggerInterface::class)
+        );
 
-        $channel = new EmailChannel($bus, new RequestStack(), $toolResolver, $this->createMock(LoggerInterface::class));
         $channel->send($this->notification('t', 'm'), $this->recipient(self::EMAIL, 'Jane', 'en'));
 
         self::assertNotNull($captured);
         self::assertSame('https://cli.example/pimcore-studio/', $captured->getLink());
     }
 
-    private function channel(RequestStack $requestStack, ?SendNotificationEmailMessage &$captured): EmailChannel
+    private function channel(?SendNotificationEmailMessage &$captured, string $hostUrl = self::HOST): EmailChannel
     {
         return new EmailChannel(
             $this->capturingBus($captured),
-            $requestStack,
-            $this->createMock(ToolResolverInterface::class),
+            $this->toolResolver($hostUrl),
             $this->createMock(LoggerInterface::class)
         );
+    }
+
+    private function toolResolver(string $hostUrl): ToolResolverInterface
+    {
+        $toolResolver = $this->createMock(ToolResolverInterface::class);
+        $toolResolver->method('getHostUrl')->willReturn($hostUrl);
+
+        return $toolResolver;
     }
 
     private function capturingBus(?SendNotificationEmailMessage &$captured): MessageBusInterface
@@ -248,14 +249,6 @@ final class EmailChannelTest extends Unit
         );
 
         return $bus;
-    }
-
-    private function stackWithHost(): RequestStack
-    {
-        $stack = new RequestStack();
-        $stack->push(Request::create(self::HOST . '/pimcore-studio/'));
-
-        return $stack;
     }
 
     private function notification(string $title, string $message, ?Asset $linkedElement = null): Notification
