@@ -208,6 +208,54 @@ final class DateFilterTest extends Unit
     }
 
     /**
+     * The day window must cover exactly the local calendar day even across DST
+     * transitions, where a local day is 23 or 25 hours long. Boundaries are therefore
+     * derived in the application timezone and only converted to UTC when binding -
+     * converting first and adding 24h would bleed an hour into the neighbouring day.
+     */
+    public function testDateFilterUtcColumnKeepsLocalDayLengthAcrossDstTransitions(): void
+    {
+        $originalTimezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            $filter = $this->createFilter();
+
+            // Spring transition: 2026-03-29 is a 23-hour day (CET +01:00 -> CEST +02:00)
+            $listing = new NotificationListing();
+            $params = new FilterParameter(columnFilters: [
+                ['key' => 'creationDate', 'type' => 'date', 'filterValue' => ['operator' => 'on', 'value' => '2026-03-29']],
+            ]);
+            $filter->apply($params, $listing);
+
+            $this->assertSame(
+                [
+                    'minTime_0' => '2026-03-28 23:00:00',
+                    'maxTime_0' => '2026-03-29 21:59:59',
+                ],
+                $listing->getConditionVariables()
+            );
+
+            // Autumn transition: 2026-10-25 is a 25-hour day (CEST +02:00 -> CET +01:00)
+            $listing = new NotificationListing();
+            $params = new FilterParameter(columnFilters: [
+                ['key' => 'creationDate', 'type' => 'date', 'filterValue' => ['operator' => 'on', 'value' => '2026-10-25']],
+            ]);
+            $filter->apply($params, $listing);
+
+            $this->assertSame(
+                [
+                    'minTime_0' => '2026-10-24 22:00:00',
+                    'maxTime_0' => '2026-10-25 22:59:59',
+                ],
+                $listing->getConditionVariables()
+            );
+        } finally {
+            date_default_timezone_set($originalTimezone);
+        }
+    }
+
+    /**
      * Columns not registered as UTC keep their wall-clock comparison - the conversion
      * must not leak into other listings.
      */

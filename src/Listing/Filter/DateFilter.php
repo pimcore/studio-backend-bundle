@@ -77,10 +77,7 @@ final readonly class DateFilter implements FilterInterface
         $quotedKey = $this->dbResolver->get()->quoteIdentifier($column->getKey());
         $carbonDate = new Carbon($filter['value']);
         $isUnixTimestamp = $this->isUnixTimestampColumn($listing, $column->getKeyWithOutLocale());
-
-        if ($this->isUtcDatetimeColumn($listing, $column->getKeyWithOutLocale())) {
-            $carbonDate->setTimezone('UTC');
-        }
+        $isUtcColumn = $this->isUtcDatetimeColumn($listing, $column->getKeyWithOutLocale());
 
         // The bind parameter name must be unique per applied filter. Deriving it from the
         // column key collides when the same column is filtered twice (a "between" range is
@@ -90,10 +87,11 @@ final readonly class DateFilter implements FilterInterface
             $listing->addConditionParam(
                 $dateCondition,
                 [
-                    'minTime_' . $index => $this->formatValue($carbonDate, $isUnixTimestamp),
+                    'minTime_' . $index => $this->formatValue($carbonDate, $isUnixTimestamp, $isUtcColumn),
                     'maxTime_' . $index => $this->formatValue(
                         $carbonDate->copy()->addDay()->subSecond(),
-                        $isUnixTimestamp
+                        $isUnixTimestamp,
+                        $isUtcColumn
                     ),
                 ]
             );
@@ -107,15 +105,26 @@ final readonly class DateFilter implements FilterInterface
             ' :' . $parameterName;
         $listing->addConditionParam(
             $dateCondition,
-            [$parameterName => $this->formatValue($carbonDate, $isUnixTimestamp)]
+            [$parameterName => $this->formatValue($carbonDate, $isUnixTimestamp, $isUtcColumn)]
         );
 
         return $listing;
     }
 
-    private function formatValue(Carbon $date, bool $asUnixTimestamp): int|string
+    private function formatValue(Carbon $date, bool $asUnixTimestamp, bool $asUtc = false): int|string
     {
-        return $asUnixTimestamp ? $date->getTimestamp() : $date->toDateTimeString();
+        if ($asUnixTimestamp) {
+            return $date->getTimestamp();
+        }
+
+        // Day boundaries are calculated in the application timezone first, so DST-length
+        // local days (23h/25h) stay intact - only the finished boundary is converted to
+        // the storage timezone.
+        if ($asUtc) {
+            return $date->copy()->setTimezone('UTC')->toDateTimeString();
+        }
+
+        return $date->toDateTimeString();
     }
 
     private function isUnixTimestampColumn(mixed $listing, string $key): bool
