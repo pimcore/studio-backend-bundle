@@ -50,6 +50,8 @@ final readonly class SentMailProvider implements DataProviderInterface
                 'subject' => $this->getSubjectLine($entry),
                 'hasHtmlLog' => $entry->getEmailLogExistsHtml() === 1,
                 'hasTextLog' => $entry->getEmailLogExistsText() === 1,
+                'hasError' => (bool) $entry->getError(),
+                'error' => $entry->getError(),
                 'hasParameters' => !empty($entry->getParams()),
                 '__gdprIsDeletable' => true,
             ]),
