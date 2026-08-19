@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\EventSubscriber;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
@@ -39,6 +39,7 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
         private NotificationHydratorInterface $notificationHydrator,
         private NotificationRepositoryInterface $notificationRepository,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
         private NotificationTypeRegistryInterface $typeRegistry,
         private SubscriptionResolverInterface $subscriptionResolver,
         private LoggerInterface $logger,
@@ -59,12 +60,19 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
             return;
         }
 
+        $recipient = $notification->getRecipient();
+        if ($recipient === null) {
+            return;
+        }
+
+        // Publish on the recipient's own Mercure topic, not the shared studio topic. The shared
+        // topic is subscribed by every client, so title, message, payload and the recipient's
+        // unread count would otherwise ride the wire to all users, with only client-side filtering
+        // hiding them. The recipient already subscribes to their own topic (UserTopicProvider).
         $this->publishService->publish(
-            Topics::STUDIO->value,
+            $this->userTopicService->getUserTopic($recipient->getId()),
             [
-                'unreadNotificationsCount' => $this->notificationRepository->getUnreadCountByUser(
-                    $notification->getRecipient()
-                ),
+                'unreadNotificationsCount' => $this->notificationRepository->getUnreadCountByUser($recipient),
                 'notification' => $this->notificationHydrator->hydrateMinimal(
                     $notification,
                     $this->wantsPopup($notification)
