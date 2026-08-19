@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\TreeLevelData;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
@@ -41,7 +40,7 @@ interface ElementTreeWidgetRepositoryInterface
     ): ?WidgetElementData;
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|InvalidFilterTypeException|InvalidQueryTypeException
+     * @throws InvalidArgumentException|InvalidFilterTypeException|InvalidQueryTypeException
      * @throws NotFoundException
      *
      * @return TreeLevelData[]

@@ -109,6 +109,16 @@ final readonly class ElementService implements ElementServiceInterface
         return $element;
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getNavigableElementByPath(
+        string $elementType,
+        string $elementPath
+    ): ElementInterface {
+        return $this->getElementByPath($this->serviceResolver, $elementType, $elementPath);
+    }
+
     public function hasElementChildren(ElementInterface $element): bool
     {
         return ($element instanceof Asset || $element instanceof Document || $element instanceof DataObject) &&
