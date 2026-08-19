@@ -5,25 +5,22 @@ description: Contribute notification types and delivery channels to the Studio n
 
 # Extending Notifications
 
-The Studio notification framework turns the notifications Pimcore writes into **typed, subscribable**
-prompts: a user chooses, per type, whether they are notified and through which channels. Bundles
-extend it in two places, plus an optional frontend renderer:
+Studio users choose, per notification type, whether they are notified and through which channels.
+Bundles plug into this in two places:
 
 | Extension point | Interface | Tag |
 |---|---|---|
 | Notification type | `NotificationTypeDescriptorInterface` | `pimcore.studio_backend.notification_type` |
 | Delivery channel | `ChannelInterface` | `pimcore.studio_backend.notification_channel` |
 
-Both are auto-discovered — implement the interface, register the service, done. A built-in catch-all
-type (`info`) already gives every untyped notification pop-up control, so you only add a type when you
-want it to appear as its own subscribable row.
+Implement the interface and register the service — tagging is automatic. A built-in catch-all type
+(`info`) already covers untyped notifications, so add a type only when it should appear as its own
+row on the preferences screen.
 
-## How It Works
+## Sending a Notification
 
-A producer builds a `DispatchableNotification` and hands it to `NotificationDispatcherInterface`. The
-dispatcher resolves the recipient's subscription for that type, writes the bell entry, and fans the
-delivery out to each subscribed channel. The in-app pop-up is not a channel — it is a preference read
-when the notification is published over Mercure.
+Build a `DispatchableNotification` and hand it to the dispatcher. Every subscribed recipient gets a
+bell entry and, per their preferences, an external delivery; unsubscribed recipients are skipped.
 
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotification;
@@ -40,10 +37,10 @@ $this->dispatcher->dispatch(new DispatchableNotification(
 ));
 ```
 
-## Notification Types
+## Adding a Notification Type
 
 A **descriptor** describes one type: its id, labels, group and defaults. Extend
-`AbstractNotificationTypeDescriptor` for sensible defaults and override what you need.
+`AbstractNotificationTypeDescriptor` and override what you need:
 
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\AbstractNotificationTypeDescriptor;
@@ -61,36 +58,24 @@ final class DealWonDescriptor extends AbstractNotificationTypeDescriptor
 }
 ```
 
-| Method | Purpose |
-|---|---|
-| `getTypeId()` | Stable id, persisted in `notifications.type`. **Max 20 characters** (see below). |
-| `getTranslationKey()` / `getDescriptionKey()` | Studio translation keys for the preferences row. |
-| `getGroup()` | Groups related types on the preferences screen. Ship a label for it — see below. |
-| `getSortOrder()` | Order within the group. |
-| `allowsExternalDelivery()` | Whether the type may leave the app (email, chat). `false` ⇒ pop-up only. |
-| `getDefaultChannels()` | Channels pre-enabled for a new user (e.g. `['popup']`). |
-| `isSubscribedByDefault()` | Whether a new user is subscribed. |
-| `isSubscriptionLocked()` | Whether the user may unsubscribe. |
+The abstract class defaults to: subscribed, pop-up on, no external delivery. Beyond the overrides
+above, `getDefaultChannels()` and `isSubscribedByDefault()` set the initial state for a new user,
+and `isSubscriptionLocked()` forbids unsubscribing entirely.
 
 :::warning
-`notifications.type` is `VARCHAR(20)`, and MySQL truncates silently outside strict mode, so **type ids
-must be at most 20 characters**, and no two types may share one. Use a short vendor prefix
-(`app_crm.deal_won` is 16; `app_crm.deal_won_late` is 21 and is rejected). Ids are persisted in both
-the notification row and the subscription row, so renaming later is a breaking change.
+Type ids are persisted in `notifications.type`, a `VARCHAR(20)` column: **at most 20 characters**
+and unique across all bundles (`app_crm.deal_won` is 16 and fits; `app_crm.deal_won_late` is 21 and
+is rejected). They are also stored in subscription rows, so renaming one later is a breaking change.
 :::
 
-:::warning
-The row label and description come from the keys above, which the API sends to the frontend. The
-**group heading does not** — the preferences screen composes it as
-`notifications.settings.group.<group>`, so a new `getGroup()` value needs that key added to the
-`studio` domain (a `translations/studio.<locale>.yaml` in your bundle, same as here). Group headings
-only appear once a second group exists, so the first bundle to contribute a type is also the first
-to see a missing one — as the raw key, in place of the heading.
-:::
+The preferences row is labelled from your two translation keys. The **group heading** is composed by
+the frontend as `notifications.settings.group.<group>`, so ship that key in your bundle's
+`translations/studio.<locale>.yaml` — group headings only appear once a second group exists, and a
+missing key shows up as the raw key in place of the heading.
 
-## Delivery Channels
+## Adding a Delivery Channel
 
-A **channel** delivers a notification outside the bell. Implement `ChannelInterface`:
+A **channel** delivers a notification outside the bell — email is built in, chat could be yours:
 
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
@@ -117,14 +102,10 @@ final class SlackChannel implements ChannelInterface
 }
 ```
 
-- **Channels register only when a type can use them.** A channel is offered to a type only if that
-  type's `allowsExternalDelivery()` is `true`. If no registered type allows external delivery, the
-  transport channels are dropped entirely — a core-only install ships none, and installing a bundle
-  with an externally-deliverable type brings them back automatically.
-- The name **`popup`** is reserved for the in-app pop-up preference and cannot be used by a channel.
-- A channel becomes available to *every* externally-deliverable type — types never enumerate channels,
-  so a new channel lights up existing types with no change to them. It defaults **off** per user, so
-  installing a bundle never silently starts emailing people.
+- A channel is offered to every type whose `allowsExternalDelivery()` is `true` — types never
+  enumerate channels, so a new channel lights up existing types without touching them.
+- It defaults **off** per user: installing a bundle never silently starts emailing people.
+- When no registered type allows external delivery, transport channels are not offered at all.
 
 ## Configuration
 
@@ -135,22 +116,19 @@ pimcore_studio_backend:
             email:
                 enabled: true   # disabling removes the channel from the preferences screen entirely
         email:
-            # Brand the notification email by pointing at your own Twig template, or override the
-            # default in place at
+            # Your own Twig template, or override the default in place at
             # templates/bundles/PimcoreStudioBackendBundle/notification/email.html.twig.
-            # The template receives: title, message, link, name, locale.
+            # Receives: title, message, link, name, locale.
             template: '@PimcoreStudioBackend/notification/email.html.twig'
 ```
 
 ## Frontend Rendering
 
-By default a typed notification renders as its title and message in the bell. To render it richer — an
-excerpt, an action, a deep link — register a renderer on the frontend `DynamicTypeNotificationRegistry`
-in **pimcore/studio-ui-bundle** (see its notification module). The `payload` you pass to
-`DispatchableNotification` is what that renderer receives.
+By default a typed notification renders as its title and message in the bell. To render it richer,
+register a renderer on the `DynamicTypeNotificationRegistry` in **pimcore/studio-ui-bundle** (see its
+notification module); it receives the `payload` you passed to `DispatchableNotification`.
 
 :::warning
-The payload is published over Mercure on a topic every signed-in Studio client subscribes to, so keep
-it to the identifiers and hints a renderer needs — a task id, a discussion id, a deep link. Anything a
-recipient's colleagues should not see does not belong in it.
+The payload is published over Mercure on a topic every signed-in Studio client subscribes to. Keep it
+to the identifiers a renderer needs — nothing a recipient's colleagues should not see.
 :::
