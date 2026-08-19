@@ -9,8 +9,8 @@ Studio users choose, per notification type, whether they are notified and throug
 
 The preferences screen is a grid, and the two concepts are its two axes:
 
-- A **notification type** is one kind of event a user can subscribe to — one *row*: "Deal won",
-  "You were mentioned".
+- A **notification type** is one kind of event a user can subscribe to — one *row*: "Product
+  approved", "You were mentioned".
 - A **delivery channel** is a way a notification reaches the user outside the app — one *column*:
   email, chat. (The in-app pop-up appears as a column too, but is built in.)
 
@@ -35,13 +35,13 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotific
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcherInterface;
 
 $this->dispatcher->dispatch(new DispatchableNotification(
-    typeId: 'app_crm.deal_won',
+    typeId: 'app_pim.approved',
     recipientIds: [42],
-    title: 'Deal won',
-    message: 'The renewal deal moved to Won.',
-    senderId: 7,                 // optional
-    linkedElement: $dataObject,  // optional; drives the bell attachment
-    payload: ['dealId' => 1234], // optional; handed to the frontend renderer
+    title: 'Product approved',
+    message: '"Trail Runner" passed review and is ready to publish.',
+    senderId: 7,                    // optional; here: the reviewer
+    linkedElement: $product,        // optional; drives the bell attachment
+    payload: ['productId' => 1234], // optional; handed to the frontend renderer
 ));
 ```
 
@@ -66,12 +66,12 @@ A **descriptor** describes one type: its id, labels, group and defaults. Extend
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\AbstractNotificationTypeDescriptor;
 
-final class DealWonDescriptor extends AbstractNotificationTypeDescriptor
+final class ProductApprovedDescriptor extends AbstractNotificationTypeDescriptor
 {
-    public function getTypeId(): string         { return 'app_crm.deal_won'; }
-    public function getTranslationKey(): string { return 'app_crm.notification.deal_won.label'; }
-    public function getDescriptionKey(): string { return 'app_crm.notification.deal_won.description'; }
-    public function getGroup(): string          { return 'app_crm'; }
+    public function getTypeId(): string         { return 'app_pim.approved'; }
+    public function getTranslationKey(): string { return 'app_pim.notification.approved.label'; }
+    public function getDescriptionKey(): string { return 'app_pim.notification.approved.description'; }
+    public function getGroup(): string          { return 'app_pim'; }
     public function getSortOrder(): int         { return 10; }
 
     // Opt in to transport channels (email, …). Defaults to false — see "Delivery Channels".
@@ -85,8 +85,8 @@ and `isSubscriptionLocked()` forbids unsubscribing entirely.
 
 :::warning
 Type ids are persisted in `notifications.type`, a `VARCHAR(20)` column: **at most 20 characters**
-and unique across all bundles (`app_crm.deal_won` is 16 and fits; `app_crm.deal_won_late` is 21 and
-is rejected). They are also stored in subscription rows, so renaming one later is a breaking change.
+and unique across all bundles (`app_pim.approved` is 16 and fits; `app_pim.product_approved` is 24
+and is rejected). They are also stored in subscription rows, so renaming one later is a breaking change.
 :::
 
 The preferences row is labelled from your two translation keys. The **group heading** is composed by
