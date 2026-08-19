@@ -78,6 +78,17 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
         return count($this->descriptors) === 1;
     }
 
+    public function hasExternallyDeliverableType(): bool
+    {
+        foreach ($this->descriptors as $descriptor) {
+            if ($descriptor->allowsExternalDelivery()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Authoritative check: this is the only place the fully-resolved set exists.
      * NotificationDispatchPass runs the same two checks at build time, but can only read

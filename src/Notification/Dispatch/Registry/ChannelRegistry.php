@@ -43,11 +43,6 @@ final readonly class ChannelRegistry implements ChannelRegistryInterface
         $this->channels = $this->collect($taggedChannels, $channelConfig);
     }
 
-    public function getEnabledChannels(): array
-    {
-        return array_values($this->channels);
-    }
-
     public function getEnabledChannel(string $name): ?ChannelInterface
     {
         return $this->channels[$name] ?? null;

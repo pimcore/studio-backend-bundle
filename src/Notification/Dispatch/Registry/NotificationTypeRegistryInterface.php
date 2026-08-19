@@ -49,6 +49,12 @@ interface NotificationTypeRegistryInterface
     public function hasOnlyGeneralDescriptor(): bool;
 
     /**
+     * Whether any registered type may leave the application. When none can, no transport
+     * channel is offered anywhere and the preferences screen shows no channel columns.
+     */
+    public function hasExternallyDeliverableType(): bool;
+
+    /**
      * Resolves a notification's stored type to the descriptor that governs it. An unknown,
      * empty or legacy `info` type resolves to the general catch-all, which is what gives
      * every notification ever written a pop-up preference without touching its producer.

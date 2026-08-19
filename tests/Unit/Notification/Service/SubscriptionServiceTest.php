@@ -236,6 +236,27 @@ final class SubscriptionServiceTest extends Unit
         }
     }
 
+    /**
+     * With no externally-deliverable type there is nothing a transport could carry, so a
+     * registered channel gets no column — instead of a column of dead switches.
+     */
+    public function testNoChannelColumnsWhenNoTypeAllowsExternalDelivery(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: false)],
+            [],
+            $captured
+        );
+
+        $ids = array_map(
+            static fn ($channel) => $channel->getId(),
+            $service->getSubscriptions($this->user())->getAvailableChannels()
+        );
+
+        $this->assertSame(['popup'], $ids);
+    }
+
     public function testALockedTypeCannotBeUnsubscribedFrom(): void
     {
         $captured = null;

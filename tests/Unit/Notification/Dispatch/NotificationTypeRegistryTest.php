@@ -158,4 +158,20 @@ final class NotificationTypeRegistryTest extends Unit
         );
         $this->assertFalse($withOthers->hasOnlyGeneralDescriptor());
     }
+    public function testHasExternallyDeliverableTypeReflectsTheDescriptors(): void
+    {
+        $general = new GeneralNotificationDescriptor();
+
+        $internalOnly = new NotificationTypeRegistry(
+            [new TestNotificationTypeDescriptor('internal.type', allowsExternalDelivery: false)],
+            $general
+        );
+        $this->assertFalse($internalOnly->hasExternallyDeliverableType());
+
+        $withExternal = new NotificationTypeRegistry(
+            [new TestNotificationTypeDescriptor('external.type', allowsExternalDelivery: true)],
+            $general
+        );
+        $this->assertTrue($withExternal->hasExternallyDeliverableType());
+    }
 }

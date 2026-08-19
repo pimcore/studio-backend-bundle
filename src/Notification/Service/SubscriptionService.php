@@ -55,7 +55,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     public function getSubscriptions(UserInterface $user): SubscriptionCollection
     {
         $effective = $this->subscriptionResolver->resolveAll($user->getId());
-        $availableChannelIds = $this->channelRegistry->getAvailableChannelIds();
+        $availableChannelIds = $this->availableChannelIds();
 
         $items = [];
         foreach ($this->typeRegistry->getDescriptors() as $descriptor) {
@@ -178,7 +178,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         array $requested,
         ?array $previouslyStored,
     ): array {
-        $availableChannelIds = $this->channelRegistry->getAvailableChannelIds();
+        $availableChannelIds = $this->availableChannelIds();
 
         // Held in both branches: an id the client never saw is not the client's to clear.
         $unresolvable = array_filter(
@@ -202,6 +202,21 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         $this->logDroppedChannels($descriptor->getTypeId(), $requested, $kept);
 
         return array_values(array_unique([...$kept, ...$unresolvable]));
+    }
+
+    /**
+     * With no externally-deliverable type there is nothing a transport could ever carry, so
+     * the preferences screen gets no channel columns — instead of a column of dead switches.
+     *
+     * @return string[]
+     */
+    private function availableChannelIds(): array
+    {
+        if (!$this->typeRegistry->hasExternallyDeliverableType()) {
+            return [ChannelRegistryInterface::POPUP_CHANNEL];
+        }
+
+        return $this->channelRegistry->getAvailableChannelIds();
     }
 
     /**

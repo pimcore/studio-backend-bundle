@@ -28,13 +28,6 @@ interface ChannelRegistryInterface
      */
     public const string POPUP_CHANNEL = 'popup';
 
-    /**
-     * Registered transport channels the administrator has enabled, ordered by sort order.
-     *
-     * @return ChannelInterface[]
-     */
-    public function getEnabledChannels(): array;
-
     public function getEnabledChannel(string $name): ?ChannelInterface;
 
     /**
