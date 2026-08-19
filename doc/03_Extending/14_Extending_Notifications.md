@@ -30,10 +30,10 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotific
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcherInterface;
 
 $this->dispatcher->dispatch(new DispatchableNotification(
-    typeId: 'acme_crm.deal_won',
+    typeId: 'app_crm.deal_won',
     recipientIds: [42],
-    title: 'You won the ACME deal',
-    message: 'The ACME renewal moved to Won.',
+    title: 'Deal won',
+    message: 'The renewal deal moved to Won.',
     senderId: 7,                 // optional
     linkedElement: $dataObject,  // optional; drives the bell attachment
     payload: ['dealId' => 1234], // optional; handed to the frontend renderer
@@ -50,10 +50,10 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\Abstract
 
 final class DealWonDescriptor extends AbstractNotificationTypeDescriptor
 {
-    public function getTypeId(): string         { return 'acme_crm.deal_won'; }
-    public function getTranslationKey(): string { return 'acme_crm.notification.deal_won.label'; }
-    public function getDescriptionKey(): string { return 'acme_crm.notification.deal_won.description'; }
-    public function getGroup(): string          { return 'acme_crm'; }
+    public function getTypeId(): string         { return 'app_crm.deal_won'; }
+    public function getTranslationKey(): string { return 'app_crm.notification.deal_won.label'; }
+    public function getDescriptionKey(): string { return 'app_crm.notification.deal_won.description'; }
+    public function getGroup(): string          { return 'app_crm'; }
     public function getSortOrder(): int         { return 10; }
 
     // Opt in to transport channels (email, …). Defaults to false — see "Delivery Channels".
@@ -75,7 +75,7 @@ final class DealWonDescriptor extends AbstractNotificationTypeDescriptor
 :::warning
 `notifications.type` is `VARCHAR(20)`, and MySQL truncates silently outside strict mode, so **type ids
 must be at most 20 characters**, and no two types may share one. Use a short vendor prefix
-(`acme_crm.deal_won` is 17; `acme_crm.deal_won_late` is 22 and is rejected). Ids are persisted in both
+(`app_crm.deal_won` is 16; `app_crm.deal_won_late` is 21 and is rejected). Ids are persisted in both
 the notification row and the subscription row, so renaming later is a breaking change.
 :::
 
@@ -106,7 +106,7 @@ final class SlackChannel implements ChannelInterface
     // address — and the preferences screen explains the switch instead of leaving it silent.
     public function unavailableReasonFor(UserInterface $recipient): ?string
     {
-        return $this->slackIdFor($recipient) === null ? 'acme.channel.slack.not-linked' : null;
+        return $this->slackIdFor($recipient) === null ? 'app.channel.slack.not-linked' : null;
     }
 
     public function send(Notification $notification, UserInterface $recipient): void
