@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\GeneralNotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Event\SubscriptionCollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\AvailableChannel;
@@ -58,16 +58,16 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
         $availableChannelIds = $this->availableChannelIds();
 
         $items = [];
-        foreach ($this->typeRegistry->getDescriptors() as $descriptor) {
-            $typeId = $descriptor->getTypeId();
+        foreach ($this->typeRegistry->getTypes() as $type) {
+            $typeId = $type->getTypeId();
 
             $items[] = $this->subscriptionHydrator->hydrate(
-                $descriptor,
+                $type,
                 $effective[$typeId],
                 $availableChannelIds,
-                $this->channelRegistry->getSupportedChannelIds($descriptor),
-                $this->resolveTranslationKey($descriptor),
-                $this->resolveDescriptionKey($descriptor)
+                $this->channelRegistry->getSupportedChannelIds($type),
+                $this->resolveTranslationKey($type),
+                $this->resolveDescriptionKey($type)
             );
         }
 
@@ -100,13 +100,13 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
 
         $preferences = [];
         foreach ($parameters->getItems() as $item) {
-            $descriptor = $this->resolveDescriptor($item->getTypeId());
-            $subscribed = $this->resolveSubscribed($descriptor, $item->isSubscribed());
+            $type = $this->resolveType($item->getTypeId());
+            $subscribed = $this->resolveSubscribed($type, $item->isSubscribed());
 
             $preferences[$item->getTypeId()] = [
                 'subscribed' => $subscribed,
                 'channels' => $this->resolveChannels(
-                    $descriptor,
+                    $type,
                     $subscribed,
                     $item->getChannels(),
                     ($stored[$item->getTypeId()] ?? null)?->getChannels()
@@ -125,34 +125,34 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
      *
      * @throws InvalidArgumentException
      */
-    private function resolveDescriptor(string $typeId): NotificationTypeDescriptorInterface
+    private function resolveType(string $typeId): NotificationType
     {
-        if (!$this->typeRegistry->hasDescriptor($typeId)) {
+        if (!$this->typeRegistry->hasType($typeId)) {
             throw new InvalidArgumentException(
                 sprintf('Unknown notification type "%s".', $typeId)
             );
         }
 
-        return $this->typeRegistry->getDescriptor($typeId);
+        return $this->typeRegistry->getType($typeId);
     }
 
     /**
      * @throws InvalidArgumentException
      */
     private function resolveSubscribed(
-        NotificationTypeDescriptorInterface $descriptor,
+        NotificationType $type,
         bool $requested,
     ): bool {
-        if ($descriptor->isSubscriptionLocked() && !$requested) {
+        if ($type->isSubscriptionLocked() && !$requested) {
             throw new InvalidArgumentException(
                 sprintf(
                     'Notification type "%s" cannot be unsubscribed from.',
-                    $descriptor->getTypeId()
+                    $type->getTypeId()
                 )
             );
         }
 
-        return $descriptor->isSubscriptionLocked() ? true : $requested;
+        return $type->isSubscriptionLocked() ? true : $requested;
     }
 
     /**
@@ -167,7 +167,7 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
      * @return string[]
      */
     private function resolveChannels(
-        NotificationTypeDescriptorInterface $descriptor,
+        NotificationType $type,
         bool $subscribed,
         array $requested,
         ?array $previouslyStored,
@@ -184,14 +184,14 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
             return array_values($unresolvable);
         }
 
-        $supported = $this->channelRegistry->getSupportedChannelIds($descriptor);
+        $supported = $this->channelRegistry->getSupportedChannelIds($type);
 
         $kept = array_filter(
             $requested,
             static fn (string $channel): bool => in_array($channel, $supported, true)
         );
 
-        $this->logDroppedChannels($descriptor->getTypeId(), $requested, $kept);
+        $this->logDroppedChannels($type->getTypeId(), $requested, $kept);
 
         return array_values(array_unique([...$kept, ...$unresolvable]));
     }
@@ -236,21 +236,27 @@ final readonly class SubscriptionService implements SubscriptionServiceInterface
     /**
      * The catch-all is "everything else" only when there is something else.
      */
-    private function resolveTranslationKey(NotificationTypeDescriptorInterface $descriptor): string
+    private function resolveTranslationKey(NotificationType $type): string
     {
-        if ($descriptor instanceof GeneralNotificationDescriptor && $this->typeRegistry->hasOnlyGeneralDescriptor()) {
-            return $descriptor->getSoloTranslationKey();
+        if ($this->isSoloGeneral($type)) {
+            return GeneralNotificationType::SOLO_TRANSLATION_KEY;
         }
 
-        return $descriptor->getTranslationKey();
+        return $type->getTranslationKey();
     }
 
-    private function resolveDescriptionKey(NotificationTypeDescriptorInterface $descriptor): string
+    private function resolveDescriptionKey(NotificationType $type): string
     {
-        if ($descriptor instanceof GeneralNotificationDescriptor && $this->typeRegistry->hasOnlyGeneralDescriptor()) {
-            return $descriptor->getSoloDescriptionKey();
+        if ($this->isSoloGeneral($type)) {
+            return GeneralNotificationType::SOLO_DESCRIPTION_KEY;
         }
 
-        return $descriptor->getDescriptionKey();
+        return $type->getDescriptionKey();
+    }
+
+    private function isSoloGeneral(NotificationType $type): bool
+    {
+        return $type->getTypeId() === GeneralNotificationType::TYPE_ID
+            && $this->typeRegistry->hasOnlyGeneralType();
     }
 }

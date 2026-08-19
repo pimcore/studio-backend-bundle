@@ -16,163 +16,134 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\GeneralNotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
+use function array_map;
 use function str_repeat;
 
 final class NotificationTypeRegistryTest extends Unit
 {
-    public function testDescriptorsAreOrderedBySortOrderThenId(): void
+    public function testTypesAreOrderedBySortOrderThenIdWithTheCatchAllLast(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $registry = new NotificationTypeRegistry(
-            [
-                new TestNotificationTypeDescriptor('b.type', sortOrder: 10),
-                new TestNotificationTypeDescriptor('a.type', sortOrder: 10),
-                new TestNotificationTypeDescriptor('early', sortOrder: 1),
-                $general,
-            ],
-            $general
-        );
+        $registry = new NotificationTypeRegistry([TestTypes::provider(
+            TestTypes::type('b.type', sortOrder: 10),
+            TestTypes::type('a.type', sortOrder: 10),
+            TestTypes::type('c.type', sortOrder: 5),
+        )]);
 
-        $ids = array_map(
-            static fn ($descriptor): string => $descriptor->getTypeId(),
-            $registry->getDescriptors()
+        $this->assertSame(
+            ['c.type', 'a.type', 'b.type', GeneralNotificationType::TYPE_ID],
+            array_map(
+                static fn (NotificationType $type): string => $type->getTypeId(),
+                $registry->getTypes()
+            )
         );
-
-        // The catch-all sorts last by construction: it is the residual bucket.
-        $this->assertSame(['early', 'a.type', 'b.type', 'info'], $ids);
     }
 
-    /**
-     * Regression: the catch-all was expected to arrive by service tag, so when the tag was not
-     * applied a bare installation reported no subscribable types at all and the preferences
-     * screen came up empty. Its presence must not depend on wiring.
-     */
-    public function testCatchAllIsPresentEvenWhenNoDescriptorIsTagged(): void
+    public function testCatchAllIsPresentEvenWithoutProviders(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $registry = new NotificationTypeRegistry([], $general);
+        $registry = new NotificationTypeRegistry([]);
 
-        $this->assertTrue($registry->hasDescriptor('info'));
-        $this->assertTrue($registry->hasOnlyGeneralDescriptor());
-        $this->assertCount(1, $registry->getDescriptors());
+        $this->assertTrue($registry->hasType(GeneralNotificationType::TYPE_ID));
+        $this->assertTrue($registry->hasOnlyGeneralType());
+        $this->assertTrue(
+            $registry->getType(GeneralNotificationType::TYPE_ID)->isSubscriptionLocked(),
+            'the catch-all must not be unsubscribable'
+        );
     }
 
-    /**
-     * It is legitimately reachable twice — added directly and, if a bundle wires it, by tag —
-     * which must not trip the duplicate guard.
-     */
-    public function testCatchAllIsNotDuplicatedWhenAlsoTagged(): void
+    public function testTypesFromSeveralProvidersAreMerged(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $registry = new NotificationTypeRegistry([$general], $general);
+        $registry = new NotificationTypeRegistry([
+            TestTypes::provider(TestTypes::type('a.type')),
+            TestTypes::provider(TestTypes::type('b.type')),
+        ]);
 
-        $this->assertCount(1, $registry->getDescriptors());
+        $this->assertTrue($registry->hasType('a.type'));
+        $this->assertTrue($registry->hasType('b.type'));
+    }
+
+    public function testAProviderMayNotClaimTheCatchAllId(): void
+    {
+        $this->expectException(InvalidNotificationTypeException::class);
+
+        new NotificationTypeRegistry([
+            TestTypes::provider(TestTypes::type(GeneralNotificationType::TYPE_ID)),
+        ]);
     }
 
     public function testDuplicateTypeIdIsRejected(): void
     {
-        $general = new GeneralNotificationDescriptor();
-
         $this->expectException(InvalidNotificationTypeException::class);
         $this->expectExceptionMessageMatches('/registered more than once/');
 
-        new NotificationTypeRegistry(
-            [
-                new TestNotificationTypeDescriptor('duplicate.id'),
-                new TestNotificationTypeDescriptor('duplicate.id'),
-                $general,
-            ],
-            $general
-        );
+        new NotificationTypeRegistry([
+            TestTypes::provider(TestTypes::type('a.type')),
+            TestTypes::provider(TestTypes::type('a.type')),
+        ]);
     }
 
-    /**
-     * The notifications.type column is VARCHAR(20) and MySQL truncates silently outside strict
-     * mode, which would turn an over-long id into one matching no descriptor. Failing at boot
-     * is the whole point.
-     */
     public function testOverlongTypeIdIsRejected(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $tooLong = str_repeat('a', NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH + 1);
-
         $this->expectException(InvalidNotificationTypeException::class);
-        $this->expectExceptionMessageMatches('/at most 20/');
 
-        new NotificationTypeRegistry([new TestNotificationTypeDescriptor($tooLong), $general], $general);
+        new NotificationTypeRegistry([TestTypes::provider(
+            TestTypes::type(str_repeat('a', NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH + 1))
+        )]);
     }
 
     public function testTypeIdAtExactlyTheLimitIsAccepted(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $exact = str_repeat('a', NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH);
+        $typeId = str_repeat('a', NotificationTypeRegistryInterface::MAX_TYPE_ID_LENGTH);
 
-        $registry = new NotificationTypeRegistry([new TestNotificationTypeDescriptor($exact), $general], $general);
+        $registry = new NotificationTypeRegistry([TestTypes::provider(TestTypes::type($typeId))]);
 
-        $this->assertTrue($registry->hasDescriptor($exact));
+        $this->assertTrue($registry->hasType($typeId));
     }
 
     public function testUnknownTypeIdThrows(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $registry = new NotificationTypeRegistry([$general], $general);
-
         $this->expectException(NotFoundException::class);
 
-        $registry->getDescriptor('does.not.exist');
+        (new NotificationTypeRegistry([]))->getType('nope.unknown');
     }
 
-    /**
-     * Everything a producer writes without a registered type must land somewhere, or it would
-     * have no preference at all.
-     */
     public function testUnknownEmptyAndLegacyTypesResolveToTheCatchAll(): void
     {
-        $general = new GeneralNotificationDescriptor();
-        $registry = new NotificationTypeRegistry(
-            [new TestNotificationTypeDescriptor('known.type'), $general],
-            $general
-        );
+        $registry = new NotificationTypeRegistry([TestTypes::provider(TestTypes::type('known.type'))]);
 
-        $this->assertSame($general, $registry->resolveBucket(null));
-        $this->assertSame($general, $registry->resolveBucket(''));
-        $this->assertSame($general, $registry->resolveBucket('info'));
-        $this->assertSame($general, $registry->resolveBucket('some.unregistered.type'));
+        $this->assertSame(GeneralNotificationType::TYPE_ID, $registry->resolveBucket(null)->getTypeId());
+        $this->assertSame(GeneralNotificationType::TYPE_ID, $registry->resolveBucket('')->getTypeId());
+        $this->assertSame(GeneralNotificationType::TYPE_ID, $registry->resolveBucket('info')->getTypeId());
+        $this->assertSame(
+            GeneralNotificationType::TYPE_ID,
+            $registry->resolveBucket('some.unregistered.type')->getTypeId()
+        );
         $this->assertSame('known.type', $registry->resolveBucket('known.type')->getTypeId());
     }
 
-    public function testHasOnlyGeneralDescriptorReflectsRegistrationCount(): void
+    public function testHasOnlyGeneralTypeReflectsRegistrationCount(): void
     {
-        $general = new GeneralNotificationDescriptor();
-
-        $alone = new NotificationTypeRegistry([$general], $general);
-        $this->assertTrue($alone->hasOnlyGeneralDescriptor());
-
-        $withOthers = new NotificationTypeRegistry(
-            [new TestNotificationTypeDescriptor('other.type'), $general],
-            $general
+        $this->assertTrue((new NotificationTypeRegistry([]))->hasOnlyGeneralType());
+        $this->assertFalse(
+            (new NotificationTypeRegistry([TestTypes::provider(TestTypes::type('other.type'))]))
+                ->hasOnlyGeneralType()
         );
-        $this->assertFalse($withOthers->hasOnlyGeneralDescriptor());
     }
 
-    public function testHasExternallyDeliverableTypeReflectsTheDescriptors(): void
+    public function testHasExternallyDeliverableTypeReflectsTheTypes(): void
     {
-        $general = new GeneralNotificationDescriptor();
-
-        $internalOnly = new NotificationTypeRegistry(
-            [new TestNotificationTypeDescriptor('internal.type', allowsExternalDelivery: false)],
-            $general
-        );
+        $internalOnly = new NotificationTypeRegistry([TestTypes::provider(
+            TestTypes::type('internal.type', allowsExternalDelivery: false)
+        )]);
         $this->assertFalse($internalOnly->hasExternallyDeliverableType());
 
-        $withExternal = new NotificationTypeRegistry(
-            [new TestNotificationTypeDescriptor('external.type', allowsExternalDelivery: true)],
-            $general
-        );
+        $withExternal = new NotificationTypeRegistry([TestTypes::provider(
+            TestTypes::type('external.type', allowsExternalDelivery: true)
+        )]);
         $this->assertTrue($withExternal->hasExternallyDeliverableType());
     }
 }

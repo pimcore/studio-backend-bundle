@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\Notificati
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationWriter;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\UserInterface;
@@ -50,7 +50,7 @@ final class NotificationDispatcherTest extends Unit
             typeRegistry: $this->makeEmpty(
                 NotificationTypeRegistryInterface::class,
                 [
-                    'getDescriptor' => static function (string $typeId): never {
+                    'getType' => static function (string $typeId): never {
                         throw new NotFoundException('Notification type', $typeId, 'type id');
                     },
                 ]
@@ -207,12 +207,12 @@ final class NotificationDispatcherTest extends Unit
         ?LoggerInterface $logger = null,
         ?NotificationTypeRegistryInterface $typeRegistry = null,
     ): NotificationDispatcher {
-        $descriptor = new TestNotificationTypeDescriptor(self::TYPE_ID, allowsExternalDelivery: true);
+        $type = TestTypes::type(self::TYPE_ID, allowsExternalDelivery: true);
 
         return new NotificationDispatcher(
             $typeRegistry ?? $this->makeEmpty(
                 NotificationTypeRegistryInterface::class,
-                ['getDescriptor' => $descriptor]
+                ['getType' => $type]
             ),
             new ChannelRegistry($channels, []),
             $this->makeEmpty(

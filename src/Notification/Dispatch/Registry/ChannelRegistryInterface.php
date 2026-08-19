@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry;
 
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 
 /**
  * @internal
@@ -38,9 +38,9 @@ interface ChannelRegistryInterface
 
     /**
      * Channel ids a specific type can offer: the pop-up, plus every enabled transport if the
-     * type allows external delivery. Derived, never enumerated by the descriptor.
+     * type allows external delivery. Derived, never enumerated by the type itself.
      *
      * @return string[]
      */
-    public function getSupportedChannelIds(NotificationTypeDescriptorInterface $descriptor): array;
+    public function getSupportedChannelIds(NotificationType $type): array;
 }

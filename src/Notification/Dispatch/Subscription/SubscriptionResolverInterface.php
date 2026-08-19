@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 
 /**
- * Merges stored preferences over descriptor defaults and narrows to what is currently
+ * Merges stored preferences over the type defaults and narrows to what is currently
  * offerable. The single place that rule lives — dispatcher, Mercure publisher and preferences
  * API all read through it.
  *
@@ -28,7 +28,7 @@ interface SubscriptionResolverInterface
     /**
      * @throws DatabaseException
      */
-    public function resolve(int $userId, NotificationTypeDescriptorInterface $descriptor): EffectiveSubscription;
+    public function resolve(int $userId, NotificationType $type): EffectiveSubscription;
 
     /**
      * Every registered type for one user, in registry order, with one query.

@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription;
 
 use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use function array_values;
 use function in_array;
 
@@ -32,11 +32,11 @@ final readonly class SubscriptionResolver implements SubscriptionResolverInterfa
     ) {
     }
 
-    public function resolve(int $userId, NotificationTypeDescriptorInterface $descriptor): EffectiveSubscription
+    public function resolve(int $userId, NotificationType $type): EffectiveSubscription
     {
         return $this->merge(
-            $descriptor,
-            $this->repository->getByUserAndType($userId, $descriptor->getTypeId())
+            $type,
+            $this->repository->getByUserAndType($userId, $type->getTypeId())
         );
     }
 
@@ -45,37 +45,37 @@ final readonly class SubscriptionResolver implements SubscriptionResolverInterfa
         $stored = $this->repository->getByUser($userId);
 
         $effective = [];
-        foreach ($this->typeRegistry->getDescriptors() as $descriptor) {
-            $typeId = $descriptor->getTypeId();
-            $effective[$typeId] = $this->merge($descriptor, $stored[$typeId] ?? null);
+        foreach ($this->typeRegistry->getTypes() as $type) {
+            $typeId = $type->getTypeId();
+            $effective[$typeId] = $this->merge($type, $stored[$typeId] ?? null);
         }
 
         return $effective;
     }
 
     /**
-     * A stored row wins over the descriptor default; the result is narrowed to what is
-     * actually offerable.
+     * A stored row wins over the type default; the result is narrowed to what is actually
+     * offerable.
      */
     private function merge(
-        NotificationTypeDescriptorInterface $descriptor,
+        NotificationType $type,
         ?NotificationSubscription $stored,
     ): EffectiveSubscription {
-        $subscribed = $descriptor->isSubscriptionLocked()
+        $subscribed = $type->isSubscriptionLocked()
             ? true
-            : ($stored?->isSubscribed() ?? $descriptor->isSubscribedByDefault());
+            : ($stored?->isSubscribed() ?? $type->isSubscribedByDefault());
 
         // null = never chosen (defaults apply); [] = deliberate "none" and must survive
-        $chosen = $stored?->getChannels() ?? $descriptor->getDefaultChannels();
+        $chosen = $stored?->getChannels() ?? $type->getDefaultChannels();
 
         if (!$subscribed) {
-            return new EffectiveSubscription($descriptor->getTypeId(), false, []);
+            return new EffectiveSubscription($type->getTypeId(), false, []);
         }
 
-        $supported = $this->channelRegistry->getSupportedChannelIds($descriptor);
+        $supported = $this->channelRegistry->getSupportedChannelIds($type);
 
         return new EffectiveSubscription(
-            $descriptor->getTypeId(),
+            $type->getTypeId(),
             true,
             array_values(
                 array_filter(

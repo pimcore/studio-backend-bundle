@@ -18,7 +18,7 @@ Bundles can contribute both:
 
 | Extension point | Interface | Tag |
 |---|---|---|
-| Notification type | `NotificationTypeDescriptorInterface` | `pimcore.studio_backend.notification_type` |
+| Notification type | `NotificationTypeProviderInterface` | `pimcore.studio_backend.notification_type_provider` |
 | Delivery channel | `ChannelInterface` | `pimcore.studio_backend.notification_channel` |
 
 Implement the interface and register the service — tagging is automatic. A built-in catch-all type
@@ -60,28 +60,35 @@ pop-up off.
 
 ## Adding a Notification Type
 
-A **descriptor** describes one type: its id, labels, group and defaults. Extend
-`AbstractNotificationTypeDescriptor` and override what you need:
+A type is plain data — a `NotificationType` value object. Register a **provider** that returns
+your bundle's types; the constructor defaults are the framework defaults, so you only state what
+is specific to your type:
 
 ```php
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\AbstractNotificationTypeDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationTypeProviderInterface;
 
-final class NewAssetDescriptor extends AbstractNotificationTypeDescriptor
+final class AppDamNotificationTypes implements NotificationTypeProviderInterface
 {
-    public function getTypeId(): string         { return 'app_dam.new_asset'; }
-    public function getTranslationKey(): string { return 'app_dam.notification.new_asset.label'; }
-    public function getDescriptionKey(): string { return 'app_dam.notification.new_asset.description'; }
-    public function getGroup(): string          { return 'app_dam'; }
-    public function getSortOrder(): int         { return 10; }
-
-    // Opt in to transport channels (email, …). Defaults to false — see "Delivery Channels".
-    public function allowsExternalDelivery(): bool { return true; }
+    public function getTypes(): array
+    {
+        return [
+            new NotificationType(
+                typeId: 'app_dam.new_asset',
+                translationKey: 'app_dam.notification.new_asset.label',
+                descriptionKey: 'app_dam.notification.new_asset.description',
+                group: 'app_dam',
+                sortOrder: 10,
+                allowsExternalDelivery: true, // opt in to transport channels (email, …)
+            ),
+        ];
+    }
 }
 ```
 
-The abstract class defaults to: subscribed, pop-up on, no external delivery. Beyond the overrides
-above, `getDefaultChannels()` and `isSubscribedByDefault()` set the initial state for a new user,
-and `isSubscriptionLocked()` forbids unsubscribing entirely.
+Defaults: subscribed, pop-up on, no external delivery. The remaining constructor arguments set
+the initial state for a new user (`defaultChannels`, `subscribedByDefault`) and
+`subscriptionLocked: true` forbids unsubscribing entirely.
 
 :::warning
 Type ids are persisted in `notifications.type`, a `VARCHAR(20)` column: **at most 20 characters**
@@ -96,7 +103,9 @@ missing key shows up as the raw key in place of the heading.
 
 ## Adding a Delivery Channel
 
-A **channel** delivers a notification outside the bell — email is built in, chat could be yours:
+A **channel** delivers a notification outside the bell — email is built in, chat could be yours.
+Unlike a type, a channel is a real service rather than a value: it has behavior (`send()`, per-user
+availability) and its own dependencies, so it stays an interface you implement:
 
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;

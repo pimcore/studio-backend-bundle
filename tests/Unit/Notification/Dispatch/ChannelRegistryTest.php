@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationChannelExcep
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
 
 final class ChannelRegistryTest extends Unit
 {
@@ -44,8 +44,8 @@ final class ChannelRegistryTest extends Unit
     {
         $registry = new ChannelRegistry([new TestChannel('email'), new TestChannel('teams')], []);
 
-        $external = new TestNotificationTypeDescriptor('external.type', allowsExternalDelivery: true);
-        $internal = new TestNotificationTypeDescriptor('internal.type', allowsExternalDelivery: false);
+        $external = TestTypes::type('external.type', allowsExternalDelivery: true);
+        $internal = TestTypes::type('internal.type', allowsExternalDelivery: false);
 
         $this->assertSame(
             [ChannelRegistryInterface::POPUP_CHANNEL, 'email', 'teams'],

@@ -17,17 +17,17 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolver;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\UpdateSubscriptionItem;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\UpdateSubscriptionsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SubscriptionService;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -48,7 +48,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
             ['email' => ['enabled' => false]],
             $captured
         );
@@ -71,7 +71,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: false)],
+            [TestTypes::type('test.type', allowsExternalDelivery: false)],
             [],
             $captured
         );
@@ -98,7 +98,7 @@ final class SubscriptionServiceTest extends Unit
             ->with($this->stringContains('email'));
 
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: false)],
+            [TestTypes::type('test.type', allowsExternalDelivery: false)],
             [],
             $captured,
             $logger
@@ -119,7 +119,7 @@ final class SubscriptionServiceTest extends Unit
     public function testAnUnknownTypeIdIsRejectedAsABadRequestRatherThanANotFound(): void
     {
         $captured = null;
-        $service = $this->service([new TestNotificationTypeDescriptor('test.type')], [], $captured);
+        $service = $this->service([TestTypes::type('test.type')], [], $captured);
 
         try {
             $service->updateSubscriptions(
@@ -147,7 +147,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
             [],
             $captured,
             stored: [
@@ -180,7 +180,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
             [],
             $captured,
             stored: ['test.type' => new NotificationSubscription(self::USER_ID, 'test.type', true, ['popup', 'email'])]
@@ -205,7 +205,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
             [],
             $captured,
             channels: [new TestChannel('email', unavailableReason: 'notifications.channel.email.no-address')]
@@ -226,7 +226,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: true)],
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
             [],
             $captured
         );
@@ -244,7 +244,7 @@ final class SubscriptionServiceTest extends Unit
     {
         $captured = null;
         $service = $this->service(
-            [new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: false)],
+            [TestTypes::type('test.type', allowsExternalDelivery: false)],
             [],
             $captured
         );
@@ -273,20 +273,21 @@ final class SubscriptionServiceTest extends Unit
     }
 
     /**
-     * @param TestNotificationTypeDescriptor[] $descriptors
+     * @param NotificationType[] $types
      * @param array<string, array{enabled: bool}> $channelConfig
      * @param array<string, NotificationSubscription> $stored rows the user already has
      */
     private function service(
-        array $descriptors,
+        array $types,
         array $channelConfig,
         ?array &$captured,
         ?LoggerInterface $logger = null,
         array $stored = [],
         ?array $channels = null,
     ): SubscriptionService {
-        $general = new GeneralNotificationDescriptor();
-        $typeRegistry = new NotificationTypeRegistry($descriptors, $general);
+        $typeRegistry = new NotificationTypeRegistry(
+            $types === [] ? [] : [TestTypes::provider(...$types)]
+        );
         $channelRegistry = new ChannelRegistry($channels ?? [new TestChannel('email')], $channelConfig);
 
         $repository = $this->makeEmpty(

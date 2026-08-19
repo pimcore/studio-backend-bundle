@@ -15,10 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Notification;
@@ -44,13 +44,13 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
     public function dispatch(DispatchableNotification $notification): void
     {
         // an unregistered type is a programming error in the producing bundle - let it surface
-        $descriptor = $this->typeRegistry->getDescriptor($notification->getTypeId());
+        $type = $this->typeRegistry->getType($notification->getTypeId());
 
         $sender = $this->resolveSender($notification->getSenderId());
 
         foreach ($notification->getRecipientIds() as $recipientId) {
             try {
-                $this->dispatchToRecipient($notification, $descriptor, $recipientId, $sender);
+                $this->dispatchToRecipient($notification, $type, $recipientId, $sender);
             } catch (Exception $e) {
                 // recipients are independent: one failing row must not cost the others theirs
                 $this->logger->error(
@@ -70,7 +70,7 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
      */
     private function dispatchToRecipient(
         DispatchableNotification $notification,
-        NotificationTypeDescriptorInterface $descriptor,
+        NotificationType $type,
         int $recipientId,
         ?UserInterface $sender,
     ): void {
@@ -84,7 +84,7 @@ final readonly class NotificationDispatcher implements NotificationDispatcherInt
             return;
         }
 
-        $subscription = $this->subscriptionResolver->resolve($recipientId, $descriptor);
+        $subscription = $this->subscriptionResolver->resolve($recipientId, $type);
 
         if (!$subscription->isSubscribed()) {
             return;

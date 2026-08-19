@@ -15,28 +15,30 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistry;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolver;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\GeneralNotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
-use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestNotificationTypeDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
 
 final class SubscriptionResolverTest extends Unit
 {
     private const int USER_ID = 7;
 
-    public function testDescriptorDefaultsApplyWhenNothingIsStored(): void
+    public function testTypeDefaultsApplyWhenNothingIsStored(): void
     {
-        $descriptor = new TestNotificationTypeDescriptor(
+        $type = TestTypes::type(
             'test.type',
             allowsExternalDelivery: true,
             defaultChannels: ['popup', 'email']
         );
 
-        $subscription = $this->resolve($descriptor, null);
+        $subscription = $this->resolve($type, null);
 
         $this->assertTrue($subscription->isSubscribed());
         $this->assertSame(['popup', 'email'], $subscription->getChannels());
@@ -45,14 +47,14 @@ final class SubscriptionResolverTest extends Unit
 
     public function testStoredRowWinsOverDefaults(): void
     {
-        $descriptor = new TestNotificationTypeDescriptor(
+        $type = TestTypes::type(
             'test.type',
             allowsExternalDelivery: true,
             defaultChannels: ['popup', 'email']
         );
 
         $subscription = $this->resolve(
-            $descriptor,
+            $type,
             new NotificationSubscription(self::USER_ID, 'test.type', true, ['email'])
         );
 
@@ -67,20 +69,20 @@ final class SubscriptionResolverTest extends Unit
      */
     public function testEmptyStoredChannelsAreNotTreatedAsUnset(): void
     {
-        $descriptor = new TestNotificationTypeDescriptor(
+        $type = TestTypes::type(
             'test.type',
             allowsExternalDelivery: true,
             defaultChannels: ['popup', 'email']
         );
 
         $explicitlyNone = $this->resolve(
-            $descriptor,
+            $type,
             new NotificationSubscription(self::USER_ID, 'test.type', true, [])
         );
         $this->assertSame([], $explicitlyNone->getChannels());
 
         $neverChosen = $this->resolve(
-            $descriptor,
+            $type,
             new NotificationSubscription(self::USER_ID, 'test.type', true, null)
         );
         $this->assertSame(['popup', 'email'], $neverChosen->getChannels());
@@ -88,14 +90,14 @@ final class SubscriptionResolverTest extends Unit
 
     public function testUnsubscribedTypeYieldsNoChannelsAndNoPopup(): void
     {
-        $descriptor = new TestNotificationTypeDescriptor(
+        $type = TestTypes::type(
             'test.type',
             allowsExternalDelivery: true,
             defaultChannels: ['popup', 'email']
         );
 
         $subscription = $this->resolve(
-            $descriptor,
+            $type,
             new NotificationSubscription(self::USER_ID, 'test.type', false, ['popup', 'email'])
         );
 
@@ -110,10 +112,10 @@ final class SubscriptionResolverTest extends Unit
      */
     public function testChannelsAreNarrowedToWhatTheTypeSupports(): void
     {
-        $descriptor = new TestNotificationTypeDescriptor('test.type', allowsExternalDelivery: false);
+        $type = TestTypes::type('test.type', allowsExternalDelivery: false);
 
         $subscription = $this->resolve(
-            $descriptor,
+            $type,
             new NotificationSubscription(self::USER_ID, 'test.type', true, ['popup', 'email'])
         );
 
@@ -122,12 +124,9 @@ final class SubscriptionResolverTest extends Unit
 
     public function testLockedSubscriptionStaysOnEvenIfStoredOff(): void
     {
-        $general = new GeneralNotificationDescriptor();
-
         $subscription = $this->resolve(
-            $general,
-            new NotificationSubscription(self::USER_ID, 'info', false, []),
-            $general
+            GeneralNotificationType::create(),
+            new NotificationSubscription(self::USER_ID, 'info', false, [])
         );
 
         $this->assertTrue($subscription->isSubscribed());
@@ -138,24 +137,21 @@ final class SubscriptionResolverTest extends Unit
      */
     public function testTransportChannelsExcludeThePopup(): void
     {
-        $descriptor = new TestNotificationTypeDescriptor(
+        $type = TestTypes::type(
             'test.type',
             allowsExternalDelivery: true,
             defaultChannels: ['popup', 'email']
         );
 
-        $subscription = $this->resolve($descriptor, null);
+        $subscription = $this->resolve($type, null);
 
         $this->assertSame(['email'], $subscription->getTransportChannels());
     }
 
     private function resolve(
-        TestNotificationTypeDescriptor|GeneralNotificationDescriptor $descriptor,
+        NotificationType $type,
         ?NotificationSubscription $stored,
-        ?GeneralNotificationDescriptor $general = null,
-    ): \Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription {
-        $general ??= new GeneralNotificationDescriptor();
-
+    ): EffectiveSubscription {
         $repository = $this->makeEmpty(
             SubscriptionRepositoryInterface::class,
             ['getByUserAndType' => $stored]
@@ -163,14 +159,18 @@ final class SubscriptionResolverTest extends Unit
 
         $channelRegistry = new ChannelRegistry([new TestChannel('email')], []);
 
-        // The catch-all is always registered; adding it twice would (correctly) trip the
-        // duplicate-id guard.
-        $descriptors = $descriptor === $general ? [$general] : [$descriptor, $general];
-        $typeRegistry = new NotificationTypeRegistry($descriptors, $general);
+        // the registry builds the catch-all itself; providing it again would trip the duplicate guard
+        $providers = $type->getTypeId() === GeneralNotificationType::TYPE_ID
+            ? []
+            : [TestTypes::provider($type)];
 
-        $resolver = new SubscriptionResolver($repository, $typeRegistry, $channelRegistry);
+        $resolver = new SubscriptionResolver(
+            $repository,
+            new NotificationTypeRegistry($providers),
+            $channelRegistry
+        );
 
-        return $resolver->resolve(self::USER_ID, $descriptor);
+        return $resolver->resolve(self::USER_ID, $type);
     }
 
     public function testPopupIsTheReservedChannelName(): void

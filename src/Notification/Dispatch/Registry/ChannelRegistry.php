@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationChannelException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function sprintf;
 
@@ -53,9 +53,9 @@ final readonly class ChannelRegistry implements ChannelRegistryInterface
         return [self::POPUP_CHANNEL, ...array_keys($this->channels)];
     }
 
-    public function getSupportedChannelIds(NotificationTypeDescriptorInterface $descriptor): array
+    public function getSupportedChannelIds(NotificationType $type): array
     {
-        if (!$descriptor->allowsExternalDelivery()) {
+        if (!$type->allowsExternalDelivery()) {
             return [self::POPUP_CHANNEL];
         }
 

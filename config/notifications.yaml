@@ -58,9 +58,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepository
 
-  # The catch-all; the registry adds it unconditionally, this definition exists for injection.
-  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor: ~
-
 
   #
   # Hydrators

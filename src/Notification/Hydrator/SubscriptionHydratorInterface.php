@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\EffectiveSubscription;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\SubscribableType;
 
 /**
@@ -27,7 +27,7 @@ interface SubscriptionHydratorInterface
      * @param string[] $supportedChannelIds  the subset this type can actually use
      */
     public function hydrate(
-        NotificationTypeDescriptorInterface $descriptor,
+        NotificationType $type,
         EffectiveSubscription $subscription,
         array $availableChannelIds,
         array $supportedChannelIds,

@@ -15,8 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidNotificationTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\GeneralNotificationDescriptor;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\GeneralNotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationTypeProviderInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function count;
 use function sprintf;
@@ -28,60 +29,59 @@ use function strlen;
 final readonly class NotificationTypeRegistry implements NotificationTypeRegistryInterface
 {
     /**
-     * @var array<string, NotificationTypeDescriptorInterface>
+     * @var array<string, NotificationType>
      */
-    private array $descriptors;
+    private array $types;
 
     /**
-     * @param iterable<NotificationTypeDescriptorInterface> $taggedDescriptors
+     * @param iterable<NotificationTypeProviderInterface> $providers
      *
      * @throws InvalidNotificationTypeException
      */
     public function __construct(
-        #[AutowireIterator(NotificationTypeDescriptorInterface::TAG)]
-        iterable $taggedDescriptors,
-        private GeneralNotificationDescriptor $generalDescriptor,
+        #[AutowireIterator(NotificationTypeProviderInterface::TAG)]
+        iterable $providers,
     ) {
-        $this->descriptors = $this->collect($taggedDescriptors);
+        $this->types = $this->collect($providers);
     }
 
-    public function getDescriptors(): array
+    public function getTypes(): array
     {
-        return array_values($this->descriptors);
+        return array_values($this->types);
     }
 
-    public function getDescriptor(string $typeId): NotificationTypeDescriptorInterface
+    public function getType(string $typeId): NotificationType
     {
-        if (!isset($this->descriptors[$typeId])) {
+        if (!isset($this->types[$typeId])) {
             throw new NotFoundException('Notification type', $typeId, 'type id');
         }
 
-        return $this->descriptors[$typeId];
+        return $this->types[$typeId];
     }
 
-    public function hasDescriptor(string $typeId): bool
+    public function hasType(string $typeId): bool
     {
-        return isset($this->descriptors[$typeId]);
+        return isset($this->types[$typeId]);
     }
 
-    public function resolveBucket(?string $typeId): NotificationTypeDescriptorInterface
+    public function resolveBucket(?string $typeId): NotificationType
     {
         if ($typeId === null || $typeId === '') {
-            return $this->generalDescriptor;
+            return $this->types[GeneralNotificationType::TYPE_ID];
         }
 
-        return $this->descriptors[$typeId] ?? $this->generalDescriptor;
+        return $this->types[$typeId] ?? $this->types[GeneralNotificationType::TYPE_ID];
     }
 
-    public function hasOnlyGeneralDescriptor(): bool
+    public function hasOnlyGeneralType(): bool
     {
-        return count($this->descriptors) === 1;
+        return count($this->types) === 1;
     }
 
     public function hasExternallyDeliverableType(): bool
     {
-        foreach ($this->descriptors as $descriptor) {
-            if ($descriptor->allowsExternalDelivery()) {
+        foreach ($this->types as $type) {
+            if ($type->allowsExternalDelivery()) {
                 return true;
             }
         }
@@ -90,55 +90,49 @@ final readonly class NotificationTypeRegistry implements NotificationTypeRegistr
     }
 
     /**
-     * @param iterable<NotificationTypeDescriptorInterface> $taggedDescriptors
+     * @param iterable<NotificationTypeProviderInterface> $providers
      *
-     * @return array<string, NotificationTypeDescriptorInterface>
+     * @return array<string, NotificationType>
      *
      * @throws InvalidNotificationTypeException
      */
-    private function collect(iterable $taggedDescriptors): array
+    private function collect(iterable $providers): array
     {
-        $descriptors = [];
+        // built directly, not provided: the catch-all's presence must not depend on wiring
+        $types = [GeneralNotificationType::TYPE_ID => GeneralNotificationType::create()];
 
-        // added directly, not by tag: the catch-all's presence must not depend on wiring
-        $descriptors[$this->generalDescriptor->getTypeId()] = $this->generalDescriptor;
+        foreach ($providers as $provider) {
+            foreach ($provider->getTypes() as $type) {
+                $typeId = $type->getTypeId();
 
-        foreach ($taggedDescriptors as $descriptor) {
-            if ($descriptor === $this->generalDescriptor) {
-                continue;
+                if (strlen($typeId) > self::MAX_TYPE_ID_LENGTH) {
+                    throw new InvalidNotificationTypeException(
+                        sprintf(
+                            'Notification type id "%s" is %d characters; the notifications.type ' .
+                            'column allows at most %d.',
+                            $typeId,
+                            strlen($typeId),
+                            self::MAX_TYPE_ID_LENGTH
+                        )
+                    );
+                }
+
+                if (isset($types[$typeId])) {
+                    throw new InvalidNotificationTypeException(
+                        sprintf('Notification type id "%s" is registered more than once.', $typeId)
+                    );
+                }
+
+                $types[$typeId] = $type;
             }
-
-            $typeId = $descriptor->getTypeId();
-
-            if (strlen($typeId) > self::MAX_TYPE_ID_LENGTH) {
-                throw new InvalidNotificationTypeException(
-                    sprintf(
-                        'Notification type id "%s" is %d characters; the notifications.type ' .
-                        'column allows at most %d.',
-                        $typeId,
-                        strlen($typeId),
-                        self::MAX_TYPE_ID_LENGTH
-                    )
-                );
-            }
-
-            if (isset($descriptors[$typeId])) {
-                throw new InvalidNotificationTypeException(
-                    sprintf('Notification type id "%s" is registered more than once.', $typeId)
-                );
-            }
-
-            $descriptors[$typeId] = $descriptor;
         }
 
         uasort(
-            $descriptors,
-            static fn (
-                NotificationTypeDescriptorInterface $a,
-                NotificationTypeDescriptorInterface $b
-            ): int => [$a->getSortOrder(), $a->getTypeId()] <=> [$b->getSortOrder(), $b->getTypeId()]
+            $types,
+            static fn (NotificationType $a, NotificationType $b): int
+                => [$a->getSortOrder(), $a->getTypeId()] <=> [$b->getSortOrder(), $b->getTypeId()]
         );
 
-        return $descriptors;
+        return $types;
     }
 }

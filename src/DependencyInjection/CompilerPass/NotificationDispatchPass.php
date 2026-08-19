@@ -14,14 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\ChannelInterface;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\NotificationTypeDescriptorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationTypeProviderInterface;
 use ReflectionClass;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 
 /**
- * Tags every notification type descriptor and delivery channel so the registries collect them.
+ * Tags every notification type provider and delivery channel so the registries collect them.
  * A compiler pass rather than #[AutoconfigureTag] alone because the interface attribute does not
  * tag implementers in Pimcore's container; type ids are validated by NotificationTypeRegistry.
  *
@@ -37,8 +37,8 @@ final readonly class NotificationDispatchPass implements CompilerPassInterface
                 continue;
             }
 
-            if ($class->implementsInterface(NotificationTypeDescriptorInterface::class)) {
-                $this->tag($definition, NotificationTypeDescriptorInterface::TAG);
+            if ($class->implementsInterface(NotificationTypeProviderInterface::class)) {
+                $this->tag($definition, NotificationTypeProviderInterface::TAG);
             }
 
             if ($class->implementsInterface(ChannelInterface::class)) {
