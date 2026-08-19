@@ -6,7 +6,15 @@ description: Contribute notification types and delivery channels to the Studio n
 # Extending Notifications
 
 Studio users choose, per notification type, whether they are notified and through which channels.
-Bundles plug into this in two places:
+
+The preferences screen is a grid, and the two concepts are its two axes:
+
+- A **notification type** is one kind of event a user can subscribe to — one *row*: "Deal won",
+  "You were mentioned".
+- A **delivery channel** is a way a notification reaches the user outside the app — one *column*:
+  email, chat. (The in-app pop-up appears as a column too, but is built in.)
+
+Bundles can contribute both:
 
 | Extension point | Interface | Tag |
 |---|---|---|
