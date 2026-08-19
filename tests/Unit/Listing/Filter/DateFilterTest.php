@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\DateFilter;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
 use Pimcore\Model\Element\Recyclebin\Item\Listing as RecycleBinListing;
+use Pimcore\Model\Notification\Listing as NotificationListing;
 
 /**
  * @internal
@@ -146,6 +147,92 @@ final class DateFilterTest extends Unit
             ['filter_0' => (new Carbon('2024-06-10'))->getTimestamp()],
             $listing->getConditionVariables()
         );
+    }
+
+    /**
+     * Notification creationDate/modificationDate are stored in UTC (pimcore core migration
+     * Version20230321133700, writer aligned in pimcore/pimcore#19373). The filter value is a
+     * wall-clock date in the application timezone, so it has to be converted to UTC -
+     * otherwise the filtered day window is shifted by the timezone offset.
+     */
+    public function testDateFilterUtcColumnConvertsApplicationTimezoneToUtc(): void
+    {
+        $originalTimezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            $filter = $this->createFilter();
+            $listing = new NotificationListing();
+
+            $params = new FilterParameter(columnFilters: [
+                ['key' => 'creationDate', 'type' => 'date', 'filterValue' => ['operator' => 'on', 'value' => '2026-07-01']],
+            ]);
+
+            $filter->apply($params, $listing);
+
+            // 2026-07-01 00:00 Europe/Berlin (CEST, UTC+2) is 2026-06-30 22:00 UTC
+            $this->assertSame(
+                [
+                    'minTime_0' => '2026-06-30 22:00:00',
+                    'maxTime_0' => '2026-07-01 21:59:59',
+                ],
+                $listing->getConditionVariables()
+            );
+        } finally {
+            date_default_timezone_set($originalTimezone);
+        }
+    }
+
+    public function testDateFilterUtcColumnRangeOperator(): void
+    {
+        $originalTimezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            $filter = $this->createFilter();
+            $listing = new NotificationListing();
+
+            $params = new FilterParameter(columnFilters: [
+                ['key' => 'creationDate', 'type' => 'date', 'filterValue' => ['operator' => 'from', 'value' => '2026-07-01']],
+            ]);
+
+            $filter->apply($params, $listing);
+
+            $this->assertSame(
+                ['filter_0' => '2026-06-30 22:00:00'],
+                $listing->getConditionVariables()
+            );
+        } finally {
+            date_default_timezone_set($originalTimezone);
+        }
+    }
+
+    /**
+     * Columns not registered as UTC keep their wall-clock comparison - the conversion
+     * must not leak into other listings.
+     */
+    public function testDateFilterNonUtcColumnKeepsWallClockValue(): void
+    {
+        $originalTimezone = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+
+        try {
+            $filter = $this->createFilter();
+            $listing = new NoteListing();
+
+            $params = new FilterParameter(columnFilters: [
+                ['key' => 'creationDate', 'type' => 'date', 'filterValue' => ['operator' => 'from', 'value' => '2026-07-01']],
+            ]);
+
+            $filter->apply($params, $listing);
+
+            $this->assertSame(
+                ['filter_0' => '2026-07-01 00:00:00'],
+                $listing->getConditionVariables()
+            );
+        } finally {
+            date_default_timezone_set($originalTimezone);
+        }
     }
 
     public function testDateFilterEscape(): void
