@@ -9,8 +9,8 @@ Studio users choose, per notification type, whether they are notified and throug
 
 The preferences screen is a grid, and the two concepts are its two axes:
 
-- A **notification type** is one kind of event a user can subscribe to — one *row*: "Product
-  approved", "You were mentioned".
+- A **notification type** is one kind of event a user can subscribe to — one *row*: "New asset
+  uploaded", "You were mentioned".
 - A **delivery channel** is a way a notification reaches the user outside the app — one *column*:
   email, chat. (The in-app pop-up appears as a column too, but is built in.)
 
@@ -35,13 +35,13 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\DispatchableNotific
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcherInterface;
 
 $this->dispatcher->dispatch(new DispatchableNotification(
-    typeId: 'app_pim.approved',
+    typeId: 'app_dam.new_asset',
     recipientIds: [42],
-    title: 'Product approved',
-    message: '"Trail Runner" passed review and is ready to publish.',
-    senderId: 7,                    // optional; here: the reviewer
-    linkedElement: $product,        // optional; drives the bell attachment
-    payload: ['productId' => 1234], // optional; handed to the frontend renderer
+    title: 'New asset uploaded',
+    message: 'A new image was added to "Campaigns".',
+    senderId: 7,                  // optional; here: the uploader
+    linkedElement: $asset,        // optional; drives the bell attachment
+    payload: ['assetId' => 1234], // optional; handed to the frontend renderer
 ));
 ```
 
@@ -66,12 +66,12 @@ A **descriptor** describes one type: its id, labels, group and defaults. Extend
 ```php
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Descriptor\AbstractNotificationTypeDescriptor;
 
-final class ProductApprovedDescriptor extends AbstractNotificationTypeDescriptor
+final class NewAssetDescriptor extends AbstractNotificationTypeDescriptor
 {
-    public function getTypeId(): string         { return 'app_pim.approved'; }
-    public function getTranslationKey(): string { return 'app_pim.notification.approved.label'; }
-    public function getDescriptionKey(): string { return 'app_pim.notification.approved.description'; }
-    public function getGroup(): string          { return 'app_pim'; }
+    public function getTypeId(): string         { return 'app_dam.new_asset'; }
+    public function getTranslationKey(): string { return 'app_dam.notification.new_asset.label'; }
+    public function getDescriptionKey(): string { return 'app_dam.notification.new_asset.description'; }
+    public function getGroup(): string          { return 'app_dam'; }
     public function getSortOrder(): int         { return 10; }
 
     // Opt in to transport channels (email, …). Defaults to false — see "Delivery Channels".
@@ -85,7 +85,7 @@ and `isSubscriptionLocked()` forbids unsubscribing entirely.
 
 :::warning
 Type ids are persisted in `notifications.type`, a `VARCHAR(20)` column: **at most 20 characters**
-and unique across all bundles (`app_pim.approved` is 16 and fits; `app_pim.product_approved` is 24
+and unique across all bundles (`app_dam.new_asset` is 17 and fits; `app_dam.new_asset_upload` is 24
 and is rejected). They are also stored in subscription rows, so renaming one later is a breaking change.
 :::
 
