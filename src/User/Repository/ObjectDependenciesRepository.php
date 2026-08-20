@@ -35,20 +35,13 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
 
             $stillNeeded = $limit - count($items);
             if ($stillNeeded > 0) {
-                $classStart = $matchesBeforeCurrentClass;
-                $classEnd = $classStart + $classMatchCount;
-                $windowStart = $offset;
-                $windowEnd = $offset + $limit;
+                $window = $this->resolveClassWindow($matchesBeforeCurrentClass, $classMatchCount, $offset, $limit, $stillNeeded);
 
-                if ($classEnd > $windowStart && $classStart < $windowEnd) {
-                    $localOffset = max(0, $windowStart - $classStart);
-                    $localLimit = min($classMatchCount - $localOffset, $stillNeeded);
-
-                    if ($localLimit > 0) {
-                        $list->setOffset($localOffset);
-                        $list->setLimit($localLimit);
-                        $items = array_merge($items, $list->load());
-                    }
+                if ($window !== null) {
+                    [$localOffset, $localLimit] = $window;
+                    $list->setOffset($localOffset);
+                    $list->setLimit($localLimit);
+                    $items = array_merge($items, $list->load());
                 }
             }
 
@@ -56,6 +49,40 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
         }
 
         return ['items' => $items, 'totalItems' => $totalItems];
+    }
+
+    /**
+     * Pure windowing math: given where this class's matches sit within the overall
+     * (unpaginated, cross-class) sequence, returns the [offset, limit] to apply to
+     * this class's own listing to fill the remainder of the requested page - or
+     * null if this class's matches don't intersect the requested window at all.
+     *
+     * @return array{0: int, 1: int}|null
+     */
+    private function resolveClassWindow(
+        int $matchesBeforeCurrentClass,
+        int $classMatchCount,
+        int $offset,
+        int $limit,
+        int $stillNeeded
+    ): ?array {
+        $classStart = $matchesBeforeCurrentClass;
+        $classEnd = $classStart + $classMatchCount;
+        $windowStart = $offset;
+        $windowEnd = $offset + $limit;
+
+        if ($classEnd <= $windowStart || $classStart >= $windowEnd) {
+            return null;
+        }
+
+        $localOffset = max(0, $windowStart - $classStart);
+        $localLimit = min($classMatchCount - $localOffset, $stillNeeded);
+
+        if ($localLimit <= 0) {
+            return null;
+        }
+
+        return [$localOffset, $localLimit];
     }
 
     /**
@@ -97,7 +124,12 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
         foreach ($userFieldNames as $userFieldName) {
             $conditionParts[] = $userFieldName . ' = ?';
         }
-        $list->setCondition(implode(' AND ', $conditionParts), array_fill(0, count($conditionParts), $userId));
+        // OR, not AND: the object references the user if ANY of its User-type fields does,
+        // not only if all of them (independently) happen to point at the same user.
+        $list->setCondition(implode(' OR ', $conditionParts), array_fill(0, count($conditionParts), $userId));
+        // Deterministic order is required for offset/limit paging to be stable across requests.
+        $list->setOrderKey('id');
+        $list->setOrder('asc');
 
         return $list;
     }
