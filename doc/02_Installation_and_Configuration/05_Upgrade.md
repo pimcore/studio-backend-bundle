@@ -2,6 +2,11 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2025.4.7
+- [User Management] Fixed: `GET /users/{id}` could time out or run out of memory when the user was referenced by a very large number of DataObjects (e.g. via a `User`-type class field), because the full, unbounded list of referencing objects was hydrated and embedded in every response.
+
+> **Note:** the `objectDependencies` field has been removed from the `User` schema entirely. Use the new paginated `GET /user/{id}/object-dependencies` endpoint instead of reading `user.objectDependencies.dependencies`.
+
 ## Upgrade to 2025.4.6
 - [GDPR Objects Export] Fixed: the data object export now includes inherited values (including inherited localized fields).
 
