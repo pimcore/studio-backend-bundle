@@ -32,6 +32,11 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\StoredTokenRevocationChecker
 
+    # Maintenance task: prune expired token records (table hygiene).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Maintenance\OAuthTokenGcTask:
+        tags:
+            - { name: pimcore.maintenance.task, type: studio_oauth_token_gc }
+
     # Resource-server JWT validator. $publicKey and $issuer come from bundle config
     # (set in the extension).
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface:
