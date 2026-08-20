@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesRepositoryInterface;
 
 /**
  * @internal
@@ -24,28 +24,26 @@ use Pimcore\Model\UserInterface;
 final readonly class ObjectDependenciesService implements ObjectDependenciesServiceInterface
 {
     public function __construct(
-        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private ObjectDependenciesRepositoryInterface $objectDependenciesRepository,
         private DependencyHydratorInterface $dependencyHydrator
     ) {
     }
 
-    public function getDependenciesForUser(UserInterface $user): ObjectDependencies
+    public function getPaginatedDependenciesForUser(int $userId, CollectionParameters $parameters): Collection
     {
+        $result = $this->objectDependenciesRepository->getObjectsReferencingUser(
+            $userId,
+            $parameters->getOffset(),
+            $parameters->getPageSize()
+        );
+
         $dependencies = [];
-        $hasHidden = false;
-
-        $objects = $this->dataObjectServiceResolver->getObjectsReferencingUser($user->getId());
-
-        foreach ($objects as $object) {
+        foreach ($result['items'] as $object) {
             if ($object->isAllowed('list')) {
                 $dependencies[] = $this->dependencyHydrator->hydrate($object);
-
-                continue;
             }
-
-            $hasHidden = true;
         }
 
-        return new ObjectDependencies($dependencies, $hasHidden);
+        return new Collection($result['totalItems'], $dependencies);
     }
 }

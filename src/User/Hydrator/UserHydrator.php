@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
 use Pimcore\Model\User;
@@ -32,7 +31,6 @@ final readonly class UserHydrator implements UserHydratorInterface
     public function __construct(
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private WorkspaceHydratorInterface $workspaceHydrator,
-        private ObjectDependenciesServiceInterface $objectDependenciesService,
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPerspectiveServiceInterface $userPerspectiveService,
@@ -74,7 +72,6 @@ final readonly class UserHydrator implements UserHydratorInterface
             assetWorkspaces: $this->workspaceHydrator->hydrateAssetWorkspace($user),
             dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
-            objectDependencies: $this->objectDependenciesService->getDependenciesForUser($user),
             perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
         );
     }

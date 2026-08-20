@@ -13,13 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
  */
 interface ObjectDependenciesServiceInterface
 {
-    public function getDependenciesForUser(UserInterface $user): ObjectDependencies;
+    /**
+     * @return Collection<\Pimcore\Bundle\StudioBackendBundle\User\Schema\Dependency>
+     */
+    public function getPaginatedDependenciesForUser(int $userId, CollectionParameters $parameters): Collection;
 }

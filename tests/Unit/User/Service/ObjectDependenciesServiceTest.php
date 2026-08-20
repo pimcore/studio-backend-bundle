@@ -14,36 +14,42 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\Dependency;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 final class ObjectDependenciesServiceTest extends Unit
 {
-    public function testIfHiddenIsSet(): void
+    public function testDeniedObjectsAreFilteredOutButStillCountedInTotal(): void
     {
-        $demoObject = $this->makeEmpty(Concrete::class, [
+        $allowedObject = $this->makeEmpty(Concrete::class, [
+            'isAllowed' => true,
+        ]);
+        $deniedObject = $this->makeEmpty(Concrete::class, [
             'isAllowed' => false,
         ]);
 
-        $dataObjectServiceResolver = $this->makeEmpty(DataObjectServiceResolverInterface::class, [
-            'getObjectsReferencingUser' => [$demoObject],
+        $objectDependenciesRepository = $this->makeEmpty(ObjectDependenciesRepositoryInterface::class, [
+            'getObjectsReferencingUser' => [
+                'items' => [$allowedObject, $deniedObject],
+                'totalItems' => 2,
+            ],
         ]);
-        $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class);
-
-        $objectDependenciesService = new ObjectDependenciesService($dataObjectServiceResolver, $dependencyHydrator);
-
-        $user = $this->makeEmpty(UserInterface::class, [
-            'getId' => 1,
+        $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class, [
+            'hydrate' => $this->makeEmpty(Dependency::class),
         ]);
 
-        $objectDependencies = $objectDependenciesService->getDependenciesForUser($user);
+        $objectDependenciesService = new ObjectDependenciesService($objectDependenciesRepository, $dependencyHydrator);
 
-        $this->assertTrue($objectDependencies->isHasHidden());
+        $collection = $objectDependenciesService->getPaginatedDependenciesForUser(1, new CollectionParameters(1, 10));
+
+        $this->assertCount(1, $collection->getItems());
+        $this->assertSame(2, $collection->getTotalItems());
     }
 }
