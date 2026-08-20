@@ -75,8 +75,7 @@ final readonly class SubscriptionResolver implements SubscriptionResolverInterfa
 
         $supported = $this->channelRegistry->getSupportedChannelIds($type);
 
-        // array_unique guards against a type declaring duplicate default channels — the dispatcher
-        // iterates the transport channels, so a duplicate id would deliver the same email twice.
+        // dedupe: a type with duplicate default channels would otherwise send the same email twice
         return new EffectiveSubscription(
             $type->getTypeId(),
             true,

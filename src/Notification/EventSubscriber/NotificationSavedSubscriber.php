@@ -65,10 +65,8 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
             return;
         }
 
-        // Publish on the recipient's own Mercure topic, not the shared studio topic. The shared
-        // topic is subscribed by every client, so title, message, payload and the recipient's
-        // unread count would otherwise ride the wire to all users, with only client-side filtering
-        // hiding them. The recipient already subscribes to their own topic (UserTopicProvider).
+        // The recipient's own topic, not the shared studio topic every client subscribes to —
+        // else the payload and unread count reach all users behind only a client-side filter.
         $this->publishService->publish(
             $this->userTopicService->getUserTopic($recipient->getId()),
             [

@@ -47,9 +47,7 @@ final readonly class EmailChannel implements ChannelInterface
     private const string NO_ADDRESS_KEY = 'notifications.channel.email.no-address';
 
     /**
-     * @param string $studioPath the Studio UI base path, wired from pimcore_studio_ui.url_path so a
-     *                          customised install still gets working links; the default is that
-     *                          parameter's own default for a studio-ui-less setup.
+     * @param string $studioPath Studio UI base path (pimcore_studio_ui.url_path)
      */
     public function __construct(
         private MessageBusInterface $messageBus,
