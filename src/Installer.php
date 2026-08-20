@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
@@ -65,6 +66,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createUserPerspectivesTable($schema);
         $this->createJobRunHiddenTable($schema);
         $this->createMcpAccessTokenTable($schema);
+        $this->createNotificationSubscriptionTable($schema);
         $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
@@ -109,6 +111,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {
             $schema->dropTable(McpAccessToken::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {
+            $schema->dropTable(NotificationSubscription::TABLE_NAME);
         }
 
         $this->removeUserPermission($schema);
@@ -468,6 +474,35 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->setPrimaryKey(['jobRunId'], 'pk_' . JobRunHidden::TABLE_NAME);
+    }
+
+    /**
+     * Per-user notification preferences; see the NotificationSubscription entity.
+     *
+     * @throws SchemaException
+     */
+    private function createNotificationSubscriptionTable(Schema $schema): void
+    {
+        if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(NotificationSubscription::TABLE_NAME);
+
+        $table->addColumn('user_id', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('type_id', 'string', ['notnull' => true, 'length' => 190]);
+        $table->addColumn('subscribed', 'boolean', ['notnull' => true, 'default' => true]);
+        $table->addColumn('channels', 'json', ['notnull' => false]);
+
+        $table->setPrimaryKey(['user_id', 'type_id'], 'pk_' . NotificationSubscription::TABLE_NAME);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . NotificationSubscription::TABLE_NAME . '_users'
+        );
     }
 
     /**

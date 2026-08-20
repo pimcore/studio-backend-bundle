@@ -24,6 +24,40 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserService
 
+  Pimcore\Bundle\StudioBackendBundle\Notification\Service\SubscriptionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\SubscriptionService
+
+  #
+  # Dispatch — the generic notification framework
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationDispatcher
+
+  # Own collaborator so the dispatcher can be tested without a database.
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationWriterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\NotificationWriter
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistry
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry
+    arguments:
+      $channelConfig: '%pimcore_studio_backend.notifications.channels%'
+
+  # Tagged by NotificationDispatchPass; its async send message rides the pimcore_core transport.
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel: ~
+
+  # $fromEmail is set from studio_from_default_email in the bundle extension, mirroring MailService.
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolver
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepository
+
 
   #
   # Hydrators
@@ -34,6 +68,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\RecipientHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\RecipientHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydrator
 
   #
   # Repository
