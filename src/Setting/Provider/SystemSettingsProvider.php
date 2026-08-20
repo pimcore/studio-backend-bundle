@@ -132,22 +132,26 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             return [];
         }
 
-        $errorPage = $this->getErrorDocument($documents['error_pages']['default']);
+        $errorPages = $documents['error_pages'] ?? [];
+
+        $errorPage = $this->getErrorDocument($errorPages['default'] ?? null);
         if ($errorPage) {
-            $documents['error_pages']['default'] = $this->elementDataService->getRelatedElementData(
+            $errorPages['default'] = $this->elementDataService->getRelatedElementData(
                 $errorPage
             );
         }
 
-        foreach ($documents['error_pages']['localized'] as $language => $errorPage) {
-            $element = $this->getErrorDocument($documents['error_pages']['localized'][$language]);
+        foreach ($errorPages['localized'] ?? [] as $language => $errorPage) {
+            $element = $this->getErrorDocument($errorPages['localized'][$language]);
             if (!$element) {
                 continue;
             }
-            $documents['error_pages']['localized'][$language] = $this->elementDataService->getRelatedElementData(
+            $errorPages['localized'][$language] = $this->elementDataService->getRelatedElementData(
                 $element
             );
         }
+
+        $documents['error_pages'] = $errorPages;
 
         return $documents;
     }
