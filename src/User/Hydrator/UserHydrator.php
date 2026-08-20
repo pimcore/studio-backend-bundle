@@ -13,9 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependenciesPreview;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
 use Pimcore\Model\User;
@@ -28,18 +31,31 @@ final readonly class UserHydrator implements UserHydratorInterface
 {
     use PermissionSanitationTrait;
 
+    /**
+     * Kept small deliberately: this preview is hydrated on every GET /user/{id} call,
+     * regardless of whether the caller ever looks at it. Browse the full list via the
+     * paginated GET /user/{id}/object-dependencies endpoint instead.
+     */
+    private const int OBJECT_DEPENDENCIES_PREVIEW_SIZE = 20;
+
     public function __construct(
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private WorkspaceHydratorInterface $workspaceHydrator,
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPerspectiveServiceInterface $userPerspectiveService,
-        private PermissionRepositoryInterface $permissionRepository
+        private PermissionRepositoryInterface $permissionRepository,
+        private ObjectDependenciesServiceInterface $objectDependenciesService
     ) {
     }
 
     public function hydrate(UserInterface $user): UserSchema
     {
+        $objectDependencies = $this->objectDependenciesService->getPaginatedDependenciesForUser(
+            $user->getId(),
+            new CollectionParameters(1, self::OBJECT_DEPENDENCIES_PREVIEW_SIZE)
+        );
+
         return new UserSchema(
             id: $user->getId(),
             name: $user->getName(),
@@ -72,6 +88,10 @@ final readonly class UserHydrator implements UserHydratorInterface
             assetWorkspaces: $this->workspaceHydrator->hydrateAssetWorkspace($user),
             dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
+            objectDependencies: new ObjectDependenciesPreview(
+                $objectDependencies->getTotalItems(),
+                $objectDependencies->getItems()
+            ),
             perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
         );
     }

@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'classes', 'docTypes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthentication', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
-        'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces',
+        'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
         'perspectives',
     ],
     type: 'object'
@@ -114,6 +114,8 @@ final class User implements AdditionalAttributesInterface
             items: new Items(ref: UserDocumentWorkspace::class)
         )]
         private readonly array $documentWorkspaces,
+        #[Property(ref: ObjectDependenciesPreview::class, description: 'Object Dependencies Preview', type: 'object')]
+        private readonly ObjectDependenciesPreview $objectDependencies,
         #[Property(
             description: 'Allowed studio perspectives',
             type: 'array',
@@ -273,6 +275,11 @@ final class User implements AdditionalAttributesInterface
     public function getDocumentWorkspaces(): array
     {
         return $this->documentWorkspaces;
+    }
+
+    public function getObjectDependencies(): ObjectDependenciesPreview
+    {
+        return $this->objectDependencies;
     }
 
     /**
