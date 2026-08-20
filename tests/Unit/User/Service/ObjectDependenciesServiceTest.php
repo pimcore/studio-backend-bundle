@@ -52,4 +52,27 @@ final class ObjectDependenciesServiceTest extends Unit
         $this->assertCount(1, $collection->getItems());
         $this->assertSame(2, $collection->getTotalItems());
     }
+
+    public function testPreviewSetsHasHiddenAndTotalItems(): void
+    {
+        $deniedObject = $this->makeEmpty(Concrete::class, [
+            'isAllowed' => false,
+        ]);
+
+        $objectDependenciesRepository = $this->makeEmpty(ObjectDependenciesRepositoryInterface::class, [
+            'getObjectsReferencingUser' => [
+                'items' => [$deniedObject],
+                'totalItems' => 5000,
+            ],
+        ]);
+        $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class);
+
+        $objectDependenciesService = new ObjectDependenciesService($objectDependenciesRepository, $dependencyHydrator);
+
+        $preview = $objectDependenciesService->getPreviewForUser(1, 20);
+
+        $this->assertTrue($preview->isHasHidden());
+        $this->assertCount(0, $preview->getDependencies());
+        $this->assertSame(5000, $preview->getTotalItems());
+    }
 }

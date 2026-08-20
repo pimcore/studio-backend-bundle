@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependenciesPreview;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
@@ -51,9 +49,9 @@ final readonly class UserHydrator implements UserHydratorInterface
 
     public function hydrate(UserInterface $user): UserSchema
     {
-        $objectDependencies = $this->objectDependenciesService->getPaginatedDependenciesForUser(
+        $objectDependencies = $this->objectDependenciesService->getPreviewForUser(
             $user->getId(),
-            new CollectionParameters(1, self::OBJECT_DEPENDENCIES_PREVIEW_SIZE)
+            self::OBJECT_DEPENDENCIES_PREVIEW_SIZE
         );
 
         return new UserSchema(
@@ -88,10 +86,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             assetWorkspaces: $this->workspaceHydrator->hydrateAssetWorkspace($user),
             dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
-            objectDependencies: new ObjectDependenciesPreview(
-                $objectDependencies->getTotalItems(),
-                $objectDependencies->getItems()
-            ),
+            objectDependencies: $objectDependencies,
             perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
         );
     }

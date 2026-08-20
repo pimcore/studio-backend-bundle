@@ -114,8 +114,8 @@ final class User implements AdditionalAttributesInterface
             items: new Items(ref: UserDocumentWorkspace::class)
         )]
         private readonly array $documentWorkspaces,
-        #[Property(ref: ObjectDependenciesPreview::class, description: 'Object Dependencies Preview', type: 'object')]
-        private readonly ObjectDependenciesPreview $objectDependencies,
+        #[Property(ref: ObjectDependencies::class, description: 'Object Dependencies', type: 'object')]
+        private readonly ObjectDependencies $objectDependencies,
         #[Property(
             description: 'Allowed studio perspectives',
             type: 'array',
@@ -277,7 +277,7 @@ final class User implements AdditionalAttributesInterface
         return $this->documentWorkspaces;
     }
 
-    public function getObjectDependencies(): ObjectDependenciesPreview
+    public function getObjectDependencies(): ObjectDependencies
     {
         return $this->objectDependencies;
     }

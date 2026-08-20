@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
 
 /**
  * @internal
@@ -45,5 +46,24 @@ final readonly class ObjectDependenciesService implements ObjectDependenciesServ
         }
 
         return new Collection($result['totalItems'], $dependencies);
+    }
+
+    public function getPreviewForUser(int $userId, int $previewSize): ObjectDependencies
+    {
+        $result = $this->objectDependenciesRepository->getObjectsReferencingUser($userId, 0, $previewSize);
+
+        $dependencies = [];
+        $hasHidden = false;
+        foreach ($result['items'] as $object) {
+            if ($object->isAllowed('list')) {
+                $dependencies[] = $this->dependencyHydrator->hydrate($object);
+
+                continue;
+            }
+
+            $hasHidden = true;
+        }
+
+        return new ObjectDependencies($dependencies, $hasHidden, $result['totalItems']);
     }
 }
