@@ -20,6 +20,7 @@ use Doctrine\DBAL\Types\Types;
 use Pimcore\Bundle\ApplicationLoggerBundle\Handler\ApplicationLoggerDb;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Util\Constant\FilterableFields;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Util\Constant\SortableFields;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
@@ -65,7 +66,7 @@ final class LogRepository implements LogRepositoryInterface
             return $this->performSearch($qb);
         }
 
-        $qb->orderBy('id', 'DESC');
+        $qb->orderBy(SortableFields::ID->value, 'DESC');
 
         return $this->performSearch($qb);
     }
@@ -199,9 +200,14 @@ final class LogRepository implements LogRepositoryInterface
     {
         $queryBuilder
             ->orderBy(
-                $this->dbResolver->get()->quoteIdentifier($sortFilter->getKey()),
+                $this->dbResolver->get()->quoteIdentifier($this->getSortField($sortFilter)->value),
                 $sortFilter->getDirection()
             );
+    }
+
+    private function getSortField(SortFilter $sortFilter): SortableFields
+    {
+        return SortableFields::tryFrom($sortFilter->getKeyWithOutLocale()) ?? SortableFields::ID;
     }
 
     /**

@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\TreeLevelData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetElementData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
@@ -107,7 +106,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws NotFoundException
      *
      */
     private function getParentElements(
@@ -120,10 +119,13 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
 
         $parents = [];
         foreach ($levels as $level) {
-            $parents[] = $this->elementService->getAllowedElementByPath(
+            // The tree levels above the requested element are only navigated through, they are not
+            // opened - so they are resolved without a view permission check, see
+            // ElementServiceInterface::getNavigableElementByPath(). The element itself is checked in
+            // ElementLocationService::getElementLocation().
+            $parents[] = $this->elementService->getNavigableElementByPath(
                 $widget->getElementType(),
-                $level,
-                $user
+                $level
             )->getId();
         }
 
