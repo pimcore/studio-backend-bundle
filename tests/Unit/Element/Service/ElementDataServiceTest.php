@@ -31,13 +31,13 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testHasAccessTrueWhenViewIsAllowed(): void
+    public function testHasViewAccessTrueWhenViewIsAllowed(): void
     {
         $service = $this->createService();
 
         $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
-        $this->assertTrue($data->getHasAccess());
+        $this->assertTrue($data->getHasViewAccess());
         $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
         $this->assertSame(83, $data->getId());
         $this->assertSame('asset', $data->getType());
@@ -49,20 +49,20 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testHasAccessFalseWhenViewIsDenied(): void
+    public function testHasViewAccessFalseWhenViewIsDenied(): void
     {
         $service = $this->createService();
 
         $data = $service->getRelatedElementData($this->makeAsset(isAllowed: false, calls: $calls));
 
-        $this->assertFalse($data->getHasAccess());
+        $this->assertFalse($data->getHasViewAccess());
         $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
     }
 
     /**
      * @throws Exception
      */
-    public function testHasAccessFalseWhenNoUserIsAuthenticated(): void
+    public function testHasViewAccessFalseWhenNoUserIsAuthenticated(): void
     {
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => static function (): UserInterface {
@@ -73,14 +73,14 @@ final class ElementDataServiceTest extends Unit
 
         $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
-        $this->assertFalse($data->getHasAccess());
+        $this->assertFalse($data->getHasViewAccess());
         $this->assertSame([], $calls);
     }
 
     /**
      * @throws Exception
      */
-    public function testHasAccessFalseWhenUserIsNotAPimcoreUser(): void
+    public function testHasViewAccessFalseWhenUserIsNotAPimcoreUser(): void
     {
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => $this->makeEmpty(UserInterface::class),
@@ -89,7 +89,7 @@ final class ElementDataServiceTest extends Unit
 
         $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
-        $this->assertFalse($data->getHasAccess());
+        $this->assertFalse($data->getHasViewAccess());
         $this->assertSame([], $calls);
     }
 

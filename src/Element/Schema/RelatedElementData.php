@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'RelatedElementData',
     title: 'RelatedElementData',
-    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished', 'hasAccess'],
+    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished', 'hasViewAccess'],
     type: 'object'
 )]
 final readonly class RelatedElementData
@@ -43,7 +43,7 @@ final readonly class RelatedElementData
             type: 'boolean',
             example: true
         )]
-        private bool $hasAccess = true,
+        private bool $hasViewAccess = true,
     ) {
     }
 
@@ -72,8 +72,8 @@ final readonly class RelatedElementData
         return $this->isPublished;
     }
 
-    public function getHasAccess(): bool
+    public function getHasViewAccess(): bool
     {
-        return $this->hasAccess;
+        return $this->hasViewAccess;
     }
 }
