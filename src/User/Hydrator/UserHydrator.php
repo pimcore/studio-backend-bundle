@@ -39,11 +39,11 @@ final readonly class UserHydrator implements UserHydratorInterface
     public function __construct(
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private WorkspaceHydratorInterface $workspaceHydrator,
+        private ObjectDependenciesServiceInterface $objectDependenciesService,
         private KeyBindingServiceInterface $keyBindingService,
         private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
         private UserPerspectiveServiceInterface $userPerspectiveService,
-        private PermissionRepositoryInterface $permissionRepository,
-        private ObjectDependenciesServiceInterface $objectDependenciesService
+        private PermissionRepositoryInterface $permissionRepository
     ) {
     }
 
