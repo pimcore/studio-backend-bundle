@@ -68,6 +68,63 @@ final class ColumnTest extends Unit
         $this->assertNull($configs->getColumns()[0]->getKeyId());
     }
 
+    /**
+     * Regression pimcore/platform-version#296: a saved advanced-column config whose
+     * simple field is missing `config.field` (e.g. the studio-ui-bundle bug where the
+     * pre-selected first source field option was dropped on save) must not reach
+     * `SimpleFieldConfig`'s constructor with an undefined array key — it should be
+     * rejected as a 422 `InvalidArgumentException` naming the broken column instead of
+     * causing an uncaught error that blanks the whole grid response.
+     */
+    public function testGetAdvancedColumnConfigSimpleFieldMissingFieldThrows(): void
+    {
+        $column = new Column(
+            key: 'name',
+            locale: 'de',
+            type: 'ttest',
+            group: ['test'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                        'config' => [],
+                    ],
+                ],
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Advanced column "name" (source field at index 0) is missing the required "field" config');
+
+        $column->getAdvancedColumnConfig();
+    }
+
+    /**
+     * The reported bug actually saves the advanced column without a `config` key at all
+     * (`{"key": "simpleField"}`), not merely without `field` inside an empty `config`.
+     */
+    public function testGetAdvancedColumnConfigSimpleFieldMissingConfigThrows(): void
+    {
+        $column = new Column(
+            key: 'name',
+            locale: 'de',
+            type: 'ttest',
+            group: ['test'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                    ],
+                ],
+            ],
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Advanced column "name" (source field at index 0) is missing the required "field" config');
+
+        $column->getAdvancedColumnConfig();
+    }
+
     public function testGetAdvancedColumnConfigRelationField(): void
     {
         $column = new Column(
