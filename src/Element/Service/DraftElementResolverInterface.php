@@ -18,22 +18,13 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 /**
- * Which state a read path should render: published, or the user's unsaved edits.
- *
- * Default is Pimcore's own — the newest unpublished version for that user. Decorate to store
- * pending edits elsewhere; every read path follows, instead of each needing to be taught.
+ * Which state a read path renders: published, or the user's unsaved edits. Default is
+ * Pimcore's newest unpublished version; decorate to store pending edits elsewhere.
  *
  * @internal
  */
 interface DraftElementResolverInterface
 {
-    /**
-     * $element as $user should see it: their draft state if any, otherwise unchanged.
-     *
-     * Must not mutate $element — several of these run per request, and $element is usually the
-     * runtime-cached instance the write path will go on to use. (Loading a version payload does
-     * clear Pimcore's runtime cache via Version::loadData(), so this is not a promise that
-     * calling it is free; it is a promise that the argument comes back untouched.)
-     */
+    /** $element as $user should see it. Must not mutate $element — it is the runtime-cached instance. */
     public function resolve(ElementInterface $element, ?UserInterface $user): ResolvedDraft;
 }

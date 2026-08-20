@@ -17,11 +17,8 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Version;
 
 /**
- * The two halves of a draft, resolved together from a single lookup.
- *
- * `element` is the STATE to render. `version` is the draft IDENTITY reported as `draftData`
- * — the row the UI labels and deletes by. They coincide by default; a resolver that stores
- * pending edits elsewhere may return state without an identity.
+ * A draft's state (`element`) and identity (`version`, the `draftData` row). They coincide
+ * by default; a resolver storing edits elsewhere may return state without an identity.
  *
  * @internal
  */

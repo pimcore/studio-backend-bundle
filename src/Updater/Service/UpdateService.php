@@ -158,12 +158,8 @@ final readonly class UpdateService implements UpdateServiceInterface
         return $draftElement;
     }
 
-    /**
-     * Deliberately narrower than the resolver: assets are excluded here even though the resolver
-     * supports them. `useDraftData` rides in on an unvalidated payload array, so widening this
-     * would let an asset update swap the live asset for its latest version before saving. That is
-     * a behaviour change, not a refactor — a decorator wanting asset drafts needs this revisited.
-     */
+    // Excludes assets deliberately: useDraftData is unvalidated, so allowing them would let an
+    // update swap the live asset for its latest version before saving. Revisit before widening.
     private function getDraftElement(ElementInterface $element): ElementInterface
     {
         if (!$element instanceof Concrete && !$element instanceof PageSnippet) {

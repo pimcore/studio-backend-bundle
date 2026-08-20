@@ -16,11 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Element\Service\Fixture;
 use Pimcore\Model\Version;
 
 /**
- * Records what the resolver asked for and answers with a canned version.
- *
- * getLatestVersion() is not declared on the models — it lives on the Dao, reached via
- * __call. A mock cannot intercept it (the mocked __call answers null and the test passes
- * proving nothing), so a subclass declares it for real.
+ * Answers with a canned version. Declares getLatestVersion() for real because it lives on
+ * the Dao via __call, which a mock cannot intercept (it would answer null and prove nothing).
  *
  * @internal
  */

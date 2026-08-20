@@ -35,8 +35,7 @@ final readonly class VersionDraftElementResolver implements DraftElementResolver
             return new ResolvedDraft($element);
         }
 
-        // Version::loadData() answers null for an unreadable payload — a pruned storage file, or
-        // an __PHP_Incomplete_Class after the class was renamed. Rendering published beats a 500.
+        // null data means an unreadable payload (pruned file, renamed class) — render published, not a 500
         $data = $version->getData();
         if (!$data instanceof ElementInterface) {
             return new ResolvedDraft($element);
