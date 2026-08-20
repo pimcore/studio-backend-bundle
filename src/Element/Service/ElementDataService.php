@@ -59,8 +59,6 @@ final readonly class ElementDataService implements ElementDataServiceInterface
             return false;
         }
 
-        // Core check instead of the GDI permission seam: this runs per relation row,
-        // and the GDI check normalizes the whole element per call.
         return $element->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
     }
 
