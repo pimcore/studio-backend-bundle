@@ -42,7 +42,7 @@ final class ObjectDependenciesServiceTest extends Unit
             ],
         ]);
         $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class, [
-            'hydrate' => $this->makeEmpty(Dependency::class),
+            'hydrate' => new Dependency(1, '/path/to/object', 'Car'),
         ]);
 
         $objectDependenciesService = new ObjectDependenciesService($objectDependenciesRepository, $dependencyHydrator);
