@@ -23,7 +23,9 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'User Object Dependencies',
     description: 'User Object Dependencies. dependencies is a bounded preview - use '
-        . 'GET /user/{id}/object-dependencies to browse beyond it, using totalItems as the true count.',
+        . 'GET /user/{id}/object-dependencies to browse beyond it. totalItems counts every referencing '
+        . 'object regardless of the caller\'s view permission on it, so it may exceed the number of '
+        . 'objects that dependencies (or the paginated endpoint, across all pages) ever actually shows.',
     required: ['hasHidden', 'dependencies'],
     type: 'object',
 )]
@@ -34,7 +36,13 @@ final readonly class ObjectDependencies
         private array $dependencies,
         #[Property(description: 'If it has hidden dependencies', type: 'boolean', example: true)]
         private bool $hasHidden,
-        #[Property(description: 'Total number of objects referencing this user', type: 'integer', example: 666)]
+        #[Property(
+            description: 'Total number of objects referencing this user, including ones the caller is not '
+                . 'permitted to view - not the count of objects actually returned via dependencies or the '
+                . 'paginated endpoint.',
+            type: 'integer',
+            example: 666
+        )]
         private int $totalItems
     ) {
     }
