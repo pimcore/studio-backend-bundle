@@ -24,7 +24,7 @@ use OpenApi\Attributes\Schema;
     title: 'User Object Dependencies',
     description: 'User Object Dependencies. dependencies is a bounded preview - use '
         . 'GET /user/{id}/object-dependencies to browse beyond it, using totalItems as the true count.',
-    required: ['hasHidden', 'dependencies', 'totalItems'],
+    required: ['hasHidden', 'dependencies'],
     type: 'object',
 )]
 final readonly class ObjectDependencies
