@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Pimcore\Model\DataObject\ClassDefinition\Data\User as UserFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Listing as ClassDefinitionListing;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Listing as ObjectListing;
 
 /**
@@ -41,7 +42,14 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
                     [$localOffset, $localLimit] = $window;
                     $list->setOffset($localOffset);
                     $list->setLimit($localLimit);
-                    $items = array_merge($items, $list->load());
+                    // A per-class Listing (e.g. Issue1106\Listing) only ever loads Concrete
+                    // instances of that class, but Listing::load() is typed to the broader
+                    // DataObject; filter to narrow it back for callers that expect Concrete.
+                    $loaded = array_filter(
+                        $list->load(),
+                        static fn (\Pimcore\Model\DataObject $object): bool => $object instanceof Concrete
+                    );
+                    $items = array_merge($items, $loaded);
                 }
             }
 
