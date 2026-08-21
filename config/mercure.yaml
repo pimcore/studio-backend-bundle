@@ -13,7 +13,9 @@ services:
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService: ~
 
-    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService: ~
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService:
+        arguments:
+            $cookieLifetime: '%pimcore_studio_backend.mercure_settings.cookie_lifetime%'
 
     Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubService
