@@ -47,6 +47,8 @@ class Configuration implements ConfigurationInterface
 
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
+    public const string MCP_SERVERS_NODE = 'studio_mcp_servers';
+
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
@@ -88,6 +90,7 @@ class Configuration implements ConfigurationInterface
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
+        $this->addMcpServersConfigurationNode($rootNode);
         $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
         $this->addTranslation($rootNode);
@@ -102,6 +105,8 @@ class Configuration implements ConfigurationInterface
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
                 self::ADMIN_SETTINGS_NODE =>
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . SettingRepository::SCOPE,
+                self::MCP_SERVERS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::MCP_SERVERS_NODE,
             ],
             ['read_target']
         );
@@ -782,6 +787,66 @@ class Configuration implements ConfigurationInterface
                                 ->useAttributeAsKey('username')
                                 ->arrayPrototype()
                                     ->scalarPrototype()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    /**
+     * MCP server definitions: named tool groups exposed at /pimcore-mcp/{url_slug}.
+     * Shipped defaults live here; runtime-managed servers use the write target
+     * configured under config_location.studio_mcp_servers.
+     */
+    private function addMcpServersConfigurationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::MCP_SERVERS_NODE)
+                ->info('MCP server definitions, keyed by server id.')
+                ->defaultValue([])
+                ->useAttributeAsKey('id')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('name')
+                            ->info('Human-facing display name; defaults to the id.')
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('description')
+                            ->defaultValue('')
+                        ->end()
+                        ->scalarNode('url_slug')
+                            ->info('URL segment under /pimcore-mcp/; defaults to the id.')
+                            ->defaultNull()
+                        ->end()
+                        ->arrayNode('tools')
+                            ->info('Ids of the assigned MCP tools.')
+                            ->scalarPrototype()->end()
+                            ->defaultValue([])
+                        ->end()
+                        ->arrayNode('scopes')
+                            ->info('OAuth scopes advertised for this server (e.g. mcp:read, mcp:write).')
+                            ->scalarPrototype()->end()
+                            ->defaultValue([])
+                        ->end()
+                        ->booleanNode('enabled')
+                            ->defaultTrue()
+                        ->end()
+                        ->arrayNode('access')
+                            ->addDefaultsIfNotSet()
+                            ->info('Who may use the server (owner + global flag + user/role id lists).')
+                            ->children()
+                                ->integerNode('owner')->defaultNull()->end()
+                                ->booleanNode('share_global')->defaultFalse()->end()
+                                ->arrayNode('shared_users')
+                                    ->integerPrototype()->end()
+                                    ->defaultValue([])
+                                ->end()
+                                ->arrayNode('shared_roles')
+                                    ->integerPrototype()->end()
+                                    ->defaultValue([])
                                 ->end()
                             ->end()
                         ->end()

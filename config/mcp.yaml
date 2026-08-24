@@ -37,3 +37,14 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler: ~
     Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandlerInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler
+
+    # --- MCP server definitions ---
+    # Location-aware storage for configured MCP servers. $serverConfigurations
+    # (shipped seed) and $storageConfig (write/read target) are set from bundle
+    # config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepository
+        arguments:
+            $serverConfigurations: []
+            $storageConfig: []
+            $repository: null
