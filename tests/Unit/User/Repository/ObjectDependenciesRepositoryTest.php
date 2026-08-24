@@ -18,11 +18,15 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesReposit
 use ReflectionMethod;
 
 /**
- * Exercises the cross-class pagination windowing math directly, since the surrounding
- * getObjectsReferencingUser() also depends on real, dynamically-resolved DataObject class
- * listings that this bundle's unit test suite has no fixtures for. The windowing itself -
- * deciding which slice of a given class's matches (if any) falls inside the requested
- * cross-class offset/limit - is pure integer arithmetic and fully testable in isolation.
+ * Exercises the cross-class pagination windowing math and the multi-field condition
+ * builder directly, since the surrounding getObjectsReferencingUser() also depends on
+ * real, dynamically-resolved DataObject class listings that this bundle's unit test
+ * suite has no fixtures for. Both pieces are pure logic - no field types, offsets, or
+ * class counts here touch the database - and are fully testable in isolation:
+ * - resolveClassWindow(): which slice of a given class's matches (if any) falls inside
+ *   the requested cross-class offset/limit.
+ * - buildUserFieldCondition(): the OR-joined SQL condition across a class's User-type
+ *   fields.
  *
  * @internal
  */
@@ -30,9 +34,15 @@ final class ObjectDependenciesRepositoryTest extends Unit
 {
     private ReflectionMethod $resolveClassWindow;
 
+    private ReflectionMethod $buildUserFieldCondition;
+
     protected function _before(): void
     {
         $this->resolveClassWindow = new ReflectionMethod(ObjectDependenciesRepository::class, 'resolveClassWindow');
+        $this->buildUserFieldCondition = new ReflectionMethod(
+            ObjectDependenciesRepository::class,
+            'buildUserFieldCondition'
+        );
     }
 
     /**
@@ -72,6 +82,30 @@ final class ObjectDependenciesRepositoryTest extends Unit
             'true last page, class starts exactly where the window does' => [49950, 50, 49950, 50, 50, [0, 50]],
             'range overlaps but the remaining page budget is already exhausted' => [0, 100, 0, 50, 0, null],
             'class could offer more, but only a few more items are needed to fill the page' => [0, 100, 0, 50, 10, [0, 10]],
+        ];
+    }
+
+    /**
+     * @dataProvider userFieldConditionProvider
+     */
+    public function testBuildUserFieldCondition(array $userFieldNames, int $userId, array $expected): void
+    {
+        $repository = new ObjectDependenciesRepository();
+
+        $result = $this->buildUserFieldCondition->invoke($repository, $userFieldNames, $userId);
+
+        $this->assertSame($expected, $result);
+    }
+
+    public function userFieldConditionProvider(): array
+    {
+        return [
+            'single User field' => [['owner'], 5, ['owner = ?', [5]]],
+            'multiple User fields are OR-ed, not AND-ed' => [
+                ['owner', 'approver', 'createdBy'],
+                7,
+                ['owner = ? OR approver = ? OR createdBy = ?', [7, 7, 7]],
+            ],
         ];
     }
 }

@@ -135,17 +135,30 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
 
         /** @var ObjectListing $list */
         $list = new $listingClass();
-        $conditionParts = [];
-        foreach ($userFieldNames as $userFieldName) {
-            $conditionParts[] = $userFieldName . ' = ?';
-        }
-        // OR, not AND: the object references the user if ANY of its User-type fields does,
-        // not only if all of them (independently) happen to point at the same user.
-        $list->setCondition(implode(' OR ', $conditionParts), array_fill(0, count($conditionParts), $userId));
+        [$condition, $params] = $this->buildUserFieldCondition($userFieldNames, $userId);
+        $list->setCondition($condition, $params);
         // Deterministic order is required for offset/limit paging to be stable across requests.
         $list->setOrderKey('id');
         $list->setOrder('asc');
 
         return $list;
+    }
+
+    /**
+     * OR, not AND: the object references the user if ANY of its User-type fields does,
+     * not only if all of them (independently) happen to point at the same user.
+     *
+     * @param string[] $userFieldNames
+     *
+     * @return array{0: string, 1: int[]}
+     */
+    private function buildUserFieldCondition(array $userFieldNames, int $userId): array
+    {
+        $conditionParts = [];
+        foreach ($userFieldNames as $userFieldName) {
+            $conditionParts[] = $userFieldName . ' = ?';
+        }
+
+        return [implode(' OR ', $conditionParts), array_fill(0, count($conditionParts), $userId)];
     }
 }
