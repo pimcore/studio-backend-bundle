@@ -15,11 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\Dependency;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -44,8 +47,19 @@ final class ObjectDependenciesServiceTest extends Unit
         $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class, [
             'hydrate' => new Dependency(1, '/path/to/object', 'Car'),
         ]);
+        $userRepository = $this->makeEmpty(UserRepositoryInterface::class, [
+            'getUserById' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+        ]);
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+        ]);
 
-        $objectDependenciesService = new ObjectDependenciesService($objectDependenciesRepository, $dependencyHydrator);
+        $objectDependenciesService = new ObjectDependenciesService(
+            $objectDependenciesRepository,
+            $dependencyHydrator,
+            $userRepository,
+            $securityService
+        );
 
         $collection = $objectDependenciesService->getPaginatedDependenciesForUser(1, new CollectionParameters(1, 10));
 
@@ -66,8 +80,15 @@ final class ObjectDependenciesServiceTest extends Unit
             ],
         ]);
         $dependencyHydrator = $this->makeEmpty(DependencyHydratorInterface::class);
+        $userRepository = $this->makeEmpty(UserRepositoryInterface::class);
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class);
 
-        $objectDependenciesService = new ObjectDependenciesService($objectDependenciesRepository, $dependencyHydrator);
+        $objectDependenciesService = new ObjectDependenciesService(
+            $objectDependenciesRepository,
+            $dependencyHydrator,
+            $userRepository,
+            $securityService
+        );
 
         $preview = $objectDependenciesService->getPreviewForUser(1, 20);
 

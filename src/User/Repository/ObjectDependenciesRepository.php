@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
+use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data\User as UserFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Listing as ClassDefinitionListing;
 use Pimcore\Model\DataObject\Concrete;
@@ -36,7 +37,13 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
 
             $stillNeeded = $limit - count($items);
             if ($stillNeeded > 0) {
-                $window = $this->resolveClassWindow($matchesBeforeCurrentClass, $classMatchCount, $offset, $limit, $stillNeeded);
+                $window = $this->resolveClassWindow(
+                    $matchesBeforeCurrentClass,
+                    $classMatchCount,
+                    $offset,
+                    $limit,
+                    $stillNeeded
+                );
 
                 if ($window !== null) {
                     [$localOffset, $localLimit] = $window;
@@ -47,7 +54,7 @@ final readonly class ObjectDependenciesRepository implements ObjectDependenciesR
                     // DataObject; filter to narrow it back for callers that expect Concrete.
                     $loaded = array_filter(
                         $list->load(),
-                        static fn (\Pimcore\Model\DataObject $object): bool => $object instanceof Concrete
+                        static fn (DataObject $object): bool => $object instanceof Concrete
                     );
                     $items = array_merge($items, $loaded);
                 }

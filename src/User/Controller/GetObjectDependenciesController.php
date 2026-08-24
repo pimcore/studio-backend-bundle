@@ -27,8 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\Dependency;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
@@ -39,7 +37,6 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
-use function sprintf;
 
 /**
  * @internal
@@ -50,16 +47,9 @@ final class GetObjectDependenciesController extends AbstractApiController
 
     private const string ROUTE = '/user/{id}/object-dependencies';
 
-    // Matches the largest selectable page size in the Studio UI's pagination control.
-    // Enforced here (not on the shared CollectionParameters) since, unlike most paginated
-    // endpoints, every additional item costs a real DataObject hydration + permission check.
-    private const int MAX_PAGE_SIZE = 100;
-
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ObjectDependenciesServiceInterface $objectDependenciesService,
-        private readonly UserRepositoryInterface $userRepository,
-        private readonly SecurityServiceInterface $securityService
+        private readonly ObjectDependenciesServiceInterface $objectDependenciesService
     ) {
         parent::__construct($serializer);
     }
@@ -83,7 +73,7 @@ final class GetObjectDependenciesController extends AbstractApiController
     )]
     #[IdParameter(type: 'user')]
     #[PageParameter]
-    #[PageSizeParameter(maxSize: self::MAX_PAGE_SIZE)]
+    #[PageSizeParameter(maxSize: ObjectDependenciesServiceInterface::MAX_PAGE_SIZE)]
     #[SuccessResponse(
         description: 'user_get_object_dependencies_success_response',
         content: new CollectionJson(new GenericCollection(Dependency::class))
@@ -98,16 +88,6 @@ final class GetObjectDependenciesController extends AbstractApiController
         int $id,
         #[MapQueryString] CollectionParameters $parameters
     ): JsonResponse {
-        if ($parameters->getPageSize() > self::MAX_PAGE_SIZE) {
-            throw new InvalidFilterException(sprintf('pageSize must not exceed %d', self::MAX_PAGE_SIZE));
-        }
-
-        $targetUser = $this->userRepository->getUserById($id);
-
-        if ($targetUser->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
-            throw new ForbiddenException('Only admins can view other admins');
-        }
-
         $collection = $this->objectDependenciesService->getPaginatedDependenciesForUser($id, $parameters);
 
         return $this->getPaginatedCollection(

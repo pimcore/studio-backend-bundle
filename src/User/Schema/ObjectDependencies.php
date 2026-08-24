@@ -22,10 +22,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'User Object Dependencies',
-    description: 'User Object Dependencies. dependencies is a bounded preview - use '
-        . 'GET /user/{id}/object-dependencies to browse beyond it. totalItems counts every referencing '
-        . 'object regardless of the caller\'s view permission on it, so it may exceed the number of '
-        . 'objects that dependencies (or the paginated endpoint, across all pages) ever actually shows.',
+    description: 'A bounded preview of dependencies - use GET /user/{id}/object-dependencies to browse beyond it.',
     required: ['hasHidden', 'dependencies'],
     type: 'object',
 )]

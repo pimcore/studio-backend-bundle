@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
@@ -22,8 +25,15 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
  */
 interface ObjectDependenciesServiceInterface
 {
+    // Matches the largest selectable page size in the Studio UI's pagination control.
+    // Enforced here (not on the shared CollectionParameters) since, unlike most paginated
+    // endpoints, every additional item costs a real DataObject hydration + permission check.
+    public const int MAX_PAGE_SIZE = 100;
+
     /**
      * @return Collection<\Pimcore\Bundle\StudioBackendBundle\User\Schema\Dependency>
+     *
+     * @throws NotFoundException|ForbiddenException|InvalidFilterException
      */
     public function getPaginatedDependenciesForUser(int $userId, CollectionParameters $parameters): Collection;
 
