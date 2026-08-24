@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterMa
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnDefinitionPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnResolverPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\McpToolPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\NotificationDispatchPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\OAuthScopeProviderPass;
@@ -34,6 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\Settings
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
 use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
@@ -103,6 +106,12 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
 
         // OAuth scopes are contributed by any bundle exposing protected resources.
         $container->addCompilerPass(new OAuthScopeProviderPass());
+
+        // MCP tools self-register: implementing the interface auto-applies the tag
+        // that McpToolRegistry collects; the pass guards against a mis-tagged service.
+        $container->registerForAutoconfiguration(McpToolInterface::class)
+            ->addTag(McpToolRegistry::TAG);
+        $container->addCompilerPass(new McpToolPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
