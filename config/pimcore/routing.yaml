@@ -41,3 +41,14 @@ pimcore_studio_oauth_register:
     path:       /pimcore-oauth/register
     controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController
     methods:    [POST]
+
+# MCP server endpoint: one configured server per URL, under the shared pimcore_mcp
+# firewall (so it accepts the OAuth bearer). Explicit (not attribute) so it is not
+# prefixed with the Studio API url prefix, and namespaced under /studio/ so it does
+# not collide with other bundles' /pimcore-mcp/ routes.
+pimcore_studio_mcp_server:
+    path:       /pimcore-mcp/studio/{server}
+    controller: Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\McpServerController
+    methods:    [GET, POST, DELETE]
+    requirements:
+        server: '[a-z0-9-]+'

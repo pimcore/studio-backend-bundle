@@ -33,7 +33,7 @@ final readonly class McpToolAnnotations
     }
 
     /**
-     * @return array<string, bool> the MCP-wire annotation hint map
+     * @return array{readOnlyHint: bool, destructiveHint: bool, idempotentHint: bool, openWorldHint: bool} the MCP-wire annotation hint map
      */
     public function toArray(): array
     {
