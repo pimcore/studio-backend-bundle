@@ -1283,6 +1283,14 @@ user_get_by_id_success_response: Node of the requested user.
 user_get_by_id_summary: Retrieve a specific user by ID.
 user_get_current_information_success_response: Current user information's.
 user_get_current_information_summary: Retrieve information's about the current logged in user.
+user_get_object_dependencies_description: |
+  Get paginated DataObjects referencing the given user via a <strong>User</strong>-type class field.
+  <strong>totalItems</strong> counts every referencing object regardless of the caller's view permission
+  on it, so pages can come back shorter than <strong>pageSize</strong> (or empty) once permission-denied
+  objects are filtered out, and the sum of items actually returned across all pages can be lower than
+  <strong>totalItems</strong>.
+user_get_object_dependencies_success_response: Paginated object dependencies with total count returned both as a header param and as `totalItems` in the response body.
+user_get_object_dependencies_summary: Get paginated object dependencies for a user.
 user_get_tree_success_response: Collection of users including folders for the given parent id.
 user_get_tree_summary: Get collection of users for tree view.
 user_list_with_permission_description: |

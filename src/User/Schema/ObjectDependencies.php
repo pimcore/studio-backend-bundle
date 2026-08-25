@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'User Object Dependencies',
-    description: 'User Object Dependencies',
+    description: 'A bounded preview of dependencies - use GET /user/{id}/object-dependencies to browse beyond it.',
     required: ['hasHidden', 'dependencies'],
     type: 'object',
 )]
@@ -31,8 +31,16 @@ final readonly class ObjectDependencies
     public function __construct(
         #[Property(description: 'Dependencies to objects', type: 'array', items: new Items(ref: Dependency::class))]
         private array $dependencies,
-        #[Property(description: 'If is has hidden dependencies', type: 'boolean', example: true)]
-        private bool $hasHidden
+        #[Property(description: 'If it has hidden dependencies', type: 'boolean', example: true)]
+        private bool $hasHidden,
+        #[Property(
+            description: 'Total number of objects referencing this user, including ones the caller is not '
+                . 'permitted to view - not the count of objects actually returned via dependencies or the '
+                . 'paginated endpoint.',
+            type: 'integer',
+            example: 666
+        )]
+        private int $totalItems
     ) {
     }
 
@@ -44,5 +52,10 @@ final readonly class ObjectDependencies
     public function isHasHidden(): bool
     {
         return $this->hasHidden;
+    }
+
+    public function getTotalItems(): int
+    {
+        return $this->totalItems;
     }
 }
