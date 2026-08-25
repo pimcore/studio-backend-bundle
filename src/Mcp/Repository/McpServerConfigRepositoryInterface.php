@@ -36,6 +36,12 @@ interface McpServerConfigRepositoryInterface
     public function has(string $id): bool;
 
     /**
+     * Whether the configured storage target accepts writes (false e.g. for a
+     * symfony-config target outside debug mode).
+     */
+    public function isWriteable(): bool;
+
+    /**
      * @throws NotFoundException when no server with that id exists
      */
     public function get(string $id): McpServerDefinition;
