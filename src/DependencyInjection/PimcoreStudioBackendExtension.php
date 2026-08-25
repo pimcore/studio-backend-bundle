@@ -243,7 +243,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->setParameter('pimcore_studio_backend.oauth.resources', $config['oauth']['resources']);
 
         $container->getDefinition(ResourceRegistryInterface::class)
-            ->setArgument('$resources', $config['oauth']['resources']);
+            ->setArgument('$resources', [
+                ...$config['oauth']['resources'],
+                ...$this->buildMcpServerResources(
+                    $config[Configuration::MCP_SERVERS_NODE],
+                    $config['oauth']['issuer'],
+                ),
+            ]);
 
         $container->getDefinition(TokenValidatorInterface::class)
             ->setArgument('$publicKey', $config['oauth']['keys']['public_key'])
@@ -355,6 +361,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                         'pimcore_studio_backend.oauth.client_metadata' => [
                             'adapter' => 'cache.adapter.filesystem',
                         ],
+                        // MCP session store (per-server, keyed by slug); dedicated so
+                        // it never collides with another bundle's MCP sessions.
+                        'pimcore_studio_backend.mcp.session' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
                     ],
                 ],
             ]);
@@ -453,6 +464,41 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::MCP_SERVERS_NODE);
+    }
+
+    /**
+     * Advertises each enabled MCP server as an RFC 9728 protected resource, so the
+     * per-server discovery and 401 challenge resolve. Requires a configured issuer
+     * to build the absolute resource URL; skipped otherwise (a null issuer derives
+     * from the request at runtime, which cannot be seeded at container-build time).
+     *
+     * @param array<string, array<string, mixed>> $servers
+     *
+     * @return list<array{uri: string, scopes_supported: list<string>, authorization_servers: list<string>}>
+     */
+    private function buildMcpServerResources(array $servers, ?string $issuer): array
+    {
+        if ($issuer === null) {
+            return [];
+        }
+
+        $base = rtrim($issuer, '/');
+        $resources = [];
+        foreach ($servers as $id => $server) {
+            if (($server['enabled'] ?? true) === false) {
+                continue;
+            }
+
+            $slug = $server['url_slug'] ?? $id;
+            $scopes = $server['scopes'] ?? [];
+            $resources[] = [
+                'uri' => $base . '/pimcore-mcp/studio/' . $slug,
+                'scopes_supported' => $scopes !== [] ? $scopes : ['mcp:read', 'mcp:write'],
+                'authorization_servers' => [$issuer],
+            ];
+        }
+
+        return $resources;
     }
 
     /**
