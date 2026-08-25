@@ -18,6 +18,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\User as UserFieldDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Listing as ClassDefinitionListing;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Listing as ObjectListing;
+use function count;
 
 /**
  * @internal
