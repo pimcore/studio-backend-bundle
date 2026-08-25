@@ -59,3 +59,24 @@ services:
 
     # Built-in tools
     Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool: ~
+
+    # --- Serving configured MCP servers over HTTP ---
+    # PSR-16 view of the dedicated MCP session cache pool (pool declared in the
+    # extension's prepend()).
+    pimcore_studio_backend.mcp.session_cache:
+        class: Symfony\Component\Cache\Psr16Cache
+        arguments: ['@pimcore_studio_backend.mcp.session']
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory:
+        arguments:
+            $sessionCache: '@pimcore_studio_backend.mcp.session_cache'
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactoryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\McpServerController:
+        public: true
+        tags: ['controller.service_arguments']
