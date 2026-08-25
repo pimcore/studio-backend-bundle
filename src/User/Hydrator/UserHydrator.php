@@ -29,6 +29,13 @@ final readonly class UserHydrator implements UserHydratorInterface
 {
     use PermissionSanitationTrait;
 
+    /**
+     * Kept small deliberately: this preview is hydrated on every GET /user/{id} call,
+     * regardless of whether the caller ever looks at it. Browse the full list via the
+     * paginated GET /user/{id}/object-dependencies endpoint instead.
+     */
+    private const int OBJECT_DEPENDENCIES_PREVIEW_SIZE = 20;
+
     public function __construct(
         private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private WorkspaceHydratorInterface $workspaceHydrator,
@@ -42,6 +49,11 @@ final readonly class UserHydrator implements UserHydratorInterface
 
     public function hydrate(UserInterface $user): UserSchema
     {
+        $objectDependencies = $this->objectDependenciesService->getPreviewForUser(
+            $user->getId(),
+            self::OBJECT_DEPENDENCIES_PREVIEW_SIZE
+        );
+
         return new UserSchema(
             id: $user->getId(),
             name: $user->getName(),
@@ -74,7 +86,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             assetWorkspaces: $this->workspaceHydrator->hydrateAssetWorkspace($user),
             dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
-            objectDependencies: $this->objectDependenciesService->getDependenciesForUser($user),
+            objectDependencies: $objectDependencies,
             perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
         );
     }
