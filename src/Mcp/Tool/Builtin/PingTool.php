@@ -34,7 +34,9 @@ final class PingTool implements McpToolInterface
             title: 'Ping',
             description: 'Health-check tool that returns "pong".',
             annotations: new McpToolAnnotations(readOnly: true, idempotent: true),
-            inputSchema: ['type' => 'object', 'properties' => [], 'additionalProperties' => false],
+            // No arguments: an object schema with no properties (an empty PHP array
+            // would serialise to a JSON array, which JSON Schema rejects for `properties`).
+            inputSchema: ['type' => 'object', 'additionalProperties' => false],
         );
     }
 
