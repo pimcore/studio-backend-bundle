@@ -77,6 +77,28 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver
 
-    Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\McpServerController:
+    # All MCP controllers (the runtime serving endpoint + the Studio-API management
+    # controllers) are public service-controllers.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\:
+        resource: '../src/Mcp/Controller'
         public: true
         tags: ['controller.service_arguments']
+
+    # --- Studio-API: MCP server management + tool catalogue ---
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService:
+        arguments:
+            $issuer: '%pimcore_studio_backend.oauth.issuer%'
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationServiceInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueService: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueServiceInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueService
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydrator: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydratorInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydrator
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydrator: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydratorInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydrator
