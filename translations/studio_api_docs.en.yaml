@@ -774,6 +774,30 @@ login_token_summary: Session-based login with user token.
 logout_description: Logout and invalidate current session for active user.
 logout_success_response: Logout successful.
 logout_summary: Logout and invalidate current session for active user.
+mcp_create_server_description: |
+    Create a new MCP server configuration. The <strong>urlSlug</strong> is used as the identifier and
+    determines the server's serving URL; it must be unique and contain only lowercase letters, digits and hyphens.
+mcp_create_server_success_response: The created MCP server configuration
+mcp_create_server_summary: Create an MCP server
+mcp_delete_server_description: Delete an MCP server configuration by its url slug.
+mcp_delete_server_success_response: MCP server configuration deleted successfully
+mcp_delete_server_summary: Delete an MCP server
+mcp_get_server_description: Get a single MCP server configuration by its url slug.
+mcp_get_server_success_response: The requested MCP server configuration
+mcp_get_server_summary: Get an MCP server
+mcp_get_servers_description: |
+    Get all MCP server configurations the current user is allowed to see.
+mcp_get_servers_success_response: List of MCP server configurations
+mcp_get_servers_summary: Get all MCP servers
+mcp_get_tools_description: |
+    Get the catalogue of MCP tools available for assignment to a server, contributed by the backend
+    bundle and any other bundle that registers tools.
+mcp_get_tools_success_response: List of available MCP tools
+mcp_get_tools_summary: Get the MCP tool catalogue
+mcp_update_server_description: |
+    Update an existing MCP server configuration identified by its url slug. The url slug itself cannot be changed.
+mcp_update_server_success_response: The updated MCP server configuration
+mcp_update_server_summary: Update an MCP server
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
@@ -1124,6 +1148,7 @@ tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags f
 tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
+tag_mcp_description: MCP server management operations to get/create/update/delete servers and list available tools
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes

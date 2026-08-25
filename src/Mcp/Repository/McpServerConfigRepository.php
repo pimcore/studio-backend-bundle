@@ -63,6 +63,15 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
         return $this->getRepository()->loadConfigByKey($id)[0] !== null;
     }
 
+    public function isWriteable(): bool
+    {
+        try {
+            return $this->getRepository()->isWriteable();
+        } catch (Exception) {
+            return false;
+        }
+    }
+
     public function get(string $id): McpServerDefinition
     {
         [$data] = $this->getRepository()->loadConfigByKey($id);
