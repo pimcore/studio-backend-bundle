@@ -39,6 +39,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_cache_description',
 )]
 #[Tag(
+    name: Tags::Mcp->value,
+    description: 'tag_mcp_description',
+)]
+#[Tag(
     name: Tags::ClassDefinition->value,
     description: 'tag_class_description'
 )]
@@ -214,6 +218,7 @@ enum Tags: string
     case RecycleBin = 'Recycle Bin';
     case Role = 'Role Management';
     case Search = 'Search';
+    case Mcp = 'MCP';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case SettingsAdmin = 'Settings Admin';
