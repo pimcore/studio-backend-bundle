@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'RelatedElementData',
     title: 'RelatedElementData',
-    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished'],
+    required: ['id', 'type', 'subtype', 'fullPath', 'isPublished', 'hasViewAccess'],
     type: 'object'
 )]
 final readonly class RelatedElementData
@@ -38,6 +38,12 @@ final readonly class RelatedElementData
         private string $fullPath,
         #[Property(description: 'Is the element published', type: 'boolean', example: true)]
         private ?bool $isPublished = null,
+        #[Property(
+            description: 'Whether the current user is allowed to view the element',
+            type: 'boolean',
+            example: true
+        )]
+        private bool $hasViewAccess = true,
     ) {
     }
 
@@ -64,5 +70,10 @@ final readonly class RelatedElementData
     public function getIsPublished(): ?bool
     {
         return $this->isPublished;
+    }
+
+    public function getHasViewAccess(): bool
+    {
+        return $this->hasViewAccess;
     }
 }
