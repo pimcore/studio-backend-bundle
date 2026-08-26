@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\Server;
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationServiceInterface;
@@ -24,10 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -45,7 +44,7 @@ final class DeleteServerController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     #[Route(
         self::ROUTE,
@@ -53,7 +52,6 @@ final class DeleteServerController extends AbstractApiController
         requirements: ['id' => '[a-z0-9-]+'],
         methods: ['DELETE'],
     )]
-    #[IsGranted(UserPermissions::MCP_SERVERS->value)]
     #[Delete(
         path: self::PREFIX . self::ROUTE,
         operationId: 'mcp_delete_server',
@@ -67,6 +65,7 @@ final class DeleteServerController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteMcpServer(string $id): Response

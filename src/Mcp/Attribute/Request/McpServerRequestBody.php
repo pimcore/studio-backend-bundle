@@ -18,7 +18,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\ListOfInteger;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerAccessGrant;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleBoolean;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
 
@@ -45,8 +45,16 @@ final class McpServerRequestBody extends RequestBody
                     ),
                     new SingleBoolean('enabled'),
                     new SingleBoolean('shareGlobal'),
-                    new ListOfInteger('sharedUsers'),
-                    new ListOfInteger('sharedRoles'),
+                    new Property(
+                        property: 'sharedUsers',
+                        type: 'array',
+                        items: new Items(ref: McpServerAccessGrant::class),
+                    ),
+                    new Property(
+                        property: 'sharedRoles',
+                        type: 'array',
+                        items: new Items(ref: McpServerAccessGrant::class),
+                    ),
                 ],
                 type: 'object',
             ),
