@@ -18,6 +18,7 @@ use OpenApi\Attributes\Put;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Attribute\Request\McpServerRequestBody;
@@ -29,11 +30,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -51,7 +50,7 @@ final class UpdateServerController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException|NotWriteableException
+     * @throws ElementSavingFailedException|ForbiddenException|NotFoundException|NotWriteableException
      */
     #[Route(
         self::ROUTE,
@@ -59,7 +58,6 @@ final class UpdateServerController extends AbstractApiController
         requirements: ['id' => '[a-z0-9-]+'],
         methods: ['PUT'],
     )]
-    #[IsGranted(UserPermissions::MCP_SERVERS->value)]
     #[Put(
         path: self::PREFIX . self::ROUTE,
         operationId: 'mcp_update_server',
@@ -75,6 +73,7 @@ final class UpdateServerController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function updateMcpServer(

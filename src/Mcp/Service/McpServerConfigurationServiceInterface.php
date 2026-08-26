@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter\McpServerParameter;
@@ -31,7 +32,7 @@ interface McpServerConfigurationServiceInterface
     public function listConfigurations(): array;
 
     /**
-     * @throws NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getConfiguration(string $id): McpServer;
 
@@ -41,12 +42,12 @@ interface McpServerConfigurationServiceInterface
     public function saveConfiguration(McpServerParameter $parameter): McpServer;
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException|NotWriteableException
+     * @throws ElementSavingFailedException|ForbiddenException|NotFoundException|NotWriteableException
      */
     public function updateConfiguration(string $id, McpServerParameter $parameter): McpServer;
 
     /**
-     * @throws NotFoundException|NotWriteableException
+     * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     public function deleteConfiguration(string $id): void;
 }

@@ -37,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'sharedUsers',
         'sharedRoles',
         'writeable',
+        'currentUserPermissions',
         'toolCount',
     ],
     type: 'object'
@@ -46,10 +47,10 @@ final class McpServer implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     /**
-     * @param list<string> $tools
-     * @param list<string> $scopes
-     * @param list<int>    $sharedUsers
-     * @param list<int>    $sharedRoles
+     * @param list<string>                 $tools
+     * @param list<string>                 $scopes
+     * @param list<McpServerAccessGrant>   $sharedUsers
+     * @param list<McpServerAccessGrant>   $sharedRoles
      */
     public function __construct(
         #[Property(description: 'Server id (also the url slug)', type: 'string', example: 'product-read')]
@@ -70,14 +71,16 @@ final class McpServer implements AdditionalAttributesInterface
         private readonly bool $enabled,
         #[Property(description: 'Owner user id. Null when the owner has been deleted.', type: 'integer', example: 42, nullable: true)]
         private readonly ?int $ownerId,
-        #[Property(description: 'Any authenticated user may use it', type: 'boolean', example: false)]
+        #[Property(description: 'Any authenticated user may read/use it', type: 'boolean', example: false)]
         private readonly bool $shareGlobal,
-        #[Property(description: 'Users allowed to use it', type: 'array', items: new Items(type: 'integer'), example: [42])]
+        #[Property(description: 'Users shared with, each at a read/write level', type: 'array', items: new Items(ref: McpServerAccessGrant::class))]
         private readonly array $sharedUsers,
-        #[Property(description: 'Roles allowed to use it', type: 'array', items: new Items(type: 'integer'), example: [7])]
+        #[Property(description: 'Roles shared with, each at a read/write level', type: 'array', items: new Items(ref: McpServerAccessGrant::class))]
         private readonly array $sharedRoles,
-        #[Property(description: 'Whether the storage target allows editing', type: 'boolean', example: true)]
+        #[Property(description: 'Whether the storage target allows editing at all', type: 'boolean', example: true)]
         private readonly bool $writeable,
+        #[Property(description: 'The requesting user\'s resolved access to this server', ref: McpServerUserPermissions::class)]
+        private readonly McpServerUserPermissions $currentUserPermissions,
         #[Property(description: 'Number of assigned tools', type: 'integer', example: 1)]
         private readonly int $toolCount,
     ) {
@@ -140,7 +143,7 @@ final class McpServer implements AdditionalAttributesInterface
     }
 
     /**
-     * @return list<int>
+     * @return list<McpServerAccessGrant>
      */
     public function getSharedUsers(): array
     {
@@ -148,7 +151,7 @@ final class McpServer implements AdditionalAttributesInterface
     }
 
     /**
-     * @return list<int>
+     * @return list<McpServerAccessGrant>
      */
     public function getSharedRoles(): array
     {
@@ -158,6 +161,11 @@ final class McpServer implements AdditionalAttributesInterface
     public function isWriteable(): bool
     {
         return $this->writeable;
+    }
+
+    public function getCurrentUserPermissions(): McpServerUserPermissions
+    {
+        return $this->currentUserPermissions;
     }
 
     public function getToolCount(): int

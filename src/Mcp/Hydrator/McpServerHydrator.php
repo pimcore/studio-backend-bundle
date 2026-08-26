@@ -13,8 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServer;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerAccessGrant;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerUserPermissions;
+use function array_map;
 use function count;
 
 /**
@@ -22,8 +26,14 @@ use function count;
  */
 final readonly class McpServerHydrator implements McpServerHydratorInterface
 {
-    public function hydrate(McpServerDefinition $definition, string $url, array $scopes, bool $writeable): McpServer
-    {
+    public function hydrate(
+        McpServerDefinition $definition,
+        string $url,
+        array $scopes,
+        bool $writeable,
+        bool $canRead,
+        bool $canWrite
+    ): McpServer {
         $access = $definition->access;
 
         return new McpServer(
@@ -37,10 +47,27 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
             enabled: $definition->enabled,
             ownerId: $access->owner,
             shareGlobal: $access->shareGlobal,
-            sharedUsers: $access->sharedUsers,
-            sharedRoles: $access->sharedRoles,
+            sharedUsers: $this->grants($access->sharedUsers),
+            sharedRoles: $this->grants($access->sharedRoles),
             writeable: $writeable,
+            currentUserPermissions: new McpServerUserPermissions($canRead, $canWrite),
             toolCount: count($definition->toolIds),
+        );
+    }
+
+    /**
+     * @param list<McpServerAccessEntry> $entries
+     *
+     * @return list<McpServerAccessGrant>
+     */
+    private function grants(array $entries): array
+    {
+        return array_map(
+            static fn (McpServerAccessEntry $entry): McpServerAccessGrant => new McpServerAccessGrant(
+                $entry->id,
+                $entry->permission->value,
+            ),
+            $entries
         );
     }
 }

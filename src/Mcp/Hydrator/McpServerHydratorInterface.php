@@ -24,5 +24,12 @@ interface McpServerHydratorInterface
     /**
      * @param list<string> $scopes
      */
-    public function hydrate(McpServerDefinition $definition, string $url, array $scopes, bool $writeable): McpServer;
+    public function hydrate(
+        McpServerDefinition $definition,
+        string $url,
+        array $scopes,
+        bool $writeable,
+        bool $canRead,
+        bool $canWrite
+    ): McpServer;
 }

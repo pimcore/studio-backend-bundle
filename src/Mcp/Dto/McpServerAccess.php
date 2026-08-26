@@ -13,22 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Dto;
 
+use function array_map;
 use function is_array;
 use function is_numeric;
 
 /**
- * Who may use an MCP server. Mirrors the bundle's SavedSearch/Grid sharing model
- * (owner + global flag + explicit user/role id lists); users and roles are kept
- * in separate lists so a shared id is never ambiguous. Enforcement lives in the
- * access resolver, not here.
+ * Who may access an MCP server, and at which level. An owner (implicit write) plus
+ * a global read flag, plus two share grids keyed by user id and role id — each
+ * entry carrying a read/write level ({@see McpServerAccessEntry}). Users and roles
+ * are kept in separate lists so a shared id is never ambiguous. Enforcement lives
+ * in the access resolver, not here.
  *
  * @internal
  */
 final readonly class McpServerAccess
 {
     /**
-     * @param list<int> $sharedUsers
-     * @param list<int> $sharedRoles
+     * @param list<McpServerAccessEntry> $sharedUsers
+     * @param list<McpServerAccessEntry> $sharedRoles
      */
     public function __construct(
         public ?int $owner = null,
@@ -46,8 +48,8 @@ final readonly class McpServerAccess
         return new self(
             owner: isset($data['owner']) && is_numeric($data['owner']) ? (int) $data['owner'] : null,
             shareGlobal: (bool) ($data['share_global'] ?? false),
-            sharedUsers: self::intList($data['shared_users'] ?? []),
-            sharedRoles: self::intList($data['shared_roles'] ?? []),
+            sharedUsers: self::entryList($data['shared_users'] ?? []),
+            sharedRoles: self::entryList($data['shared_roles'] ?? []),
         );
     }
 
@@ -59,29 +61,30 @@ final readonly class McpServerAccess
         return [
             'owner' => $this->owner,
             'share_global' => $this->shareGlobal,
-            'shared_users' => $this->sharedUsers,
-            'shared_roles' => $this->sharedRoles,
+            'shared_users' => array_map(static fn (McpServerAccessEntry $e): array => $e->toArray(), $this->sharedUsers),
+            'shared_roles' => array_map(static fn (McpServerAccessEntry $e): array => $e->toArray(), $this->sharedRoles),
         ];
     }
 
     /**
      * @param mixed $value
      *
-     * @return list<int>
+     * @return list<McpServerAccessEntry>
      */
-    private static function intList(mixed $value): array
+    private static function entryList(mixed $value): array
     {
         if (!is_array($value)) {
             return [];
         }
 
-        $ids = [];
+        $entries = [];
         foreach ($value as $item) {
-            if (is_numeric($item)) {
-                $ids[] = (int) $item;
+            $entry = McpServerAccessEntry::fromMixed($item);
+            if ($entry !== null) {
+                $entries[] = $entry;
             }
         }
 
-        return $ids;
+        return $entries;
     }
 }
