@@ -28,6 +28,8 @@ use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
+use function array_diff;
+use function array_map;
 use function in_array;
 
 /**
@@ -57,17 +59,30 @@ final readonly class UpdateService implements UpdateServiceInterface
         array $permissionsToSet,
         UserInterface|UserRoleInterface $user
     ): UserInterface|UserRoleInterface {
-        $permissions = array_map(static function ($permission) {
+        $availablePermissions = array_map(static function ($permission) {
             return $permission->getKey();
         }, $this->permissionRepository->getAvailablePermissions());
 
+        // Permission definitions can disappear (e.g. when a bundle gets uninstalled) while the key stays
+        // assigned to the user/role. Those orphaned keys are read from the database and sent back on the
+        // next save, so rejecting them would make unrelated changes (language, perspectives, ...)
+        // unsavable. They are dropped instead - keys the client made up are still reported as not found.
+        $orphanedPermissions = array_diff($user->getPermissions(), $availablePermissions);
+
+        $permissions = [];
         foreach ($permissionsToSet as $permission) {
-            if (!in_array($permission, $permissions, true)) {
+            if (in_array($permission, $availablePermissions, true)) {
+                $permissions[] = $permission;
+
+                continue;
+            }
+
+            if (!in_array($permission, $orphanedPermissions, true)) {
                 throw new NotFoundException('Permission', $permission, 'Key');
             }
         }
 
-        $user->setPermissions($permissionsToSet);
+        $user->setPermissions($permissions);
 
         return $user;
     }
