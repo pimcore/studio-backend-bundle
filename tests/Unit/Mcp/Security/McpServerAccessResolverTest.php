@@ -15,8 +15,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Security;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Model\UserInterface;
 
 final class McpServerAccessResolverTest extends Unit
@@ -30,45 +32,82 @@ final class McpServerAccessResolverTest extends Unit
         $this->resolver = new McpServerAccessResolver();
     }
 
-    public function testAdminIsAlwaysAllowed(): void
+    public function testAdminIsAlwaysAllowedBothLevels(): void
     {
-        // No sharing at all, but admin bypasses everything.
-        $this->assertTrue($this->resolver->isAllowed($this->server(new McpServerAccess()), $this->user(isAdmin: true)));
+        $server = $this->server(new McpServerAccess());
+
+        $this->assertSame(['read' => true, 'write' => true], $this->resolver->resolve($server, $this->user(isAdmin: true)));
     }
 
-    public function testGlobalShareAllowsAnyUser(): void
-    {
-        $server = $this->server(new McpServerAccess(shareGlobal: true));
-
-        $this->assertTrue($this->resolver->isAllowed($server, $this->user()));
-    }
-
-    public function testOwnerIsAllowed(): void
+    public function testOwnerHasReadAndWrite(): void
     {
         $server = $this->server(new McpServerAccess(owner: self::USER_ID));
 
-        $this->assertTrue($this->resolver->isAllowed($server, $this->user()));
+        $this->assertSame(['read' => true, 'write' => true], $this->resolver->resolve($server, $this->user()));
     }
 
-    public function testSharedUserIsAllowed(): void
+    public function testGlobalShareGrantsReadButNotWrite(): void
     {
-        $server = $this->server(new McpServerAccess(sharedUsers: [7, self::USER_ID]));
+        $server = $this->server(new McpServerAccess(shareGlobal: true));
 
-        $this->assertTrue($this->resolver->isAllowed($server, $this->user()));
+        $this->assertTrue($this->resolver->isAllowed($server, McpServerPermission::Read, $this->user()));
+        $this->assertFalse($this->resolver->isAllowed($server, McpServerPermission::Write, $this->user()));
     }
 
-    public function testSharedRoleIsAllowed(): void
+    public function testReadUserEntryGrantsOnlyRead(): void
     {
-        $server = $this->server(new McpServerAccess(sharedRoles: [9]));
+        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_ID, McpServerPermission::Read)]));
 
-        $this->assertTrue($this->resolver->isAllowed($server, $this->user(roles: [3, 9])));
+        $this->assertSame(['read' => true, 'write' => false], $this->resolver->resolve($server, $this->user()));
     }
 
-    public function testUnrelatedUserIsDenied(): void
+    public function testWriteUserEntryGrantsReadAndWrite(): void
     {
-        $server = $this->server(new McpServerAccess(owner: 1, sharedUsers: [2], sharedRoles: [3]));
+        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_ID, McpServerPermission::Write)]));
 
-        $this->assertFalse($this->resolver->isAllowed($server, $this->user(roles: [4, 5])));
+        $this->assertSame(['read' => true, 'write' => true], $this->resolver->resolve($server, $this->user()));
+    }
+
+    public function testWriteRoleEntryGrantsReadAndWrite(): void
+    {
+        $server = $this->server(new McpServerAccess(sharedRoles: [$this->entry(9, McpServerPermission::Write)]));
+
+        $this->assertSame(['read' => true, 'write' => true], $this->resolver->resolve($server, $this->user(roles: [3, 9])));
+    }
+
+    public function testDirectUserEntryWinsOverRoleAndPinsTheLevel(): void
+    {
+        // User is pinned to read even though a role they hold would grant write.
+        $server = $this->server(new McpServerAccess(
+            sharedUsers: [$this->entry(self::USER_ID, McpServerPermission::Read)],
+            sharedRoles: [$this->entry(9, McpServerPermission::Write)],
+        ));
+
+        $this->assertSame(['read' => true, 'write' => false], $this->resolver->resolve($server, $this->user(roles: [9])));
+    }
+
+    public function testUnrelatedUserIsDeniedBothLevels(): void
+    {
+        $server = $this->server(new McpServerAccess(
+            owner: 1,
+            sharedUsers: [$this->entry(2, McpServerPermission::Write)],
+            sharedRoles: [$this->entry(3, McpServerPermission::Write)],
+        ));
+
+        $this->assertSame(['read' => false, 'write' => false], $this->resolver->resolve($server, $this->user(roles: [4, 5])));
+    }
+
+    public function testEmptyAccessDeniesNonAdmin(): void
+    {
+        // Deny-by-default: nothing shared, not global, not owner → no access.
+        $server = $this->server(new McpServerAccess());
+
+        $this->assertSame(['read' => false, 'write' => false], $this->resolver->resolve($server, $this->user()));
+    }
+
+    private function entry(int $id, McpServerPermission $permission): McpServerAccessEntry
+    {
+        return new McpServerAccessEntry($id, $permission);
     }
 
     private function server(McpServerAccess $access): McpServerDefinition

@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Event\PreResponse\McpServerEvent;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydratorInterface;
@@ -22,10 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter\McpServerParameter;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServer;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use function array_keys;
-use function array_map;
 use function rtrim;
 use function sprintf;
 
@@ -39,6 +42,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         private EventDispatcherInterface $eventDispatcher,
         private McpServerConfigRepositoryInterface $repository,
         private McpToolRegistryInterface $toolRegistry,
+        private McpServerAccessResolverInterface $accessResolver,
         private SecurityServiceInterface $securityService,
         private ?string $issuer,
     ) {
@@ -46,15 +50,24 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
 
     public function listConfigurations(): array
     {
-        return array_map(
-            fn (McpServerDefinition $definition): McpServer => $this->buildServer($definition),
-            $this->repository->list()
-        );
+        $user = $this->securityService->getCurrentUser();
+
+        $servers = [];
+        foreach ($this->repository->list() as $definition) {
+            if ($this->accessResolver->isAllowed($definition, McpServerPermission::Read, $user)) {
+                $servers[] = $this->buildServer($definition);
+            }
+        }
+
+        return $servers;
     }
 
     public function getConfiguration(string $id): McpServer
     {
-        return $this->buildServer($this->repository->get($id));
+        $definition = $this->repository->get($id);
+        $this->assert($definition, McpServerPermission::Read);
+
+        return $this->buildServer($definition);
     }
 
     public function saveConfiguration(McpServerParameter $parameter): McpServer
@@ -78,8 +91,11 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
 
     public function updateConfiguration(string $id, McpServerParameter $parameter): McpServer
     {
-        // Preserve the original owner; the slug is locked to the id.
+        // Editing (incl. re-sharing) requires write; the slug is locked to the id
+        // and the original owner is preserved.
         $existing = $this->repository->get($id);
+        $this->assert($existing, McpServerPermission::Write);
+
         $definition = $this->buildDefinition($id, $parameter, $existing->access->owner);
         $this->repository->save($definition);
 
@@ -88,6 +104,9 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
 
     public function deleteConfiguration(string $id): void
     {
+        $definition = $this->repository->get($id);
+        $this->assert($definition, McpServerPermission::Write);
+
         $this->repository->delete($id);
     }
 
@@ -104,24 +123,58 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
             access: new McpServerAccess(
                 owner: $owner,
                 shareGlobal: $parameter->shareGlobal(),
-                sharedUsers: $parameter->getSharedUsers(),
-                sharedRoles: $parameter->getSharedRoles(),
+                sharedUsers: $this->normalizeEntries($parameter->getSharedUsers()),
+                sharedRoles: $this->normalizeEntries($parameter->getSharedRoles()),
             ),
         );
     }
 
     private function buildServer(McpServerDefinition $definition): McpServer
     {
+        $permissions = $this->accessResolver->resolve($definition, $this->securityService->getCurrentUser());
+
         $server = $this->serverHydrator->hydrate(
             $definition,
             $this->buildUrl($definition->urlSlug),
             $this->deriveScopes($definition->toolIds),
             $this->repository->isWriteable(),
+            $permissions['read'],
+            $permissions['write'],
         );
 
         $this->eventDispatcher->dispatch(new McpServerEvent($server), McpServerEvent::EVENT_NAME);
 
         return $server;
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function assert(McpServerDefinition $definition, McpServerPermission $permission): void
+    {
+        if (!$this->accessResolver->isAllowed($definition, $permission, $this->securityService->getCurrentUser())) {
+            throw new ForbiddenException(
+                sprintf('You are not allowed to %s the MCP server "%s".', $permission->value, $definition->id)
+            );
+        }
+    }
+
+    /**
+     * @param list<array{id?: mixed, permission?: mixed}> $raw
+     *
+     * @return list<McpServerAccessEntry>
+     */
+    private function normalizeEntries(array $raw): array
+    {
+        $entries = [];
+        foreach ($raw as $item) {
+            $entry = McpServerAccessEntry::fromMixed($item);
+            if ($entry !== null) {
+                $entries[] = $entry;
+            }
+        }
+
+        return $entries;
     }
 
     /**
