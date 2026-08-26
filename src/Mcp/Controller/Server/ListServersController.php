@@ -23,11 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
@@ -47,8 +45,9 @@ final class ListServersController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    // No permission gate: any authenticated user may list, but the service returns
+    // only the servers they have at least read access to (deny-by-default).
     #[Route(self::ROUTE, name: 'pimcore_studio_api_get_mcp_servers', methods: ['GET'])]
-    #[IsGranted(UserPermissions::MCP_SERVERS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'mcp_get_servers',

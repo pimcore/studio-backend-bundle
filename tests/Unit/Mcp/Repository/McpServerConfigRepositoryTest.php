@@ -17,8 +17,10 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepository;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Config\LocationAwareConfigRepository;
 
 final class McpServerConfigRepositoryTest extends Unit
@@ -130,7 +132,10 @@ final class McpServerConfigRepositoryTest extends Unit
             toolIds: ['get_asset'],
             scopes: ['mcp:read'],
             enabled: true,
-            access: new McpServerAccess(owner: 22, sharedRoles: [7]),
+            access: new McpServerAccess(
+                owner: 22,
+                sharedRoles: [new McpServerAccessEntry(7, McpServerPermission::Write)]
+            ),
         );
         $repository->save($server);
 

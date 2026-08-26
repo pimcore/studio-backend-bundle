@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Dto;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 
 final class McpServerDefinitionTest extends Unit
 {
@@ -84,7 +86,10 @@ final class McpServerDefinitionTest extends Unit
             toolIds: ['apply_transition'],
             scopes: ['mcp:read', 'mcp:write'],
             enabled: true,
-            access: new McpServerAccess(owner: 1, sharedRoles: [9]),
+            access: new McpServerAccess(
+                owner: 1,
+                sharedRoles: [new McpServerAccessEntry(9, McpServerPermission::Read)]
+            ),
         );
 
         $this->assertEquals($server, McpServerDefinition::fromArray($server->id, $server->toArray()));
