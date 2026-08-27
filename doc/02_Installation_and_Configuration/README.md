@@ -61,6 +61,13 @@ security:
 > Symfony evaluates firewalls in order, so placing it first ensures `/pimcore-mcp/` requests are matched
 > by the correct firewall.
 
+**Optional: OAuth 2.1 authorization server**
+
+The bundle can also act as an embedded OAuth 2.1 authorization server, so MCP (and other) clients can
+authenticate with standards-based bearer tokens instead of static credentials. It is opt-in and its endpoints
+live at the web root (outside the firewalls above), so it needs its own `access_control` rules. See the
+[OAuth 2.1 Authorization Server](./06_OAuth_Server.md) page for setup and configuration.
+
 4) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
 
 ```php
