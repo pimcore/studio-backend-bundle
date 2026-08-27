@@ -22,6 +22,7 @@ use Pimcore\Workflow\Manager;
 use Pimcore\Workflow\Place\PlaceConfig;
 use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\WorkflowInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -93,6 +94,85 @@ final class WorkflowPermissionMergerTest extends Unit
         $this->assertInstanceOf(AssetPermissions::class, $merged);
         $this->assertFalse($merged->isDelete());
         $this->assertTrue($merged->isView());
+    }
+
+    /**
+     * Drift detector: the merger mirrors the private core aggregation behind
+     * Manager::isDeniedInWorkflow(). This test runs the REAL isDeniedInWorkflow() (only the
+     * fixture collaborators getAllWorkflows/getWorkflowIfExists/getOrderedPlaceConfigs are
+     * stubbed) against the merger on identical workflow data and asserts both agree on every
+     * permission flag. If core changes its aggregation semantics, this fails instead of the
+     * grid silently disagreeing with enforcement.
+     */
+    public function testMergerAgreesWithCoreIsDeniedInWorkflowForEveryFlag(): void
+    {
+        $placePermissions = [
+            'save' => false,
+            'unpublish' => false,
+            'delete' => false,
+            'rename' => false,
+            'properties' => false,
+            'view' => true,
+            'publish' => true,
+            'settings' => true,
+            'versions' => true,
+        ];
+
+        $workflow = $this->createMock(WorkflowInterface::class);
+        $workflow->method('getMarking')->willReturn(new Marking(['test_place' => 1]));
+
+        $placeConfig = $this->createMock(PlaceConfig::class);
+        $placeConfig->method('getPermissions')->willReturn($placePermissions);
+        $placeConfig->method('getUserPermissions')->willReturn($placePermissions);
+
+        $manager = $this->getMockBuilder(Manager::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getAllWorkflows', 'getWorkflowIfExists', 'getOrderedPlaceConfigs'])
+            ->getMock();
+        $manager->method('getAllWorkflows')->willReturn(['test_workflow']);
+        $manager->method('getWorkflowIfExists')->willReturn($workflow);
+        $manager->method('getOrderedPlaceConfigs')->willReturn([$placeConfig]);
+
+        $element = $this->createMock(ElementInterface::class);
+
+        $merged = (new WorkflowPermissionMerger($manager))->mergeWorkflowPermissions(
+            new DataObjectPermissions(
+                save: true,
+                unpublish: true,
+                list: true,
+                view: true,
+                publish: true,
+                delete: true,
+                rename: true,
+                create: true,
+                settings: true,
+                versions: true,
+                properties: true,
+            ),
+            $element
+        );
+
+        $this->assertInstanceOf(DataObjectPermissions::class, $merged);
+
+        $flagGetters = [
+            'save' => 'isSave',
+            'unpublish' => 'isUnpublish',
+            'view' => 'isView',
+            'publish' => 'isPublish',
+            'delete' => 'isDelete',
+            'rename' => 'isRename',
+            'settings' => 'isSettings',
+            'versions' => 'isVersions',
+            'properties' => 'isProperties',
+        ];
+
+        foreach ($flagGetters as $flag => $getter) {
+            $this->assertSame(
+                !$manager->isDeniedInWorkflow($element, $flag),
+                $merged->$getter(),
+                sprintf('Merger disagrees with Manager::isDeniedInWorkflow() for the "%s" flag', $flag)
+            );
+        }
     }
 
     /**

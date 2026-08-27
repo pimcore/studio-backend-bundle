@@ -37,7 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
     ],
     type: 'object'
 )]
-class Element implements StudioElementInterface, WorkflowPermissionsAwareInterface
+class Element implements StudioElementInterface
 {
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 83)]
@@ -118,11 +118,6 @@ class Element implements StudioElementInterface, WorkflowPermissionsAwareInterfa
     public function getPermissions(): Permissions
     {
         return new Permissions();
-    }
-
-    public function getHasWorkflowWithPermissions(): bool
-    {
-        return false;
     }
 
     public function getElementType(): string

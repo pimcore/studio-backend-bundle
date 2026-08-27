@@ -35,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\AbstractObject;
@@ -153,7 +154,7 @@ final class GridServiceTest extends Unit
 
     private function createStudioElement(Permissions $permissions, bool $hasWorkflowWithPermissions): Element
     {
-        return new class($permissions, $hasWorkflowWithPermissions) extends Element {
+        return new class($permissions, $hasWorkflowWithPermissions) extends Element implements WorkflowPermissionsAwareInterface {
             public function __construct(
                 private readonly Permissions $studioPermissions,
                 private readonly bool $workflowFlag,
