@@ -63,21 +63,34 @@ final class UserPerspectiveServiceTest extends Unit
         $this->assertCount(1, $result);
     }
 
-    public function testSuperadminGetsDefaultActivePerspectiveDespiteStaleAssignment(): void
+    public function testAdminKeepsExplicitlySelectedActivePerspectiveOutsideStaleAssignment(): void
     {
         $user = $this->makeEmpty(UserInterface::class, [
             'getId' => 1,
             'isAdmin' => true,
         ]);
 
-        // Uses a real, still-configured perspective ID (one of the two in the mocked full set),
-        // not a fake one - otherwise this test would pass even without the isAdmin() bypass in
-        // getActivePerspective(), since a nonexistent stale ID can never match the full set either
-        // way and the bug would go unnoticed.
+        // 'other-perspective' is outside the stale assignment but inside the full set, so it is a
+        // perspective the admin is allowed to select - and their selection must survive the next
+        // application load instead of being reset.
         $service = $this->createService(
-            listUserPerspectives: ['other-perspective'],
+            listUserPerspectives: ['stale-perspective'],
             getUserActivePerspective: 'other-perspective',
         );
+
+        $result = $service->getActivePerspective($user);
+
+        $this->assertSame('other-perspective', $result);
+    }
+
+    public function testAdminWithoutSelectedActivePerspectiveGetsDefaultDespiteStaleAssignment(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getId' => 1,
+            'isAdmin' => true,
+        ]);
+
+        $service = $this->createService(listUserPerspectives: ['stale-perspective']);
 
         $result = $service->getActivePerspective($user);
 
@@ -156,10 +169,7 @@ final class UserPerspectiveServiceTest extends Unit
             'getRoles' => [7],
         ]);
 
-        $service = $this->createService(
-            getUserActivePerspective: 'other-perspective',
-            perspectivesByRoleId: [7 => ['other-perspective']],
-        );
+        $service = $this->createService(perspectivesByRoleId: [7 => ['role-perspective']]);
 
         $result = $service->getActivePerspective($user);
 
