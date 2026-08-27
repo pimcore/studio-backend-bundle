@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
 
@@ -22,11 +23,29 @@ use Pimcore\Model\UserInterface;
  */
 interface LanguageServiceInterface
 {
+    /**
+     * @return array<int, string>
+     *
+     * @throws InvalidArgumentException
+     */
     public function getUserAllowedLanguages(
         DataObject $dataObject,
         UserInterface $user,
         string $permission
     ): array;
+
+    /**
+     * Tells whether the user may use the language independent ("default") value of a localized
+     * field for the given language permission. It is granted unless the configured language list
+     * explicitly leaves it out.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function isLanguageIndependentValueAllowed(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission
+    ): bool;
 
     /**
      * @throws ForbiddenException

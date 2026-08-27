@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\SearchIndexAdapter\MappingProperty;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -42,21 +43,41 @@ final readonly class LanguageService implements LanguageServiceInterface
         UserInterface $user,
         string $permission
     ): array {
-        if (!in_array($permission, ElementPermissions::LANGUAGE_PERMISSIONS)) {
-            throw new InvalidArgumentException(sprintf('Invalid permission "%s"', $permission));
-        }
+        $this->validateLanguagePermission($permission);
 
-        $languagePermissions =  $this->securityService->getSpecialDataObjectPermissions(
-            $dataObject,
-            $user,
-            $permission
-        );
+        $languagePermissions = $this->getLanguagePermissions($dataObject, $user, $permission);
 
-        if (empty($languagePermissions) || $this->isDefaultLanguagePermission($languagePermissions)) {
+        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
             return $this->toolResolver->getValidLanguages();
         }
 
         return $languagePermissions;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isLanguageIndependentValueAllowed(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission
+    ): bool {
+        $this->validateLanguagePermission($permission);
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        $languagePermissions = $this->getLanguagePermissions($dataObject, $user, $permission);
+
+        // Without an explicit language restriction every language is allowed, the language
+        // independent value included. This mirrors the behavior of the classic UI, where the
+        // language independent column stays available unless it is left out of the language list.
+        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
+            return true;
+        }
+
+        return in_array(MappingProperty::NOT_LOCALIZED_KEY, $languagePermissions, true);
     }
 
     /**
@@ -81,6 +102,31 @@ final readonly class LanguageService implements LanguageServiceInterface
         }
 
         return $allowedLanguages;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateLanguagePermission(string $permission): void
+    {
+        if (!in_array($permission, ElementPermissions::LANGUAGE_PERMISSIONS, true)) {
+            throw new InvalidArgumentException(sprintf('Invalid permission "%s"', $permission));
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function getLanguagePermissions(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission
+    ): array {
+        return $this->securityService->getSpecialDataObjectPermissions(
+            $dataObject,
+            $user,
+            $permission
+        );
     }
 
     private function isDefaultLanguagePermission(array $permissions): bool

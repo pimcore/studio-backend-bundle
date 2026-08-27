@@ -449,11 +449,18 @@ final readonly class ClassificationStoreAdapter implements
             return array_merge($languages, $this->toolResolver->getValidLanguages());
         }
 
-        return $this->languageService->getUserAllowedLanguages(
-            $object,
-            $user,
-            $permissionType
+        $allowedLanguages = array_values(
+            array_filter(
+                $this->languageService->getUserAllowedLanguages($object, $user, $permissionType),
+                static fn (string $language): bool => $language !== MappingProperty::NOT_LOCALIZED_KEY
+            )
         );
+
+        if (!$this->languageService->isLanguageIndependentValueAllowed($object, $user, $permissionType)) {
+            return $allowedLanguages;
+        }
+
+        return array_merge($languages, $allowedLanguages);
     }
 
     /**

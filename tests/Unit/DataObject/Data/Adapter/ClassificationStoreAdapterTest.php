@@ -385,6 +385,99 @@ final class ClassificationStoreAdapterTest extends Unit
         $this->assertArrayHasKey(30, $mappings);
     }
 
+    /**
+     * A non admin user whose language permissions grant the language independent column must be
+     * able to store values in it, exactly like in the classic UI.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterStoresLanguageIndependentValuesForAllowedNonAdmin(): void
+    {
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(isLanguageIndependentValueAllowed: true);
+
+        $this->assertContains('default', $storedLanguages);
+    }
+
+    /**
+     * A non admin user whose language permissions exclude the language independent column must not
+     * be able to store values in it.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterSkipsLanguageIndependentValuesForDeniedNonAdmin(): void
+    {
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(isLanguageIndependentValueAllowed: false);
+
+        $this->assertNotContains('default', $storedLanguages);
+        $this->assertContains('de', $storedLanguages);
+    }
+
+    /**
+     * @return array<int, string|null>
+     *
+     * @throws Exception
+     */
+    private function getStoredLanguagesForNonAdmin(bool $isLanguageIndependentValueAllowed): array
+    {
+        $storedLanguages = [];
+        $existingContainer = $this->make(Classificationstore::class, [
+            'setLocalizedKeyValue' => function (
+                int $groupId,
+                int $keyId,
+                mixed $value,
+                ?string $language = null
+            ) use (&$storedLanguages, &$existingContainer) {
+                $storedLanguages[] = $language;
+
+                return $existingContainer;
+            },
+        ]);
+
+        $element = $this->makeEmpty(Concrete::class, [
+            'get' => $existingContainer,
+        ]);
+
+        $fieldDefinition = $this->make(ClassificationstoreDefinition::class, [
+            'isLocalized' => true,
+            'getKeyConfiguration' => new KeyConfig(),
+        ]);
+
+        $adapter = $this->createAdapter(
+            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => $this->makeEmpty(SetterDataInterface::class, [
+                    'getDataForSetter' => 'new-value',
+                ]),
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getUserAllowedLanguages' => ['de', 'en'],
+                'isLanguageIndependentValueAllowed' => $isLanguageIndependentValueAllowed,
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                    'getName' => 'inputField',
+                ]),
+            ]),
+        );
+
+        $adapter->getDataForSetter(
+            $element,
+            $fieldDefinition,
+            'myStore',
+            [
+                'myStore' => [
+                    22 => [
+                        'default' => [2 => 'language-independent-value'],
+                        'de' => [2 => 'german-value'],
+                    ],
+                    'activeGroups' => [22 => true],
+                ],
+            ],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false])
+        );
+
+        return $storedLanguages;
+    }
+
     private function createAdapter(
         ?DataObjectServiceResolverInterface $dataObjectServiceResolver = null,
         ?DefinitionCacheResolverInterface $definitionCacheResolver = null,
