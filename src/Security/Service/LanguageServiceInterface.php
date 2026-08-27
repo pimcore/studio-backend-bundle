@@ -35,17 +35,19 @@ interface LanguageServiceInterface
     ): array;
 
     /**
-     * Tells whether the user may use the language independent ("default") value of a localized
-     * field for the given language permission. It is granted unless the configured language list
-     * explicitly leaves it out.
+     * Same as getUserAllowedLanguages(), but for fields that also have a language independent
+     * ("default") value - a localized Classification Store. That value is prepended unless the
+     * configured language list explicitly leaves it out.
+     *
+     * @return array<int, string>
      *
      * @throws InvalidArgumentException
      */
-    public function isLanguageIndependentValueAllowed(
+    public function getUserAllowedLanguagesWithLanguageIndependentValue(
         DataObject $dataObject,
         UserInterface $user,
         string $permission
-    ): bool;
+    ): array;
 
     /**
      * @throws ForbiddenException

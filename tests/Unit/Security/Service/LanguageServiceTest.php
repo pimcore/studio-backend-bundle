@@ -28,103 +28,72 @@ use Pimcore\Model\UserInterface;
  */
 final class LanguageServiceTest extends Unit
 {
-    public function testLanguageIndependentValueIsAllowedForAdmins(): void
+    public function testAdminsGetTheLanguageIndependentValueAndEveryValidLanguage(): void
     {
-        $service = $this->createService(['de']);
-
-        $this->assertTrue(
-            $service->isLanguageIndependentValueAllowed(
-                $this->makeEmpty(DataObject::class),
-                $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
-            )
+        $this->assertSame(
+            ['default', 'de', 'en'],
+            $this->resolveLanguages(['de'], isAdmin: true)
         );
     }
 
-    public function testLanguageIndependentValueIsAllowedWithoutAnyLanguageRestriction(): void
+    public function testWithoutAnyLanguageRestrictionEveryLanguageIsAllowed(): void
     {
-        $service = $this->createService([]);
-
-        $this->assertTrue(
-            $service->isLanguageIndependentValueAllowed(
-                $this->makeEmpty(DataObject::class),
-                $this->makeEmpty(UserInterface::class),
-                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
-            )
+        $this->assertSame(
+            ['default', 'de', 'en'],
+            $this->resolveLanguages([])
         );
     }
 
-    public function testLanguageIndependentValueIsAllowedForAnEmptyPermissionString(): void
+    public function testAnEmptyPermissionStringIsTreatedAsNoRestriction(): void
     {
-        $service = $this->createService(['']);
-
-        $this->assertTrue(
-            $service->isLanguageIndependentValueAllowed(
-                $this->makeEmpty(DataObject::class),
-                $this->makeEmpty(UserInterface::class),
-                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
-            )
+        $this->assertSame(
+            ['default', 'de', 'en'],
+            $this->resolveLanguages([''])
         );
     }
 
-    public function testLanguageIndependentValueIsAllowedWhenItIsTheOnlyGrantedPermission(): void
+    public function testTheLanguageIndependentValueAloneIsTreatedAsNoRestriction(): void
     {
-        $service = $this->createService(['default']);
-
-        $this->assertTrue(
-            $service->isLanguageIndependentValueAllowed(
-                $this->makeEmpty(DataObject::class),
-                $this->makeEmpty(UserInterface::class),
-                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
-            )
+        $this->assertSame(
+            ['default', 'de', 'en'],
+            $this->resolveLanguages(['default'])
         );
     }
 
-    public function testLanguageIndependentValueIsAllowedWhenGrantedNextToConcreteLanguages(): void
+    public function testTheLanguageIndependentValueIsPrependedWhenGrantedNextToLanguages(): void
     {
-        $service = $this->createService(['default', 'de']);
-
-        $this->assertTrue(
-            $service->isLanguageIndependentValueAllowed(
-                $this->makeEmpty(DataObject::class),
-                $this->makeEmpty(UserInterface::class),
-                ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
-            )
+        $this->assertSame(
+            ['default', 'de'],
+            $this->resolveLanguages(['de', 'default'], ElementPermissions::LANGUAGE_EDIT_PERMISSIONS)
         );
     }
 
-    public function testLanguageIndependentValueIsDeniedWhenExcludedFromTheLanguageList(): void
+    public function testTheLanguageIndependentValueIsDeniedWhenLeftOutOfTheLanguageList(): void
     {
-        $service = $this->createService(['de', 'en']);
-
-        $this->assertFalse(
-            $service->isLanguageIndependentValueAllowed(
-                $this->makeEmpty(DataObject::class),
-                $this->makeEmpty(UserInterface::class),
-                ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
-            )
+        $this->assertSame(
+            ['de', 'en'],
+            $this->resolveLanguages(['de', 'en'], ElementPermissions::LANGUAGE_EDIT_PERMISSIONS)
         );
     }
 
-    public function testLanguageIndependentValueRejectsAnUnknownPermission(): void
+    public function testAnUnknownPermissionIsRejected(): void
     {
-        $service = $this->createService(['de']);
-
         $this->expectException(InvalidArgumentException::class);
 
-        $service->isLanguageIndependentValueAllowed(
-            $this->makeEmpty(DataObject::class),
-            $this->makeEmpty(UserInterface::class),
-            'view'
-        );
+        $this->resolveLanguages(['de'], 'view');
     }
 
     /**
      * @param array<int, string> $languagePermissions
+     *
+     * @return array<int, string>
      */
-    private function createService(array $languagePermissions): LanguageService
-    {
-        return new LanguageService(
+    private function resolveLanguages(
+        array $languagePermissions,
+        string $permission = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS,
+        bool $isAdmin = false
+    ): array {
+        $service = new LanguageService(
             $this->makeEmpty(AdminLanguageServiceInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'getSpecialDataObjectPermissions' => $languagePermissions,
@@ -132,6 +101,12 @@ final class LanguageServiceTest extends Unit
             $this->makeEmpty(ToolResolverInterface::class, [
                 'getValidLanguages' => ['de', 'en'],
             ]),
+        );
+
+        return $service->getUserAllowedLanguagesWithLanguageIndependentValue(
+            $this->makeEmpty(DataObject::class),
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => $isAdmin]),
+            $permission
         );
     }
 }

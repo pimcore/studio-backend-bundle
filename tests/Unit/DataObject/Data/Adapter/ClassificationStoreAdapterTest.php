@@ -393,7 +393,7 @@ final class ClassificationStoreAdapterTest extends Unit
      */
     public function testGetDataForSetterStoresLanguageIndependentValuesForAllowedNonAdmin(): void
     {
-        $storedLanguages = $this->getStoredLanguagesForNonAdmin(isLanguageIndependentValueAllowed: true);
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(['default', 'de', 'en']);
 
         $this->assertContains('default', $storedLanguages);
     }
@@ -406,18 +406,20 @@ final class ClassificationStoreAdapterTest extends Unit
      */
     public function testGetDataForSetterSkipsLanguageIndependentValuesForDeniedNonAdmin(): void
     {
-        $storedLanguages = $this->getStoredLanguagesForNonAdmin(isLanguageIndependentValueAllowed: false);
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(['de', 'en']);
 
         $this->assertNotContains('default', $storedLanguages);
         $this->assertContains('de', $storedLanguages);
     }
 
     /**
+     * @param array<int, string> $allowedLanguages
+     *
      * @return array<int, string|null>
      *
      * @throws Exception
      */
-    private function getStoredLanguagesForNonAdmin(bool $isLanguageIndependentValueAllowed): array
+    private function getStoredLanguagesForNonAdmin(array $allowedLanguages): array
     {
         $storedLanguages = [];
         $existingContainer = $this->make(Classificationstore::class, [
@@ -449,8 +451,7 @@ final class ClassificationStoreAdapterTest extends Unit
                 ]),
             ]),
             languageService: $this->makeEmpty(LanguageServiceInterface::class, [
-                'getUserAllowedLanguages' => ['de', 'en'],
-                'isLanguageIndependentValueAllowed' => $isLanguageIndependentValueAllowed,
+                'getUserAllowedLanguagesWithLanguageIndependentValue' => $allowedLanguages,
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
                 'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [

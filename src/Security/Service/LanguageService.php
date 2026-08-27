@@ -45,39 +45,44 @@ final readonly class LanguageService implements LanguageServiceInterface
     ): array {
         $this->validateLanguagePermission($permission);
 
-        $languagePermissions = $this->getLanguagePermissions($dataObject, $user, $permission);
-
-        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
-            return $this->toolResolver->getValidLanguages();
-        }
-
-        return $languagePermissions;
+        return $this->resolveAllowedLanguages(
+            $this->getLanguagePermissions($dataObject, $user, $permission)
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function isLanguageIndependentValueAllowed(
+    public function getUserAllowedLanguagesWithLanguageIndependentValue(
         DataObject $dataObject,
         UserInterface $user,
         string $permission
-    ): bool {
+    ): array {
         $this->validateLanguagePermission($permission);
 
         if ($user->isAdmin()) {
-            return true;
+            return array_merge(
+                [MappingProperty::NOT_LOCALIZED_KEY],
+                $this->toolResolver->getValidLanguages()
+            );
         }
 
         $languagePermissions = $this->getLanguagePermissions($dataObject, $user, $permission);
 
-        // Without an explicit language restriction every language is allowed, the language
-        // independent value included. This mirrors the behavior of the classic UI, where the
-        // language independent column stays available unless it is left out of the language list.
-        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
-            return true;
+        $languages = array_values(
+            array_filter(
+                $this->resolveAllowedLanguages($languagePermissions),
+                static fn (string $language): bool => $language !== MappingProperty::NOT_LOCALIZED_KEY
+            )
+        );
+
+        if (!$this->isLanguageIndependentValueGranted($languagePermissions)) {
+            return $languages;
         }
 
-        return in_array(MappingProperty::NOT_LOCALIZED_KEY, $languagePermissions, true);
+        array_unshift($languages, MappingProperty::NOT_LOCALIZED_KEY);
+
+        return $languages;
     }
 
     /**
@@ -127,6 +132,36 @@ final readonly class LanguageService implements LanguageServiceInterface
             $user,
             $permission
         );
+    }
+
+    /**
+     * @param array<int, string> $languagePermissions
+     *
+     * @return array<int, string>
+     */
+    private function resolveAllowedLanguages(array $languagePermissions): array
+    {
+        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
+            return $this->toolResolver->getValidLanguages();
+        }
+
+        return $languagePermissions;
+    }
+
+    /**
+     * Without an explicit language restriction every language is allowed, the language independent
+     * value included. This mirrors the behavior of the classic UI, where the language independent
+     * column stays available unless it is left out of the configured language list.
+     *
+     * @param array<int, string> $languagePermissions
+     */
+    private function isLanguageIndependentValueGranted(array $languagePermissions): bool
+    {
+        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
+            return true;
+        }
+
+        return in_array(MappingProperty::NOT_LOCALIZED_KEY, $languagePermissions, true);
     }
 
     private function isDefaultLanguagePermission(array $permissions): bool
