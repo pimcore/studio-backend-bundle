@@ -307,18 +307,16 @@ final readonly class ClassificationStoreAdapter implements
         bool $isPatch
     ): void {
 
+        $editableLanguages = $this->getValidLanguages(
+            $element,
+            $definition->isLocalized(),
+            ElementPermissions::LANGUAGE_EDIT_PERMISSIONS,
+            $user
+        );
+
         foreach ($store as $groupId => $groupData) {
             foreach ($groupData as $language => $keys) {
-                if (!in_array(
-                    $language,
-                    $this->getValidLanguages(
-                        $element,
-                        $definition->isLocalized(),
-                        ElementPermissions::LANGUAGE_EDIT_PERMISSIONS,
-                        $user
-                    ),
-                    true
-                )) {
+                if (!in_array($language, $editableLanguages, true)) {
                     continue;
                 }
                 $this->processGroupKeys($element, $user, $definition, $container, $language, $groupId, $keys, $isPatch);

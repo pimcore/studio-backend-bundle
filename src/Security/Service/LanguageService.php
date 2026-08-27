@@ -69,14 +69,24 @@ final readonly class LanguageService implements LanguageServiceInterface
 
         $languagePermissions = $this->getLanguagePermissions($dataObject, $user, $permission);
 
+        // Only an unset or empty permission means no restriction. Unlike for localized fields, the
+        // language independent value is a real column here, so granting just that column must not
+        // hand out any language on top of it - which is what the classic UI does as well.
+        if ($this->isUnrestrictedLanguagePermission($languagePermissions)) {
+            return array_merge(
+                [MappingProperty::NOT_LOCALIZED_KEY],
+                $this->toolResolver->getValidLanguages()
+            );
+        }
+
         $languages = array_values(
             array_filter(
-                $this->resolveAllowedLanguages($languagePermissions),
+                $languagePermissions,
                 static fn (string $language): bool => $language !== MappingProperty::NOT_LOCALIZED_KEY
             )
         );
 
-        if (!$this->isLanguageIndependentValueGranted($languagePermissions)) {
+        if (!in_array(MappingProperty::NOT_LOCALIZED_KEY, $languagePermissions, true)) {
             return $languages;
         }
 
@@ -149,19 +159,11 @@ final readonly class LanguageService implements LanguageServiceInterface
     }
 
     /**
-     * Without an explicit language restriction every language is allowed, the language independent
-     * value included. This mirrors the behavior of the classic UI, where the language independent
-     * column stays available unless it is left out of the configured language list.
-     *
      * @param array<int, string> $languagePermissions
      */
-    private function isLanguageIndependentValueGranted(array $languagePermissions): bool
+    private function isUnrestrictedLanguagePermission(array $languagePermissions): bool
     {
-        if ($languagePermissions === [] || $this->isDefaultLanguagePermission($languagePermissions)) {
-            return true;
-        }
-
-        return in_array(MappingProperty::NOT_LOCALIZED_KEY, $languagePermissions, true);
+        return $languagePermissions === [] || $languagePermissions === [''];
     }
 
     private function isDefaultLanguagePermission(array $permissions): bool

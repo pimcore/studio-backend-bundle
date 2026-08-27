@@ -52,10 +52,14 @@ final class LanguageServiceTest extends Unit
         );
     }
 
-    public function testTheLanguageIndependentValueAloneIsTreatedAsNoRestriction(): void
+    /**
+     * Unlike for localized fields, the language independent value is a real column of a localized
+     * Classification Store. Granting only that column must therefore not hand out any language.
+     */
+    public function testGrantingOnlyTheLanguageIndependentValueGrantsNoLanguage(): void
     {
         $this->assertSame(
-            ['default', 'de', 'en'],
+            ['default'],
             $this->resolveLanguages(['default'])
         );
     }
