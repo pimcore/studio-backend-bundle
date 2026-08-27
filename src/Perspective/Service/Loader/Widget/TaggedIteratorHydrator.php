@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\MustImplementInterfaceTrait;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -29,7 +29,7 @@ final class TaggedIteratorHydrator implements ConfigHydratorLoaderInterface
     public const string HYDRATOR_TAG = 'pimcore.studio_backend.widget_hydrator';
 
     public function __construct(
-        #[TaggedIterator(self::HYDRATOR_TAG)]
+        #[AutowireIterator(self::HYDRATOR_TAG)]
         private readonly iterable $taggedHydratorClasses,
     ) {
     }

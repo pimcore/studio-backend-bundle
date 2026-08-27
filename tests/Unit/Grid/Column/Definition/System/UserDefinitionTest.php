@@ -43,9 +43,9 @@ final class UserDefinitionTest extends Unit
         $this->assertTrue($this->definition->isSortable());
     }
 
-    public function testIsNotFilterable(): void
+    public function testIsFilterable(): void
     {
-        $this->assertFalse($this->definition->isFilterable());
+        $this->assertTrue($this->definition->isFilterable());
     }
 
     public function testIsExportable(): void

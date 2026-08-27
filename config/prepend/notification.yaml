@@ -1,0 +1,6 @@
+# Rides the existing pimcore_core transport so the standard worker delivers it and a slow mail
+# server never blocks the request that produced the notification.
+framework:
+    messenger:
+        routing:
+            Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailMessage: pimcore_core

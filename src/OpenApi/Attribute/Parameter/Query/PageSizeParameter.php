@@ -20,14 +20,14 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class PageSizeParameter extends QueryParameter
 {
-    public function __construct(int $defaultSize = 10)
+    public function __construct(int $defaultSize = 10, ?int $maxSize = null)
     {
         parent::__construct(
             name: 'pageSize',
             description: 'Number of items per page',
             in: 'query',
             required: true,
-            schema: new Schema(type: 'integer', minimum: 1, example: $defaultSize),
+            schema: new Schema(type: 'integer', minimum: 1, maximum: $maxSize, example: $defaultSize),
         );
     }
 }

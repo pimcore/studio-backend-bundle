@@ -75,5 +75,15 @@ studio_ee_job_element_usage_replace: Erstatt elementbruk
 preview_generator_locale: Language
 main_site: 'Main Site'
 preview_generator_site: Site
+notifications.email.greeting: 'Hei %name%,'
+notifications.email.cta: 'Vis i Pimcore Studio'
+notifications.email.footer: 'Du mottar denne e-posten fordi du har abonnert på disse varslene i Pimcore Studio.'
+notifications.channel.popup: 'Pop-up'
+notifications.channel.email: 'E-post'
+notifications.channel.email.no-address: 'Ingen e-postadresse på kontoen din — legg til en i profilen din for å motta disse.'
+notifications.type.general.label: 'Alt annet'
+notifications.type.general.description: 'Arbeidsflyttrinn, systemmeldinger, varsler fra andre bundler. De havner alltid i varslene dine — velg om de også skal vises som pop-up.'
+notifications.type.general.solo_label: 'Alle varsler'
+notifications.type.general.solo_description: 'Alt Pimcore sender deg: arbeidsflyttrinn, systemmeldinger, varsler fra andre bundler. De havner alltid i varslene dine; velg om de også skal vises som pop-up.'
 ownership_management_type_grid_configuration: Grid-konfigurasjoner
 ownership_management_type_saved_search: Lagrede søk

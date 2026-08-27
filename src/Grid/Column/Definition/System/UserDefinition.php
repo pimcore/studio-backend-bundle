@@ -49,6 +49,6 @@ final readonly class UserDefinition implements ColumnDefinitionInterface
 
     public function isFilterable(): bool
     {
-        return false;
+        return true;
     }
 }

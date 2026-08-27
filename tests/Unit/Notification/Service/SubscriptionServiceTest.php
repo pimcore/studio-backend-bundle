@@ -1,0 +1,321 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Service;
+
+use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\ChannelRegistry;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistry;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolver;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Type\NotificationType;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\SubscriptionHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\UpdateSubscriptionItem;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Subscription\UpdateSubscriptionsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SubscriptionService;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestChannel;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Notification\Dispatch\Fixture\TestTypes;
+use Pimcore\Model\UserInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+
+/**
+ * What the service decides on a bulk save. Only the repository is stubbed, so what would have
+ * been persisted can be asserted.
+ */
+final class SubscriptionServiceTest extends Unit
+{
+    private const int USER_ID = 7;
+
+    /**
+     * Rejecting would cost the user every other row on the screen for something they cannot
+     * influence.
+     */
+    public function testAChannelDisabledByTheAdministratorDoesNotFailTheSave(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
+            ['email' => ['enabled' => false]],
+            $captured
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', true, ['popup', 'email']),
+            ])
+        );
+
+        $this->assertSame(['popup'], $captured['test.type']['channels']);
+        $this->assertTrue($captured['test.type']['subscribed']);
+    }
+
+    /**
+     * Same treatment as an unavailable channel; these two used to be handled inconsistently.
+     */
+    public function testAChannelTheTypeCannotUseIsDropped(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: false)],
+            [],
+            $captured
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', true, ['popup', 'email']),
+            ])
+        );
+
+        $this->assertSame(['popup'], $captured['test.type']['channels']);
+    }
+
+    /**
+     * Dropping is not silent.
+     */
+    public function testDroppingAChannelIsLogged(): void
+    {
+        $captured = null;
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('email'));
+
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: false)],
+            [],
+            $captured,
+            $logger
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', true, ['popup', 'email']),
+            ])
+        );
+    }
+
+    /**
+     * Still rejected, unlike an unavailable channel — but as an invalid request body (422),
+     * not the registry's 404.
+     */
+    public function testAnUnknownTypeIdIsRejectedAsABadRequestRatherThanANotFound(): void
+    {
+        $captured = null;
+        $service = $this->service([TestTypes::type('test.type')], [], $captured);
+
+        try {
+            $service->updateSubscriptions(
+                $this->user(),
+                new UpdateSubscriptionsParameters([
+                    new UpdateSubscriptionItem('nope.unknown', true, ['popup']),
+                ])
+            );
+            $this->fail('Expected an InvalidArgumentException for an unregistered type id.');
+        } catch (NotFoundException) {
+            $this->fail('An unknown type id in a request body must not surface as a 404.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('nope.unknown', $e->getMessage());
+        }
+
+        $this->assertNull($captured, 'Nothing should be persisted when the payload is rejected.');
+    }
+
+    /**
+     * A channel id this installation does not currently offer was never on screen, so the client
+     * could not have meant to clear it. Switching the type off must not drop it either — that is
+     * the one thing an unsubscribe is not entitled to decide.
+     */
+    public function testUnsubscribingKeepsAChannelTheClientCouldNotSee(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured,
+            stored: [
+                'test.type' => new NotificationSubscription(
+                    self::USER_ID,
+                    'test.type',
+                    true,
+                    ['popup', 'email', 'teams']
+                ),
+            ]
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', false, []),
+            ])
+        );
+
+        // popup and email are on screen and go; teams is contributed by no installed bundle.
+        $this->assertFalse($captured['test.type']['subscribed']);
+        $this->assertSame(['teams'], $captured['test.type']['channels']);
+    }
+
+    /**
+     * The visible channels are cleared, matching what the preferences screen does locally when a
+     * row is muted. Both sides agreeing is what keeps the saved state and the screen the same.
+     */
+    public function testUnsubscribingClearsTheChannelsTheClientCanSee(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured,
+            stored: ['test.type' => new NotificationSubscription(self::USER_ID, 'test.type', true, ['popup', 'email'])]
+        );
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('test.type', false, []),
+            ])
+        );
+
+        $this->assertSame([], $captured['test.type']['channels']);
+    }
+
+    /**
+     * A channel the account cannot use is still offered — the preference is real and will work the
+     * moment an address exists — but the collection says why it will not deliver today, so the
+     * screen can show that rather than leaving a switch that silently does nothing.
+     */
+    public function testAChannelThatCannotReachTheUserReportsWhy(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured,
+            channels: [new TestChannel('email', unavailableReason: 'notifications.channel.email.no-address')]
+        );
+
+        $channels = $service->getSubscriptions($this->user())->getAvailableChannels();
+        $byId = [];
+        foreach ($channels as $channel) {
+            $byId[$channel->getId()] = $channel->getUnavailableReasonKey();
+        }
+
+        $this->assertSame('notifications.channel.email.no-address', $byId['email']);
+        // The in-app pop-up is not a transport, so it has no account to be missing.
+        $this->assertNull($byId['popup']);
+    }
+
+    public function testAReachableChannelReportsNoReason(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: true)],
+            [],
+            $captured
+        );
+
+        foreach ($service->getSubscriptions($this->user())->getAvailableChannels() as $channel) {
+            $this->assertNull($channel->getUnavailableReasonKey());
+        }
+    }
+
+    /**
+     * With no externally-deliverable type there is nothing a transport could carry, so a
+     * registered channel gets no column — instead of a column of dead switches.
+     */
+    public function testNoChannelColumnsWhenNoTypeAllowsExternalDelivery(): void
+    {
+        $captured = null;
+        $service = $this->service(
+            [TestTypes::type('test.type', allowsExternalDelivery: false)],
+            [],
+            $captured
+        );
+
+        $ids = array_map(
+            static fn ($channel) => $channel->getId(),
+            $service->getSubscriptions($this->user())->getAvailableChannels()
+        );
+
+        $this->assertSame(['popup'], $ids);
+    }
+
+    public function testALockedTypeCannotBeUnsubscribedFrom(): void
+    {
+        $captured = null;
+        $service = $this->service([], [], $captured);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $service->updateSubscriptions(
+            $this->user(),
+            new UpdateSubscriptionsParameters([
+                new UpdateSubscriptionItem('info', false, []),
+            ])
+        );
+    }
+
+    /**
+     * @param NotificationType[] $types
+     * @param array<string, array{enabled: bool}> $channelConfig
+     * @param array<string, NotificationSubscription> $stored rows the user already has
+     */
+    private function service(
+        array $types,
+        array $channelConfig,
+        ?array &$captured,
+        ?LoggerInterface $logger = null,
+        array $stored = [],
+        ?array $channels = null,
+    ): SubscriptionService {
+        $typeRegistry = new NotificationTypeRegistry(
+            $types === [] ? [] : [TestTypes::provider(...$types)]
+        );
+        $channelRegistry = new ChannelRegistry($channels ?? [new TestChannel('email')], $channelConfig);
+
+        $repository = $this->makeEmpty(
+            SubscriptionRepositoryInterface::class,
+            [
+                'getByUser' => $stored,
+                'save' => static function (int $userId, array $preferences) use (&$captured): void {
+                    $captured = $preferences;
+                },
+            ]
+        );
+
+        return new SubscriptionService(
+            $typeRegistry,
+            $channelRegistry,
+            new SubscriptionResolver($repository, $typeRegistry, $channelRegistry),
+            $repository,
+            new SubscriptionHydrator(),
+            $this->createMock(EventDispatcherInterface::class),
+            $logger ?? $this->createMock(LoggerInterface::class),
+        );
+    }
+
+    private function user(): UserInterface
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn(self::USER_ID);
+
+        return $user;
+    }
+}

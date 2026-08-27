@@ -58,11 +58,11 @@ final class McpLoginThrottlingIntegrationTest extends Unit
         [$listener, $authenticator] = $this->createStack();
 
         for ($i = 0; $i < self::MAX_ATTEMPTS; ++$i) {
-            $this->attempt($listener, $authenticator, 'guess-' . $i);
+            $this->attemptLogin($listener, $authenticator, 'guess-' . $i);
         }
 
         $this->expectException(TooManyLoginAttemptsAuthenticationException::class);
-        $this->attempt($listener, $authenticator, 'guess-final');
+        $this->attemptLogin($listener, $authenticator, 'guess-final');
     }
 
     /**
@@ -79,7 +79,7 @@ final class McpLoginThrottlingIntegrationTest extends Unit
 
         for ($i = 0; $i < self::MAX_ATTEMPTS * 4; ++$i) {
             try {
-                $this->attempt($listener, $authenticator, 'guess-' . $i, charge: true);
+                $this->attemptLogin($listener, $authenticator, 'guess-' . $i, charge: true);
             } catch (TooManyLoginAttemptsAuthenticationException) {
                 // Blocked from attempt six onwards, and an attacker keeps hammering anyway.
                 // The point of this test is what that does to *another* client, not to them.
@@ -102,7 +102,7 @@ final class McpLoginThrottlingIntegrationTest extends Unit
         [$listener, $authenticator] = $this->createStack();
 
         for ($i = 0; $i < self::MAX_ATTEMPTS * 2; ++$i) {
-            $this->attempt($listener, $authenticator, self::VALID_TOKEN);
+            $this->attemptLogin($listener, $authenticator, self::VALID_TOKEN);
         }
 
         $this->expectNotToPerformAssertions();
@@ -115,7 +115,7 @@ final class McpLoginThrottlingIntegrationTest extends Unit
      *
      * @throws TooManyLoginAttemptsAuthenticationException when the client is throttled
      */
-    private function attempt(
+    private function attemptLogin(
         LoginThrottlingListener $listener,
         PatAuthenticator $authenticator,
         string $token,
@@ -148,7 +148,7 @@ final class McpLoginThrottlingIntegrationTest extends Unit
         PatAuthenticator $authenticator,
         string $token
     ): void {
-        $this->attempt($listener, $authenticator, $token, charge: false);
+        $this->attemptLogin($listener, $authenticator, $token, charge: false);
     }
 
     /**

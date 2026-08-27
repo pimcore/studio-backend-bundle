@@ -71,6 +71,23 @@ interface ElementServiceInterface
         UserInterface $user
     ): ElementInterface;
 
+    /**
+     * Resolves an element that is only navigated through - the root of an element tree or one of the
+     * tree levels above the element a user asked for - without checking the view permission.
+     *
+     * Element permissions are resolved from the workspaces relevant for the requested path, so tree
+     * levels above the workspace granting access carry no permissions at all - the tree root most of
+     * all, as no workspace below "/" is relevant for "/" itself. The search index deliberately keeps
+     * those levels listable to keep the tree navigable. Use getAllowedElementByPath() for every path
+     * a user actually opens.
+     *
+     * @throws NotFoundException
+     */
+    public function getNavigableElementByPath(
+        string $elementType,
+        string $elementPath
+    ): ElementInterface;
+
     public function hasElementChildren(ElementInterface $element): bool;
 
     public function hasElementDependencies(

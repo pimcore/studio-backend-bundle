@@ -190,6 +190,10 @@ asset_replace_summary: Replace existing asset binary
 asset_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
 asset_update_by_id_summary: Update an asset by ID
+asset_upload_batch_info_description: |
+  Get information which of the given file names already exist in the folder <strong>{parentId}</strong>. <br> Send the names in the <strong>fileNames</strong> body property; at most 100 per request.
+asset_upload_batch_info_success_response: Returns one entry per requested file name, in the order they were sent, each with the existing asset ID if a file with that name already exists in the same path. <br> Names that exist but are not viewable by the current user are reported as not existing with <strong>accessDenied</strong> set, so a single denied file does not fail the whole batch
+asset_upload_batch_info_summary: Get information which assets already exist
 asset_upload_info_description: |
   Get information if asset already exists based on the given <strong>{parentId}</strong> and <strong>{fileName}</strong> query parameter.
 asset_upload_info_success_response: Returns true and existing asset ID, if asset with the same name and in the same path already exists, false otherwise
@@ -1133,6 +1137,7 @@ tag_schedule_description: Get schedules for an element
 tag_settings_description: Get System Settings
 tag_tags_description: Tag operations to get/list/create/update/delete tags
 tag_tags_for_element_description: Tag operations to get tags for an element
+tag_telemetry_description: Telemetry outbox operations to drain and acknowledge spooled telemetry batches
 tag_translation_description: Get translations either for a single key or multiple
   keys
 tag_unassign_from_element_description: |
@@ -1151,6 +1156,17 @@ tag_versions_description: Versions operations to get/list/publish/delete and cle
   versions
 tag_website_settings_description: Website settings operations to list/update/create/delete website settings
 tag_workflows_description: Workflows operations to get element workflow details
+telemetry_outbox_ack_description: |
+  Acknowledge a telemetry outbox batch that the relay has accepted, identified by the given <strong>{nonce}</strong>. <br>
+  Acknowledged events are permanently removed from the outbox pool.
+telemetry_outbox_ack_success_response: Number of spooled events removed from the outbox
+telemetry_outbox_ack_summary: Acknowledge a drained telemetry batch
+telemetry_outbox_next_batch_description: |
+  Get the next encrypted telemetry batch from the outbox so the browser can forward it to the relay. <br>
+  Returns <strong>204 No Content</strong> when the outbox is not ready or the pool is empty.
+telemetry_outbox_next_batch_no_content_response: No telemetry batch is currently available to drain
+telemetry_outbox_next_batch_success_response: Next encrypted telemetry batch ready to forward to the relay
+telemetry_outbox_next_batch_summary: Get the next telemetry outbox batch
 thumbnail_image_get_collection_description: |
   Get collection of thumbnails for images. <br>
   The thumbnails have to be defined as downloadable in order to be listed in the collection.
@@ -1279,6 +1295,14 @@ user_get_by_id_success_response: Node of the requested user.
 user_get_by_id_summary: Retrieve a specific user by ID.
 user_get_current_information_success_response: Current user information's.
 user_get_current_information_summary: Retrieve information's about the current logged in user.
+user_get_object_dependencies_description: |
+  Get paginated DataObjects referencing the given user via a <strong>User</strong>-type class field.
+  <strong>totalItems</strong> counts every referencing object regardless of the caller's view permission
+  on it, so pages can come back shorter than <strong>pageSize</strong> (or empty) once permission-denied
+  objects are filtered out, and the sum of items actually returned across all pages can be lower than
+  <strong>totalItems</strong>.
+user_get_object_dependencies_success_response: Paginated object dependencies with total count returned both as a header param and as `totalItems` in the response body.
+user_get_object_dependencies_summary: Get paginated object dependencies for a user.
 user_get_tree_success_response: Collection of users including folders for the given parent id.
 user_get_tree_summary: Get collection of users for tree view.
 user_list_with_permission_description: |
@@ -2127,3 +2151,9 @@ ownership_management_delete_configurations_summary: Delete configurations
 ownership_management_delete_configurations_description: Deletes one or more configurations of the given type.
 ownership_management_delete_configurations_success_response: Configurations deleted successfully
 ownership_management_delete_configurations_created_response: A job run was created to delete the configurations asynchronously
+notification_get_subscriptions_description: Get the current user's notification preferences, merged with the defaults of every registered notification type
+notification_get_subscriptions_summary: Get notification preferences for the current user
+notification_get_subscriptions_success_response: Notification preferences for the current user
+notification_update_subscriptions_description: Store the current user's notification preferences. Sent as a single bulk request; the stored state is returned so the client can re-seed from the server.
+notification_update_subscriptions_summary: Update notification preferences for the current user
+notification_update_subscriptions_success_response: The stored notification preferences for the current user

@@ -1,9 +1,9 @@
 name: PR Guardrails
 
 # Thin, generic trigger. All guardrail logic lives in the central collection
-# pimcore/workflows-collection-public. This file names no guardrails and no
-# secrets (secrets: inherit), so it is identical across every repo and never
-# needs editing when a guardrail or token is added/removed there.
+# pimcore/workflows-collection-public. This file names no guardrails, while
+# required token secrets are passed explicitly below; token changes in the
+# central workflow must therefore be synchronized to this file.
 
 on:
   pull_request_target:

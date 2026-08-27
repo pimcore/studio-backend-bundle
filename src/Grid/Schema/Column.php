@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFi
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Transformer;
 
+use function sprintf;
+
 /**
  * Contains all data that is needed to get all the data for the column.
  *
@@ -96,7 +98,7 @@ final readonly class Column
             throw new InvalidArgumentException('Advanced column config is not set');
         }
 
-        foreach ($this->config['advancedColumns'] as $advancedColumn) {
+        foreach ($this->config['advancedColumns'] as $index => $advancedColumn) {
             if ($advancedColumn['key'] === 'relationField') {
                 $configs[] = new RelationFieldConfig(
                     relation: $advancedColumn['config']['relation'],
@@ -109,6 +111,14 @@ final readonly class Column
             }
 
             if ($advancedColumn['key'] === 'simpleField') {
+                if (!isset($advancedColumn['config']['field'])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Advanced column "%s" (source field at index %d) is missing the required "field" config',
+                        $this->getKey(),
+                        $index
+                    ));
+                }
+
                 $configs[] = new SimpleFieldConfig(
                     field: $advancedColumn['config']['field'],
                     groupId: $advancedColumn['config']['groupId'] ?? null,

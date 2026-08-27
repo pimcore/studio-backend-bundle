@@ -32,6 +32,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
@@ -46,9 +48,9 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use function sprintf;
@@ -158,6 +160,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(MailServiceInterface::class);
         $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
 
+        $definition = $container->getDefinition(SendNotificationEmailHandler::class);
+        $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
+        $definition->setArgument('$template', $config['notifications']['email']['template']);
+
+        // Studio UI base path for the email deep links; default it since studio-ui isn't a hard dependency.
+        if (!$container->hasParameter('pimcore_studio_ui.url_path')) {
+            $container->setParameter('pimcore_studio_ui.url_path', '/pimcore-studio');
+        }
+        $container->getDefinition(EmailChannel::class)
+            ->setArgument('$studioPath', '%pimcore_studio_ui.url_path%');
+
         $definition = $container->getDefinition(WidgetServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);
 
@@ -193,6 +206,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->setParameter(
             'pimcore_studio_backend.gdpr_data_extractor',
             $config['gdpr_data_extractor']
+        );
+
+        $container->setParameter(
+            'pimcore_studio_backend.notifications.channels',
+            $config['notifications']['channels']
         );
 
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
@@ -239,6 +257,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $loader->load('bundle_seo.yaml');
         }
         $loader->load('rate_limiter.yaml');
+        // Routes the email channel's send message onto the pimcore_core transport (see the file).
+        $loader->load('notification.yaml');
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,

@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\PhpCodeTransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 final readonly class TaggedIteratorPhpCodeTransformerLoader implements PhpCodeTransformerLoaderInterface
 {
     public function __construct(
-        #[TaggedIterator(self::PHPCODE_TRANSFORMER_TAG)]
+        #[AutowireIterator(self::PHPCODE_TRANSFORMER_TAG)]
         private iterable $transformers,
     ) {
     }

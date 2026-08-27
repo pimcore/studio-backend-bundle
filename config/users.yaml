@@ -112,3 +112,6 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepository
     arguments:
       - "@doctrine.orm.default_entity_manager"
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\ObjectDependenciesRepository
