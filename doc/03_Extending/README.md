@@ -50,3 +50,4 @@ pimcore_studio_backend:
   - [Custom Widget Types](./11_Perspectives/01_Extending_Widgets.md)
 - [GDPR Data Providers](./12_Extending_GDPR_Data_Providers.md)
 - [Ownership Management Providers](./13_Extending_Ownership_Management.md)
+- [Providing MCP Tools](./15_Providing_MCP_Tools.md)
