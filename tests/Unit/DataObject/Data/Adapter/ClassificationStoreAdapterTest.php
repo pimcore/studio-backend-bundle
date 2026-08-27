@@ -413,6 +413,20 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * A non admin user whose language permissions grant only the language independent column must
+     * not be able to store values in concrete localized columns.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterSkipsConcreteLanguagesWhenOnlyDefaultIsGranted(): void
+    {
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(['default']);
+
+        $this->assertContains('default', $storedLanguages);
+        $this->assertNotContains('de', $storedLanguages);
+    }
+
+    /**
      * @param array<int, string> $allowedLanguages
      *
      * @return array<int, string|null>
