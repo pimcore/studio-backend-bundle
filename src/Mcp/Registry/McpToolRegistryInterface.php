@@ -13,27 +13,34 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Registry;
 
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
+use Psr\Container\ContainerInterface;
 
 /**
- * The catalogue of tools that self-registered via the MCP tool tag — the set an
- * MCP server may draw from. Keyed by the tool's definition name.
+ * Catalogue of MCP tools contributed by services tagged {@see McpToolRegistry::TAG}
+ * (SDK-native `#[McpTool]` services). Collected at compile time by
+ * {@see \Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\McpToolPass}.
  *
  * @internal
  */
 interface McpToolRegistryInterface
 {
     /**
-     * @return list<McpToolInterface>
+     * @return list<McpToolReference>
      */
     public function all(): array;
 
     public function has(string $name): bool;
 
-    public function get(string $name): ?McpToolInterface;
+    public function get(string $name): ?McpToolReference;
 
     /**
      * @return list<string>
      */
     public function names(): array;
+
+    /**
+     * PSR container that resolves a tool's backing service by class, for the SDK
+     * server to invoke `[class, method]` handlers.
+     */
+    public function getLocator(): ContainerInterface;
 }

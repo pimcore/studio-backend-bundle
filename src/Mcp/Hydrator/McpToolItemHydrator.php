@@ -13,25 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpToolItem;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
 
 /**
  * @internal
  */
 final readonly class McpToolItemHydrator implements McpToolItemHydratorInterface
 {
-    public function hydrate(McpToolInterface $tool): McpToolItem
+    public function hydrate(McpToolReference $tool): McpToolItem
     {
-        $definition = $tool->getDefinition();
-
         return new McpToolItem(
-            name: $definition->name,
-            title: $definition->title,
-            description: $definition->description,
-            requiredScope: $definition->requiredScope(),
-            readOnly: $definition->annotations->readOnly,
-            destructive: $definition->annotations->destructive,
+            name: $tool->name,
+            title: $tool->title ?? $tool->name,
+            description: $tool->description,
+            requiredScope: McpScopes::forReadOnly($tool->isReadOnly()),
+            readOnly: $tool->isReadOnly(),
+            destructive: $tool->isDestructive(),
         );
     }
 }

@@ -14,25 +14,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Tool\Builtin;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
+use Mcp\Schema\Content\TextContent;
+use Mcp\Schema\Result\CallToolResult;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool;
 
 final class PingToolTest extends Unit
 {
-    public function testDefinitionIsReadOnlyAndNamedPing(): void
-    {
-        $definition = (new PingTool())->getDefinition();
-
-        $this->assertSame('ping', $definition->name);
-        $this->assertTrue($definition->annotations->readOnly);
-        $this->assertSame(McpScopes::READ, $definition->requiredScope());
-    }
-
     public function testExecuteReturnsPong(): void
     {
-        $result = (new PingTool())->execute([]);
+        $result = (new PingTool())->execute();
 
-        $this->assertSame('pong', $result->text);
+        $this->assertInstanceOf(CallToolResult::class, $result);
         $this->assertFalse($result->isError);
+
+        $content = $result->content[0];
+        $this->assertInstanceOf(TextContent::class, $content);
+        $this->assertSame('pong', $content->text);
     }
 }
