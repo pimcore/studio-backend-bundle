@@ -31,8 +31,7 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
         string $url,
         array $scopes,
         bool $writeable,
-        bool $canRead,
-        bool $canWrite
+        McpServerUserPermissions $currentUserPermissions
     ): McpServer {
         $access = $definition->access;
 
@@ -50,7 +49,7 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
             sharedUsers: $this->grants($access->sharedUsers),
             sharedRoles: $this->grants($access->sharedRoles),
             writeable: $writeable,
-            currentUserPermissions: new McpServerUserPermissions($canRead, $canWrite),
+            currentUserPermissions: $currentUserPermissions,
             toolCount: count($definition->toolIds),
         );
     }
@@ -65,7 +64,8 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
         return array_map(
             static fn (McpServerAccessEntry $entry): McpServerAccessGrant => new McpServerAccessGrant(
                 $entry->name,
-                $entry->permission->value,
+                $entry->canAccess,
+                $entry->canEdit,
             ),
             $entries
         );

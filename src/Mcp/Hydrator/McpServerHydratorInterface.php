@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServer;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerUserPermissions;
 
 /**
  * @internal
@@ -29,7 +30,6 @@ interface McpServerHydratorInterface
         string $url,
         array $scopes,
         bool $writeable,
-        bool $canRead,
-        bool $canWrite
+        McpServerUserPermissions $currentUserPermissions
     ): McpServer;
 }
