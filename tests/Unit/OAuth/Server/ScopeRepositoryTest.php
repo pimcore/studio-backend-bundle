@@ -38,7 +38,7 @@ final class ScopeRepositoryTest extends Unit
         $finalized = (new ScopeRepository())->finalizeScopes(
             $scopes,
             'client_credentials',
-            new ClientEntity('studio-mcp', 'Studio MCP', [], true, 21),
+            new ClientEntity('studio-mcp', 'Studio MCP', [], true),
         );
 
         $this->assertSame($scopes, $finalized);

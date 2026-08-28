@@ -74,11 +74,9 @@ services:
     # the factory; repositories and keys come from bundle config (set in the
     # extension). Endpoints are routed in config/pimcore/routing.yaml.
     #
-    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository:
-        arguments:
-            $clients: []
-            # $clientMetadataResolver and $dynamicClientStore autowired from the
-            # interface bindings below.
+    # $clientMetadataResolver and $dynamicClientStore autowired from the
+    # interface bindings below.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository: ~
 
     # Client ID Metadata Documents (CIMD). $enabled/$allowedHosts/$allowInsecure/
     # $cacheTtl come from bundle config (set in the extension).

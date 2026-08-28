@@ -18,8 +18,9 @@ use League\OAuth2\Server\Entities\Traits\ClientTrait;
 use League\OAuth2\Server\Entities\Traits\EntityTrait;
 
 /**
- * Pre-registered first-party client. `serviceUserId` is the Pimcore user the
- * client_credentials grant acts as, so its tokens resolve to a real user.
+ * An OAuth client (CIMD or dynamically registered). Public clients authenticate
+ * via PKCE; confidential dynamic clients carry a secret validated at the token
+ * endpoint.
  *
  * @internal
  */
@@ -36,16 +37,10 @@ final class ClientEntity implements ClientEntityInterface
         string $name,
         string|array $redirectUri,
         bool $isConfidential = false,
-        private readonly ?int $serviceUserId = null,
     ) {
         $this->identifier = $identifier;
         $this->name = $name;
         $this->redirectUri = $redirectUri;
         $this->isConfidential = $isConfidential;
-    }
-
-    public function getServiceUserId(): ?int
-    {
-        return $this->serviceUserId;
     }
 }

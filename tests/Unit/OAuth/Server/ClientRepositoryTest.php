@@ -31,20 +31,6 @@ final class ClientRepositoryTest extends Unit
     private function repository(array $resolvable = [], array $dynamicClients = []): ClientRepository
     {
         return new ClientRepository(
-            [
-                'studio-mcp' => [
-                    'name' => 'Studio MCP',
-                    'redirect_uris' => ['https://localhost/callback'],
-                    'confidential' => true,
-                    'secret' => 'top-secret',
-                    'service_user' => 21,
-                ],
-                'public-client' => [
-                    'name' => 'Public Client',
-                    'redirect_uris' => ['https://localhost/cb'],
-                    'confidential' => false,
-                ],
-            ],
             $this->resolver($resolvable),
             $this->store($dynamicClients),
         );
@@ -55,7 +41,7 @@ final class ClientRepositoryTest extends Unit
      */
     private function resolver(array $resolvable): ClientMetadataResolverInterface
     {
-        return new class ($resolvable) implements ClientMetadataResolverInterface {
+        return new class($resolvable) implements ClientMetadataResolverInterface {
             /**
              * @param array<string, ClientMetadata> $resolvable
              */
@@ -75,7 +61,7 @@ final class ClientRepositoryTest extends Unit
      */
     private function store(array $clients): DynamicClientStoreInterface
     {
-        return new class ($clients) implements DynamicClientStoreInterface {
+        return new class($clients) implements DynamicClientStoreInterface {
             /**
              * @param array<string, DynamicClient> $clients
              */
@@ -95,43 +81,14 @@ final class ClientRepositoryTest extends Unit
         };
     }
 
-    public function testResolvesClientEntityWithServiceUser(): void
-    {
-        $client = $this->repository()->getClientEntity('studio-mcp');
-        $this->assertInstanceOf(ClientEntity::class, $client);
-        $this->assertSame('studio-mcp', $client->getIdentifier());
-        $this->assertTrue($client->isConfidential());
-        $this->assertSame(21, $client->getServiceUserId());
-    }
-
     public function testUnknownClientIsNull(): void
     {
         $this->assertNull($this->repository()->getClientEntity('nope'));
     }
 
-    public function testConfidentialClientRequiresMatchingSecret(): void
-    {
-        $repo = $this->repository();
-        $this->assertTrue($repo->validateClient('studio-mcp', 'top-secret', 'client_credentials'));
-        $this->assertFalse($repo->validateClient('studio-mcp', 'wrong', 'client_credentials'));
-        $this->assertFalse($repo->validateClient('studio-mcp', null, 'client_credentials'));
-    }
-
-    public function testPublicClientNeedsNoSecret(): void
-    {
-        $this->assertTrue($this->repository()->validateClient('public-client', null, 'authorization_code'));
-    }
-
-    public function testPublicClientCannotUseClientCredentials(): void
-    {
-        // A public client has no secret and must not obtain a service-account
-        // token via client_credentials with only its client id.
-        $this->assertFalse($this->repository()->validateClient('public-client', null, 'client_credentials'));
-    }
-
     public function testUnknownClientDoesNotValidate(): void
     {
-        $this->assertFalse($this->repository()->validateClient('nope', 'x', 'client_credentials'));
+        $this->assertFalse($this->repository()->validateClient('nope', 'x', 'authorization_code'));
     }
 
     public function testResolvesCimdClientFromUrl(): void
@@ -144,9 +101,8 @@ final class ClientRepositoryTest extends Unit
         $client = $repo->getClientEntity($url);
         $this->assertInstanceOf(ClientEntity::class, $client);
         $this->assertSame($url, $client->getIdentifier());
-        // CIMD clients are public and carry no service user.
+        // CIMD clients are public.
         $this->assertFalse($client->isConfidential());
-        $this->assertNull($client->getServiceUserId());
         $this->assertTrue($repo->validateClient($url, null, 'authorization_code'));
     }
 
@@ -155,16 +111,6 @@ final class ClientRepositoryTest extends Unit
         $repo = $this->repository();
         $this->assertNull($repo->getClientEntity('https://unknown.example/client.json'));
         $this->assertFalse($repo->validateClient('https://unknown.example/client.json', null, 'authorization_code'));
-    }
-
-    public function testCimdClientCannotUseClientCredentials(): void
-    {
-        $url = 'https://app.example/client.json';
-        $repo = $this->repository([
-            $url => new ClientMetadata($url, 'CIMD App', ['https://app.example/cb']),
-        ]);
-
-        $this->assertFalse($repo->validateClient($url, null, 'client_credentials'));
     }
 
     public function testResolvesDynamicPublicClient(): void
@@ -185,28 +131,7 @@ final class ClientRepositoryTest extends Unit
         $this->assertInstanceOf(ClientEntity::class, $client);
         $this->assertSame('dcr_pub', $client->getIdentifier());
         $this->assertFalse($client->isConfidential());
-        // Dynamic clients never carry a service user.
-        $this->assertNull($client->getServiceUserId());
         $this->assertTrue($repo->validateClient('dcr_pub', null, 'authorization_code'));
-    }
-
-    public function testDynamicClientCannotUseClientCredentials(): void
-    {
-        $repo = $this->repository([], [
-            'dcr_conf' => new DynamicClient(
-                'dcr_conf',
-                'Dyn Conf',
-                ['https://app/cb'],
-                ['authorization_code'],
-                ['mcp:read'],
-                true,
-                hash('sha256', 'sekret'),
-            ),
-        ]);
-
-        // Even a confidential dynamic client (with a valid secret) has no service
-        // user and must be rejected for client_credentials.
-        $this->assertFalse($repo->validateClient('dcr_conf', 'sekret', 'client_credentials'));
     }
 
     public function testDynamicConfidentialClientValidatesSecret(): void

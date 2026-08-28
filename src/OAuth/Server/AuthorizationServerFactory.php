@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 use DateInterval;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
-use League\OAuth2\Server\Grant\ClientCredentialsGrant;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
@@ -73,8 +72,6 @@ final class AuthorizationServerFactory
 
         $accessTokenTtl = $this->secondsInterval($this->accessTokenTtl);
         $refreshTokenTtl = $this->secondsInterval($this->refreshTokenTtl);
-
-        $server->enableGrantType(new ClientCredentialsGrant(), $accessTokenTtl);
 
         $authCodeGrant = new LoopbackAuthCodeGrant(
             $this->authCodeRepository,

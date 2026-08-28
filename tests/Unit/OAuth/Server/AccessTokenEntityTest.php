@@ -31,7 +31,7 @@ final class AccessTokenEntityTest extends Unit
         [$private, $public] = $this->keyPair();
 
         $token = new AccessTokenEntity();
-        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true, 21));
+        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true));
         $token->setIdentifier('jti-123');
         $token->setExpiryDateTime(new DateTimeImmutable('+1 hour'));
         $token->setUserIdentifier('21');
@@ -59,7 +59,7 @@ final class AccessTokenEntityTest extends Unit
         [$private, $public] = $this->keyPair();
 
         $token = new AccessTokenEntity();
-        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true, null));
+        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true));
         $token->setIdentifier('jti-1');
         $token->setExpiryDateTime(new DateTimeImmutable('+1 hour'));
         $token->addScope(new ScopeEntity('mcp:read'));

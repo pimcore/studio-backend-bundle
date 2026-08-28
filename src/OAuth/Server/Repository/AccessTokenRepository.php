@@ -18,7 +18,6 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use function ctype_digit;
 
 /**
@@ -49,14 +48,8 @@ final class AccessTokenRepository implements AccessTokenRepositoryInterface
             $token->addScope($scope);
         }
 
-        // client_credentials has no end user; act as the client's configured
-        // service user so the token resolves to a real Pimcore user downstream.
-        $subject = $userIdentifier;
-        if ($subject === null && $clientEntity instanceof ClientEntity && $clientEntity->getServiceUserId() !== null) {
-            $subject = (string) $clientEntity->getServiceUserId();
-        }
-        if ($subject !== null) {
-            $token->setUserIdentifier($subject);
+        if ($userIdentifier !== null) {
+            $token->setUserIdentifier($userIdentifier);
         }
 
         $token->setIssuer($this->issuer);
