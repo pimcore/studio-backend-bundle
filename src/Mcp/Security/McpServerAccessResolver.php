@@ -13,14 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Security;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\RoleResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Model\UserInterface;
 use function in_array;
 
 /**
- * Resolves the read/write access grid on an MCP server for a user. The precedence,
- * modelled on the agent bundle's permission service but keyed by id and
+ * Resolves the read/write access grid on an MCP server for a user, matching by
+ * user/role name (not id) so a configuration is portable across instances. The
+ * precedence, modelled on the agent bundle's permission service and
  * deny-by-default, is:
  *
  *  1. admin — always allowed (both levels)
@@ -35,6 +37,11 @@ use function in_array;
  */
 final class McpServerAccessResolver implements McpServerAccessResolverInterface
 {
+    public function __construct(
+        private readonly RoleResolverInterface $roleResolver,
+    ) {
+    }
+
     public function isAllowed(
         McpServerDefinition $server,
         McpServerPermission $permission,
@@ -45,18 +52,20 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
         }
 
         $access = $server->access;
+        $userName = $user->getName();
 
-        if ($access->owner !== null && $access->owner === $user->getId()) {
+        if ($access->owner !== null && $userName !== null && $access->owner === $userName) {
             return true;
         }
 
-        $userEntry = $this->findEntry($access->sharedUsers, $user->getId());
+        $userEntry = $this->findEntry($access->sharedUsers, $userName);
         if ($userEntry !== null) {
             return $userEntry->permission->grants($permission);
         }
 
+        $roleNames = $this->roleNames($user);
         foreach ($access->sharedRoles as $roleEntry) {
-            if (in_array($roleEntry->id, $user->getRoles(), true) && $roleEntry->permission->grants($permission)) {
+            if (in_array($roleEntry->name, $roleNames, true) && $roleEntry->permission->grants($permission)) {
                 return true;
             }
         }
@@ -75,18 +84,37 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
     /**
      * @param list<McpServerAccessEntry> $entries
      */
-    private function findEntry(array $entries, ?int $id): ?McpServerAccessEntry
+    private function findEntry(array $entries, ?string $name): ?McpServerAccessEntry
     {
-        if ($id === null) {
+        if ($name === null) {
             return null;
         }
 
         foreach ($entries as $entry) {
-            if ($entry->id === $id) {
+            if ($entry->name === $name) {
                 return $entry;
             }
         }
 
         return null;
+    }
+
+    /**
+     * The names of the roles the user holds. {@see UserInterface::getRoles()}
+     * yields role ids, so each is resolved to its name for matching.
+     *
+     * @return list<string>
+     */
+    private function roleNames(UserInterface $user): array
+    {
+        $names = [];
+        foreach ($user->getRoles() as $roleId) {
+            $role = $this->roleResolver->getById($roleId);
+            if ($role !== null) {
+                $names[] = $role->getName();
+            }
+        }
+
+        return $names;
     }
 }

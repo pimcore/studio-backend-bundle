@@ -133,8 +133,8 @@ final class McpServerConfigRepositoryTest extends Unit
             scopes: ['mcp:read'],
             enabled: true,
             access: new McpServerAccess(
-                owner: 22,
-                sharedRoles: [new McpServerAccessEntry(7, McpServerPermission::Write)]
+                owner: 'jane.doe',
+                sharedRoles: [new McpServerAccessEntry('editors', McpServerPermission::Write)]
             ),
         );
         $repository->save($server);

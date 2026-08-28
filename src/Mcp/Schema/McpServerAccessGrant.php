@@ -17,30 +17,31 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 /**
- * One share entry as exposed by the API: a user or role id paired with the level
+ * One share entry as exposed by the API: a user or role name paired with the level
  * it is granted. Used in both the server response and the create/update payload.
+ * Names (not ids) so a configuration is portable across instances.
  *
  * @internal
  */
 #[Schema(
     schema: 'McpServerAccessGrant',
     title: 'MCP Server Access Grant',
-    required: ['id', 'permission'],
+    required: ['name', 'permission'],
     type: 'object'
 )]
 final readonly class McpServerAccessGrant
 {
     public function __construct(
-        #[Property(description: 'User or role id', type: 'integer', example: 42)]
-        private int $id,
+        #[Property(description: 'User or role name', type: 'string', example: 'john.doe')]
+        private string $name,
         #[Property(description: 'Granted access level', type: 'string', enum: ['read', 'write'], example: 'read')]
         private string $permission,
     ) {
     }
 
-    public function getId(): int
+    public function getName(): string
     {
-        return $this->id;
+        return $this->name;
     }
 
     public function getPermission(): string
