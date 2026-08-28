@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpToolItem;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
 
 /**
  * @internal
  */
 interface McpToolItemHydratorInterface
 {
-    public function hydrate(McpToolInterface $tool): McpToolItem;
+    public function hydrate(McpToolReference $tool): McpToolItem;
 }

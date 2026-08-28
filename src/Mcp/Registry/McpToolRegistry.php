@@ -13,63 +13,97 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Registry;
 
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Exception\DuplicateMcpToolException;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
-use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Mcp\Schema\ToolAnnotations;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 use function array_keys;
 use function array_values;
+use function is_array;
 
 /**
- * Collects every service tagged {@see TAG} (auto-applied to {@see McpToolInterface}
- * implementations) into a name-keyed catalogue.
+ * Name-keyed catalogue of the studio backend's MCP tools. Tools are SDK-native
+ * `#[McpTool]` services tagged {@see TAG}; {@see McpToolPass} reflects the
+ * attribute at compile time and injects the descriptor metadata plus a service
+ * locator here (metadata is passed as plain arrays so it survives container
+ * compilation, and SDK objects are rebuilt lazily).
  *
  * @internal
+ *
+ * @phpstan-type ToolMetadata array{
+ *     class: class-string,
+ *     method: string,
+ *     title: string|null,
+ *     description: string,
+ *     annotations: array<string, mixed>|null,
+ *     outputSchema: array<string, mixed>|null
+ * }
  */
 final class McpToolRegistry implements McpToolRegistryInterface
 {
     public const string TAG = 'pimcore.studio_backend.mcp_tool';
 
     /**
-     * @var array<string, McpToolInterface>
+     * @var array<string, McpToolReference>|null
      */
-    private array $tools = [];
+    private ?array $resolved = null;
 
     /**
-     * @param iterable<McpToolInterface> $tools
-     *
-     * @throws DuplicateMcpToolException
+     * @param array<string, ToolMetadata> $toolMetadata name-keyed tool descriptors
      */
     public function __construct(
-        #[AutowireIterator(self::TAG)]
-        iterable $tools = [],
+        private readonly array $toolMetadata = [],
+        private readonly ?ContainerInterface $toolLocator = null,
     ) {
-        foreach ($tools as $tool) {
-            $name = $tool->getDefinition()->name;
-            if (isset($this->tools[$name])) {
-                throw new DuplicateMcpToolException($name);
-            }
-
-            $this->tools[$name] = $tool;
-        }
     }
 
     public function all(): array
     {
-        return array_values($this->tools);
+        return array_values($this->references());
     }
 
     public function has(string $name): bool
     {
-        return isset($this->tools[$name]);
+        return isset($this->references()[$name]);
     }
 
-    public function get(string $name): ?McpToolInterface
+    public function get(string $name): ?McpToolReference
     {
-        return $this->tools[$name] ?? null;
+        return $this->references()[$name] ?? null;
     }
 
     public function names(): array
     {
-        return array_keys($this->tools);
+        return array_keys($this->references());
+    }
+
+    public function getLocator(): ContainerInterface
+    {
+        return $this->toolLocator ?? new ServiceLocator([]);
+    }
+
+    /**
+     * @return array<string, McpToolReference>
+     */
+    private function references(): array
+    {
+        if ($this->resolved !== null) {
+            return $this->resolved;
+        }
+
+        $references = [];
+        foreach ($this->toolMetadata as $name => $meta) {
+            $annotations = $meta['annotations'];
+            $references[$name] = new McpToolReference(
+                name: $name,
+                title: $meta['title'],
+                description: $meta['description'],
+                annotations: is_array($annotations) ? ToolAnnotations::fromArray($annotations) : null,
+                outputSchema: $meta['outputSchema'],
+                className: $meta['class'],
+                method: $meta['method'],
+            );
+        }
+
+        return $this->resolved = $references;
     }
 }

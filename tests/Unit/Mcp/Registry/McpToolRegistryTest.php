@@ -14,46 +14,48 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Registry;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Exception\DuplicateMcpToolException;
+use Mcp\Schema\ToolAnnotations;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolAnnotations;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolResult;
+use Psr\Container\ContainerInterface;
+use stdClass;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 final class McpToolRegistryTest extends Unit
 {
-    private function tool(string $name): McpToolInterface
+    public function testExposesToolReferencesRebuiltFromMetadata(): void
     {
-        return new class($name) implements McpToolInterface {
-            public function __construct(private readonly string $name)
-            {
-            }
+        $registry = new McpToolRegistry([
+            'get_thing' => [
+                'class' => stdClass::class, 'method' => 'execute', 'title' => 'Get Thing',
+                'description' => 'reads a thing', 'annotations' => ['readOnlyHint' => true], 'outputSchema' => null,
+            ],
+            'delete_thing' => [
+                'class' => stdClass::class, 'method' => 'run', 'title' => null,
+                'description' => '', 'annotations' => null, 'outputSchema' => null,
+            ],
+        ]);
 
-            public function getDefinition(): McpToolDefinition
-            {
-                return new McpToolDefinition($this->name, $this->name, 'desc', new McpToolAnnotations(readOnly: true));
-            }
-
-            public function execute(array $arguments): McpToolResult
-            {
-                return McpToolResult::text('ok');
-            }
-        };
-    }
-
-    public function testIndexesToolsByName(): void
-    {
-        $a = $this->tool('a');
-        $b = $this->tool('b');
-        $registry = new McpToolRegistry([$a, $b]);
-
-        $this->assertSame(['a', 'b'], $registry->names());
-        $this->assertSame([$a, $b], $registry->all());
-        $this->assertTrue($registry->has('a'));
+        $this->assertSame(['get_thing', 'delete_thing'], $registry->names());
+        $this->assertTrue($registry->has('get_thing'));
         $this->assertFalse($registry->has('missing'));
-        $this->assertSame($b, $registry->get('b'));
         $this->assertNull($registry->get('missing'));
+        $this->assertCount(2, $registry->all());
+
+        $ref = $registry->get('get_thing');
+        $this->assertInstanceOf(McpToolReference::class, $ref);
+        $this->assertSame('get_thing', $ref->name);
+        $this->assertSame('Get Thing', $ref->title);
+        $this->assertSame(stdClass::class, $ref->className);
+        $this->assertSame('execute', $ref->method);
+        $this->assertInstanceOf(ToolAnnotations::class, $ref->annotations);
+        $this->assertTrue($ref->isReadOnly());
+        $this->assertFalse($ref->isDestructive());
+
+        $writeRef = $registry->get('delete_thing');
+        $this->assertNull($writeRef->title);
+        $this->assertNull($writeRef->annotations);
+        $this->assertFalse($writeRef->isReadOnly());
     }
 
     public function testEmptyRegistry(): void
@@ -64,10 +66,15 @@ final class McpToolRegistryTest extends Unit
         $this->assertSame([], $registry->names());
     }
 
-    public function testDuplicateToolNameThrows(): void
+    public function testGetLocatorFallsBackToAnEmptyContainer(): void
     {
-        $this->expectException(DuplicateMcpToolException::class);
+        $this->assertInstanceOf(ContainerInterface::class, (new McpToolRegistry())->getLocator());
+    }
 
-        new McpToolRegistry([$this->tool('dup'), $this->tool('dup')]);
+    public function testGetLocatorReturnsTheInjectedOne(): void
+    {
+        $locator = new ServiceLocator([]);
+
+        $this->assertSame($locator, (new McpToolRegistry([], $locator))->getLocator());
     }
 }

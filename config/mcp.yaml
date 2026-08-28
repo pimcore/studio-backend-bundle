@@ -50,15 +50,20 @@ services:
             $repository: null
 
     # --- MCP tools ---
-    # Registry of tools that self-registered via the McpToolInterface tag. Tools
-    # are auto-tagged (see the bundle's build()), so the registry receives them
-    # through its #[AutowireIterator].
-    Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry: ~
+    # Registry of SDK-native #[McpTool] services tagged with McpToolRegistry::TAG.
+    # McpToolPass reflects the tagged services and injects $toolMetadata + a service
+    # $toolLocator; the arguments below are placeholders it overrides.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry:
+        autowire: false
+        arguments:
+            $toolMetadata: []
+            $toolLocator: null
     Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry
 
-    # Built-in tools
-    Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool: ~
+    # Built-in tools (tagged so the registry collects them)
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool:
+        tags: ['pimcore.studio_backend.mcp_tool']
 
     # --- Serving configured MCP servers over HTTP ---
     # PSR-16 view of the dedicated MCP session cache pool (pool declared in the

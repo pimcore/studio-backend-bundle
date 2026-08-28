@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Event\PreResponse\McpServerEvent;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter\McpServerParameter;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServer;
@@ -188,7 +189,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         foreach ($toolIds as $toolId) {
             $tool = $this->toolRegistry->get($toolId);
             if ($tool !== null) {
-                $scopes[$tool->getDefinition()->requiredScope()] = true;
+                $scopes[McpScopes::forReadOnly($tool->isReadOnly())] = true;
             }
         }
 
