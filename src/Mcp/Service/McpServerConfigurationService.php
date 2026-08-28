@@ -25,11 +25,14 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServer;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerUserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function array_filter;
 use function array_keys;
+use function array_values;
 use function rtrim;
 use function sprintf;
 
@@ -55,7 +58,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
 
         $servers = [];
         foreach ($this->repository->list() as $definition) {
-            if ($this->accessResolver->isAllowed($definition, McpServerPermission::Read, $user)) {
+            if ($this->accessResolver->isAllowed($definition, McpServerCapability::View, $user)) {
                 $servers[] = $this->buildServer($definition);
             }
         }
@@ -66,7 +69,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
     public function getConfiguration(string $id): McpServer
     {
         $definition = $this->repository->get($id);
-        $this->assert($definition, McpServerPermission::Read);
+        $this->assert($definition, McpServerCapability::View);
 
         return $this->buildServer($definition);
     }
@@ -92,10 +95,10 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
 
     public function updateConfiguration(string $id, McpServerParameter $parameter): McpServer
     {
-        // Editing (incl. re-sharing) requires write; the slug is locked to the id
-        // and the original owner is preserved.
+        // Editing (incl. re-sharing) requires the Edit capability; the slug is
+        // locked to the id and the original owner is preserved.
         $existing = $this->repository->get($id);
-        $this->assert($existing, McpServerPermission::Write);
+        $this->assert($existing, McpServerCapability::Edit);
 
         $definition = $this->buildDefinition($id, $parameter, $existing->access->owner);
         $this->repository->save($definition);
@@ -106,7 +109,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
     public function deleteConfiguration(string $id): void
     {
         $definition = $this->repository->get($id);
-        $this->assert($definition, McpServerPermission::Write);
+        $this->assert($definition, McpServerCapability::Edit);
 
         $this->repository->delete($id);
     }
@@ -124,7 +127,9 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
             access: new McpServerAccess(
                 owner: $owner,
                 shareGlobal: $parameter->shareGlobal(),
-                sharedUsers: $this->normalizeEntries($parameter->getSharedUsers()),
+                // The owner is always listed with full capabilities, so they can
+                // view, use and edit their own server regardless of the payload.
+                sharedUsers: $this->withOwner($this->normalizeEntries($parameter->getSharedUsers()), $owner),
                 sharedRoles: $this->normalizeEntries($parameter->getSharedRoles()),
             ),
         );
@@ -132,15 +137,14 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
 
     private function buildServer(McpServerDefinition $definition): McpServer
     {
-        $permissions = $this->accessResolver->resolve($definition, $this->securityService->getCurrentUser());
+        $resolved = $this->accessResolver->resolve($definition, $this->securityService->getCurrentUser());
 
         $server = $this->serverHydrator->hydrate(
             $definition,
             $this->buildUrl($definition->urlSlug),
             $this->deriveScopes($definition->toolIds),
             $this->repository->isWriteable(),
-            $permissions['read'],
-            $permissions['write'],
+            new McpServerUserPermissions($resolved['view'], $resolved['access'], $resolved['edit']),
         );
 
         $this->eventDispatcher->dispatch(new McpServerEvent($server), McpServerEvent::EVENT_NAME);
@@ -151,17 +155,39 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
     /**
      * @throws ForbiddenException
      */
-    private function assert(McpServerDefinition $definition, McpServerPermission $permission): void
+    private function assert(McpServerDefinition $definition, McpServerCapability $capability): void
     {
-        if (!$this->accessResolver->isAllowed($definition, $permission, $this->securityService->getCurrentUser())) {
+        if (!$this->accessResolver->isAllowed($definition, $capability, $this->securityService->getCurrentUser())) {
             throw new ForbiddenException(
-                sprintf('You are not allowed to %s the MCP server "%s".', $permission->value, $definition->id)
+                sprintf('You are not allowed to %s the MCP server "%s".', $capability->value, $definition->id)
             );
         }
     }
 
     /**
-     * @param list<array{name?: mixed, permission?: mixed}> $raw
+     * Ensure the owner is listed with full capabilities (access + edit), replacing
+     * any existing entry for that name.
+     *
+     * @param list<McpServerAccessEntry> $sharedUsers
+     *
+     * @return list<McpServerAccessEntry>
+     */
+    private function withOwner(array $sharedUsers, ?string $owner): array
+    {
+        if ($owner === null || $owner === '') {
+            return $sharedUsers;
+        }
+
+        $others = array_values(array_filter(
+            $sharedUsers,
+            static fn (McpServerAccessEntry $entry): bool => $entry->name !== $owner
+        ));
+
+        return [new McpServerAccessEntry($owner, canAccess: true, canEdit: true), ...$others];
+    }
+
+    /**
+     * @param list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}> $raw
      *
      * @return list<McpServerAccessEntry>
      */

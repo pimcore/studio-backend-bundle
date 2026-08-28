@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepository;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Config\LocationAwareConfigRepository;
 
 final class McpServerConfigRepositoryTest extends Unit
@@ -134,7 +133,7 @@ final class McpServerConfigRepositoryTest extends Unit
             enabled: true,
             access: new McpServerAccess(
                 owner: 'jane.doe',
-                sharedRoles: [new McpServerAccessEntry('editors', McpServerPermission::Write)]
+                sharedRoles: [new McpServerAccessEntry('editors', canAccess: true, canEdit: true)]
             ),
         );
         $repository->save($server);

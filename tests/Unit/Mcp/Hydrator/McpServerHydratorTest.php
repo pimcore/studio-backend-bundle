@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydrator;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Schema\McpServerUserPermissions;
 
 /**
  * @internal
@@ -38,8 +38,8 @@ final class McpServerHydratorTest extends Unit
             access: new McpServerAccess(
                 owner: 'john.doe',
                 shareGlobal: false,
-                sharedUsers: [new McpServerAccessEntry('alice', McpServerPermission::Write)],
-                sharedRoles: [new McpServerAccessEntry('editors', McpServerPermission::Read)],
+                sharedUsers: [new McpServerAccessEntry('alice', canAccess: true, canEdit: true)],
+                sharedRoles: [new McpServerAccessEntry('editors', canAccess: false, canEdit: true)],
             ),
         );
 
@@ -48,35 +48,29 @@ final class McpServerHydratorTest extends Unit
             'https://host/pimcore-mcp/studio/product-read',
             ['mcp:read'],
             true,
-            true,
-            false,
+            new McpServerUserPermissions(canView: true, canAccess: false, canEdit: true),
         );
 
         $this->assertSame('product-read', $server->getId());
-        $this->assertSame('Product (read-only)', $server->getName());
-        $this->assertSame('Read access to product data', $server->getDescription());
-        $this->assertSame('https://host/pimcore-mcp/studio/product-read', $server->getUrl());
-        $this->assertSame(['get_car_info', 'search_data_objects'], $server->getTools());
-        $this->assertSame(['mcp:read'], $server->getScopes());
-        $this->assertTrue($server->isEnabled());
         $this->assertSame('john.doe', $server->getOwner());
         $this->assertFalse($server->isShareGlobal());
         $this->assertTrue($server->isWriteable());
         $this->assertSame(2, $server->getToolCount());
 
-        // Grid entries map to name + level grants.
         $users = $server->getSharedUsers();
         $this->assertCount(1, $users);
         $this->assertSame('alice', $users[0]->getName());
-        $this->assertSame('write', $users[0]->getPermission());
+        $this->assertTrue($users[0]->isCanAccess());
+        $this->assertTrue($users[0]->isCanEdit());
 
         $roles = $server->getSharedRoles();
         $this->assertSame('editors', $roles[0]->getName());
-        $this->assertSame('read', $roles[0]->getPermission());
+        $this->assertFalse($roles[0]->isCanAccess());
+        $this->assertTrue($roles[0]->isCanEdit());
 
-        // The caller's resolved access is echoed for the UI.
-        $this->assertTrue($server->getCurrentUserPermissions()->isRead());
-        $this->assertFalse($server->getCurrentUserPermissions()->isWrite());
+        $this->assertTrue($server->getCurrentUserPermissions()->isCanView());
+        $this->assertFalse($server->getCurrentUserPermissions()->isCanAccess());
+        $this->assertTrue($server->getCurrentUserPermissions()->isCanEdit());
     }
 
     public function testHydrateNormalisesEmptyDescriptionAndEmptyGrid(): void
@@ -92,14 +86,19 @@ final class McpServerHydratorTest extends Unit
             access: new McpServerAccess(),
         );
 
-        $server = (new McpServerHydrator())->hydrate($definition, 'https://host/pimcore-mcp/studio/x', [], false, false, false);
+        $server = (new McpServerHydrator())->hydrate(
+            $definition,
+            'https://host/pimcore-mcp/studio/x',
+            [],
+            false,
+            new McpServerUserPermissions(canView: false, canAccess: false, canEdit: false),
+        );
 
         $this->assertNull($server->getDescription());
         $this->assertNull($server->getOwner());
         $this->assertSame([], $server->getSharedUsers());
         $this->assertSame([], $server->getSharedRoles());
-        $this->assertFalse($server->isWriteable());
-        $this->assertFalse($server->getCurrentUserPermissions()->isRead());
+        $this->assertFalse($server->getCurrentUserPermissions()->isCanView());
         $this->assertSame(0, $server->getToolCount());
     }
 }

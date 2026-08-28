@@ -19,7 +19,7 @@ use Mcp\Server\Transport\StreamableHttpTransport;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -67,7 +67,7 @@ final readonly class McpServerController
 
         $mayConnect = $this->accessResolver->isAllowed(
             $definition,
-            McpServerPermission::Read,
+            McpServerCapability::Access,
             $this->securityService->getCurrentUser()
         );
         if (!$mayConnect) {
