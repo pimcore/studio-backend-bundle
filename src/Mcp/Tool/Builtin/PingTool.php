@@ -13,35 +13,36 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin;
 
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolAnnotations;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolResult;
+use Mcp\Capability\Attribute\McpTool;
+use Mcp\Schema\Content\TextContent;
+use Mcp\Schema\Result\CallToolResult;
+use Mcp\Schema\ToolAnnotations;
 
 /**
- * Built-in health-check tool: takes no arguments and answers "pong". Read-only,
- * so it requires only mcp:read — a minimal, dependency-free tool that lets a
- * server be exercised end-to-end without the agent bundle.
+ * Minimal built-in MCP tool: a liveness check that echoes "pong". Doubles as the
+ * reference example of an SDK-native tool — a plain service with an `#[McpTool]`
+ * method returning a {@see CallToolResult}, tagged for the studio tool registry.
  *
  * @internal
  */
-final class PingTool implements McpToolInterface
+final class PingTool
 {
-    public function getDefinition(): McpToolDefinition
+    #[McpTool(
+        name: 'ping',
+        title: 'Ping',
+        description: 'Liveness check that returns "pong".',
+        annotations: new ToolAnnotations(
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        ),
+    )]
+    public function execute(): CallToolResult
     {
-        return new McpToolDefinition(
-            name: 'ping',
-            title: 'Ping',
-            description: 'Health-check tool that returns "pong".',
-            annotations: new McpToolAnnotations(readOnly: true, idempotent: true),
-            // No arguments: an object schema with no properties (an empty PHP array
-            // would serialise to a JSON array, which JSON Schema rejects for `properties`).
-            inputSchema: ['type' => 'object', 'additionalProperties' => false],
+        return new CallToolResult(
+            content: [new TextContent('pong')],
+            isError: false,
         );
-    }
-
-    public function execute(array $arguments): McpToolResult
-    {
-        return McpToolResult::text('pong');
     }
 }

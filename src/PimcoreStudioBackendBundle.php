@@ -34,8 +34,6 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\Settings
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
 use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
@@ -103,10 +101,8 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new DocumentTypeAdapterPass());
         $container->addCompilerPass(new NotificationDispatchPass());
 
-        // MCP tools self-register: implementing the interface auto-applies the tag
-        // that McpToolRegistry collects; the pass guards against a mis-tagged service.
-        $container->registerForAutoconfiguration(McpToolInterface::class)
-            ->addTag(McpToolRegistry::TAG);
+        // MCP tools are SDK-native #[McpTool] services, opted in with the
+        // McpToolRegistry::TAG tag; the pass reflects them into the registry.
         $container->addCompilerPass(new McpToolPass());
     }
 
