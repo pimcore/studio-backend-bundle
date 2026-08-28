@@ -13,27 +13,26 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Server;
 
-use Mcp\Schema\Content\TextContent;
-use Mcp\Schema\Request\CallToolRequest;
-use Mcp\Schema\Result\CallToolResult;
+use Mcp\Capability\Discovery\DocBlockParser;
+use Mcp\Capability\Discovery\SchemaGenerator;
 use Mcp\Schema\ServerCapabilities;
-use Mcp\Schema\ToolAnnotations;
 use Mcp\Server;
 use Mcp\Server\Builder;
-use Mcp\Server\RequestContext;
 use Mcp\Server\Session\Psr16SessionStore;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\ToolInputSchemaNormalizer;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
+use ReflectionMethod;
 
 /**
  * Assembles a tools-only MCP {@see Server} for a configured server, one instance
- * per definition (cached). Each assigned tool is resolved from the registry and
- * bridged onto the SDK: the native {@see McpToolInterface::execute()} is wrapped
- * in a handler that reads the call arguments and maps the result back to the SDK
- * result type, so tools stay SDK-agnostic while the server speaks the protocol.
+ * per definition (cached). Assigned tools are SDK-native `#[McpTool]` services;
+ * each is registered straight onto the SDK builder via {@see Builder::addTool()}
+ * with `[class, method]`, and the registry's locator resolves the backing service
+ * at call time — no bundle-specific tool bridge.
  *
  * @internal
  */
@@ -76,6 +75,7 @@ final class McpServerFactory implements McpServerFactoryInterface
                     self::SESSION_TTL,
                 )
             )
+            ->setContainer($this->toolRegistry->getLocator())
             ->setLogger($this->logger);
 
         foreach ($server->toolIds as $toolId) {
@@ -95,27 +95,32 @@ final class McpServerFactory implements McpServerFactoryInterface
         return $this->servers[$server->id] = $builder->build();
     }
 
-    private function registerTool(Builder $builder, McpToolInterface $tool): void
+    private function registerTool(Builder $builder, McpToolReference $tool): void
     {
-        $definition = $tool->getDefinition();
-
         $builder->addTool(
-            handler: static function (RequestContext $context) use ($tool): CallToolResult {
-                $request = $context->getRequest();
-                $arguments = $request instanceof CallToolRequest ? $request->arguments : [];
-                $result = $tool->execute($arguments);
-
-                return new CallToolResult(
-                    content: [new TextContent($result->text)],
-                    isError: $result->isError,
-                );
-            },
-            name: $definition->name,
-            title: $definition->title,
-            description: $definition->description,
-            annotations: ToolAnnotations::fromArray($definition->annotations->toArray()),
-            inputSchema: $definition->inputSchema,
-            outputSchema: $definition->outputSchema,
+            handler: [$tool->className, $tool->method],
+            name: $tool->name,
+            title: $tool->title,
+            description: $tool->description,
+            annotations: $tool->annotations,
+            inputSchema: $this->buildInputSchema($tool->className, $tool->method),
+            outputSchema: $tool->outputSchema,
         );
+    }
+
+    /**
+     * The SDK can derive the input schema from `#[Schema]` parameter attributes, but
+     * it is generated here so {@see ToolInputSchemaNormalizer} can repair the
+     * generated parameter types before registration.
+     *
+     * @param class-string $class
+     *
+     * @return array<string, mixed>
+     */
+    private function buildInputSchema(string $class, string $method): array
+    {
+        $generator = new SchemaGenerator(new DocBlockParser());
+
+        return ToolInputSchemaNormalizer::normalize($generator->generate(new ReflectionMethod($class, $method)));
     }
 }

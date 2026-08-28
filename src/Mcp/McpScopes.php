@@ -24,4 +24,13 @@ final class McpScopes
     public const string READ = 'mcp:read';
 
     public const string WRITE = 'mcp:write';
+
+    /**
+     * The scope a tool requires, derived from its read-only annotation: a
+     * read-only tool needs {@see READ}, anything else the fail-safe {@see WRITE}.
+     */
+    public static function forReadOnly(bool $readOnly): string
+    {
+        return $readOnly ? self::READ : self::WRITE;
+    }
 }

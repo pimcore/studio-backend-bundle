@@ -27,11 +27,9 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryI
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolAnnotations;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\UserInterface;
+use stdClass;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -208,8 +206,14 @@ final class McpServerConfigurationServiceTest extends Unit
             $this->makeEmpty(EventDispatcherInterface::class),
             $repository,
             new McpToolRegistry([
-                $this->tool('get_car_info', readOnly: true),
-                $this->tool('delete_object', readOnly: false),
+                'get_car_info' => [
+                    'class' => stdClass::class, 'method' => 'execute', 'title' => null,
+                    'description' => '', 'annotations' => ['readOnlyHint' => true], 'outputSchema' => null,
+                ],
+                'delete_object' => [
+                    'class' => stdClass::class, 'method' => 'execute', 'title' => null,
+                    'description' => '', 'annotations' => ['readOnlyHint' => false], 'outputSchema' => null,
+                ],
             ]),
             new McpServerAccessResolver(),
             $this->makeEmpty(SecurityServiceInterface::class, [
@@ -299,17 +303,5 @@ final class McpServerConfigurationServiceTest extends Unit
             enabled: true,
             access: $access,
         );
-    }
-
-    private function tool(string $name, bool $readOnly): McpToolInterface
-    {
-        return $this->makeEmpty(McpToolInterface::class, [
-            'getDefinition' => new McpToolDefinition(
-                name: $name,
-                title: $name,
-                description: $name,
-                annotations: new McpToolAnnotations(readOnly: $readOnly),
-            ),
-        ]);
     }
 }

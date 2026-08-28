@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Service;
 
 use Codeception\Test\Unit;
+use Mcp\Schema\ToolAnnotations;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Event\PreResponse\McpToolItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueService;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolAnnotations;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
+use stdClass;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -68,15 +68,16 @@ final class McpToolCatalogueServiceTest extends Unit
         $this->assertSame([], $service->listTools());
     }
 
-    private function tool(string $name, string $title, bool $readOnly): McpToolInterface
+    private function tool(string $name, string $title, bool $readOnly): McpToolReference
     {
-        return $this->makeEmpty(McpToolInterface::class, [
-            'getDefinition' => new McpToolDefinition(
-                name: $name,
-                title: $title,
-                description: $title . ' tool',
-                annotations: new McpToolAnnotations(readOnly: $readOnly),
-            ),
-        ]);
+        return new McpToolReference(
+            name: $name,
+            title: $title,
+            description: $title . ' tool',
+            annotations: new ToolAnnotations(readOnlyHint: $readOnly),
+            outputSchema: null,
+            className: stdClass::class,
+            method: 'execute',
+        );
     }
 }

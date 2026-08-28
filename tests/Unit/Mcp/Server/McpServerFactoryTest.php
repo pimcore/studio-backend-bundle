@@ -14,16 +14,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Server;
 
 use Codeception\Test\Unit;
+use Mcp\Schema\ToolAnnotations;
 use Mcp\Server;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolReference;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Psr16Cache;
+use Symfony\Component\DependencyInjection\ServiceLocator;
 
 final class McpServerFactoryTest extends Unit
 {
@@ -54,8 +56,21 @@ final class McpServerFactoryTest extends Unit
     {
         $registry = $this->createMock(McpToolRegistryInterface::class);
         $registry->method('get')->willReturnCallback(
-            static fn (string $name): ?McpToolInterface => $name === 'ping' ? new PingTool() : null
+            static fn (string $name): ?McpToolReference => $name === 'ping'
+                ? new McpToolReference(
+                    name: 'ping',
+                    title: 'Ping',
+                    description: 'Liveness check.',
+                    annotations: new ToolAnnotations(readOnlyHint: true),
+                    outputSchema: null,
+                    className: PingTool::class,
+                    method: 'execute',
+                )
+                : null
         );
+        $registry->method('getLocator')->willReturn(new ServiceLocator([
+            PingTool::class => static fn (): PingTool => new PingTool(),
+        ]));
 
         return new McpServerFactory($registry, new Psr16Cache(new ArrayAdapter()), new NullLogger());
     }
