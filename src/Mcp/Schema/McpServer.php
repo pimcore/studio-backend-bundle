@@ -69,8 +69,8 @@ final class McpServer implements AdditionalAttributesInterface
         private readonly array $scopes,
         #[Property(description: 'Whether the server is enabled', type: 'boolean', example: true)]
         private readonly bool $enabled,
-        #[Property(description: 'Owner user id. Null when the owner has been deleted.', type: 'integer', example: 42, nullable: true)]
-        private readonly ?int $ownerId,
+        #[Property(description: 'Owner user name. Null when the owner has been deleted.', type: 'string', example: 'john.doe', nullable: true)]
+        private readonly ?string $owner,
         #[Property(description: 'Any authenticated user may read/use it', type: 'boolean', example: false)]
         private readonly bool $shareGlobal,
         #[Property(description: 'Users shared with, each at a read/write level', type: 'array', items: new Items(ref: McpServerAccessGrant::class))]
@@ -132,9 +132,9 @@ final class McpServer implements AdditionalAttributesInterface
         return $this->enabled;
     }
 
-    public function getOwnerId(): ?int
+    public function getOwner(): ?string
     {
-        return $this->ownerId;
+        return $this->owner;
     }
 
     public function isShareGlobal(): bool

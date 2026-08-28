@@ -45,7 +45,7 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
             tools: $definition->toolIds,
             scopes: $scopes,
             enabled: $definition->enabled,
-            ownerId: $access->owner,
+            owner: $access->owner,
             shareGlobal: $access->shareGlobal,
             sharedUsers: $this->grants($access->sharedUsers),
             sharedRoles: $this->grants($access->sharedRoles),
@@ -64,7 +64,7 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
     {
         return array_map(
             static fn (McpServerAccessEntry $entry): McpServerAccessGrant => new McpServerAccessGrant(
-                $entry->id,
+                $entry->name,
                 $entry->permission->value,
             ),
             $entries

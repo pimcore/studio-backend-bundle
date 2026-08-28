@@ -30,7 +30,7 @@ final class McpServerDefinitionTest extends Unit
             'tools' => ['get_data_object', 'search_data_objects'],
             'scopes' => ['mcp:read'],
             'enabled' => false,
-            'access' => ['owner' => 22, 'share_global' => true],
+            'access' => ['owner' => 'jane.doe', 'share_global' => true],
         ]);
 
         $this->assertSame('objects-read', $server->id);
@@ -40,7 +40,7 @@ final class McpServerDefinitionTest extends Unit
         $this->assertSame(['get_data_object', 'search_data_objects'], $server->toolIds);
         $this->assertSame(['mcp:read'], $server->scopes);
         $this->assertFalse($server->enabled);
-        $this->assertSame(22, $server->access->owner);
+        $this->assertSame('jane.doe', $server->access->owner);
         $this->assertTrue($server->access->shareGlobal);
     }
 
@@ -87,8 +87,8 @@ final class McpServerDefinitionTest extends Unit
             scopes: ['mcp:read', 'mcp:write'],
             enabled: true,
             access: new McpServerAccess(
-                owner: 1,
-                sharedRoles: [new McpServerAccessEntry(9, McpServerPermission::Read)]
+                owner: 'jane.doe',
+                sharedRoles: [new McpServerAccessEntry('editors', McpServerPermission::Read)]
             ),
         );
 
