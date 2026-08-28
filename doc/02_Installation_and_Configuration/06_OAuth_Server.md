@@ -26,10 +26,11 @@ the static-token alternative.
   Protected Resource Metadata ([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)).
 - **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) — the `S256`
   method is **required**; `plain` is rejected.
-- **Refresh tokens** and, for confidential first-party clients, the **Client Credentials** grant (acting as a
-  configured service user).
-- Three ways to onboard clients: **pre-registered** clients, optional **Dynamic Client Registration**
-  ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata Documents**.
+- **Refresh tokens**.
+- Two ways for clients to onboard, both self-service: optional **Dynamic Client Registration**
+  ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)) and optional **Client ID Metadata Documents**. There are
+  no pre-registered or service clients — non-interactive/machine access uses the
+  [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT) instead.
 
 ## Enabling
 
@@ -96,7 +97,7 @@ bearer authenticator that validates these tokens.
 | `/.well-known/oauth-authorization-server` | GET | Authorization Server Metadata (RFC 8414) — public discovery |
 | `/.well-known/oauth-protected-resource{/path}` | GET | Protected Resource Metadata (RFC 9728) — advertises the audience + auth server for a resource |
 | `/pimcore-oauth/authorize` | GET | Browser entry point; redirects to the Studio consent UI (`oauth.consent_path`) |
-| `/pimcore-oauth/token` | POST | Token endpoint (authorization_code, refresh_token, client_credentials) |
+| `/pimcore-oauth/token` | POST | Token endpoint (authorization_code, refresh_token) |
 | `/pimcore-oauth/register` | POST | Dynamic Client Registration (RFC 7591) — returns `404` unless enabled |
 
 ## How a client authenticates
@@ -120,31 +121,7 @@ a compliant client can discover where to authenticate.
 
 ## Onboarding clients
 
-Choose one (or several) of the following.
-
-### Pre-registered clients
-
-First-party clients you control, declared in config:
-
-```yaml
-pimcore_studio_backend:
-    oauth:
-        clients:
-            my-desktop-app:
-                name: 'My Desktop App'
-                redirect_uris: ['http://127.0.0.1:33418/callback']
-                confidential: false
-            my-service:
-                name: 'Backend Service'
-                redirect_uris: []
-                confidential: true
-                secret: '%env(MY_SERVICE_OAUTH_SECRET)%'
-                # Client Credentials grant acts as this Pimcore user id (service account).
-                service_user: 42
-                scopes: ['mcp:read']
-```
-
-A client with a `service_user` **must** be `confidential` and define a `secret`.
+Clients onboard themselves — there is no pre-registered client list. Use one (or both) of the following.
 
 ### Dynamic Client Registration (RFC 7591)
 
@@ -211,7 +188,6 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
 | `client_id_metadata_documents.allow_insecure` | `false` | Dev only: permit http/loopback `client_id` URLs. |
 | `client_id_metadata_documents.cache_ttl` | `300` | Seconds to cache a fetched client metadata document. |
-| `clients` | `[]` | Pre-registered first-party clients (see above). |
 | `resources` | `[]` | Protected resources / token audiences (see above). |
 
 ## Security considerations
