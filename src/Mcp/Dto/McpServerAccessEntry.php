@@ -15,55 +15,54 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Dto;
 
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use function is_array;
-use function is_numeric;
+use function is_string;
 
 /**
- * One share entry on an MCP server: a user or role id paired with the level it is
- * granted. The kind (user vs role) is carried by which list the entry lives in on
- * {@see McpServerAccess}, so it is not repeated here.
+ * One share entry on an MCP server: a user or role, identified by its (unique)
+ * name, paired with the level it is granted. Names are used rather than ids so a
+ * configuration stays portable across instances where the same user/role may
+ * carry a different id. The kind (user vs role) is carried by which list the
+ * entry lives in on {@see McpServerAccess}.
  *
  * @internal
  */
 final readonly class McpServerAccessEntry
 {
     public function __construct(
-        public int $id,
+        public string $name,
         public McpServerPermission $permission,
     ) {
     }
 
     /**
-     * Tolerant deserialization from stored/submitted data. A bare numeric id is
-     * read as a {@see McpServerPermission::Read} grant — this is the compatibility
-     * bridge for the earlier "flat id list" shape, whose entries meant "may use".
-     * Returns null for anything without a usable id.
+     * Tolerant deserialization: a bare string name is read as a
+     * {@see McpServerPermission::Read} grant; a `{name, permission}` map carries
+     * its level. Returns null for anything without a usable name.
      *
      * @param mixed $value
      */
     public static function fromMixed(mixed $value): ?self
     {
-        if (is_numeric($value)) {
-            return new self((int) $value, McpServerPermission::Read);
+        if (is_string($value) && $value !== '') {
+            return new self($value, McpServerPermission::Read);
         }
 
-        if (!is_array($value) || !isset($value['id']) || !is_numeric($value['id'])) {
+        if (!is_array($value) || !isset($value['name']) || !is_string($value['name']) || $value['name'] === '') {
             return null;
         }
 
-        $permission = is_numeric($value['permission'] ?? null)
-            ? null
-            : McpServerPermission::tryFrom((string) ($value['permission'] ?? ''));
+        $permission = McpServerPermission::tryFrom(is_string($value['permission'] ?? null) ? $value['permission'] : '');
 
-        return new self((int) $value['id'], $permission ?? McpServerPermission::Read);
+        return new self($value['name'], $permission ?? McpServerPermission::Read);
     }
 
     /**
-     * @return array{id: int, permission: string}
+     * @return array{name: string, permission: string}
      */
     public function toArray(): array
     {
         return [
-            'id' => $this->id,
+            'name' => $this->name,
             'permission' => $this->permission->value,
         ];
     }
