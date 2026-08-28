@@ -21,41 +21,42 @@ final class McpServerAccessEntryTest extends Unit
 {
     public function testFromMixedReadsGridEntry(): void
     {
-        $entry = McpServerAccessEntry::fromMixed(['id' => 42, 'permission' => 'write']);
+        $entry = McpServerAccessEntry::fromMixed(['name' => 'john.doe', 'permission' => 'write']);
 
         $this->assertNotNull($entry);
-        $this->assertSame(42, $entry->id);
+        $this->assertSame('john.doe', $entry->name);
         $this->assertSame(McpServerPermission::Write, $entry->permission);
     }
 
-    public function testFromMixedTreatsBareIdAsReadGrant(): void
+    public function testFromMixedTreatsBareStringAsReadGrant(): void
     {
-        $entry = McpServerAccessEntry::fromMixed('7');
+        $entry = McpServerAccessEntry::fromMixed('editors');
 
         $this->assertNotNull($entry);
-        $this->assertSame(7, $entry->id);
+        $this->assertSame('editors', $entry->name);
         $this->assertSame(McpServerPermission::Read, $entry->permission);
     }
 
     public function testFromMixedDefaultsUnknownOrMissingPermissionToRead(): void
     {
-        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['id' => 1])->permission);
-        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['id' => 1, 'permission' => 'bogus'])->permission);
-        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['id' => 1, 'permission' => 5])->permission);
+        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['name' => 'a'])->permission);
+        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['name' => 'a', 'permission' => 'bogus'])->permission);
+        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['name' => 'a', 'permission' => 5])->permission);
     }
 
-    public function testFromMixedReturnsNullWithoutUsableId(): void
+    public function testFromMixedReturnsNullWithoutUsableName(): void
     {
         $this->assertNull(McpServerAccessEntry::fromMixed(['permission' => 'write']));
-        $this->assertNull(McpServerAccessEntry::fromMixed(['id' => 'abc']));
+        $this->assertNull(McpServerAccessEntry::fromMixed(['name' => '']));
+        $this->assertNull(McpServerAccessEntry::fromMixed(['name' => 5]));
         $this->assertNull(McpServerAccessEntry::fromMixed(null));
     }
 
     public function testToArray(): void
     {
         $this->assertSame(
-            ['id' => 9, 'permission' => 'read'],
-            (new McpServerAccessEntry(9, McpServerPermission::Read))->toArray()
+            ['name' => 'admins', 'permission' => 'read'],
+            (new McpServerAccessEntry('admins', McpServerPermission::Read))->toArray()
         );
     }
 }

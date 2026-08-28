@@ -33,56 +33,56 @@ final class McpServerAccessTest extends Unit
     public function testGridArrayWithLevels(): void
     {
         $access = McpServerAccess::fromArray([
-            'owner' => 22,
+            'owner' => 'john.doe',
             'share_global' => true,
-            'shared_users' => [['id' => 1, 'permission' => 'write'], ['id' => 2, 'permission' => 'read']],
-            'shared_roles' => [['id' => 7, 'permission' => 'write']],
+            'shared_users' => [['name' => 'alice', 'permission' => 'write'], ['name' => 'bob', 'permission' => 'read']],
+            'shared_roles' => [['name' => 'editors', 'permission' => 'write']],
         ]);
 
-        $this->assertSame(22, $access->owner);
+        $this->assertSame('john.doe', $access->owner);
         $this->assertTrue($access->shareGlobal);
         $this->assertEquals(
             [
-                new McpServerAccessEntry(1, McpServerPermission::Write),
-                new McpServerAccessEntry(2, McpServerPermission::Read),
+                new McpServerAccessEntry('alice', McpServerPermission::Write),
+                new McpServerAccessEntry('bob', McpServerPermission::Read),
             ],
             $access->sharedUsers
         );
-        $this->assertEquals([new McpServerAccessEntry(7, McpServerPermission::Write)], $access->sharedRoles);
+        $this->assertEquals([new McpServerAccessEntry('editors', McpServerPermission::Write)], $access->sharedRoles);
     }
 
-    public function testReadsLegacyFlatIdListsAsReadGrants(): void
+    public function testReadsBareStringNamesAsReadGrants(): void
     {
         $access = McpServerAccess::fromArray([
-            'shared_users' => [3, '4'],
-            'shared_roles' => [9],
+            'shared_users' => ['alice', 'bob'],
+            'shared_roles' => ['editors'],
         ]);
 
         $this->assertEquals(
-            [new McpServerAccessEntry(3, McpServerPermission::Read), new McpServerAccessEntry(4, McpServerPermission::Read)],
+            [new McpServerAccessEntry('alice', McpServerPermission::Read), new McpServerAccessEntry('bob', McpServerPermission::Read)],
             $access->sharedUsers
         );
-        $this->assertEquals([new McpServerAccessEntry(9, McpServerPermission::Read)], $access->sharedRoles);
+        $this->assertEquals([new McpServerAccessEntry('editors', McpServerPermission::Read)], $access->sharedRoles);
     }
 
     public function testDropsInvalidEntriesAndNonArrayLists(): void
     {
         $access = McpServerAccess::fromArray([
-            'shared_users' => [['permission' => 'write'], ['id' => 'nope'], null, ['id' => 5]],
+            'shared_users' => [['permission' => 'write'], ['name' => ''], null, ['name' => 'carol']],
             'shared_roles' => 'not-an-array',
         ]);
 
-        $this->assertEquals([new McpServerAccessEntry(5, McpServerPermission::Read)], $access->sharedUsers);
+        $this->assertEquals([new McpServerAccessEntry('carol', McpServerPermission::Read)], $access->sharedUsers);
         $this->assertSame([], $access->sharedRoles);
     }
 
     public function testRoundTrip(): void
     {
         $access = new McpServerAccess(
-            owner: 5,
+            owner: 'john.doe',
             shareGlobal: true,
-            sharedUsers: [new McpServerAccessEntry(1, McpServerPermission::Write)],
-            sharedRoles: [new McpServerAccessEntry(2, McpServerPermission::Read), new McpServerAccessEntry(3, McpServerPermission::Write)],
+            sharedUsers: [new McpServerAccessEntry('alice', McpServerPermission::Write)],
+            sharedRoles: [new McpServerAccessEntry('editors', McpServerPermission::Read), new McpServerAccessEntry('admins', McpServerPermission::Write)],
         );
 
         $this->assertEquals($access, McpServerAccess::fromArray($access->toArray()));
@@ -90,9 +90,9 @@ final class McpServerAccessTest extends Unit
 
     public function testToArrayKeysAndEntryShape(): void
     {
-        $array = (new McpServerAccess(sharedUsers: [new McpServerAccessEntry(1, McpServerPermission::Write)]))->toArray();
+        $array = (new McpServerAccess(sharedUsers: [new McpServerAccessEntry('alice', McpServerPermission::Write)]))->toArray();
 
         $this->assertSame(['owner', 'share_global', 'shared_users', 'shared_roles'], array_keys($array));
-        $this->assertSame([['id' => 1, 'permission' => 'write']], $array['shared_users']);
+        $this->assertSame([['name' => 'alice', 'permission' => 'write']], $array['shared_users']);
     }
 }

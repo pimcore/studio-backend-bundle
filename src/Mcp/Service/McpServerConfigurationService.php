@@ -83,7 +83,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         $definition = $this->buildDefinition(
             $id,
             $parameter,
-            $this->securityService->getCurrentUser()->getId()
+            $this->securityService->getCurrentUser()->getName()
         );
         $this->repository->save($definition);
 
@@ -111,7 +111,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         $this->repository->delete($id);
     }
 
-    private function buildDefinition(string $id, McpServerParameter $parameter, ?int $owner): McpServerDefinition
+    private function buildDefinition(string $id, McpServerParameter $parameter, ?string $owner): McpServerDefinition
     {
         return new McpServerDefinition(
             id: $id,
@@ -161,7 +161,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
     }
 
     /**
-     * @param list<array{id?: mixed, permission?: mixed}> $raw
+     * @param list<array{name?: mixed, permission?: mixed}> $raw
      *
      * @return list<McpServerAccessEntry>
      */

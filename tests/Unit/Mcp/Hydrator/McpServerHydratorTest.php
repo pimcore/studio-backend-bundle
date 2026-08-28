@@ -36,10 +36,10 @@ final class McpServerHydratorTest extends Unit
             scopes: ['mcp:read'],
             enabled: true,
             access: new McpServerAccess(
-                owner: 42,
+                owner: 'john.doe',
                 shareGlobal: false,
-                sharedUsers: [new McpServerAccessEntry(7, McpServerPermission::Write)],
-                sharedRoles: [new McpServerAccessEntry(3, McpServerPermission::Read)],
+                sharedUsers: [new McpServerAccessEntry('alice', McpServerPermission::Write)],
+                sharedRoles: [new McpServerAccessEntry('editors', McpServerPermission::Read)],
             ),
         );
 
@@ -59,19 +59,19 @@ final class McpServerHydratorTest extends Unit
         $this->assertSame(['get_car_info', 'search_data_objects'], $server->getTools());
         $this->assertSame(['mcp:read'], $server->getScopes());
         $this->assertTrue($server->isEnabled());
-        $this->assertSame(42, $server->getOwnerId());
+        $this->assertSame('john.doe', $server->getOwner());
         $this->assertFalse($server->isShareGlobal());
         $this->assertTrue($server->isWriteable());
         $this->assertSame(2, $server->getToolCount());
 
-        // Grid entries map to id + level grants.
+        // Grid entries map to name + level grants.
         $users = $server->getSharedUsers();
         $this->assertCount(1, $users);
-        $this->assertSame(7, $users[0]->getId());
+        $this->assertSame('alice', $users[0]->getName());
         $this->assertSame('write', $users[0]->getPermission());
 
         $roles = $server->getSharedRoles();
-        $this->assertSame(3, $roles[0]->getId());
+        $this->assertSame('editors', $roles[0]->getName());
         $this->assertSame('read', $roles[0]->getPermission());
 
         // The caller's resolved access is echoed for the UI.
@@ -95,7 +95,7 @@ final class McpServerHydratorTest extends Unit
         $server = (new McpServerHydrator())->hydrate($definition, 'https://host/pimcore-mcp/studio/x', [], false, false, false);
 
         $this->assertNull($server->getDescription());
-        $this->assertNull($server->getOwnerId());
+        $this->assertNull($server->getOwner());
         $this->assertSame([], $server->getSharedUsers());
         $this->assertSame([], $server->getSharedRoles());
         $this->assertFalse($server->isWriteable());

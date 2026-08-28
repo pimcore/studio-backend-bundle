@@ -15,14 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Dto;
 
 use function array_map;
 use function is_array;
-use function is_numeric;
+use function is_string;
 
 /**
  * Who may access an MCP server, and at which level. An owner (implicit write) plus
- * a global read flag, plus two share grids keyed by user id and role id — each
- * entry carrying a read/write level ({@see McpServerAccessEntry}). Users and roles
- * are kept in separate lists so a shared id is never ambiguous. Enforcement lives
- * in the access resolver, not here.
+ * a global read flag, plus two share grids keyed by user name and role name — each
+ * entry carrying a read/write level ({@see McpServerAccessEntry}). Names are used
+ * rather than ids so the configuration is portable across instances. Users and
+ * roles are kept in separate lists so a shared name is never ambiguous.
+ * Enforcement lives in the access resolver, not here.
  *
  * @internal
  */
@@ -33,7 +34,7 @@ final readonly class McpServerAccess
      * @param list<McpServerAccessEntry> $sharedRoles
      */
     public function __construct(
-        public ?int $owner = null,
+        public ?string $owner = null,
         public bool $shareGlobal = false,
         public array $sharedUsers = [],
         public array $sharedRoles = [],
@@ -46,7 +47,7 @@ final readonly class McpServerAccess
     public static function fromArray(array $data): self
     {
         return new self(
-            owner: isset($data['owner']) && is_numeric($data['owner']) ? (int) $data['owner'] : null,
+            owner: isset($data['owner']) && is_string($data['owner']) && $data['owner'] !== '' ? $data['owner'] : null,
             shareGlobal: (bool) ($data['share_global'] ?? false),
             sharedUsers: self::entryList($data['shared_users'] ?? []),
             sharedRoles: self::entryList($data['shared_roles'] ?? []),
