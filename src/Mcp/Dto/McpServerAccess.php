@@ -18,11 +18,12 @@ use function is_array;
 use function is_string;
 
 /**
- * Who may access an MCP server, and at which level. An owner (implicit write) plus
- * a global read flag, plus two share grids keyed by user name and role name — each
- * entry carrying a read/write level ({@see McpServerAccessEntry}). Names are used
- * rather than ids so the configuration is portable across instances. Users and
- * roles are kept in separate lists so a shared name is never ambiguous.
+ * Who may access an MCP server. The {@see $owner} (creator) is auto-listed with
+ * full capabilities; {@see $shareGlobal} is the "public" flag — when set, every
+ * authenticated user may view and use (but not edit) the server. Two share grids,
+ * keyed by user name and role name, carry per-entry capabilities
+ * ({@see McpServerAccessEntry}: canAccess / canEdit; presence alone = view). Names
+ * are used rather than ids so the configuration is portable across instances.
  * Enforcement lives in the access resolver, not here.
  *
  * @internal

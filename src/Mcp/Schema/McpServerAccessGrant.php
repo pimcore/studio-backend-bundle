@@ -17,16 +17,16 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 /**
- * One share entry as exposed by the API: a user or role name paired with the level
- * it is granted. Used in both the server response and the create/update payload.
- * Names (not ids) so a configuration is portable across instances.
+ * One share entry as exposed by the API: a user or role name with two independent
+ * capabilities. Being present at all grants a read-only view; the flags add use
+ * and edit. Used in both the server response and the create/update payload.
  *
  * @internal
  */
 #[Schema(
     schema: 'McpServerAccessGrant',
     title: 'MCP Server Access Grant',
-    required: ['name', 'permission'],
+    required: ['name', 'canAccess', 'canEdit'],
     type: 'object'
 )]
 final readonly class McpServerAccessGrant
@@ -34,8 +34,10 @@ final readonly class McpServerAccessGrant
     public function __construct(
         #[Property(description: 'User or role name', type: 'string', example: 'john.doe')]
         private string $name,
-        #[Property(description: 'Granted access level', type: 'string', enum: ['read', 'write'], example: 'read')]
-        private string $permission,
+        #[Property(description: 'May connect a client to the server at runtime', type: 'boolean', example: true)]
+        private bool $canAccess,
+        #[Property(description: 'May edit the server configuration', type: 'boolean', example: false)]
+        private bool $canEdit,
     ) {
     }
 
@@ -44,8 +46,13 @@ final readonly class McpServerAccessGrant
         return $this->name;
     }
 
-    public function getPermission(): string
+    public function isCanAccess(): bool
     {
-        return $this->permission;
+        return $this->canAccess;
+    }
+
+    public function isCanEdit(): bool
+    {
+        return $this->canEdit;
     }
 }

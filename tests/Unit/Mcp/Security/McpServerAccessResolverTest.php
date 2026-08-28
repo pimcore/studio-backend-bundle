@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\UserInterface;
 
@@ -27,85 +26,84 @@ final class McpServerAccessResolverTest extends Unit
 {
     private const string USER_NAME = 'john.doe';
 
-    public function testAdminIsAlwaysAllowedBothLevels(): void
+    public function testAdminHasViewAndEditButNotAccess(): void
     {
         $server = $this->server(new McpServerAccess());
 
-        $this->assertSame(['read' => true, 'write' => true], $this->resolver()->resolve($server, $this->user(isAdmin: true)));
+        // Admins manage everything but must be granted Access explicitly.
+        $this->assertSame(['view' => true, 'access' => false, 'edit' => true], $this->resolver()->resolve($server, $this->user(isAdmin: true)));
     }
 
-    public function testOwnerHasReadAndWrite(): void
+    public function testAdminGetsAccessWhenExplicitlyGranted(): void
     {
-        $server = $this->server(new McpServerAccess(owner: self::USER_NAME));
+        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_NAME, canAccess: true)]));
 
-        $this->assertSame(['read' => true, 'write' => true], $this->resolver()->resolve($server, $this->user()));
+        $this->assertSame(['view' => true, 'access' => true, 'edit' => true], $this->resolver()->resolve($server, $this->user(isAdmin: true)));
     }
 
-    public function testGlobalShareGrantsReadButNotWrite(): void
+    public function testPublicGrantsViewAndAccessButNotEdit(): void
     {
         $server = $this->server(new McpServerAccess(shareGlobal: true));
-        $resolver = $this->resolver();
 
-        $this->assertTrue($resolver->isAllowed($server, McpServerPermission::Read, $this->user()));
-        $this->assertFalse($resolver->isAllowed($server, McpServerPermission::Write, $this->user()));
+        $this->assertSame(['view' => true, 'access' => true, 'edit' => false], $this->resolver()->resolve($server, $this->user()));
     }
 
-    public function testReadUserEntryGrantsOnlyRead(): void
+    public function testListedWithNoCapabilitiesIsViewOnly(): void
     {
-        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_NAME, McpServerPermission::Read)]));
+        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_NAME)]));
 
-        $this->assertSame(['read' => true, 'write' => false], $this->resolver()->resolve($server, $this->user()));
+        $this->assertSame(['view' => true, 'access' => false, 'edit' => false], $this->resolver()->resolve($server, $this->user()));
     }
 
-    public function testWriteUserEntryGrantsReadAndWrite(): void
+    public function testCanAccessGrantsAccessNotEdit(): void
     {
-        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_NAME, McpServerPermission::Write)]));
+        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_NAME, canAccess: true)]));
 
-        $this->assertSame(['read' => true, 'write' => true], $this->resolver()->resolve($server, $this->user()));
+        $this->assertSame(['view' => true, 'access' => true, 'edit' => false], $this->resolver()->resolve($server, $this->user()));
     }
 
-    public function testWriteRoleEntryGrantsReadAndWrite(): void
+    public function testCanEditGrantsEditNotAccess(): void
     {
-        $server = $this->server(new McpServerAccess(sharedRoles: [$this->entry('editors', McpServerPermission::Write)]));
+        $server = $this->server(new McpServerAccess(sharedUsers: [$this->entry(self::USER_NAME, canEdit: true)]));
+
+        $this->assertSame(['view' => true, 'access' => false, 'edit' => true], $this->resolver()->resolve($server, $this->user()));
+    }
+
+    public function testRoleGrantApplies(): void
+    {
+        $server = $this->server(new McpServerAccess(sharedRoles: [$this->entry('editors', canAccess: true, canEdit: true)]));
         $resolver = $this->resolver([9 => 'editors']);
 
-        $this->assertSame(['read' => true, 'write' => true], $resolver->resolve($server, $this->user(roles: [3, 9])));
+        $this->assertSame(['view' => true, 'access' => true, 'edit' => true], $resolver->resolve($server, $this->user(roles: [3, 9])));
     }
 
-    public function testDirectUserEntryWinsOverRoleAndPinsTheLevel(): void
+    public function testCapabilitiesAreUnionOfUserAndRoleEntries(): void
     {
-        // Pinned to read even though a role the user holds would grant write.
+        // User entry grants only access; a role entry grants only edit — the user gets both.
         $server = $this->server(new McpServerAccess(
-            sharedUsers: [$this->entry(self::USER_NAME, McpServerPermission::Read)],
-            sharedRoles: [$this->entry('editors', McpServerPermission::Write)],
+            sharedUsers: [$this->entry(self::USER_NAME, canAccess: true)],
+            sharedRoles: [$this->entry('editors', canEdit: true)],
         ));
         $resolver = $this->resolver([9 => 'editors']);
 
-        $this->assertSame(['read' => true, 'write' => false], $resolver->resolve($server, $this->user(roles: [9])));
+        $this->assertSame(['view' => true, 'access' => true, 'edit' => true], $resolver->resolve($server, $this->user(roles: [9])));
     }
 
-    public function testUnrelatedUserIsDeniedBothLevels(): void
+    public function testUnrelatedUserIsDeniedEverything(): void
     {
         $server = $this->server(new McpServerAccess(
             owner: 'someone.else',
-            sharedUsers: [$this->entry('alice', McpServerPermission::Write)],
-            sharedRoles: [$this->entry('editors', McpServerPermission::Write)],
+            sharedUsers: [$this->entry('alice', canAccess: true, canEdit: true)],
+            sharedRoles: [$this->entry('editors', canEdit: true)],
         ));
         $resolver = $this->resolver([4 => 'viewers', 5 => 'guests']);
 
-        $this->assertSame(['read' => false, 'write' => false], $resolver->resolve($server, $this->user(roles: [4, 5])));
+        $this->assertSame(['view' => false, 'access' => false, 'edit' => false], $resolver->resolve($server, $this->user(roles: [4, 5])));
     }
 
-    public function testEmptyAccessDeniesNonAdmin(): void
+    private function entry(string $name, bool $canAccess = false, bool $canEdit = false): McpServerAccessEntry
     {
-        $server = $this->server(new McpServerAccess());
-
-        $this->assertSame(['read' => false, 'write' => false], $this->resolver()->resolve($server, $this->user()));
-    }
-
-    private function entry(string $name, McpServerPermission $permission): McpServerAccessEntry
-    {
-        return new McpServerAccessEntry($name, $permission);
+        return new McpServerAccessEntry($name, $canAccess, $canEdit);
     }
 
     private function server(McpServerAccess $access): McpServerDefinition
