@@ -17,35 +17,42 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 /**
- * The requesting user's resolved access to a server, so the UI can decide what to
- * render. {@see $write} implies {@see $read}. Distinct from the server's
- * `writeable` flag, which is about whether the storage target itself is editable.
+ * The requesting user's resolved capabilities on a server, so the UI can decide
+ * what to render. Distinct from the server's `writeable` flag, which is about
+ * whether the storage target itself is editable.
  *
  * @internal
  */
 #[Schema(
     schema: 'McpServerUserPermissions',
     title: 'MCP Server User Permissions',
-    required: ['read', 'write'],
+    required: ['canView', 'canAccess', 'canEdit'],
     type: 'object'
 )]
 final readonly class McpServerUserPermissions
 {
     public function __construct(
-        #[Property(description: 'The current user may view the server and copy its URL', type: 'boolean', example: true)]
-        private bool $read,
+        #[Property(description: 'The current user may view the server and its config', type: 'boolean', example: true)]
+        private bool $canView,
+        #[Property(description: 'The current user may connect a client to the server', type: 'boolean', example: false)]
+        private bool $canAccess,
         #[Property(description: 'The current user may edit, re-share or delete the server', type: 'boolean', example: false)]
-        private bool $write,
+        private bool $canEdit,
     ) {
     }
 
-    public function isRead(): bool
+    public function isCanView(): bool
     {
-        return $this->read;
+        return $this->canView;
     }
 
-    public function isWrite(): bool
+    public function isCanAccess(): bool
     {
-        return $this->write;
+        return $this->canAccess;
+    }
+
+    public function isCanEdit(): bool
+    {
+        return $this->canEdit;
     }
 }

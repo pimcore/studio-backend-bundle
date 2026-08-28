@@ -71,7 +71,7 @@ final class McpServer implements AdditionalAttributesInterface
         private readonly bool $enabled,
         #[Property(description: 'Owner user name. Null when the owner has been deleted.', type: 'string', example: 'john.doe', nullable: true)]
         private readonly ?string $owner,
-        #[Property(description: 'Any authenticated user may read/use it', type: 'boolean', example: false)]
+        #[Property(description: 'Public: any authenticated user may view and use it (not edit)', type: 'boolean', example: false)]
         private readonly bool $shareGlobal,
         #[Property(description: 'Users shared with, each at a read/write level', type: 'array', items: new Items(ref: McpServerAccessGrant::class))]
         private readonly array $sharedUsers,

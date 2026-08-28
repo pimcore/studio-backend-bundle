@@ -20,18 +20,15 @@ use Pimcore\Model\UserInterface;
 use function in_array;
 
 /**
- * Resolves the read/write access grid on an MCP server for a user, matching by
- * user/role name (not id) so a configuration is portable across instances. The
- * precedence, modelled on the agent bundle's permission service and
- * deny-by-default, is:
+ * Resolves a user's capabilities on an MCP server, matching users and roles by
+ * name. Grants are the union of the user's direct entry and any of their role
+ * entries (most-permissive wins). The rules:
  *
- *  1. admin — always allowed (both levels)
- *  2. owner — always allowed (implicit write, not downgradable via the grid)
- *  3. a direct user entry is authoritative — it decides outright, blocking role
- *     fallback even when it denies the requested level
- *  4. otherwise any of the user's roles that grants the level
- *  5. read only: the global-share flag
- *  6. otherwise denied
+ *  - View   — admin, OR the server is public ({@see McpServerAccess::$shareGlobal}),
+ *             OR the user is listed at all (as a user or via a role).
+ *  - Access — the server is public, OR a matching entry grants Access. Admins do
+ *             NOT get Access implicitly; they must be listed with it.
+ *  - Edit   — admin, OR a matching entry grants Edit. Public does not grant Edit.
  *
  * @internal
  */
@@ -44,59 +41,69 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
 
     public function isAllowed(
         McpServerDefinition $server,
-        McpServerPermission $permission,
+        McpServerCapability $capability,
         UserInterface $user
     ): bool {
-        if ($user->isAdmin()) {
-            return true;
-        }
+        $resolved = $this->resolve($server, $user);
 
-        $access = $server->access;
-        $userName = $user->getName();
-
-        if ($access->owner !== null && $userName !== null && $access->owner === $userName) {
-            return true;
-        }
-
-        $userEntry = $this->findEntry($access->sharedUsers, $userName);
-        if ($userEntry !== null) {
-            return $userEntry->permission->grants($permission);
-        }
-
-        $roleNames = $this->roleNames($user);
-        foreach ($access->sharedRoles as $roleEntry) {
-            if (in_array($roleEntry->name, $roleNames, true) && $roleEntry->permission->grants($permission)) {
-                return true;
-            }
-        }
-
-        return $permission === McpServerPermission::Read && $access->shareGlobal;
+        return match ($capability) {
+            McpServerCapability::View => $resolved['view'],
+            McpServerCapability::Access => $resolved['access'],
+            McpServerCapability::Edit => $resolved['edit'],
+        };
     }
 
     public function resolve(McpServerDefinition $server, UserInterface $user): array
     {
+        $access = $server->access;
+        $isAdmin = $user->isAdmin();
+
+        $entries = $this->matchingEntries($access->sharedUsers, $access->sharedRoles, $user);
+        $listed = $entries !== [];
+
+        $entryAccess = false;
+        $entryEdit = false;
+        foreach ($entries as $entry) {
+            $entryAccess = $entryAccess || $entry->canAccess;
+            $entryEdit = $entryEdit || $entry->canEdit;
+        }
+
         return [
-            'read' => $this->isAllowed($server, McpServerPermission::Read, $user),
-            'write' => $this->isAllowed($server, McpServerPermission::Write, $user),
+            'view' => $isAdmin || $access->shareGlobal || $listed,
+            'access' => $access->shareGlobal || $entryAccess,
+            'edit' => $isAdmin || $entryEdit,
         ];
     }
 
     /**
-     * @param list<McpServerAccessEntry> $entries
+     * The user's own entry plus any of their role entries.
+     *
+     * @param list<McpServerAccessEntry> $userEntries
+     * @param list<McpServerAccessEntry> $roleEntries
+     *
+     * @return list<McpServerAccessEntry>
      */
-    private function findEntry(array $entries, ?string $name): ?McpServerAccessEntry
+    private function matchingEntries(array $userEntries, array $roleEntries, UserInterface $user): array
     {
-        if ($name === null) {
-            return null;
-        }
+        $matched = [];
 
-        foreach ($entries as $entry) {
-            if ($entry->name === $name) {
-                return $entry;
+        $userName = $user->getName();
+        if ($userName !== null) {
+            foreach ($userEntries as $entry) {
+                if ($entry->name === $userName) {
+                    $matched[] = $entry;
+                }
             }
         }
 
-        return null;
+        $roleNames = $this->roleNames($user);
+        foreach ($roleEntries as $entry) {
+            if (in_array($entry->name, $roleNames, true)) {
+                $matched[] = $entry;
+            }
+        }
+
+        return $matched;
     }
 
     /**

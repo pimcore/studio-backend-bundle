@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter\McpServerParameter;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\UserInterface;
@@ -42,7 +41,7 @@ final class McpServerConfigurationServiceTest extends Unit
 
     private const USER_NAME = 'john.doe';
 
-    public function testSaveConfigurationSetsOwnerDerivesScopesAndPersists(): void
+    public function testSaveConfigurationSetsOwnerAndAutoGrantsFullAccess(): void
     {
         $repository = $this->repository();
         $service = $this->service($repository, self::USER_NAME);
@@ -53,31 +52,37 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertSame(self::USER_NAME, $server->getOwner());
         $this->assertSame(['mcp:read'], $server->getScopes());
         $this->assertSame('https://example.test/pimcore-mcp/studio/objects-read', $server->getUrl());
-        // The creator is the owner, so they resolve to full write.
-        $this->assertTrue($server->getCurrentUserPermissions()->isWrite());
-        $this->assertTrue($repository->has('objects-read'));
-        $this->assertSame(self::USER_NAME, $repository->get('objects-read')->access->owner);
+        // The creator is auto-listed with full capabilities, so they resolve to all three.
+        $permissions = $server->getCurrentUserPermissions();
+        $this->assertTrue($permissions->isCanView());
+        $this->assertTrue($permissions->isCanAccess());
+        $this->assertTrue($permissions->isCanEdit());
+        $this->assertEquals(
+            [new McpServerAccessEntry(self::USER_NAME, canAccess: true, canEdit: true)],
+            $repository->get('objects-read')->access->sharedUsers
+        );
     }
 
-    public function testSaveConfigurationPersistsAccessGrid(): void
+    public function testSaveConfigurationPersistsGridAndAutoAddsOwner(): void
     {
         $repository = $this->repository();
         $service = $this->service($repository, self::USER_NAME);
 
-        $server = $service->saveConfiguration($this->parameter(
+        $service->saveConfiguration($this->parameter(
             'shared',
-            sharedUsers: [['name' => 'alice', 'permission' => 'write']],
-            sharedRoles: [['name' => 'editors', 'permission' => 'read']],
+            sharedUsers: [['name' => 'alice', 'canAccess' => true, 'canEdit' => false]],
+            sharedRoles: [['name' => 'editors', 'canAccess' => false, 'canEdit' => true]],
         ));
 
-        $this->assertSame('alice', $server->getSharedUsers()[0]->getName());
-        $this->assertSame('write', $server->getSharedUsers()[0]->getPermission());
         $this->assertEquals(
-            [new McpServerAccessEntry('alice', McpServerPermission::Write)],
+            [
+                new McpServerAccessEntry(self::USER_NAME, canAccess: true, canEdit: true),
+                new McpServerAccessEntry('alice', canAccess: true, canEdit: false),
+            ],
             $repository->get('shared')->access->sharedUsers
         );
         $this->assertEquals(
-            [new McpServerAccessEntry('editors', McpServerPermission::Read)],
+            [new McpServerAccessEntry('editors', canAccess: false, canEdit: true)],
             $repository->get('shared')->access->sharedRoles
         );
     }
@@ -92,14 +97,21 @@ final class McpServerConfigurationServiceTest extends Unit
         $service->saveConfiguration($this->parameter('taken'));
     }
 
-    public function testGetConfigurationReturnsServerWhenReadable(): void
+    public function testGetConfigurationAllowedForListedViewer(): void
     {
-        $repository = $this->repository(['srv' => $this->definition('srv', new McpServerAccess(owner: self::USER_NAME))]);
+        $access = new McpServerAccess(owner: 'someone', sharedUsers: [new McpServerAccessEntry(self::USER_NAME)]);
+        $repository = $this->repository(['srv' => $this->definition('srv', $access)]);
         $service = $this->service($repository, self::USER_NAME);
 
-        $server = $service->getConfiguration('srv');
+        $this->assertSame('https://example.test/pimcore-mcp/studio/srv', $service->getConfiguration('srv')->getUrl());
+    }
 
-        $this->assertSame('https://example.test/pimcore-mcp/studio/srv', $server->getUrl());
+    public function testGetConfigurationAllowedForAdmin(): void
+    {
+        $repository = $this->repository(['srv' => $this->definition('srv', new McpServerAccess(owner: 'someone'))]);
+        $service = $this->service($repository, self::USER_NAME, isAdmin: true);
+
+        $this->assertSame('srv', $service->getConfiguration('srv')->getId());
     }
 
     public function testGetConfigurationDeniedWithoutAccess(): void
@@ -115,7 +127,7 @@ final class McpServerConfigurationServiceTest extends Unit
     public function testUpdateConfigurationPreservesOwnerAndLocksSlug(): void
     {
         $repository = $this->repository(['srv' => $this->definition('srv', new McpServerAccess(owner: 'original.owner'))]);
-        // Admin may edit any server; the original owner must be preserved, not replaced by the actor.
+        // Admin has Edit on all servers; the original owner must be preserved.
         $service = $this->service($repository, self::USER_NAME, isAdmin: true);
 
         $server = $service->updateConfiguration('srv', $this->parameter('ignored-slug', tools: ['get_car_info']));
@@ -127,9 +139,9 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertSame('original.owner', $repository->get('srv')->access->owner);
     }
 
-    public function testUpdateConfigurationDeniedForReadOnlyUser(): void
+    public function testUpdateConfigurationDeniedForViewOnlyUser(): void
     {
-        $access = new McpServerAccess(owner: 'someone', sharedUsers: [new McpServerAccessEntry(self::USER_NAME, McpServerPermission::Read)]);
+        $access = new McpServerAccess(owner: 'someone', sharedUsers: [new McpServerAccessEntry(self::USER_NAME)]);
         $repository = $this->repository(['srv' => $this->definition('srv', $access)]);
         $service = $this->service($repository, self::USER_NAME);
 
@@ -147,34 +159,35 @@ final class McpServerConfigurationServiceTest extends Unit
         $service->updateConfiguration('missing', $this->parameter('missing'));
     }
 
-    public function testListConfigurationsReturnsOnlyReadableServers(): void
+    public function testListConfigurationsReturnsOnlyViewableServers(): void
     {
         $repository = $this->repository([
-            'mine' => $this->definition('mine', new McpServerAccess(owner: self::USER_NAME)),
-            'private' => $this->definition('private', new McpServerAccess(owner: 'someone')),
-            'global' => $this->definition('global', new McpServerAccess(owner: 'someone', shareGlobal: true)),
+            'mine' => $this->definition('mine', new McpServerAccess(owner: 'x', sharedUsers: [new McpServerAccessEntry(self::USER_NAME)])),
+            'private' => $this->definition('private', new McpServerAccess(owner: 'x')),
+            'public' => $this->definition('public', new McpServerAccess(owner: 'x', shareGlobal: true)),
         ]);
         $service = $this->service($repository, self::USER_NAME);
 
         $ids = array_map(static fn ($s) => $s->getId(), $service->listConfigurations());
 
-        $this->assertSame(['mine', 'global'], $ids);
+        $this->assertSame(['mine', 'public'], $ids);
     }
 
     public function testListConfigurationsShowsEverythingToAdmin(): void
     {
         $repository = $this->repository([
-            'a' => $this->definition('a', new McpServerAccess(owner: 'someone')),
-            'b' => $this->definition('b', new McpServerAccess(owner: 'another')),
+            'a' => $this->definition('a', new McpServerAccess(owner: 'x')),
+            'b' => $this->definition('b', new McpServerAccess(owner: 'y')),
         ]);
         $service = $this->service($repository, self::USER_NAME, isAdmin: true);
 
         $this->assertCount(2, $service->listConfigurations());
     }
 
-    public function testDeleteConfigurationDelegatesWhenWritable(): void
+    public function testDeleteConfigurationAllowedForEditor(): void
     {
-        $repository = $this->repository(['gone' => $this->definition('gone', new McpServerAccess(owner: self::USER_NAME))]);
+        $access = new McpServerAccess(owner: 'x', sharedUsers: [new McpServerAccessEntry(self::USER_NAME, canEdit: true)]);
+        $repository = $this->repository(['gone' => $this->definition('gone', $access)]);
         $service = $this->service($repository, self::USER_NAME);
 
         $service->deleteConfiguration('gone');
@@ -182,9 +195,9 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertFalse($repository->has('gone'));
     }
 
-    public function testDeleteConfigurationDeniedForReadOnlyUser(): void
+    public function testDeleteConfigurationDeniedForViewOnlyUser(): void
     {
-        $access = new McpServerAccess(owner: 'someone', sharedUsers: [new McpServerAccessEntry(self::USER_NAME, McpServerPermission::Read)]);
+        $access = new McpServerAccess(owner: 'x', sharedUsers: [new McpServerAccessEntry(self::USER_NAME)]);
         $repository = $this->repository(['srv' => $this->definition('srv', $access)]);
         $service = $this->service($repository, self::USER_NAME);
 
@@ -276,9 +289,9 @@ final class McpServerConfigurationServiceTest extends Unit
     }
 
     /**
-     * @param list<string>                                  $tools
-     * @param list<array{name?: mixed, permission?: mixed}> $sharedUsers
-     * @param list<array{name?: mixed, permission?: mixed}> $sharedRoles
+     * @param list<string>                                                    $tools
+     * @param list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}>   $sharedUsers
+     * @param list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}>   $sharedRoles
      */
     private function parameter(string $slug, array $tools = [], array $sharedUsers = [], array $sharedRoles = []): McpServerParameter
     {

@@ -17,11 +17,9 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Model\UserInterface;
 
 /**
- * Decides whether a user may access a given MCP server at a requested level
- * ({@see McpServerPermission}). Deny-by-default: an admin or the owner always
- * passes, otherwise the user must be granted the level directly, via a role, or
- * (for read only) by the global-share flag. Used both by the Studio API and by
- * the runtime serving endpoint (which asks for {@see McpServerPermission::Read}).
+ * Resolves the three independent capabilities ({@see McpServerCapability}) a user
+ * holds on an MCP server. Used by the Studio API (view/edit) and the runtime
+ * serving endpoint (access).
  *
  * @internal
  */
@@ -29,14 +27,14 @@ interface McpServerAccessResolverInterface
 {
     public function isAllowed(
         McpServerDefinition $server,
-        McpServerPermission $permission,
+        McpServerCapability $capability,
         UserInterface $user
     ): bool;
 
     /**
-     * Both levels resolved at once, for building the response DTO.
+     * All three capabilities resolved at once, for building the response DTO.
      *
-     * @return array{read: bool, write: bool}
+     * @return array{view: bool, access: bool, edit: bool}
      */
     public function resolve(McpServerDefinition $server, UserInterface $user): array;
 }

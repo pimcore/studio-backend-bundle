@@ -15,48 +15,58 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Dto;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerPermission;
 
 final class McpServerAccessEntryTest extends Unit
 {
-    public function testFromMixedReadsGridEntry(): void
+    public function testFromMixedReadsCamelCaseGridEntry(): void
     {
-        $entry = McpServerAccessEntry::fromMixed(['name' => 'john.doe', 'permission' => 'write']);
+        $entry = McpServerAccessEntry::fromMixed(['name' => 'john.doe', 'canAccess' => true, 'canEdit' => false]);
 
         $this->assertNotNull($entry);
         $this->assertSame('john.doe', $entry->name);
-        $this->assertSame(McpServerPermission::Write, $entry->permission);
+        $this->assertTrue($entry->canAccess);
+        $this->assertFalse($entry->canEdit);
     }
 
-    public function testFromMixedTreatsBareStringAsReadGrant(): void
+    public function testFromMixedReadsSnakeCaseFromStorage(): void
+    {
+        $entry = McpServerAccessEntry::fromMixed(['name' => 'a', 'can_access' => true, 'can_edit' => true]);
+
+        $this->assertTrue($entry->canAccess);
+        $this->assertTrue($entry->canEdit);
+    }
+
+    public function testFromMixedTreatsBareStringAsViewOnly(): void
     {
         $entry = McpServerAccessEntry::fromMixed('editors');
 
         $this->assertNotNull($entry);
         $this->assertSame('editors', $entry->name);
-        $this->assertSame(McpServerPermission::Read, $entry->permission);
+        $this->assertFalse($entry->canAccess);
+        $this->assertFalse($entry->canEdit);
     }
 
-    public function testFromMixedDefaultsUnknownOrMissingPermissionToRead(): void
+    public function testFromMixedDefaultsMissingCapabilitiesToFalse(): void
     {
-        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['name' => 'a'])->permission);
-        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['name' => 'a', 'permission' => 'bogus'])->permission);
-        $this->assertSame(McpServerPermission::Read, McpServerAccessEntry::fromMixed(['name' => 'a', 'permission' => 5])->permission);
+        $entry = McpServerAccessEntry::fromMixed(['name' => 'a']);
+
+        $this->assertFalse($entry->canAccess);
+        $this->assertFalse($entry->canEdit);
     }
 
     public function testFromMixedReturnsNullWithoutUsableName(): void
     {
-        $this->assertNull(McpServerAccessEntry::fromMixed(['permission' => 'write']));
+        $this->assertNull(McpServerAccessEntry::fromMixed(['canAccess' => true]));
         $this->assertNull(McpServerAccessEntry::fromMixed(['name' => '']));
         $this->assertNull(McpServerAccessEntry::fromMixed(['name' => 5]));
         $this->assertNull(McpServerAccessEntry::fromMixed(null));
     }
 
-    public function testToArray(): void
+    public function testToArrayUsesSnakeCase(): void
     {
         $this->assertSame(
-            ['name' => 'admins', 'permission' => 'read'],
-            (new McpServerAccessEntry('admins', McpServerPermission::Read))->toArray()
+            ['name' => 'admins', 'can_access' => true, 'can_edit' => false],
+            (new McpServerAccessEntry('admins', canAccess: true, canEdit: false))->toArray()
         );
     }
 }
