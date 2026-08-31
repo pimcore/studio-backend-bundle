@@ -68,7 +68,8 @@ token's signature, expiry and revocation status and resolves the Pimcore user. O
 so `PatAuthenticator` still runs, hence it must precede it in the chain.
 
 MCP is one application of the OAuth server, not its purpose. The same contracts protect Data Hub Simple REST,
-and any bundle can use them for its own endpoints. Neither audience nor scopes are enforced yet. See
+and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
+so a token obtained for another application is refused here; scopes are advertised but not yet enforced. See
 [OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint, and
 [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
 server.

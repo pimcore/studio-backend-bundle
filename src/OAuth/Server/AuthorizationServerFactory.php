@@ -16,14 +16,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 use DateInterval;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\CryptKey;
-use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\ResourceRefreshTokenGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ResponseType\ResourceBearerTokenResponse;
 use function sprintf;
 
 /**
@@ -48,6 +50,7 @@ final class AuthorizationServerFactory
         private readonly int $authCodeTtl,
         private readonly int $refreshTokenTtl,
         private readonly bool $allowLocalhostLoopback,
+        private readonly ResourceRegistryInterface $resourceRegistry,
     ) {
     }
 
@@ -68,6 +71,7 @@ final class AuthorizationServerFactory
             $this->scopeRepository,
             new CryptKey($this->privateKey, $this->passphrase, false),
             $this->encryptionKey,
+            new ResourceBearerTokenResponse(),
         );
 
         $accessTokenTtl = $this->secondsInterval($this->accessTokenTtl);
@@ -78,11 +82,12 @@ final class AuthorizationServerFactory
             $this->refreshTokenRepository,
             $this->secondsInterval($this->authCodeTtl),
             $this->allowLocalhostLoopback,
+            $this->resourceRegistry,
         );
         $authCodeGrant->setRefreshTokenTTL($refreshTokenTtl);
         $server->enableGrantType($authCodeGrant, $accessTokenTtl);
 
-        $refreshTokenGrant = new RefreshTokenGrant($this->refreshTokenRepository);
+        $refreshTokenGrant = new ResourceRefreshTokenGrant($this->refreshTokenRepository);
         $refreshTokenGrant->setRefreshTokenTTL($refreshTokenTtl);
         $server->enableGrantType($refreshTokenGrant, $accessTokenTtl);
 

@@ -16,19 +16,22 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ScopeEntity;
-use function in_array;
 
 /**
  * @internal
  */
 final class ScopeRepository implements ScopeRepositoryInterface
 {
-    private const array SUPPORTED = ['mcp:read', 'mcp:write'];
+    public function __construct(
+        private readonly ScopeRegistryInterface $scopeRegistry,
+    ) {
+    }
 
     public function getScopeEntityByIdentifier(string $identifier): ?ScopeEntityInterface
     {
-        return in_array($identifier, self::SUPPORTED, true) ? new ScopeEntity($identifier) : null;
+        return $this->scopeRegistry->has($identifier) ? new ScopeEntity($identifier) : null;
     }
 
     /**

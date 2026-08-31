@@ -108,6 +108,18 @@ services:
         arguments:
             $enabled: false
 
+    # Scope catalogue. Any bundle exposing protected resources contributes its own
+    # identifiers by tagging a ScopeProviderInterface service.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry:
+        arguments:
+            $providers: !tagged_iterator pimcore_studio_backend.oauth.scope_provider
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Scope\McpScopeProvider:
+        tags: ['pimcore_studio_backend.oauth.scope_provider']
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository:

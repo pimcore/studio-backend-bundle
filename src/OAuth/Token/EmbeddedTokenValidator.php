@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ResolvedAccess;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\NativeClock;
@@ -92,9 +93,13 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
-        // Audience (resource) binding per RFC 8707 is captured here but not yet
-        // enforced; $resourceUri is the seam where that check is added (#1309/#1310).
+        // Audience (resource) binding per RFC 8707. A token minted for one resource must
+        // not be accepted at another, which is what keeps a token obtained for one
+        // application from opening every other protected resource of this server.
         $audience = $this->toStringList($claims->get('aud', []));
+        if (!$this->permittedFor($audience, $resourceUri)) {
+            return null;
+        }
 
         $subject = $claims->get('sub');
         if (!is_string($subject)) {
@@ -114,6 +119,30 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             $audience,
             is_string($clientId) ? $clientId : '',
         );
+    }
+
+    /**
+     * A token with no audience predates audience binding, or was issued for a request
+     * that named no resource. Those are accepted so that enabling this does not
+     * invalidate tokens already in circulation; a token that DOES name an audience is
+     * held to it.
+     *
+     * @param list<string> $audience
+     */
+    private function permittedFor(array $audience, string $resourceUri): bool
+    {
+        if ($audience === []) {
+            return true;
+        }
+
+        $canonical = CanonicalUri::canonicalize($resourceUri);
+        foreach ($audience as $entry) {
+            if (CanonicalUri::canonicalize($entry) === $canonical) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function parseVerifiedToken(Configuration $configuration, string $rawToken): ?UnencryptedToken

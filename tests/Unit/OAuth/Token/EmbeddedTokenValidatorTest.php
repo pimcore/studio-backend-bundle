@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInte
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Token\EmbeddedTokenValidator;
 use Pimcore\Model\User;
 use Symfony\Component\Clock\MockClock;
+use function array_key_exists;
 
 final class EmbeddedTokenValidatorTest extends Unit
 {
