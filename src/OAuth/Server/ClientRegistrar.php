@@ -195,10 +195,11 @@ final readonly class ClientRegistrar
      */
     private function parseScopes(mixed $value): array
     {
+        // No scope requested means no scope. Defaulting to "the first registered scope"
+        // would depend on bundle registration order, so the same client registration
+        // would yield different scopes on different installations.
         if ($value === null || $value === '') {
-            $all = $this->scopeRegistry->all();
-
-            return $all === [] ? [] : [$all[0]];
+            return [];
         }
 
         if (!is_string($value)) {

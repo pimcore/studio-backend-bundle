@@ -115,7 +115,7 @@ final class ClientRegistrarTest extends Unit
     {
         $result = $this->registrar->register(['redirect_uris' => ['https://app.example/cb']]);
         $this->assertSame(['authorization_code'], $result->grantTypes);
-        $this->assertSame(['mcp:read'], $result->scopes);
+        $this->assertSame([], $result->scopes);
     }
 
     public function testAllowsLoopbackHttpRedirect(): void
@@ -174,13 +174,18 @@ final class ClientRegistrarTest extends Unit
         $this->assertSame(['datahub:read'], $result->scopes);
     }
 
-    public function testOmittedScopeDefaultsToTheFirstScopeInTheRegistry(): void
+    /**
+     * Deliberately NOT "the first scope in the registry": that order follows bundle
+     * registration, so the same registration would yield different scopes on different
+     * installations. A client that asks for no scope gets none.
+     */
+    public function testOmittedScopeYieldsNoScopeRegardlessOfTheRegistry(): void
     {
         $result = $this->createRegistrar('datahub:read', 'datahub:write')->register([
             'redirect_uris' => ['https://app.example/cb'],
         ]);
 
-        $this->assertSame(['datahub:read'], $result->scopes);
+        $this->assertSame([], $result->scopes);
     }
 
     public function testEmptyRegistryYieldsNoDefaultScope(): void

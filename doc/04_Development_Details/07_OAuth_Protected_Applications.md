@@ -32,14 +32,16 @@ what it is handed and applies its own authorization rules.
 | Application | Endpoint | Authenticates in | Authorization model |
 |-------------|----------|------------------|---------------------|
 | Pimcore MCP servers | `/pimcore-mcp/…` | a Symfony firewall | The resolved user's own Pimcore permissions, plus per-server sharing |
-| Data Hub Simple REST | `/pimcore-datahub-webservices/simplerest-mcp` | a request-argument resolver | Per-configuration allow-list of users and roles; data exposure stays driven by the Data Hub configuration |
+| Data Hub Simple REST | `/pimcore-datahub-webservices/simplerest…` (REST and MCP) | a request-argument resolver and a controller base class | Per-configuration allow-list of users and roles; data exposure stays driven by the Data Hub configuration |
 
 They differ deliberately, and in more than one dimension. Authentication is shared; **authorization is each
 application's own business**, and so is *where* the credential is checked. The platform tells you *who* is
 calling, never *what they may do*.
 
-Note that Data Hub Simple REST accepts OAuth on its MCP endpoint only. Its REST endpoints continue to
-authenticate with Data Hub API keys, which is a scope decision, not a platform limitation.
+Data Hub Simple REST is worth studying as an example of one resource covering two surfaces: its REST
+endpoints and its MCP endpoint share a single protected resource, so a user consents once and the
+resulting token works across both. Each surface checks the token where it already authenticated,
+which is why the same application appears twice in the "authenticates in" column.
 
 ## Public contracts
 

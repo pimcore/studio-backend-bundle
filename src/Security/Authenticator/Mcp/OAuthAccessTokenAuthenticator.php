@@ -26,7 +26,9 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use function is_string;
 use function preg_match;
+use function rtrim;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -52,6 +54,7 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     public function __construct(
         private readonly bool $enabled,
         private readonly TokenValidatorInterface $tokenValidator,
+        private readonly ?string $issuer = null,
     ) {
     }
 
@@ -122,8 +125,25 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         return $token === '' ? null : $token;
     }
 
+    /**
+     * Each MCP server is its own protected resource, registered as
+     * `<issuer>/pimcore-mcp/studio/<slug>`, and that is what a client discovering this
+     * endpoint asks a token for. The URI has to be derived the same way here or an
+     * audience-bound token would be refused at the very endpoint it was issued for.
+     *
+     * The slug comes from the matched route, which is available because the router runs
+     * before the firewall. Without one (an unrouted request) the prefix stands in, which
+     * only an audience-less token can satisfy.
+     */
     private function resourceUri(Request $request): string
     {
-        return CanonicalUri::canonicalize($request->getSchemeAndHttpHost() . '/pimcore-mcp');
+        $base = rtrim($this->issuer ?? $request->getSchemeAndHttpHost(), '/');
+        $server = $request->attributes->get('server');
+
+        if (!is_string($server) || $server === '') {
+            return CanonicalUri::canonicalize($base . '/pimcore-mcp');
+        }
+
+        return CanonicalUri::canonicalize($base . '/pimcore-mcp/studio/' . $server);
     }
 }
