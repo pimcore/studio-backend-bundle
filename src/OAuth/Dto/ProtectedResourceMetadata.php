@@ -20,7 +20,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Dto;
  * `WWW-Authenticate` challenge on the MCP endpoint. Bearer tokens are accepted
  * in the header only.
  *
- * @internal
+ * Public API: the return type of {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface::metadataFor()}.
  */
 final readonly class ProtectedResourceMetadata
 {
