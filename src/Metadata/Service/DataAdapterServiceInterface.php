@@ -40,4 +40,10 @@ interface DataAdapterServiceInterface
      * @throws InvalidArgumentException
      */
     public function getDenormalizerAdapter(string $type): null|DataDenormalizerInterface|NormalizerInterface;
+
+    /**
+     * Whether the given metadata type is known, either as a Studio adapter or as a core
+     * asset metadata data type.
+     */
+    public function supportsType(string $type): bool;
 }

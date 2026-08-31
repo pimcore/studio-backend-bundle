@@ -28,7 +28,13 @@ final readonly class PatchCustomMetadata
         private string $name,
         #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
         private ?string $language,
-        #[Property(description: 'Type', type: 'string', example: 'input')]
+        #[Property(
+            description: 'Type. Used when the entry does not exist on the asset yet and its name '
+                . 'resolves to no predefined metadata definition or grid column; it also replaces '
+                . 'the stored type of a matching entry.',
+            type: 'string',
+            example: 'input'
+        )]
         private string $type,
         #[Property(description: 'Data', type: 'string', example: 'data', nullable: true)]
         private mixed $data

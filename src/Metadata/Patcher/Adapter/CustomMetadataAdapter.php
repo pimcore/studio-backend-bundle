@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PatchAdapterInterface;
@@ -23,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdap
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Metadata\Predefined;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
@@ -39,11 +41,15 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
 
     private const array PATCHABLE_KEYS = [
         'language',
+        // `type` is applied before `data`: the value is denormalised with the entry's type,
+        // so a submitted type has to be in place by the time `data` is processed.
+        'type',
         'data',
     ];
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly DataAdapterServiceInterface $dataAdapterService,
         private readonly DataResolverServiceInterface $dataResolverService,
         private readonly MetadataRepositoryInterface $metadataRepository
     ) {
@@ -89,7 +95,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         $patchedMetadata = [
             ...$patchedMetadata,
             ...array_map(
-                fn (array $metaData) => $this->processNewMetadataEntry($metaData, $user),
+                fn (array $metaData) => $this->processNewMetadataEntry($metaData, $user, $element->getType()),
                 $metadataForPatch
             ),
         ];
@@ -111,12 +117,19 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         ];
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     private function getExistingEntryValue(
         array $metadata,
         array $existingMetadata,
         string $key,
         UserInterface $user
     ): mixed {
+        if ($key === 'type') {
+            return $this->assertSupportedType($metadata[$key]);
+        }
+
         if ($key !== 'data') {
             return $metadata[$key];
         }
@@ -133,7 +146,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
     /**
      * @throws InvalidArgumentException
      */
-    private function processNewMetadataEntry(array $metadata, UserInterface $user): array
+    private function processNewMetadataEntry(array $metadata, UserInterface $user, string $assetType): array
     {
         if (!isset($metadata['name'])) {
             throw new InvalidArgumentException('Metadata name is required');
@@ -144,7 +157,12 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         }
 
         $predefined = $this->metadataRepository->getPredefinedMetadataByName($metadata['name']);
-        $type = $predefined?->getType();
+        $type = null;
+        if ($predefined !== null) {
+            $this->assertAllowedForAssetType($predefined, $metadata['name'], $assetType);
+            $type = $predefined->getType();
+        }
+
         if (!$type) {
             $columnConfigurations = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
             foreach ($columnConfigurations as $columnConfiguration) {
@@ -155,10 +173,16 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
                     break;
                 }
             }
+        }
 
-            if (!$type) {
-                throw new InvalidArgumentException(sprintf('Asset metadata %s not found', $metadata['name']));
-            }
+        // Nothing knows the name: fall back to the submitted type, which lets an entry copied
+        // off another asset be added even when its predefined definition no longer exists.
+        if (!$type && isset($metadata['type'])) {
+            $type = $this->assertSupportedType($metadata['type']);
+        }
+
+        if (!$type) {
+            throw new InvalidArgumentException(sprintf('Asset metadata %s not found', $metadata['name']));
         }
 
         return [
@@ -169,6 +193,37 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
                 $this->dataResolverService->denormalizeData($metadata, $user, $type, [], true) :
                 null,
         ];
+    }
+
+    /**
+     * A predefined definition may be restricted to one asset subtype. Appending it to an asset
+     * of another type is refused rather than silently accepted, matching how the metadata is
+     * offered in the first place (MetadataRepository::getPredefinedMetadataByTargetType).
+     *
+     * @throws InvalidArgumentException
+     */
+    private function assertAllowedForAssetType(Predefined $predefined, string $name, string $assetType): void
+    {
+        $targetSubtype = $predefined->getTargetSubtype();
+        if (empty($targetSubtype) || $targetSubtype === $assetType) {
+            return;
+        }
+
+        throw new InvalidArgumentException(
+            sprintf('Asset metadata %s is not available for assets of type %s', $name, $assetType)
+        );
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function assertSupportedType(string $type): string
+    {
+        if (!$this->dataAdapterService->supportsType($type)) {
+            throw new InvalidArgumentException(sprintf('Asset metadata type %s is not supported', $type));
+        }
+
+        return $type;
     }
 
     private function findIndexOfMatch(array $metadata, array $patchMetadata): int|bool

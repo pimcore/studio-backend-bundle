@@ -79,6 +79,17 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
         return $this->getCoreNormalizerAdapter($type);
     }
 
+    public function supportsType(string $type): bool
+    {
+        foreach ($this->getStudioAdaptersMapping() as $fieldTypes) {
+            if (in_array($type, $fieldTypes, true)) {
+                return true;
+            }
+        }
+
+        return $this->loader->supports($type);
+    }
+
     private function getCoreNormalizerAdapter(string $type): ?NormalizerInterface
     {
         try {
