@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository;
 use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\RefreshTokenEntity;
 
 /**
@@ -41,12 +42,16 @@ final class RefreshTokenRepository implements RefreshTokenRepositoryInterface
     {
         $accessToken = $refreshTokenEntity->getAccessToken();
 
+        // Recording the audience here is what carries the RFC 8707 binding across a
+        // refresh: without it the refreshed token would come back unbound and be
+        // accepted at every protected resource.
         $this->tokenRecordStore->persist(
             $refreshTokenEntity->getIdentifier(),
             OAuthTokenRecord::TYPE_REFRESH,
             $refreshTokenEntity->getExpiryDateTime()->getTimestamp(),
             null,
             $accessToken->getClient()->getIdentifier(),
+            $accessToken instanceof AccessTokenEntity ? $accessToken->getAudience() : null,
         );
     }
 

@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepositor
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ResponseType\ResourceBearerTokenResponse;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use function sprintf;
 
 /**
@@ -51,6 +51,7 @@ final class AuthorizationServerFactory
         private readonly int $refreshTokenTtl,
         private readonly bool $allowLocalhostLoopback,
         private readonly ResourceRegistryInterface $resourceRegistry,
+        private readonly TokenRecordStoreInterface $tokenRecordStore,
     ) {
     }
 
@@ -71,7 +72,6 @@ final class AuthorizationServerFactory
             $this->scopeRepository,
             new CryptKey($this->privateKey, $this->passphrase, false),
             $this->encryptionKey,
-            new ResourceBearerTokenResponse(),
         );
 
         $accessTokenTtl = $this->secondsInterval($this->accessTokenTtl);
@@ -83,11 +83,12 @@ final class AuthorizationServerFactory
             $this->secondsInterval($this->authCodeTtl),
             $this->allowLocalhostLoopback,
             $this->resourceRegistry,
+            $this->tokenRecordStore,
         );
         $authCodeGrant->setRefreshTokenTTL($refreshTokenTtl);
         $server->enableGrantType($authCodeGrant, $accessTokenTtl);
 
-        $refreshTokenGrant = new ResourceRefreshTokenGrant($this->refreshTokenRepository);
+        $refreshTokenGrant = new ResourceRefreshTokenGrant($this->refreshTokenRepository, $this->tokenRecordStore);
         $refreshTokenGrant->setRefreshTokenTTL($refreshTokenTtl);
         $server->enableGrantType($refreshTokenGrant, $accessTokenTtl);
 

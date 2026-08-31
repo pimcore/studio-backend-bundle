@@ -28,7 +28,26 @@ interface TokenRecordStoreInterface
     /**
      * @throws UniqueTokenIdentifierConstraintViolationException on a duplicate identifier
      */
-    public function persist(string $identifier, string $type, int $expiresAt, ?int $userId, ?string $clientId): void;
+    public function persist(
+        string $identifier,
+        string $type,
+        int $expiresAt,
+        ?int $userId,
+        ?string $clientId,
+        ?string $resource = null
+    ): void;
+
+    /**
+     * Records the protected resource a token is bound to. The record already exists by
+     * the time the binding is known, because league persists the token as it issues it.
+     */
+    public function bindResource(string $identifier, ?string $resource): void;
+
+    /**
+     * The protected resource a previously persisted token was bound to, or null when it
+     * was unbound or is unknown.
+     */
+    public function resourceFor(string $identifier): ?string;
 
     public function revoke(string $identifier): void;
 

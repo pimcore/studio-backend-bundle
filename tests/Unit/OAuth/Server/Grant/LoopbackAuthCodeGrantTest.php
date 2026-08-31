@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -54,6 +55,7 @@ final class LoopbackAuthCodeGrantTest extends Unit
                     'authorization_servers' => ['https://example.com/pimcore-oauth'],
                 ],
             ]),
+            $this->createMock(TokenRecordStoreInterface::class),
         );
 
         $clientRepository = $this->createMock(ClientRepositoryInterface::class);
@@ -130,6 +132,7 @@ final class LoopbackAuthCodeGrantTest extends Unit
         $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([
             'code_challenge' => self::CODE_CHALLENGE,
             'code_challenge_method' => 'S256',
+            'resource' => self::KNOWN_RESOURCE,
         ]));
 
         $this->assertSame(self::CLIENT_ID, $authRequest->getClient()->getIdentifier());
@@ -173,14 +176,17 @@ final class LoopbackAuthCodeGrantTest extends Unit
         $this->assertInstanceOf(ResourceAuthorizationRequest::class, $authRequest);
     }
 
-    public function testRequestWithoutResourceCarriesNoAudience(): void
+    /**
+     * The resource is required, not optional: a token that named none would be accepted
+     * by every protected resource of this server, so a client cannot decline the binding.
+     */
+    public function testRequestWithoutResourceIsRejected(): void
     {
-        $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([
+        $exception = $this->assertRejectedAsInvalidRequest([
             'code_challenge' => self::CODE_CHALLENGE,
             'code_challenge_method' => 'S256',
-        ]));
+        ]);
 
-        $this->assertInstanceOf(ResourceAuthorizationRequest::class, $authRequest);
-        $this->assertNull($authRequest->getResource());
+        $this->assertStringContainsString('resource', $exception->getHint() ?? '');
     }
 }

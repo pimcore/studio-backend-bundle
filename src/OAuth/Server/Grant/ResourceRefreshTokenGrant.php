@@ -19,7 +19,9 @@ use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Grant\RefreshTokenGrant;
+use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use function is_string;
 
@@ -30,14 +32,28 @@ use function is_string;
  * carry no `aud` and would therefore be accepted at every protected resource, which
  * is exactly what audience binding exists to prevent.
  *
+ * The binding is read from the token record rather than the refresh payload, because
+ * league builds that payload itself and offers no extension point.
+ *
  * @internal
  */
 final class ResourceRefreshTokenGrant extends RefreshTokenGrant
 {
+    private TokenRecordStoreInterface $tokenRecordStore;
+
     /**
      * Captured while validating the old refresh token, valid only within one request.
      */
     private ?string $pendingResource = null;
+
+    public function __construct(
+        RefreshTokenRepositoryInterface $refreshTokenRepository,
+        TokenRecordStoreInterface $tokenRecordStore,
+    ) {
+        parent::__construct($refreshTokenRepository);
+
+        $this->tokenRecordStore = $tokenRecordStore;
+    }
 
     /**
      * @return array<string, mixed>
@@ -48,8 +64,9 @@ final class ResourceRefreshTokenGrant extends RefreshTokenGrant
     {
         $refreshTokenData = parent::validateOldRefreshToken($request, $clientId);
 
-        $this->pendingResource = is_string($refreshTokenData['resource'] ?? null)
-            ? $refreshTokenData['resource']
+        $tokenId = $refreshTokenData['refresh_token_id'] ?? null;
+        $this->pendingResource = is_string($tokenId)
+            ? $this->tokenRecordStore->resourceFor($tokenId)
             : null;
 
         return $refreshTokenData;
