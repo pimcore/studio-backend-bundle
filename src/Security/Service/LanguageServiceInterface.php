@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
 
@@ -22,7 +23,27 @@ use Pimcore\Model\UserInterface;
  */
 interface LanguageServiceInterface
 {
+    /**
+     * @return array<int, string>
+     *
+     * @throws InvalidArgumentException
+     */
     public function getUserAllowedLanguages(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission
+    ): array;
+
+    /**
+     * Same as getUserAllowedLanguages(), but for fields that also have a language independent
+     * ("default") value - a localized Classification Store. That value is prepended unless the
+     * configured language list explicitly leaves it out.
+     *
+     * @return array<int, string>
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getUserAllowedLanguagesWithLanguageIndependentValue(
         DataObject $dataObject,
         UserInterface $user,
         string $permission

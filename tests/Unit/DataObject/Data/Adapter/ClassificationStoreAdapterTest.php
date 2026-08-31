@@ -385,6 +385,114 @@ final class ClassificationStoreAdapterTest extends Unit
         $this->assertArrayHasKey(30, $mappings);
     }
 
+    /**
+     * A non admin user whose language permissions grant the language independent column must be
+     * able to store values in it, exactly like in the classic UI.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterStoresLanguageIndependentValuesForAllowedNonAdmin(): void
+    {
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(['default', 'de', 'en']);
+
+        $this->assertContains('default', $storedLanguages);
+    }
+
+    /**
+     * A non admin user whose language permissions exclude the language independent column must not
+     * be able to store values in it.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterSkipsLanguageIndependentValuesForDeniedNonAdmin(): void
+    {
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(['de', 'en']);
+
+        $this->assertNotContains('default', $storedLanguages);
+        $this->assertContains('de', $storedLanguages);
+    }
+
+    /**
+     * A non admin user whose language permissions grant only the language independent column must
+     * not be able to store values in concrete localized columns.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterSkipsConcreteLanguagesWhenOnlyDefaultIsGranted(): void
+    {
+        $storedLanguages = $this->getStoredLanguagesForNonAdmin(['default']);
+
+        $this->assertContains('default', $storedLanguages);
+        $this->assertNotContains('de', $storedLanguages);
+    }
+
+    /**
+     * @param array<int, string> $allowedLanguages
+     *
+     * @return array<int, string|null>
+     *
+     * @throws Exception
+     */
+    private function getStoredLanguagesForNonAdmin(array $allowedLanguages): array
+    {
+        $storedLanguages = [];
+        $existingContainer = $this->make(Classificationstore::class, [
+            'setLocalizedKeyValue' => function (
+                int $groupId,
+                int $keyId,
+                mixed $value,
+                ?string $language = null
+            ) use (&$storedLanguages, &$existingContainer) {
+                $storedLanguages[] = $language;
+
+                return $existingContainer;
+            },
+        ]);
+
+        $element = $this->makeEmpty(Concrete::class, [
+            'get' => $existingContainer,
+        ]);
+
+        $fieldDefinition = $this->make(ClassificationstoreDefinition::class, [
+            'isLocalized' => true,
+            'getKeyConfiguration' => new KeyConfig(),
+        ]);
+
+        $adapter = $this->createAdapter(
+            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => $this->makeEmpty(SetterDataInterface::class, [
+                    'getDataForSetter' => 'new-value',
+                ]),
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getUserAllowedLanguagesWithLanguageIndependentValue' => $allowedLanguages,
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                    'getName' => 'inputField',
+                ]),
+            ]),
+        );
+
+        $adapter->getDataForSetter(
+            $element,
+            $fieldDefinition,
+            'myStore',
+            [
+                'myStore' => [
+                    22 => [
+                        'default' => [2 => 'language-independent-value'],
+                        'de' => [2 => 'german-value'],
+                    ],
+                    'activeGroups' => [22 => true],
+                ],
+            ],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false])
+        );
+
+        return $storedLanguages;
+    }
+
     private function createAdapter(
         ?DataObjectServiceResolverInterface $dataObjectServiceResolver = null,
         ?DefinitionCacheResolverInterface $definitionCacheResolver = null,
