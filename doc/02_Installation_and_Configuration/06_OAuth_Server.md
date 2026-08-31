@@ -27,9 +27,10 @@ the static-token alternative.
 - **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) — the `S256`
   method is **required**; `plain` is rejected.
 - **Refresh tokens**.
-- Two ways for clients to onboard, both self-service: optional **Dynamic Client Registration**
-  ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)) and optional **Client ID Metadata Documents**. There are
-  no pre-registered or service clients — non-interactive/machine access uses the
+- Three ways to onboard clients, all resolving to **public** clients (PKCE, no secret): **pre-registered**
+  clients declared in config, optional **Dynamic Client Registration**
+  ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata Documents**. There are
+  no confidential/service clients and no Client Credentials grant — non-interactive/machine access uses the
   [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT) instead.
 
 ## Enabling
@@ -121,7 +122,30 @@ a compliant client can discover where to authenticate.
 
 ## Onboarding clients
 
-Clients onboard themselves — there is no pre-registered client list. Use one (or both) of the following.
+Use one (or several) of the following. All three yield **public** clients that authenticate a logged-in
+Pimcore user via the Authorization Code + PKCE flow — none carry a secret.
+
+### Pre-registered clients
+
+Declare known clients directly in config — first-party clients you control, or any client that supports
+neither of the self-registration mechanisms below. Each entry is a `client_id` (the map key) with an
+allow-list of redirect URIs:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        clients:
+            my-desktop-app:
+                name: 'My Desktop App'
+                redirect_uris:
+                    - 'http://127.0.0.1:33418/callback'
+                    - 'http://localhost:33418/callback'
+```
+
+Pre-registered clients are **public only** — there is no `secret`, `confidential`, or `service_user` field,
+and no Client Credentials grant. They resolve **before** Client ID Metadata Documents and Dynamic Client
+Registration, and work even when both of those are disabled — so they are the onboarding path for a
+locked-down deployment that exposes no open registration endpoint.
 
 ### Dynamic Client Registration (RFC 7591)
 
@@ -183,6 +207,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `keys.public_key` | `null` | JWT signing public key (path or contents). |
 | `keys.passphrase` | `null` | Passphrase for the private key, if any. |
 | `keys.encryption_key` | `null` | Encryption key for authorization codes and refresh tokens. |
+| `clients` | `[]` | Pre-registered public clients, keyed by `client_id`; each has `name` + `redirect_uris` (see above). |
 | `dynamic_client_registration.enabled` | `false` | Expose `POST /pimcore-oauth/register` and advertise it. |
 | `client_id_metadata_documents.enabled` | `false` | Resolve URL-form `client_id`s and advertise support. |
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
@@ -192,6 +217,8 @@ All keys live under `pimcore_studio_backend.oauth`.
 
 ## Security considerations
 
+- **Prefer pre-registered clients when you know your clients up front.** They need no publicly writable
+  registration endpoint; keep Dynamic Client Registration off unless anonymous clients must self-register.
 - **Dynamic Client Registration is open registration.** Enable it only when you intend anonymous clients to
   self-register, and consider the network exposure of `/pimcore-oauth/register`.
 - **`allow_insecure` and loopback allowances are development conveniences.** Never enable `allow_insecure` in
