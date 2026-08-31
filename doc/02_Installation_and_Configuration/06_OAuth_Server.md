@@ -6,8 +6,13 @@ description: Embedded, opt-in OAuth 2.1 authorization server for authenticating 
 # OAuth 2.1 Authorization Server (Experimental)
 
 The Studio Backend Bundle ships an embedded **OAuth 2.1 authorization server**. It lets standards-based
-clients — most importantly external [MCP](https://modelcontextprotocol.io/) clients — obtain a bearer token
-and call Pimcore endpoints on behalf of a Pimcore user, without static credentials.
+clients obtain a bearer token and call Pimcore endpoints on behalf of a Pimcore user, without static
+credentials.
+
+This page covers running the authorization server: enabling it, key material, endpoints, and onboarding
+clients. It issues tokens and does not care which endpoints they are presented to. Accepting those tokens is
+a separate role, filled by any bundle that makes its endpoints a *resource server*. To build one, see
+[OAuth-Protected Applications](../04_Development_Details/07_OAuth_Protected_Applications.md).
 
 It is **opt-in** (off by default) and deliberately **isolated from your application's global security
 configuration**: enabling it adds a self-contained set of routes and does not change how the rest of your
@@ -16,9 +21,9 @@ firewalls behave.
 > **Experimental.** The feature is under active development; configuration keys and behavior may change
 > between minor versions. Enable it consciously and pin the bundle version.
 
-It is one of several ways to authenticate against the `pimcore_mcp` firewall — see
-[MCP Server Infrastructure](../04_Development_Details/08_MCP_Server.md) for the full authenticator chain and
-the static-token alternative.
+Two applications accept its tokens today: the bundle's own
+[MCP servers](../04_Development_Details/08_MCP_Server.md), where OAuth is one of several accepted
+credentials, and Data Hub Simple REST. Neither is privileged; both build on the same public contracts.
 
 ## What it provides
 
@@ -30,8 +35,9 @@ the static-token alternative.
 - Three ways to onboard clients, all resolving to **public** clients (PKCE, no secret): **pre-registered**
   clients declared in config, optional **Dynamic Client Registration**
   ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata Documents**. There are
-  no confidential/service clients and no Client Credentials grant — non-interactive/machine access uses the
-  [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT) instead.
+  no confidential/service clients and no Client Credentials grant. Non-interactive machine access uses
+  whatever static credential the target application supports, for example the
+  [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT).
 
 ## Enabling
 
@@ -178,7 +184,12 @@ pimcore_studio_backend:
 
 ## Protected resources (audiences)
 
-Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata:
+Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
+Applications whose endpoints are only known at runtime register them programmatically instead, through
+`ResourceRegistryInterface`.
+
+> Resource URIs are **discovery identifiers**, not an isolation boundary: audience binding is not yet
+> enforced (see [OAuth-Protected Applications](../04_Development_Details/07_OAuth_Protected_Applications.md)).
 
 ```yaml
 pimcore_studio_backend:
