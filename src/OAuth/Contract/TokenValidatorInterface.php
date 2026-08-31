@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ResolvedAccess;
  * source (embedded AS today, external IdP later) is swappable without changing
  * the endpoints.
  *
- * @internal
+ * Public API. Bundles that expose their own OAuth-protected endpoints implement
+ * an authenticator against this contract rather than duplicating token parsing,
+ * signature and revocation checks.
  */
 interface TokenValidatorInterface
 {
