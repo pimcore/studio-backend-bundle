@@ -56,7 +56,16 @@ final class ConfigProtectedResourceRegistry implements ResourceRegistryInterface
 
     public function register(ProtectedResource $resource): void
     {
-        $this->resources[CanonicalUri::canonicalize($resource->canonicalUri)] = $resource;
+        // Canonicalise the resource itself, not only the lookup key: the metadata
+        // document echoes `canonicalUri` back as the RFC 9728 `resource` value, which
+        // must be the canonical form whatever a caller registered.
+        $canonicalUri = CanonicalUri::canonicalize($resource->canonicalUri);
+
+        $this->resources[$canonicalUri] = new ProtectedResource(
+            $canonicalUri,
+            $resource->scopesSupported,
+            $resource->authorizationServers,
+        );
     }
 
     public function has(string $canonicalUri): bool
