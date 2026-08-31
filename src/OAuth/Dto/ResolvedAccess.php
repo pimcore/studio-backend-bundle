@@ -20,7 +20,8 @@ use Pimcore\Model\UserInterface;
  * Pimcore user plus the OAuth context (granted scopes, validated audience,
  * client id).
  *
- * Public API: the return type of {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface::validate()}.
+ * Public API: the return type of
+ * {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface::validate()}.
  */
 final readonly class ResolvedAccess
 {

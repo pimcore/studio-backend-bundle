@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Token;
 
+use const PREG_SPLIT_NO_EMPTY;
+use Exception;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
@@ -26,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInte
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ResolvedAccess;
 use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\NativeClock;
 use Throwable;
 use function array_filter;
@@ -35,7 +38,6 @@ use function is_string;
 use function preg_split;
 use function str_contains;
 use function trim;
-use const PREG_SPLIT_NO_EMPTY;
 
 /**
  * Validates a JWT access token minted by the embedded authorization server:
@@ -60,6 +62,7 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
         private readonly IdentityResolverInterface $identityResolver,
         private readonly TokenRevocationCheckerInterface $revocationChecker,
         ?ClockInterface $clock = null,
+        private readonly ?LoggerInterface $logger = null,
     ) {
         $this->clock = $clock ?? new NativeClock();
     }
@@ -143,9 +146,18 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
-        $key = str_contains($this->publicKey, 'BEGIN')
-            ? InMemory::plainText($this->publicKey)
-            : InMemory::file($this->publicKey);
+        // Misconfigured or unreadable key material must fail closed. Letting the
+        // exception escape would turn every request at every protected resource into a
+        // 500 instead of an authentication failure.
+        try {
+            $key = str_contains($this->publicKey, 'BEGIN')
+                ? InMemory::plainText($this->publicKey)
+                : InMemory::file($this->publicKey);
+        } catch (Exception $exception) {
+            $this->logger?->error('OAuth public key could not be read', ['error' => $exception->getMessage()]);
+
+            return null;
+        }
 
         // Verification only: the signer/verification key are used to check the
         // signature; the same public key fills the (unused) signing-key slot.

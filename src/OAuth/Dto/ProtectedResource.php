@@ -20,7 +20,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Dto;
  * `$canonicalUri` need not be pre-canonicalised: the registry canonicalises on
  * registration and on every lookup.
  *
- * Public API: the argument type of {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface::register()}.
+ * Public API: the argument type of
+ * {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface::register()}.
  */
 final readonly class ProtectedResource
 {

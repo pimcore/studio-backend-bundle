@@ -29,13 +29,17 @@ what it is handed and applies its own authorization rules.
 
 ## Applications today
 
-| Application | Endpoints | Authorization model |
-|-------------|-----------|---------------------|
-| Pimcore MCP servers | `/pimcore-mcp/…` | The resolved user's own Pimcore permissions, plus per-server sharing |
-| Data Hub Simple REST | `/pimcore-datahub-webservices/simplerest/…` | Per-configuration allow-list of users and roles; data exposure stays driven by the Data Hub configuration |
+| Application | Endpoint | Authenticates in | Authorization model |
+|-------------|----------|------------------|---------------------|
+| Pimcore MCP servers | `/pimcore-mcp/…` | a Symfony firewall | The resolved user's own Pimcore permissions, plus per-server sharing |
+| Data Hub Simple REST | `/pimcore-datahub-webservices/simplerest-mcp` | a request-argument resolver | Per-configuration allow-list of users and roles; data exposure stays driven by the Data Hub configuration |
 
-They differ deliberately. Authentication is shared; **authorization is each application's own business**. The
-platform tells you *who* is calling, never *what they may do*.
+They differ deliberately, and in more than one dimension. Authentication is shared; **authorization is each
+application's own business**, and so is *where* the credential is checked. The platform tells you *who* is
+calling, never *what they may do*.
+
+Note that Data Hub Simple REST accepts OAuth on its MCP endpoint only. Its REST endpoints continue to
+authenticate with Data Hub API keys, which is a scope decision, not a platform limitation.
 
 ## Public contracts
 
@@ -55,17 +59,27 @@ of a URI works.
 
 Five parts, in the order a request meets them.
 
-**1. A firewall over your own routes.** Stateless, using the `pimcore_studio_backend` user provider. Do not
-put your endpoints under another bundle's URL prefix to borrow its firewall; declare your own over your own
-prefix so REST-style and MCP-style endpoints in your bundle share one authentication story.
+**1. A place to authenticate.** Two shapes are in use, and the right one depends on what your bundle already
+does:
 
-**2. An authenticator** that claims JWT-shaped bearer tokens, calls `TokenValidatorInterface::validate()`,
-and puts the resolved user into the security context. It returns `null` on failure so any other credential
-your bundle already supports still gets its turn.
+- **A Symfony firewall** over your own routes, stateless, using the `pimcore_studio_backend` user provider.
+  Right when your endpoints have no authentication of their own yet, or already use the security component.
+  This is what the MCP servers do. Declare your own firewall over your own prefix rather than putting your
+  endpoints under another bundle's URL prefix to borrow its firewall.
+- **Your existing request pipeline**, if the bundle already authenticates somewhere else. Data Hub Simple
+  REST checks credentials in a `ValueResolverInterface` and has no `security.yaml` at all; bolting a firewall
+  on would have duplicated that and forced every installation to edit its security configuration. It added a
+  branch where it already authenticated instead.
+
+**2. Token validation.** Claim JWT-shaped bearer tokens, call `TokenValidatorInterface::validate()`, and
+resolve the user. Whatever shape you chose, leave every other credential your bundle supports working: shape
+is not proof, so a credential that looks like a token but does not resolve should fall through to your
+existing check rather than being rejected.
 
 **3. Resource registration.** One `ProtectedResource` per endpoint that acts as a token audience. This is
 what makes `/.well-known/oauth-protected-resource/<path>` resolvable for your endpoint, which is how a
-client discovers the authorization server in the first place.
+client discovers the authorization server in the first place. One endpoint means one resource, even when it
+serves many logical things behind it.
 
 **4. A 401 challenge** carrying `WWW-Authenticate: Bearer resource_metadata="…"`. Without this parameter a
 standards-based client cannot begin discovery, so the whole flow never starts.
@@ -75,9 +89,11 @@ the thing being accessed.
 
 ## Blueprint: adding an application
 
-Data Hub Simple REST is the reference implementation. The steps below mirror it.
+Data Hub Simple REST is the worked example. Where it and the MCP servers differ, both are shown.
 
-### Step 1: Declare a firewall
+### Step 1: Choose where to authenticate
+
+**If your bundle has no authentication of its own**, declare a firewall.
 
 Expose the settings as a parameter, the way other bundles do, so integrators add one line to
 `security.yaml`:
@@ -110,7 +126,13 @@ Two decisions worth making consciously:
 - **Supply an explicit rate limiter.** Symfony's default builds a per-IP tier that every client on an address
   shares, so guesses against one credential can push an unrelated valid credential into a `429`.
 
-### Step 2: Write an authenticator
+**If your bundle already authenticates elsewhere**, skip the firewall entirely and add a branch there. Data
+Hub Simple REST does this in `McpAuthContextResolver`, so integrators need no `security.yaml` change at all
+and existing traffic is untouched. The rest of the steps are the same; only step 2 changes shape.
+
+### Step 2: Validate the token
+
+**In a firewall**, that means an authenticator.
 
 ```php
 final class MyOAuthAuthenticator extends AbstractAuthenticator
@@ -151,24 +173,30 @@ final class MyOAuthAuthenticator extends AbstractAuthenticator
 }
 ```
 
-Gate it on `%pimcore_studio_backend.oauth.enabled%` so the authenticator is inert when the authorization
+**In an existing pipeline**, it is the same three calls without the Symfony scaffolding: recognise the
+credential, call `validate()`, resolve the user, and on failure continue to whatever check you had before.
+
+Either way, gate it on `%pimcore_studio_backend.oauth.enabled%` so the code is inert when the authorization
 server is switched off.
 
 ### Step 3: Register protected resources
 
-Inject `ResourceRegistryInterface` and register one resource per endpoint that acts as an audience. When your
-endpoints are configuration-driven and therefore only known at runtime, register them as they are resolved
-rather than at compile time:
+Inject `ResourceRegistryInterface` and register one resource per endpoint that acts as an audience. The
+canonical URI depends on the incoming scheme and host, so registration happens per request rather than at
+compile time:
 
 ```php
 $this->resourceRegistry->register(
     new ProtectedResource(
-        $request->getSchemeAndHttpHost() . '/my-bundle-prefix/' . $configName,
+        $request->getSchemeAndHttpHost() . '/my-bundle-prefix/endpoint',
         ['mcp:read'],
         [$issuer],
     )
 );
 ```
+
+Gate that on the paths that actually consult the registry, your endpoint and the well-known prefix. Running
+it on every request lets a varied `Host` header grow the registry unboundedly on a long-running worker.
 
 ### Step 4: Emit the challenge
 
@@ -184,7 +212,7 @@ credential was sent at all.
 ### Step 5: Apply your own authorization
 
 Authentication produced a Pimcore user. What that user may do is yours to decide, at the point where a
-request resolves to the thing being accessed. Two rules learned from the existing applications:
+request resolves to the thing being accessed. Two rules that matter:
 
 - **Do not apply user-bound checks to credentials that carry no user.** If your bundle also accepts a static
   key, that caller has no user, so a user allow-list must not apply to it. Getting this wrong breaks every
