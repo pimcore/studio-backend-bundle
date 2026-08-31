@@ -836,24 +836,50 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->arrayNode('access')
                             ->addDefaultsIfNotSet()
-                            ->info('Who may use the server (owner + global flag + user/role id lists).')
+                            ->info('Who may access the server: owner (username) + public flag + user/role grants.')
                             ->children()
-                                ->integerNode('owner')->defaultNull()->end()
-                                ->booleanNode('share_global')->defaultFalse()->end()
-                                ->arrayNode('shared_users')
-                                    ->integerPrototype()->end()
-                                    ->defaultValue([])
+                                ->scalarNode('owner')
+                                    ->info('Creator username; auto-listed with full capabilities. Names, not ids.')
+                                    ->defaultNull()
                                 ->end()
-                                ->arrayNode('shared_roles')
-                                    ->integerPrototype()->end()
-                                    ->defaultValue([])
+                                ->booleanNode('share_global')
+                                    ->info('Public: any authenticated user may view and use the server (not edit).')
+                                    ->defaultFalse()
                                 ->end()
+                                ->append($this->mcpAccessGrantListNode('shared_users', 'Users granted access, by unique username.'))
+                                ->append($this->mcpAccessGrantListNode('shared_roles', 'Roles granted access, by unique role name.'))
                             ->end()
                         ->end()
                     ->end()
                 ->end()
             ->end()
         ->end();
+    }
+
+    /**
+     * A list of access grants keyed by unique name — the file-config equivalent
+     * of the settings-store {name, can_access, can_edit} grid. A bare string is
+     * accepted as a view-only grant (name only), matching {@see McpServerAccessEntry::fromMixed()}.
+     */
+    private function mcpAccessGrantListNode(string $name, string $info): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder($name))->getRootNode();
+        $node
+            ->info($info)
+            ->arrayPrototype()
+                ->beforeNormalization()
+                    ->ifString()
+                    ->then(static fn (string $value): array => ['name' => $value])
+                ->end()
+                ->children()
+                    ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                    ->booleanNode('can_access')->defaultFalse()->end()
+                    ->booleanNode('can_edit')->defaultFalse()->end()
+                ->end()
+            ->end()
+            ->defaultValue([]);
+
+        return $node;
     }
 
     private function addOAuthNode(ArrayNodeDefinition $node): void
