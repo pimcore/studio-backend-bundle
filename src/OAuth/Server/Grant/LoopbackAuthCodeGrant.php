@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant;
 
 use DateInterval;
-use DateTimeImmutable;
 use Exception;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
+use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Exception\UniqueTokenIdentifierConstraintViolationException;
 use League\OAuth2\Server\Grant\AuthCodeGrant;
@@ -27,19 +26,17 @@ use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use League\OAuth2\Server\RequestEvent;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
-use League\OAuth2\Server\ResponseTypes\RedirectResponse;
 use League\OAuth2\Server\ResponseTypes\ResponseTypeInterface;
-use LogicException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RedirectUri\LoopbackRedirectUriValidator;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Psr\Http\Message\ServerRequestInterface;
 use function is_array;
 use function is_string;
 use function json_decode;
-use function json_encode;
 
 /**
  * Authorization-code grant that validates redirect URIs with the RFC 8252
@@ -87,11 +84,14 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
      *
      * @throws OAuthServerException
      */
-    private function validatedResource(ServerRequestInterface $request): ?string
+    private function validatedResource(ServerRequestInterface $request): string
     {
         $resource = $this->getQueryStringParameter('resource', $request);
         if ($resource === null) {
-            return null;
+            throw OAuthServerException::invalidRequest(
+                'resource',
+                'The resource the token is requested for must be named (RFC 8707).'
+            );
         }
 
         if (!$this->resourceRegistry->has($resource)) {
@@ -107,94 +107,75 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
     }
 
     /**
-     * Mirrors the league implementation, adding the resource to the authorization code
-     * payload. league offers no hook for extra payload fields, so the method body is
-     * duplicated; revisit on a league major upgrade.
+     * Captures the resource so {@see self::issueAuthCode()} can record it against the
+     * code that is about to be issued. league builds the code payload itself and offers
+     * no hook for extra fields, so the binding is persisted alongside the token record
+     * instead of being smuggled into that payload.
      */
     public function completeAuthorizationRequest(
         AuthorizationRequestInterface $authorizationRequest
     ): ResponseTypeInterface {
-        if (!$authorizationRequest->getUser() instanceof UserEntityInterface) {
-            throw new LogicException('An instance of UserEntityInterface should be set on the AuthorizationRequest');
-        }
+        $this->pendingResource = $authorizationRequest instanceof ResourceAuthorizationRequest
+            ? $authorizationRequest->getResource()
+            : null;
 
-        $finalRedirectUri = $authorizationRequest->getRedirectUri()
-            ?? $this->getClientRedirectUri($authorizationRequest->getClient());
-
-        if ($authorizationRequest->isAuthorizationApproved() !== true) {
-            throw OAuthServerException::accessDenied(
-                'The user denied the request',
-                $this->makeRedirectUri($finalRedirectUri, ['state' => $authorizationRequest->getState()])
-            );
-        }
-
-        $authCode = $this->issueAuthCode(
-            $this->ownAuthCodeTTL,
-            $authorizationRequest->getClient(),
-            $authorizationRequest->getUser()->getIdentifier(),
-            $authorizationRequest->getRedirectUri(),
-            $authorizationRequest->getScopes()
-        );
-
-        $payload = [
-            'client_id' => $authCode->getClient()->getIdentifier(),
-            'redirect_uri' => $authCode->getRedirectUri(),
-            'auth_code_id' => $authCode->getIdentifier(),
-            'scopes' => $authCode->getScopes(),
-            'user_id' => $authCode->getUserIdentifier(),
-            'expire_time' => (new DateTimeImmutable())->add($this->ownAuthCodeTTL)->getTimestamp(),
-            'code_challenge' => $authorizationRequest->getCodeChallenge(),
-            'code_challenge_method' => $authorizationRequest->getCodeChallengeMethod(),
-            'resource' => $authorizationRequest instanceof ResourceAuthorizationRequest
-                ? $authorizationRequest->getResource()
-                : null,
-        ];
-
-        $jsonPayload = json_encode($payload);
-        if ($jsonPayload === false) {
-            throw new LogicException('An error was encountered when JSON encoding the authorization request response');
-        }
-
-        $response = new RedirectResponse();
-        $response->setRedirectUri(
-            $this->makeRedirectUri($finalRedirectUri, [
-                'code' => $this->encrypt($jsonPayload),
-                'state' => $authorizationRequest->getState(),
-            ])
-        );
-
-        return $response;
+        return parent::completeAuthorizationRequest($authorizationRequest);
     }
 
     /**
-     * league keeps its own authorization-code validation private, so there is no hook
-     * on the decrypted payload. The client check is the first thing the token request
-     * does and it does receive the request, so the code is decrypted once more here to
-     * recover the resource it was issued for. The payload is authenticated by league's
-     * own encryption, so trusting it is no weaker than league trusting it.
+     * @param ScopeEntityInterface[] $scopes
+     *
+     * @throws OAuthServerException
+     * @throws UniqueTokenIdentifierConstraintViolationException
+     */
+    protected function issueAuthCode(
+        DateInterval $authCodeTTL,
+        ClientEntityInterface $client,
+        string $userIdentifier,
+        ?string $redirectUri,
+        array $scopes = []
+    ): AuthCodeEntityInterface {
+        $authCode = parent::issueAuthCode($authCodeTTL, $client, $userIdentifier, $redirectUri, $scopes);
+
+        $this->tokenRecordStore->bindResource($authCode->getIdentifier(), $this->pendingResource);
+
+        return $authCode;
+    }
+
+    /**
+     * league validates and decrypts the authorization code inside a private method, so
+     * there is no hook on the decrypted payload. The token request entry point is the
+     * right layer to recover the binding: the code id is enough to look the resource up,
+     * and the record was written when the code was issued.
      *
      * @throws OAuthServerException
      */
-    protected function validateClient(ServerRequestInterface $request): ClientEntityInterface
+    public function respondToAccessTokenRequest(
+        ServerRequestInterface $request,
+        ResponseTypeInterface $responseType,
+        DateInterval $accessTokenTTL
+    ): ResponseTypeInterface {
+        $this->pendingResource = $this->boundResource($request);
+
+        return parent::respondToAccessTokenRequest($request, $responseType, $accessTokenTTL);
+    }
+
+    private function boundResource(ServerRequestInterface $request): ?string
     {
-        $client = parent::validateClient($request);
-
-        $this->pendingResource = null;
         $encryptedCode = $this->getRequestParameter('code', $request);
-
-        if (is_string($encryptedCode)) {
-            try {
-                $payload = json_decode($this->decrypt($encryptedCode), true);
-            } catch (Exception) {
-                return $client;
-            }
-
-            if (is_array($payload) && is_string($payload['resource'] ?? null)) {
-                $this->pendingResource = $payload['resource'];
-            }
+        if (!is_string($encryptedCode)) {
+            return null;
         }
 
-        return $client;
+        try {
+            $payload = json_decode($this->decrypt($encryptedCode), true);
+        } catch (Exception) {
+            return null;
+        }
+
+        $codeId = is_array($payload) ? ($payload['auth_code_id'] ?? null) : null;
+
+        return is_string($codeId) ? $this->tokenRecordStore->resourceFor($codeId) : null;
     }
 
     /**
@@ -225,22 +206,16 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
      */
     private ?string $pendingResource = null;
 
-    /**
-     * league keeps its own $authCodeTTL private, so the mirrored
-     * {@see self::completeAuthorizationRequest()} needs its own copy.
-     */
-    private readonly DateInterval $ownAuthCodeTTL;
-
     public function __construct(
         AuthCodeRepositoryInterface $authCodeRepository,
         RefreshTokenRepositoryInterface $refreshTokenRepository,
         DateInterval $authCodeTTL,
         private readonly bool $allowLocalhostLoopback,
         private readonly ResourceRegistryInterface $resourceRegistry,
+        private readonly TokenRecordStoreInterface $tokenRecordStore,
     ) {
         parent::__construct($authCodeRepository, $refreshTokenRepository, $authCodeTTL);
 
-        $this->ownAuthCodeTTL = $authCodeTTL;
     }
 
     protected function validateRedirectUri(

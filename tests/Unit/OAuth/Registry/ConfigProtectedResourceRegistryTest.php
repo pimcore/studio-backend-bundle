@@ -79,4 +79,24 @@ final class ConfigProtectedResourceRegistryTest extends Unit
             $metadata->toArray()
         );
     }
+
+    /**
+     * A resource registered at runtime with a non-canonical URI is stored canonically,
+     * so the RFC 9728 document echoes the canonical `resource` whatever the caller
+     * spelled. Callers are told they need not canonicalise; this is what makes that true.
+     */
+    public function testRuntimeRegistrationCanonicalisesTheStoredResource(): void
+    {
+        $registry = new ConfigProtectedResourceRegistry();
+        $registry->register(new ProtectedResource('https://EXAMPLE.com:443/pimcore-mcp/', ['mcp:read'], []));
+
+        $resource = $registry->get('https://example.com/pimcore-mcp');
+
+        $this->assertNotNull($resource);
+        $this->assertSame('https://example.com/pimcore-mcp', $resource->canonicalUri);
+        $this->assertSame(
+            'https://example.com/pimcore-mcp',
+            $registry->metadataFor('https://example.com/pimcore-mcp')?->toArray()['resource'] ?? null
+        );
+    }
 }
