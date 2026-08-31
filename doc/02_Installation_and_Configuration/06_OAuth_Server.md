@@ -188,8 +188,10 @@ Declare the endpoints that act as token audiences. Each becomes discoverable via
 Applications whose endpoints are only known at runtime register them programmatically instead, through
 `ResourceRegistryInterface`.
 
-> Resource URIs are **discovery identifiers**, not an isolation boundary: audience binding is not yet
-> enforced (see [OAuth-Protected Applications](../04_Development_Details/07_OAuth_Protected_Applications.md)).
+A client names the resource it wants a token for with the RFC 8707 `resource` parameter on the authorization
+request. An unknown resource is rejected; a known one is stamped onto the token as its `aud` and enforced
+when that token is presented, so a token minted for one resource is refused at another. A client that sends
+no `resource` gets an unbound token, which stays valid at every resource, so existing clients keep working.
 
 ```yaml
 pimcore_studio_backend:

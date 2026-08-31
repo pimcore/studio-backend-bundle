@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\RegisteredClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ClientRegistrationException;
@@ -40,8 +41,6 @@ use function trim;
  */
 final readonly class ClientRegistrar
 {
-    private const array SUPPORTED_SCOPES = ['mcp:read', 'mcp:write'];
-
     private const array SUPPORTED_GRANTS = ['authorization_code', 'refresh_token'];
 
     private const array AUTH_METHODS = ['none', 'client_secret_basic', 'client_secret_post'];
@@ -50,6 +49,7 @@ final readonly class ClientRegistrar
 
     public function __construct(
         private DynamicClientStoreInterface $store,
+        private ScopeRegistryInterface $scopeRegistry,
     ) {
     }
 
@@ -196,7 +196,9 @@ final readonly class ClientRegistrar
     private function parseScopes(mixed $value): array
     {
         if ($value === null || $value === '') {
-            return ['mcp:read'];
+            $all = $this->scopeRegistry->all();
+
+            return $all === [] ? [] : [$all[0]];
         }
 
         if (!is_string($value)) {
@@ -205,7 +207,7 @@ final readonly class ClientRegistrar
 
         $requested = preg_split('/\s+/u', trim($value)) ?: [];
         foreach ($requested as $scope) {
-            if (!in_array($scope, self::SUPPORTED_SCOPES, true)) {
+            if (!$this->scopeRegistry->has($scope)) {
                 throw new ClientRegistrationException('invalid_client_metadata', 'Unsupported scope: ' . $scope);
             }
         }

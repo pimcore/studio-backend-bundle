@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Controller;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Symfony\Component\HttpFoundation\Request;
+use function in_array;
 use function is_array;
 use function json_decode;
 
@@ -28,7 +30,7 @@ final class AuthorizationServerMetadataControllerTest extends Unit
 
     public function testDoesNotAdvertiseTheRemovedClientCredentialsGrant(): void
     {
-        $metadata = $this->metadata(new AuthorizationServerMetadataController(self::ISSUER));
+        $metadata = $this->metadata($this->controller());
 
         // The client_credentials grant was removed; the metadata must not advertise it.
         $this->assertSame(['authorization_code', 'refresh_token'], $metadata['grant_types_supported']);
@@ -36,20 +38,69 @@ final class AuthorizationServerMetadataControllerTest extends Unit
 
     public function testAdvertisesTheCoreDiscoveryFields(): void
     {
-        $metadata = $this->metadata(new AuthorizationServerMetadataController(self::ISSUER));
+        $metadata = $this->metadata($this->controller());
 
         $this->assertSame(self::ISSUER, $metadata['issuer']);
         $this->assertSame(self::ISSUER . '/pimcore-oauth/token', $metadata['token_endpoint']);
         $this->assertSame(['S256'], $metadata['code_challenge_methods_supported']);
     }
 
+    public function testAdvertisesTheScopesContributedByTheRegistry(): void
+    {
+        // The catalogue is extensible, so the advertised scopes are whatever the
+        // registry holds -- not a list hard-coded in the controller.
+        $metadata = $this->metadata($this->controller(scopes: ['mcp:read', 'datahub:read']));
+
+        $this->assertSame(['mcp:read', 'datahub:read'], $metadata['scopes_supported']);
+    }
+
     public function testRegistrationEndpointOnlyAdvertisedWhenDcrEnabled(): void
     {
-        $disabled = $this->metadata(new AuthorizationServerMetadataController(self::ISSUER));
+        $disabled = $this->metadata($this->controller());
         $this->assertArrayNotHasKey('registration_endpoint', $disabled);
 
-        $enabled = $this->metadata(new AuthorizationServerMetadataController(self::ISSUER, false, true));
+        $enabled = $this->metadata($this->controller(registrationEnabled: true));
         $this->assertSame(self::ISSUER . '/pimcore-oauth/register', $enabled['registration_endpoint']);
+    }
+
+    /**
+     * @param list<string> $scopes
+     */
+    private function controller(
+        array $scopes = ['mcp:read'],
+        bool $registrationEnabled = false,
+    ): AuthorizationServerMetadataController {
+        return new AuthorizationServerMetadataController(
+            self::ISSUER,
+            $this->scopeRegistry($scopes),
+            false,
+            $registrationEnabled,
+        );
+    }
+
+    /**
+     * @param list<string> $scopes
+     */
+    private function scopeRegistry(array $scopes): ScopeRegistryInterface
+    {
+        return new class($scopes) implements ScopeRegistryInterface {
+            /**
+             * @param list<string> $scopes
+             */
+            public function __construct(private readonly array $scopes)
+            {
+            }
+
+            public function all(): array
+            {
+                return $this->scopes;
+            }
+
+            public function has(string $scope): bool
+            {
+                return in_array($scope, $this->scopes, true);
+            }
+        };
     }
 
     /**

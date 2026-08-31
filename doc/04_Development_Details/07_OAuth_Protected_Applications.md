@@ -45,6 +45,8 @@ authenticate with Data Hub API keys, which is a scope decision, not a platform l
 
 | Contract | Purpose |
 |----------|---------|
+| `OAuth\Contract\ScopeProviderInterface` | Contribute your own scope identifiers to the server's catalogue |
+| `OAuth\Contract\ScopeRegistryInterface` | Read the catalogue |
 | `OAuth\Contract\TokenValidatorInterface` | Validate a raw bearer token and resolve it to effective access |
 | `OAuth\Dto\ResolvedAccess` | Result of validation: the Pimcore user, granted scopes, audience, client id |
 | `OAuth\Contract\ResourceRegistryInterface` | Register endpoints as protected resources, making their RFC 9728 metadata resolvable |
@@ -76,10 +78,14 @@ resolve the user. Whatever shape you chose, leave every other credential your bu
 is not proof, so a credential that looks like a token but does not resolve should fall through to your
 existing check rather than being rejected.
 
-**3. Resource registration.** One `ProtectedResource` per endpoint that acts as a token audience. This is
-what makes `/.well-known/oauth-protected-resource/<path>` resolvable for your endpoint, which is how a
-client discovers the authorization server in the first place. One endpoint means one resource, even when it
-serves many logical things behind it.
+**3. Resource registration.** One `ProtectedResource` per endpoint that acts as a token audience. This does
+two things: it makes `/.well-known/oauth-protected-resource/<path>` resolvable, which is how a client
+discovers the authorization server, and it is what the authorization endpoint validates a requested
+`resource` against. One endpoint means one resource, even when it serves many logical things behind it.
+
+Register on every request that might consult the registry. That includes your own endpoint, its metadata
+document, and the OAuth endpoints, since the authorization request is validated there. Deriving the URI from
+the configured issuer rather than the request host keeps registration idempotent.
 
 **4. A 401 challenge** carrying `WWW-Authenticate: Bearer resource_metadata="…"`. Without this parameter a
 standards-based client cannot begin discovery, so the whole flow never starts.
@@ -209,7 +215,26 @@ WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-prote
 `error="invalid_token"` belongs there only when a token was actually presented and rejected. Omit it when no
 credential was sent at all.
 
-### Step 5: Apply your own authorization
+### Step 5: Declare your scopes
+
+Use your own prefix rather than another application's. Sharing `mcp:read` between two applications makes the
+consent screen ambiguous about what is being granted, and prevents a token being narrowed to one of them.
+
+```php
+final class MyScopeProvider implements ScopeProviderInterface
+{
+    public function scopes(): array
+    {
+        return ['mybundle:read'];
+    }
+}
+```
+
+Tag the service with `ScopeProviderInterface::TAG`. The authorization endpoint then accepts the scope,
+dynamic clients may register it, and the server metadata advertises it. Ship only scopes that correspond to
+operations you actually have: a scope a user can consent to that grants nothing is worse than no scope.
+
+### Step 6: Apply your own authorization
 
 Authentication produced a Pimcore user. What that user may do is yours to decide, at the point where a
 request resolves to the thing being accessed. Two rules that matter:
@@ -221,17 +246,32 @@ request resolves to the thing being accessed. Two rules that matter:
   they see once connected" are different questions with different answers, and conflating them makes both
   harder to reason about.
 
+## Audience binding
+
+A token is bound to the resource it was requested for. A client names it with the RFC 8707 `resource`
+parameter on the authorization request; the server validates it against the registry, rejects an unknown one
+with `invalid_request`, and stamps it as the token's `aud`. `TokenValidatorInterface::validate()` then refuses
+a token whose audience does not name the resource URI you pass it.
+
+This is what stops a token obtained for one application being replayed against another. Without it, every
+protected resource on the installation accepts every token the server ever issued, which is a real hole once
+more than one resource exists.
+
+Two consequences for an application:
+
+- **Pass your own resource URI to `validate()`**, and derive it the same way every time. Prefer the
+  configured issuer over the request's host: the URI has to be byte-identical when the resource is
+  registered, when a token is requested for it, and when that token is validated, and a Host header behind a
+  proxy will not be.
+- **A token with no audience is accepted.** A client that does not send `resource` gets an unbound token,
+  which stays valid everywhere. That keeps existing clients working, and it means audience binding protects
+  clients that opt in rather than being a wall. Do not treat the presence of an audience as guaranteed.
+
 ## What the platform does not do yet
 
-Do not build on these until they land. Both are visible in tokens and metadata, which makes it easy to assume
-they are enforced.
-
-- **Audience binding is not enforced.** Issued tokens carry no `aud` claim, and `TokenValidatorInterface`
-  accepts a resource URI but does not currently compare it. Resource URIs are discovery identifiers today,
-  not an isolation boundary. Your application's own authorization is what actually restricts access.
-- **Scopes are not enforced.** They are requested, consented to and carried on the token, but nothing
-  compares a granted scope against an operation. Treat a scope as a label shown at consent time, not a
-  guarantee.
+**Scopes are not enforced.** They are requested, consented to, carried on the token and advertised per
+resource, but nothing compares a granted scope against an operation. Treat a scope as a label shown at
+consent time, not a guarantee, and enforce it yourself if your operations differ in privilege.
 
 ## Related
 
