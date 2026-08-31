@@ -871,6 +871,29 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->arrayNode('clients')
+                        ->info(
+                            'Pre-registered public clients (e.g. Studio MCP, Pimcore Agent). Each '
+                            . 'authenticates a logged-in user via the authorization_code + PKCE flow; '
+                            . 'no secret and no client_credentials. Active regardless of the '
+                            . 'dynamic_client_registration / client_id_metadata_documents toggles, so '
+                            . 'these are the onboarding path when both self-registration mechanisms '
+                            . 'are off. The map key is the client_id.'
+                        )
+                        ->useAttributeAsKey('identifier')
+                        ->normalizeKeys(false)
+                        ->arrayPrototype()
+                            ->children()
+                                ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                                ->arrayNode('redirect_uris')
+                                    ->info('Exact-match allow-list of redirect URIs for this client.')
+                                    ->isRequired()
+                                    ->requiresAtLeastOneElement()
+                                    ->scalarPrototype()->cannotBeEmpty()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
                     ->arrayNode('resources')
                         ->info('Protected resources (audiences). Each entry is one endpoint bound as a token audience.')
                         ->arrayPrototype()

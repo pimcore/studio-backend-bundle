@@ -45,6 +45,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
@@ -237,6 +238,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->setParameter('pimcore_studio_backend.oauth.enabled', $config['oauth']['enabled']);
         $container->setParameter('pimcore_studio_backend.oauth.issuer', $config['oauth']['issuer']);
         $container->setParameter('pimcore_studio_backend.oauth.keys', $config['oauth']['keys']);
+        $container->setParameter('pimcore_studio_backend.oauth.clients', $config['oauth']['clients']);
         $container->setParameter('pimcore_studio_backend.oauth.resources', $config['oauth']['resources']);
 
         $container->getDefinition(ResourceRegistryInterface::class)
@@ -257,6 +259,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$allowedOrigins', $config['oauth']['cors_allowed_origins']);
 
         // Authorization server (token issuance).
+        $container->getDefinition(ClientRepository::class)
+            ->setArgument('$clients', $config['oauth']['clients']);
+
         $container->getDefinition(AccessTokenRepository::class)
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 

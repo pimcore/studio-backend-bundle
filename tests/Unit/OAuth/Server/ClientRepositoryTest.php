@@ -25,12 +25,14 @@ use function hash;
 final class ClientRepositoryTest extends Unit
 {
     /**
-     * @param array<string, ClientMetadata> $resolvable
-     * @param array<string, DynamicClient>  $dynamicClients
+     * @param array<string, array{name: string, redirect_uris: list<string>}> $clients
+     * @param array<string, ClientMetadata>                                    $resolvable
+     * @param array<string, DynamicClient>                                     $dynamicClients
      */
-    private function repository(array $resolvable = [], array $dynamicClients = []): ClientRepository
+    private function repository(array $clients = [], array $resolvable = [], array $dynamicClients = []): ClientRepository
     {
         return new ClientRepository(
+            $clients,
             $this->resolver($resolvable),
             $this->store($dynamicClients),
         );
@@ -91,10 +93,59 @@ final class ClientRepositoryTest extends Unit
         $this->assertFalse($this->repository()->validateClient('nope', 'x', 'authorization_code'));
     }
 
+    public function testResolvesPreRegisteredPublicClient(): void
+    {
+        $repo = $this->repository([
+            'studio-mcp' => ['name' => 'Studio MCP', 'redirect_uris' => ['http://localhost:6274/cb']],
+        ]);
+
+        $client = $repo->getClientEntity('studio-mcp');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertSame('studio-mcp', $client->getIdentifier());
+        $this->assertSame(['http://localhost:6274/cb'], $client->getRedirectUri());
+        // Pre-registered clients are public: PKCE, no secret.
+        $this->assertFalse($client->isConfidential());
+    }
+
+    public function testPreRegisteredClientValidatesWithoutSecret(): void
+    {
+        $repo = $this->repository([
+            'studio-mcp' => ['name' => 'Studio MCP', 'redirect_uris' => ['http://localhost:6274/cb']],
+        ]);
+
+        // Public client: valid with no secret, and a supplied secret is simply ignored.
+        $this->assertTrue($repo->validateClient('studio-mcp', null, 'authorization_code'));
+        $this->assertTrue($repo->validateClient('studio-mcp', 'anything', 'authorization_code'));
+    }
+
+    public function testPreRegisteredClientTakesPrecedenceOverDynamicStore(): void
+    {
+        $repo = $this->repository(
+            ['shared-id' => ['name' => 'Pre-registered', 'redirect_uris' => ['https://app/pre']]],
+            [],
+            [
+                'shared-id' => new DynamicClient(
+                    'shared-id',
+                    'Dynamic',
+                    ['https://app/dyn'],
+                    ['authorization_code'],
+                    ['mcp:read'],
+                    false,
+                    null,
+                ),
+            ],
+        );
+
+        // The admin-declared config entry is authoritative and resolves first.
+        $client = $repo->getClientEntity('shared-id');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertSame(['https://app/pre'], $client->getRedirectUri());
+    }
+
     public function testResolvesCimdClientFromUrl(): void
     {
         $url = 'https://app.example/client.json';
-        $repo = $this->repository([
+        $repo = $this->repository([], [
             $url => new ClientMetadata($url, 'CIMD App', ['https://app.example/cb']),
         ]);
 
@@ -115,7 +166,7 @@ final class ClientRepositoryTest extends Unit
 
     public function testResolvesDynamicPublicClient(): void
     {
-        $repo = $this->repository([], [
+        $repo = $this->repository([], [], [
             'dcr_pub' => new DynamicClient(
                 'dcr_pub',
                 'Dyn Public',
@@ -136,7 +187,7 @@ final class ClientRepositoryTest extends Unit
 
     public function testDynamicConfidentialClientValidatesSecret(): void
     {
-        $repo = $this->repository([], [
+        $repo = $this->repository([], [], [
             'dcr_conf' => new DynamicClient(
                 'dcr_conf',
                 'Dyn Conf',

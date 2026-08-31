@@ -22,17 +22,27 @@ use function hash_equals;
 use function str_starts_with;
 
 /**
- * Serves clients from two sources: clients identified by a URL-form client_id
- * resolved on demand from a Client ID Metadata Document (CIMD), and clients
- * created at runtime via Dynamic Client Registration (looked up through the
- * store). Both are self-registered; there are no pre-registered or service
- * clients — machine access uses the PAT authenticator instead.
+ * Serves clients from three sources, in precedence order: pre-registered public
+ * clients declared in bundle configuration (authoritative, and available even
+ * when the self-registration mechanisms are off); clients identified by a
+ * URL-form client_id resolved on demand from a Client ID Metadata Document
+ * (CIMD); and clients created at runtime via Dynamic Client Registration
+ * (looked up through the store).
+ *
+ * Every source is public: clients authenticate a logged-in user via the
+ * authorization_code + PKCE flow and carry no secret (a confidential dynamic
+ * client is the only exception, validated at the token endpoint). There is no
+ * service/machine client — machine access uses the PAT authenticator instead.
  *
  * @internal
  */
 final class ClientRepository implements ClientRepositoryInterface
 {
+    /**
+     * @param array<string, array{name: string, redirect_uris: list<string>}> $clients
+     */
     public function __construct(
+        private readonly array $clients,
         private readonly ClientMetadataResolverInterface $clientMetadataResolver,
         private readonly DynamicClientStoreInterface $dynamicClientStore,
     ) {
@@ -40,6 +50,13 @@ final class ClientRepository implements ClientRepositoryInterface
 
     public function getClientEntity(string $clientIdentifier): ?ClientEntityInterface
     {
+        // Pre-registered public clients are authoritative and resolve first, so
+        // they work even when DCR and CIMD are disabled.
+        $client = $this->clients[$clientIdentifier] ?? null;
+        if ($client !== null) {
+            return new ClientEntity($clientIdentifier, $client['name'], $client['redirect_uris']);
+        }
+
         // A URL-form client_id is a CIMD client; anything else may be a
         // dynamically registered client.
         if ($this->looksLikeUrl($clientIdentifier)) {
@@ -61,6 +78,11 @@ final class ClientRepository implements ClientRepositoryInterface
 
     public function validateClient(string $clientIdentifier, ?string $clientSecret, ?string $grantType): bool
     {
+        // Pre-registered clients are public: PKCE on the auth-code flow, no secret.
+        if (isset($this->clients[$clientIdentifier])) {
+            return true;
+        }
+
         // CIMD clients are public: PKCE, no secret.
         if ($this->looksLikeUrl($clientIdentifier)) {
             return $this->clientMetadataResolver->resolve($clientIdentifier) !== null;
