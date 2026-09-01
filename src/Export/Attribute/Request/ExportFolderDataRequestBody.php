@@ -46,6 +46,12 @@ final class ExportFolderDataRequestBody extends RequestBody
                 example: ';'
             );
         }
+        $configProperties[] = new Property(
+            property: StepConfig::SETTINGS_FILE_NAME->value,
+            type: 'string',
+            example: 'my-grid-export.csv',
+            nullable: true
+        );
 
         parent::__construct(
             content: new JsonContent(
