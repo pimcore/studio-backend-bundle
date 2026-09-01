@@ -54,7 +54,7 @@ final class ClientRepository implements ClientRepositoryInterface
         // they work even when DCR and CIMD are disabled.
         $client = $this->clients[$clientIdentifier] ?? null;
         if ($client !== null) {
-            return new ClientEntity($clientIdentifier, $client['name'], $client['redirect_uris']);
+            return new ClientEntity($clientIdentifier, $client['name'], $client['redirect_uris'], preRegistered: true);
         }
 
         // A URL-form client_id is a CIMD client; anything else may be a

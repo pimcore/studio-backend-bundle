@@ -105,6 +105,8 @@ final class ClientRepositoryTest extends Unit
         $this->assertSame(['http://localhost:6274/cb'], $client->getRedirectUri());
         // Pre-registered clients are public: PKCE, no secret.
         $this->assertFalse($client->isConfidential());
+        // ...and flagged as admin-declared, so the consent screen shows them verified.
+        $this->assertTrue($client->isPreRegistered());
     }
 
     public function testPreRegisteredClientValidatesWithoutSecret(): void
@@ -154,6 +156,8 @@ final class ClientRepositoryTest extends Unit
         $this->assertSame($url, $client->getIdentifier());
         // CIMD clients are public.
         $this->assertFalse($client->isConfidential());
+        // Self-registered (URL-identified) → not pre-registered → shown as unverified.
+        $this->assertFalse($client->isPreRegistered());
         $this->assertTrue($repo->validateClient($url, null, 'authorization_code'));
     }
 
@@ -182,6 +186,8 @@ final class ClientRepositoryTest extends Unit
         $this->assertInstanceOf(ClientEntity::class, $client);
         $this->assertSame('dcr_pub', $client->getIdentifier());
         $this->assertFalse($client->isConfidential());
+        // Self-registered via DCR → not pre-registered → shown as unverified.
+        $this->assertFalse($client->isPreRegistered());
         $this->assertTrue($repo->validateClient('dcr_pub', null, 'authorization_code'));
     }
 

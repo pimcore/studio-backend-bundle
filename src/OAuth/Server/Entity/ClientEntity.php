@@ -37,10 +37,21 @@ final class ClientEntity implements ClientEntityInterface
         string $name,
         string|array $redirectUri,
         bool $isConfidential = false,
+        private readonly bool $preRegistered = false,
     ) {
         $this->identifier = $identifier;
         $this->name = $name;
         $this->redirectUri = $redirectUri;
         $this->isConfidential = $isConfidential;
+    }
+
+    /**
+     * True only for clients an administrator declared in configuration, as
+     * opposed to self-registered (DCR) or URL-identified (CIMD) clients. The
+     * consent screen uses this to mark self-registered clients as unverified.
+     */
+    public function isPreRegistered(): bool
+    {
+        return $this->preRegistered;
     }
 }
