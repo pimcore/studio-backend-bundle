@@ -26,6 +26,14 @@ final readonly class PendingAuthorizationStore
 {
     private const string KEY_PREFIX = 'pimcore_oauth_pending_';
 
+    /**
+     * The exact shape {@see AuthorizeController} mints via bin2hex(random_bytes(32)).
+     * Ids arrive from the request, so lookups reject anything else before it can
+     * reach the cache key — otherwise a reserved character (e.g. ":") throws and a
+     * traversal segment ("../…") escapes into other paths.
+     */
+    private const string ID_PATTERN = '/^[a-f0-9]{64}$/';
+
     public function __construct(
         private CacheItemPoolInterface $cache,
         private int $ttl,
@@ -47,6 +55,10 @@ final readonly class PendingAuthorizationStore
      */
     public function get(string $id): ?array
     {
+        if (!$this->isValidId($id)) {
+            return null;
+        }
+
         $item = $this->cache->getItem(self::KEY_PREFIX . $id);
 
         return $item->isHit() ? $item->get() : null;
@@ -54,6 +66,15 @@ final readonly class PendingAuthorizationStore
 
     public function remove(string $id): void
     {
+        if (!$this->isValidId($id)) {
+            return;
+        }
+
         $this->cache->deleteItem(self::KEY_PREFIX . $id);
+    }
+
+    private function isValidId(string $id): bool
+    {
+        return preg_match(self::ID_PATTERN, $id) === 1;
     }
 }
