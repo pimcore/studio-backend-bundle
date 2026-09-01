@@ -39,6 +39,8 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
 {
     private const string INDEX_KEY = 'metadata';
 
+    private const string DEFAULT_METADATA_TYPE = 'input';
+
     private const array PATCHABLE_KEYS = [
         'language',
         // `type` is applied before `data`: the value is denormalised with the entry's type,
@@ -127,7 +129,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         UserInterface $user
     ): mixed {
         if ($key === 'type') {
-            return $this->assertSupportedType($metadata[$key]);
+            return $this->assertPatchableType($existingMetadata['name'], $metadata[$key]);
         }
 
         if ($key !== 'data') {
@@ -215,6 +217,24 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
     }
 
     /**
+     * `title`, `alt` and `copyright` are seeded as `input` (MetadataService) and published by the
+     * asset grid as `metadata.input` with an INPUT frontend type (MetadataCollector). Retyping one
+     * would leave the stored value and the grid contract disagreeing, so it is refused outright.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function assertPatchableType(string $name, string $type): string
+    {
+        if (in_array($name, MetadataServiceInterface::DEFAULT_METADATA, true) && $type !== self::DEFAULT_METADATA_TYPE) {
+            throw new InvalidArgumentException(
+                sprintf('Asset metadata %s is reserved and must stay of type %s', $name, self::DEFAULT_METADATA_TYPE)
+            );
+        }
+
+        return $this->assertSupportedType($type);
+    }
+
+    /**
      * @throws InvalidArgumentException
      */
     private function assertSupportedType(string $type): string
@@ -239,12 +259,19 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         return !empty($match) ? current($match) : false;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     private function addDefaultMetadata(array $metadata): array
     {
+        if (isset($metadata['type'])) {
+            $this->assertPatchableType($metadata['name'], $metadata['type']);
+        }
+
         return [
             'name' => $metadata['name'],
             'language' => $metadata['language'] ?? '',
-            'type' => 'input',
+            'type' => self::DEFAULT_METADATA_TYPE,
             'data' => $metadata['data'] ?? null,
         ];
     }

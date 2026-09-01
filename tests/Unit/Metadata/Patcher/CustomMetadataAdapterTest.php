@@ -159,6 +159,53 @@ final class CustomMetadataAdapterTest extends Unit
         );
     }
 
+    /**
+     * `title`, `alt` and `copyright` are seeded as `input` and published by the grid as
+     * `metadata.input`; retyping one would break that contract.
+     */
+    public function testRejectsRetypingReservedDefaultMetadata(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->getAdapter()->patch(
+            $this->getAsset([['name' => 'title', 'language' => 'en', 'type' => 'input', 'data' => 'x']]),
+            ['metadata' => [
+                ['name' => 'title', 'language' => 'en', 'type' => 'date', 'data' => 'x'],
+            ]],
+            $this->getUser()
+        );
+    }
+
+    public function testAllowsPatchingReservedDefaultMetadataWithItsOwnType(): void
+    {
+        $captured = null;
+
+        $this->getAdapter()->patch(
+            $this->getAsset(
+                [['name' => 'title', 'language' => 'en', 'type' => 'input', 'data' => 'old']],
+                $captured
+            ),
+            ['metadata' => [
+                ['name' => 'title', 'language' => 'en', 'type' => 'input', 'data' => 'new'],
+            ]],
+            $this->getUser()
+        );
+
+        $this->assertCount(1, $captured);
+        $this->assertSame('input', $captured[0]['type']);
+    }
+
+    public function testRejectsAppendingReservedDefaultMetadataWithAnotherType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->getAdapter()->patch(
+            $this->getAsset([]),
+            ['metadata' => [['name' => 'alt', 'language' => '', 'type' => 'date', 'data' => 'x']]],
+            $this->getUser()
+        );
+    }
+
     public function testLeavesUntouchedEntriesAlone(): void
     {
         $captured = null;
