@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
@@ -44,8 +46,12 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -86,7 +92,74 @@ final class GridService implements GridServiceInterface
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
         private readonly WorkflowPermissionMergerInterface $workflowPermissionMerger,
         private readonly LoggerInterface $pimcoreLogger,
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly ToolResolverInterface $toolResolver,
+        private readonly LocaleServiceInterface $localeService,
     ) {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isLocaleViewableForElement(
+        ElementInterface $element,
+        ?string $locale,
+        ?UserInterface $user = null,
+        bool $isLocalizedField = false,
+    ): bool {
+        if (!$element instanceof Concrete) {
+            return true;
+        }
+
+        if ($locale === null) {
+            if (!$isLocalizedField) {
+                return true;
+            }
+
+            // A localized field read without an explicit locale resolves to the current request
+            // locale or the default language (Localizedfield::getLanguage()). That effective
+            // locale must be authorized like an explicit one - otherwise omitting the locale
+            // from the column configuration would bypass the language permission entirely.
+            $locale = $this->getImplicitReadLocale();
+
+            if ($locale === null) {
+                return true;
+            }
+        }
+
+        $user ??= $this->securityService->getCurrentUser();
+
+        /** @var User $user */
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        $allowedView = $this->dataObjectServiceResolver->getLanguagePermissions($element, $user, 'lView');
+
+        if ($allowedView === null) {
+            return true;
+        }
+
+        if (!array_key_exists($locale, $allowedView)) {
+            return false;
+        }
+
+        // An empty value for an allowed locale can silently fall back to the default language
+        // (LocalizedValueTrait::getLocalizedValue()). If that fallback language isn't permitted,
+        // the column must be treated as not viewable - otherwise a denied language's value could
+        // still leak out through the fallback.
+        if ($this->localizedFieldResolver->doGetFallbackValues()) {
+            $defaultLanguage = $this->toolResolver->getDefaultLanguage();
+            $fallbackLanguageIsDenied = $defaultLanguage !== null
+                && $defaultLanguage !== $locale
+                && !array_key_exists($defaultLanguage, $allowedView);
+
+            if ($fallbackLanguageIsDenied) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -221,21 +294,13 @@ final class GridService implements GridServiceInterface
                 continue;
             }
 
-            $resolver = $this->getColumnResolvers()[$column->getType()];
-
-            $columnData = match (true) {
-                $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
-                    $resolver->resolveForExport($column, $databaseElement, $user),
-                $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
-                    $resolver->resolveForCoreElement($column, $databaseElement),
-                $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
-                    $resolver->resolveForStudioElement($column, $element),
-                default =>
-                    throw new InvalidArgumentException(
-                        'Resolver must implement either StudioElementColumnResolverInterface or
-                        CoreElementColumnResolverInterface'
-                    ),
-            };
+            $columnData = $this->resolveColumnDataRespectingLocalePermission(
+                $column,
+                $databaseElement,
+                $element,
+                $isExport,
+                $user
+            );
 
             $this->eventDispatcher->dispatch(
                 new GridColumnDataEvent($columnData),
@@ -249,6 +314,72 @@ final class GridService implements GridServiceInterface
         }
 
         return $data;
+    }
+
+    private function resolveColumnDataRespectingLocalePermission(
+        Column $column,
+        ?ElementInterface $databaseElement,
+        ?StudioElementInterface $element,
+        bool $isExport,
+        ?UserInterface $user,
+    ): ColumnData {
+        $isLocalizedField = $column->getLocale() === null
+            && $databaseElement !== null
+            && $this->isLocalizedClassField($databaseElement, $column->getKey());
+
+        if ($databaseElement !== null
+            && !$this->isLocaleViewableForElement($databaseElement, $column->getLocale(), $user, $isLocalizedField)
+        ) {
+            return new ColumnData(
+                key: $column->getKey(),
+                locale: $column->getLocale(),
+                value: null,
+                fieldType: $column->getType(),
+            );
+        }
+
+        $resolver = $this->getColumnResolvers()[$column->getType()];
+
+        return match (true) {
+            $databaseElement && $isExport && $user && $resolver instanceof ExportResolverInterface =>
+                $resolver->resolveForExport($column, $databaseElement, $user),
+            $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
+                $resolver->resolveForCoreElement($column, $databaseElement),
+            $element !== null && $resolver instanceof StudioElementColumnResolverInterface =>
+                $resolver->resolveForStudioElement($column, $element),
+            default =>
+                throw new InvalidArgumentException(
+                    'Resolver must implement either StudioElementColumnResolverInterface or
+                    CoreElementColumnResolverInterface'
+                ),
+        };
+    }
+
+    /**
+     * The locale core actually reads when a localized getter is called without an explicit
+     * locale - the current request locale if it is a configured language, otherwise the
+     * default language. Mirrors Localizedfield::getLanguage().
+     */
+    private function getImplicitReadLocale(): ?string
+    {
+        $currentLocale = $this->localeService->getLocale();
+        if ($currentLocale !== null && $this->toolResolver->isValidLanguage($currentLocale)) {
+            return $currentLocale;
+        }
+
+        return $this->toolResolver->getDefaultLanguage();
+    }
+
+    private function isLocalizedClassField(ElementInterface $element, string $key): bool
+    {
+        if (!$element instanceof Concrete) {
+            return false;
+        }
+
+        $localizedFields = $element->getClass()->getFieldDefinition('localizedfields');
+
+        return $localizedFields instanceof Localizedfields
+            && $localizedFields->getFieldDefinition($key) !== null;
     }
 
     /**
