@@ -41,7 +41,7 @@ final class McpServerConfigurationServiceTest extends Unit
 
     private const USER_NAME = 'john.doe';
 
-    public function testSaveConfigurationSetsOwnerAndAutoGrantsFullAccess(): void
+    public function testSaveConfigurationGivesOwnerImplicitReadEditButNotAccess(): void
     {
         $repository = $this->repository();
         $service = $this->service($repository, self::USER_NAME);
@@ -52,18 +52,16 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertSame(self::USER_NAME, $server->getOwner());
         $this->assertSame(['mcp:read'], $server->getScopes());
         $this->assertSame('https://example.test/pimcore-mcp/studio/objects-read', $server->getUrl());
-        // The creator is auto-listed with full capabilities, so they resolve to all three.
+        // The owner has implicit read + edit, but access must be granted explicitly.
         $permissions = $server->getCurrentUserPermissions();
         $this->assertTrue($permissions->isCanView());
-        $this->assertTrue($permissions->isCanAccess());
+        $this->assertFalse($permissions->isCanAccess());
         $this->assertTrue($permissions->isCanEdit());
-        $this->assertEquals(
-            [new McpServerAccessEntry(self::USER_NAME, canAccess: true, canEdit: true)],
-            $repository->get('objects-read')->access->sharedUsers
-        );
+        // The owner is NOT seeded into the sharing grid.
+        $this->assertSame([], $repository->get('objects-read')->access->sharedUsers);
     }
 
-    public function testSaveConfigurationPersistsGridAndAutoAddsOwner(): void
+    public function testSaveConfigurationPersistsGridWithoutSeedingTheOwner(): void
     {
         $repository = $this->repository();
         $service = $this->service($repository, self::USER_NAME);
@@ -74,11 +72,9 @@ final class McpServerConfigurationServiceTest extends Unit
             sharedRoles: [['name' => 'editors', 'canAccess' => false, 'canEdit' => true]],
         ));
 
+        // Only the provided entries persist; the owner is not prepended.
         $this->assertEquals(
-            [
-                new McpServerAccessEntry(self::USER_NAME, canAccess: true, canEdit: true),
-                new McpServerAccessEntry('alice', canAccess: true, canEdit: false),
-            ],
+            [new McpServerAccessEntry('alice', canAccess: true, canEdit: false)],
             $repository->get('shared')->access->sharedUsers
         );
         $this->assertEquals(

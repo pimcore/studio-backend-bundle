@@ -24,11 +24,12 @@ use function in_array;
  * name. Grants are the union of the user's direct entry and any of their role
  * entries (most-permissive wins). The rules:
  *
- *  - View   — admin, OR the server is public ({@see McpServerAccess::$shareGlobal}),
+ *  - View   — admin, the owner, a public server ({@see McpServerAccess::$shareGlobal}),
  *             OR the user is listed at all (as a user or via a role).
- *  - Access — the server is public, OR a matching entry grants Access. Admins do
- *             NOT get Access implicitly; they must be listed with it.
- *  - Edit   — admin, OR a matching entry grants Edit. Public does not grant Edit.
+ *  - Access — the server is public, OR a matching entry grants Access. Neither admins
+ *             nor the owner get Access implicitly; it must be granted explicitly (they
+ *             can add themselves to the user list with Access).
+ *  - Edit   — admin, the owner, OR a matching entry grants Edit. Public does not grant Edit.
  *
  * @internal
  */
@@ -57,6 +58,7 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
     {
         $access = $server->access;
         $isAdmin = $user->isAdmin();
+        $isOwner = $access->owner !== null && $access->owner !== '' && $user->getName() === $access->owner;
 
         $entries = $this->matchingEntries($access->sharedUsers, $access->sharedRoles, $user);
         $listed = $entries !== [];
@@ -69,9 +71,9 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
         }
 
         return [
-            'view' => $isAdmin || $access->shareGlobal || $listed,
+            'view' => $isAdmin || $isOwner || $access->shareGlobal || $listed,
             'access' => $access->shareGlobal || $entryAccess,
-            'edit' => $isAdmin || $entryEdit,
+            'edit' => $isAdmin || $isOwner || $entryEdit,
         ];
     }
 
