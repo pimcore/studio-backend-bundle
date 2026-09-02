@@ -41,6 +41,24 @@ final class McpServerAccessResolverTest extends Unit
         $this->assertSame(['view' => true, 'access' => true, 'edit' => true], $this->resolver()->resolve($server, $this->user(isAdmin: true)));
     }
 
+    public function testOwnerHasViewAndEditButNotAccess(): void
+    {
+        // The owner is symmetric with an admin: implicit read + edit, explicit access.
+        $server = $this->server(new McpServerAccess(owner: self::USER_NAME));
+
+        $this->assertSame(['view' => true, 'access' => false, 'edit' => true], $this->resolver()->resolve($server, $this->user()));
+    }
+
+    public function testOwnerGetsAccessWhenExplicitlyListed(): void
+    {
+        $server = $this->server(new McpServerAccess(
+            owner: self::USER_NAME,
+            sharedUsers: [$this->entry(self::USER_NAME, canAccess: true)],
+        ));
+
+        $this->assertSame(['view' => true, 'access' => true, 'edit' => true], $this->resolver()->resolve($server, $this->user()));
+    }
+
     public function testPublicGrantsViewAndAccessButNotEdit(): void
     {
         $server = $this->server(new McpServerAccess(shareGlobal: true));

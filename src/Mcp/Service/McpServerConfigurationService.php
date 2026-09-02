@@ -30,9 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInter
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use function array_filter;
 use function array_keys;
-use function array_values;
 use function rtrim;
 use function sprintf;
 
@@ -127,9 +125,9 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
             access: new McpServerAccess(
                 owner: $owner,
                 shareGlobal: $parameter->shareGlobal(),
-                // The owner is always listed with full capabilities, so they can
-                // view, use and edit their own server regardless of the payload.
-                sharedUsers: $this->withOwner($this->normalizeEntries($parameter->getSharedUsers()), $owner),
+                // The owner is not seeded into the grid: they get implicit read + edit
+                // via the resolver, and must grant themselves Access explicitly.
+                sharedUsers: $this->normalizeEntries($parameter->getSharedUsers()),
                 sharedRoles: $this->normalizeEntries($parameter->getSharedRoles()),
             ),
         );
@@ -162,28 +160,6 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
                 sprintf('You are not allowed to %s the MCP server "%s".', $capability->value, $definition->id)
             );
         }
-    }
-
-    /**
-     * Ensure the owner is listed with full capabilities (access + edit), replacing
-     * any existing entry for that name.
-     *
-     * @param list<McpServerAccessEntry> $sharedUsers
-     *
-     * @return list<McpServerAccessEntry>
-     */
-    private function withOwner(array $sharedUsers, ?string $owner): array
-    {
-        if ($owner === null || $owner === '') {
-            return $sharedUsers;
-        }
-
-        $others = array_values(array_filter(
-            $sharedUsers,
-            static fn (McpServerAccessEntry $entry): bool => $entry->name !== $owner
-        ));
-
-        return [new McpServerAccessEntry($owner, canAccess: true, canEdit: true), ...$others];
     }
 
     /**
