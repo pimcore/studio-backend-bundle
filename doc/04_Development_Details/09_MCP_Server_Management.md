@@ -16,6 +16,11 @@ other authenticators in the chain).
 
 > **Experimental.** Configuration keys, API, and UI may change between minor versions.
 
+This is a configuration topic, independent of authentication. Which servers exist, which tools they expose,
+and who may use them are decided the same way whichever credential admitted the caller: an OAuth bearer, an
+MCP access token, a Personal Access Token, or a Pimcore Studio session cookie. See
+[MCP Server Infrastructure](./08_MCP_Server.md) for the credentials themselves.
+
 ## The `mcp_servers` permission
 
 A single Pimcore user permission, `mcp_servers`, gates **creating** servers and **browsing the tool catalogue**.

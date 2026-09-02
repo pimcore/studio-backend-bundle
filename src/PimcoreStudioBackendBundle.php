@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingF
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\McpToolPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\NotificationDispatchPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\OAuthScopeProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeTransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
@@ -104,6 +105,9 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         // MCP tools are SDK-native #[McpTool] services, opted in with the
         // McpToolRegistry::TAG tag; the pass reflects them into the registry.
         $container->addCompilerPass(new McpToolPass());
+
+        // OAuth scopes are contributed by any bundle exposing protected resources.
+        $container->addCompilerPass(new OAuthScopeProviderPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void

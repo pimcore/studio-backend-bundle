@@ -50,6 +50,7 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator:
         arguments:
             $enabled: false
+            $issuer: '%pimcore_studio_backend.oauth.issuer%'
 
     # Entry point for the pimcore_mcp firewall (401 + RFC 9728 challenge).
     # $oauthEnabled is set from config in the extension.
@@ -107,6 +108,18 @@ services:
         tags: ['controller.service_arguments']
         arguments:
             $enabled: false
+
+    # Scope catalogue. Any bundle exposing protected resources contributes its own
+    # identifiers by tagging a ScopeProviderInterface service.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry:
+        arguments:
+            $providers: !tagged_iterator pimcore_studio_backend.oauth.scope_provider
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Scope\McpScopeProvider:
+        tags: ['pimcore_studio_backend.oauth.scope_provider']
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 

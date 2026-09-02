@@ -60,15 +60,19 @@ servers - see [Minting MCP access tokens](#minting-mcp-access-tokens).
 
 ### `OAuthAccessTokenAuthenticator` (OAuth 2.1 bearer)
 
-Authenticates a JWT access token issued by the bundle's [embedded OAuth 2.1 authorization
+Authenticates a JWT access token issued by the [embedded OAuth 2.1 authorization
 server](../02_Installation_and_Configuration/06_OAuth_Server.md) (`Authorization: Bearer <jwt>`). It is
 **additive** to the chain: it only claims JWT-shaped bearers, declines the `pmcp_` prefix (owned by
-`McpAccessTokenAuthenticator`), and stays **inert unless the OAuth server is enabled**. It validates the token's
-signature and audience and resolves the Pimcore user. On failure it returns `null`, so `PatAuthenticator` still
-runs — hence it must precede it in the chain.
+`McpAccessTokenAuthenticator`), and stays **inert unless the OAuth server is enabled**. It validates the
+token's signature, expiry and revocation status and resolves the Pimcore user. On failure it returns `null`,
+so `PatAuthenticator` still runs, hence it must precede it in the chain.
 
-See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling and
-configuring the server.
+MCP is one application of the OAuth server, not its purpose. The same contracts protect Data Hub Simple REST,
+and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
+so a token obtained for another application is refused here; scopes are advertised but not yet enforced. See
+[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint, and
+[OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
+server.
 
 ### `PatAuthenticator` (external clients)
 

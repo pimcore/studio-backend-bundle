@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInte
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Token\EmbeddedTokenValidator;
 use Pimcore\Model\User;
 use Symfony\Component\Clock\MockClock;
+use function array_key_exists;
 
 final class EmbeddedTokenValidatorTest extends Unit
 {
@@ -50,6 +51,47 @@ final class EmbeddedTokenValidatorTest extends Unit
         $this->assertSame(['mcp:read', 'mcp:write'], $access->scopes);
         $this->assertSame([self::RESOURCE], $access->audience);
         $this->assertSame('studio-mcp', $access->clientId);
+    }
+
+    /**
+     * RFC 8707: a token minted for one protected resource must not be accepted at
+     * another, which is what stops a token obtained for one application opening every
+     * other one on the same authorization server.
+     */
+    public function testRejectsTokenMintedForAnotherResource(): void
+    {
+        $keys = $this->keyPair();
+        $token = $this->mint($keys, ['aud' => 'https://example.com/pimcore-datahub-webservices/simplerest']);
+
+        $this->assertNull($this->validator($keys['public'])->validate($token, self::RESOURCE));
+    }
+
+    /**
+     * The audience is compared canonically, so a token whose `aud` differs only by a
+     * trailing slash, host case or an explicit default port is still accepted.
+     */
+    public function testAcceptsAnEquivalentButNonCanonicalAudience(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $keys = $this->keyPair();
+        $token = $this->mint($keys, ['aud' => 'https://PIMCORE.EXAMPLE.com:443/pimcore-mcp/']);
+
+        $this->assertNotNull($this->validator($keys['public'], $user)->validate($token, self::RESOURCE));
+    }
+
+    /**
+     * A token that names no audience predates the binding or was issued for a request
+     * that named no resource, and stays valid so existing clients keep working.
+     */
+    public function testAcceptsTokenWithoutAudience(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $keys = $this->keyPair();
+        $token = $this->mint($keys, ['aud' => null]);
+
+        $this->assertNotNull($this->validator($keys['public'], $user)->validate($token, self::RESOURCE));
     }
 
     public function testRejectsExpiredToken(): void
@@ -196,10 +238,15 @@ final class EmbeddedTokenValidatorTest extends Unit
             ->issuedBy($overrides['iss'] ?? self::ISSUER)
             ->relatedTo($overrides['sub'] ?? '42')
             ->identifiedBy($overrides['jti'] ?? 'jti-1')
-            ->permittedFor($overrides['aud'] ?? self::RESOURCE)
             ->issuedAt(new DateTimeImmutable($overrides['iat'] ?? '2026-07-15T12:00:00+00:00'))
             ->withClaim('scope', $overrides['scope'] ?? 'mcp:read mcp:write')
             ->withClaim('client_id', $overrides['client_id'] ?? 'studio-mcp');
+
+        // array_key_exists (not ??) so an explicit null omits the audience entirely,
+        // which is how a token that names no resource is minted.
+        if (!array_key_exists('aud', $overrides) || $overrides['aud'] !== null) {
+            $builder = $builder->permittedFor($overrides['aud'] ?? self::RESOURCE);
+        }
 
         // array_key_exists (not ??) so an explicit null omits the claim entirely.
         if (!array_key_exists('exp', $overrides) || $overrides['exp'] !== null) {

@@ -20,17 +20,26 @@ use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Nyholm\Psr7\ServerRequest;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class LoopbackAuthCodeGrantTest extends Unit
 {
     private const string CLIENT_ID = 'test-client';
+
     private const string REDIRECT_URI = 'http://127.0.0.1:8080/callback';
+
     // A valid RFC 7636 code_challenge (43–128 chars of the unreserved set).
     private const string CODE_CHALLENGE = 'abcdefghijklmnopqrstuvwxyz0123456789-._~ABCDE';
+
+    private const string KNOWN_RESOURCE = 'https://example.com/pimcore-mcp';
 
     private function grant(): LoopbackAuthCodeGrant
     {
@@ -39,6 +48,14 @@ final class LoopbackAuthCodeGrantTest extends Unit
             $this->createMock(RefreshTokenRepositoryInterface::class),
             new DateInterval('PT10M'),
             true,
+            new ConfigProtectedResourceRegistry([
+                [
+                    'uri' => self::KNOWN_RESOURCE,
+                    'scopes_supported' => ['mcp:read'],
+                    'authorization_servers' => ['https://example.com/pimcore-oauth'],
+                ],
+            ]),
+            $this->createMock(TokenRecordStoreInterface::class),
         );
 
         $clientRepository = $this->createMock(ClientRepositoryInterface::class);
@@ -46,10 +63,22 @@ final class LoopbackAuthCodeGrantTest extends Unit
             new ClientEntity(self::CLIENT_ID, 'Test client', self::REDIRECT_URI),
         );
         $grant->setClientRepository($clientRepository);
-        $grant->setScopeRepository(new ScopeRepository());
+        $grant->setScopeRepository(new ScopeRepository($this->scopeRegistry()));
         $grant->setDefaultScope('mcp:read');
 
         return $grant;
+    }
+
+    private function scopeRegistry(): ScopeRegistry
+    {
+        return new ScopeRegistry([
+            new class implements ScopeProviderInterface {
+                public function scopes(): array
+                {
+                    return ['mcp:read', 'mcp:write'];
+                }
+            },
+        ]);
     }
 
     /**
@@ -86,13 +115,15 @@ final class LoopbackAuthCodeGrantTest extends Unit
     /**
      * @param array<string, string> $extra
      */
-    private function assertRejectedAsInvalidRequest(array $extra): void
+    private function assertRejectedAsInvalidRequest(array $extra): OAuthServerException
     {
         try {
             $this->grant()->validateAuthorizationRequest($this->authorizeRequest($extra));
             $this->fail('Expected the request to be rejected.');
         } catch (OAuthServerException $exception) {
             $this->assertSame('invalid_request', $exception->getErrorType());
+
+            return $exception;
         }
     }
 
@@ -101,9 +132,61 @@ final class LoopbackAuthCodeGrantTest extends Unit
         $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([
             'code_challenge' => self::CODE_CHALLENGE,
             'code_challenge_method' => 'S256',
+            'resource' => self::KNOWN_RESOURCE,
         ]));
 
         $this->assertSame(self::CLIENT_ID, $authRequest->getClient()->getIdentifier());
         $this->assertSame('S256', $authRequest->getCodeChallengeMethod());
+    }
+
+    public function testUnknownResourceIsRejected(): void
+    {
+        // RFC 8707: an unregistered audience must be refused, not silently ignored.
+        $exception = $this->assertRejectedAsInvalidRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => 'https://elsewhere.example/mcp',
+        ]);
+
+        $this->assertStringContainsString('resource', (string) $exception->getHint());
+    }
+
+    public function testKnownResourceIsAcceptedAndCarriedOnTheRequest(): void
+    {
+        $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => self::KNOWN_RESOURCE,
+        ]));
+
+        $this->assertInstanceOf(ResourceAuthorizationRequest::class, $authRequest);
+        $this->assertSame(self::KNOWN_RESOURCE, $authRequest->getResource());
+    }
+
+    public function testResourceLookupIsCanonicalised(): void
+    {
+        // A trailing-slash / differently-cased variant of a registered resource
+        // is the same audience and must be accepted.
+        $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => 'https://EXAMPLE.com/pimcore-mcp/',
+        ]));
+
+        $this->assertInstanceOf(ResourceAuthorizationRequest::class, $authRequest);
+    }
+
+    /**
+     * The resource is required, not optional: a token that named none would be accepted
+     * by every protected resource of this server, so a client cannot decline the binding.
+     */
+    public function testRequestWithoutResourceIsRejected(): void
+    {
+        $exception = $this->assertRejectedAsInvalidRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+        ]);
+
+        $this->assertStringContainsString('resource', $exception->getHint() ?? '');
     }
 }

@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ClientRegistrationException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
 use function hash;
@@ -44,7 +46,30 @@ final class ClientRegistrarTest extends Unit
             }
         };
 
-        $this->registrar = new ClientRegistrar($this->store);
+        $this->registrar = $this->createRegistrar('mcp:read', 'mcp:write');
+    }
+
+    /**
+     * A registrar whose scope catalogue is the real registry, fed by a single
+     * provider contributing exactly the given scopes.
+     */
+    private function createRegistrar(string ...$scopes): ClientRegistrar
+    {
+        $provider = new class($scopes) implements ScopeProviderInterface {
+            /**
+             * @param list<string> $scopes
+             */
+            public function __construct(private readonly array $scopes)
+            {
+            }
+
+            public function scopes(): array
+            {
+                return $this->scopes;
+            }
+        };
+
+        return new ClientRegistrar($this->store, new ScopeRegistry([$provider]));
     }
 
     public function testRegistersPublicClient(): void
@@ -90,7 +115,7 @@ final class ClientRegistrarTest extends Unit
     {
         $result = $this->registrar->register(['redirect_uris' => ['https://app.example/cb']]);
         $this->assertSame(['authorization_code'], $result->grantTypes);
-        $this->assertSame(['mcp:read'], $result->scopes);
+        $this->assertSame([], $result->scopes);
     }
 
     public function testAllowsLoopbackHttpRedirect(): void
@@ -135,6 +160,48 @@ final class ClientRegistrarTest extends Unit
         $this->registrar->register([
             'redirect_uris' => ['https://app.example/cb'],
             'scope' => 'admin:all',
+        ]);
+    }
+
+    public function testRegistersScopeContributedByAnotherBundle(): void
+    {
+        // The allowed scopes are whatever the registry holds, not a fixed list.
+        $result = $this->createRegistrar('datahub:read')->register([
+            'redirect_uris' => ['https://app.example/cb'],
+            'scope' => 'datahub:read',
+        ]);
+
+        $this->assertSame(['datahub:read'], $result->scopes);
+    }
+
+    /**
+     * Deliberately NOT "the first scope in the registry": that order follows bundle
+     * registration, so the same registration would yield different scopes on different
+     * installations. A client that asks for no scope gets none.
+     */
+    public function testOmittedScopeYieldsNoScopeRegardlessOfTheRegistry(): void
+    {
+        $result = $this->createRegistrar('datahub:read', 'datahub:write')->register([
+            'redirect_uris' => ['https://app.example/cb'],
+        ]);
+
+        $this->assertSame([], $result->scopes);
+    }
+
+    public function testEmptyRegistryYieldsNoDefaultScope(): void
+    {
+        $result = $this->createRegistrar()->register(['redirect_uris' => ['https://app.example/cb']]);
+
+        $this->assertSame([], $result->scopes);
+    }
+
+    public function testRejectsScopeMissingFromTheRegistry(): void
+    {
+        // `mcp:write` is only ever supported because a provider contributes it.
+        $this->expectException(ClientRegistrationException::class);
+        $this->createRegistrar('mcp:read')->register([
+            'redirect_uris' => ['https://app.example/cb'],
+            'scope' => 'mcp:write',
         ]);
     }
 }

@@ -53,6 +53,9 @@ class OAuthTokenRecord
     #[ORM\Column(name: 'user_id', type: 'integer', nullable: true, options: ['unsigned' => true])]
     private ?int $userId;
 
+    #[ORM\Column(name: 'resource', type: 'string', length: 512, nullable: true)]
+    private ?string $resource = null;
+
     #[ORM\Column(name: 'client_id', type: 'string', length: 255, nullable: true)]
     private ?string $clientId;
 
@@ -113,5 +116,20 @@ class OAuthTokenRecord
     public function getCreatedAt(): int
     {
         return (int) $this->createdAt;
+    }
+
+    /**
+     * The protected resource this token is bound to (RFC 8707), carried here so the
+     * binding survives the authorization-code and refresh exchanges without having to
+     * duplicate league's payload construction.
+     */
+    public function getResource(): ?string
+    {
+        return $this->resource;
+    }
+
+    public function setResource(?string $resource): void
+    {
+        $this->resource = $resource;
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -28,6 +29,7 @@ final class AuthorizationServerMetadataController
 {
     public function __construct(
         private readonly ?string $issuer,
+        private readonly ScopeRegistryInterface $scopeRegistry,
         private readonly bool $clientIdMetadataDocumentSupported = false,
         private readonly bool $registrationEnabled = false,
     ) {
@@ -45,7 +47,7 @@ final class AuthorizationServerMetadataController
             'response_types_supported' => ['code'],
             'code_challenge_methods_supported' => ['S256'],
             'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic', 'none'],
-            'scopes_supported' => ['mcp:read', 'mcp:write'],
+            'scopes_supported' => $this->scopeRegistry->all(),
             'authorization_response_iss_parameter_supported' => true,
             // CIMD: clients may present an HTTPS URL as client_id (no registration).
             'client_id_metadata_document_supported' => $this->clientIdMetadataDocumentSupported,

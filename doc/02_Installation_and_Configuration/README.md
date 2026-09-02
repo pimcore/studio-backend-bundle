@@ -63,7 +63,7 @@ security:
 
 **Optional: OAuth 2.1 authorization server**
 
-The bundle can also act as an embedded OAuth 2.1 authorization server, so MCP (and other) clients can
+The bundle can also act as an embedded OAuth 2.1 authorization server, so standards-based clients can
 authenticate with standards-based bearer tokens instead of static credentials. It is opt-in and its endpoints
 live at the web root (outside the firewalls above), so it needs its own `access_control` rules. See the
 [OAuth 2.1 Authorization Server](./06_OAuth_Server.md) page for setup and configuration.

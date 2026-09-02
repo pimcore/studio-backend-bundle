@@ -20,8 +20,11 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResourceMetadata;
  * Registry of OAuth protected resources (audiences).
  *
  * Supports multiple resources; lookups are keyed by the canonical resource URI.
+ * Implementations canonicalise on both registration and lookup, so callers may
+ * pass any equivalent form of a URI.
  *
- * @internal
+ * Public API. Bundles whose endpoints are protected resources register them here,
+ * which is what makes their RFC 9728 metadata document resolvable.
  */
 interface ResourceRegistryInterface
 {
