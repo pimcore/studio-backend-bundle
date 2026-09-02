@@ -240,6 +240,15 @@ final class AdvancedColumnResolver implements
             config: $config,
         );
 
+        if (!$this->gridService->isLocaleViewableForElement(
+            $element,
+            $subColumn->getLocale(),
+            $this->user,
+            isLocalizedField: $isLocalizable,
+        )) {
+            return;
+        }
+
         $data = null;
         if ($resolver instanceof CoreElementColumnResolverInterface && !$export) {
             $data = $resolver->resolveForCoreElement($subColumn, $element);
@@ -294,9 +303,20 @@ final class AdvancedColumnResolver implements
             $this->user
         );
 
+        $relationLocale = $isRelationLocalizable ? $column->getLocale() : null;
+
+        if (!$this->gridService->isLocaleViewableForElement(
+            $element,
+            $relationLocale,
+            $this->user,
+            isLocalizedField: $isRelationLocalizable,
+        )) {
+            return [];
+        }
+
         $relation = $this->getLocalizedValueFromKey(
             $relationKey,
-            $isRelationLocalizable ? $column->getLocale() : null,
+            $relationLocale,
             $element
         );
 

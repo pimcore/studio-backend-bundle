@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Column\Resolver\DataObject;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
@@ -53,6 +54,7 @@ final class AdvancedColumnResolverTest extends Unit
             $this->makeEmpty(TransformerLoaderInterface::class, ['loadTransformers' => []]),
             $this->makeEmpty(GridServiceInterface::class, [
                 'getColumnResolvers' => ['dataobject.classificationstore' => $classificationStoreResolver],
+                'isLocaleViewableForElement' => true,
             ]),
             $this->makeEmpty(ResolverTypeGuesserInterface::class, [
                 'guessType' => 'dataobject.classificationstore',
@@ -90,5 +92,118 @@ final class AdvancedColumnResolverTest extends Unit
         $this->assertSame('input', $values[0]->getType());
         $this->assertSame('csstore', $values[0]->getFieldName());
         $this->assertNull($values[0]->getRelation());
+    }
+
+    /**
+     * A denied locale for a simple field must skip that field entirely and never reach its
+     * sub-resolver - otherwise the "advanced" column would leak values for languages a role's
+     * "Viewable Languages" workspace permission restricts.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testResolveForCoreElementSkipsFieldWhenLocaleNotViewable(): void
+    {
+        $subResolver = $this->makeEmpty(CoreElementColumnResolverInterface::class, [
+            'resolveForCoreElement' => Expected::never(),
+        ]);
+
+        $resolver = new AdvancedColumnResolver(
+            $this->makeEmpty(TransformerLoaderInterface::class, ['loadTransformers' => []]),
+            $this->makeEmpty(GridServiceInterface::class, [
+                'getColumnResolvers' => ['dataobject.input' => $subResolver],
+                'isLocaleViewableForElement' => false,
+            ]),
+            $this->makeEmpty(ResolverTypeGuesserInterface::class, [
+                'guessType' => 'dataobject.input',
+                'isLocalizable' => true,
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+        );
+
+        $column = new Column(
+            key: 'advanced',
+            locale: 'de',
+            type: 'dataobject.advanced',
+            group: ['advanced'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                        'config' => ['field' => 'name'],
+                    ],
+                ],
+                'transformers' => [],
+            ],
+        );
+
+        $element = $this->makeEmpty(Concrete::class, ['getClassId' => 'CAR']);
+
+        $result = $resolver->resolveForCoreElement($column, $element);
+
+        self::assertSame([], $result->getValue());
+    }
+
+    /**
+     * A localizable sub-field that inherits a null locale from its parent column is implicitly
+     * read in the request/default locale by core. The resolver must tell the grid service that
+     * the field is localized so the implicit locale gets authorized - passing a null locale
+     * without that flag would silently skip the language permission check.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testResolveForCoreElementFlagsLocalizableFieldWithoutExplicitLocale(): void
+    {
+        $capturedArgs = null;
+
+        $subResolver = $this->makeEmpty(CoreElementColumnResolverInterface::class, [
+            'resolveForCoreElement' => Expected::never(),
+        ]);
+
+        $resolver = new AdvancedColumnResolver(
+            $this->makeEmpty(TransformerLoaderInterface::class, ['loadTransformers' => []]),
+            $this->makeEmpty(GridServiceInterface::class, [
+                'getColumnResolvers' => ['dataobject.input' => $subResolver],
+                'isLocaleViewableForElement' => static function (
+                    $element,
+                    ?string $locale,
+                    $user = null,
+                    bool $isLocalizedField = false
+                ) use (&$capturedArgs): bool {
+                    $capturedArgs = ['locale' => $locale, 'isLocalizedField' => $isLocalizedField];
+
+                    return false;
+                },
+            ]),
+            $this->makeEmpty(ResolverTypeGuesserInterface::class, [
+                'guessType' => 'dataobject.input',
+                'isLocalizable' => true,
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+        );
+
+        $column = new Column(
+            key: 'advanced',
+            locale: null,
+            type: 'dataobject.advanced',
+            group: ['advanced'],
+            config: [
+                'advancedColumns' => [
+                    [
+                        'key' => 'simpleField',
+                        'config' => ['field' => 'name'],
+                    ],
+                ],
+                'transformers' => [],
+            ],
+        );
+
+        $element = $this->makeEmpty(Concrete::class, ['getClassId' => 'CAR']);
+
+        $result = $resolver->resolveForCoreElement($column, $element);
+
+        self::assertSame([], $result->getValue());
+        self::assertSame(['locale' => null, 'isLocalizedField' => true], $capturedArgs);
     }
 }
