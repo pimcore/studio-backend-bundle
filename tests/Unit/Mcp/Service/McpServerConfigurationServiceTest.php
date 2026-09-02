@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\RoleResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -28,9 +29,11 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryI
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use stdClass;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @internal
@@ -80,6 +83,92 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertEquals(
             [new McpServerAccessEntry('editors', canAccess: false, canEdit: true)],
             $repository->get('shared')->access->sharedRoles
+        );
+    }
+
+    public function testSaveConfigurationForcesReadAndEditForAnAdminSharedUser(): void
+    {
+        $repository = $this->repository();
+        // 'admin.al' is an admin; the client submitted them as read-only + no edit.
+        $service = $this->service($repository, self::USER_NAME, adminUsers: ['admin.al']);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [['name' => 'admin.al', 'canRead' => false, 'canAccess' => true, 'canEdit' => false]],
+        ));
+
+        // Read + Edit are forced on; the submitted Access flag is preserved.
+        $this->assertEquals(
+            [new McpServerAccessEntry('admin.al', canRead: true, canAccess: true, canEdit: true)],
+            $repository->get('shared')->access->sharedUsers
+        );
+    }
+
+    public function testSaveConfigurationForcesReadAndEditWhenTheOwnerIsEnteredReadOnly(): void
+    {
+        $repository = $this->repository();
+        // The current user (owner) is somehow submitted into the grid as read-only.
+        $service = $this->service($repository, self::USER_NAME);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [['name' => self::USER_NAME, 'canRead' => false, 'canAccess' => true, 'canEdit' => false]],
+        ));
+
+        $this->assertEquals(
+            [new McpServerAccessEntry(self::USER_NAME, canRead: true, canAccess: true, canEdit: true)],
+            $repository->get('shared')->access->sharedUsers
+        );
+    }
+
+    public function testSaveConfigurationLeavesANonAdminNonOwnerUserUntouched(): void
+    {
+        $repository = $this->repository();
+        $service = $this->service($repository, self::USER_NAME);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedUsers: [['name' => 'alice', 'canRead' => true, 'canAccess' => false, 'canEdit' => false]],
+        ));
+
+        // alice is neither the owner nor an admin: her read-only grant stands.
+        $this->assertEquals(
+            [new McpServerAccessEntry('alice', canRead: true, canAccess: false, canEdit: false)],
+            $repository->get('shared')->access->sharedUsers
+        );
+    }
+
+    public function testSaveConfigurationDoesNotPatchAnAdminNameInTheRoleList(): void
+    {
+        $repository = $this->repository();
+        // A role that happens to share a name with an admin user must NOT be patched;
+        // only user grants get the implicit admin/owner edit.
+        $service = $this->service($repository, self::USER_NAME, adminUsers: ['admin.al']);
+
+        $service->saveConfiguration($this->parameter(
+            'shared',
+            sharedRoles: [['name' => 'admin.al', 'canRead' => false, 'canAccess' => false, 'canEdit' => false]],
+        ));
+
+        $this->assertEquals(
+            [new McpServerAccessEntry('admin.al', canRead: false, canAccess: false, canEdit: false)],
+            $repository->get('shared')->access->sharedRoles
+        );
+    }
+
+    public function testUpdateConfigurationForcesEditForAnAdminSharedUser(): void
+    {
+        $repository = $this->repository(['srv' => $this->definition('srv', new McpServerAccess(owner: 'original.owner'))]);
+        $service = $this->service($repository, self::USER_NAME, isAdmin: true, adminUsers: ['admin.al']);
+
+        $service->updateConfiguration('srv', $this->parameter(
+            'srv',
+            sharedUsers: [['name' => 'admin.al', 'canRead' => false, 'canAccess' => false, 'canEdit' => false]],
+        ));
+
+        $this->assertEquals(
+            [new McpServerAccessEntry('admin.al', canRead: true, canAccess: false, canEdit: true)],
+            $repository->get('srv')->access->sharedUsers
         );
     }
 
@@ -203,13 +292,15 @@ final class McpServerConfigurationServiceTest extends Unit
     }
 
     /**
-     * @param list<int> $roles
+     * @param list<int>    $roles
+     * @param list<string> $adminUsers names the {@see UserResolverInterface} reports as admins
      */
     private function service(
         McpServerConfigRepositoryInterface $repository,
         string $currentUserName,
         bool $isAdmin = false,
         array $roles = [],
+        array $adminUsers = [],
     ): McpServerConfigurationService {
         return new McpServerConfigurationService(
             new McpServerHydrator(),
@@ -233,8 +324,24 @@ final class McpServerConfigurationServiceTest extends Unit
                     'getRoles' => $roles,
                 ]),
             ]),
+            $this->userResolver($adminUsers),
             self::ISSUER,
         );
+    }
+
+    /**
+     * A resolver that reports the given names as admin users and everyone else
+     * (including unknown names) as non-admin.
+     *
+     * @param list<string> $adminUsers
+     */
+    private function userResolver(array $adminUsers): UserResolverInterface
+    {
+        return $this->makeEmpty(UserResolverInterface::class, [
+            'getByName' => static fn (string $name): ?User => in_array($name, $adminUsers, true)
+                ? (new User())->setAdmin(true)
+                : null,
+        ]);
     }
 
     /**
