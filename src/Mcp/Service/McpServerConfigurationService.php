@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
@@ -46,6 +47,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         private McpToolRegistryInterface $toolRegistry,
         private McpServerAccessResolverInterface $accessResolver,
         private SecurityServiceInterface $securityService,
+        private UserResolverInterface $userResolver,
         private ?string $issuer,
     ) {
     }
@@ -126,8 +128,10 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
                 owner: $owner,
                 shareGlobal: $parameter->shareGlobal(),
                 // The owner is not seeded into the grid: they get implicit read + edit
-                // via the resolver, and must grant themselves Access explicitly.
-                sharedUsers: $this->normalizeEntries($parameter->getSharedUsers()),
+                // via the resolver, and must grant themselves Access explicitly. User
+                // grants are patched so admins and the owner are never persisted as
+                // read-only or non-editable (see normalizeUserEntries).
+                sharedUsers: $this->normalizeUserEntries($parameter->getSharedUsers(), $owner),
                 sharedRoles: $this->normalizeEntries($parameter->getSharedRoles()),
             ),
         );
@@ -163,7 +167,68 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
     }
 
     /**
-     * @param list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}> $raw
+     * User grants, with the admin/owner capabilities enforced. Admins and the
+     * owner always hold Config Read + Edit at resolve time; persisting them any
+     * other way would only be a lie the UI then faithfully renders (showing the
+     * server as non-editable). So we patch each user entry on write rather than
+     * trusting the client to have disabled the right checkboxes — this stays
+     * correct even when the frontend has a bug or the owner is somehow submitted
+     * as read-only. Access is never touched: it is explicit for everyone.
+     *
+     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $raw
+     *
+     * @return list<McpServerAccessEntry>
+     */
+    private function normalizeUserEntries(array $raw, ?string $owner): array
+    {
+        $entries = [];
+        foreach ($raw as $item) {
+            $entry = McpServerAccessEntry::fromMixed($item);
+            if ($entry === null) {
+                continue;
+            }
+
+            $entries[] = $this->enforceImplicitEdit($entry, $owner);
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Force Read + Edit on a user entry that belongs to an admin or the owner,
+     * preserving its Access flag. Leaves a non-privileged entry untouched.
+     */
+    private function enforceImplicitEdit(McpServerAccessEntry $entry, ?string $owner): McpServerAccessEntry
+    {
+        // canEdit already implies canRead (see McpServerAccessEntry), so an entry
+        // that can edit needs no patching.
+        if ($entry->canEdit || !$this->isImplicitEditor($entry->name, $owner)) {
+            return $entry;
+        }
+
+        return new McpServerAccessEntry(
+            $entry->name,
+            canRead: true,
+            canAccess: $entry->canAccess,
+            canEdit: true,
+        );
+    }
+
+    /**
+     * Whether the named user gets Read + Edit implicitly — i.e. is the owner or
+     * an admin. Mirrors the owner/admin rules in {@see McpServerAccessResolver}.
+     */
+    private function isImplicitEditor(string $name, ?string $owner): bool
+    {
+        if ($owner !== null && $owner !== '' && $name === $owner) {
+            return true;
+        }
+
+        return $this->userResolver->getByName($name)?->isAdmin() === true;
+    }
+
+    /**
+     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $raw
      *
      * @return list<McpServerAccessEntry>
      */
