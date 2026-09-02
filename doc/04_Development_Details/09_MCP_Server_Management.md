@@ -69,11 +69,13 @@ Access is **deny-by-default** with three **independent** capabilities per server
 - **MCP Server Access** — connect a client to the *running* server over its URL.
 
 A server carries an **owner** (its creator), a **public** flag (`shareGlobal`), and per-**user** and per-**role**
-grants. Each grant is `{ name, canAccess, canEdit }`; being listed at all conveys **Config Read**. Users and
-roles are matched by **name**, and a user's own grant is unioned with their role grants (most-permissive wins).
-The capabilities resolve independently:
+grants. Each grant is `{ name, canRead, canAccess, canEdit }` — three independent booleans, with one invariant:
+**Config Edit implies Config Read** (`canRead` is normalised to true whenever `canEdit` is — never
+edit-without-read). Users and roles are matched by **name**, and a user's own grant is unioned with their role
+grants (most-permissive wins). The capabilities resolve independently:
 
-- **Config Read** — admin, the owner, a public server, or any listed user/role.
+- **Config Read** — admin, the owner, a public server, or a grant with `canRead`. Read is **per-grant**, so a
+  user can hold **Access without Read** (use the server without ever seeing its config).
 - **Config Edit** — admin, the owner, or a grant with `canEdit`.
 - **MCP Server Access** — a public server, or a grant with `canAccess`. **Neither admins nor the owner get
   Access implicitly**; it must be granted explicitly (they can add themselves to the user list with Access). This
@@ -88,6 +90,9 @@ Server Access** to every authenticated user (not Edit); it is then editable only
 server response includes `currentUserPermissions` (`{ canView, canAccess, canEdit }`) — the caller's resolved
 capabilities — so clients need not re-derive them.
 
+> **Back-compat.** Grants stored before `canRead` existed carry no `can_read` key; they default to **read on**,
+> preserving the previous "listed = read" behaviour.
+
 ## Managing servers in Pimcore Studio
 
 The Studio UI presents server management as a **master/detail** screen:
@@ -97,8 +102,10 @@ The Studio UI presents server management as a **master/detail** screen:
 - Selecting a server opens its **configuration mask**: identity (name, locked url-slug, description, enabled),
   the **tool picker** (from the catalogue, each showing its read/write scope), the **sharing panel**, and the
   derived scopes plus the copyable server URL.
-- The **sharing panel** is a grid: pick a user or role, then set **Config Edit** and **MCP Server Access** (being
-  listed already conveys Config Read). The owner and admins are **not** listed rows — their Config Read + Config
+- The **sharing panel** is a grid with three checkbox columns per user/role — **Config Read**, **Config Edit**,
+  **MCP Server Access** (a new grant defaults to `{ canRead: true, canAccess: false, canEdit: false }`). Because
+  edit implies read, the UI forces **Read** on and disables its checkbox whenever **Edit** is checked. The owner
+  and admins are **not** listed rows — their Config Read + Config
   Edit is implicit; to gain runtime access they add themselves as a user with **MCP Server Access**.
 - When the current user has **read but not edit** (`currentUserPermissions.canEdit === false`), the mask opens
   **read-only**: fields are disabled and Save/Delete are hidden, but copying the URL stays available.

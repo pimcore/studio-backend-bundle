@@ -17,27 +17,34 @@ use function is_array;
 use function is_string;
 
 /**
- * One share entry on an MCP server: a user or role (by unique name) with two
- * independent capabilities — {@see $canAccess} (connect a client at runtime) and
- * {@see $canEdit} (change the config). Presence in the list at all grants a
- * read-only view. The kind (user vs role) is carried by which list the entry
- * lives in on {@see McpServerAccess}.
+ * One share entry on an MCP server: a user or role (by unique name) with three
+ * independent capabilities — {@see $canRead} (see the server and its config),
+ * {@see $canAccess} (connect a client at runtime), and {@see $canEdit} (change the
+ * config). The capabilities do not imply one another, with a single invariant:
+ * {@see $canEdit} always implies {@see $canRead} (never edit-without-read). The kind
+ * (user vs role) is carried by which list the entry lives in on {@see McpServerAccess}.
  *
  * @internal
  */
 final readonly class McpServerAccessEntry
 {
+    public bool $canRead;
+
     public function __construct(
         public string $name,
+        bool $canRead = true,
         public bool $canAccess = false,
         public bool $canEdit = false,
     ) {
+        // Edit implies read — there is no edit-without-read grant.
+        $this->canRead = $canRead || $canEdit;
     }
 
     /**
      * Tolerant deserialization from stored (snake_case) or submitted (camelCase)
-     * data. A bare string name is a view-only entry (no capabilities). Returns null
-     * for anything without a usable name.
+     * data. A bare string name is a read-only entry. `canRead` defaults to true so
+     * grants stored before this flag existed keep their "listed = read" behavior.
+     * Returns null for anything without a usable name.
      *
      * @param mixed $value
      */
@@ -53,18 +60,20 @@ final readonly class McpServerAccessEntry
 
         return new self(
             $value['name'],
+            (bool) ($value['canRead'] ?? $value['can_read'] ?? true),
             (bool) ($value['canAccess'] ?? $value['can_access'] ?? false),
             (bool) ($value['canEdit'] ?? $value['can_edit'] ?? false),
         );
     }
 
     /**
-     * @return array{name: string, can_access: bool, can_edit: bool}
+     * @return array{name: string, can_read: bool, can_access: bool, can_edit: bool}
      */
     public function toArray(): array
     {
         return [
             'name' => $this->name,
+            'can_read' => $this->canRead,
             'can_access' => $this->canAccess,
             'can_edit' => $this->canEdit,
         ];

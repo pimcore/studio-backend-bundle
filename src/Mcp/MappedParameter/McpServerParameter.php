@@ -26,8 +26,8 @@ final readonly class McpServerParameter
 {
     /**
      * @param list<string>                                $tools
-     * @param list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedUsers user-name → level share entries
-     * @param list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedRoles role-name → level share entries
+     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedUsers user-name → level share entries
+     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedRoles role-name → level share entries
      */
     public function __construct(
         #[NotBlank]
@@ -78,7 +78,7 @@ final readonly class McpServerParameter
     }
 
     /**
-     * @return list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}>
+     * @return list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}>
      */
     public function getSharedUsers(): array
     {
@@ -86,7 +86,7 @@ final readonly class McpServerParameter
     }
 
     /**
-     * @return list<array{name?: mixed, canAccess?: mixed, canEdit?: mixed}>
+     * @return list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}>
      */
     public function getSharedRoles(): array
     {

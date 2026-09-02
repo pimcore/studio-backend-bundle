@@ -91,6 +91,6 @@ final class McpServerAccessTest extends Unit
         $array = (new McpServerAccess(sharedUsers: [new McpServerAccessEntry('alice', canAccess: true, canEdit: false)]))->toArray();
 
         $this->assertSame(['owner', 'share_global', 'shared_users', 'shared_roles'], array_keys($array));
-        $this->assertSame([['name' => 'alice', 'can_access' => true, 'can_edit' => false]], $array['shared_users']);
+        $this->assertSame([['name' => 'alice', 'can_read' => true, 'can_access' => true, 'can_edit' => false]], $array['shared_users']);
     }
 }
