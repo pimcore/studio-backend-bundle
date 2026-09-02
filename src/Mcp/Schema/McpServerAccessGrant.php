@@ -17,16 +17,17 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 /**
- * One share entry as exposed by the API: a user or role name with two independent
- * capabilities. Being present at all grants a read-only view; the flags add use
- * and edit. Used in both the server response and the create/update payload.
+ * One share entry as exposed by the API: a user or role name with three independent
+ * capabilities — read (see the server + config), access (connect a client), and edit
+ * (change the config). Edit implies read. Used in both the server response and the
+ * create/update payload.
  *
  * @internal
  */
 #[Schema(
     schema: 'McpServerAccessGrant',
     title: 'MCP Server Access Grant',
-    required: ['name', 'canAccess', 'canEdit'],
+    required: ['name', 'canRead', 'canAccess', 'canEdit'],
     type: 'object'
 )]
 final readonly class McpServerAccessGrant
@@ -34,6 +35,8 @@ final readonly class McpServerAccessGrant
     public function __construct(
         #[Property(description: 'User or role name', type: 'string', example: 'john.doe')]
         private string $name,
+        #[Property(description: 'May see the server and its configuration (implied by canEdit)', type: 'boolean', example: true)]
+        private bool $canRead,
         #[Property(description: 'May connect a client to the server at runtime', type: 'boolean', example: true)]
         private bool $canAccess,
         #[Property(description: 'May edit the server configuration', type: 'boolean', example: false)]
@@ -44,6 +47,11 @@ final readonly class McpServerAccessGrant
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function isCanRead(): bool
+    {
+        return $this->canRead;
     }
 
     public function isCanAccess(): bool

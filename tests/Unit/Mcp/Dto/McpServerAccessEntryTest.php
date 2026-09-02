@@ -42,16 +42,37 @@ final class McpServerAccessEntryTest extends Unit
 
         $this->assertNotNull($entry);
         $this->assertSame('editors', $entry->name);
+        $this->assertTrue($entry->canRead);
         $this->assertFalse($entry->canAccess);
         $this->assertFalse($entry->canEdit);
     }
 
-    public function testFromMixedDefaultsMissingCapabilitiesToFalse(): void
+    public function testFromMixedDefaultsCanReadTrueAndCapabilitiesFalse(): void
     {
+        // A grant stored before can_read existed keeps its "listed = read" behavior.
         $entry = McpServerAccessEntry::fromMixed(['name' => 'a']);
 
+        $this->assertTrue($entry->canRead);
         $this->assertFalse($entry->canAccess);
         $this->assertFalse($entry->canEdit);
+    }
+
+    public function testFromMixedReadsExplicitAccessWithoutRead(): void
+    {
+        $entry = McpServerAccessEntry::fromMixed(['name' => 'a', 'can_read' => false, 'can_access' => true]);
+
+        $this->assertNotNull($entry);
+        $this->assertFalse($entry->canRead);
+        $this->assertTrue($entry->canAccess);
+        $this->assertFalse($entry->canEdit);
+    }
+
+    public function testCanEditAlwaysImpliesCanRead(): void
+    {
+        $entry = new McpServerAccessEntry('a', canRead: false, canEdit: true);
+
+        $this->assertTrue($entry->canRead);
+        $this->assertTrue($entry->canEdit);
     }
 
     public function testFromMixedReturnsNullWithoutUsableName(): void
@@ -65,7 +86,7 @@ final class McpServerAccessEntryTest extends Unit
     public function testToArrayUsesSnakeCase(): void
     {
         $this->assertSame(
-            ['name' => 'admins', 'can_access' => true, 'can_edit' => false],
+            ['name' => 'admins', 'can_read' => true, 'can_access' => true, 'can_edit' => false],
             (new McpServerAccessEntry('admins', canAccess: true, canEdit: false))->toArray()
         );
     }

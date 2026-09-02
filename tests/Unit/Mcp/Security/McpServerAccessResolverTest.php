@@ -87,6 +87,35 @@ final class McpServerAccessResolverTest extends Unit
         $this->assertSame(['view' => true, 'access' => false, 'edit' => true], $this->resolver()->resolve($server, $this->user()));
     }
 
+    public function testAccessWithoutReadGrantsUseButHidesTheConfig(): void
+    {
+        // Read is now per-grant: a user can be given Access without Read.
+        $server = $this->server(new McpServerAccess(
+            sharedUsers: [$this->entry(self::USER_NAME, canAccess: true, canRead: false)],
+        ));
+
+        $this->assertSame(['view' => false, 'access' => true, 'edit' => false], $this->resolver()->resolve($server, $this->user()));
+    }
+
+    public function testReadWithoutAccessGrantsViewOnly(): void
+    {
+        $server = $this->server(new McpServerAccess(
+            sharedUsers: [$this->entry(self::USER_NAME, canRead: true)],
+        ));
+
+        $this->assertSame(['view' => true, 'access' => false, 'edit' => false], $this->resolver()->resolve($server, $this->user()));
+    }
+
+    public function testEditImpliesReadEvenWhenReadIsWithheld(): void
+    {
+        // canEdit normalises canRead to true — never edit-without-read.
+        $server = $this->server(new McpServerAccess(
+            sharedUsers: [$this->entry(self::USER_NAME, canEdit: true, canRead: false)],
+        ));
+
+        $this->assertSame(['view' => true, 'access' => false, 'edit' => true], $this->resolver()->resolve($server, $this->user()));
+    }
+
     public function testRoleGrantApplies(): void
     {
         $server = $this->server(new McpServerAccess(sharedRoles: [$this->entry('editors', canAccess: true, canEdit: true)]));
@@ -119,9 +148,13 @@ final class McpServerAccessResolverTest extends Unit
         $this->assertSame(['view' => false, 'access' => false, 'edit' => false], $resolver->resolve($server, $this->user(roles: [4, 5])));
     }
 
-    private function entry(string $name, bool $canAccess = false, bool $canEdit = false): McpServerAccessEntry
-    {
-        return new McpServerAccessEntry($name, $canAccess, $canEdit);
+    private function entry(
+        string $name,
+        bool $canAccess = false,
+        bool $canEdit = false,
+        bool $canRead = true,
+    ): McpServerAccessEntry {
+        return new McpServerAccessEntry($name, canRead: $canRead, canAccess: $canAccess, canEdit: $canEdit);
     }
 
     private function server(McpServerAccess $access): McpServerDefinition
