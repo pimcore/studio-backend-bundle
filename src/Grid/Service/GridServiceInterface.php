@@ -43,12 +43,19 @@ interface GridServiceInterface
     /**
      * Whether the given (or, if omitted, the current) user is allowed to view the given locale
      * for the given element, based on the "Viewable Languages" workspace permission. Non-object
-     * elements and columns without a locale are always considered viewable.
+     * elements are always considered viewable.
+     *
+     * Callers reading a localized field MUST pass $isLocalizedField = true: a localized field
+     * read without an explicit locale implicitly resolves to the current request locale or the
+     * default language (Localizedfield::getLanguage()), so a null $locale is then authorized
+     * against that effective locale instead of being skipped. Only for non-localized fields
+     * ($isLocalizedField = false) does a null $locale mean no language is involved at all.
      */
     public function isLocaleViewableForElement(
         ElementInterface $element,
         ?string $locale,
         ?UserInterface $user = null,
+        bool $isLocalizedField = false,
     ): bool;
 
     /**

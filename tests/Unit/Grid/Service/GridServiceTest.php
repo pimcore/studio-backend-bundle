@@ -35,7 +35,11 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
@@ -217,9 +221,10 @@ final class GridServiceTest extends Unit
     }
 
     /**
-     * Columns without a locale (e.g. system columns) are never subject to language filtering.
+     * Non-localized columns without a locale (e.g. system columns) carry no language data
+     * and are never subject to language filtering.
      */
-    public function testIsLocaleViewableForElementReturnsTrueWhenColumnHasNoLocale(): void
+    public function testIsLocaleViewableForElementReturnsTrueWhenNonLocalizedColumnHasNoLocale(): void
     {
         $user = $this->buildUser(isAdmin: false);
         $element = $this->makeEmpty(Concrete::class);
@@ -230,7 +235,92 @@ final class GridServiceTest extends Unit
             ]),
         );
 
-        self::assertTrue($service->isLocaleViewableForElement($element, null, $user));
+        self::assertTrue($service->isLocaleViewableForElement($element, null, $user, isLocalizedField: false));
+    }
+
+    /**
+     * A localized field read without an explicit locale is implicitly served in the current
+     * request locale (Localizedfield::getLanguage()). Omitting the locale from the column
+     * configuration must therefore authorize that effective locale - otherwise a user
+     * restricted to e.g. "fr" could read another language's value by simply leaving the
+     * locale out of the client-supplied column config.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testIsLocaleViewableForElementChecksImplicitRequestLocaleForLocalizedField(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['fr' => 1],
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'isValidLanguage' => true,
+            ]),
+            localeService: $this->makeEmpty(LocaleServiceInterface::class, [
+                'getLocale' => 'de',
+            ]),
+        );
+
+        self::assertFalse($service->isLocaleViewableForElement($element, null, $user, isLocalizedField: true));
+    }
+
+    /**
+     * Without a (valid) request locale, core resolves an implicit read to the default
+     * language - that language must be authorized as well.
+     */
+    public function testIsLocaleViewableForElementChecksImplicitDefaultLanguageForLocalizedField(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['fr' => 1],
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'isValidLanguage' => false,
+                'getDefaultLanguage' => 'de',
+            ]),
+        );
+
+        self::assertFalse($service->isLocaleViewableForElement($element, null, $user, isLocalizedField: true));
+
+        $allowedService = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['de' => 1],
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'isValidLanguage' => false,
+                'getDefaultLanguage' => 'de',
+            ]),
+        );
+
+        self::assertTrue($allowedService->isLocaleViewableForElement($element, null, $user, isLocalizedField: true));
+    }
+
+    /**
+     * When no implicit locale can be resolved at all (no request locale, no default language
+     * configured), there is no language to authorize and the value stays viewable.
+     */
+    public function testIsLocaleViewableForElementReturnsTrueForLocalizedFieldWithoutResolvableLocale(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $element = $this->makeEmpty(Concrete::class);
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => Expected::never(),
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'isValidLanguage' => false,
+                'getDefaultLanguage' => null,
+            ]),
+        );
+
+        self::assertTrue($service->isLocaleViewableForElement($element, null, $user, isLocalizedField: true));
     }
 
     /**
@@ -338,6 +428,91 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * The client controls the column configuration, so it can simply omit the locale for a
+     * localized field: the resolver then calls the bare getter and core implicitly serves the
+     * request locale or the default language. The grid data path must detect that the column
+     * targets a localized field and authorize the implicit locale - otherwise the explicit-locale
+     * guard above is trivially bypassed.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testGetGridDataForElementRedactsLocalizedFieldColumnWithoutExplicitLocale(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+
+        // "name" is a localized class field: not a direct field definition, but present inside
+        // the localizedfields container - exactly how core resolves an implicit localized read.
+        $localizedFields = $this->makeEmpty(Localizedfields::class, [
+            'getFieldDefinition' => $this->makeEmpty(Data::class),
+        ]);
+        // ClassDefinition is final and cannot be doubled - a real instance seeded through
+        // addFieldDefinition() behaves exactly like a loaded definition for this lookup.
+        $classDefinition = new ClassDefinition();
+        $classDefinition->addFieldDefinition('localizedfields', $localizedFields);
+        $element = $this->makeEmpty(Concrete::class, [
+            'getClass' => $classDefinition,
+        ]);
+
+        $column = new Column(key: 'name', locale: null, type: 'dataobject.input', group: null, config: []);
+
+        $deniedResolver = new class implements ColumnResolverInterface, CoreElementColumnResolverInterface {
+            public bool $wasCalled = false;
+
+            public function getType(): string
+            {
+                return 'dataobject.input';
+            }
+
+            public function supportedElementTypes(): array
+            {
+                return [ElementTypes::TYPE_OBJECT];
+            }
+
+            public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+            {
+                $this->wasCalled = true;
+
+                return new ColumnData(key: 'name', locale: $column->getLocale(), value: 'LEAKED', fieldType: 'input');
+            }
+        };
+
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => $element,
+            ]),
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['fr' => 1],
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class),
+            columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                'loadColumnResolvers' => ['dataobject.input' => $deniedResolver],
+            ]),
+            toolResolver: $this->makeEmpty(ToolResolverInterface::class, [
+                'isValidLanguage' => true,
+            ]),
+            localeService: $this->makeEmpty(LocaleServiceInterface::class, [
+                // The implicit read locale "de" is not among the user's viewable languages.
+                'getLocale' => 'de',
+            ]),
+        );
+
+        $data = $service->getGridDataForElement(
+            new ColumnCollection([$column]),
+            null,
+            ElementTypes::TYPE_OBJECT,
+            1,
+            false,
+            $user,
+        );
+
+        self::assertNull($data['columns'][0]->getValue());
+        self::assertFalse(
+            $deniedResolver->wasCalled,
+            'the resolver must not be invoked when the implicit locale of a localized field is denied'
+        );
+    }
+
+    /**
      * User is final and cannot be doubled - a real instance with just the admin flag set is
      * enough for the permission checks under test here.
      */
@@ -358,6 +533,7 @@ final class GridServiceTest extends Unit
         ?ColumnResolverLoaderInterface $columnResolverLoader = null,
         ?LocalizedFieldResolverInterface $localizedFieldResolver = null,
         ?ToolResolverInterface $toolResolver = null,
+        ?LocaleServiceInterface $localeService = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -372,6 +548,7 @@ final class GridServiceTest extends Unit
             $logger ?? $this->makeEmpty(LoggerInterface::class),
             $dataObjectServiceResolver ?? $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $toolResolver ?? $this->makeEmpty(ToolResolverInterface::class),
+            $localeService ?? $this->makeEmpty(LocaleServiceInterface::class),
         );
     }
 }

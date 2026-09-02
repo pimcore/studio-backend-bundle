@@ -240,7 +240,12 @@ final class AdvancedColumnResolver implements
             config: $config,
         );
 
-        if (!$this->gridService->isLocaleViewableForElement($element, $subColumn->getLocale(), $this->user)) {
+        if (!$this->gridService->isLocaleViewableForElement(
+            $element,
+            $subColumn->getLocale(),
+            $this->user,
+            isLocalizedField: $isLocalizable,
+        )) {
             return;
         }
 
@@ -300,7 +305,12 @@ final class AdvancedColumnResolver implements
 
         $relationLocale = $isRelationLocalizable ? $column->getLocale() : null;
 
-        if (!$this->gridService->isLocaleViewableForElement($element, $relationLocale, $this->user)) {
+        if (!$this->gridService->isLocaleViewableForElement(
+            $element,
+            $relationLocale,
+            $this->user,
+            isLocalizedField: $isRelationLocalizable,
+        )) {
             return [];
         }
 
