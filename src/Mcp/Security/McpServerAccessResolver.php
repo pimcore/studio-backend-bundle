@@ -25,7 +25,8 @@ use function in_array;
  * entries (most-permissive wins). The rules:
  *
  *  - View   — admin, the owner, a public server ({@see McpServerAccess::$shareGlobal}),
- *             OR the user is listed at all (as a user or via a role).
+ *             OR a matching entry grants Read (`canRead`). Read is per-grant, so a user
+ *             can hold Access without Read.
  *  - Access — the server is public, OR a matching entry grants Access. Neither admins
  *             nor the owner get Access implicitly; it must be granted explicitly (they
  *             can add themselves to the user list with Access).
@@ -61,17 +62,18 @@ final class McpServerAccessResolver implements McpServerAccessResolverInterface
         $isOwner = $access->owner !== null && $access->owner !== '' && $user->getName() === $access->owner;
 
         $entries = $this->matchingEntries($access->sharedUsers, $access->sharedRoles, $user);
-        $listed = $entries !== [];
 
+        $entryRead = false;
         $entryAccess = false;
         $entryEdit = false;
         foreach ($entries as $entry) {
+            $entryRead = $entryRead || $entry->canRead;
             $entryAccess = $entryAccess || $entry->canAccess;
             $entryEdit = $entryEdit || $entry->canEdit;
         }
 
         return [
-            'view' => $isAdmin || $isOwner || $access->shareGlobal || $listed,
+            'view' => $isAdmin || $isOwner || $access->shareGlobal || $entryRead,
             'access' => $access->shareGlobal || $entryAccess,
             'edit' => $isAdmin || $isOwner || $entryEdit,
         ];

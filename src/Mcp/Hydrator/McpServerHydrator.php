@@ -64,6 +64,7 @@ final readonly class McpServerHydrator implements McpServerHydratorInterface
         return array_map(
             static fn (McpServerAccessEntry $entry): McpServerAccessGrant => new McpServerAccessGrant(
                 $entry->name,
+                $entry->canRead,
                 $entry->canAccess,
                 $entry->canEdit,
             ),
