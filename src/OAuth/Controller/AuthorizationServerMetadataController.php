@@ -41,7 +41,7 @@ final class AuthorizationServerMetadataController
             'issuer' => $base,
             'authorization_endpoint' => $base . '/pimcore-oauth/authorize',
             'token_endpoint' => $base . '/pimcore-oauth/token',
-            'grant_types_supported' => ['authorization_code', 'client_credentials', 'refresh_token'],
+            'grant_types_supported' => ['authorization_code', 'refresh_token'],
             'response_types_supported' => ['code'],
             'code_challenge_methods_supported' => ['S256'],
             'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic', 'none'],

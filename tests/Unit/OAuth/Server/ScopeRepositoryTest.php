@@ -37,7 +37,7 @@ final class ScopeRepositoryTest extends Unit
         $scopes = [new ScopeEntity('mcp:read')];
         $finalized = (new ScopeRepository())->finalizeScopes(
             $scopes,
-            'client_credentials',
+            'authorization_code',
             new ClientEntity('studio-mcp', 'Studio MCP', [], true),
         );
 

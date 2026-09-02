@@ -26,7 +26,7 @@ use function json_encode;
 /**
  * OAuth token endpoint (POST /pimcore-oauth/token). Bridges the Symfony request
  * to PSR-7, delegates to the embedded league server, and bridges the response
- * back. Currently handles the client_credentials grant.
+ * back. Handles the authorization_code and refresh_token grants.
  *
  * @internal
  */
