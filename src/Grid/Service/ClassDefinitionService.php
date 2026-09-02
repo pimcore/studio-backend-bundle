@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -30,6 +31,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private DataObjectResolverInterface $dataObjectResolver,
     ) {
     }
 
@@ -57,8 +59,15 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         /** @var Layout $layoutDefinitions */
         $layoutDefinitions = $filteredDefinitions['layoutDefinition'];
 
+        // No Concrete object is available for a folder-scoped grid config, but the folder/object
+        // permission subject can still be handed through context['object'] so language-permission
+        // enrichment (PEES-1063) can run without requiring field-level Concrete enrichment.
         $this->dataObjectServiceResolver->enrichLayoutDefinition(
             $layoutDefinitions,
+            context: [
+                'object' => $folderId ? $this->dataObjectResolver->getById($folderId) : null,
+                'purpose' => 'gridconfig',
+            ],
             user: $user
         );
 
