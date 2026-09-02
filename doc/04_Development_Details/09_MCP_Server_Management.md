@@ -1,6 +1,6 @@
 ---
 title: MCP Server Management
-description: Configure MCP servers at runtime — assign tools, control access with a read/write sharing model, and manage them in Pimcore Studio.
+description: Configure MCP servers at runtime — assign tools, control access with per-user and per-role capabilities, and manage them in Pimcore Studio.
 ---
 
 # MCP Server Management (Experimental)
@@ -50,11 +50,11 @@ All endpoints live under the Studio API prefix (`/pimcore-studio/api`) and are d
 
 | Method · Path | Gate |
 |---------------|------|
-| `GET /mcp/servers` | none — returns only servers the caller can read |
-| `GET /mcp/servers/{id}` | read on the server |
+| `GET /mcp/servers` | none — returns only servers the caller can **read** |
+| `GET /mcp/servers/{id}` | **Config Read** on the server |
 | `POST /mcp/servers` | `mcp_servers` |
-| `PUT /mcp/servers/{id}` | write on the server |
-| `DELETE /mcp/servers/{id}` | write on the server |
+| `PUT /mcp/servers/{id}` | **Config Edit** on the server |
+| `DELETE /mcp/servers/{id}` | **Config Edit** on the server |
 | `GET /mcp/tools` | `mcp_servers` |
 
 A server's advertised `scopes` are **derived** from its tools' required scopes and cannot be set directly; the
@@ -62,26 +62,31 @@ A server's advertised `scopes` are **derived** from its tools' required scopes a
 
 ## Access and sharing
 
-Access is **deny-by-default** and modelled on the Pimcore Agent bundle's run/update sharing, with two levels
-(**write implies read**):
+Access is **deny-by-default** with three **independent** capabilities per server:
 
-- **Read** — see the server, view its configuration, copy its URL, and connect a client at runtime.
-- **Write** — read, plus edit the configuration, change its sharing, and delete it.
+- **Config Read** — see the server in the list and view its configuration (read-only).
+- **Config Edit** — change the configuration, change its sharing, and delete it.
+- **MCP Server Access** — connect a client to the *running* server over its URL.
 
-A server carries an **owner** (its creator, implicit write), a **global read** flag (`shareGlobal`: any
-authenticated user may read/use it), and per-**user** and per-**role** grants, each at read or write. For a
-requested level the backend decides in order:
+A server carries an **owner** (its creator), a **public** flag (`shareGlobal`), and per-**user** and per-**role**
+grants. Each grant is `{ name, canAccess, canEdit }`; being listed at all conveys **Config Read**. Users and
+roles are matched by **name**, and a user's own grant is unioned with their role grants (most-permissive wins).
+The capabilities resolve independently:
 
-1. admin — always allowed
-2. owner — always allowed
-3. a direct user grant — authoritative (blocks role fallback, so a user can be pinned to read-only)
-4. otherwise any of the user's roles that grants the level
-5. read only: the global-share flag
-6. otherwise denied
+- **Config Read** — admin, the owner, a public server, or any listed user/role.
+- **Config Edit** — admin, the owner, or a grant with `canEdit`.
+- **MCP Server Access** — a public server, or a grant with `canAccess`. **Neither admins nor the owner get
+  Access implicitly**; it must be granted explicitly (they can add themselves to the user list with Access). This
+  keeps a server's *runtime* deliberately closed — managing every server does not mean being able to connect to
+  one.
 
-The **same read resolution** gates connecting to the running server at `/pimcore-mcp/studio/{urlSlug}`, so
-sharing a server read with someone is exactly what lets them use it. Each server response includes
-`currentUserPermissions` (`{read, write}`) — the caller's resolved access — so clients need not re-derive it.
+So the owner and admins are **symmetric**: both always have **Config Read + Config Edit**, and both need an
+explicit grant for **MCP Server Access**. A **public** server (`shareGlobal: true`) grants **Config Read + MCP
+Server Access** to every authenticated user (not Edit); it is then editable only by admins and the owner.
+
+**MCP Server Access** — not read — gates connecting to the running server at `/pimcore-mcp/studio/{urlSlug}`. Each
+server response includes `currentUserPermissions` (`{ canView, canAccess, canEdit }`) — the caller's resolved
+capabilities — so clients need not re-derive them.
 
 ## Managing servers in Pimcore Studio
 
@@ -92,11 +97,11 @@ The Studio UI presents server management as a **master/detail** screen:
 - Selecting a server opens its **configuration mask**: identity (name, locked url-slug, description, enabled),
   the **tool picker** (from the catalogue, each showing its read/write scope), the **sharing panel**, and the
   derived scopes plus the copyable server URL.
-- The **sharing panel** is a two-level grid: pick a user or role, then choose **Read** or **Can edit** — the same
-  shape as the Agent bundle's sharing editor.
-- When the current user has **read but not write** on a server (`currentUserPermissions.write === false`), the
-  mask opens **read-only**: fields are disabled and Save/Delete are hidden, but copying the URL stays available —
-  which is the point of a read share.
+- The **sharing panel** is a grid: pick a user or role, then set **Config Edit** and **MCP Server Access** (being
+  listed already conveys Config Read). The owner and admins are **not** listed rows — their Config Read + Config
+  Edit is implicit; to gain runtime access they add themselves as a user with **MCP Server Access**.
+- When the current user has **read but not edit** (`currentUserPermissions.canEdit === false`), the mask opens
+  **read-only**: fields are disabled and Save/Delete are hidden, but copying the URL stays available.
 
 ## Related
 
