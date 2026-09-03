@@ -51,6 +51,16 @@ services:
         arguments:
             $enabled: false
 
+    # Resolves which registered protected resource a request addresses, so the
+    # audience comes from the endpoint's owner rather than a path hardcoded here.
+    # $issuer is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver:
+        arguments:
+            $issuer: null
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver
+
     # Entry point for the pimcore_mcp firewall (401 + RFC 9728 challenge).
     # $oauthEnabled is set from config in the extension.
     Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint:

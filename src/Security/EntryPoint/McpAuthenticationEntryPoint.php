@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use function rtrim;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use function sprintf;
@@ -37,6 +38,7 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
 
     public function __construct(
         private readonly bool $oauthEnabled,
+        private readonly ?string $issuer = null,
     ) {
     }
 
@@ -49,12 +51,24 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
                 'WWW-Authenticate',
                 sprintf(
                     'Bearer resource_metadata="%s", scope="%s"',
-                    $request->getSchemeAndHttpHost() . self::METADATA_PREFIX . $request->getPathInfo(),
+                    $this->metadataUrl($request),
                     self::DEFAULT_SCOPE,
                 )
             );
         }
 
         return $response;
+    }
+
+    /**
+     * Built from the configured issuer, because that is what the resource is registered
+     * under: pointing the client at the request host instead would send it to a metadata
+     * document that resolves to nothing whenever the two differ, as they do behind a proxy.
+     */
+    private function metadataUrl(Request $request): string
+    {
+        $base = rtrim($this->issuer ?? $request->getSchemeAndHttpHost(), '/');
+
+        return $base . self::METADATA_PREFIX . $request->getPathInfo();
     }
 }

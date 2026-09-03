@@ -42,10 +42,12 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalCon
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
@@ -258,8 +260,15 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
 
+        $container->getDefinition(RequestResourceResolver::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
         $container->getDefinition(McpAuthenticationEntryPoint::class)
-            ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+            ->setArgument('$oauthEnabled', $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        $container->getDefinition(ProtectedResourceMetadataController::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(OAuthCorsSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
