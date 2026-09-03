@@ -37,6 +37,7 @@ enum StepConfig: string
     case CONFIG_COLUMNS = 'columns';
     case CONFIG_FILTERS = 'filters';
     case SETTINGS_DELIMITER = 'delimiter';
+    case SETTINGS_FILE_NAME = 'fileName';
     case SETTINGS_HEADER = 'header';
     case SETTINGS_HEADER_NO_HEADER = 'no_header';
     case SETTINGS_HEADER_TITLE = 'title';
