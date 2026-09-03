@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use function rtrim;
 
 /**
  * Serves the RFC 9728 Protected Resource Metadata document.
@@ -33,12 +34,16 @@ final class ProtectedResourceMetadataController
 {
     public function __construct(
         private readonly ResourceRegistryInterface $resourceRegistry,
+        private readonly ?string $issuer = null,
     ) {
     }
 
     public function __invoke(Request $request, string $resourcePath = ''): JsonResponse
     {
-        $resourceUri = CanonicalUri::canonicalize($request->getSchemeAndHttpHost() . $resourcePath);
+        // Resources are registered under the configured issuer, so the lookup has to be
+        // built the same way; using the request host would 404 whenever the two differ.
+        $base = rtrim($this->issuer ?? $request->getSchemeAndHttpHost(), '/');
+        $resourceUri = CanonicalUri::canonicalize($base . $resourcePath);
         $metadata = $this->resourceRegistry->metadataFor($resourceUri);
 
         if ($metadata === null) {

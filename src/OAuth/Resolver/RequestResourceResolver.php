@@ -43,15 +43,14 @@ final readonly class RequestResourceResolver implements RequestResourceResolverI
         $target = CanonicalUri::canonicalize($base . $request->getPathInfo());
 
         $match = null;
-        $matchLength = 0;
+        $matchLength = -1;
         foreach ($this->resourceRegistry->all() as $resource) {
-            if (!self::covers($resource->canonicalUri, $target)) {
-                continue;
-            }
+            $length = self::coveredPathLength($resource->canonicalUri, $target);
 
-            // Longest match wins, so a resource registered for one server takes
-            // precedence over a broader one registered for its whole prefix.
-            $length = strlen($resource->canonicalUri);
+            // Longest matching path wins, so a resource registered for one server takes
+            // precedence over a broader one registered for its whole prefix. Ranking on
+            // the path rather than the whole URI keeps the choice a property of the
+            // request, not of how long the rest of the identifier happens to be.
             if ($length > $matchLength) {
                 $match = $resource;
                 $matchLength = $length;
@@ -62,28 +61,36 @@ final readonly class RequestResourceResolver implements RequestResourceResolverI
     }
 
     /**
-     * The rule a standards-based client applies when deciding whether a resource
-     * covers an endpoint: same origin, and a path prefix that only matches on a
-     * segment boundary, so `/pimcore-mcp/agent` never covers `/pimcore-mcp/agentx`.
+     * How much of the request path a resource covers, or -1 when it does not cover it
+     * at all. The rule a standards-based client applies when deciding whether a resource
+     * covers an endpoint: same origin, and a path prefix that only matches on a segment
+     * boundary, so `/pimcore-mcp/agent` never covers `/pimcore-mcp/agentx`.
      */
-    private static function covers(string $resourceUri, string $target): bool
+    private static function coveredPathLength(string $resourceUri, string $target): int
     {
         $resource = parse_url($resourceUri);
         $endpoint = parse_url($target);
 
         if (!is_array($resource) || !is_array($endpoint)) {
-            return false;
+            return -1;
+        }
+
+        // RFC 8707 resource identifiers carry no query or fragment. One that does can
+        // never be what this endpoint is, and matching it on path alone would let it
+        // shadow the resource that actually is.
+        if (isset($resource['query']) || isset($resource['fragment'])) {
+            return -1;
         }
 
         foreach (['scheme', 'host', 'port'] as $part) {
             if (($resource[$part] ?? null) !== ($endpoint[$part] ?? null)) {
-                return false;
+                return -1;
             }
         }
 
         $resourcePath = rtrim($resource['path'] ?? '/', '/') . '/';
         $endpointPath = rtrim($endpoint['path'] ?? '/', '/') . '/';
 
-        return str_starts_with($endpointPath, $resourcePath);
+        return str_starts_with($endpointPath, $resourcePath) ? strlen($resourcePath) : -1;
     }
 }

@@ -42,6 +42,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalCon
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
@@ -263,7 +264,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
-            ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+            ->setArgument('$oauthEnabled', $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        $container->getDefinition(ProtectedResourceMetadataController::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(OAuthCorsSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
