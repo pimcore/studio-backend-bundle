@@ -38,10 +38,11 @@ They differ deliberately, and in more than one dimension. Authentication is shar
 application's own business**, and so is *where* the credential is checked. The platform tells you *who* is
 calling, never *what they may do*.
 
-Data Hub Simple REST is worth studying as an example of one resource covering two surfaces: its REST
-endpoints and its MCP endpoint share a single protected resource, so a user consents once and the
-resulting token works across both. Each surface checks the token where it already authenticated,
-which is why the same application appears twice in the "authenticates in" column.
+Data Hub Simple REST is worth studying as an example of one application with two surfaces. Its REST
+endpoints and its MCP endpoint are separate protected resources, so a client asks for a token naming
+the one it intends to call, and a token minted for either is refused at the other. Each surface checks
+the token where it already authenticated, which is why the same application appears twice in the
+"authenticates in" column.
 
 ## Public contracts
 
