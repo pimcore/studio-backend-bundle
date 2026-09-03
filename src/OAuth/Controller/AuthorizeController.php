@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
+use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -22,7 +24,9 @@ use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use function array_map;
 use function bin2hex;
+use function implode;
 use function random_bytes;
 use function str_contains;
 
@@ -49,7 +53,7 @@ final class AuthorizeController
     {
         try {
             // Validates client, redirect URI, scopes and PKCE before we prompt.
-            $this->authorizationServerFactory->create()->validateAuthorizationRequest(
+            $authorizationRequest = $this->authorizationServerFactory->create()->validateAuthorizationRequest(
                 $this->psrHttpFactory->createRequest($request)
             );
         } catch (OAuthServerException $exception) {
@@ -59,10 +63,34 @@ final class AuthorizeController
         }
 
         $id = bin2hex(random_bytes(32));
-        $this->pendingAuthorizationStore->store($id, $request->query->all());
+        $this->pendingAuthorizationStore->store($id, $this->pinnedParams($request, $authorizationRequest));
 
         $separator = str_contains($this->consentPath, '?') ? '&' : '?';
 
         return new RedirectResponse($this->consentPath . $separator . 'authorization_id=' . $id);
+    }
+
+    /**
+     * The consent screen and the approval each re-validate from these parameters, so the
+     * scope is written back as it was narrowed for the resource. Left as the client sent
+     * it, a configuration change between the two would grant a wider set than the screen
+     * showed, binding the user to something they never saw.
+     *
+     * @return array<string, mixed>
+     */
+    private function pinnedParams(Request $request, AuthorizationRequestInterface $authorizationRequest): array
+    {
+        $params = $request->query->all();
+
+        $scopes = array_map(
+            static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
+            $authorizationRequest->getScopes(),
+        );
+
+        if ($scopes !== []) {
+            $params['scope'] = implode(' ', $scopes);
+        }
+
+        return $params;
     }
 }

@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server\Grant;
 
 use Codeception\Test\Unit;
 use DateInterval;
+use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
@@ -33,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreI
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
+use function array_map;
 use function array_values;
 use function parse_str;
 use function parse_url;
@@ -51,14 +54,19 @@ final class LoopbackAuthCodeGrantTest extends Unit
 
     private const string ENCRYPTION_KEY = 'def000004242424242424242424242424242424242424242424242424242424242';
 
+    /**
+     * @param list<string>|null $supportedScopes null keeps the default single-scope resource
+     */
     private function grant(
         bool $withResources = true,
         ?TokenRecordStoreInterface $store = null,
+        string $defaultScope = '',
+        ?array $supportedScopes = null,
     ): LoopbackAuthCodeGrant {
         $resources = $withResources ? [
             [
                 'uri' => self::KNOWN_RESOURCE,
-                'scopes_supported' => ['mcp:read'],
+                'scopes_supported' => $supportedScopes ?? ['mcp:read'],
                 'authorization_servers' => ['https://example.com/pimcore-oauth'],
             ],
         ] : [];
@@ -88,7 +96,7 @@ final class LoopbackAuthCodeGrantTest extends Unit
         );
         $grant->setClientRepository($clientRepository);
         $grant->setScopeRepository(new ScopeRepository($this->scopeRegistry()));
-        $grant->setDefaultScope('mcp:read');
+        $grant->setDefaultScope($defaultScope);
 
         return $grant;
     }
@@ -282,6 +290,92 @@ final class LoopbackAuthCodeGrantTest extends Unit
         $this->assertInstanceOf(ResourceAuthorizationRequest::class, $authRequest);
         $this->assertNull($authRequest->getState());
         $this->assertSame(self::KNOWN_RESOURCE, $authRequest->getResource());
+    }
+
+    /**
+     * RFC 8707: the token is downscoped to what the named resource can process. Narrowing
+     * at authorization time is what keeps the consent screen honest, since the screen
+     * renders the scopes carried on this request.
+     */
+    public function testScopesAreNarrowedToWhatTheResourceSupports(): void
+    {
+        $authRequest = $this->grant(defaultScope: '', supportedScopes: ['mcp:read'])
+            ->validateAuthorizationRequest($this->authorizeRequest([
+                'code_challenge' => self::CODE_CHALLENGE,
+                'code_challenge_method' => 'S256',
+                'resource' => self::KNOWN_RESOURCE,
+                'scope' => 'mcp:read mcp:write',
+            ]));
+
+        $this->assertSame(['mcp:read'], $this->scopeIdentifiers($authRequest));
+    }
+
+    /**
+     * The production configuration: no default scope is ever set, so a client that names
+     * none arrives with an empty list. Narrowing must leave it alone rather than read it
+     * as "asked for nothing this resource supports" and refuse a working client.
+     */
+    public function testARequestNamingNoScopeIsAccepted(): void
+    {
+        $authRequest = $this->grant(defaultScope: '', supportedScopes: ['mcp:read'])
+            ->validateAuthorizationRequest($this->authorizeRequest([
+                'code_challenge' => self::CODE_CHALLENGE,
+                'code_challenge_method' => 'S256',
+                'resource' => self::KNOWN_RESOURCE,
+                'scope' => null,
+            ]));
+
+        $this->assertSame([], $this->scopeIdentifiers($authRequest));
+    }
+
+    /**
+     * A resource may declare no scopes at all, through configuration or through the public
+     * registry. That constrains nothing, so it must not brick every request naming it.
+     */
+    public function testAResourceDeclaringNoScopesConstrainsNothing(): void
+    {
+        $authRequest = $this->grant(defaultScope: '', supportedScopes: [])
+            ->validateAuthorizationRequest($this->authorizeRequest([
+                'code_challenge' => self::CODE_CHALLENGE,
+                'code_challenge_method' => 'S256',
+                'resource' => self::KNOWN_RESOURCE,
+                'scope' => 'mcp:read mcp:write',
+            ]));
+
+        $this->assertSame(['mcp:read', 'mcp:write'], $this->scopeIdentifiers($authRequest));
+    }
+
+    /**
+     * Asking only for scopes the resource cannot process would yield a token that opens
+     * nothing. league raises its own `invalid_scope` as a redirect, and so must this one,
+     * or the client gets a response it has no way to interpret.
+     */
+    public function testAskingOnlyForUnsupportedScopesIsRefusedAsARedirect(): void
+    {
+        try {
+            $this->grant(defaultScope: '', supportedScopes: ['mcp:read'])
+                ->validateAuthorizationRequest($this->authorizeRequest([
+                    'code_challenge' => self::CODE_CHALLENGE,
+                    'code_challenge_method' => 'S256',
+                    'resource' => self::KNOWN_RESOURCE,
+                    'scope' => 'mcp:write',
+                ]));
+            $this->fail('Expected the request to be rejected.');
+        } catch (OAuthServerException $exception) {
+            $this->assertSame('invalid_scope', $exception->getErrorType());
+            $this->assertNotNull($exception->getRedirectUri());
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function scopeIdentifiers(AuthorizationRequestInterface $request): array
+    {
+        return array_map(
+            static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
+            $request->getScopes(),
+        );
     }
 
     /**

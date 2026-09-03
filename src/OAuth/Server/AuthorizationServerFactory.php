@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ResponseType\ScopedBearerTokenResponse;
 use function sprintf;
 
 /**
@@ -72,6 +73,8 @@ final class AuthorizationServerFactory
             $this->scopeRepository,
             new CryptKey($this->privateKey, $this->passphrase, false),
             $this->encryptionKey,
+            // Reports the granted scope, which league's default response never does.
+            new ScopedBearerTokenResponse(),
         );
 
         $accessTokenTtl = $this->secondsInterval($this->accessTokenTtl);

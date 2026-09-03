@@ -35,8 +35,11 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreI
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Psr\Http\Message\ServerRequestInterface;
+use function array_filter;
 use function array_map;
+use function array_values;
 use function implode;
+use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -74,9 +77,76 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
             }
         }
 
-        return ResourceAuthorizationRequest::from(
-            parent::validateAuthorizationRequest($request),
-            $this->validatedResource($request),
+        // league validates the client and the redirect URI first, and the resource check
+        // must not overtake it: an unknown client paired with a missing resource would
+        // otherwise answer with the list of every registered resource on this server.
+        $authorizationRequest = parent::validateAuthorizationRequest($request);
+        $resource = $this->validatedResource($request);
+
+        $resourceRequest = ResourceAuthorizationRequest::from($authorizationRequest, $resource);
+        $resourceRequest->setScopes($this->narrowToResource($authorizationRequest, $resource));
+
+        return $resourceRequest;
+    }
+
+    /**
+     * RFC 8707: a token is downscoped to what the resource it names can actually process.
+     * Narrowing here rather than when the token is issued is what makes the consent screen
+     * honest, because the screen shows the scopes carried on this request.
+     *
+     * @return ScopeEntityInterface[]
+     *
+     * @throws OAuthServerException
+     */
+    private function narrowToResource(AuthorizationRequestInterface $request, string $resource): array
+    {
+        $supported = $this->resourceRegistry->get($resource)->scopesSupported ?? [];
+        $requested = $request->getScopes();
+
+        // A resource that declares no scopes constrains nothing, and a request that names
+        // none has nothing to narrow. Neither is an error: both are reachable today, and
+        // refusing them would turn working clients away over a token nobody checks.
+        if ($supported === [] || $requested === []) {
+            return $requested;
+        }
+
+        $narrowed = array_values(
+            array_filter(
+                $requested,
+                static fn (ScopeEntityInterface $scope): bool => in_array(
+                    $scope->getIdentifier(),
+                    $supported,
+                    true,
+                ),
+            )
+        );
+
+        if ($narrowed === []) {
+            // Asked only for scopes this resource cannot process: the token would open
+            // nothing, so say so instead of issuing it.
+            throw OAuthServerException::invalidScope(
+                implode(' ', array_map(
+                    static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
+                    $requested,
+                )),
+                $this->redirectUriFor($request),
+            );
+        }
+
+        return $narrowed;
+    }
+
+    /**
+     * The redirect league itself would have used for an `invalid_scope`, so a refusal
+     * raised here reaches the client the same way rather than as a bare response.
+     */
+    private function redirectUriFor(AuthorizationRequestInterface $request): string
+    {
+        $state = $request->getState();
+
+        return $this->makeRedirectUri(
+            $request->getRedirectUri() ?? $this->getClientRedirectUri($request->getClient()),
+            $state !== null ? ['state' => $state] : [],
         );
     }
 
