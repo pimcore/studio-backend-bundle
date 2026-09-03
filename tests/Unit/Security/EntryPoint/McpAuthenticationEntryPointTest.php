@@ -43,6 +43,25 @@ final class McpAuthenticationEntryPointTest extends Unit
         $this->assertFalse($response->headers->has('WWW-Authenticate'));
     }
 
+    /**
+     * Behind a proxy the request host is not the issuer, and the resource is registered
+     * under the issuer. Pointing the client at the request host would send it to a
+     * metadata document that resolves to nothing, so discovery would never start.
+     */
+    public function testChallengeUsesTheIssuerRatherThanTheRequestHost(): void
+    {
+        $entryPoint = new McpAuthenticationEntryPoint(true, 'https://pimcore.example.com');
+
+        $response = $entryPoint->start(Request::create('http://internal.local/pimcore-mcp/message'));
+
+        $this->assertSame(
+            'Bearer resource_metadata='
+            . '"https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp/message",'
+            . ' scope="mcp:read"',
+            $response->headers->get('WWW-Authenticate'),
+        );
+    }
+
     private function mcpRequest(): Request
     {
         return Request::create('https://pimcore.example.com/pimcore-mcp/message');

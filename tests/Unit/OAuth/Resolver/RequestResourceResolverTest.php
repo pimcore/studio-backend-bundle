@@ -95,6 +95,30 @@ final class RequestResourceResolverTest extends Unit
         $this->assertSame('http://localhost/pimcore-mcp/agent/content', $resource->canonicalUri);
     }
 
+    /**
+     * A resource carrying a query cannot be what an endpoint is, and ranking on the whole
+     * identifier would let a long query outrank the resource that actually matches.
+     */
+    public function testAQueryBearingResourceNeverShadowsTheRealOne(): void
+    {
+        $resource = $this->resolve(
+            '/pimcore-mcp/studio/product-read',
+            self::STUDIO_SERVER . '?tenant=a-very-long-tenant-identifier',
+            self::STUDIO_SERVER,
+        );
+
+        $this->assertNotNull($resource);
+        $this->assertSame(self::STUDIO_SERVER, $resource->canonicalUri);
+    }
+
+    public function testAQueryBearingResourceAloneResolvesToNothing(): void
+    {
+        $this->assertNull($this->resolve(
+            '/pimcore-mcp/studio/product-read',
+            self::STUDIO_SERVER . '?tenant=a',
+        ));
+    }
+
     private function resolve(string $path, string ...$registered): ?ProtectedResource
     {
         $registry = new ConfigProtectedResourceRegistry();
