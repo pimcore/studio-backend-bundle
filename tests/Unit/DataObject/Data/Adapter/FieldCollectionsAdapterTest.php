@@ -33,7 +33,10 @@ use ReflectionMethod;
  *
  * Regression test for PEES-1279: a field collection sub-field value that is
  * legitimately falsy (e.g. a numeric field's value/default of 0) must not be
- * silently dropped by FieldCollectionsAdapter::processCollectionRaw().
+ * silently dropped by FieldCollectionsAdapter::processCollectionRaw(), and a
+ * key that is genuinely absent must be distinguished from one explicitly
+ * submitted as null (which the setter-adapter contract allows to clear a
+ * field on non-patch saves).
  */
 final class FieldCollectionsAdapterTest extends Unit
 {
@@ -80,6 +83,21 @@ final class FieldCollectionsAdapterTest extends Unit
     }
 
     /**
+     * A key explicitly submitted as null must still reach the setter adapter
+     * (which may use null to clear the field on a non-patch save) instead of
+     * being conflated with a genuinely absent key.
+     *
+     * @throws Exception
+     */
+    public function testProcessCollectionRawPassesExplicitNullThrough(): void
+    {
+        $result = $this->callProcessCollectionRaw([self::ELEMENT_NAME => null], null);
+
+        $this->assertArrayHasKey(self::ELEMENT_NAME, $result);
+        $this->assertNull($result[self::ELEMENT_NAME]);
+    }
+
+    /**
      * A genuinely absent sub-field (no key in the submitted data at all) must
      * still be skipped, so the fix doesn't turn into "always include".
      *
@@ -93,9 +111,22 @@ final class FieldCollectionsAdapterTest extends Unit
     }
 
     /**
+     * A collection item with no 'data' key at all must not be treated as
+     * having every sub-field explicitly null.
+     *
      * @throws Exception
      */
-    private function callProcessCollectionRaw(array $blockElementData, mixed $adapterReturnValue = null): array
+    public function testProcessCollectionRawSkipsWhenDataKeyMissing(): void
+    {
+        $result = $this->callProcessCollectionRaw(null);
+
+        $this->assertArrayNotHasKey(self::ELEMENT_NAME, $result);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function callProcessCollectionRaw(?array $blockElementData, mixed $adapterReturnValue = null): array
     {
         $subFieldDefinition = $this->makeEmpty(Data::class, [
             'getFieldType' => 'numeric',
@@ -123,15 +154,17 @@ final class FieldCollectionsAdapterTest extends Unit
         $method = new ReflectionMethod(FieldCollectionsAdapter::class, 'processCollectionRaw');
         $method->setAccessible(true);
 
+        $collectionRaw = ['type' => self::COLLECTION_KEY];
+        if ($blockElementData !== null) {
+            $collectionRaw['data'] = $blockElementData;
+        }
+
         return $method->invoke(
             $adapter,
             $this->makeEmpty(Concrete::class),
             $this->makeEmpty(UserInterface::class),
             $this->makeEmpty(Data::class),
-            [
-                'type' => self::COLLECTION_KEY,
-                'data' => $blockElementData,
-            ],
+            $collectionRaw,
             false,
             null,
         );

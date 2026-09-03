@@ -166,9 +166,8 @@ final readonly class FieldCollectionsAdapter implements
         $collectionDef = Fieldcollection\Definition::getByKey($collectionRaw['type']);
 
         foreach ($collectionDef?->getFieldDefinitions() as $elementName => $fd) {
-            $elementValue = $blockElement[$elementName] ?? null;
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
-            if ($elementValue === null || !$adapter) {
+            if (!$adapter || !is_array($blockElement) || !array_key_exists($elementName, $blockElement)) {
                 continue;
             }
 
@@ -176,7 +175,7 @@ final readonly class FieldCollectionsAdapter implements
                 $element,
                 $fd,
                 $elementName,
-                [$elementName => $elementValue],
+                [$elementName => $blockElement[$elementName]],
                 $user,
                 $contextData,
                 $isPatch,
