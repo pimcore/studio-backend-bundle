@@ -39,7 +39,7 @@ final readonly class InheritanceData
      * Whether the field takes part in inheritance at all. A field that does not is
      * reported as not inherited, which on its own is indistinguishable from a field
      * that carries an own value - clients that offer to give a field back to its
-     * origin object need the two apart.
+     * origin object need to tell the two apart.
      */
     public function isInheritable(): bool
     {
