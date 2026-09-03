@@ -858,8 +858,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * A list of access grants keyed by unique name — the file-config equivalent
-     * of the settings-store {name, can_access, can_edit} grid. A bare string is
-     * accepted as a view-only grant (name only), matching {@see McpServerAccessEntry::fromMixed()}.
+     * of the settings-store {name, can_read, can_access, can_edit} grid. A bare string is
+     * accepted as a read-only grant (name only), matching {@see McpServerAccessEntry::fromMixed()}.
      */
     private function mcpAccessGrantListNode(string $name, string $info): ArrayNodeDefinition
     {
@@ -873,6 +873,9 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->children()
                     ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                    // Defaults to true, matching McpServerAccessEntry::fromMixed(): a grant
+                    // that names someone without saying more lets them see the server.
+                    ->booleanNode('can_read')->defaultTrue()->end()
                     ->booleanNode('can_access')->defaultFalse()->end()
                     ->booleanNode('can_edit')->defaultFalse()->end()
                 ->end()
