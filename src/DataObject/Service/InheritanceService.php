@@ -76,7 +76,10 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
 
         if ($adapter === null || $fieldDefinition->supportsInheritance() === false) {
-            return new InheritanceData($object->getId());
+            // Everything below this point takes part in inheritance, so the flag is
+            // only ever turned off here, and the other places that build the data can
+            // keep the default.
+            return new InheritanceData($object->getId(), inheritable: false);
         }
 
         if ($adapter instanceof DataInheritanceInterface) {

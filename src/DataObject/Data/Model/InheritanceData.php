@@ -20,7 +20,8 @@ final readonly class InheritanceData
 {
     public function __construct(
         private int $objectId,
-        private bool $inherited = false
+        private bool $inherited = false,
+        private bool $inheritable = true
     ) {
     }
 
@@ -32,5 +33,16 @@ final readonly class InheritanceData
     public function isInherited(): bool
     {
         return $this->inherited;
+    }
+
+    /**
+     * Whether the field takes part in inheritance at all. A field that does not is
+     * reported as not inherited, which on its own is indistinguishable from a field
+     * that carries an own value - clients that offer to give a field back to its
+     * origin object need the two apart.
+     */
+    public function isInheritable(): bool
+    {
+        return $this->inheritable;
     }
 }
