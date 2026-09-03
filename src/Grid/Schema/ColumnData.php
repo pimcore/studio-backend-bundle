@@ -37,8 +37,13 @@ final class ColumnData implements AdditionalAttributesInterface
         #[Property(description: 'Field Type of the column', type: 'string', example: 'input')]
         private readonly mixed $fieldType,
         #[Property(
-            ref: InheritanceData::class,
-            description: 'Inheritance data of the column field',
+            description: 'Inheritance data of the column field. Either a single InheritanceData object for a '
+                . 'leaf field, or a nested map for localized fields, object bricks and classification stores.',
+            anyOf: [
+                new Schema(ref: InheritanceData::class),
+                new Schema(type: 'object', additionalProperties: true),
+            ],
+            example: ['objectId' => 42, 'inherited' => true, 'inheritable' => true],
             nullable: true
         )]
         private readonly null|InheritanceData|array $inheritance = null
