@@ -38,6 +38,9 @@ use Pimcore\Twig\Extension\Templating\Placeholder\Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 use function is_array;
+use function is_bool;
+use function is_scalar;
+use function is_string;
 use function sprintf;
 
 /**

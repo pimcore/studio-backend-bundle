@@ -36,7 +36,7 @@ final class SentMailProviderTest extends Unit
             'getError' => 'Delivery failed',
             'getParams' => [],
         ]);
-        $listing = new class ($log) extends Listing {
+        $listing = new class($log) extends Listing {
             public function __construct(private readonly Log $log)
             {
             }
