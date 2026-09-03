@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
+use OpenApi\Attributes\AdditionalProperties;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
@@ -66,10 +67,14 @@ class DataObjectDetail extends DataObject
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
         #[Property(
-            description: 'Inheritance object data',
+            description: 'Inheritance data of the object fields, mapped by field key',
             type: 'object',
-            example: ['fieldKey' => new InheritanceData(1, true)])
-        ]
+            example: ['fieldKey' => ['objectId' => 1, 'inherited' => true, 'inheritable' => true]],
+            additionalProperties: new AdditionalProperties(
+                ref: InheritanceData::class,
+                description: 'Inheritance data of the field'
+            ),
+        )]
         private array $inheritanceData = [],
         #[Property(ref: DataObjectDraftData::class)]
         private ?DataObjectDraftData $draftData = null,

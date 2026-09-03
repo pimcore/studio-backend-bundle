@@ -37,9 +37,8 @@ final class ColumnData implements AdditionalAttributesInterface
         #[Property(description: 'Field Type of the column', type: 'string', example: 'input')]
         private readonly mixed $fieldType,
         #[Property(
-            description: 'inheritance',
-            type: 'object',
-            example: ['objectId' => 42, 'inInherited' => true],
+            ref: InheritanceData::class,
+            description: 'Inheritance data of the column field',
             nullable: true
         )]
         private readonly null|InheritanceData|array $inheritance = null
