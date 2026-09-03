@@ -11,3 +11,4 @@ conventions, testing approaches, and infrastructure services.
 - [Dot Notation for Field Definitions](./01_Dot_Notation_for_Field_Definitions.md) - How nested field paths are represented in API requests and responses
 - [API Testing](./02_API_Testing.md) - Running and writing tests for Studio Backend endpoints
 - [MCP Server Infrastructure](./08_MCP_Server.md) - Shared infrastructure for Model Context Protocol servers (experimental)
+- [MCP Server Management](./09_MCP_Server_Management.md) - Configure MCP servers at runtime: tools, read/write sharing, and the Studio management UI (experimental)

@@ -43,6 +43,10 @@ final class Installer extends SettingsStoreAwareInstaller
         UserPermissions::WIDGET_EDITOR->value,
     ];
 
+    private const array MCP_PERMISSIONS = [
+        UserPermissions::MCP_SERVERS->value,
+    ];
+
     public function __construct(
         private readonly Connection $db,
         BundleInterface $bundle,
@@ -542,7 +546,7 @@ final class Installer extends SettingsStoreAwareInstaller
     private function addUserPermission(Schema $schema): void
     {
         if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
-            foreach (self::PERSPECTIVE_PERMISSIONS as $permission) {
+            foreach ([...self::PERSPECTIVE_PERMISSIONS, ...self::MCP_PERMISSIONS] as $permission) {
                 $queryBuilder = $this->db->createQueryBuilder();
                 $queryBuilder
                     ->insert(UserPermissions::DEFINITIONS_TABLE->value)
@@ -566,7 +570,7 @@ final class Installer extends SettingsStoreAwareInstaller
     private function removeUserPermission(Schema $schema): void
     {
         if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
-            foreach (self::PERSPECTIVE_PERMISSIONS as $permission) {
+            foreach ([...self::PERSPECTIVE_PERMISSIONS, ...self::MCP_PERMISSIONS] as $permission) {
                 $queryBuilder = $this->db->createQueryBuilder();
                 $queryBuilder
                     ->delete(UserPermissions::DEFINITIONS_TABLE->value)

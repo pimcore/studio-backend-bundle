@@ -47,6 +47,8 @@ class Configuration implements ConfigurationInterface
 
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
+    public const string MCP_SERVERS_NODE = 'studio_mcp_servers';
+
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
@@ -88,6 +90,7 @@ class Configuration implements ConfigurationInterface
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
+        $this->addMcpServersConfigurationNode($rootNode);
         $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
         $this->addTranslation($rootNode);
@@ -102,6 +105,8 @@ class Configuration implements ConfigurationInterface
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
                 self::ADMIN_SETTINGS_NODE =>
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . SettingRepository::SCOPE,
+                self::MCP_SERVERS_NODE =>
+                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::MCP_SERVERS_NODE,
             ],
             ['read_target']
         );
@@ -789,6 +794,92 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+    /**
+     * MCP server definitions: named tool groups exposed at /pimcore-mcp/{url_slug}.
+     * Shipped defaults live here; runtime-managed servers use the write target
+     * configured under config_location.studio_mcp_servers.
+     */
+    private function addMcpServersConfigurationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::MCP_SERVERS_NODE)
+                ->info('MCP server definitions, keyed by server id.')
+                ->defaultValue([])
+                ->useAttributeAsKey('id')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('name')
+                            ->info('Human-facing display name; defaults to the id.')
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('description')
+                            ->defaultValue('')
+                        ->end()
+                        ->scalarNode('url_slug')
+                            ->info('URL segment under /pimcore-mcp/; defaults to the id.')
+                            ->defaultNull()
+                        ->end()
+                        ->arrayNode('tools')
+                            ->info('Ids of the assigned MCP tools.')
+                            ->scalarPrototype()->end()
+                            ->defaultValue([])
+                        ->end()
+                        ->arrayNode('scopes')
+                            ->info('OAuth scopes advertised for this server (e.g. mcp:read, mcp:write).')
+                            ->scalarPrototype()->end()
+                            ->defaultValue([])
+                        ->end()
+                        ->booleanNode('enabled')
+                            ->defaultTrue()
+                        ->end()
+                        ->arrayNode('access')
+                            ->addDefaultsIfNotSet()
+                            ->info('Who may access the server: owner (username) + public flag + user/role grants.')
+                            ->children()
+                                ->scalarNode('owner')
+                                    ->info('Creator username; auto-listed with full capabilities. Names, not ids.')
+                                    ->defaultNull()
+                                ->end()
+                                ->booleanNode('share_global')
+                                    ->info('Public: any authenticated user may view and use the server (not edit).')
+                                    ->defaultFalse()
+                                ->end()
+                                ->append($this->mcpAccessGrantListNode('shared_users', 'Users granted access, by unique username.'))
+                                ->append($this->mcpAccessGrantListNode('shared_roles', 'Roles granted access, by unique role name.'))
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    /**
+     * A list of access grants keyed by unique name — the file-config equivalent
+     * of the settings-store {name, can_access, can_edit} grid. A bare string is
+     * accepted as a view-only grant (name only), matching {@see McpServerAccessEntry::fromMixed()}.
+     */
+    private function mcpAccessGrantListNode(string $name, string $info): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder($name))->getRootNode();
+        $node
+            ->info($info)
+            ->arrayPrototype()
+                ->beforeNormalization()
+                    ->ifString()
+                    ->then(static fn (string $value): array => ['name' => $value])
+                ->end()
+                ->children()
+                    ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                    ->booleanNode('can_access')->defaultFalse()->end()
+                    ->booleanNode('can_edit')->defaultFalse()->end()
+                ->end()
+            ->end()
+            ->defaultValue([]);
+
+        return $node;
     }
 
     private function addOAuthNode(ArrayNodeDefinition $node): void

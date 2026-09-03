@@ -37,3 +37,73 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler: ~
     Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandlerInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\McpToolErrorHandler
+
+    # --- MCP server definitions ---
+    # Location-aware storage for configured MCP servers. $serverConfigurations
+    # (shipped seed) and $storageConfig (write/read target) are set from bundle
+    # config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepository
+        arguments:
+            $serverConfigurations: []
+            $storageConfig: []
+            $repository: null
+
+    # --- MCP tools ---
+    # Registry of SDK-native #[McpTool] services tagged with McpToolRegistry::TAG.
+    # McpToolPass reflects the tagged services and injects $toolMetadata + a service
+    # $toolLocator; the arguments below are placeholders it overrides.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry:
+        autowire: false
+        arguments:
+            $toolMetadata: []
+            $toolLocator: null
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry
+
+    # Built-in tools (tagged so the registry collects them)
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Tool\Builtin\PingTool:
+        tags: ['pimcore.studio_backend.mcp_tool']
+
+    # --- Serving configured MCP servers over HTTP ---
+    # PSR-16 view of the dedicated MCP session cache pool (pool declared in the
+    # extension's prepend()).
+    pimcore_studio_backend.mcp.session_cache:
+        class: Symfony\Component\Cache\Psr16Cache
+        arguments: ['@pimcore_studio_backend.mcp.session']
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory:
+        arguments:
+            $sessionCache: '@pimcore_studio_backend.mcp.session_cache'
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactoryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Server\McpServerFactory
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver
+
+    # All MCP controllers (the runtime serving endpoint + the Studio-API management
+    # controllers) are public service-controllers.
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Controller\:
+        resource: '../src/Mcp/Controller'
+        public: true
+        tags: ['controller.service_arguments']
+
+    # --- Studio-API: MCP server management + tool catalogue ---
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService:
+        arguments:
+            $issuer: '%pimcore_studio_backend.oauth.issuer%'
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationServiceInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpServerConfigurationService
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueService: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueServiceInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Service\McpToolCatalogueService
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydrator: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydratorInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydrator
+
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydrator: ~
+    Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydratorInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpToolItemHydrator
