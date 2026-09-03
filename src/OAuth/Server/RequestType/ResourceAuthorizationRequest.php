@@ -40,10 +40,26 @@ final class ResourceAuthorizationRequest extends AuthorizationRequest
         $copy->setClient($request->getClient());
         $copy->setRedirectUri($request->getRedirectUri());
         $copy->setScopes($request->getScopes());
-        $copy->setState($request->getState());
-        $copy->setCodeChallenge($request->getCodeChallenge());
-        $copy->setCodeChallengeMethod($request->getCodeChallengeMethod());
         $copy->setAuthorizationApproved($request->isAuthorizationApproved());
+
+        // Every one of these is optional on the wire, and league's getters return null
+        // for an absent value while its setters take a non-nullable string. Copying one
+        // through unguarded turns a spec-legal request into a TypeError, which no
+        // OAuthServerException handler catches, so the whole flow answers 500.
+        $state = $request->getState();
+        if ($state !== null) {
+            $copy->setState($state);
+        }
+
+        $codeChallenge = $request->getCodeChallenge();
+        if ($codeChallenge !== null) {
+            $copy->setCodeChallenge($codeChallenge);
+        }
+
+        $codeChallengeMethod = $request->getCodeChallengeMethod();
+        if ($codeChallengeMethod !== null) {
+            $copy->setCodeChallengeMethod($codeChallengeMethod);
+        }
 
         $user = $request->getUser();
         if ($user !== null) {

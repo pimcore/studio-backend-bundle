@@ -186,7 +186,7 @@ pimcore_studio_backend:
 
 Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
 Applications whose endpoints are only known at runtime register them programmatically instead, through
-`ResourceRegistryInterface`, which is how Data Hub Simple REST and the Pimcore Studio MCP servers declare theirs.
+`ResourceRegistryInterface`, which is how Data Hub Simple REST declares its own.
 
 The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
 not enough on its own: something has to declare a resource, and something has to accept tokens at it.
@@ -204,8 +204,8 @@ token request does not repeat it, and a refresh keeps the resource the original 
 pimcore_studio_backend:
     oauth:
         resources:
-            - uri: 'https://pimcore.example.com/pimcore-mcp/studio/product-read'
-              scopes_supported: ['mcp:read']
+            - uri: 'https://pimcore.example.com/my-bundle/api'
+              scopes_supported: ['mybundle:read']
               authorization_servers: ['https://pimcore.example.com']
 ```
 

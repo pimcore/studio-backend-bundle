@@ -265,6 +265,26 @@ final class LoopbackAuthCodeGrantTest extends Unit
     }
 
     /**
+     * `state` is optional for every client, and league returns null for an absent one
+     * while its setter takes a non-nullable string. Copying it through unguarded turned
+     * a spec-legal request into a TypeError, which no OAuthServerException handler
+     * catches, so the authorization endpoint answered 500 before consent was reached.
+     */
+    public function testAuthorizationRequestWithoutStateIsAccepted(): void
+    {
+        $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => self::KNOWN_RESOURCE,
+            'state' => null,
+        ]));
+
+        $this->assertInstanceOf(ResourceAuthorizationRequest::class, $authRequest);
+        $this->assertNull($authRequest->getState());
+        $this->assertSame(self::KNOWN_RESOURCE, $authRequest->getResource());
+    }
+
+    /**
      * There is no discovery document listing an authorization server's resources, so a
      * client that guessed wrong has nowhere to look. The refusal names them instead.
      */
