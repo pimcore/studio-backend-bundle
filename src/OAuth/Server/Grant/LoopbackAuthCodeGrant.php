@@ -28,12 +28,15 @@ use League\OAuth2\Server\RequestEvent;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\ResponseTypes\ResponseTypeInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RedirectUri\LoopbackRedirectUriValidator;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Psr\Http\Message\ServerRequestInterface;
+use function array_map;
+use function implode;
 use function is_array;
 use function is_string;
 use function json_decode;
@@ -78,9 +81,9 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
     }
 
     /**
-     * RFC 8707: the client may name the resource it wants the token for. An unknown
-     * resource is refused rather than silently ignored, so a client never believes it
-     * holds a narrowly-scoped token when it does not.
+     * RFC 8707: the request names the resource it wants the token for. Both an absent
+     * and an unknown resource are refused rather than silently ignored, so a client
+     * never believes it holds a narrowly-scoped token when it does not.
      *
      * @throws OAuthServerException
      */
@@ -88,22 +91,52 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
     {
         $resource = $this->getQueryStringParameter('resource', $request);
         if ($resource === null) {
-            throw OAuthServerException::invalidRequest(
-                'resource',
-                'The resource the token is requested for must be named (RFC 8707).'
-            );
+            throw OAuthServerException::invalidRequest('resource', $this->missingResourceHint());
         }
 
         if (!$this->resourceRegistry->has($resource)) {
             throw OAuthServerException::invalidRequest(
                 'resource',
-                'The requested resource is not a known protected resource of this server.'
+                'The requested resource is not a known protected resource of this server. '
+                . $this->knownResourcesHint()
             );
         }
 
         // Stamp the canonical form, not the client's spelling, so every consumer of the
         // `aud` claim can compare it without canonicalising first.
         return CanonicalUri::canonicalize($resource);
+    }
+
+    /**
+     * An empty registry and a missing parameter are different problems with the same
+     * symptom, so they get different messages: nothing can be issued at all until a
+     * bundle or the configuration declares a protected resource.
+     */
+    private function missingResourceHint(): string
+    {
+        if ($this->resourceRegistry->all() === []) {
+            return 'This authorization server has no protected resources configured, '
+                . 'so no token can be issued. Declare one under '
+                . 'pimcore_studio_backend.oauth.resources, or install a bundle that registers its own.';
+        }
+
+        return 'The resource the token is requested for must be named (RFC 8707). '
+            . $this->knownResourcesHint();
+    }
+
+    /**
+     * The resource URIs are already public: each one publishes its own RFC 9728
+     * metadata document, and a 401 from the endpoint points at it. Naming them here
+     * only saves the client a discovery round trip it is entitled to make anyway.
+     */
+    private function knownResourcesHint(): string
+    {
+        $known = array_map(
+            static fn (ProtectedResource $resource): string => $resource->canonicalUri,
+            $this->resourceRegistry->all(),
+        );
+
+        return 'Known resources: ' . implode(', ', $known) . '.';
     }
 
     /**

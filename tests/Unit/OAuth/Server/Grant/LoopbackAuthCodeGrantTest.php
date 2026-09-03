@@ -41,20 +41,22 @@ final class LoopbackAuthCodeGrantTest extends Unit
 
     private const string KNOWN_RESOURCE = 'https://example.com/pimcore-mcp';
 
-    private function grant(): LoopbackAuthCodeGrant
+    private function grant(bool $withResources = true): LoopbackAuthCodeGrant
     {
+        $resources = $withResources ? [
+            [
+                'uri' => self::KNOWN_RESOURCE,
+                'scopes_supported' => ['mcp:read'],
+                'authorization_servers' => ['https://example.com/pimcore-oauth'],
+            ],
+        ] : [];
+
         $grant = new LoopbackAuthCodeGrant(
             $this->createMock(AuthCodeRepositoryInterface::class),
             $this->createMock(RefreshTokenRepositoryInterface::class),
             new DateInterval('PT10M'),
             true,
-            new ConfigProtectedResourceRegistry([
-                [
-                    'uri' => self::KNOWN_RESOURCE,
-                    'scopes_supported' => ['mcp:read'],
-                    'authorization_servers' => ['https://example.com/pimcore-oauth'],
-                ],
-            ]),
+            new ConfigProtectedResourceRegistry($resources),
             $this->createMock(TokenRecordStoreInterface::class),
         );
 
@@ -115,10 +117,12 @@ final class LoopbackAuthCodeGrantTest extends Unit
     /**
      * @param array<string, string> $extra
      */
-    private function assertRejectedAsInvalidRequest(array $extra): OAuthServerException
-    {
+    private function assertRejectedAsInvalidRequest(
+        array $extra,
+        bool $withResources = true,
+    ): OAuthServerException {
         try {
-            $this->grant()->validateAuthorizationRequest($this->authorizeRequest($extra));
+            $this->grant($withResources)->validateAuthorizationRequest($this->authorizeRequest($extra));
             $this->fail('Expected the request to be rejected.');
         } catch (OAuthServerException $exception) {
             $this->assertSame('invalid_request', $exception->getErrorType());
@@ -188,5 +192,37 @@ final class LoopbackAuthCodeGrantTest extends Unit
         ]);
 
         $this->assertStringContainsString('resource', $exception->getHint() ?? '');
+    }
+
+    /**
+     * There is no discovery document listing an authorization server's resources, so a
+     * client that guessed wrong has nowhere to look. The refusal names them instead.
+     */
+    public function testRefusalNamesTheKnownResources(): void
+    {
+        $exception = $this->assertRejectedAsInvalidRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => 'https://example.com/not-a-resource',
+        ]);
+
+        $this->assertStringContainsString(self::KNOWN_RESOURCE, $exception->getHint() ?? '');
+    }
+
+    /**
+     * An empty registry and a missing parameter produce the same symptom, so they have
+     * to read differently: nothing can be issued at all until a resource is declared.
+     */
+    public function testRefusalSaysWhenNoResourceIsConfiguredAtAll(): void
+    {
+        $exception = $this->assertRejectedAsInvalidRequest(
+            [
+                'code_challenge' => self::CODE_CHALLENGE,
+                'code_challenge_method' => 'S256',
+            ],
+            withResources: false,
+        );
+
+        $this->assertStringContainsString('no protected resources configured', $exception->getHint() ?? '');
     }
 }
