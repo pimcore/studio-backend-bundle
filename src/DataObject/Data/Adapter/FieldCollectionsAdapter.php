@@ -168,7 +168,7 @@ final readonly class FieldCollectionsAdapter implements
         foreach ($collectionDef?->getFieldDefinitions() as $elementName => $fd) {
             $elementValue = $blockElement[$elementName] ?? null;
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
-            if (!$elementValue || !$adapter) {
+            if ($elementValue === null || !$adapter) {
                 continue;
             }
 
