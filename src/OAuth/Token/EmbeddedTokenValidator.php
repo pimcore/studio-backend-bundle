@@ -122,17 +122,18 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
     }
 
     /**
-     * A token with no audience predates audience binding, or was issued for a request
-     * that named no resource. Those are accepted so that enabling this does not
-     * invalidate tokens already in circulation; a token that DOES name an audience is
-     * held to it.
+     * Fail closed: a token naming no audience is refused everywhere rather than
+     * accepted everywhere. The authorization server requires a request to name the
+     * resource it wants a token for, so a token without one cannot have been issued
+     * by it, and honouring such a token would open every protected resource of this
+     * server at once.
      *
      * @param list<string> $audience
      */
     private function permittedFor(array $audience, string $resourceUri): bool
     {
         if ($audience === []) {
-            return true;
+            return false;
         }
 
         $canonical = CanonicalUri::canonicalize($resourceUri);

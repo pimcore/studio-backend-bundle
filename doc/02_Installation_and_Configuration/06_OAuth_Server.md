@@ -186,12 +186,19 @@ pimcore_studio_backend:
 
 Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
 Applications whose endpoints are only known at runtime register them programmatically instead, through
-`ResourceRegistryInterface`.
+`ResourceRegistryInterface`, which is how Data Hub Simple REST and the Pimcore Studio MCP servers declare theirs.
+
+The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
+not enough on its own: something has to declare a resource, and something has to accept tokens at it.
 
 A client names the resource it wants a token for with the RFC 8707 `resource` parameter on the authorization
-request. An unknown resource is rejected; a known one is stamped onto the token as its `aud` and enforced
-when that token is presented, so a token minted for one resource is refused at another. A client that sends
-no `resource` gets an unbound token, which stays valid at every resource, so existing clients keep working.
+request. The parameter is required, and an unknown resource is rejected, so a client never believes it holds a
+narrowly scoped token when it does not. The named resource is stamped onto the token as its `aud` and enforced
+when that token is presented, so a token minted for one resource is refused at another. A token carrying no
+audience is refused everywhere rather than accepted everywhere.
+
+Only the authorization request carries the parameter. The binding travels with the authorization code, so the
+token request does not repeat it, and a refresh keeps the resource the original grant was issued for.
 
 ```yaml
 pimcore_studio_backend:

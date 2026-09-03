@@ -81,17 +81,18 @@ final class EmbeddedTokenValidatorTest extends Unit
     }
 
     /**
-     * A token that names no audience predates the binding or was issued for a request
-     * that named no resource, and stays valid so existing clients keep working.
+     * A token naming no audience is refused rather than honoured everywhere. Accepting
+     * one would let a single token reach every protected resource of this server, which
+     * is the confused deputy that resource binding exists to prevent.
      */
-    public function testAcceptsTokenWithoutAudience(): void
+    public function testRejectsTokenWithoutAudience(): void
     {
         $user = new User();
         $user->setUsername('agent-user');
         $keys = $this->keyPair();
         $token = $this->mint($keys, ['aud' => null]);
 
-        $this->assertNotNull($this->validator($keys['public'], $user)->validate($token, self::RESOURCE));
+        $this->assertNull($this->validator($keys['public'], $user)->validate($token, self::RESOURCE));
     }
 
     public function testRejectsExpiredToken(): void
