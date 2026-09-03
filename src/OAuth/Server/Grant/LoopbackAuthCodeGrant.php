@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AccessTokenEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RedirectUri\LoopbackRedirectUriValidator;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Psr\Http\Message\ServerRequestInterface;
 use function is_array;
 use function is_string;
@@ -100,7 +101,9 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
             );
         }
 
-        return $resource;
+        // Stamp the canonical form, not the client's spelling, so every consumer of the
+        // `aud` claim can compare it without canonicalising first.
+        return CanonicalUri::canonicalize($resource);
     }
 
     /**
