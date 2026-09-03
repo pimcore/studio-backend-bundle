@@ -73,15 +73,17 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): array|InheritanceData {
-        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
-
-        if ($adapter === null || $fieldDefinition->supportsInheritance() === false) {
-            // Everything below this point takes part in inheritance, so the flag is
-            // only ever turned off here, and the other places that build the data can
-            // keep the default.
+        if ($fieldDefinition->supportsInheritance() === false) {
+            // The only place the flag is turned off, and the field type itself is the
+            // only thing that can turn it off - everything below takes part in
+            // inheritance, so the other places that build the data keep the default.
             return new InheritanceData($object->getId(), inheritable: false);
         }
 
+        // A field type without a data adapter is one Studio has no adapter registered
+        // for; that says nothing about whether the field can inherit, so it keeps the
+        // flag and falls through to the generic origin walk.
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataInheritanceInterface) {
             return $adapter->getFieldInheritance(
                 $object,

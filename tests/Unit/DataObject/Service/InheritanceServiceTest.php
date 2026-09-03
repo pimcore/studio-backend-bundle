@@ -31,16 +31,35 @@ final class InheritanceServiceTest extends Unit
 
     private const FIELD = 'carClass';
 
-    public function testFieldWithoutDataAdapterIsNotInheritable(): void
+    /**
+     * A missing data adapter only means Studio has no adapter registered for the field
+     * type - it says nothing about whether the Pimcore field can inherit, so such a
+     * field keeps the flag and goes through the generic origin walk.
+     */
+    public function testFieldWithoutDataAdapterIsStillInheritable(): void
     {
         $inheritanceData = $this->processFieldDefinition(
             $this->createFieldDefinition(supportsInheritance: true),
             withAdapter: false
         );
 
-        $this->assertFalse($inheritanceData->isInheritable());
+        $this->assertTrue($inheritanceData->isInheritable());
         $this->assertFalse($inheritanceData->isInherited());
         $this->assertSame(self::OBJECT_ID, $inheritanceData->getObjectId());
+    }
+
+    public function testFieldWithoutDataAdapterIsResolvedFromAnAncestor(): void
+    {
+        $inheritanceData = $this->processFieldDefinition(
+            $this->createFieldDefinition(supportsInheritance: true),
+            withAdapter: false,
+            ownValue: null,
+            ancestor: $this->createObject(self::ANCESTOR_ID, 'coupe')
+        );
+
+        $this->assertTrue($inheritanceData->isInheritable());
+        $this->assertTrue($inheritanceData->isInherited());
+        $this->assertSame(self::ANCESTOR_ID, $inheritanceData->getObjectId());
     }
 
     public function testFieldTypeThatDoesNotSupportInheritanceIsNotInheritable(): void
@@ -51,12 +70,24 @@ final class InheritanceServiceTest extends Unit
 
         $this->assertFalse($inheritanceData->isInheritable());
         $this->assertFalse($inheritanceData->isInherited());
+        $this->assertSame(self::OBJECT_ID, $inheritanceData->getObjectId());
+    }
+
+    public function testFieldTypeThatDoesNotSupportInheritanceIsNotInheritableWithoutAdapterEither(): void
+    {
+        $inheritanceData = $this->processFieldDefinition(
+            $this->createFieldDefinition(supportsInheritance: false),
+            withAdapter: false
+        );
+
+        $this->assertFalse($inheritanceData->isInheritable());
+        $this->assertFalse($inheritanceData->isInherited());
     }
 
     /**
-     * The case the flag exists for. Without it this is byte for byte what the two
-     * tests above produce, so a client cannot tell a field carrying an own value
-     * from one that can never take part in inheritance.
+     * The case the flag exists for. Without it this is byte for byte what a field type
+     * that cannot inherit produces, so a client cannot tell a field carrying an own
+     * value from one that can never take part in inheritance.
      */
     public function testFieldWithOwnValueIsInheritableButNotInherited(): void
     {
