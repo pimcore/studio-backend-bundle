@@ -67,6 +67,16 @@ server](../02_Installation_and_Configuration/06_OAuth_Server.md) (`Authorization
 signature and audience and resolves the Pimcore user. On failure it returns `null`, so `PatAuthenticator` still
 runs — hence it must precede it in the chain.
 
+The audience it validates against is **the protected resource registered for the endpoint being called**, not a
+path this bundle derives. The endpoints behind this firewall belong to different bundles, so the most specific
+registered resource covering the request is what the token is held to, and the URI is built from the configured
+issuer when one is set.
+
+That makes registration the switch: an endpoint whose owner registers no protected resource does not accept
+OAuth, and the authenticator declines so the rest of the chain still runs. Every other credential on such an
+endpoint keeps working unchanged. Servers managed through
+[MCP Server Management](./09_MCP_Server_Management.md) register themselves, so nothing extra is needed for them.
+
 See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling and
 configuring the server.
 
