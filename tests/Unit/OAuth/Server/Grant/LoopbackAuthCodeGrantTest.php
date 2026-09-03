@@ -19,16 +19,24 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
+use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AuthCodeEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\UserEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\LoopbackAuthCodeGrant;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\RequestType\ResourceAuthorizationRequest;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionMethod;
+use function array_values;
+use function parse_str;
+use function parse_url;
+use const PHP_URL_QUERY;
 
 final class LoopbackAuthCodeGrantTest extends Unit
 {
@@ -41,8 +49,12 @@ final class LoopbackAuthCodeGrantTest extends Unit
 
     private const string KNOWN_RESOURCE = 'https://example.com/pimcore-mcp';
 
-    private function grant(bool $withResources = true): LoopbackAuthCodeGrant
-    {
+    private const string ENCRYPTION_KEY = 'def000004242424242424242424242424242424242424242424242424242424242';
+
+    private function grant(
+        bool $withResources = true,
+        ?TokenRecordStoreInterface $store = null,
+    ): LoopbackAuthCodeGrant {
         $resources = $withResources ? [
             [
                 'uri' => self::KNOWN_RESOURCE,
@@ -51,13 +63,23 @@ final class LoopbackAuthCodeGrantTest extends Unit
             ],
         ] : [];
 
+        $authCodeRepository = $this->createMock(AuthCodeRepositoryInterface::class);
+        $authCodeRepository->method('getNewAuthCode')->willReturnCallback(
+            static function (): AuthCodeEntity {
+                $code = new AuthCodeEntity();
+                $code->setIdentifier('auth-code-id');
+
+                return $code;
+            },
+        );
+
         $grant = new LoopbackAuthCodeGrant(
-            $this->createMock(AuthCodeRepositoryInterface::class),
+            $authCodeRepository,
             $this->createMock(RefreshTokenRepositoryInterface::class),
             new DateInterval('PT10M'),
             true,
             new ConfigProtectedResourceRegistry($resources),
-            $this->createMock(TokenRecordStoreInterface::class),
+            $store ?? $this->createMock(TokenRecordStoreInterface::class),
         );
 
         $clientRepository = $this->createMock(ClientRepositoryInterface::class);
@@ -181,8 +203,9 @@ final class LoopbackAuthCodeGrantTest extends Unit
     }
 
     /**
-     * The resource is required, not optional: a token that named none would be accepted
-     * by every protected resource of this server, so a client cannot decline the binding.
+     * The resource is required, not optional. A token naming none is refused everywhere,
+     * so accepting the request would only mint a credential that opens nothing; refusing
+     * it surfaces the client's mistake at authorization time instead.
      */
     public function testRequestWithoutResourceIsRejected(): void
     {
@@ -192,6 +215,53 @@ final class LoopbackAuthCodeGrantTest extends Unit
         ]);
 
         $this->assertStringContainsString('resource', $exception->getHint() ?? '');
+    }
+
+    /**
+     * The binding has to survive the round trip through league's encrypted authorization
+     * code: it is written when the code is issued, and recovered by decrypting the code
+     * at the token request. Both ends key off `auth_code_id`, which is league's name and
+     * not ours, so this drives the real encoder rather than a hand-built payload.
+     */
+    public function testResourceSurvivesTheAuthorizationCodeRoundTrip(): void
+    {
+        $bound = [];
+        $store = $this->makeEmpty(TokenRecordStoreInterface::class, [
+            'bindResource' => function (string $identifier, ?string $resource) use (&$bound): void {
+                $bound[$identifier] = $resource;
+            },
+            'resourceFor' => function (string $identifier) use (&$bound): ?string {
+                return $bound[$identifier] ?? null;
+            },
+        ]);
+
+        $grant = $this->grant(store: $store);
+        $grant->setEncryptionKey(self::ENCRYPTION_KEY);
+
+        $authRequest = $grant->validateAuthorizationRequest($this->authorizeRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => self::KNOWN_RESOURCE,
+        ]));
+        $authRequest->setUser(new UserEntity('21'));
+        $authRequest->setAuthorizationApproved(true);
+
+        $redirect = $grant->completeAuthorizationRequest($authRequest)
+            ->generateHttpResponse(new Response())
+            ->getHeaderLine('Location');
+        parse_str((string) parse_url($redirect, PHP_URL_QUERY), $query);
+
+        // The code was bound as it was issued.
+        $this->assertSame([self::KNOWN_RESOURCE], array_values($bound));
+
+        // And decrypting it at the token request recovers that binding.
+        $recovered = (new ReflectionMethod($grant, 'boundResource'))->invoke(
+            $grant,
+            (new ServerRequest('POST', 'https://example.com/pimcore-oauth/token'))
+                ->withParsedBody(['code' => $query['code'] ?? '']),
+        );
+
+        $this->assertSame(self::KNOWN_RESOURCE, $recovered);
     }
 
     /**

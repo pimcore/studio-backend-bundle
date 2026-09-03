@@ -28,9 +28,9 @@ use function is_string;
 /**
  * Refresh-token grant that carries the resource binding across a refresh.
  *
- * Without this, refreshing would silently widen a token: the new access token would
- * carry no `aud` and would therefore be accepted at every protected resource, which
- * is exactly what audience binding exists to prevent.
+ * Without this, refreshing would break a token: the new access token would carry no
+ * `aud`, and the validator refuses an audience-less token at every protected resource,
+ * so a refresh would hand back a credential that opens nothing.
  *
  * The binding is read from the token record rather than the refresh payload, because
  * league builds that payload itself and offers no extension point.

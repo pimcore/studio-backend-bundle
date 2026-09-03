@@ -43,8 +43,8 @@ final class RefreshTokenRepository implements RefreshTokenRepositoryInterface
         $accessToken = $refreshTokenEntity->getAccessToken();
 
         // Recording the audience here is what carries the RFC 8707 binding across a
-        // refresh: without it the refreshed token would come back unbound and be
-        // accepted at every protected resource.
+        // refresh: without it the refreshed token would come back unbound, and an
+        // unbound token is refused at every protected resource.
         $this->tokenRecordStore->persist(
             $refreshTokenEntity->getIdentifier(),
             OAuthTokenRecord::TYPE_REFRESH,

@@ -265,9 +265,10 @@ Two consequences for an application:
   configured issuer over the request's host: the URI has to be byte-identical when the resource is
   registered, when a token is requested for it, and when that token is validated, and a Host header behind a
   proxy will not be.
-- **A token with no audience is accepted.** A client that does not send `resource` gets an unbound token,
-  which stays valid everywhere. That keeps existing clients working, and it means audience binding protects
-  clients that opt in rather than being a wall. Do not treat the presence of an audience as guaranteed.
+- **A token with no audience is refused.** The authorization request has to name a resource, and a token
+  carrying no `aud` is rejected at every protected resource rather than accepted at all of them. Audience
+  binding is a wall, not an opt-in, so a client that does not send `resource` gets an error at authorization
+  time rather than a credential that fails later.
 
 ## What the platform does not do yet
 

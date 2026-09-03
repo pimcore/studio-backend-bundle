@@ -55,8 +55,10 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
     }
 
     /**
-     * The resource this token is for (RFC 8707). Null leaves `aud` off the token,
-     * which is what a request that named no resource gets.
+     * The resource this token is for (RFC 8707). Null leaves `aud` off the token, and
+     * is only a defensive state: the authorization request is refused before issuance
+     * unless it names a resource, and a token without `aud` is refused by the validator
+     * at every protected resource.
      */
     public function setAudience(?string $audience): void
     {
