@@ -21,9 +21,9 @@ firewalls behave.
 > **Experimental.** The feature is under active development; configuration keys and behavior may change
 > between minor versions. Enable it consciously and pin the bundle version.
 
-Two applications accept its tokens today: the bundle's own
-[MCP servers](../04_Development_Details/08_MCP_Server.md), where OAuth is one of several accepted
-credentials, and Data Hub Simple REST. Neither is privileged; both build on the same public contracts.
+Two applications accept its tokens: the bundle's own [MCP firewall](../04_Development_Details/08_MCP_Server.md),
+where OAuth is one of several accepted credentials, and Data Hub Simple REST. Neither is privileged; both build
+on the same public contracts, and any bundle can do the same.
 
 ## What it provides
 
@@ -32,11 +32,13 @@ credentials, and Data Hub Simple REST. Neither is privileged; both build on the 
 - **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) — the `S256`
   method is **required**; `plain` is rejected.
 - **Refresh tokens**.
-- Three ways to onboard clients, all resolving to **public** clients (PKCE, no secret): **pre-registered**
-  clients declared in config, optional **Dynamic Client Registration**
-  ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata Documents**. There are
-  no confidential/service clients and no Client Credentials grant. Non-interactive machine access uses
-  whatever static credential the target application supports, for example the
+- Three ways to onboard clients: **pre-registered** clients declared in config, optional **Dynamic Client
+  Registration** ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata
+  Documents**. Pre-registered and metadata-document clients are always public (PKCE, no secret). A dynamically
+  registered client is public only when it registers `token_endpoint_auth_method: none`; RFC 7591 defaults an
+  omitted value to `client_secret_basic`, and the server then issues a secret. There is no Client Credentials
+  grant either way, so a client always acts for a logged-in user. Non-interactive machine access uses whatever
+  static credential the target application supports, for example the
   [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT).
 
 ## Enabling
@@ -116,20 +118,24 @@ The Authorization Code + PKCE flow, end to end:
    redirects to the Studio consent UI (`oauth.consent_path`), where the user logs in and approves.
 3. On approval the client receives an authorization code and exchanges it at `/pimcore-oauth/token`, presenting
    the PKCE `code_verifier`. It gets an access token (a signed JWT) and, optionally, a refresh token.
-4. The client calls the MCP endpoint (`/pimcore-mcp/studio/{server}`) with `Authorization: Bearer <jwt>`. The
-   `pimcore_mcp` firewall's `OAuthAccessTokenAuthenticator` validates the token and resolves the Pimcore user.
+4. The client calls the resource it named, presenting `Authorization: Bearer <jwt>`. For an endpoint behind
+   the `pimcore_mcp` firewall, its `OAuthAccessTokenAuthenticator` validates the token and resolves the
+   Pimcore user; another application validates it wherever it already authenticates.
 
 A `401` from a protected resource carries a `WWW-Authenticate` challenge pointing at the resource's metadata, so
 a compliant client can discover where to authenticate.
 
-> **Scopes.** Scopes (e.g. `mcp:read`) are advertised in metadata and carried on tokens, but authorization is
-> enforced by **Pimcore user permissions** (and, for MCP servers, per-server access) rather than by scope
-> checks. Treat scopes as descriptive for now.
+> **Scopes.** Scopes (e.g. `mcp:read`) are advertised in metadata and carried on tokens, but nothing compares
+> a granted scope against an operation. Authorization is **each application's own rules** instead: Pimcore user
+> permissions plus per-server access behind the MCP firewall, a per-configuration allow-list in Data Hub Simple
+> REST. Treat scopes as descriptive for now.
 
 ## Onboarding clients
 
-Use one (or several) of the following. All three yield **public** clients that authenticate a logged-in
-Pimcore user via the Authorization Code + PKCE flow — none carry a secret.
+Use one (or several) of the following. All three authenticate a logged-in Pimcore user via the Authorization
+Code flow; there is no Client Credentials grant. Pre-registered and metadata-document clients are public and
+use PKCE with no secret. A dynamically registered client gets a secret unless it registers
+`token_endpoint_auth_method: none`.
 
 ### Pre-registered clients
 

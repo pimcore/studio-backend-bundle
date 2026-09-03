@@ -191,21 +191,28 @@ server is switched off.
 ### Step 3: Register protected resources
 
 Inject `ResourceRegistryInterface` and register one resource per endpoint that acts as an audience. The
-canonical URI depends on the incoming scheme and host, so registration happens per request rather than at
-compile time:
+registry is built per request rather than at compile time, so registration happens in a `kernel.request`
+subscriber:
 
 ```php
+$base = $this->issuer ?? $request->getSchemeAndHttpHost();
+
 $this->resourceRegistry->register(
     new ProtectedResource(
-        $request->getSchemeAndHttpHost() . '/my-bundle-prefix/endpoint',
-        ['mcp:read'],
-        [$issuer],
+        $base . '/my-bundle-prefix/endpoint',
+        ['mybundle:read'],
+        [$base],
     )
 );
 ```
 
-Gate that on the paths that actually consult the registry, your endpoint and the well-known prefix. Running
-it on every request lets a varied `Host` header grow the registry unboundedly on a long-running worker.
+Register every resource you own on every main request, not only the one being addressed: a metadata document
+is fetched on a `.well-known` request that matches none of your routes, and the authorization request is
+validated on an OAuth route, so a path filter would leave those lookups unresolvable. The cost is two array
+writes on requests that never consult the registry.
+
+Preferring the configured issuer over the request host also bounds the registry: with `oauth.issuer` unset,
+each distinct `Host` header registers its own set of URIs on a long-running worker.
 
 ### Step 4: Emit the challenge
 
