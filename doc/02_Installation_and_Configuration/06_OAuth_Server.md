@@ -125,10 +125,11 @@ The Authorization Code + PKCE flow, end to end:
 A `401` from a protected resource carries a `WWW-Authenticate` challenge pointing at the resource's metadata, so
 a compliant client can discover where to authenticate.
 
-> **Scopes.** Scopes (e.g. `mcp:read`) are advertised in metadata and carried on tokens, but nothing compares
-> a granted scope against an operation. Authorization is **each application's own rules** instead: Pimcore user
-> permissions plus per-server access behind the MCP firewall, a per-configuration allow-list in Data Hub Simple
-> REST. Treat scopes as descriptive for now.
+> **Scopes.** A token carries only the scopes the resource it names declares, and the granted set is reported
+> back in the `scope` response parameter. Nothing compares a granted scope against an operation, though:
+> authorization is **each application's own rules** instead, meaning Pimcore user permissions plus per-server
+> access behind the MCP firewall, or a per-configuration allow-list in Data Hub Simple REST. Treat a scope as a
+> label shown at consent time rather than a permission.
 
 ## Onboarding clients
 
@@ -206,6 +207,13 @@ audience is refused everywhere rather than accepted everywhere.
 Only the authorization request carries the parameter. The binding travels with the authorization code, so the
 token request does not repeat it, and a refresh keeps the resource the original grant was issued for.
 
+`scopes_supported` is what a token for that resource may carry. A client asking for more is narrowed to the
+intersection, which is what the consent screen then shows and what the `scope` response parameter reports, so
+a client that reads the server-wide catalogue instead of this resource's own metadata does not have the user
+consent to scopes the resource cannot process. Asking **only** for scopes it does not declare is refused with
+`invalid_scope`, since the resulting token would open nothing. A resource that declares no scopes constrains
+nothing, and a request that names none is left alone.
+
 ```yaml
 pimcore_studio_backend:
     oauth:
@@ -239,7 +247,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
 | `client_id_metadata_documents.allow_insecure` | `false` | Dev only: permit http/loopback `client_id` URLs. |
 | `client_id_metadata_documents.cache_ttl` | `300` | Seconds to cache a fetched client metadata document. |
-| `resources` | `[]` | Protected resources / token audiences (see above). |
+| `resources` | `[]` | Protected resources / token audiences; `scopes_supported` caps a token's scopes. |
 
 ## Security considerations
 

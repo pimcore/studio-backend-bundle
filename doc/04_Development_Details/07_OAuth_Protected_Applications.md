@@ -206,6 +206,9 @@ $this->resourceRegistry->register(
 );
 ```
 
+The scopes passed here are not decoration: they cap what a token for this resource may carry, and a client
+that asks for more is narrowed to them before consent is shown.
+
 Register every resource you own on every main request, not only the one being addressed: a metadata document
 is fetched on a `.well-known` request that matches none of your routes, and the authorization request is
 validated on an OAuth route, so a path filter would leave those lookups unresolvable. The cost is two array
@@ -244,6 +247,12 @@ Tag the service with `ScopeProviderInterface::TAG`. The authorization endpoint t
 dynamic clients may register it, and the server metadata advertises it. Ship only scopes that correspond to
 operations you actually have: a scope a user can consent to that grants nothing is worse than no scope.
 
+The provider makes a scope *exist*; listing it in a resource's `scopesSupported` is what lets a token for that
+resource carry it. Those are separate steps, and the second is the one that matters at consent time: a client
+asking for more than the resource declares is narrowed to the intersection, so the user is shown only the
+scopes that resource can process. Declare on each resource exactly what it accepts, because the server-wide
+catalogue is the union across every bundle and a client reading that instead will over-ask.
+
 ### Step 6: Apply your own authorization
 
 Authentication produced a Pimcore user. What that user may do is yours to decide, at the point where a
@@ -280,9 +289,10 @@ Two consequences for an application:
 
 ## What the platform does not do yet
 
-**Scopes are not enforced.** They are requested, consented to, carried on the token and advertised per
-resource, but nothing compares a granted scope against an operation. Treat a scope as a label shown at
-consent time, not a guarantee, and enforce it yourself if your operations differ in privilege.
+**Scopes are not enforced at call time.** They are requested, consented to, narrowed to the resource, carried
+on the token and reported back, but nothing compares a granted scope against an operation. What a token carries
+is therefore an upper bound the server maintains, not a check anyone performs: treat a scope as a label shown
+at consent time, not a guarantee, and enforce it yourself if your operations differ in privilege.
 
 ## Related
 
