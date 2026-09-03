@@ -13,10 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
-use OpenApi\Attributes\AdditionalProperties;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
@@ -67,13 +65,19 @@ class DataObjectDetail extends DataObject
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
         #[Property(
-            description: 'Inheritance data of the object fields, mapped by field key',
+            description: 'Inheritance data of the object fields, nested under a container key. A leaf holds an '
+                . 'InheritanceData object, while localized fields, object bricks and classification stores add '
+                . 'further nested maps keyed by language, brick type or classification group.',
             type: 'object',
-            example: ['fieldKey' => ['objectId' => 1, 'inherited' => true, 'inheritable' => true]],
-            additionalProperties: new AdditionalProperties(
-                ref: InheritanceData::class,
-                description: 'Inheritance data of the field'
-            ),
+            example: [
+                'metaData' => [
+                    'fieldKey' => ['objectId' => 1, 'inherited' => true, 'inheritable' => true],
+                    'localizedFieldKey' => [
+                        'en' => ['objectId' => 1, 'inherited' => false, 'inheritable' => true],
+                    ],
+                ],
+            ],
+            additionalProperties: true,
         )]
         private array $inheritanceData = [],
         #[Property(ref: DataObjectDraftData::class)]
