@@ -46,6 +46,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
@@ -257,6 +258,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+
+        $container->getDefinition(RequestResourceResolver::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
