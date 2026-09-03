@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
@@ -52,6 +52,7 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     public function __construct(
         private readonly bool $enabled,
         private readonly TokenValidatorInterface $tokenValidator,
+        private readonly RequestResourceResolverInterface $resourceResolver,
     ) {
     }
 
@@ -79,7 +80,16 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     {
         $token = $this->bearerToken($request) ?? '';
 
-        $resolved = $this->tokenValidator->validate($token, $this->resourceUri($request));
+        // The endpoints behind this firewall belong to other bundles. Whoever owns
+        // one registers it as a protected resource, and that registration names the
+        // audience. Without one there is no audience a token could carry for this
+        // endpoint, so decline and leave the request to the rest of the chain.
+        $resource = $this->resourceResolver->resolve($request);
+        if ($resource === null) {
+            throw new AuthenticationException('This endpoint is not a registered OAuth protected resource.');
+        }
+
+        $resolved = $this->tokenValidator->validate($token, $resource->canonicalUri);
         if ($resolved === null) {
             throw new AuthenticationException('Invalid or expired OAuth access token.');
         }
@@ -120,10 +130,5 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         $token = substr($header, strlen(self::BEARER_PREFIX));
 
         return $token === '' ? null : $token;
-    }
-
-    private function resourceUri(Request $request): string
-    {
-        return CanonicalUri::canonicalize($request->getSchemeAndHttpHost() . '/pimcore-mcp');
     }
 }
