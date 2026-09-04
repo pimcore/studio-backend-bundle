@@ -30,16 +30,39 @@ final readonly class TokenRecordStore implements TokenRecordStoreInterface
     ) {
     }
 
-    public function persist(string $identifier, string $type, int $expiresAt, ?int $userId, ?string $clientId): void
-    {
+    public function persist(
+        string $identifier,
+        string $type,
+        int $expiresAt,
+        ?int $userId,
+        ?string $clientId,
+        ?string $resource = null
+    ): void {
         if ($this->find($identifier) !== null) {
             throw UniqueTokenIdentifierConstraintViolationException::create();
         }
 
-        $this->entityManager->persist(
-            new OAuthTokenRecord($identifier, $type, $expiresAt, $userId, $clientId, time())
-        );
+        $record = new OAuthTokenRecord($identifier, $type, $expiresAt, $userId, $clientId, time());
+        $record->setResource($resource);
+
+        $this->entityManager->persist($record);
         $this->entityManager->flush();
+    }
+
+    public function bindResource(string $identifier, ?string $resource): void
+    {
+        $record = $this->find($identifier);
+        if ($record === null) {
+            return;
+        }
+
+        $record->setResource($resource);
+        $this->entityManager->flush();
+    }
+
+    public function resourceFor(string $identifier): ?string
+    {
+        return $this->find($identifier)?->getResource();
     }
 
     public function revoke(string $identifier): void

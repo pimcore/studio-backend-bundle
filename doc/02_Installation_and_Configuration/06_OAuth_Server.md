@@ -6,8 +6,13 @@ description: Embedded, opt-in OAuth 2.1 authorization server for authenticating 
 # OAuth 2.1 Authorization Server (Experimental)
 
 The Studio Backend Bundle ships an embedded **OAuth 2.1 authorization server**. It lets standards-based
-clients — most importantly external [MCP](https://modelcontextprotocol.io/) clients — obtain a bearer token
-and call Pimcore endpoints on behalf of a Pimcore user, without static credentials.
+clients obtain a bearer token and call Pimcore endpoints on behalf of a Pimcore user, without static
+credentials.
+
+This page covers running the authorization server: enabling it, key material, endpoints, and onboarding
+clients. It issues tokens and does not care which endpoints they are presented to. Accepting those tokens is
+a separate role, filled by any bundle that makes its endpoints a *resource server*. To build one, see
+[OAuth-Protected Applications](../04_Development_Details/07_OAuth_Protected_Applications.md).
 
 It is **opt-in** (off by default) and deliberately **isolated from your application's global security
 configuration**: enabling it adds a self-contained set of routes and does not change how the rest of your
@@ -16,9 +21,9 @@ firewalls behave.
 > **Experimental.** The feature is under active development; configuration keys and behavior may change
 > between minor versions. Enable it consciously and pin the bundle version.
 
-It is one of several ways to authenticate against the `pimcore_mcp` firewall — see
-[MCP Server Infrastructure](../04_Development_Details/08_MCP_Server.md) for the full authenticator chain and
-the static-token alternative.
+Two applications accept its tokens: the bundle's own [MCP firewall](../04_Development_Details/08_MCP_Server.md),
+where OAuth is one of several accepted credentials, and Data Hub Simple REST. Neither is privileged; both build
+on the same public contracts, and any bundle can do the same.
 
 ## What it provides
 
@@ -27,11 +32,14 @@ the static-token alternative.
 - **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) — the `S256`
   method is **required**; `plain` is rejected.
 - **Refresh tokens**.
-- Three ways to onboard clients, all resolving to **public** clients (PKCE, no secret): **pre-registered**
-  clients declared in config, optional **Dynamic Client Registration**
-  ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata Documents**. There are
-  no confidential/service clients and no Client Credentials grant — non-interactive/machine access uses the
-  [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT) instead.
+- Three ways to onboard clients: **pre-registered** clients declared in config, optional **Dynamic Client
+  Registration** ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata
+  Documents**. Pre-registered and metadata-document clients are always public (PKCE, no secret). A dynamically
+  registered client is public only when it registers `token_endpoint_auth_method: none`; RFC 7591 defaults an
+  omitted value to `client_secret_basic`, and the server then issues a secret. There is no Client Credentials
+  grant either way, so a client always acts for a logged-in user. Non-interactive machine access uses whatever
+  static credential the target application supports, for example the
+  [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT).
 
 ## Enabling
 
@@ -110,20 +118,25 @@ The Authorization Code + PKCE flow, end to end:
    redirects to the Studio consent UI (`oauth.consent_path`), where the user logs in and approves.
 3. On approval the client receives an authorization code and exchanges it at `/pimcore-oauth/token`, presenting
    the PKCE `code_verifier`. It gets an access token (a signed JWT) and, optionally, a refresh token.
-4. The client calls the MCP endpoint (`/pimcore-mcp/studio/{server}`) with `Authorization: Bearer <jwt>`. The
-   `pimcore_mcp` firewall's `OAuthAccessTokenAuthenticator` validates the token and resolves the Pimcore user.
+4. The client calls the resource it named, presenting `Authorization: Bearer <jwt>`. For an endpoint behind
+   the `pimcore_mcp` firewall, its `OAuthAccessTokenAuthenticator` validates the token and resolves the
+   Pimcore user; another application validates it wherever it already authenticates.
 
 A `401` from a protected resource carries a `WWW-Authenticate` challenge pointing at the resource's metadata, so
 a compliant client can discover where to authenticate.
 
-> **Scopes.** Scopes (e.g. `mcp:read`) are advertised in metadata and carried on tokens, but authorization is
-> enforced by **Pimcore user permissions** (and, for MCP servers, per-server access) rather than by scope
-> checks. Treat scopes as descriptive for now.
+> **Scopes.** A token carries only the scopes the resource it names declares, and the granted set is reported
+> back in the `scope` response parameter. Nothing compares a granted scope against an operation, though:
+> authorization is **each application's own rules** instead, meaning Pimcore user permissions plus per-server
+> access behind the MCP firewall, or a per-configuration allow-list in Data Hub Simple REST. Treat a scope as a
+> label shown at consent time rather than a permission.
 
 ## Onboarding clients
 
-Use one (or several) of the following. All three yield **public** clients that authenticate a logged-in
-Pimcore user via the Authorization Code + PKCE flow — none carry a secret.
+Use one (or several) of the following. All three authenticate a logged-in Pimcore user via the Authorization
+Code flow; there is no Client Credentials grant. Pre-registered and metadata-document clients are public and
+use PKCE with no secret. A dynamically registered client gets a secret unless it registers
+`token_endpoint_auth_method: none`.
 
 ### Pre-registered clients
 
@@ -178,14 +191,35 @@ pimcore_studio_backend:
 
 ## Protected resources (audiences)
 
-Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata:
+Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
+Applications whose endpoints are only known at runtime register them programmatically instead, through
+`ResourceRegistryInterface`, which is how Data Hub Simple REST declares its own.
+
+The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
+not enough on its own: something has to declare a resource, and something has to accept tokens at it.
+
+A client names the resource it wants a token for with the RFC 8707 `resource` parameter on the authorization
+request. The parameter is required, and an unknown resource is rejected, so a client never believes it holds a
+narrowly scoped token when it does not. The named resource is stamped onto the token as its `aud` and enforced
+when that token is presented, so a token minted for one resource is refused at another. A token carrying no
+audience is refused everywhere rather than accepted everywhere.
+
+Only the authorization request carries the parameter. The binding travels with the authorization code, so the
+token request does not repeat it, and a refresh keeps the resource the original grant was issued for.
+
+`scopes_supported` is what a token for that resource may carry. A client asking for more is narrowed to the
+intersection, which is what the consent screen then shows and what the `scope` response parameter reports, so
+a client that reads the server-wide catalogue instead of this resource's own metadata does not have the user
+consent to scopes the resource cannot process. Asking **only** for scopes it does not declare is refused with
+`invalid_scope`, since the resulting token would open nothing. A resource that declares no scopes constrains
+nothing, and a request that names none is left alone.
 
 ```yaml
 pimcore_studio_backend:
     oauth:
         resources:
-            - uri: 'https://pimcore.example.com/pimcore-mcp/studio/product-read'
-              scopes_supported: ['mcp:read']
+            - uri: 'https://pimcore.example.com/my-bundle/api'
+              scopes_supported: ['mybundle:read']
               authorization_servers: ['https://pimcore.example.com']
 ```
 
@@ -213,7 +247,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
 | `client_id_metadata_documents.allow_insecure` | `false` | Dev only: permit http/loopback `client_id` URLs. |
 | `client_id_metadata_documents.cache_ttl` | `300` | Seconds to cache a fetched client metadata document. |
-| `resources` | `[]` | Protected resources / token audiences (see above). |
+| `resources` | `[]` | Protected resources / token audiences; `scopes_supported` caps a token's scopes. |
 
 ## Security considerations
 

@@ -27,9 +27,9 @@ use function implode;
 
 /**
  * JWT access token. Replaces league's default AccessTokenTrait so the token
- * carries RFC 9068 claims — a space-delimited `scope` string, `client_id`, and
- * `iss` — instead of league's `aud`=client-id / `scopes` array. Resource
- * audience binding is added later.
+ * carries RFC 9068 claims: a space-delimited `scope` string, `client_id`, `iss`,
+ * and an `aud` naming the resource the token was requested for (RFC 8707), rather
+ * than league's `aud`=client-id / `scopes` array.
  *
  * @internal
  */
@@ -42,6 +42,8 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
 
     private ?string $issuer = null;
 
+    private ?string $audience = null;
+
     public function setPrivateKey(CryptKeyInterface $privateKey): void
     {
         $this->privateKey = $privateKey;
@@ -50,6 +52,22 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
     public function setIssuer(?string $issuer): void
     {
         $this->issuer = $issuer;
+    }
+
+    /**
+     * The resource this token is for (RFC 8707). Null leaves `aud` off the token, and
+     * is only a defensive state: the authorization request is refused before issuance
+     * unless it names a resource, and a token without `aud` is refused by the validator
+     * at every protected resource.
+     */
+    public function setAudience(?string $audience): void
+    {
+        $this->audience = $audience;
+    }
+
+    public function getAudience(): ?string
+    {
+        return $this->audience;
     }
 
     public function toString(): string
@@ -72,6 +90,10 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
 
         if ($this->issuer !== null) {
             $builder = $builder->issuedBy($this->issuer);
+        }
+
+        if ($this->audience !== null) {
+            $builder = $builder->permittedFor($this->audience);
         }
 
         return $builder->getToken($configuration->signer(), $configuration->signingKey())->toString();

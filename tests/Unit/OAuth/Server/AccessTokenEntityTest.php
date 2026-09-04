@@ -54,6 +54,48 @@ final class AccessTokenEntityTest extends Unit
         $this->assertNull($claims->get('scopes'));
     }
 
+    /**
+     * The last seam in resource binding: the resource travels from the authorization
+     * request through the token record, and this is where it becomes the `aud` claim a
+     * resource server actually reads.
+     */
+    public function testStampsTheResourceAsTheAudienceClaim(): void
+    {
+        [$private, $public] = $this->keyPair();
+
+        $token = new AccessTokenEntity();
+        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true));
+        $token->setIdentifier('jti-aud');
+        $token->setExpiryDateTime(new DateTimeImmutable('+1 hour'));
+        $token->setUserIdentifier('21');
+        $token->setIssuer('https://pimcore.example.com');
+        $token->setAudience('https://pimcore.example.com/pimcore-mcp/studio/product-read');
+        $token->setPrivateKey(new CryptKey($private, null, false));
+
+        $claims = $this->parse($token->toString(), $public)->claims();
+
+        $this->assertSame(
+            ['https://pimcore.example.com/pimcore-mcp/studio/product-read'],
+            $claims->get('aud'),
+        );
+    }
+
+    public function testOmitsTheAudienceClaimWhenNoResourceIsSet(): void
+    {
+        [$private, $public] = $this->keyPair();
+
+        $token = new AccessTokenEntity();
+        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true));
+        $token->setIdentifier('jti-no-aud');
+        $token->setExpiryDateTime(new DateTimeImmutable('+1 hour'));
+        $token->setUserIdentifier('21');
+        $token->setPrivateKey(new CryptKey($private, null, false));
+
+        // Such a token is refused by the validator, so the claim must be absent rather
+        // than present and empty, which a resource server could read as a match.
+        $this->assertNull($this->parse($token->toString(), $public)->claims()->get('aud'));
+    }
+
     public function testSubjectFallsBackToClientWhenNoUser(): void
     {
         [$private, $public] = $this->keyPair();

@@ -17,10 +17,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Dto;
  * A protected resource (OAuth audience): its canonical URI, the scopes it
  * supports, and the authorization server(s) that may issue tokens for it.
  *
- * `$canonicalUri` is expected to already be canonicalised
- * (see {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri}).
+ * `$canonicalUri` need not be pre-canonicalised: the registry canonicalises on
+ * registration and on every lookup.
  *
- * @internal
+ * Public API: the argument type of
+ * {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface::register()}.
  */
 final readonly class ProtectedResource
 {
