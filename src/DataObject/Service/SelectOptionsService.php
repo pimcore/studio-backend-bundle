@@ -18,13 +18,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DynamicSelectOptionEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelperInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
@@ -39,7 +40,8 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 {
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver,
-        private ApplyChangesHelperInterface $applyChangesHelper,
+        private DataServiceInterface $dataService,
+        private SecurityServiceInterface $securityService,
         private OptionsProviderResolverInterface $optionsProviderResolver,
         private SelectOptionHydratorInterface $selectOptionHydrator,
         private EventDispatcherInterface $eventDispatcher,
@@ -48,9 +50,10 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
     }
 
     /**
-     * @throws DatabaseException
+     * @throws ElementSavingFailedException
      * @throws NotFoundException
      * @throws InvalidArgumentException
+     * @throws UserNotFoundException
      */
     public function getSelectOptions(SelectOptionsParameter $selectOptionsParameter): array
     {
@@ -59,7 +62,13 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
         );
 
         if ($selectOptionsParameter->hasChangedData()) {
-            $this->applyChangesHelper->applyChanges($object, $selectOptionsParameter->getChangedData());
+            // changedData arrives in the Studio data format (e.g. localizedfields as attribute -> language),
+            // so it has to be applied through the same data adapters as a regular save.
+            $this->dataService->updateEditableData(
+                $object,
+                $selectOptionsParameter->getChangedData(),
+                $this->securityService->getCurrentUser()
+            );
         }
 
         $fieldDefinition = $this->getFieldDefinition($selectOptionsParameter, $object);
