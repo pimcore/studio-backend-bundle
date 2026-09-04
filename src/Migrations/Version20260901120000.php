@@ -40,13 +40,29 @@ final class Version20260901120000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql(
-            'ALTER TABLE ' . OAuthTokenRecord::TABLE_NAME . ' ADD COLUMN IF NOT EXISTS resource VARCHAR(512) NULL'
-        );
+        if (!$schema->hasTable(OAuthTokenRecord::TABLE_NAME)) {
+            return;
+        }
+
+        // Guard on the column rather than emitting `ADD COLUMN IF NOT EXISTS`, which is a
+        // MariaDB-only extension and a syntax error on MySQL. Letting Doctrine build the
+        // ALTER from the schema diff keeps the DDL portable across both, and the guard
+        // makes the migration idempotent for re-runs and cross-line forward-merges.
+        $table = $schema->getTable(OAuthTokenRecord::TABLE_NAME);
+        if (!$table->hasColumn('resource')) {
+            $table->addColumn('resource', 'string', ['length' => 512, 'notnull' => false]);
+        }
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE ' . OAuthTokenRecord::TABLE_NAME . ' DROP COLUMN IF EXISTS resource');
+        if (!$schema->hasTable(OAuthTokenRecord::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->getTable(OAuthTokenRecord::TABLE_NAME);
+        if ($table->hasColumn('resource')) {
+            $table->dropColumn('resource');
+        }
     }
 }
