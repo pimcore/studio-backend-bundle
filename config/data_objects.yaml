@@ -61,10 +61,6 @@ services:
   #
   # Legacy Services
   #
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelperInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelper
-
-
   Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator: ~
 
   #
