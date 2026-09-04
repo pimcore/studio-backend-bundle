@@ -34,12 +34,26 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\EmailChannel;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\SendNotificationEmailHandler;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
+use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
@@ -69,6 +83,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
 
     private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
+
+    private const string ARG_ISSUER = '$issuer';
+
+    private const string ARG_ENABLED = '$enabled';
 
     /**
      * {@inheritdoc}
@@ -104,7 +122,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
 
         $definition = $container->getDefinition(RateLimitSubscriber::class);
-        $definition->setArgument('$enabled', $config['rate_limiting']['enabled']);
+        $definition->setArgument(self::ARG_ENABLED, $config['rate_limiting']['enabled']);
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
@@ -213,6 +231,78 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $config['notifications']['channels']
         );
 
+        // Embedded OAuth authorization server. Expose the config as parameters
+        // (route/authenticator activation gates on `oauth.enabled`) and seed the
+        // resource registry. Kept isolated: only parameters and the module's own
+        // services, no changes to the global security configuration.
+        $container->setParameter('pimcore_studio_backend.oauth.enabled', $config['oauth']['enabled']);
+        $container->setParameter('pimcore_studio_backend.oauth.issuer', $config['oauth']['issuer']);
+        $container->setParameter('pimcore_studio_backend.oauth.keys', $config['oauth']['keys']);
+        $container->setParameter('pimcore_studio_backend.oauth.clients', $config['oauth']['clients']);
+        $container->setParameter('pimcore_studio_backend.oauth.resources', $config['oauth']['resources']);
+
+        $container->getDefinition(ResourceRegistryInterface::class)
+            ->setArgument('$resources', $config['oauth']['resources']);
+
+        $container->getDefinition(TokenValidatorInterface::class)
+            ->setArgument('$publicKey', $config['oauth']['keys']['public_key'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        $container->getDefinition(OAuthAccessTokenAuthenticator::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+
+        $container->getDefinition(McpAuthenticationEntryPoint::class)
+            ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+
+        $container->getDefinition(OAuthCorsSubscriber::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument('$allowedOrigins', $config['oauth']['cors_allowed_origins']);
+
+        // Authorization server (token issuance).
+        $container->getDefinition(ClientRepository::class)
+            ->setArgument('$clients', $config['oauth']['clients']);
+
+        $container->getDefinition(AccessTokenRepository::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        $container->getDefinition(AuthorizationServerFactory::class)
+            ->setArgument('$privateKey', $config['oauth']['keys']['private_key'])
+            ->setArgument('$passphrase', $config['oauth']['keys']['passphrase'])
+            ->setArgument('$encryptionKey', $config['oauth']['keys']['encryption_key'])
+            ->setArgument('$accessTokenTtl', $config['oauth']['access_token_ttl'])
+            ->setArgument('$authCodeTtl', $config['oauth']['auth_code_ttl'])
+            ->setArgument('$refreshTokenTtl', $config['oauth']['refresh_token_ttl'])
+            ->setArgument('$allowLocalhostLoopback', $config['oauth']['allow_localhost_loopback_redirect']);
+
+        $cimd = $config['oauth']['client_id_metadata_documents'];
+        $container->setParameter('pimcore_studio_backend.oauth.cimd_enabled', $cimd['enabled']);
+
+        $dcrEnabled = $config['oauth']['dynamic_client_registration']['enabled'];
+        $container->setParameter('pimcore_studio_backend.oauth.dcr_enabled', $dcrEnabled);
+
+        $container->getDefinition(AuthorizationServerMetadataController::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer'])
+            ->setArgument('$clientIdMetadataDocumentSupported', $cimd['enabled'])
+            ->setArgument('$registrationEnabled', $dcrEnabled);
+
+        $container->getDefinition(CimdClientMetadataResolver::class)
+            ->setArgument(self::ARG_ENABLED, $cimd['enabled'])
+            ->setArgument('$allowedHosts', $cimd['allowed_hosts'])
+            ->setArgument('$allowInsecure', $cimd['allow_insecure'])
+            ->setArgument('$cacheTtl', $cimd['cache_ttl']);
+
+        $container->getDefinition(ClientRegistrationController::class)
+            ->setArgument(self::ARG_ENABLED, $dcrEnabled);
+
+        $container->getDefinition(AuthorizeController::class)
+            ->setArgument('$consentPath', $config['oauth']['consent_path']);
+
+        $container->getDefinition(PendingAuthorizationStore::class)
+            ->setArgument('$ttl', $config['oauth']['auth_code_ttl']);
+
+        $container->getDefinition(AuthorizationApprovalController::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
         $definition = $container->getDefinition(SettingRepositoryInterface::class);
         $definition->setArguments([
             '$adminConfig' => [
@@ -245,6 +335,26 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
      */
     public function prepend(ContainerBuilder $container): void
     {
+        if ($container->hasExtension('framework')) {
+            // Dedicated shared cache pool for pending OAuth authorizations, so the
+            // authorize request and the later consent approval (possibly different
+            // workers) hit the same store regardless of the project's cache.app
+            // adapter (a per-process adapter such as APCu would lose the request).
+            $container->prependExtensionConfig('framework', [
+                'cache' => [
+                    'pools' => [
+                        'pimcore_studio_backend.oauth.pending_authorization' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
+                        // Cache for fetched Client ID Metadata Documents (CIMD).
+                        'pimcore_studio_backend.oauth.client_metadata' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
+                    ],
+                ],
+            ]);
+        }
+
         // Load bundles
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config/prepend'));
         if ($container->hasExtension('pimcore_application_logger')) {
@@ -305,9 +415,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'login_throttling' => [
                     'limiter' => 'Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface',
                 ],
+                'entry_point' =>
+                    'Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint',
                 'custom_authenticators' => [
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator',
+                    // Must precede PatAuthenticator: it claims JWT-shaped bearers and
+                    // yields (returns null on failure) to Pat for opaque tokens.
+                    'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator',
                     'Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator',
                 ],
             ]);

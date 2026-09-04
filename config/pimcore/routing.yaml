@@ -4,3 +4,40 @@ pimcore_studio_api:
     prefix:   '%pimcore_studio_backend.url_prefix%'
     options:
         expose: true
+
+# RFC 9728 Protected Resource Metadata. Root-level (not under the API prefix),
+# so it is declared explicitly rather than via the prefixed attribute loader.
+pimcore_studio_oauth_protected_resource_metadata:
+    path:       /.well-known/oauth-protected-resource{resourcePath}
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController
+    methods:    [GET]
+    requirements:
+        resourcePath: '(/.*)?'
+    defaults:
+        resourcePath: ''
+
+# RFC 8414 Authorization Server Metadata (root-level, public discovery).
+pimcore_studio_oauth_authorization_server_metadata:
+    path:       /.well-known/oauth-authorization-server
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController
+    methods:    [GET]
+
+# OAuth token endpoint. Lives under the dedicated /pimcore-oauth prefix, outside
+# the Studio API prefix and the pimcore_mcp firewall.
+pimcore_studio_oauth_token:
+    path:       /pimcore-oauth/token
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController
+    methods:    [POST]
+
+# OAuth authorization endpoint (browser entry point; redirects to the consent UI).
+pimcore_studio_oauth_authorize:
+    path:       /pimcore-oauth/authorize
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController
+    methods:    [GET]
+
+# RFC 7591 Dynamic Client Registration endpoint. Open (unauthenticated); the
+# controller returns 404 unless dynamic client registration is enabled.
+pimcore_studio_oauth_register:
+    path:       /pimcore-oauth/register
+    controller: Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController
+    methods:    [POST]

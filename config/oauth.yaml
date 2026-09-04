@@ -1,0 +1,181 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    #
+    # Embedded OAuth 2.1 authorization-server module.
+    #
+    # Self-contained and isolated: this file registers only the module's own
+    # services and must not wire anything into Symfony's global security config
+    # (providers / firewall map). The resource-server authenticator is added to
+    # the existing pimcore_mcp firewall chain later, gated on the
+    # `pimcore_studio_backend.oauth.enabled` parameter.
+    #
+
+    # Resource registry; $resources is populated from bundle config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry
+        arguments:
+            $resources: []
+
+    # Embedded identity resolution (subject = Pimcore user id).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Identity\EmbeddedIdentityResolver
+
+    # Token record store (revocation / reuse detection) and the store-backed
+    # resource-server revocation check.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStore
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenRevocationCheckerInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\StoredTokenRevocationChecker
+
+    # Maintenance task: prune expired token records (table hygiene).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Maintenance\OAuthTokenGcTask:
+        tags:
+            - { name: pimcore.maintenance.task, type: studio_oauth_token_gc }
+
+    # Resource-server JWT validator. $publicKey and $issuer come from bundle config
+    # (set in the extension).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Token\EmbeddedTokenValidator
+        arguments:
+            $publicKey: null
+            $issuer: null
+
+    # Resource-server authenticator added to the pimcore_mcp firewall chain.
+    # $enabled is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator:
+        arguments:
+            $enabled: false
+
+    # Entry point for the pimcore_mcp firewall (401 + RFC 9728 challenge).
+    # $oauthEnabled is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint:
+        arguments:
+            $oauthEnabled: false
+
+    # CORS for the browser-facing OAuth endpoints (autoconfigured as an event
+    # subscriber). $enabled/$allowedOrigins are set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber:
+        arguments:
+            $enabled: false
+            $allowedOrigins: []
+
+    # RFC 9728 discovery endpoint controller (routed in config/pimcore/routing.yaml).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController:
+        public: true
+        tags: ['controller.service_arguments']
+
+    #
+    # Authorization server (token issuance). Standalone league instance built by
+    # the factory; repositories and keys come from bundle config (set in the
+    # extension). Endpoints are routed in config/pimcore/routing.yaml.
+    #
+    # $clients is overridden with the pre-registered clients from bundle config
+    # (set in the extension); $clientMetadataResolver and $dynamicClientStore are
+    # autowired from the interface bindings below.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository:
+        arguments:
+            $clients: []
+
+    # Client ID Metadata Documents (CIMD). $enabled/$allowedHosts/$allowInsecure/
+    # $cacheTtl come from bundle config (set in the extension).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver:
+        arguments:
+            $cache: '@pimcore_studio_backend.oauth.client_metadata'
+            $enabled: false
+            $allowedHosts: []
+            $allowInsecure: false
+            $cacheTtl: 300
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver
+
+    # Dynamic Client Registration (RFC 7591). Store + registrar + endpoint.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStore: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStore
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $enabled: false
+
+    # Scope catalogue. Any bundle exposing protected resources contributes its own
+    # identifiers by tagging a ScopeProviderInterface service.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry:
+        arguments:
+            $providers: !tagged_iterator pimcore_studio_backend.oauth.scope_provider
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Scope\McpScopeProvider:
+        tags: ['pimcore_studio_backend.oauth.scope_provider']
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository:
+        arguments:
+            $issuer: null
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory:
+        arguments:
+            $privateKey: null
+            $passphrase: null
+            $encryptionKey: null
+            $accessTokenTtl: 3600
+            $authCodeTtl: 600
+            $refreshTokenTtl: 2592000
+            $allowLocalhostLoopback: true
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\TokenController:
+        public: true
+        tags: ['controller.service_arguments']
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $issuer: null
+
+    #
+    # Authorize + consent flow (auth-code). The authorize endpoint redirects to
+    # the Studio UI, which drives the consent API below.
+    #
+    Psr\Http\Message\ServerRequestFactoryInterface:
+        alias: pimcore_studio_backend.mcp.psr17_factory
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore:
+        arguments:
+            $cache: '@pimcore_studio_backend.oauth.pending_authorization'
+            $ttl: 600
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $consentPath: '/pimcore-studio/oauth/consent'
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationDetailsController:
+        public: true
+        tags: ['controller.service_arguments']
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController:
+        public: true
+        tags: ['controller.service_arguments']
+        arguments:
+            $issuer: null

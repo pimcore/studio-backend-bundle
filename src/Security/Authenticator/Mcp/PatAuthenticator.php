@@ -33,6 +33,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 use function in_array;
 use function is_numeric;
 use function max;
+use function preg_match;
+use function str_starts_with;
+use function substr;
 
 /**
  * Authenticates MCP requests via Personal Access Tokens (config-based).
@@ -50,6 +53,8 @@ class PatAuthenticator extends AbstractAuthenticator
     private const string BEARER_PREFIX = 'Bearer ';
 
     private const int BEARER_PREFIX_LENGTH = 7;
+
+    private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/';
 
     private const int SECONDS_PER_MINUTE = 60;
 
@@ -81,6 +86,14 @@ class PatAuthenticator extends AbstractAuthenticator
         // authenticator chain does not run PAT validation in parallel — which
         // would override McpAccessTokenAuthenticator's success with a 401.
         if (str_starts_with($authHeader, self::BEARER_PREFIX . McpAccessTokenService::TOKEN_PREFIX)) {
+            return false;
+        }
+
+        // JWT-shaped bearers are OAuth access tokens handled by
+        // OAuthAccessTokenAuthenticator. Decline them for the same reason:
+        // otherwise a PAT failure here would override a successful OAuth login.
+        $token = substr($authHeader, self::BEARER_PREFIX_LENGTH);
+        if (preg_match(self::JWT_PATTERN, $token) === 1) {
             return false;
         }
 
