@@ -30,11 +30,15 @@ use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\M
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFormat;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
+use function basename;
+use function is_string;
+use function trim;
 
 /**
  * @internal
@@ -91,7 +95,12 @@ final readonly class ExportService implements ExportServiceInterface
             $user = $this->securityService->getCurrentUser();
         }
 
-        return $this->generateExportFileJob($jobSteps, $exportFormat, $user->getId());
+        return $this->generateExportFileJob(
+            $jobSteps,
+            $exportFormat,
+            $user->getId(),
+            downloadFileName: $this->getDownloadFileName($exportParameter->getConfig())
+        );
     }
 
     /**
@@ -127,7 +136,8 @@ final readonly class ExportService implements ExportServiceInterface
             $exportFormat,
             $this->securityService->getCurrentUser()->getId(),
             [new ElementDescriptor($elementType, $folderId)],
-            true
+            true,
+            $this->getDownloadFileName($exportParameter->getConfig())
         );
     }
 
@@ -136,7 +146,8 @@ final readonly class ExportService implements ExportServiceInterface
         string $exportFormat,
         int $ownerId,
         array $selectedElements = [],
-        bool $isFolder = false
+        bool $isFolder = false,
+        ?string $downloadFileName = null
     ): int {
         $name = $this->createJobNameByFormat($exportFormat);
         if ($isFolder) {
@@ -145,13 +156,30 @@ final readonly class ExportService implements ExportServiceInterface
                 : Jobs::COLLECT_CSV_FOLDER_EXPORT_ELEMENTS->value;
         }
 
+        $environmentData = [];
+        if ($downloadFileName !== null) {
+            $environmentData[DownloadServiceInterface::EXPORT_DOWNLOAD_FILENAME] = $downloadFileName;
+        }
+
         $jobRun = $this->jobExecutionAgent->startJobExecution(
-            new Job($name, $jobSteps, $selectedElements),
+            new Job($name, $jobSteps, $selectedElements, $environmentData),
             $ownerId,
             Config::CONTEXT_STOP_ON_ERROR->value
         );
 
         return $jobRun->getId();
+    }
+
+    private function getDownloadFileName(array $config): ?string
+    {
+        $fileName = $config[StepConfig::SETTINGS_FILE_NAME->value] ?? null;
+        if (!is_string($fileName) || trim($fileName) === '') {
+            return null;
+        }
+
+        $fileName = preg_replace('/[^\w\-. ]/', '_', basename(trim($fileName)));
+
+        return $fileName === '' ? null : $fileName;
     }
 
     private function mapJobSteps(
