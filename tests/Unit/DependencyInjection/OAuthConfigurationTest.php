@@ -23,8 +23,9 @@ use Symfony\Component\Config\Definition\Processor;
 /**
  * The embedded OAuth server has no meaningful identity without an issuer: it is
  * stamped on tokens (`iss`) and is the base for protected-resource URIs, and it
- * cannot be derived per request. So enabling OAuth without one is rejected at
- * container-compile time rather than failing silently at runtime.
+ * cannot be derived per request. So enabling OAuth without one — or with anything
+ * other than a bare http(s) origin — is rejected at container-compile time rather
+ * than failing silently at runtime.
  *
  * @internal
  */
@@ -38,27 +39,51 @@ final class OAuthConfigurationTest extends Unit
         $this->process(['enabled' => true]);
     }
 
-    public function testEnablingOAuthWithAnEmptyIssuerIsRejected(): void
+    /**
+     * @dataProvider malformedIssuers
+     */
+    public function testAMalformedIssuerIsRejected(string $issuer): void
     {
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessageMatches('/issuer/');
 
-        $this->process(['enabled' => true, 'issuer' => '']);
+        $this->process(['enabled' => true, 'issuer' => $issuer]);
     }
 
-    public function testEnablingOAuthWithANonAbsoluteIssuerIsRejected(): void
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function malformedIssuers(): array
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessageMatches('/issuer/');
-
-        $this->process(['enabled' => true, 'issuer' => 'not-an-absolute-url']);
+        return [
+            'empty' => [''],
+            'no scheme or host' => ['not-an-absolute-url'],
+            'non-http(s) scheme' => ['ftp://pimcore.example.com'],
+            'with a path' => ['https://pimcore.example.com/base'],
+            'with a trailing slash' => ['https://pimcore.example.com/'],
+            'with a query' => ['https://pimcore.example.com?tenant=a'],
+            'with a fragment' => ['https://pimcore.example.com#frag'],
+            'with userinfo' => ['https://user:pass@pimcore.example.com'],
+        ];
     }
 
-    public function testEnablingOAuthWithAnIssuerIsAccepted(): void
+    /**
+     * An `%env(...)%` placeholder resolves at container runtime, so the shape cannot
+     * (and must not) be validated at config-compile time — the documented env-driven
+     * form must be accepted.
+     */
+    public function testAnEnvPlaceholderIssuerIsAccepted(): void
     {
-        $processed = $this->process(['enabled' => true, 'issuer' => 'https://studio.example.com']);
+        $processed = $this->process(['enabled' => true, 'issuer' => '%env(PIMCORE_OAUTH_ISSUER)%']);
 
-        $this->assertSame('https://studio.example.com', $processed['oauth']['issuer']);
+        $this->assertSame('%env(PIMCORE_OAUTH_ISSUER)%', $processed['oauth']['issuer']);
+    }
+
+    public function testAnAbsoluteHttpsOriginIsAccepted(): void
+    {
+        $processed = $this->process(['enabled' => true, 'issuer' => 'https://studio.example.com:8443']);
+
+        $this->assertSame('https://studio.example.com:8443', $processed['oauth']['issuer']);
     }
 
     public function testDisabledOAuthDoesNotRequireAnIssuer(): void
