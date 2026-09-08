@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
+use DateTimeImmutable;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface;
 use Symfony\Component\Mercure\Jwt\TokenFactoryInterface;
@@ -25,7 +26,8 @@ final readonly class ClientTokenService implements TokenProviderInterface
 {
     public function __construct(
         private TopicLoaderInterface $topicLoader,
-        private TokenFactoryInterface $tokenFactory
+        private TokenFactoryInterface $tokenFactory,
+        private int $cookieLifetime = 3600
     ) {
     }
 
@@ -39,6 +41,12 @@ final readonly class ClientTokenService implements TokenProviderInterface
         return $this->tokenFactory->create(
             $this->getTopicCollection()->getClientSubscribableTopics(),
             $this->getTopicCollection()->getClientPublishableTopics(),
+            // Without an explicit claim the factory derives `exp` from `session.cookie_lifetime`
+            // (or 3600), which has nothing to do with the lifetime the cookie is stamped with and
+            // the client is told to renew on. Configuring a longer `cookie_lifetime` would then
+            // leave a window where the browser still sends a cookie the hub already rejects, which
+            // is the dead-authorization state this whole mechanism exists to avoid.
+            ['exp' => new DateTimeImmutable('+' . $this->cookieLifetime . ' seconds')]
         );
     }
 }

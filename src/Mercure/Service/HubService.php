@@ -31,6 +31,11 @@ final readonly class HubService implements HubServiceInterface
     ) {
     }
 
+    public function getCookieLifetime(): int
+    {
+        return $this->cookieLifetime;
+    }
+
     public function createCookie(): Cookie
     {
         $urlParts = parse_url($this->urlService->getClientSideUrl());
