@@ -64,7 +64,7 @@ final class McpServersConfigurationTest extends Unit
                     'owner' => 'john.doe',
                     'share_global' => true,
                     'shared_users' => [
-                        ['name' => 'alice', 'can_access' => true, 'can_edit' => false],
+                        ['name' => 'alice', 'can_read' => true, 'can_access' => true, 'can_edit' => false],
                         'bob',
                     ],
                     'shared_roles' => [
@@ -80,12 +80,14 @@ final class McpServersConfigurationTest extends Unit
         $this->assertTrue($access['share_global']);
         // assertEquals, not assertSame: Symfony appends defaulted keys after the
         // provided ones, so the associative key order is not fixed (list order is).
+        // A grant that only names someone still lets them see the server, which is why
+        // `can_read` defaults to true rather than false like the other two.
         $this->assertEquals([
-            ['name' => 'alice', 'can_access' => true, 'can_edit' => false],
-            ['name' => 'bob', 'can_access' => false, 'can_edit' => false],
+            ['name' => 'alice', 'can_read' => true, 'can_access' => true, 'can_edit' => false],
+            ['name' => 'bob', 'can_read' => true, 'can_access' => false, 'can_edit' => false],
         ], $access['shared_users']);
         $this->assertEquals([
-            ['name' => 'editors', 'can_access' => false, 'can_edit' => true],
+            ['name' => 'editors', 'can_read' => true, 'can_access' => false, 'can_edit' => true],
         ], $access['shared_roles']);
     }
 
