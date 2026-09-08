@@ -92,7 +92,10 @@ final class McpServerFactory implements McpServerFactoryInterface
             $this->registerTool($builder, $tool);
         }
 
-        return $this->servers[$server->id] = $builder->build();
+        $built = $builder->build();
+        $this->servers[$server->id] = $built;
+
+        return $built;
     }
 
     private function registerTool(Builder $builder, McpToolReference $tool): void

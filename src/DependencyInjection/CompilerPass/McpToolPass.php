@@ -91,7 +91,14 @@ final class McpToolPass implements CompilerPassInterface
     }
 
     /**
-     * @return list<array{name: string, method: string, title: string|null, description: string, annotations: array<string, mixed>|null, outputSchema: array<string, mixed>|null}>
+     * @return list<array{
+     *     name: string,
+     *     method: string,
+     *     title: string|null,
+     *     description: string,
+     *     annotations: array<string, mixed>|null,
+     *     outputSchema: array<string, mixed>|null
+     * }>
      */
     private function extractToolMetadata(ContainerBuilder $container, string $serviceId): array
     {
