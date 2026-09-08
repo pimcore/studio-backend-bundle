@@ -37,8 +37,8 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
     /**
      * @param array<string, mixed>            $serverConfigurations shipped server seed (the studio_mcp_servers node)
      * @param array<string, mixed>            $storageConfig        the config_location.studio_mcp_servers subtree
-     * @param LocationAwareConfigRepository|null $repository        pre-built backend; null in production (built lazily),
-     *                                                              injected as an in-memory backend by tests
+     * @param LocationAwareConfigRepository|null $repository pre-built backend; null in production
+     *                                                       (built lazily), injected as an in-memory backend by tests
      */
     public function __construct(
         private readonly array $serverConfigurations,
@@ -123,11 +123,13 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
 
     private function getRepository(): LocationAwareConfigRepository
     {
-        return $this->repository ??= new LocationAwareConfigRepository(
+        $this->repository ??= new LocationAwareConfigRepository(
             $this->serverConfigurations,
             Configuration::MCP_SERVERS_NODE,
             $this->storageConfig,
         );
+
+        return $this->repository;
     }
 
     /**

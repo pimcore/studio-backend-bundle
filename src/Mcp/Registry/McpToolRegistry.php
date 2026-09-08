@@ -104,6 +104,8 @@ final class McpToolRegistry implements McpToolRegistryInterface
             );
         }
 
-        return $this->resolved = $references;
+        $this->resolved = $references;
+
+        return $this->resolved;
     }
 }
