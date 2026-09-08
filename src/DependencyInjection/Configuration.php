@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
+use const PHP_URL_HOST;
+use const PHP_URL_SCHEME;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
@@ -30,6 +32,7 @@ use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+use function parse_url;
 use function sprintf;
 
 /**
@@ -1008,11 +1011,23 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->validate()
                     ->ifTrue(
-                        static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
-                            && ($oauth['issuer'] ?? null) === null
+                        static function (array $oauth): bool {
+                            if (($oauth['enabled'] ?? false) !== true) {
+                                return false;
+                            }
+
+                            // Must be a non-empty absolute origin: an empty or relative value
+                            // yields relative resource URIs and an empty `iss`.
+                            $issuer = $oauth['issuer'] ?? null;
+
+                            return !is_string($issuer)
+                                || $issuer === ''
+                                || parse_url($issuer, PHP_URL_SCHEME) === null
+                                || parse_url($issuer, PHP_URL_HOST) === null;
+                        }
                     )
                     ->thenInvalid(
-                        'pimcore_studio_backend.oauth.issuer must be set to the public base URL '
+                        'pimcore_studio_backend.oauth.issuer must be set to an absolute public base URL '
                         . '(e.g. "https://your-host") when oauth.enabled is true: it is stamped on tokens '
                         . 'and is the base for protected-resource URIs, and cannot be derived per request.'
                     )

@@ -80,9 +80,16 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
         $base = rtrim($this->issuer ?? $request->getSchemeAndHttpHost(), '/');
 
         $resource = $this->resourceResolver->resolve($request);
-        $resourcePath = $resource !== null ? parse_url($resource->canonicalUri, PHP_URL_PATH) : null;
-        $path = is_string($resourcePath) && $resourcePath !== '' ? $resourcePath : $request->getPathInfo();
+        if ($resource === null) {
+            // Nothing registered covers the endpoint: best-effort challenge at the request path.
+            return $base . self::METADATA_PREFIX . $request->getPathInfo();
+        }
 
-        return $base . self::METADATA_PREFIX . $path;
+        // A matched resource: use its path. An origin-only (root) resource has none, which
+        // points the client at the resource's own metadata document (an empty suffix), not
+        // at the endpoint-specific path the controller's exact lookup could not resolve.
+        $path = parse_url($resource->canonicalUri, PHP_URL_PATH);
+
+        return $base . self::METADATA_PREFIX . (is_string($path) ? $path : '');
     }
 }

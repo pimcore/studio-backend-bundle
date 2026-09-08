@@ -38,6 +38,22 @@ final class OAuthConfigurationTest extends Unit
         $this->process(['enabled' => true]);
     }
 
+    public function testEnablingOAuthWithAnEmptyIssuerIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/issuer/');
+
+        $this->process(['enabled' => true, 'issuer' => '']);
+    }
+
+    public function testEnablingOAuthWithANonAbsoluteIssuerIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/issuer/');
+
+        $this->process(['enabled' => true, 'issuer' => 'not-an-absolute-url']);
+    }
+
     public function testEnablingOAuthWithAnIssuerIsAccepted(): void
     {
         $processed = $this->process(['enabled' => true, 'issuer' => 'https://studio.example.com']);

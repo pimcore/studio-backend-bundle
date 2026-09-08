@@ -85,6 +85,26 @@ final class McpAuthenticationEntryPointTest extends Unit
         );
     }
 
+    /**
+     * An origin-only resource covers the request but has no path, so the challenge must
+     * point at the resource's own metadata document (empty suffix) rather than falling
+     * back to the request path, which the controller's exact lookup could not resolve.
+     */
+    public function testChallengePointsAtAMatchedRootResource(): void
+    {
+        $matched = new ProtectedResource('https://pimcore.example.com', [], []);
+
+        $response = $this->entryPoint(true, $matched, 'https://pimcore.example.com')
+            ->start(Request::create('https://pimcore.example.com/pimcore-mcp/message'));
+
+        $this->assertSame(
+            'Bearer resource_metadata='
+            . '"https://pimcore.example.com/.well-known/oauth-protected-resource",'
+            . ' scope="mcp:read"',
+            $response->headers->get('WWW-Authenticate'),
+        );
+    }
+
     private function entryPoint(bool $enabled, ?ProtectedResource $match = null, ?string $issuer = null): McpAuthenticationEntryPoint
     {
         $resolver = $this->makeEmpty(RequestResourceResolverInterface::class, ['resolve' => $match]);
