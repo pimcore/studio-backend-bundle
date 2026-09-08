@@ -13,11 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint;
 
+use const PHP_URL_PATH;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
+use function is_string;
+use function parse_url;
+use function rtrim;
 use function sprintf;
 
 /**
@@ -37,6 +42,8 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
 
     public function __construct(
         private readonly bool $oauthEnabled,
+        private readonly RequestResourceResolverInterface $resourceResolver,
+        private readonly ?string $issuer = null,
     ) {
     }
 
@@ -49,12 +56,40 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
                 'WWW-Authenticate',
                 sprintf(
                     'Bearer resource_metadata="%s", scope="%s"',
-                    $request->getSchemeAndHttpHost() . self::METADATA_PREFIX . $request->getPathInfo(),
+                    $this->metadataUrl($request),
                     self::DEFAULT_SCOPE,
                 )
             );
         }
 
         return $response;
+    }
+
+    /**
+     * Points at the resource the authenticator would actually validate the token against,
+     * not the raw request path. The resolver matches by longest prefix, so when a broader
+     * resource covers this endpoint the two differ, and advertising the request path would
+     * send the client to a metadata document the controller's exact lookup answers with a
+     * 404. Falls back to the request path when nothing is registered for the endpoint.
+     *
+     * The base is the configured issuer, which is what the resource is registered under;
+     * the request host would resolve to nothing whenever the two differ, as behind a proxy.
+     */
+    private function metadataUrl(Request $request): string
+    {
+        $base = rtrim($this->issuer ?? $request->getSchemeAndHttpHost(), '/');
+
+        $resource = $this->resourceResolver->resolve($request);
+        if ($resource === null) {
+            // Nothing registered covers the endpoint: best-effort challenge at the request path.
+            return $base . self::METADATA_PREFIX . $request->getPathInfo();
+        }
+
+        // A matched resource: use its path. An origin-only (root) resource has none, which
+        // points the client at the resource's own metadata document (an empty suffix), not
+        // at the endpoint-specific path the controller's exact lookup could not resolve.
+        $path = parse_url($resource->canonicalUri, PHP_URL_PATH);
+
+        return $base . self::METADATA_PREFIX . (is_string($path) ? $path : '');
     }
 }

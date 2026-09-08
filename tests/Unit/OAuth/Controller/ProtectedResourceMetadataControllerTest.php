@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadat
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Symfony\Component\HttpFoundation\Request;
+use function json_decode;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ProtectedResourceMetadataControllerTest extends Unit
@@ -56,6 +57,34 @@ final class ProtectedResourceMetadataControllerTest extends Unit
         );
 
         $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
+    /**
+     * The other half of the same problem as the 401 challenge: the document has to be
+     * findable on whatever host the client reaches it by, because the resource it
+     * describes is registered under the issuer.
+     */
+    public function testResolvesByIssuerWhenTheRequestArrivesOnAnotherHost(): void
+    {
+        $registry = new ConfigProtectedResourceRegistry([
+            [
+                'uri' => 'https://pimcore.example.com/pimcore-mcp',
+                'scopes_supported' => ['mcp:read'],
+                'authorization_servers' => ['https://pimcore.example.com'],
+            ],
+        ]);
+
+        $response = (new ProtectedResourceMetadataController($registry, 'https://pimcore.example.com'))(
+            Request::create('http://internal.local/.well-known/oauth-protected-resource/pimcore-mcp'),
+            '/pimcore-mcp',
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+
+        $payload = json_decode((string) $response->getContent(), true);
+
+        $this->assertIsArray($payload);
+        $this->assertSame('https://pimcore.example.com/pimcore-mcp', $payload['resource'] ?? null);
     }
 
     private function requestFor(string $schemeAndHost): Request

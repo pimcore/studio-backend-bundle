@@ -14,6 +14,10 @@ Each server is served at `/pimcore-mcp/studio/{urlSlug}` on the `pimcore_mcp` fi
 a token from the [embedded OAuth 2.1 server](../02_Installation_and_Configuration/06_OAuth_Server.md) (or the
 other authenticators in the chain).
 
+Every enabled server is its own OAuth protected resource, at `<issuer>/pimcore-mcp/studio/{urlSlug}`. That URI is
+what a client names in its RFC 8707 `resource` parameter, what the server's metadata document is published under,
+and what the token's audience is checked against, so a token obtained for one server is refused at another.
+
 > **Experimental.** Configuration keys, API, and UI may change between minor versions.
 
 ## The `mcp_servers` permission
