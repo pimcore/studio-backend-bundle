@@ -36,7 +36,11 @@ final readonly class McpServerUserPermissions
         private bool $canView,
         #[Property(description: 'The current user may connect a client to the server', type: 'boolean', example: false)]
         private bool $canAccess,
-        #[Property(description: 'The current user may edit, re-share or delete the server', type: 'boolean', example: false)]
+        #[Property(
+            description: 'The current user may edit, re-share or delete the server',
+            type: 'boolean',
+            example: false
+        )]
         private bool $canEdit,
     ) {
     }

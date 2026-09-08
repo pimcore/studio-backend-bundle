@@ -25,9 +25,9 @@ use Symfony\Component\Validator\Constraints\Regex;
 final readonly class McpServerParameter
 {
     /**
-     * @param list<string>                                $tools
-     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedUsers user-name → level share entries
-     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedRoles role-name → level share entries
+     * @param list<string>                                                                    $tools
+     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedUsers
+     * @param list<array{name?: mixed, canRead?: mixed, canAccess?: mixed, canEdit?: mixed}> $sharedRoles
      */
     public function __construct(
         #[NotBlank]

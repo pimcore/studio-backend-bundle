@@ -35,7 +35,11 @@ final readonly class McpServerAccessGrant
     public function __construct(
         #[Property(description: 'User or role name', type: 'string', example: 'john.doe')]
         private string $name,
-        #[Property(description: 'May see the server and its configuration (implied by canEdit)', type: 'boolean', example: true)]
+        #[Property(
+            description: 'May see the server and its configuration (implied by canEdit)',
+            type: 'boolean',
+            example: true
+        )]
         private bool $canRead,
         #[Property(description: 'May connect a client to the server at runtime', type: 'boolean', example: true)]
         private bool $canAccess,

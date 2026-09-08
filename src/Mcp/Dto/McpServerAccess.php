@@ -60,11 +60,13 @@ final readonly class McpServerAccess
      */
     public function toArray(): array
     {
+        $toArray = static fn (McpServerAccessEntry $entry): array => $entry->toArray();
+
         return [
             'owner' => $this->owner,
             'share_global' => $this->shareGlobal,
-            'shared_users' => array_map(static fn (McpServerAccessEntry $e): array => $e->toArray(), $this->sharedUsers),
-            'shared_roles' => array_map(static fn (McpServerAccessEntry $e): array => $e->toArray(), $this->sharedRoles),
+            'shared_users' => array_map($toArray, $this->sharedUsers),
+            'shared_roles' => array_map($toArray, $this->sharedRoles),
         ];
     }
 

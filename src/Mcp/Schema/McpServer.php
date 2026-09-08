@@ -61,25 +61,59 @@ final class McpServer implements AdditionalAttributesInterface
         private readonly ?string $description,
         #[Property(description: 'URL segment under /pimcore-mcp/studio/', type: 'string', example: 'product-read')]
         private readonly string $urlSlug,
-        #[Property(description: 'Endpoint an MCP client connects to', type: 'string', example: 'https://host/pimcore-mcp/studio/product-read')]
+        #[Property(
+            description: 'Endpoint an MCP client connects to',
+            type: 'string',
+            example: 'https://host/pimcore-mcp/studio/product-read'
+        )]
         private readonly string $url,
-        #[Property(description: 'Assigned tool ids', type: 'array', items: new Items(type: 'string'), example: ['get_car_info'])]
+        #[Property(
+            description: 'Assigned tool ids',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['get_car_info']
+        )]
         private readonly array $tools,
-        #[Property(description: 'Advertised OAuth scopes (derived from the tools)', type: 'array', items: new Items(type: 'string'), example: ['mcp:read'])]
+        #[Property(
+            description: 'Advertised OAuth scopes (derived from the tools)',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['mcp:read']
+        )]
         private readonly array $scopes,
         #[Property(description: 'Whether the server is enabled', type: 'boolean', example: true)]
         private readonly bool $enabled,
-        #[Property(description: 'Owner user name. Null when the owner has been deleted.', type: 'string', example: 'john.doe', nullable: true)]
+        #[Property(
+            description: 'Owner user name. Null when the owner has been deleted.',
+            type: 'string',
+            example: 'john.doe',
+            nullable: true
+        )]
         private readonly ?string $owner,
-        #[Property(description: 'Public: any authenticated user may view and use it (not edit)', type: 'boolean', example: false)]
+        #[Property(
+            description: 'Public: any authenticated user may view and use it (not edit)',
+            type: 'boolean',
+            example: false
+        )]
         private readonly bool $shareGlobal,
-        #[Property(description: 'Users shared with, each at a read/write level', type: 'array', items: new Items(ref: McpServerAccessGrant::class))]
+        #[Property(
+            description: 'Users shared with, each at a read/write level',
+            type: 'array',
+            items: new Items(ref: McpServerAccessGrant::class)
+        )]
         private readonly array $sharedUsers,
-        #[Property(description: 'Roles shared with, each at a read/write level', type: 'array', items: new Items(ref: McpServerAccessGrant::class))]
+        #[Property(
+            description: 'Roles shared with, each at a read/write level',
+            type: 'array',
+            items: new Items(ref: McpServerAccessGrant::class)
+        )]
         private readonly array $sharedRoles,
         #[Property(description: 'Whether the storage target allows editing at all', type: 'boolean', example: true)]
         private readonly bool $writeable,
-        #[Property(description: 'The requesting user\'s resolved access to this server', ref: McpServerUserPermissions::class)]
+        #[Property(
+            description: 'The requesting user\'s resolved access to this server',
+            ref: McpServerUserPermissions::class
+        )]
         private readonly McpServerUserPermissions $currentUserPermissions,
         #[Property(description: 'Number of assigned tools', type: 'integer', example: 1)]
         private readonly int $toolCount,
