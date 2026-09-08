@@ -58,8 +58,15 @@ pimcore_studio_backend:
 The `issuer` must be the **public** URL clients use — behind a reverse proxy set it to the external
 address (`https://studio.acme.com`), not the internal upstream (`http://php:9000`). Locally it is
 `http://localhost` (or `http://localhost:8080` with a port). Keep it **stable**: changing it re-keys
-every protected resource and invalidates the `iss` on tokens already issued. To vary it per
-environment, drive it from an env var:
+every protected resource and invalidates the `iss` on tokens already issued.
+
+> **Give it a bare origin** — scheme + host, optionally a port, and nothing else. A trailing slash or
+> a path produces malformed protected-resource URIs, and a **query or fragment silently collapses every
+> MCP server onto the same token audience**, defeating the per-server isolation audience binding exists
+> to provide. The value is not shape-validated, so a wrong one fails at first use rather than at
+> container build.
+
+To vary it per environment, drive it from an env var:
 
 ```yaml
 pimcore_studio_backend:

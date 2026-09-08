@@ -26,14 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use function in_array;
 use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
-use function parse_url;
 use function sprintf;
-use function str_contains;
 
 /**
  * This is the class that validates and merges configuration from your app/config files.
@@ -903,44 +900,11 @@ class Configuration implements ConfigurationInterface
                         ->info(
                             'Public base URL of this instance (e.g. "https://pimcore.example.com"), '
                             . 'advertised as the issuer (iss), stamped on tokens, and used as the base for '
-                            . 'protected-resource URIs. Required when oauth.enabled is true.'
+                            . 'protected-resource URIs. Required when oauth.enabled is true. Must be a bare '
+                            . 'origin: a query or fragment would collapse every MCP server onto the same '
+                            . 'token audience.'
                         )
                         ->defaultNull()
-                        ->validate()
-                            // The shape check lives here rather than on the parent node so Symfony
-                            // skips it for unresolved env placeholders (`%env(...)%`); absence is
-                            // enforced (only when enabled) by the oauth-node rule below.
-                            ->ifTrue(static function (mixed $issuer): bool {
-                                // A `%...%` placeholder resolves at runtime, so its shape cannot be
-                                // checked here — an http(s) origin never legitimately contains '%'.
-                                if ($issuer === null || (is_string($issuer) && str_contains($issuer, '%'))) {
-                                    return false;
-                                }
-
-                                if (!is_string($issuer)) {
-                                    return true;
-                                }
-
-                                $parts = parse_url($issuer);
-                                if (!is_array($parts)) {
-                                    return true;
-                                }
-
-                                // Must be a bare http(s) origin: scheme + host [+ port], nothing else.
-                                return !in_array($parts['scheme'] ?? null, ['http', 'https'], true)
-                                    || ($parts['host'] ?? '') === ''
-                                    || isset($parts['user'])
-                                    || isset($parts['pass'])
-                                    || ($parts['path'] ?? '') !== ''
-                                    || isset($parts['query'])
-                                    || isset($parts['fragment']);
-                            })
-                            ->thenInvalid(
-                                'pimcore_studio_backend.oauth.issuer must be an absolute http(s) origin '
-                                . '(scheme + host [+ port]) with no userinfo, path, query or fragment, '
-                                . 'e.g. "https://your-host". Got: %s'
-                            )
-                        ->end()
                     ->end()
                     ->integerNode('access_token_ttl')
                         ->info('Access-token lifetime in seconds.')
