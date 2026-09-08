@@ -42,8 +42,9 @@ The minimum configuration is the master switch, an issuer, and signing keys:
 pimcore_studio_backend:
     oauth:
         enabled: true
-        # Issuer identifier advertised in metadata and stamped on tokens.
-        # If null, it is derived from the incoming request — set it explicitly in production.
+        # Required when enabled: the public base URL clients reach this instance at.
+        # It is advertised as the issuer (iss), stamped on tokens, and used as the base
+        # for protected-resource URIs. Scheme + host [+ port], no trailing slash, no path.
         issuer: 'https://pimcore.example.com'
         keys:
             private_key: '%env(OAUTH_PRIVATE_KEY)%'
@@ -53,6 +54,19 @@ pimcore_studio_backend:
 ```
 
 > Reference key material via environment variables or Symfony secrets. **Never commit keys.**
+
+The `issuer` must be the **public** URL clients use — behind a reverse proxy set it to the external
+address (`https://studio.acme.com`), not the internal upstream (`http://php:9000`). Locally it is
+`http://localhost` (or `http://localhost:8080` with a port). Keep it **stable**: changing it re-keys
+every protected resource and invalidates the `iss` on tokens already issued. To vary it per
+environment, drive it from an env var:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        enabled: true
+        issuer: '%env(PIMCORE_OAUTH_ISSUER)%'   # e.g. https://studio.acme.com
+```
 
 ### Generating keys
 
@@ -196,7 +210,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | Key | Default | Purpose |
 |-----|---------|---------|
 | `enabled` | `false` | Master switch for the embedded authorization server. |
-| `issuer` | `null` | Issuer (`iss`) advertised in metadata and stamped on tokens. Null derives it from the request. |
+| `issuer` | `null` | Public base URL (`scheme://host[:port]`), advertised as `iss`, stamped on tokens, and the base for protected-resource URIs. **Required when `enabled` is `true`** (config validation fails otherwise). |
 | `access_token_ttl` | `3600` | Access-token lifetime (seconds). |
 | `auth_code_ttl` | `600` | Authorization-code lifetime (seconds). |
 | `refresh_token_ttl` | `2592000` | Refresh-token lifetime (seconds). |

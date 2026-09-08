@@ -898,8 +898,9 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->scalarNode('issuer')
                         ->info(
-                            'Issuer identifier (iss) advertised in metadata and stamped on tokens, '
-                            . 'e.g. "https://pimcore.example.com". Null derives it from the request.'
+                            'Public base URL of this instance (e.g. "https://pimcore.example.com"), '
+                            . 'advertised as the issuer (iss), stamped on tokens, and used as the base for '
+                            . 'protected-resource URIs. Required when oauth.enabled is true.'
                         )
                         ->defaultNull()
                     ->end()
@@ -1004,6 +1005,17 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                ->end()
+                ->validate()
+                    ->ifTrue(
+                        static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
+                            && ($oauth['issuer'] ?? null) === null
+                    )
+                    ->thenInvalid(
+                        'pimcore_studio_backend.oauth.issuer must be set to the public base URL '
+                        . '(e.g. "https://your-host") when oauth.enabled is true: it is stamped on tokens '
+                        . 'and is the base for protected-resource URIs, and cannot be derived per request.'
+                    )
                 ->end()
             ->end()
         ->end();
