@@ -68,11 +68,22 @@ token's signature, expiry and revocation status and resolves the Pimcore user. O
 so `PatAuthenticator` still runs, hence it must precede it in the chain.
 
 MCP is one application of the OAuth server, not its purpose. The same contracts protect Data Hub Simple REST,
-and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
-so a token obtained for another application is refused here; scopes are advertised but not yet enforced. See
-[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint, and
-[OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
-server.
+and any bundle can use them for its own endpoints. See
+[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint.
+
+The audience it validates against is **the protected resource registered for the endpoint being called**, not a
+path this bundle derives. The endpoints behind this firewall belong to different bundles, so the most specific
+registered resource covering the request is what the token is held to, and the URI is built from the configured
+issuer, which is required whenever the OAuth server is enabled. A token obtained for another application is
+therefore refused here; scopes are advertised but not yet enforced.
+
+That makes registration the switch: an endpoint whose owner registers no protected resource does not accept
+OAuth, and the authenticator declines so the rest of the chain still runs. Every other credential on such an
+endpoint keeps working unchanged. Servers managed through
+[MCP Server Management](./09_MCP_Server_Management.md) register themselves, so nothing extra is needed for them.
+
+See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling and
+configuring the server.
 
 ### `PatAuthenticator` (external clients)
 

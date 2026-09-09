@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
@@ -41,7 +43,9 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalCon
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
@@ -242,7 +246,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->setParameter('pimcore_studio_backend.oauth.resources', $config['oauth']['resources']);
 
         $container->getDefinition(ResourceRegistryInterface::class)
-            ->setArgument('$resources', $config['oauth']['resources']);
+            ->setArgument('$resources', [
+                ...$config['oauth']['resources'],
+                ...$this->buildMcpServerResources(
+                    $config[Configuration::MCP_SERVERS_NODE],
+                    $config['oauth']['issuer'],
+                ),
+            ]);
 
         $container->getDefinition(TokenValidatorInterface::class)
             ->setArgument('$publicKey', $config['oauth']['keys']['public_key'])
@@ -251,8 +261,15 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
 
+        $container->getDefinition(RequestResourceResolver::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
         $container->getDefinition(McpAuthenticationEntryPoint::class)
-            ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
+            ->setArgument('$oauthEnabled', $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        $container->getDefinition(ProtectedResourceMetadataController::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(OAuthCorsSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
@@ -311,6 +328,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$storageConfig' => $config['config_location'][Configuration::ADMIN_SETTINGS_NODE],
         ]);
 
+        $container->getDefinition(McpServerConfigRepositoryInterface::class)
+            ->setArgument('$serverConfigurations', $config[Configuration::MCP_SERVERS_NODE])
+            ->setArgument('$storageConfig', $config['config_location'][Configuration::MCP_SERVERS_NODE]);
+
         $this->populateTwigSandboxExtension($config, $container);
 
         // MCP authentication token map
@@ -348,6 +369,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                         ],
                         // Cache for fetched Client ID Metadata Documents (CIMD).
                         'pimcore_studio_backend.oauth.client_metadata' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
+                        // MCP session store (per-server, keyed by slug); dedicated so
+                        // it never collides with another bundle's MCP sessions.
+                        'pimcore_studio_backend.mcp.session' => [
                             'adapter' => 'cache.adapter.filesystem',
                         ],
                     ],
@@ -447,6 +473,42 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
+        $this->prependCustomConfig($container, $containerConfig, Configuration::MCP_SERVERS_NODE);
+    }
+
+    /**
+     * Advertises each enabled MCP server as an RFC 9728 protected resource, so the
+     * per-server discovery and 401 challenge resolve. Requires a configured issuer
+     * to build the absolute resource URL; skipped otherwise (a null issuer derives
+     * from the request at runtime, which cannot be seeded at container-build time).
+     *
+     * @param array<string, array<string, mixed>> $servers
+     *
+     * @return list<array{uri: string, scopes_supported: list<string>, authorization_servers: list<string>}>
+     */
+    private function buildMcpServerResources(array $servers, ?string $issuer): array
+    {
+        if ($issuer === null) {
+            return [];
+        }
+
+        $base = rtrim($issuer, '/');
+        $resources = [];
+        foreach ($servers as $id => $server) {
+            if (($server['enabled'] ?? true) === false) {
+                continue;
+            }
+
+            $slug = $server['url_slug'] ?? $id;
+            $scopes = $server['scopes'] ?? [];
+            $resources[] = [
+                'uri' => $base . '/pimcore-mcp/studio/' . $slug,
+                'scopes_supported' => $scopes !== [] ? $scopes : [McpScopes::READ, McpScopes::WRITE],
+                'authorization_servers' => [$issuer],
+            ];
+        }
+
+        return $resources;
     }
 
     /**
