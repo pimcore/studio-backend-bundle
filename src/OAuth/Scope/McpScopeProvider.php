@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Scope;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
 
 /**
@@ -24,6 +25,6 @@ final class McpScopeProvider implements ScopeProviderInterface
 {
     public function scopes(): array
     {
-        return ['mcp:read', 'mcp:write'];
+        return [McpScopes::READ, McpScopes::WRITE];
     }
 }

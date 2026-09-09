@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint;
 
 use const PHP_URL_PATH;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,7 +39,7 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
 {
     private const string METADATA_PREFIX = '/.well-known/oauth-protected-resource';
 
-    private const string DEFAULT_SCOPE = 'mcp:read';
+    private const string DEFAULT_SCOPE = McpScopes::READ;
 
     public function __construct(
         private readonly bool $oauthEnabled,
