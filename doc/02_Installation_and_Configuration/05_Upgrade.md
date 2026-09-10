@@ -2,6 +2,11 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2025.4.13
+- [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.
+
+> **Note:** the internal `ApplyChangesHelper` (`DataObject\Legacy`) and its interface are deprecated and will be removed in 2027.1.0, since the select-options endpoint was their only consumer. They still expect the classic editmode data format; use `DataServiceInterface::updateEditableData()` with the Studio data format instead.
+
 ## Upgrade to 2025.4.7
 - [User Management] Fixed: `GET /user/{id}` could time out or run out of memory when the user was referenced by a very large number of DataObjects (e.g. via a `User`-type class field), because the full, unbounded list of referencing objects was hydrated and embedded in every response. The `objectDependencies.dependencies` array on the `User` schema is now capped at 20 entries, and a new paginated `GET /user/{id}/object-dependencies` endpoint was added to browse the full list.
 
