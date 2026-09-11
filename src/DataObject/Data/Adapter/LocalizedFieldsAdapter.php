@@ -177,7 +177,11 @@ final readonly class LocalizedFieldsAdapter implements
                     $object,
                     $field,
                     $fieldKey,
-                    new FieldContextData(contextObject: $contextObject, language: $language)
+                    new FieldContextData(
+                        contextObject: $contextObject,
+                        language: $language,
+                        resolveInheritedValue: $contextData?->shouldResolveInheritedValue() ?? false
+                    )
                 );
             }
         }

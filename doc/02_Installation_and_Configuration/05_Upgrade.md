@@ -2,6 +2,13 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.3.0
+- [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:
+  - `inheritable` (bool): whether the field type can take part in inheritance at all. It is `false` for field types whose `supportsInheritance()` returns `false` (e.g. `urlSlug`, `calculatedValue`, `fieldcollections`) and for field types without a Studio data adapter, so a client can tell an overridden value (`inherited: false, inheritable: true`) apart from a field that can never inherit (`inheritable: false`).
+  - `inheritedValue` (mixed): the value the field inherits — or would inherit if its own value were removed — from the nearest ancestor that holds a non-empty value, normalized to the same shape as `objectData`. It is `null` when no ancestor holds a value, when the field is not inheritable, or when it was not requested: resolving it costs a walk up the tree for every field holding an own value, so it is opt-in. The data object detail response requests it; grid columns do not and always report `null`.
+
+> **Note:** both properties are additive; `objectId` and `inherited` keep their meaning. `InheritanceServiceInterface::getInheritanceData()` gained a `bool $resolveInheritedValues = false` parameter and `getFieldInheritanceData()`, which returns the complete `InheritanceData` for a single field. The opt-in travels through the recursion as `FieldContextData::shouldResolveInheritedValue()` (constructor argument `resolveInheritedValue`). Custom `DataInheritanceInterface` adapters that build `InheritanceData` themselves should switch to `getFieldInheritanceData()` and pass `resolveInheritedValue` on to the `FieldContextData` they create for their child fields; instances they construct directly keep working and default to `inheritable: true`, `inheritedValue: null`.
+
 ## Upgrade to 2025.4.13
 - [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.
 

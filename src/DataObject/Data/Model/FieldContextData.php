@@ -33,7 +33,8 @@ final readonly class FieldContextData
         private ?string $language = null,
         private ?int $classificationStoreGroupId = null,
         private ?int $classificationStoreKeyId = null,
-        private array $legacyParameters = []
+        private array $legacyParameters = [],
+        private bool $resolveInheritedValue = false
     ) {
     }
 
@@ -55,6 +56,15 @@ final readonly class FieldContextData
     public function getClassificationStoreKeyId(): ?int
     {
         return $this->contextObject instanceof Classificationstore ? $this->classificationStoreKeyId : null;
+    }
+
+    /**
+     * Whether inheritance data should also carry the (normalized) value inherited from the ancestors.
+     * Opt-in, since resolving it costs an additional walk up the tree for every field holding an own value.
+     */
+    public function shouldResolveInheritedValue(): bool
+    {
+        return $this->resolveInheritedValue;
     }
 
     /**
@@ -115,7 +125,8 @@ final readonly class FieldContextData
             $contextObject,
             $this->language,
             $this->classificationStoreGroupId,
-            $this->classificationStoreKeyId
+            $this->classificationStoreKeyId,
+            resolveInheritedValue: $this->resolveInheritedValue
         );
     }
 

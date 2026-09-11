@@ -17,6 +17,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceOrigin;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DetailValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -27,6 +29,7 @@ use Pimcore\Model\DataObject\Concrete;
  */
 final readonly class InheritanceService implements InheritanceServiceInterface
 {
+    use DetailValueTrait;
     use ValidateObjectDataTrait;
 
     public function __construct(
@@ -40,22 +43,25 @@ final readonly class InheritanceService implements InheritanceServiceInterface
      */
     public function getInheritanceData(
         Concrete $object,
-        array $fieldDefinitions
+        array $fieldDefinitions,
+        bool $resolveInheritedValues = false
     ): array {
 
         return $this->dataObjectServiceResolver->useInheritedValues(
             false,
-            function () use ($object, $fieldDefinitions) {
+            function () use ($object, $fieldDefinitions, $resolveInheritedValues) {
                 $inheritanceData = [];
                 if (!$object->getParent() instanceof Concrete) {
                     return $inheritanceData;
                 }
 
+                $contextData = new FieldContextData(resolveInheritedValue: $resolveInheritedValues);
                 foreach ($fieldDefinitions as $key => $fieldDefinition) {
                     $inheritanceData['metaData'][$key] = $this->processFieldDefinition(
                         $object,
                         $fieldDefinition,
-                        $key
+                        $key,
+                        $contextData
                     );
                 }
 
@@ -76,7 +82,7 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
 
         if ($adapter === null || $fieldDefinition->supportsInheritance() === false) {
-            return new InheritanceData($object->getId());
+            return new InheritanceData($object->getId(), inheritable: false);
         }
 
         if ($adapter instanceof DataInheritanceInterface) {
@@ -88,11 +94,55 @@ final readonly class InheritanceService implements InheritanceServiceInterface
             );
         }
 
-        $originId = $this->getOriginId($object, $fieldDefinition, $key, $contextData);
+        return $this->getFieldInheritanceData($object, $fieldDefinition, $key, $contextData);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getFieldInheritanceData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): InheritanceData {
+        $origin = $this->findOrigin($object, $fieldDefinition, $key, $contextData);
+        $inherited = $origin !== null && $origin->getObject()->getId() !== $object->getId();
 
         return new InheritanceData(
-            $originId,
-            $originId !== $object->getId()
+            $inherited ? $origin->getObject()->getId() : $object->getId(),
+            $inherited,
+            true,
+            $contextData?->shouldResolveInheritedValue()
+                ? $this->getInheritedValue($object, $fieldDefinition, $key, $contextData, $inherited ? $origin : null)
+                : null
+        );
+    }
+
+    /**
+     * @param InheritanceOrigin|null $origin the already resolved ancestor origin of an inherited value
+     *
+     * @throws NotFoundException
+     */
+    private function getInheritedValue(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData,
+        ?InheritanceOrigin $origin
+    ): mixed {
+        // an inherited value already comes from the nearest ancestor holding one, an own value hides it
+        $origin ??= $this->findParentOrigin($object, $fieldDefinition, $key, $contextData);
+        if ($origin === null) {
+            return null;
+        }
+
+        return $this->resolveDetailValue(
+            $this->dataAdapterService,
+            $origin->getObject(),
+            $origin->getValue(),
+            $fieldDefinition,
+            $origin->getContextData()
         );
     }
 
@@ -105,16 +155,46 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): int {
-        if (!$fieldDefinition->isEmpty($this->getValidFieldValue($object, $key, $contextData))) {
-            return $object->getId();
+        return $this->findOrigin($object, $fieldDefinition, $key, $contextData)?->getObject()->getId()
+            ?? $object->getId();
+    }
+
+    /**
+     * Walks up from the object itself to the nearest object holding a non-empty value.
+     *
+     * @throws NotFoundException
+     */
+    private function findOrigin(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): ?InheritanceOrigin {
+        $value = $this->getValidFieldValue($object, $key, $contextData);
+        if (!$fieldDefinition->isEmpty($value)) {
+            return new InheritanceOrigin($object, $value, $contextData);
         }
 
+        return $this->findParentOrigin($object, $fieldDefinition, $key, $contextData);
+    }
+
+    /**
+     * Walks up from the next parent for inheritance to the nearest ancestor holding a non-empty value.
+     *
+     * @throws NotFoundException
+     */
+    private function findParentOrigin(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): ?InheritanceOrigin {
         $parent = $object->getNextParentForInheritance();
         if (!$parent) {
-            return $object->getId();
+            return null;
         }
 
-        return $this->getOriginId(
+        return $this->findOrigin(
             $parent,
             $fieldDefinition,
             $key,
