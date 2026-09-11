@@ -19,6 +19,7 @@
   "require": {
     "php": "~8.4.0 || ~8.5.0",
     "league/csv": "^9.27",
+    "league/oauth2-server": "^9.0",
     "nesbot/carbon": "^3.10.0",
     "pimcore/static-resolver-bundle": "^2026.2.0",
     "pimcore/generic-data-index-bundle": "^2026.2.0",

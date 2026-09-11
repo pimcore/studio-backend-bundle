@@ -203,6 +203,7 @@ enum Tags: string
     case Metadata = 'Metadata';
     case Notes = 'Notes';
     case Notifications = 'Notifications';
+    case Oauth = 'OAuth';
     case OwnershipManagement = 'Ownership Management';
     case Perspectives = 'Perspectives';
     case Properties = 'Properties';

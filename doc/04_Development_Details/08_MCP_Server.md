@@ -36,14 +36,16 @@ instead carry a Pimcore Studio session cookie.
 
 ### Authenticator chain
 
-The firewall tries these authenticators in order. The first two return `null` on failure so the next one can try;
-`PatAuthenticator` is last and therefore owns the terminal response, answering `401` (or `429` when throttled):
+The firewall tries these authenticators in order. All but the last return `null` on failure so the next one can
+try; `PatAuthenticator` is last and therefore owns the terminal response, answering `401` (or `429` when
+throttled):
 
 | Order | Authenticator | Trigger | Use case |
 |-------|---------------|---------|----------|
 | 1 | `SessionBridgeAuthenticator` | Pimcore session cookie present | Requests that carry a Pimcore Studio session cookie |
 | 2 | `McpAccessTokenAuthenticator` | `Authorization: Bearer pmcp_…` | Internal: dynamically-issued, expiring, revocable per-chat-session tokens (Pimcore AI agent) |
-| 3 | `PatAuthenticator` | `Authorization: Bearer <other>` | External: MCP clients (Claude Desktop, Cursor, etc.) |
+| 3 | `OAuthAccessTokenAuthenticator` | `Authorization: Bearer <JWT>` | External: clients using the [embedded OAuth 2.1 server](../02_Installation_and_Configuration/06_OAuth_Server.md); inert unless OAuth is enabled |
+| 4 | `PatAuthenticator` | `Authorization: Bearer <other>` | External: MCP clients using static Personal Access Tokens (Claude Desktop, Cursor, etc.) |
 
 ### `McpAccessTokenAuthenticator` (primary internal)
 
@@ -55,6 +57,22 @@ forge-able header. On failure it returns `null`, so the firewall falls through t
 The studio-backend bundle owns both validation (`McpAccessTokenAuthenticator`) and the issuance/refresh/revoke
 primitives. Consuming bundles (e.g. `pimcore-agent-bundle`) call those primitives to mint tokens for their own MCP
 servers - see [Minting MCP access tokens](#minting-mcp-access-tokens).
+
+### `OAuthAccessTokenAuthenticator` (OAuth 2.1 bearer)
+
+Authenticates a JWT access token issued by the [embedded OAuth 2.1 authorization
+server](../02_Installation_and_Configuration/06_OAuth_Server.md) (`Authorization: Bearer <jwt>`). It is
+**additive** to the chain: it only claims JWT-shaped bearers, declines the `pmcp_` prefix (owned by
+`McpAccessTokenAuthenticator`), and stays **inert unless the OAuth server is enabled**. It validates the
+token's signature, expiry and revocation status and resolves the Pimcore user. On failure it returns `null`,
+so `PatAuthenticator` still runs, hence it must precede it in the chain.
+
+MCP is one application of the OAuth server, not its purpose. The same contracts protect Data Hub Simple REST,
+and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
+so a token obtained for another application is refused here; scopes are advertised but not yet enforced. See
+[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint, and
+[OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
+server.
 
 ### `PatAuthenticator` (external clients)
 
