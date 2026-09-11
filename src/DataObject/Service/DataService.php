@@ -17,14 +17,13 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DetailValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -39,7 +38,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\EqualComparisonInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModel;
-use Pimcore\Normalizer\NormalizerInterface;
 use function array_key_exists;
 
 /**
@@ -47,6 +45,7 @@ use function array_key_exists;
  */
 final readonly class DataService implements DataServiceInterface
 {
+    use DetailValueTrait;
     use ValidateObjectDataTrait;
 
     public function __construct(
@@ -86,7 +85,7 @@ final readonly class DataService implements DataServiceInterface
 
             if ($dataObject->getAllowInheritance()) {
                 $dataObject->setInheritanceData(
-                    $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
+                    $this->inheritanceService->getInheritanceData($element, $fieldDefinitions, true)
                 );
             }
         }
@@ -96,16 +95,7 @@ final readonly class DataService implements DataServiceInterface
         mixed $value,
         Data $fieldDefinition
     ): mixed {
-        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
-        if ($adapter instanceof DataNormalizerInterface) {
-            return $adapter->normalize($value, $fieldDefinition);
-        }
-
-        if (!$fieldDefinition instanceof NormalizerInterface) {
-            return null;
-        }
-
-        return $fieldDefinition->normalize($value);
+        return $this->normalizeFieldValue($this->dataAdapterService, $value, $fieldDefinition);
     }
 
     public function getDetailValue(
@@ -114,12 +104,7 @@ final readonly class DataService implements DataServiceInterface
         Data $fieldDefinition,
         ?FieldContextData $contextData = null,
     ): mixed {
-        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
-        if ($adapter instanceof DetailDataInterface) {
-            return $adapter->getDetailData($object, $value, $fieldDefinition, $contextData);
-        }
-
-        return $this->getNormalizedValue($value, $fieldDefinition);
+        return $this->resolveDetailValue($this->dataAdapterService, $object, $value, $fieldDefinition, $contextData);
     }
 
     /**
