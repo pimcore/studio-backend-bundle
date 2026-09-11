@@ -16,7 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
 use Pimcore\Model\DataObject\Concrete;
 
 /**
- * The object in an inheritance chain that holds a non-empty value for a field, together with that value.
+ * The result of walking an inheritance chain for a field: normally the nearest object holding a
+ * non-empty value, together with that value - but when none of them does, the terminal ancestor with
+ * its empty value, so objectId/inherited can still be reported without an inherited value being implied.
  *
  * @internal
  */

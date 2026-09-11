@@ -124,6 +124,22 @@ final class InheritanceServiceTest extends Unit
         $this->assertNull($result->getInheritedValue());
     }
 
+    public function testEmptyChainReportsTheTerminalAncestorWithoutAnInheritedValue(): void
+    {
+        // neither this object nor its (terminal) parent hold a value for the field; objectId/inherited
+        // must still resolve to the terminal ancestor, matching the legacy getOriginId() contract the
+        // upgrade notes promise to keep - only inheritedValue must stay null since nothing was found
+        $parent = $this->createObject(self::PARENT_ID, '');
+        $object = $this->createObject(self::OBJECT_ID, '', $parent);
+
+        $result = $this->createService()->processFieldDefinition($object, new Input(), self::FIELD_KEY, $this->optIn());
+
+        $this->assertInstanceOf(InheritanceData::class, $result);
+        $this->assertSame(self::PARENT_ID, $result->getObjectId());
+        $this->assertTrue($result->isInherited());
+        $this->assertNull($result->getInheritedValue());
+    }
+
     public function testInheritedValueIsNullWithoutParentForInheritance(): void
     {
         $object = $this->createObject(self::OBJECT_ID, 'own value');
@@ -154,12 +170,16 @@ final class InheritanceServiceTest extends Unit
         $inheriting = $this->createObject(self::OBJECT_ID, '', $parent);
         $overriding = $this->createObject(self::OBJECT_ID, 'own value', $parent);
         $orphan = $this->createObject(self::OBJECT_ID, '');
+        $emptyChainParent = $this->createObject(self::PARENT_ID, '');
+        $emptyChain = $this->createObject(self::OBJECT_ID, '', $emptyChainParent);
 
         $service = $this->createService();
 
         $this->assertSame(self::GRANDPARENT_ID, $service->getOriginId($inheriting, new Input(), self::FIELD_KEY));
         $this->assertSame(self::OBJECT_ID, $service->getOriginId($overriding, new Input(), self::FIELD_KEY));
         $this->assertSame(self::OBJECT_ID, $service->getOriginId($orphan, new Input(), self::FIELD_KEY));
+        // no object in the chain holds a value: falls back to the terminal ancestor, not the starting object
+        $this->assertSame(self::PARENT_ID, $service->getOriginId($emptyChain, new Input(), self::FIELD_KEY));
     }
 
     public function testGetInheritanceDataIsEmptyWithoutConcreteParent(): void

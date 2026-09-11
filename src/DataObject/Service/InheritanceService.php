@@ -111,7 +111,7 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         }
 
         $origin = $this->findOrigin($object, $fieldDefinition, $key, $contextData);
-        $inherited = $origin !== null && $origin->getObject()->getId() !== $object->getId();
+        $inherited = $origin->getObject()->getId() !== $object->getId();
         $originId = $inherited ? $origin->getObject()->getId() : $object->getId();
 
         $inheritedValue = null;
@@ -153,7 +153,9 @@ final readonly class InheritanceService implements InheritanceServiceInterface
     ): mixed {
         // an inherited value already comes from the nearest ancestor holding one, an own value hides it
         $origin ??= $this->findParentOrigin($object, $fieldDefinition, $key, $contextData);
-        if ($origin === null) {
+        // findOrigin() may hand back the terminal ancestor with an empty value (see its own docblock);
+        // that is not an inherited value, so it must not be resolved/normalized like one
+        if ($origin === null || $fieldDefinition->isEmpty($origin->getValue())) {
             return null;
         }
 
@@ -175,12 +177,13 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): int {
-        return $this->findOrigin($object, $fieldDefinition, $key, $contextData)?->getObject()->getId()
-            ?? $object->getId();
+        return $this->findOrigin($object, $fieldDefinition, $key, $contextData)->getObject()->getId();
     }
 
     /**
-     * Walks up from the object itself to the nearest object holding a non-empty value.
+     * Walks up from the object itself to the nearest ancestor holding a non-empty value. When none of
+     * them does, the terminal ancestor is still reported (with an empty value) rather than null, so
+     * that objectId/inherited keep resolving exactly like the previous, non-value-aware getOriginId().
      *
      * @throws NotFoundException
      */
@@ -189,7 +192,7 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): ?InheritanceOrigin {
+    ): InheritanceOrigin {
         // a container (e.g. an object brick) missing on this ancestor is not the same as no container at
         // all: falling through to a same-named root field would read unrelated data, so treat it as empty
         // and keep walking instead - the container may still reappear further up the ancestor chain
@@ -201,11 +204,24 @@ final readonly class InheritanceService implements InheritanceServiceInterface
             return new InheritanceOrigin($object, $value, $contextData);
         }
 
-        return $this->findParentOrigin($object, $fieldDefinition, $key, $contextData);
+        $parent = $object->getNextParentForInheritance();
+        if (!$parent) {
+            return new InheritanceOrigin($object, $value, $contextData);
+        }
+
+        return $this->findOrigin(
+            $parent,
+            $fieldDefinition,
+            $key,
+            $contextData?->getContextObjectFromElement($parent)
+        );
     }
 
     /**
-     * Walks up from the next parent for inheritance to the nearest ancestor holding a non-empty value.
+     * Walks up from the next parent for inheritance to the nearest ancestor holding a non-empty value,
+     * ignoring the object's own value. Unlike findOrigin(), this returns null - not the terminal ancestor -
+     * when no ancestor holds one, since it only backs the actual inherited value, which has no legacy
+     * terminal-ancestor fallback to preserve.
      *
      * @throws NotFoundException
      */
@@ -220,11 +236,13 @@ final readonly class InheritanceService implements InheritanceServiceInterface
             return null;
         }
 
-        return $this->findOrigin(
+        $origin = $this->findOrigin(
             $parent,
             $fieldDefinition,
             $key,
             $contextData?->getContextObjectFromElement($parent)
         );
+
+        return $fieldDefinition->isEmpty($origin->getValue()) ? null : $origin;
     }
 }
