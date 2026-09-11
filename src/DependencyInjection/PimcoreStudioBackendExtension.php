@@ -42,6 +42,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetad
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthEndpointGuardSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
@@ -257,6 +258,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(OAuthCorsSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
             ->setArgument('$allowedOrigins', $config['oauth']['cors_allowed_origins']);
+
+        // Master switch for the endpoints themselves: the OAuth routes are declared
+        // unconditionally, so without this they stay reachable (and erroring) while
+        // the server is off.
+        $container->getDefinition(OAuthEndpointGuardSubscriber::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
 
         // Authorization server (token issuance).
         $container->getDefinition(ClientRepository::class)

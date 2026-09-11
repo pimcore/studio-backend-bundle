@@ -64,6 +64,14 @@ services:
             $enabled: false
             $allowedOrigins: []
 
+    # Master switch: 404s every OAuth endpoint while the server is disabled, so the
+    # unconditionally declared routes are not reachable on installations that never
+    # enabled OAuth. $enabled is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthEndpointGuardSubscriber:
+        arguments:
+            $enabled: false
+            $apiPrefix: '%pimcore_studio_backend.url_prefix%'
+
     # RFC 9728 discovery endpoint controller (routed in config/pimcore/routing.yaml).
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController:
         public: true
