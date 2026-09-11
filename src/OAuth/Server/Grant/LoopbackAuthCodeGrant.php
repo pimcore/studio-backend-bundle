@@ -125,10 +125,13 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
             // Asked only for scopes this resource cannot process: the token would open
             // nothing, so say so instead of issuing it.
             throw OAuthServerException::invalidScope(
-                implode(' ', array_map(
-                    static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
-                    $requested,
-                )),
+                implode(
+                    ' ',
+                    array_map(
+                        static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
+                        $requested,
+                    ),
+                ),
                 $this->redirectUriFor($request),
             );
         }

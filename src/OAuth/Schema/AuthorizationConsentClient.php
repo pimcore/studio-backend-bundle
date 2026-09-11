@@ -30,7 +30,11 @@ final readonly class AuthorizationConsentClient
     public function __construct(
         #[Property(description: 'Client identifier', type: 'string', example: 'studio-mcp')]
         private string $identifier,
-        #[Property(description: 'Client display name (self-chosen; not authoritative)', type: 'string', example: 'Studio MCP')]
+        #[Property(
+            description: 'Client display name (self-chosen; not authoritative)',
+            type: 'string',
+            example: 'Studio MCP',
+        )]
         private string $name,
         #[Property(
             description: 'Host (with port) of the redirect URI the authorization code will be sent to. '
