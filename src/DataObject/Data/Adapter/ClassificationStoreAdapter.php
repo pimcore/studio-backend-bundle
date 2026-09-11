@@ -172,18 +172,15 @@ final readonly class ClassificationStoreAdapter implements
         foreach ($collection as $groupId => $groupDefinitions) {
             foreach ($groupDefinitions as $groupKeyId => $definition) {
                 foreach ($languages as $language) {
-                    $inheritedData[$groupId][$language][$groupKeyId] = $this->inheritanceService->getFieldInheritanceData(
-                        $object,
-                        $definition,
-                        $key,
-                        new FieldContextData(
-                            $container,
-                            $language,
-                            $groupId,
-                            $groupKeyId,
-                            resolveInheritedValue: $resolveInheritedValue
-                        )
+                    $fieldContextData = new FieldContextData(
+                        $container,
+                        $language,
+                        $groupId,
+                        $groupKeyId,
+                        resolveInheritedValue: $resolveInheritedValue
                     );
+                    $inheritedData[$groupId][$language][$groupKeyId] = $this->inheritanceService
+                        ->getFieldInheritanceData($object, $definition, $key, $fieldContextData);
                 }
             }
         }

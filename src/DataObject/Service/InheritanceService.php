@@ -108,15 +108,20 @@ final readonly class InheritanceService implements InheritanceServiceInterface
     ): InheritanceData {
         $origin = $this->findOrigin($object, $fieldDefinition, $key, $contextData);
         $inherited = $origin !== null && $origin->getObject()->getId() !== $object->getId();
+        $originId = $inherited ? $origin->getObject()->getId() : $object->getId();
 
-        return new InheritanceData(
-            $inherited ? $origin->getObject()->getId() : $object->getId(),
-            $inherited,
-            true,
-            $contextData?->shouldResolveInheritedValue()
-                ? $this->getInheritedValue($object, $fieldDefinition, $key, $contextData, $inherited ? $origin : null)
-                : null
-        );
+        $inheritedValue = null;
+        if ($contextData?->shouldResolveInheritedValue()) {
+            $inheritedValue = $this->getInheritedValue(
+                $object,
+                $fieldDefinition,
+                $key,
+                $contextData,
+                $inherited ? $origin : null
+            );
+        }
+
+        return new InheritanceData($originId, $inherited, true, $inheritedValue);
     }
 
     /**
