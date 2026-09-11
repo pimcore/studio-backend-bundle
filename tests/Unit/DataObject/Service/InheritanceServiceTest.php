@@ -26,6 +26,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\UrlSlug;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Objectbrick;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as ObjectBrickData;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -240,6 +242,69 @@ final class InheritanceServiceTest extends Unit
         $this->assertSame(self::PARENT_ID, $result->getObjectId());
         $this->assertTrue($result->isInherited());
         $this->assertNull($result->getInheritedValue());
+    }
+
+    public function testDirectLeafCallHonorsTheEligibilityGuard(): void
+    {
+        $parent = $this->createObject(self::PARENT_ID, 'parent value');
+        $object = $this->makeEmpty(Concrete::class, [
+            'getId' => self::OBJECT_ID,
+            'getParent' => $parent,
+            // a field type without an adapter must never be treated as inheritable, even when
+            // getFieldInheritanceData() is called directly instead of through processFieldDefinition()
+            'getNextParentForInheritance' => Expected::never(),
+        ]);
+
+        $result = $this->createService(adapter: null)
+            ->getFieldInheritanceData($object, new Input(), self::FIELD_KEY, $this->optIn());
+
+        $this->assertFalse($result->isInheritable());
+        $this->assertFalse($result->isInherited());
+        $this->assertNull($result->getInheritedValue());
+    }
+
+    public function testAncestorWalkReacquiresAnObjectBrickSkippedByAnIntermediateAncestor(): void
+    {
+        $grandparentBrickData = $this->makeEmpty(ObjectBrickData::class, [
+            'get' => 'grandparent value',
+        ]);
+        $grandparentBrickContainer = $this->makeEmpty(Objectbrick::class, [
+            'get' => $grandparentBrickData,
+        ]);
+        $grandparent = $this->makeEmpty(Concrete::class, [
+            'getId' => self::GRANDPARENT_ID,
+            'get' => $grandparentBrickContainer,
+            'getNextParentForInheritance' => null,
+        ]);
+
+        $parentBrickContainer = $this->makeEmpty(Objectbrick::class, [
+            // the parent never had this brick type added
+            'get' => null,
+        ]);
+        $parent = $this->makeEmpty(Concrete::class, [
+            'getId' => self::PARENT_ID,
+            'get' => $parentBrickContainer,
+            'getNextParentForInheritance' => $grandparent,
+        ]);
+
+        $ownBrickData = $this->makeEmpty(ObjectBrickData::class, [
+            'getFieldname' => 'myBricks',
+            'getType' => 'MyBrick',
+            'get' => '',
+        ]);
+        $object = $this->makeEmpty(Concrete::class, [
+            'getId' => self::OBJECT_ID,
+            'getParent' => $parent,
+            'getNextParentForInheritance' => $parent,
+        ]);
+
+        $contextData = new FieldContextData($ownBrickData, resolveInheritedValue: true);
+
+        $result = $this->createService()->getFieldInheritanceData($object, new Input(), self::FIELD_KEY, $contextData);
+
+        $this->assertTrue($result->isInherited());
+        $this->assertSame(self::GRANDPARENT_ID, $result->getObjectId());
+        $this->assertSame('grandparent value', $result->getInheritedValue());
     }
 
     public function testOptInSurvivesTheContextCopyForAnAncestor(): void

@@ -106,6 +106,10 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): InheritanceData {
+        if (!$this->isEligibleForInheritance($fieldDefinition)) {
+            return new InheritanceData($object->getId(), inheritable: false);
+        }
+
         $origin = $this->findOrigin($object, $fieldDefinition, $key, $contextData);
         $inherited = $origin !== null && $origin->getObject()->getId() !== $object->getId();
         $originId = $inherited ? $origin->getObject()->getId() : $object->getId();
@@ -122,6 +126,17 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         }
 
         return new InheritanceData($originId, $inherited, true, $inheritedValue);
+    }
+
+    /**
+     * A field is only eligible for inheritance resolution when a data adapter is registered for its type
+     * and the field itself supports inheritance. This mirrors the guard in processFieldDefinition() so
+     * that callers reaching this leaf helper directly (e.g. for classification store keys) cannot bypass it.
+     */
+    private function isEligibleForInheritance(Data $fieldDefinition): bool
+    {
+        return $fieldDefinition->supportsInheritance()
+            && $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType()) !== null;
     }
 
     /**
@@ -175,7 +190,13 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): ?InheritanceOrigin {
-        $value = $this->getValidFieldValue($object, $key, $contextData);
+        // a container (e.g. an object brick) missing on this ancestor is not the same as no container at
+        // all: falling through to a same-named root field would read unrelated data, so treat it as empty
+        // and keep walking instead - the container may still reappear further up the ancestor chain
+        $value = $contextData?->isContainerContextUnresolved() === true
+            ? null
+            : $this->getValidFieldValue($object, $key, $contextData);
+
         if (!$fieldDefinition->isEmpty($value)) {
             return new InheritanceOrigin($object, $value, $contextData);
         }
