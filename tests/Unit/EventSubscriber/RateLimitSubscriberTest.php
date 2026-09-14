@@ -39,6 +39,10 @@ final class RateLimitSubscriberTest extends Unit
 
     private const int MCP_LIMIT = 3000;
 
+    private const string OAUTH_REGISTER_PATH = '/pimcore-oauth/register';
+
+    private const int REGISTER_LIMIT = 60;
+
     public function testGetSubscribedEvents(): void
     {
         $events = RateLimitSubscriber::getSubscribedEvents();
@@ -315,13 +319,114 @@ final class RateLimitSubscriberTest extends Unit
         int $limit = 500,
         bool $enabled = true,
         int $mcpLimit = self::MCP_LIMIT,
+        int $registerLimit = self::REGISTER_LIMIT,
     ): RateLimitSubscriber {
         return new RateLimitSubscriber(
             self::URL_PREFIX,
             $this->createLimiterFactory('test_studio_api', $limit),
             $this->createLimiterFactory('test_studio_mcp', $mcpLimit),
+            $this->createLimiterFactory('test_oauth_register', $registerLimit),
             $enabled,
         );
+    }
+
+    /**
+     * The registration endpoint is open, unauthenticated and writes a row, so it is the
+     * one OAuth path that carries a limiter.
+     *
+     * @throws Exception
+     */
+    public function testOauthRegisterPathIsRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        $this->assertSame(self::REGISTER_LIMIT, $rateLimit->getLimit());
+        $this->assertSame(self::REGISTER_LIMIT - 1, $rateLimit->getRemainingTokens());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testOauthRegisterOverflowThrowsRateLimitException(): void
+    {
+        $subscriber = $this->createSubscriber(registerLimit: 1);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST'));
+
+        $this->expectException(RateLimitException::class);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST'));
+    }
+
+    /**
+     * The token and authorize endpoints must stay unlimited. For a hosted AI connector
+     * every user's token exchange arrives from the provider's egress range, so an IP
+     * bucket there would throttle one provider's entire user base against this
+     * installation. Pinned as a test so nobody "completes" the match arm later.
+     *
+     * @throws Exception
+     */
+    public function testOtherOauthEndpointsAreNotRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+
+        foreach (['/pimcore-oauth/token', '/pimcore-oauth/authorize'] as $path) {
+            $event = $this->createRequestEvent($path, 'POST');
+            $subscriber->onKernelRequest($event);
+
+            $this->assertNull(
+                $event->getRequest()->attributes->get('_studio_rate_limit'),
+                $path . ' must not be rate limited.',
+            );
+        }
+    }
+
+    /**
+     * Guards against matching the register path by prefix, which would drag the sibling
+     * OAuth endpoints into the same bucket.
+     *
+     * @throws Exception
+     */
+    public function testPathMerelyResemblingTheRegisterPathIsIgnored(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent(self::OAUTH_REGISTER_PATH . '/something', 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDisabledSubscriberSkipsOauthRegister(): void
+    {
+        $subscriber = $this->createSubscriber(enabled: false);
+        $event = $this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRegisterTrafficDoesNotConsumeTheStudioBudget(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $subscriber->onKernelRequest($this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST'));
+
+        $studioEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($studioEvent);
+
+        $rateLimit = $studioEvent->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        $this->assertSame(499, $rateLimit->getRemainingTokens());
     }
 
     private function createLimiterFactory(string $id, int $limit): RateLimiterFactory

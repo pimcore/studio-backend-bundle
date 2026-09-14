@@ -40,6 +40,7 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
                 $client->scopes,
                 $client->confidential,
                 $client->secretHash,
+                $client->metadataHash,
             )
         );
         $this->entityManager->flush();
@@ -48,10 +49,24 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
     public function find(string $identifier): ?DynamicClient
     {
         $record = $this->entityManager->getRepository(OAuthClientRecord::class)->find($identifier);
-        if ($record === null) {
-            return null;
-        }
 
+        return $record === null ? null : $this->toDto($record);
+    }
+
+    public function findByMetadataHash(string $metadataHash): ?DynamicClient
+    {
+        // Oldest first, so a repeat registration keeps resolving to the same client_id
+        // even if duplicates predate this lookup.
+        $record = $this->entityManager->getRepository(OAuthClientRecord::class)->findOneBy(
+            ['metadataHash' => $metadataHash],
+            ['createdAt' => 'ASC'],
+        );
+
+        return $record === null ? null : $this->toDto($record);
+    }
+
+    private function toDto(OAuthClientRecord $record): DynamicClient
+    {
         return new DynamicClient(
             $record->getClientId(),
             $record->getName(),
@@ -60,6 +75,8 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
             $record->getScopes(),
             $record->isConfidential(),
             $record->getSecretHash(),
+            $record->getMetadataHash(),
+            $record->getCreatedAt(),
         );
     }
 }

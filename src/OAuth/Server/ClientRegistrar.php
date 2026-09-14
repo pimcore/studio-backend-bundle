@@ -25,8 +25,10 @@ use function hash;
 use function in_array;
 use function is_array;
 use function is_string;
+use function json_encode;
 use function preg_split;
 use function random_bytes;
+use function sort;
 use function time;
 use function trim;
 
@@ -63,6 +65,20 @@ final readonly class ClientRegistrar
         $name = $this->parseName($metadata['client_name'] ?? null);
 
         $confidential = $authMethod !== 'none';
+        $metadataHash = $this->metadataHash($name, $redirectUris, $grantTypes, $scopes, $authMethod);
+
+        // Recognising a repeat registration is what bounds this table, so it is done
+        // unconditionally: it is deliberately not gated on the rate limiter's enabled
+        // flag, because a performance setting must not switch off a storage-growth
+        // control.
+        if (!$confidential) {
+            $existing = $this->store->findByMetadataHash($metadataHash);
+
+            if ($existing !== null) {
+                return $this->asRegisteredClient($existing, $authMethod);
+            }
+        }
+
         $identifier = 'dcr_' . bin2hex(random_bytes(16));
 
         $secret = null;
@@ -85,6 +101,9 @@ final readonly class ClientRegistrar
             $scopes,
             $confidential,
             $secretHash,
+            // Only a public client is deduplicated, so only a public client stores a
+            // digest to be matched on.
+            $confidential ? null : $metadataHash,
         ));
 
         return new RegisteredClient(
@@ -96,6 +115,59 @@ final readonly class ClientRegistrar
             $authMethod,
             $secret,
             time(),
+        );
+    }
+
+    /**
+     * Digest of the metadata the client chose, which is what decides whether two
+     * registration requests describe the same client. The generated identifier and
+     * secret are ours rather than the client's, so they are deliberately not part of it.
+     *
+     * The three lists are sorted first: RFC 7591 gives their order no meaning, so a
+     * client listing the same redirect URIs in a different order has registered the same
+     * client and must not get a second row for it.
+     *
+     * @param list<string> $redirectUris
+     * @param list<string> $grantTypes
+     * @param list<string> $scopes
+     */
+    private function metadataHash(
+        string $name,
+        array $redirectUris,
+        array $grantTypes,
+        array $scopes,
+        string $authMethod,
+    ): string {
+        sort($redirectUris);
+        sort($grantTypes);
+        sort($scopes);
+
+        return hash('sha256', (string) json_encode([
+            'client_name' => $name,
+            'redirect_uris' => $redirectUris,
+            'grant_types' => $grantTypes,
+            'scope' => $scopes,
+            'token_endpoint_auth_method' => $authMethod,
+        ]));
+    }
+
+    /**
+     * The RFC 7591 response for a client that already existed. `client_secret` is absent
+     * by construction: only public clients reach here, and a public client has none.
+     * `client_id_issued_at` reports when the client was first registered rather than now,
+     * so a repeat call does not claim to have created something.
+     */
+    private function asRegisteredClient(DynamicClient $client, string $authMethod): RegisteredClient
+    {
+        return new RegisteredClient(
+            $client->identifier,
+            $client->name,
+            $client->redirectUris,
+            $client->grantTypes,
+            $client->scopes,
+            $authMethod,
+            null,
+            $client->createdAt ?? time(),
         );
     }
 

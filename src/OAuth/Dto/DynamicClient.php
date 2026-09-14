@@ -26,6 +26,12 @@ final readonly class DynamicClient
      * @param list<string> $redirectUris
      * @param list<string> $grantTypes
      * @param list<string> $scopes
+     * @param string|null  $metadataHash digest of the client-chosen metadata, used to
+     *                                   recognise a repeat registration. Null for a
+     *                                   confidential client, which is never deduplicated
+     *                                   (see ClientRegistrar::register()).
+     * @param int|null     $createdAt    unix timestamp the record was stored, null when
+     *                                   the client has not been persisted yet
      */
     public function __construct(
         public string $identifier,
@@ -35,6 +41,8 @@ final readonly class DynamicClient
         public array $scopes,
         public bool $confidential,
         public ?string $secretHash,
+        public ?string $metadataHash = null,
+        public ?int $createdAt = null,
     ) {
     }
 }

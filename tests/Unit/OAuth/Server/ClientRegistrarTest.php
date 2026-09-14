@@ -44,6 +44,17 @@ final class ClientRegistrarTest extends Unit
             {
                 return $this->saved[$identifier] ?? null;
             }
+
+            public function findByMetadataHash(string $metadataHash): ?DynamicClient
+            {
+                foreach ($this->saved as $client) {
+                    if ($client->metadataHash === $metadataHash) {
+                        return $client;
+                    }
+                }
+
+                return null;
+            }
         };
 
         $this->registrar = $this->createRegistrar('mcp:read', 'mcp:write');
@@ -102,6 +113,128 @@ final class ClientRegistrarTest extends Unit
         $this->assertTrue($stored->confidential);
         // Only the hash is persisted, never the plaintext.
         $this->assertSame(hash('sha256', (string) $result->secret), $stored->secretHash);
+    }
+
+    /**
+     * An open registration endpoint is the abuse surface: without this, a client that
+     * re-registers on every start, or a caller hammering the endpoint, grows the table
+     * without bound. Matching on the client-chosen metadata makes the repeat a no-op.
+     */
+    public function testRepeatRegistrationReturnsTheSameClientAndStoresNoSecondRow(): void
+    {
+        $metadata = [
+            'client_name' => 'Repeat',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ];
+
+        $first = $this->registrar->register($metadata);
+        $second = $this->registrar->register($metadata);
+
+        $this->assertSame($first->identifier, $second->identifier);
+        $this->assertCount(1, $this->store->saved);
+        // Still a valid RFC 7591 registration response.
+        $this->assertSame($first->redirectUris, $second->redirectUris);
+        $this->assertSame('none', $second->tokenEndpointAuthMethod);
+        $this->assertNull($second->secret);
+    }
+
+    /**
+     * RFC 7591 gives the order of redirect_uris no meaning, so the same client listing
+     * them differently is still the same client.
+     */
+    public function testRedirectUriOrderDoesNotCreateASecondClient(): void
+    {
+        $first = $this->registrar->register([
+            'client_name' => 'Ordered',
+            'redirect_uris' => ['https://app.example/a', 'https://app.example/b'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+        $second = $this->registrar->register([
+            'client_name' => 'Ordered',
+            'redirect_uris' => ['https://app.example/b', 'https://app.example/a'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+
+        $this->assertSame($first->identifier, $second->identifier);
+        $this->assertCount(1, $this->store->saved);
+    }
+
+    public function testDifferingMetadataCreatesANewClient(): void
+    {
+        $first = $this->registrar->register([
+            'client_name' => 'One',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+        $differentName = $this->registrar->register([
+            'client_name' => 'Two',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+        $differentUri = $this->registrar->register([
+            'client_name' => 'One',
+            'redirect_uris' => ['https://other.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+
+        $this->assertNotSame($first->identifier, $differentName->identifier);
+        $this->assertNotSame($first->identifier, $differentUri->identifier);
+        $this->assertCount(3, $this->store->saved);
+    }
+
+    /**
+     * Confidential clients are deliberately never deduplicated. The secret is returned
+     * once and kept only as a hash, so a repeat call can neither return the original
+     * (it is unrecoverable) nor omit it (RFC 7591 requires client_secret for a
+     * confidential client) nor reissue it (that would silently invalidate the secret an
+     * already-deployed instance is using). A fresh record is the honest answer.
+     */
+    public function testConfidentialRegistrationIsNeverDeduplicated(): void
+    {
+        $metadata = [
+            'client_name' => 'Confidential',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'client_secret_basic',
+        ];
+
+        $first = $this->registrar->register($metadata);
+        $second = $this->registrar->register($metadata);
+
+        $this->assertNotSame($first->identifier, $second->identifier);
+        $this->assertCount(2, $this->store->saved);
+        // Each gets its own usable secret.
+        $this->assertNotNull($first->secret);
+        $this->assertNotNull($second->secret);
+        $this->assertNotSame($first->secret, $second->secret);
+    }
+
+    /**
+     * A confidential record must carry no digest at all, so it can never be returned by
+     * the dedupe lookup even if a public client happened to hash to the same value.
+     */
+    public function testConfidentialClientStoresNoMetadataHash(): void
+    {
+        $result = $this->registrar->register([
+            'redirect_uris' => ['https://app.example/cb'],
+        ]);
+
+        $stored = $this->store->find($result->identifier);
+        $this->assertNotNull($stored);
+        $this->assertTrue($stored->confidential);
+        $this->assertNull($stored->metadataHash);
+    }
+
+    public function testPublicClientStoresAMetadataHash(): void
+    {
+        $result = $this->registrar->register([
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+
+        $stored = $this->store->find($result->identifier);
+        $this->assertNotNull($stored);
+        $this->assertNotNull($stored->metadataHash);
     }
 
     public function testDefaultsGrantAndScope(): void
