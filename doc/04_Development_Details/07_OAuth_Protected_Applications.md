@@ -27,11 +27,9 @@ OAuth splits into two roles, and this bundle fills only the first by default:
 A resource server never issues or refreshes tokens, and never needs the signing keys. It validates what it is
 handed and applies its own authorization rules.
 
-There is no token revocation endpoint ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)) and no
-client-facing revoke API. Every issued token is *recorded* so it can be refused, and the record is marked
-revoked by the library's own authorization-code and refresh-token rotation, but nothing today lets a client or
-an administrator revoke a token on demand. Treat the access-token TTL as the real upper bound on a leaked
-token.
+There is no revocation endpoint ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)) and no way for a client
+or an administrator to revoke a token on demand; only the library's own code and refresh-token rotation marks
+records revoked. The access-token TTL is the real upper bound on a leaked token.
 
 ## Applications that accept these tokens
 
@@ -44,11 +42,9 @@ They differ deliberately, and in more than one dimension. Authentication is shar
 application's own business**, and so is *where* the credential is checked. The platform tells you *who* is
 calling, never *what they may do*.
 
-Datahub Simple REST is worth studying as an example of one application with two surfaces. Its REST
-endpoints and its MCP endpoint are separate protected resources, so a client asks for a token naming
-the one it intends to call, and a token minted for either is refused at the other. Each surface checks
-the token where it already authenticated, which is why the same application appears twice in the
-"authenticates in" column.
+Datahub Simple REST shows one application with two surfaces: its REST and MCP endpoints are separate
+protected resources, so a token minted for one is refused at the other, and each checks the token where it
+already authenticated.
 
 ## Public contracts
 
@@ -218,11 +214,7 @@ that asks for more is narrowed to them before consent is shown.
 
 Register every resource you own on every main request, not only the one being addressed: a metadata document
 is fetched on a `.well-known` request that matches none of your routes, and the authorization request is
-validated on an OAuth route, so a path filter would leave those lookups unresolvable. The cost is two array
-writes on requests that never consult the registry.
-
-`oauth.issuer` is required whenever the server is enabled, so `$base` is a single configured value rather than
-one set of URIs per `Host` header on a long-running worker.
+validated on an OAuth route, so a path filter would leave those lookups unresolvable.
 
 ### Step 4: Emit the challenge
 
@@ -261,11 +253,9 @@ Tag the service with `ScopeProviderInterface::TAG`. The authorization endpoint t
 dynamic clients may register it, and the server metadata advertises it. Ship only scopes that correspond to
 operations you actually have: a scope a user can consent to that grants nothing is worse than no scope.
 
-The provider makes a scope *exist*; listing it in a resource's `scopesSupported` is what lets a token for that
-resource carry it. Those are separate steps, and the second is the one that matters at consent time: a client
-asking for more than the resource declares is narrowed to the intersection, so the user is shown only the
-scopes that resource can process. Declare on each resource exactly what it accepts, because the server-wide
-catalogue is the union across every bundle and a client reading that instead will over-ask.
+The provider makes a scope *exist*; listing it in a resource's `scopesSupported` (step 3) is what lets a token
+for that resource carry it. Declare on each resource exactly what it accepts, because the server-wide
+catalogue is the union across every bundle.
 
 ### Step 6: Apply your own authorization
 
@@ -286,11 +276,8 @@ parameter on the authorization request; the server validates it against the regi
 with `invalid_request`, and stamps it as the token's `aud`. `TokenValidatorInterface::validate()` then refuses
 a token whose audience does not name the resource URI you pass it.
 
-This is what stops a token obtained for one application being replayed against another. Without it, every
-protected resource on the installation accepts every token the server ever issued, which is a real hole once
-more than one resource exists.
-
-Two consequences for an application:
+This is what stops a token obtained for one application being replayed against another. Two consequences for
+an application:
 
 - **Pass your own resource URI to `validate()`**, and derive it the same way every time. The URI has to be
   byte-identical when the resource is declared, when a token is requested for it, and when that token is

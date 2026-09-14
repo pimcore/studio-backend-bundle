@@ -78,9 +78,6 @@ pimcore_studio_backend:
 
 > Reference key material via environment variables or Symfony secrets. **Never commit keys.**
 
-> `issuer` is validated at container build time: enabling the server without one fails the build rather than
-> advertising an issuer in metadata that never reaches the tokens themselves.
-
 ### What enabling it adds
 
 Three things become operator-visible the moment the server is switched on:
@@ -120,19 +117,25 @@ included: it performs no user lookup of its own. It validates the request, stash
 redirects to `oauth.consent_path`; the login and the consent screen happen there, on a Pimcore Studio UI route
 that enforces the session.
 
-Make sure your `security.access_control` allows them:
+No firewall or `access_control` rule ships for these paths, and Symfony imposes nothing where no rule
+matches, so on a default installation they are already reachable. You only need to whitelist them if **your**
+project restricts by default, for example with a catch-all `- { path: ^/, roles: ROLE_USER }`:
 
 ```yaml
 security:
     access_control:
-        # Public discovery + authorize + token + dynamic registration
+        # Only needed if a broader rule of yours would otherwise catch these
         - { path: '^/\.well-known/oauth-', roles: PUBLIC_ACCESS }
         - { path: '^/pimcore-oauth/(authorize|token|register)$', roles: PUBLIC_ACCESS }
-        # ... your existing pimcore_studio / pimcore_mcp rules ...
 ```
 
-Leaving `authorize` out of that list hands it to whatever catch-all rule the project has, which usually means
-the flow dies at its first redirect rather than at the consent screen.
+Include `authorize` in that list as well as `token` and `register`. It is the one people leave out, and a
+catch-all rule catching it kills the flow at its first redirect rather than at the consent screen.
+
+The consent page itself (`oauth.consent_path`, `/pimcore-studio/oauth/consent` by default) is also public: it
+sits outside the `pimcore_studio` firewall, whose pattern is `^/pimcore-studio/api(/.*)?$`. That is
+deliberate. The page is a Pimcore Studio UI route, and the authentication happens in the Studio API call it
+makes to fetch the pending authorization, not in serving the page.
 
 ### Accepting tokens at the MCP endpoints
 
@@ -157,8 +160,8 @@ pimcore_studio_backend:
 ```
 
 The authenticator derives that URI from the **request** host, so behind a reverse proxy the host Pimcore sees
-must match the `uri` here byte for byte. Set `oauth.issuer` to the public origin and make sure the proxy
-forwards the host (Symfony `trusted_proxies`), or the audience check rejects otherwise valid tokens.
+must match this `uri` byte for byte, or valid tokens are rejected. See
+[Deriving the resource URI](../04_Development_Details/07_OAuth_Protected_Applications.md#deriving-the-resource-uri).
 
 ## Endpoints
 
@@ -197,18 +200,16 @@ The Authorization Code + PKCE flow, end to end:
 A `401` from a protected resource carries a `WWW-Authenticate` challenge pointing at the resource's metadata, so
 a compliant client can discover where to authenticate.
 
-> **Scopes.** A token carries only the scopes the resource it names declares, and the granted set is reported
-> back in the `scope` response parameter. Nothing compares a granted scope against an operation, though:
-> authorization is **each application's own rules** instead, meaning Pimcore user permissions plus per-server
-> access behind the MCP firewall, or a per-configuration allow-list in Datahub Simple REST. Treat a scope as a
-> label shown at consent time rather than a permission.
+> **Scopes are labels, not permissions.** A token carries only the scopes the resource it names declares, but
+> nothing compares a granted scope against an operation: each application applies its own authorization rules.
+> See [What the platform leaves to each application][scope-enforcement].
+
+[scope-enforcement]: ../04_Development_Details/07_OAuth_Protected_Applications.md#what-the-platform-leaves-to-each-application
 
 ## Onboarding clients
 
-Use one (or several) of the following. All three authenticate a logged-in Pimcore user via the Authorization
-Code flow; there is no Client Credentials grant. Pre-registered and metadata-document clients are public and
-use PKCE with no secret. A dynamically registered client gets a secret unless it registers
-`token_endpoint_auth_method: none`.
+Use one or several of the following. All three authenticate a logged-in Pimcore user via the Authorization
+Code flow.
 
 ### Pre-registered clients
 
@@ -270,21 +271,15 @@ Applications whose endpoints are only known at runtime register them programmati
 The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
 not enough on its own: something has to declare a resource, and something has to accept tokens at it.
 
-A client names the resource it wants a token for with the RFC 8707 `resource` parameter on the authorization
-request. The parameter is required, and an unknown resource is rejected, so a client never believes it holds a
-narrowly scoped token when it does not. The named resource is stamped onto the token as its `aud` and enforced
-when that token is presented, so a token minted for one resource is refused at another. A token carrying no
-audience is refused everywhere rather than accepted everywhere.
+Every token is bound to one resource. The client names it with the RFC 8707 `resource` parameter, the
+parameter is required, an unknown resource is rejected, and the resulting token is refused at any other
+resource. See [Audience binding](../04_Development_Details/07_OAuth_Protected_Applications.md#audience-binding)
+for the full rules.
 
-Only the authorization request carries the parameter. The binding travels with the authorization code, so the
-token request does not repeat it, and a refresh keeps the resource the original grant was issued for.
-
-`scopes_supported` is what a token for that resource may carry. A client asking for more is narrowed to the
-intersection, which is what the consent screen then shows and what the `scope` response parameter reports, so
-a client that reads the server-wide catalogue instead of this resource's own metadata does not have the user
-consent to scopes the resource cannot process. Asking **only** for scopes it does not declare is refused with
-`invalid_scope`, since the resulting token would open nothing. A resource that declares no scopes constrains
-nothing, and a request that names none is left alone.
+`scopes_supported` caps what a token for that resource may carry: a client asking for more is narrowed to the
+intersection, and one asking **only** for scopes the resource does not declare is refused with
+`invalid_scope`. A resource declaring no scopes constrains nothing. Note the default is `['mcp:read']`, so set
+it explicitly on any non-MCP resource.
 
 ```yaml
 pimcore_studio_backend:
