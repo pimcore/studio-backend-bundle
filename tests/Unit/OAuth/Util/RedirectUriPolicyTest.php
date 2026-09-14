@@ -47,6 +47,8 @@ final class RedirectUriPolicyTest extends Unit
             'scheme only' => ['https://'],
             'empty' => [''],
             'custom scheme' => ['com.example.app://cb'],
+            'doubled IPv6 brackets' => ['http://[[::1]]/cb'],
+            'unbalanced IPv6 brackets' => ['http://[::1]]/cb'],
         ];
     }
 

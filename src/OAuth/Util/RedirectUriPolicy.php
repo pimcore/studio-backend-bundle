@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Util;
 
 use function in_array;
 use function parse_url;
+use function preg_match;
 use function str_contains;
 use function strtolower;
-use function trim;
 
 /**
  * Decides whether a redirect URI may be associated with a client at all.
@@ -63,11 +63,17 @@ final class RedirectUriPolicy
 
     /**
      * parse_url() reports an IPv6 literal with its delimiting brackets, so
-     * "http://[::1]:8080/cb" yields "[::1]". Strip them to compare against a
-     * plain address.
+     * "http://[::1]:8080/cb" yields "[::1]". Strip that one pair to compare
+     * against a plain address. Exactly one pair: parse_url() also accepts
+     * malformed hosts such as "[[::1]]" and "[::1]]", and trimming every
+     * bracket would let those through as loopback.
      */
     private static function getHost(string $host): string
     {
-        return strtolower(trim($host, '[]'));
+        if (preg_match('/^\[(.+)\]$/u', $host, $matches) === 1) {
+            return strtolower($matches[1]);
+        }
+
+        return strtolower($host);
     }
 }
