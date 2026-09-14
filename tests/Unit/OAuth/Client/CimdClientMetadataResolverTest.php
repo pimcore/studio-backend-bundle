@@ -114,6 +114,45 @@ final class CimdClientMetadataResolverTest extends Unit
         $this->assertNull($resolver->resolve('https://app.example/client.json'));
     }
 
+    public function testRejectsCleartextRedirectUriOnARoutableHost(): void
+    {
+        $resolver = $this->resolver([
+            $this->doc((string) json_encode([
+                'client_name' => 'Cleartext',
+                'redirect_uris' => ['http://attacker.example/cb'],
+            ])),
+        ]);
+
+        $this->assertNull($resolver->resolve('https://app.example/client.json'));
+    }
+
+    public function testRejectsTheDocumentWhenOnlyOneRedirectUriIsUnusable(): void
+    {
+        $resolver = $this->resolver([
+            $this->doc((string) json_encode([
+                'client_name' => 'Mixed',
+                'redirect_uris' => ['https://app.example/cb', 'http://attacker.example/cb'],
+            ])),
+        ]);
+
+        $this->assertNull($resolver->resolve('https://app.example/client.json'));
+    }
+
+    public function testAcceptsHttpOnLoopbackForNativeClients(): void
+    {
+        $resolver = $this->resolver([
+            $this->doc((string) json_encode([
+                'client_name' => 'Native',
+                'redirect_uris' => ['http://127.0.0.1:8137/cb'],
+            ])),
+        ]);
+
+        $metadata = $resolver->resolve('https://app.example/client.json');
+
+        $this->assertNotNull($metadata);
+        $this->assertSame(['http://127.0.0.1:8137/cb'], $metadata->redirectUris);
+    }
+
     public function testRejectsNon200(): void
     {
         $resolver = $this->resolver([new MockResponse('not found', ['http_code' => 404])]);

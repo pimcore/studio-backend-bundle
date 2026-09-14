@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Client;
 
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ClientMetadata;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\RedirectUriPolicy;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\NoPrivateNetworkHttpClient;
@@ -227,7 +228,13 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
         }
 
         foreach ($redirectUris as $uri) {
-            if (!is_string($uri)) {
+            // Same gate dynamic registration applies. The document is fetched from a
+            // host the client_id names, so its redirect URIs are attacker-choosable in
+            // exactly the way a registration request's are; without this a document
+            // could name a cleartext routable URI and take delivery of the code.
+            if (!is_string($uri) || !RedirectUriPolicy::isAcceptable($uri)) {
+                $this->logger->warning('CIMD document declares an unusable redirect_uri', ['url' => $clientId]);
+
                 return null;
             }
         }
