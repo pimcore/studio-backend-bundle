@@ -135,8 +135,8 @@ Two decisions worth making consciously:
 - **Supply an explicit rate limiter.** Symfony's default builds a per-IP tier that every client on an address
   shares, so guesses against one credential can push an unrelated valid credential into a `429`.
 
-**If your bundle already authenticates elsewhere**, skip the firewall entirely and add a branch there. Data
-Hub Simple REST does this in `McpAuthContextResolver`, so integrators need no `security.yaml` change at all
+**If your bundle already authenticates elsewhere**, skip the firewall entirely and add a branch there. Datahub 
+Simple REST does this in `McpAuthContextResolver`, so integrators need no `security.yaml` change at all
 and existing traffic is untouched. The rest of the steps are the same; only step 2 changes shape.
 
 ### Step 2: Validate the token
