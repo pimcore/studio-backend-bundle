@@ -54,7 +54,7 @@ class PatAuthenticator extends AbstractAuthenticator
 
     private const int BEARER_PREFIX_LENGTH = 7;
 
-    private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/';
+    private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u';
 
     private const int SECONDS_PER_MINUTE = 60;
 

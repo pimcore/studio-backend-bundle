@@ -32,7 +32,7 @@ final readonly class PendingAuthorizationStore
      * reach the cache key — otherwise a reserved character (e.g. ":") throws and a
      * traversal segment ("../…") escapes into other paths.
      */
-    private const string ID_PATTERN = '/^[a-f0-9]{64}$/';
+    private const string ID_PATTERN = '/^[a-f0-9]{64}$/u';
 
     public function __construct(
         private CacheItemPoolInterface $cache,

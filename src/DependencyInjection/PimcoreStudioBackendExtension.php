@@ -298,8 +298,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument('$allowInsecure', $cimd['allow_insecure'])
             ->setArgument('$cacheTtl', $cimd['cache_ttl']);
 
+        // Both flags, not just the sub-flag: registration writes a row from an open,
+        // unauthenticated endpoint, so it must not depend on OAuthEndpointGuardSubscriber
+        // being the only thing that refuses it. An install carrying a stale
+        // dynamic_client_registration flag while OAuth is off then has the controller
+        // itself answer 404, which is also the honest reading of the sub-flag: it
+        // qualifies a feature that is not running.
         $container->getDefinition(ClientRegistrationController::class)
-            ->setArgument(self::ARG_ENABLED, $dcrEnabled);
+            ->setArgument(self::ARG_ENABLED, $dcrEnabled && $config['oauth']['enabled']);
 
         $container->getDefinition(AuthorizeController::class)
             ->setArgument('$consentPath', $config['oauth']['consent_path']);
