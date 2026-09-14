@@ -19,11 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
-use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
-use Pimcore\Model\Version;
 use function get_class;
 
 /**
@@ -61,30 +58,6 @@ trait ElementProviderTrait
         }
 
         return $element;
-    }
-
-    private function getLatestVersionForUser(
-        ElementInterface $element,
-        ?UserInterface $user,
-    ): ?Version {
-        if (!$element instanceof Asset &&
-            !$element instanceof Document\PageSnippet &&
-            !$element instanceof Concrete
-        ) {
-            return null;
-        }
-
-        // check for latest version
-        return $element->getLatestVersion($user?->getId());
-    }
-
-    private function getVersionData(ElementInterface $element, ?Version $version): ElementInterface
-    {
-        if (!$version) {
-            return $element;
-        }
-
-        return $version->getData();
     }
 
     /**

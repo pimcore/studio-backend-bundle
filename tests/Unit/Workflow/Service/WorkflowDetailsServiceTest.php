@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\VersionDraftElementResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface;
@@ -51,7 +52,8 @@ final class WorkflowDetailsServiceTest extends Unit
             $this->makeEmpty(Manager::class),
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(ServiceResolverInterface::class),
-            $this->makeEmpty(WorkflowDetailsHydratorInterface::class)
+            $this->makeEmpty(WorkflowDetailsHydratorInterface::class),
+            new VersionDraftElementResolver()
         );
     }
 }
