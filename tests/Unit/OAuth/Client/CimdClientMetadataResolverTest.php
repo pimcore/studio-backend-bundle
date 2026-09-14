@@ -20,6 +20,7 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use function json_encode;
+use function str_repeat;
 
 final class CimdClientMetadataResolverTest extends Unit
 {
@@ -117,6 +118,33 @@ final class CimdClientMetadataResolverTest extends Unit
     {
         $resolver = $this->resolver([new MockResponse('not found', ['http_code' => 404])]);
         $this->assertNull($resolver->resolve('https://app.example/client.json'));
+    }
+
+    /**
+     * The client_id is attacker-influenced, so the host serving the document is too. The
+     * cap has to bound what this process allocates, which means aborting mid-body rather
+     * than measuring one already collected in memory.
+     */
+    public function testRejectsDocumentOverTheSizeCap(): void
+    {
+        $oversized = '{"redirect_uris":["https://app.example/cb"],"pad":"'
+            . str_repeat('a', 70000)
+            . '"}';
+
+        $resolver = $this->resolver([$this->doc($oversized)]);
+
+        $this->assertNull($resolver->resolve('https://app.example/client.json'));
+    }
+
+    public function testAcceptsDocumentUnderTheSizeCap(): void
+    {
+        $sized = '{"redirect_uris":["https://app.example/cb"],"pad":"'
+            . str_repeat('a', 1000)
+            . '"}';
+
+        $resolver = $this->resolver([$this->doc($sized)]);
+
+        $this->assertNotNull($resolver->resolve('https://app.example/client.json'));
     }
 
     public function testCachesWithinRequest(): void

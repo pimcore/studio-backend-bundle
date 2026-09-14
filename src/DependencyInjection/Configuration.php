@@ -51,6 +51,13 @@ class Configuration implements ConfigurationInterface
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
+    private const string OAUTH_ISSUER_REQUIRED_ERROR =
+        'pimcore_studio_backend.oauth.issuer must be set when oauth.enabled is true, '
+        . 'e.g. "https://pimcore.example.com". It is the one identity the server is '
+        . 'known by: discovery advertises it, the authorization response carries it, '
+        . 'issued tokens are stamped with it, and the resource server verifies it '
+        . 'against it. Deriving it per request would let those disagree.';
+
     /**
      * {@inheritdoc}
      *
@@ -807,8 +814,10 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->scalarNode('issuer')
                         ->info(
-                            'Issuer identifier (iss) advertised in metadata and stamped on tokens, '
-                            . 'e.g. "https://pimcore.example.com". Null derives it from the request.'
+                            'Issuer identifier (iss) advertised in metadata, returned in the '
+                            . 'authorization response, stamped on issued tokens and verified by the '
+                            . 'resource server, e.g. "https://pimcore.example.com". Required once '
+                            . 'oauth.enabled is true.'
                         )
                         ->defaultNull()
                     ->end()
@@ -913,6 +922,16 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                ->end()
+                // Fail at container build time rather than shipping an issuer that is
+                // advertised but never stamped: with a null issuer the metadata endpoint
+                // still derives one from the request while token issuance omits `iss`
+                // entirely, and EmbeddedTokenValidator then drops its IssuedBy constraint
+                // - a check the documentation promises, silently disabled.
+                ->validate()
+                    ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
+                        && ($oauth['issuer'] ?? null) === null)
+                    ->thenInvalid(self::OAUTH_ISSUER_REQUIRED_ERROR)
                 ->end()
             ->end()
         ->end();

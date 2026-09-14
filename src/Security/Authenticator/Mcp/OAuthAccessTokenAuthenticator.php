@@ -49,6 +49,15 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
 
     private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/';
 
+    /**
+     * The single resource every MCP request is validated against, regardless of the
+     * sub-path it targets. Public because McpAuthenticationEntryPoint has to advertise
+     * this exact resource in its RFC 9728 challenge: a challenge naming anything else
+     * sends the client to a metadata document that does not describe what is enforced
+     * here.
+     */
+    public const string MCP_RESOURCE_PATH = '/pimcore-mcp';
+
     public function __construct(
         private readonly bool $enabled,
         private readonly TokenValidatorInterface $tokenValidator,
@@ -124,6 +133,6 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
 
     private function resourceUri(Request $request): string
     {
-        return CanonicalUri::canonicalize($request->getSchemeAndHttpHost() . '/pimcore-mcp');
+        return CanonicalUri::canonicalize($request->getSchemeAndHttpHost() . self::MCP_RESOURCE_PATH);
     }
 }

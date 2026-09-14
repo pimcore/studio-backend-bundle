@@ -72,7 +72,9 @@ final class AuthorizationApprovalController extends AbstractApiController
         tags: [Tags::Oauth->value],
     )]
     #[StringParameter('id', 'a1b2c3', 'Opaque id of the pending authorization')]
-    #[SingleParameterRequestBody('approved', true, 'boolean')]
+    // `approved` is required: this endpoint decides an allow/deny, so an empty body
+    // must be rejected by the contract rather than silently read as a denial.
+    #[SingleParameterRequestBody('approved', true, 'boolean', parameterRequired: true)]
     #[SuccessResponse(
         description: 'The location to redirect the browser to',
         content: new JsonContent(ref: AuthorizationRedirect::class),
@@ -131,7 +133,9 @@ final class AuthorizationApprovalController extends AbstractApiController
             return $location;
         }
 
-        // RFC 9207: identify the issuer in the authorization response.
+        // RFC 9207: identify the issuer in the authorization response. Same configured
+        // value the metadata endpoint advertises and the token carries - a client that
+        // compares the three must see one identity, not three request-derived guesses.
         $issuer = $this->issuer ?? $request->getSchemeAndHttpHost();
         $separator = str_contains($location, '?') ? '&' : '?';
 

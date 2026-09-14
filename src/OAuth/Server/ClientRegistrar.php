@@ -73,6 +73,11 @@ final readonly class ClientRegistrar
         $secretHash = null;
         if ($confidential) {
             $secret = bin2hex(random_bytes(32));
+            // A plain SHA-256 rather than a password hash on purpose: the secret is a
+            // 256-bit CSPRNG value this server generates, never a user-chosen one, so
+            // there is no guessable keyspace for a rainbow table or a brute force to
+            // work against and nothing for a salt or a work factor to buy. The
+            // comparison is still constant-time (see ClientRepository::validateClient).
             $secretHash = hash('sha256', $secret);
         }
 

@@ -1128,6 +1128,7 @@ tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
+tag_oauth_description: Consent operations for the embedded OAuth authorization server, used by the Pimcore Studio consent screen
 tag_perspectives_description: Operations to get/update/create/delete properties and widgets
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_recycle_bin_description: Recycle bin operations to list/restore/flush deleted elements

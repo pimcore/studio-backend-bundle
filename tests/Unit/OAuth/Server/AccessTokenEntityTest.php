@@ -55,6 +55,27 @@ final class AccessTokenEntityTest extends Unit
     }
 
     /**
+     * RFC 9068 section 2.1 requires the JOSE `typ` to be the access-token media type, so
+     * a resource server can reject an ID token or any other JWT this issuer mints before
+     * looking at a single claim. lcobucci defaults the header to plain "JWT".
+     */
+    public function testEmitsTheRfc9068AccessTokenTypeHeader(): void
+    {
+        [$private, $public] = $this->keyPair();
+
+        $token = new AccessTokenEntity();
+        $token->setClient(new ClientEntity('studio-mcp', 'Studio MCP', [], true));
+        $token->setIdentifier('jti-typ');
+        $token->setExpiryDateTime(new DateTimeImmutable('+1 hour'));
+        $token->setUserIdentifier('21');
+        $token->setPrivateKey(new CryptKey($private, null, false));
+
+        $headers = $this->parse($token->toString(), $public)->headers();
+
+        $this->assertSame('at+jwt', $headers->get('typ'));
+    }
+
+    /**
      * The last seam in resource binding: the resource travels from the authorization
      * request through the token record, and this is where it becomes the `aud` claim a
      * resource server actually reads.

@@ -18,7 +18,9 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ClientMetadata;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpClient\NoPrivateNetworkHttpClient;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use Throwable;
 use function array_is_list;
 use function array_key_exists;
@@ -152,6 +154,10 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
                 'max_duration' => self::MAX_DURATION_SECONDS,
                 'max_redirects' => 0,
                 'headers' => ['Accept' => 'application/json'],
+                // Read the body through stream() below instead of letting the
+                // transport collect it, so the size cap can abort a hostile
+                // response rather than being applied to one already in memory.
+                'buffer' => false,
             ]);
 
             if ($response->getStatusCode() !== 200) {
@@ -163,10 +169,8 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
                 return null;
             }
 
-            $content = $response->getContent(false);
-            if (strlen($content) > self::MAX_BYTES) {
-                $this->logger->warning('CIMD document too large', ['url' => $url]);
-
+            $content = $this->readCapped($client, $response, $url);
+            if ($content === null) {
                 return null;
             }
 
@@ -178,6 +182,32 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
 
             return null;
         }
+    }
+
+    /**
+     * Reads the body chunk by chunk and gives up as soon as it exceeds MAX_BYTES,
+     * so the advertised cap bounds what this process actually allocates. Collecting
+     * the whole body first and measuring afterwards would let an attacker-named host
+     * (the client_id is attacker-influenced) exhaust a worker before the check runs.
+     *
+     * @throws TransportExceptionInterface
+     */
+    private function readCapped(HttpClientInterface $client, ResponseInterface $response, string $url): ?string
+    {
+        $content = '';
+
+        foreach ($client->stream($response) as $chunk) {
+            $content .= $chunk->getContent();
+
+            if (strlen($content) > self::MAX_BYTES) {
+                $this->logger->warning('CIMD document too large', ['url' => $url]);
+                $response->cancel();
+
+                return null;
+            }
+        }
+
+        return $content;
     }
 
     /**

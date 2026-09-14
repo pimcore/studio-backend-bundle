@@ -27,9 +27,9 @@ use function implode;
 
 /**
  * JWT access token. Replaces league's default AccessTokenTrait so the token
- * carries RFC 9068 claims: a space-delimited `scope` string, `client_id`, `iss`,
- * and an `aud` naming the resource the token was requested for (RFC 8707), rather
- * than league's `aud`=client-id / `scopes` array.
+ * carries the RFC 9068 `at+jwt` header and claims: a space-delimited `scope`
+ * string, `client_id`, `iss`, and an `aud` naming the resource the token was
+ * requested for (RFC 8707), rather than league's `aud`=client-id / `scopes` array.
  *
  * @internal
  */
@@ -80,6 +80,10 @@ final class AccessTokenEntity implements AccessTokenEntityInterface
 
         $now = new DateTimeImmutable();
         $builder = $configuration->builder()
+            // RFC 9068 section 2.1: the JOSE `typ` must be the access-token media
+            // type, so a resource server can tell an access token apart from any
+            // other JWT this issuer mints. lcobucci defaults it to plain "JWT".
+            ->withHeader('typ', 'at+jwt')
             ->identifiedBy($this->getIdentifier())
             ->issuedAt($now)
             ->canOnlyBeUsedAfter($now)

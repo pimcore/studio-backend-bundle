@@ -37,6 +37,10 @@ final class AuthorizationServerMetadataController
 
     public function __invoke(Request $request): JsonResponse
     {
+        // Configuration requires a non-null issuer whenever the server is enabled, and
+        // the endpoint guard 404s this route while it is off, so the fallback is only
+        // reached by a container built past both. It must match what tokens are stamped
+        // with; see Configuration::OAUTH_ISSUER_REQUIRED_ERROR.
         $base = $this->issuer ?? $request->getSchemeAndHttpHost();
 
         $metadata = [

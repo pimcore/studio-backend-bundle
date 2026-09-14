@@ -155,6 +155,10 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
                 new SignedWith($configuration->signer(), $configuration->verificationKey()),
                 new LooseValidAt($this->clock),
             ];
+            // Configuration rejects a null issuer while the server is enabled, so this
+            // constraint is always applied to tokens minted by the embedded server. The
+            // guard remains for a resource server wired up without one, where there is
+            // no issuer to compare against rather than a check worth skipping.
             if ($this->issuer !== null) {
                 $constraints[] = new IssuedBy($this->issuer);
             }

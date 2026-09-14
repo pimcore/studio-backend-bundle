@@ -14,24 +14,51 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\EntryPoint;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class McpAuthenticationEntryPointTest extends Unit
 {
+    private const string EXPECTED_CHALLENGE =
+        'Bearer resource_metadata='
+        . '"https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp",'
+        . ' scope="mcp:read"';
+
     public function testEnabledEmitsChallengeWithResourceMetadata(): void
     {
         $response = (new McpAuthenticationEntryPoint(true))->start($this->mcpRequest());
 
         $this->assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
-        // The metadata URL is derived from the request path, so it points at the
-        // protected resource for the endpoint that was actually requested.
-        $this->assertSame(
-            'Bearer resource_metadata='
-            . '"https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp/message",'
-            . ' scope="mcp:read"',
-            $response->headers->get('WWW-Authenticate'),
+        $this->assertSame(self::EXPECTED_CHALLENGE, $response->headers->get('WWW-Authenticate'));
+    }
+
+    /**
+     * The challenge must name the resource the token is validated against, not the
+     * endpoint that produced the 401. MCP endpoints are sub-paths of the base while
+     * OAuthAccessTokenAuthenticator validates all of them against the base, so deriving
+     * the URL from the request path advertised metadata for an unregistered resource -
+     * which the RFC 9728 endpoint answers with 404, breaking discovery.
+     */
+    public function testChallengeNamesTheBaseResourceForEverySubPath(): void
+    {
+        $entryPoint = new McpAuthenticationEntryPoint(true);
+
+        foreach (['/pimcore-mcp/message', '/pimcore-mcp/agent/pimcore-data-objects-read'] as $path) {
+            $response = $entryPoint->start(Request::create('https://pimcore.example.com' . $path));
+
+            $this->assertSame(self::EXPECTED_CHALLENGE, $response->headers->get('WWW-Authenticate'));
+        }
+    }
+
+    public function testChallengeUsesTheResourcePathTheAuthenticatorEnforces(): void
+    {
+        $response = (new McpAuthenticationEntryPoint(true))->start($this->mcpRequest());
+
+        $this->assertStringContainsString(
+            '/.well-known/oauth-protected-resource' . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH . '"',
+            (string) $response->headers->get('WWW-Authenticate'),
         );
     }
 
