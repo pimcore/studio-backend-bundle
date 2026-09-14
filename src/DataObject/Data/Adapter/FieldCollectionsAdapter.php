@@ -31,6 +31,8 @@ use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData;
 use Pimcore\Model\Factory;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function is_array;
 
 /**
  * @internal
@@ -166,9 +168,8 @@ final readonly class FieldCollectionsAdapter implements
         $collectionDef = Fieldcollection\Definition::getByKey($collectionRaw['type']);
 
         foreach ($collectionDef?->getFieldDefinitions() as $elementName => $fd) {
-            $elementValue = $blockElement[$elementName] ?? null;
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
-            if (!$elementValue || !$adapter) {
+            if (!$adapter || !is_array($blockElement) || !array_key_exists($elementName, $blockElement)) {
                 continue;
             }
 
@@ -176,7 +177,7 @@ final readonly class FieldCollectionsAdapter implements
                 $element,
                 $fd,
                 $elementName,
-                [$elementName => $elementValue],
+                [$elementName => $blockElement[$elementName]],
                 $user,
                 $contextData,
                 $isPatch,
