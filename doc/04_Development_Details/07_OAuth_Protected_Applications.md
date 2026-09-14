@@ -29,10 +29,10 @@ what it is handed and applies its own authorization rules.
 
 ## Applications today
 
-| Application         | Endpoint | Authenticates in | Authorization model |
-|---------------------|----------|------------------|---------------------|
-| Pimcore MCP servers | `/pimcore-mcp/…` | a Symfony firewall | The resolved user's own Pimcore permissions, plus per-server sharing |
-| Datahub Simple REST | `/pimcore-datahub-webservices/simplerest…` (REST and MCP) | a request-argument resolver and a controller base class | Per-configuration allow-list of users and roles; data exposure stays driven by the Data Hub configuration |
+| Application         | Endpoint | Authenticates in | Authorization model                                                                                      |
+|---------------------|----------|------------------|----------------------------------------------------------------------------------------------------------|
+| Pimcore MCP servers | `/pimcore-mcp/…` | a Symfony firewall | The resolved user's own Pimcore permissions, plus per-server sharing                                     |
+| Datahub Simple REST | `/pimcore-datahub-webservices/simplerest…` (REST and MCP) | a request-argument resolver and a controller base class | Per-configuration allow-list of users and roles; data exposure stays driven by the Datahub configuration |
 
 They differ deliberately, and in more than one dimension. Authentication is shared; **authorization is each
 application's own business**, and so is *where* the credential is checked. The platform tells you *who* is
@@ -71,7 +71,7 @@ does:
   Right when your endpoints have no authentication of their own yet, or already use the security component.
   This is what the MCP servers do. Declare your own firewall over your own prefix rather than putting your
   endpoints under another bundle's URL prefix to borrow its firewall.
-- **Your existing request pipeline**, if the bundle already authenticates somewhere else. Data Hub Simple
+- **Your existing request pipeline**, if the bundle already authenticates somewhere else. Datahub Simple
   REST checks credentials in a `ValueResolverInterface` and has no `security.yaml` at all; bolting a firewall
   on would have duplicated that and forced every installation to edit its security configuration. It added a
   branch where it already authenticated instead.
@@ -98,7 +98,7 @@ the thing being accessed.
 
 ## Blueprint: adding an application
 
-Data Hub Simple REST is the worked example. Where it and the MCP servers differ, both are shown.
+Datahub Simple REST is the worked example. Where it and the MCP servers differ, both are shown.
 
 ### Step 1: Choose where to authenticate
 
