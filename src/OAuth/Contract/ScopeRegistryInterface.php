@@ -14,19 +14,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Contract;
 
 /**
- * The authorization server's scope catalogue: every identifier contributed by a
- * registered {@see ScopeProviderInterface}.
+ * The authorization server's scope catalogue: the union of the `scopesSupported` of
+ * every registered {@see ResourceRegistryInterface} resource.
  *
  * Single source of truth for which scopes exist. The authorization endpoint accepts
  * them, dynamic client registration allows them, and the server metadata advertises
- * them.
+ * them. Declaring a scope on the resource that supports it is the only way to add
+ * one: a scope belonging to no resource would be narrowed away at authorization time
+ * anyway.
  *
  * Public API.
  */
 interface ScopeRegistryInterface
 {
     /**
-     * All known identifiers, de-duplicated, in contribution order.
+     * All known identifiers, de-duplicated, in resource-registration order.
      *
      * @return list<string>
      */

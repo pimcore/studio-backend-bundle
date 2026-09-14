@@ -50,8 +50,7 @@ already authenticated.
 
 | Contract | Purpose |
 |----------|---------|
-| `OAuth\Contract\ScopeProviderInterface` | Contribute your own scope identifiers to the server's catalogue |
-| `OAuth\Contract\ScopeRegistryInterface` | Read the catalogue |
+| `OAuth\Contract\ScopeRegistryInterface` | Read the scope catalogue |
 | `OAuth\Contract\TokenValidatorInterface` | Validate a raw bearer token and resolve it to effective access |
 | `OAuth\Dto\ResolvedAccess` | Result of validation: the Pimcore user, granted scopes, audience, client id |
 | `OAuth\Contract\ResourceRegistryInterface` | Register endpoints as protected resources, making their RFC 9728 metadata resolvable |
@@ -236,26 +235,24 @@ credential was sent at all.
 
 ### Step 5: Declare your scopes
 
-Use your own prefix rather than another application's. Sharing `mcp:read` between two applications makes the
-consent screen ambiguous about what is being granted, and prevents a token being narrowed to one of them.
+There is nothing separate to do: **a scope exists because a resource supports it**. The `scopesSupported` you
+passed to `ProtectedResource` in step 3 is the declaration.
 
 ```php
-final class MyScopeProvider implements ScopeProviderInterface
-{
-    public function scopes(): array
-    {
-        return ['mybundle:read'];
-    }
-}
+new ProtectedResource($base . '/my-bundle-prefix/endpoint', ['mybundle:read'], [$base]);
 ```
 
-Tag the service with `ScopeProviderInterface::TAG`. The authorization endpoint then accepts the scope,
-dynamic clients may register it, and the server metadata advertises it. Ship only scopes that correspond to
-operations you actually have: a scope a user can consent to that grants nothing is worse than no scope.
+The authorization endpoint then accepts `mybundle:read`, dynamic clients may register it, and the server
+metadata advertises it. The server-wide catalogue is the union across every registered resource.
 
-The provider makes a scope *exist*; listing it in a resource's `scopesSupported` (step 3) is what lets a token
-for that resource carry it. Declare on each resource exactly what it accepts, because the server-wide
-catalogue is the union across every bundle.
+Use your own prefix rather than another application's. Sharing `mcp:read` between two applications makes the
+consent screen ambiguous about what is being granted, and prevents a token being narrowed to one of them.
+Ship only scopes that correspond to operations you actually have: a scope a user can consent to that grants
+nothing is worse than no scope.
+
+Declare on each resource exactly what it accepts. A scope attached to no resource cannot be used at all: the
+authorization request is narrowed to the named resource, so such a scope is either filtered out or refused
+with `invalid_scope`.
 
 ### Step 6: Apply your own authorization
 

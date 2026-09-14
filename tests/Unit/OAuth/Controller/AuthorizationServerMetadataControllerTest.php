@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Controller;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use function in_array;
 use function is_array;
@@ -61,6 +64,34 @@ final class AuthorizationServerMetadataControllerTest extends Unit
 
         $enabled = $this->metadata($this->controller(registrationEnabled: true));
         $this->assertSame(self::ISSUER . '/pimcore-oauth/register', $enabled['registration_endpoint']);
+    }
+
+    /**
+     * End to end through the real registry: what the server advertises is the union of
+     * what its resources support, with nothing declared separately alongside them.
+     */
+    public function testAdvertisedScopesAreDerivedFromTheRegisteredResources(): void
+    {
+        $resources = new ConfigProtectedResourceRegistry([
+            ['uri' => 'https://issuer.test/pimcore-mcp', 'scopes_supported' => ['mcp:read', 'mcp:write']],
+        ]);
+        $controller = new AuthorizationServerMetadataController(
+            self::ISSUER,
+            new ScopeRegistry($resources),
+            false,
+            false,
+        );
+
+        $this->assertSame(['mcp:read', 'mcp:write'], $this->metadata($controller)['scopes_supported']);
+
+        // A resource registered later in the request is advertised too, which it would
+        // not be if the catalogue were memoised on first read.
+        $resources->register(new ProtectedResource('https://issuer.test/my-bundle', ['mybundle:read'], []));
+
+        $this->assertSame(
+            ['mcp:read', 'mcp:write', 'mybundle:read'],
+            $this->metadata($controller)['scopes_supported'],
+        );
     }
 
     /**

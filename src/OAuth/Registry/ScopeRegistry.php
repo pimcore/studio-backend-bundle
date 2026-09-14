@@ -13,46 +13,48 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Registry;
 
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use function in_array;
 
 /**
+ * The scope catalogue, derived from the protected resources themselves rather than
+ * declared a second time alongside them.
+ *
+ * A scope that no resource supports cannot be used: the authorization request is
+ * narrowed to the named resource's `scopesSupported`, so such a scope is either
+ * filtered out or refused with `invalid_scope`. Resource definitions therefore
+ * already carry every scope that can matter, and deriving the catalogue from them
+ * makes the two structurally incapable of disagreeing.
+ *
  * @internal
  */
-final class ScopeRegistry implements ScopeRegistryInterface
+final readonly class ScopeRegistry implements ScopeRegistryInterface
 {
-    /**
-     * @var list<string>|null
-     */
-    private ?array $scopes = null;
-
-    /**
-     * @param iterable<ScopeProviderInterface> $providers
-     */
     public function __construct(
-        private readonly iterable $providers,
+        private ResourceRegistryInterface $resourceRegistry,
     ) {
     }
 
+    /**
+     * Recomputed on every call rather than memoised. Resources are not static: a
+     * bundle registers its own from a `kernel.request` subscriber, so a catalogue
+     * frozen on first use would depend on whether anything happened to ask before
+     * registration ran. The sets involved are a handful of short strings.
+     */
     public function all(): array
     {
-        if ($this->scopes !== null) {
-            return $this->scopes;
-        }
-
         $scopes = [];
-        foreach ($this->providers as $provider) {
-            foreach ($provider->scopes() as $scope) {
+
+        foreach ($this->resourceRegistry->all() as $resource) {
+            foreach ($resource->scopesSupported as $scope) {
                 if ($scope !== '' && !in_array($scope, $scopes, true)) {
                     $scopes[] = $scope;
                 }
             }
         }
 
-        $this->scopes = $scopes;
-
-        return $this->scopes;
+        return $scopes;
     }
 
     public function has(string $scope): bool

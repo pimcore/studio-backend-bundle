@@ -41,6 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalCon
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\McpProtectedResourceSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthEndpointGuardSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
@@ -263,6 +264,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // unconditionally, so without this they stay reachable (and erroring) while
         // the server is off.
         $container->getDefinition(OAuthEndpointGuardSubscriber::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+
+        // The bundle's own MCP endpoints as a protected resource, so an installation
+        // that enables OAuth does not have to hand-write the entry to get a working
+        // authorization server.
+        $container->getDefinition(McpProtectedResourceSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
 
         // Authorization server (token issuance).

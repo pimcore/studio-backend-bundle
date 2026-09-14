@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColu
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\NotificationDispatchPass;
-use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\OAuthScopeProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PhpCodeTransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
@@ -102,7 +101,6 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new NotificationDispatchPass());
 
         // OAuth scopes are contributed by any bundle exposing protected resources.
-        $container->addCompilerPass(new OAuthScopeProviderPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void

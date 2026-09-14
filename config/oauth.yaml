@@ -116,17 +116,20 @@ services:
         arguments:
             $enabled: false
 
-    # Scope catalogue. Any bundle exposing protected resources contributes its own
-    # identifiers by tagging a ScopeProviderInterface service.
-    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry:
-        arguments:
-            $providers: !tagged_iterator pimcore_studio_backend.oauth.scope_provider
+    # Scope catalogue, derived from the resources themselves: a bundle that exposes
+    # protected resources declares their scopes on the ProtectedResource it registers,
+    # and they appear here automatically. A scope belonging to no resource would be
+    # narrowed away at authorization time, so there is nothing else to declare.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry: ~
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry
 
-    Pimcore\Bundle\StudioBackendBundle\OAuth\Scope\McpScopeProvider:
-        tags: ['pimcore_studio_backend.oauth.scope_provider']
+    # Registers this bundle's own /pimcore-mcp endpoints as a protected resource.
+    # $enabled is set from config in the extension.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\McpProtectedResourceSubscriber:
+        arguments:
+            $enabled: false
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 

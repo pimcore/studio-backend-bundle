@@ -912,8 +912,13 @@ class Configuration implements ConfigurationInterface
                                     ->info('Canonical resource URI (audience).')
                                 ->end()
                                 ->arrayNode('scopes_supported')
+                                    ->info(
+                                        'Scopes a token for this resource may carry. These are also what '
+                                        . 'the server advertises as its catalogue, so an entry here is how '
+                                        . 'a scope comes to exist at all. Empty constrains nothing.'
+                                    )
                                     ->scalarPrototype()->end()
-                                    ->defaultValue(['mcp:read'])
+                                    ->defaultValue([])
                                 ->end()
                                 ->arrayNode('authorization_servers')
                                     ->scalarPrototype()->end()

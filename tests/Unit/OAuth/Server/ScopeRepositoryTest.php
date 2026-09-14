@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ScopeEntity;
@@ -65,25 +65,17 @@ final class ScopeRepositoryTest extends Unit
     }
 
     /**
-     * A repository backed by the real registry, fed by a single provider that
-     * contributes exactly the given scopes.
+     * A repository backed by the real registry, whose catalogue comes from a single
+     * protected resource declaring exactly the given scopes.
      */
     private function repository(string ...$scopes): ScopeRepository
     {
-        $provider = new class($scopes) implements ScopeProviderInterface {
-            /**
-             * @param list<string> $scopes
-             */
-            public function __construct(private readonly array $scopes)
-            {
-            }
-
-            public function scopes(): array
-            {
-                return $this->scopes;
-            }
-        };
-
-        return new ScopeRepository(new ScopeRegistry([$provider]));
+        return new ScopeRepository(
+            new ScopeRegistry(
+                new ConfigProtectedResourceRegistry([
+                    ['uri' => 'https://example.com/pimcore-mcp', 'scopes_supported' => $scopes],
+                ]),
+            ),
+        );
     }
 }
