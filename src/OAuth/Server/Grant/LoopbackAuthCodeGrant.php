@@ -47,9 +47,9 @@ use function json_decode;
 /**
  * Authorization-code grant that validates redirect URIs with the RFC 8252
  * loopback exception, optionally extended to `localhost` (see
- * {@see LoopbackRedirectUriValidator}), and requires the S256 PKCE
- * transformation. The redirect-URI and PKCE-method validation are overridden;
- * all other behaviour is the league grant's.
+ * {@see LoopbackRedirectUriValidator}), and requires PKCE with the S256
+ * transformation from every client. The redirect-URI and PKCE validation are
+ * overridden; all other behaviour is the league grant's.
  *
  * @internal
  */
@@ -57,25 +57,9 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
 {
     private const string REQUIRED_CODE_CHALLENGE_METHOD = 'S256';
 
-    /**
-     * OAuth 2.1 and our advertised metadata support only the S256 PKCE
-     * transformation, but the league grant still accepts `plain` (and defaults
-     * to it when the method is omitted). Reject anything but S256 before
-     * delegating, so the server never issues a code protected by a plain
-     * challenge.
-     */
     public function validateAuthorizationRequest(ServerRequestInterface $request): AuthorizationRequestInterface
     {
-        if ($this->getQueryStringParameter('code_challenge', $request) !== null) {
-            $method = $this->getQueryStringParameter('code_challenge_method', $request, 'plain');
-
-            if ($method !== self::REQUIRED_CODE_CHALLENGE_METHOD) {
-                throw OAuthServerException::invalidRequest(
-                    'code_challenge_method',
-                    'Only the S256 code challenge method is supported.'
-                );
-            }
-        }
+        $this->assertPkce($request);
 
         // league validates the client and the redirect URI first, and the resource check
         // must not overtake it: an unknown client paired with a missing resource would
@@ -87,6 +71,43 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
         $resourceRequest->setScopes($this->narrowToResource($authorizationRequest, $resource));
 
         return $resourceRequest;
+    }
+
+    /**
+     * OAuth 2.1 requires PKCE on every authorization-code request, whatever the client
+     * type. league asks for a challenge only from public clients (its
+     * `requireCodeChallengeForPublicClients`), so a confidential client -- on this server,
+     * one that registered through Dynamic Client Registration and holds a secret -- could
+     * otherwise complete the flow with no challenge at all. The secret is not a substitute:
+     * PKCE protects the authorization *code*, so a code intercepted in transit stays
+     * redeemable without it.
+     *
+     * league also still accepts `plain`, and defaults to it when the method is omitted,
+     * while the metadata this server publishes offers S256 alone.
+     *
+     * Both refusals are `invalid_request` naming the offending parameter, which is what
+     * RFC 6749 prescribes for a missing or malformed one and what league itself raises for
+     * the public-client case. Neither carries a redirect URI, so the client is answered
+     * directly rather than through its callback, exactly as league answers its own.
+     *
+     * @throws OAuthServerException
+     */
+    private function assertPkce(ServerRequestInterface $request): void
+    {
+        if ($this->getQueryStringParameter('code_challenge', $request) === null) {
+            throw OAuthServerException::invalidRequest(
+                'code_challenge',
+                'PKCE is required: every client must send a code_challenge.'
+            );
+        }
+
+        $method = $this->getQueryStringParameter('code_challenge_method', $request, 'plain');
+        if ($method !== self::REQUIRED_CODE_CHALLENGE_METHOD) {
+            throw OAuthServerException::invalidRequest(
+                'code_challenge_method',
+                'Only the S256 code challenge method is supported.'
+            );
+        }
     }
 
     /**

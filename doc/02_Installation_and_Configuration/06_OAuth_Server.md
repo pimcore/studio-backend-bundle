@@ -29,8 +29,9 @@ on the same public contracts, and any bundle can do the same.
 
 - **Discovery** - Authorization Server Metadata ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)) and
   Protected Resource Metadata ([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)).
-- **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) - PKCE is
-  required for public clients, and when a challenge is sent only `S256` is accepted; `plain` is rejected.
+- **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) - required from
+  every client, public or confidential, using the `S256` method; a missing challenge and `plain` are both
+  rejected.
 - **Refresh tokens**.
 - Three ways to onboard clients: **pre-registered** clients declared in config, optional **Dynamic Client
   Registration** ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata

@@ -128,6 +128,45 @@ final class LoopbackAuthCodeGrantTest extends Unit
         ]);
     }
 
+    /**
+     * OAuth 2.1 requires PKCE from every client. league only enforces a challenge for
+     * public ones, so without this check a confidential client registered through DCR
+     * could run the whole authorization-code flow unprotected. Its secret does not cover
+     * the gap: PKCE protects the code, not the client.
+     */
+    public function testRequestWithoutCodeChallengeIsRejected(): void
+    {
+        $exception = $this->assertRejectedAsInvalidRequest([
+            'resource' => self::KNOWN_RESOURCE,
+        ]);
+
+        $this->assertStringContainsString('code_challenge', $exception->getHint() ?? '');
+    }
+
+    /**
+     * The refusal must not depend on the client being public. A confidential client is the
+     * one league would have waved through, so it is the case worth pinning.
+     */
+    public function testConfidentialClientAlsoRequiresACodeChallenge(): void
+    {
+        $grant = $this->grant();
+        $clientRepository = $this->createMock(ClientRepositoryInterface::class);
+        $clientRepository->method('getClientEntity')->willReturn(
+            new ClientEntity(self::CLIENT_ID, 'Confidential client', self::REDIRECT_URI, true),
+        );
+        $grant->setClientRepository($clientRepository);
+
+        try {
+            $grant->validateAuthorizationRequest($this->authorizeRequest([
+                'resource' => self::KNOWN_RESOURCE,
+            ]));
+            $this->fail('Expected the request to be rejected.');
+        } catch (OAuthServerException $exception) {
+            $this->assertSame('invalid_request', $exception->getErrorType());
+            $this->assertStringContainsString('code_challenge', $exception->getHint() ?? '');
+        }
+    }
+
     public function testPlainCodeChallengeMethodIsRejected(): void
     {
         $this->assertRejectedAsInvalidRequest([
