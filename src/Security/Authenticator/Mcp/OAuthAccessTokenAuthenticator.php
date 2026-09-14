@@ -61,6 +61,7 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     public function __construct(
         private readonly bool $enabled,
         private readonly TokenValidatorInterface $tokenValidator,
+        private readonly ?string $issuer = null,
     ) {
     }
 
@@ -131,8 +132,21 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         return $token === '' ? null : $token;
     }
 
+    /**
+     * The configured issuer, not the request host. `Host` is caller-supplied unless
+     * `framework.trusted_hosts` is set, and deriving the expected audience from it would
+     * make this check compare an attacker's string against the same attacker's string.
+     * The issuer is mandatory while OAuth is enabled, and the resource is registered from
+     * that same value, so the two agree by construction rather than by coincidence.
+     *
+     * The fallback is unreachable while enabled: a null issuer means OAuth is off, and
+     * `supports()` has already declined. It also fails closed, since nothing can have
+     * registered a resource for that host either.
+     */
     private function resourceUri(Request $request): string
     {
-        return CanonicalUri::canonicalize($request->getSchemeAndHttpHost() . self::MCP_RESOURCE_PATH);
+        $base = $this->issuer ?? $request->getSchemeAndHttpHost();
+
+        return CanonicalUri::canonicalize($base . self::MCP_RESOURCE_PATH);
     }
 }

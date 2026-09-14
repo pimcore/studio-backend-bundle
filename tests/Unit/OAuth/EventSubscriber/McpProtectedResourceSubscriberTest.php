@@ -29,9 +29,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
  */
 final class McpProtectedResourceSubscriberTest extends Unit
 {
-    private const string HOST = 'https://pimcore.example.com';
+    private const string ISSUER = 'https://pimcore.example.com';
 
-    private const string MCP_RESOURCE = self::HOST . '/pimcore-mcp';
+    private const string MCP_RESOURCE = self::ISSUER . '/pimcore-mcp';
 
     public function testRegistersTheMcpResourceWhenEnabled(): void
     {
@@ -44,43 +44,90 @@ final class McpProtectedResourceSubscriberTest extends Unit
         $this->assertSame(['mcp:read', 'mcp:write'], $resource->scopesSupported);
     }
 
+    /**
+     * The RFC 9728 document serialises this verbatim, and a client reads it to find
+     * where to authenticate. An empty list leaves it with nowhere to go.
+     */
+    public function testMetadataNamesTheAuthorizationServer(): void
+    {
+        $registry = new ConfigProtectedResourceRegistry();
+        $this->dispatch($registry, enabled: true);
+
+        $resource = $registry->get(self::MCP_RESOURCE);
+        $this->assertNotNull($resource);
+        $this->assertSame([self::ISSUER], $resource->authorizationServers);
+
+        $metadata = $registry->metadataFor(self::MCP_RESOURCE);
+        $this->assertNotNull($metadata);
+        $this->assertSame([self::ISSUER], $metadata->toArray()['authorization_servers']);
+    }
+
     public function testRegistersNothingWhenDisabled(): void
     {
         $registry = new ConfigProtectedResourceRegistry();
         $this->dispatch($registry, enabled: false);
 
         $this->assertSame([], $registry->all());
-        $this->assertFalse($registry->has(self::MCP_RESOURCE));
     }
 
     /**
-     * The URI must be the one the MCP authenticator validates a token's audience
-     * against. Deriving both from the request host is what keeps them identical; a
-     * mismatch would refuse valid tokens with nothing saying why.
+     * Fails closed: with no configured issuer there is no trustworthy base to build the
+     * URI from, and an unregistered resource is refused at the authorization endpoint.
      */
-    public function testUriMatchesWhatTheAuthenticatorEnforces(): void
+    public function testRegistersNothingWithoutAnIssuer(): void
     {
         $registry = new ConfigProtectedResourceRegistry();
-        $this->dispatch($registry, enabled: true);
+        $this->dispatch($registry, enabled: true, issuer: null);
+
+        $this->assertSame([], $registry->all());
+    }
+
+    /**
+     * Regression, HIGH severity. `Host` is caller-supplied unless `trusted_hosts` is
+     * configured, and it is empty by default. Deriving the resource URI from it let an
+     * attacker register their own host as a protected resource, obtain a token stamped
+     * with it, and pass the audience check by replaying the same spoofed header - the
+     * check compared the attacker's string against the attacker's string.
+     */
+    public function testSpoofedHostIsNotRegistered(): void
+    {
+        $registry = new ConfigProtectedResourceRegistry();
+        $this->dispatch($registry, enabled: true, url: 'http://evil.example/pimcore-mcp/agent/x');
+
+        $this->assertFalse($registry->has('http://evil.example/pimcore-mcp'));
+        $this->assertTrue($registry->has(self::MCP_RESOURCE));
+        $this->assertCount(1, $registry->all());
+    }
+
+    /**
+     * The audience the MCP authenticator enforces has to be one that was actually
+     * registered, or `validatedResource()` refuses the authorization request. Pinning
+     * both to the configured issuer is what keeps them equal without either following
+     * the caller.
+     */
+    public function testRegisteredUriIsTheOneTheAuthenticatorEnforces(): void
+    {
+        $registry = new ConfigProtectedResourceRegistry();
+        $this->dispatch($registry, enabled: true, url: 'http://evil.example/pimcore-mcp');
 
         $this->assertTrue(
-            $registry->has(self::HOST . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH),
+            $registry->has(self::ISSUER . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH),
         );
     }
 
-    public function testUriFollowsTheRequestHost(): void
+    public function testUriDoesNotFollowTheRequestHost(): void
     {
         $registry = new ConfigProtectedResourceRegistry();
         $this->dispatch($registry, enabled: true, url: 'https://other.example/pimcore-mcp/agent/x');
 
-        $this->assertTrue($registry->has('https://other.example/pimcore-mcp'));
-        $this->assertFalse($registry->has(self::MCP_RESOURCE));
+        $this->assertTrue($registry->has(self::MCP_RESOURCE));
+        $this->assertFalse($registry->has('https://other.example/pimcore-mcp'));
     }
 
     /**
      * An operator who declares the same URI under `oauth.resources` has made a
-     * deliberate choice, most often to change the scopes. The built-in default must
-     * not overwrite it.
+     * deliberate choice, most often to narrow the scopes. The built-in default must not
+     * overwrite it, and must not add a second resource carrying the wider set.
      */
     public function testOperatorConfiguredResourceForTheSameUriWins(): void
     {
@@ -88,7 +135,7 @@ final class McpProtectedResourceSubscriberTest extends Unit
             [
                 'uri' => self::MCP_RESOURCE,
                 'scopes_supported' => ['mcp:read'],
-                'authorization_servers' => [self::HOST],
+                'authorization_servers' => [self::ISSUER],
             ],
         ]);
 
@@ -97,14 +144,9 @@ final class McpProtectedResourceSubscriberTest extends Unit
         $resource = $registry->get(self::MCP_RESOURCE);
         $this->assertNotNull($resource);
         $this->assertSame(['mcp:read'], $resource->scopesSupported);
-        $this->assertSame([self::HOST], $resource->authorizationServers);
         $this->assertCount(1, $registry->all());
     }
 
-    /**
-     * The override is matched on the canonical form, so a trailing slash or a
-     * differently-cased host in configuration is still the same resource.
-     */
     public function testOperatorOverrideIsMatchedCanonically(): void
     {
         $registry = new ConfigProtectedResourceRegistry([
@@ -119,6 +161,24 @@ final class McpProtectedResourceSubscriberTest extends Unit
         $this->assertSame(['mcp:read'], $resource->scopesSupported);
     }
 
+    /**
+     * A proxy presenting a different host used to produce a second registration with the
+     * built-in scopes, silently widening an operator's narrowed configuration. With the
+     * URI pinned to the issuer the request host is irrelevant, so it cannot happen.
+     */
+    public function testProxyHostMismatchDoesNotWidenAnOperatorsScopes(): void
+    {
+        $registry = new ConfigProtectedResourceRegistry([
+            ['uri' => self::MCP_RESOURCE, 'scopes_supported' => ['mcp:read']],
+        ]);
+        $scopes = new ScopeRegistry($registry);
+
+        $this->dispatch($registry, enabled: true, url: 'http://internal.lan/pimcore-mcp/agent/x');
+
+        $this->assertCount(1, $registry->all());
+        $this->assertSame(['mcp:read'], $scopes->all());
+    }
+
     public function testRunsOnNonMcpPathsToo(): void
     {
         // The metadata document and the authorize endpoint both consult the registry
@@ -130,7 +190,7 @@ final class McpProtectedResourceSubscriberTest extends Unit
             ] as $path
         ) {
             $registry = new ConfigProtectedResourceRegistry();
-            $this->dispatch($registry, enabled: true, url: self::HOST . $path);
+            $this->dispatch($registry, enabled: true, url: self::ISSUER . $path);
 
             $this->assertTrue($registry->has(self::MCP_RESOURCE), $path . ' must still register.');
         }
@@ -144,20 +204,21 @@ final class McpProtectedResourceSubscriberTest extends Unit
         $this->assertSame([], $registry->all());
     }
 
-    public function testRunsBeforeTheFirewallAndTheRouter(): void
+    public function testRunsBeforeTheEndpointGuardTheRouterAndTheFirewall(): void
     {
         $events = McpProtectedResourceSubscriber::getSubscribedEvents();
 
         $this->assertArrayHasKey(KernelEvents::REQUEST, $events);
         [$method, $priority] = $events[KernelEvents::REQUEST];
         $this->assertSame('onKernelRequest', $method);
-        // RouterListener is 32 and the firewall 8; both read the registry downstream.
-        $this->assertGreaterThan(32, $priority);
+        // Above OAuthEndpointGuardSubscriber (251), which is itself above the router
+        // (32) and the firewall (8); every one of those reads the registry downstream.
+        $this->assertGreaterThan(251, $priority);
     }
 
     /**
-     * The end the whole change is for: the scope catalogue picks the MCP scopes up
-     * from the resource, with no separate provider declaring them.
+     * The end the whole change is for: the scope catalogue picks the MCP scopes up from
+     * the resource, with no separate provider declaring them.
      */
     public function testScopeCatalogueGainsTheMcpScopes(): void
     {
@@ -174,10 +235,11 @@ final class McpProtectedResourceSubscriberTest extends Unit
     private function dispatch(
         ConfigProtectedResourceRegistry $registry,
         bool $enabled,
-        string $url = self::HOST . '/pimcore-mcp/agent/documents',
+        string $url = self::ISSUER . '/pimcore-mcp/agent/documents',
         bool $mainRequest = true,
+        ?string $issuer = self::ISSUER,
     ): void {
-        $subscriber = new McpProtectedResourceSubscriber($registry, $enabled);
+        $subscriber = new McpProtectedResourceSubscriber($registry, $enabled, $issuer);
 
         $subscriber->onKernelRequest(new RequestEvent(
             $this->kernel(),

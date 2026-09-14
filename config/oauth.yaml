@@ -50,6 +50,7 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator:
         arguments:
             $enabled: false
+            $issuer: null
 
     # Entry point for the pimcore_mcp firewall (401 + RFC 9728 challenge).
     # $oauthEnabled is set from config in the extension.
@@ -130,6 +131,7 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\McpProtectedResourceSubscriber:
         arguments:
             $enabled: false
+            $issuer: null
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 

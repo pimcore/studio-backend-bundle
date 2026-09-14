@@ -99,8 +99,6 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new DataProviderPass());
         $container->addCompilerPass(new DocumentTypeAdapterPass());
         $container->addCompilerPass(new NotificationDispatchPass());
-
-        // OAuth scopes are contributed by any bundle exposing protected resources.
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void

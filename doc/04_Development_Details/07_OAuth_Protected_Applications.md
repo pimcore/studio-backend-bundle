@@ -286,20 +286,22 @@ an application:
 
 ### Deriving the resource URI
 
-Two ways, and the bundle's own applications use different ones:
+**Derive it from `oauth.issuer`**, on both the registering side and the validating side. The issuer is
+required whenever the server is enabled, so it is always available, and it is configured rather than
+supplied by the caller. Every application in this bundle does this, including the MCP endpoints: the
+resource is registered at `<issuer>/pimcore-mcp` and `OAuthAccessTokenAuthenticator` checks a token's
+audience against the same value.
 
-- **From `oauth.issuer`.** Recommended for an application that registers its resources programmatically. The
-  value is configured once, so it cannot drift with the incoming `Host` header and registration stays
-  idempotent on a long-running worker.
-- **From the request host** (`$request->getSchemeAndHttpHost()`). This is what
-  `OAuthAccessTokenAuthenticator` does for the MCP endpoints, because the MCP resource is declared in
-  `oauth.resources` rather than registered in code, and the authenticator has no configured base of its own.
+**Do not derive it from the request host.** `$request->getSchemeAndHttpHost()` returns the `Host` header
+unless `framework.trusted_hosts` is configured, and that is empty by default. Registering a resource named
+after it lets a caller invent an audience, obtain a token stamped with it, and then pass the audience check
+by replaying the same header, so the check compares an attacker's string against the attacker's own string.
+Two sides deriving the URI the same way is not sufficient; they have to agree on a value neither the caller
+nor a proxy can choose.
 
-The consequence for an MCP deployment behind a reverse proxy: the host Pimcore sees has to match the `uri` in
-`oauth.resources` byte for byte. Set `oauth.issuer` to the public origin, configure Symfony `trusted_proxies`
-so the forwarded host is honoured, and write the resource URI with the same scheme, host and no trailing
-slash. Get this wrong and tokens are issued happily and then refused at the endpoint, with no error that says
-why.
+Because nothing reads the request host, a reverse proxy needs no special handling for audience binding. Set
+`oauth.issuer` to the public origin, and if you write a resource URI in configuration, write it with the same
+scheme and host and no trailing slash so it matches what is registered.
 
 ## What the platform leaves to each application
 

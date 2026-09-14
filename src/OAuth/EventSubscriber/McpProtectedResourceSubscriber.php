@@ -30,18 +30,25 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * that refuses every request with "no protected resources configured" until someone
  * hand-writes the entry, and whose RFC 9728 metadata document 404s.
  *
- * Registered per request rather than at container build for two reasons.
+ * The URI is built from the configured `oauth.issuer`, never from the request. It is
+ * tempting to derive it from `$request->getSchemeAndHttpHost()` so that it matches
+ * whatever {@see OAuthAccessTokenAuthenticator::resourceUri()} sees, but with
+ * `framework.trusted_hosts` unset - the default - that is the caller's `Host` header.
+ * Registering it would let an attacker name their own host as a protected resource,
+ * have a token stamped with it, and then present that token with the same spoofed
+ * header: the audience check would compare the attacker's string against the
+ * attacker's string and pass. Both sides pin to the configured issuer instead, which
+ * agrees just as reliably and cannot be supplied by the caller.
  *
- * The URI has to be the one {@see OAuthAccessTokenAuthenticator::resourceUri()}
- * enforces, and that is derived from the incoming request. Deriving it from the same
- * place is what makes the two incapable of disagreeing; taking it from `oauth.issuer`
- * instead would drift apart the moment a reverse proxy presents a different host, and
- * the symptom would be valid tokens refused with nothing saying why.
+ * The issuer is mandatory whenever `oauth.enabled` is true (enforced in
+ * {@see \Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration}), so it
+ * is always present here. Registering nothing when it is somehow absent fails closed:
+ * an unregistered resource is refused at the authorization endpoint.
  *
- * And the registry is consulted on requests that are not MCP requests at all: the
- * RFC 9728 metadata document is fetched on a `.well-known` path, and a requested
- * `resource` is validated on `/pimcore-oauth/authorize`. Registering only on MCP
- * paths would leave both of those unresolvable, so this runs on every main request.
+ * Registration happens per request because the registry is per request, and on every
+ * main request rather than only MCP ones: the RFC 9728 metadata document is fetched on
+ * a `.well-known` path and a requested `resource` is validated on
+ * `/pimcore-oauth/authorize`, so a path filter would leave both unresolvable.
  *
  * @internal
  */
@@ -56,6 +63,7 @@ final readonly class McpProtectedResourceSubscriber implements EventSubscriberIn
     public function __construct(
         private ResourceRegistryInterface $resourceRegistry,
         private bool $enabled = false,
+        private ?string $issuer = null,
     ) {
     }
 
@@ -71,13 +79,11 @@ final readonly class McpProtectedResourceSubscriber implements EventSubscriberIn
 
     public function onKernelRequest(RequestEvent $event): void
     {
-        if (!$this->enabled || !$event->isMainRequest()) {
+        if (!$this->enabled || $this->issuer === null || !$event->isMainRequest()) {
             return;
         }
 
-        $uri = CanonicalUri::canonicalize(
-            $event->getRequest()->getSchemeAndHttpHost() . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH
-        );
+        $uri = CanonicalUri::canonicalize($this->issuer . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH);
 
         // An operator entry in `oauth.resources` for the same URI wins: it is seeded
         // into the registry when the container is built, and registering over it here
@@ -86,6 +92,6 @@ final readonly class McpProtectedResourceSubscriber implements EventSubscriberIn
             return;
         }
 
-        $this->resourceRegistry->register(new ProtectedResource($uri, self::SCOPES, []));
+        $this->resourceRegistry->register(new ProtectedResource($uri, self::SCOPES, [$this->issuer]));
     }
 }

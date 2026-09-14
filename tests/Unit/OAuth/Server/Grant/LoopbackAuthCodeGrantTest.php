@@ -225,6 +225,23 @@ final class LoopbackAuthCodeGrantTest extends Unit
         $this->assertStringContainsString('resource', (string) $exception->getHint());
     }
 
+    /**
+     * The other half of the spoofed-host regression. The registry is seeded from the
+     * configured issuer only, so a resource named after an attacker-supplied `Host` is
+     * not in it, and naming it here is refused rather than minting a token whose
+     * audience the attacker controls.
+     */
+    public function testResourceNamingAForeignHostIsRejected(): void
+    {
+        $exception = $this->assertRejectedAsInvalidRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => 'https://evil.example/pimcore-mcp',
+        ]);
+
+        $this->assertStringContainsString('not a known protected resource', $exception->getHint() ?? '');
+    }
+
     public function testKnownResourceIsAcceptedAndCarriedOnTheRequest(): void
     {
         $authRequest = $this->grant()->validateAuthorizationRequest($this->authorizeRequest([

@@ -160,9 +160,15 @@ pimcore_studio_backend:
               authorization_servers: ['https://pimcore.example.com']
 ```
 
-If you do, mind the host: the built-in registration follows the **request** host, while a configured `uri` is
-a fixed string. Behind a reverse proxy the host Pimcore sees must match it byte for byte, or valid tokens are
-rejected. See
+If you do, the `uri` must be exactly `<oauth.issuer>/pimcore-mcp`, with no trailing slash. That is the value
+the built-in registration uses and the value the MCP authenticator checks a token's audience against, so an
+entry that differs does not override the built-in one: it adds a **second**, unrelated resource that nothing
+validates against, while the built-in one stays in place with its own scopes.
+
+Neither side reads the request's `Host`, so a reverse proxy changes nothing here. That is deliberate: `Host`
+is caller-supplied unless `framework.trusted_hosts` is set, and deriving an audience from it would let a
+caller name their own host as a protected resource and then satisfy the audience check with the same spoofed
+header. See
 [Deriving the resource URI](../04_Development_Details/07_OAuth_Protected_Applications.md#deriving-the-resource-uri).
 
 ## Endpoints

@@ -68,11 +68,45 @@ final class OAuthAccessTokenAuthenticatorTest extends Unit
         );
     }
 
+    /**
+     * The audience a token is checked against must come from configuration, not from the
+     * request. `Host` is caller-supplied unless `trusted_hosts` is set, so deriving it
+     * from the request would compare an attacker's string against the same attacker's
+     * string and pass.
+     */
+    public function testValidatesAgainstTheConfiguredIssuerNotTheRequestHost(): void
+    {
+        $seen = [];
+        $auth = new OAuthAccessTokenAuthenticator(
+            true,
+            $this->makeEmpty(TokenValidatorInterface::class, [
+                'validate' => function (string $token, string $resourceUri) use (&$seen): ?ResolvedAccess {
+                    $seen[] = $resourceUri;
+
+                    return null;
+                },
+            ]),
+            'https://pimcore.example.com',
+        );
+
+        $request = $this->requestWith(self::JWT);
+        $request->headers->set('Host', 'evil.example');
+
+        try {
+            $auth->authenticate($request);
+        } catch (AuthenticationException) {
+            // The validator returned null; only the resource URI it was asked about matters.
+        }
+
+        $this->assertSame(['https://pimcore.example.com/pimcore-mcp'], $seen);
+    }
+
     private function makeAuthenticator(bool $enabled, ?ResolvedAccess $resolved): OAuthAccessTokenAuthenticator
     {
         return new OAuthAccessTokenAuthenticator(
             $enabled,
             $this->makeEmpty(TokenValidatorInterface::class, ['validate' => $resolved]),
+            'https://pimcore.example.com',
         );
     }
 

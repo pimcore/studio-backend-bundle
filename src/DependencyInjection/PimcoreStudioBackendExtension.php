@@ -251,7 +251,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
-            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
@@ -270,7 +271,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // that enables OAuth does not have to hand-write the entry to get a working
         // authorization server.
         $container->getDefinition(McpProtectedResourceSubscriber::class)
-            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         // Authorization server (token issuance).
         $container->getDefinition(ClientRepository::class)

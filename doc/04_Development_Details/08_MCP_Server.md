@@ -65,8 +65,8 @@ WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-prote
 ```
 
 The URL always names the MCP **base** resource, never the sub-path that was called, because that base is what
-`OAuthAccessTokenAuthenticator` validates every token's audience against. That resource has to be declared in
-`oauth.resources` for the metadata document to resolve; the bundle registers none on its own. See
+`OAuthAccessTokenAuthenticator` validates every token's audience against. The bundle registers that resource
+itself, at `<oauth.issuer>/pimcore-mcp`, so the metadata document resolves without any configuration. See
 [Accepting tokens at the MCP endpoints][mcp-resource] on the OAuth server page.
 
 [mcp-resource]: ../02_Installation_and_Configuration/06_OAuth_Server.md#accepting-tokens-at-the-mcp-endpoints
