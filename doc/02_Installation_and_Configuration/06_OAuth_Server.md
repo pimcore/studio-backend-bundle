@@ -236,14 +236,18 @@ pimcore_studio_backend:
 Enable it deliberately - the `/pimcore-oauth/register` endpoint becomes publicly writable and is advertised in
 metadata.
 
-Two controls bound what that endpoint can be made to do.
+Two controls bound what that endpoint can be made to do, and they cover different callers.
 
 **Registration is idempotent for public clients.** A repeat registration whose metadata matches a client that
 already exists returns that same `client_id` instead of creating another record. The comparison is over the
-metadata the client chose: `redirect_uris` (order-insensitive), `client_name`, `grant_types`, `scope` and
-`token_endpoint_auth_method`. So a client that re-registers every time it starts, which several MCP clients
-do, accumulates one row rather than one per start. This is always on, and is not affected by the rate-limiting
-setting below.
+metadata the client chose: `redirect_uris` (order-insensitive and de-duplicated), `client_name` (trimmed),
+`grant_types`, `scope` (de-duplicated) and `token_endpoint_auth_method`. So a client that re-registers every
+time it starts, which several MCP clients do, accumulates one row rather than one per start. This is always
+on, and is not affected by the rate-limiting setting below.
+
+It is **not** a defence against a hostile caller. Every input to that comparison comes from the request, so
+anyone willing to vary a client name by one character gets a new row every time. What it removes is the
+accidental growth from well-behaved clients; the rate limit is what bounds the deliberate kind.
 
 Confidential clients are **never** deduplicated and always get a new record. Their secret is shown once and
 kept only as a hash, so a repeat call could not return the original, and reissuing one would silently

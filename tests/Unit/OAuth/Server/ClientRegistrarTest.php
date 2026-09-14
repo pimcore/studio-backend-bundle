@@ -32,12 +32,27 @@ final class ClientRegistrarTest extends Unit
     protected function _before(): void
     {
         $this->store = new class implements DynamicClientStoreInterface {
+            public const int STORED_AT = 1_700_000_000;
+
             /** @var array<string, DynamicClient> */
             public array $saved = [];
 
             public function save(DynamicClient $client): void
             {
-                $this->saved[$client->identifier] = $client;
+                // Stamped the way the entity does, so asRegisteredClient()'s preservation of
+                // the original client_id_issued_at is actually exercised rather than always
+                // falling through to its time() default.
+                $this->saved[$client->identifier] = new DynamicClient(
+                    $client->identifier,
+                    $client->name,
+                    $client->redirectUris,
+                    $client->grantTypes,
+                    $client->scopes,
+                    $client->confidential,
+                    $client->secretHash,
+                    $client->metadataHash,
+                    self::STORED_AT,
+                );
             }
 
             public function find(string $identifier): ?DynamicClient
@@ -137,6 +152,8 @@ final class ClientRegistrarTest extends Unit
         $this->assertSame($first->redirectUris, $second->redirectUris);
         $this->assertSame('none', $second->tokenEndpointAuthMethod);
         $this->assertNull($second->secret);
+        // client_id_issued_at reports the original registration, not this call.
+        $this->assertSame($this->store::STORED_AT, $second->issuedAt);
     }
 
     /**
@@ -158,6 +175,66 @@ final class ClientRegistrarTest extends Unit
 
         $this->assertSame($first->identifier, $second->identifier);
         $this->assertCount(1, $this->store->saved);
+    }
+
+    /**
+     * The stored name is trimmed, so these are one client rather than three whose consent
+     * screens are indistinguishable.
+     */
+    public function testSurroundingWhitespaceInTheNameIsNotANewClient(): void
+    {
+        $ids = [];
+        foreach (['Claude', ' Claude', 'Claude '] as $name) {
+            $ids[] = $this->registrar->register([
+                'client_name' => $name,
+                'redirect_uris' => ['https://app.example/cb'],
+                'token_endpoint_auth_method' => 'none',
+            ])->identifier;
+        }
+
+        $this->assertCount(1, $this->store->saved);
+        $this->assertSame([$ids[0], $ids[0], $ids[0]], $ids);
+        $stored = $this->store->find($ids[0]);
+        $this->assertNotNull($stored);
+        $this->assertSame('Claude', $stored->name);
+    }
+
+    public function testRepeatedRedirectUriIsNotANewClient(): void
+    {
+        $first = $this->registrar->register([
+            'client_name' => 'Dup',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+        $second = $this->registrar->register([
+            'client_name' => 'Dup',
+            'redirect_uris' => ['https://app.example/cb', 'https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+
+        $this->assertSame($first->identifier, $second->identifier);
+        $this->assertCount(1, $this->store->saved);
+        $this->assertSame(['https://app.example/cb'], $second->redirectUris);
+    }
+
+    public function testRepeatedScopeIsNotANewClient(): void
+    {
+        $first = $this->registrar->register([
+            'client_name' => 'Scoped',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+            'scope' => 'mcp:read',
+        ]);
+        $second = $this->registrar->register([
+            'client_name' => 'Scoped',
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+            'scope' => 'mcp:read mcp:read',
+        ]);
+
+        $this->assertSame($first->identifier, $second->identifier);
+        $this->assertCount(1, $this->store->saved);
+        $this->assertSame(['mcp:read'], $second->scopes);
     }
 
     public function testDifferingMetadataCreatesANewClient(): void

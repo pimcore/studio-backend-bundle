@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthClientRecord;
  *
  * @internal
  */
-final class Version20260918120000 extends AbstractMigration
+final class Version20260914120000 extends AbstractMigration
 {
     private const string INDEX_NAME = 'idx_oauth_client_metadata_hash';
 

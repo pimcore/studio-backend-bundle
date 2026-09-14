@@ -385,6 +385,74 @@ final class RateLimitSubscriberTest extends Unit
     }
 
     /**
+     * Security regression. `Request::getPathInfo()` is still percent-encoded while the
+     * router matches on the decoded path, so comparing the raw value let
+     * `/pimcore-oauth/%72egister` reach the controller and write a row while consuming no
+     * budget at all. The set of encodings is unbounded, so this has to be fixed by
+     * decoding rather than by listing variants.
+     *
+     * @throws Exception
+     */
+    public function testPercentEncodedRegisterPathIsStillRateLimited(): void
+    {
+        foreach (
+            [
+                '/pimcore-oauth/%72egister',
+                '/pimcore-oauth/registe%72',
+                '/%70imcore-oauth/register',
+            ] as $encoded
+        ) {
+            $subscriber = $this->createSubscriber();
+            $event = $this->createRequestEvent($encoded, 'POST');
+
+            $subscriber->onKernelRequest($event);
+
+            $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+            $this->assertInstanceOf(RateLimit::class, $rateLimit, $encoded . ' must be rate limited.');
+            $this->assertSame(self::REGISTER_LIMIT, $rateLimit->getLimit());
+        }
+    }
+
+    /**
+     * The Studio and MCP prefixes are matched on the same decoded value, so they cannot be
+     * escaped the same way.
+     *
+     * @throws Exception
+     */
+    public function testPercentEncodedStudioAndMcpPathsAreStillRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+
+        // Encoded inside the prefix itself, so the raw path does not match it at all.
+        $studio = $this->createRequestEvent('/pimcore-studio/%61pi/assets/1');
+        $subscriber->onKernelRequest($studio);
+        $this->assertInstanceOf(RateLimit::class, $studio->getRequest()->attributes->get('_studio_rate_limit'));
+
+        $mcp = $this->createRequestEvent('/pimcore-%6dcp/agent/documents');
+        $subscriber->onKernelRequest($mcp);
+        $mcpLimit = $mcp->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $mcpLimit);
+        $this->assertSame(self::MCP_LIMIT, $mcpLimit->getLimit());
+    }
+
+    /**
+     * Decoded exactly once, like the router. A doubly-encoded path decodes to
+     * `/pimcore-oauth/%72egister`, which the router does not route to the controller, so
+     * claiming it here would limit a request that 404s.
+     *
+     * @throws Exception
+     */
+    public function testDoublyEncodedPathIsNotClaimed(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent('/pimcore-oauth/%2572egister', 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
      * Guards against matching the register path by prefix, which would drag the sibling
      * OAuth endpoints into the same bucket.
      *

@@ -16,11 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\RateLimiter\RateLimit;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use function rawurldecode;
 
 /**
  * @internal
@@ -36,6 +38,25 @@ final class RateLimitSubscriber implements EventSubscriberInterface
      * /pimcore-oauth/ are deliberately unlimited (see self::resolveLimiterFactory()).
      */
     private const string OAUTH_REGISTER_PATH = '/pimcore-oauth/register';
+
+    /**
+     * The path the router will actually match on.
+     *
+     * Request::getPathInfo() is still percent-encoded, while the router matches on the
+     * decoded path (CompiledUrlMatcherTrait::doMatch() calls rawurldecode() on it).
+     * Comparing the raw path would let "/pimcore-oauth/%72egister" reach the registration
+     * controller with no limiter consumed at all, and the number of encodings is
+     * unbounded. The Studio and MCP prefixes below are matched on the same value for the
+     * same reason.
+     *
+     * Decoded exactly once, like the router: decoding repeatedly would claim paths the
+     * router never routes here, so "%2572egister" would be limited while the request it
+     * describes 404s.
+     */
+    private function routedPath(Request $request): string
+    {
+        return rawurldecode($request->getPathInfo());
+    }
 
     public function __construct(
         private readonly string $urlPrefix,
@@ -69,7 +90,7 @@ final class RateLimitSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $limiterFactory = $this->resolveLimiterFactory($request->getPathInfo());
+        $limiterFactory = $this->resolveLimiterFactory($this->routedPath($request));
 
         if ($limiterFactory === null) {
             return;

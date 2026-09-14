@@ -31,18 +31,18 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
 
     public function save(DynamicClient $client): void
     {
-        $this->entityManager->persist(
-            new OAuthClientRecord(
-                $client->identifier,
-                $client->name,
-                $client->redirectUris,
-                $client->grantTypes,
-                $client->scopes,
-                $client->confidential,
-                $client->secretHash,
-                $client->metadataHash,
-            )
+        $record = new OAuthClientRecord(
+            $client->identifier,
+            $client->name,
+            $client->redirectUris,
+            $client->grantTypes,
+            $client->scopes,
+            $client->confidential,
+            $client->secretHash,
         );
+        $record->setMetadataHash($client->metadataHash);
+
+        $this->entityManager->persist($record);
         $this->entityManager->flush();
     }
 
@@ -55,11 +55,16 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
 
     public function findByMetadataHash(string $metadataHash): ?DynamicClient
     {
-        // Oldest first, so a repeat registration keeps resolving to the same client_id
-        // even if duplicates predate this lookup.
+        // `confidential = false` is a criterion rather than a caller convention, so the
+        // interface's promise never to return a confidential client holds by construction.
+        //
+        // Oldest first, so a repeat registration keeps resolving to the same client_id even
+        // if duplicates predate this lookup. `created_at` is second-granular, so client_id
+        // breaks the tie: without it two rows written inside one second could come back in
+        // either order and successive registrations would flap between them.
         $record = $this->entityManager->getRepository(OAuthClientRecord::class)->findOneBy(
-            ['metadataHash' => $metadataHash],
-            ['createdAt' => 'ASC'],
+            ['metadataHash' => $metadataHash, 'confidential' => false],
+            ['createdAt' => 'ASC', 'clientId' => 'ASC'],
         );
 
         return $record === null ? null : $this->toDto($record);

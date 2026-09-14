@@ -26,6 +26,7 @@ use function time;
  */
 #[ORM\Entity]
 #[ORM\Table(name: OAuthClientRecord::TABLE_NAME)]
+#[ORM\Index(columns: ['metadata_hash'], name: 'idx_oauth_client_metadata_hash')]
 class OAuthClientRecord
 {
     public const string TABLE_NAME = 'bundle_studio_oauth_client';
@@ -88,7 +89,6 @@ class OAuthClientRecord
         array $scopes,
         bool $confidential,
         ?string $secretHash,
-        ?string $metadataHash = null,
     ) {
         $this->clientId = $clientId;
         $this->name = $name;
@@ -97,7 +97,7 @@ class OAuthClientRecord
         $this->scopes = $scopes;
         $this->confidential = $confidential;
         $this->secretHash = $secretHash;
-        $this->metadataHash = $metadataHash;
+        $this->metadataHash = null;
         // Public clients authenticate via PKCE; confidential ones via their secret.
         $this->tokenEndpointAuthMethod = $confidential ? 'client_secret_basic' : 'none';
         $this->createdAt = (string) time();
@@ -155,6 +155,11 @@ class OAuthClientRecord
     public function getMetadataHash(): ?string
     {
         return $this->metadataHash;
+    }
+
+    public function setMetadataHash(?string $metadataHash): void
+    {
+        $this->metadataHash = $metadataHash;
     }
 
     public function getCreatedAt(): int
