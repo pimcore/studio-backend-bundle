@@ -49,6 +49,13 @@ final class RedirectUriPolicyTest extends Unit
             'custom scheme' => ['com.example.app://cb'],
             'doubled IPv6 brackets' => ['http://[[::1]]/cb'],
             'unbalanced IPv6 brackets' => ['http://[::1]]/cb'],
+            'backslash authority differential' => ['http://attacker.example\\@localhost/cb'],
+            'backslash before a loopback literal' => ['http://attacker.example\\@127.0.0.1/cb'],
+            'userinfo on a loopback host' => ['http://user@localhost/cb'],
+            'userinfo with password' => ['http://user:pw@localhost/cb'],
+            'tab inside the authority' => ["http://local\thost/cb"],
+            'newline inside the authority' => ["http://local\nhost/cb"],
+            'space in the uri' => ['http://local host/cb'],
         ];
     }
 

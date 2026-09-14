@@ -45,11 +45,33 @@ final class RedirectUriPolicy
 
     public static function isAcceptable(string $uri): bool
     {
+        // PHP parses a URI by RFC 3986; the browser that will follow it parses by
+        // the WHATWG URL rules. Two constructs make them disagree about the host,
+        // so they are refused before parsing rather than reconciled. A backslash
+        // is ordinary userinfo text to PHP but an authority terminator to WHATWG:
+        // "http://attacker.example\@localhost/cb" is host "localhost" to
+        // parse_url() and host "attacker.example" to a browser, which would send
+        // the authorization code in cleartext to a routable host. The ASCII
+        // control characters WHATWG strips before parsing are the same class of
+        // problem. (League's RFC 3986 parser agrees with PHP here, so parsing
+        // more strictly does not help; only refusing the input does.)
+        //
+        // preg_match() returning false on malformed input also lands here.
+        if (preg_match('/[\x00-\x20\x7f\\\\]/u', $uri) !== 0) {
+            return false;
+        }
+
         $parts = parse_url($uri);
 
         // An absolute URI is required, and a fragment is never permitted on a
         // redirect URI: the authorization response appends its own.
         if ($parts === false || !isset($parts['scheme'], $parts['host']) || str_contains($uri, '#')) {
+            return false;
+        }
+
+        // Userinfo is what makes a host ambiguous to both parsers and to the
+        // person reading the consent screen, and a redirect target never needs it.
+        if (isset($parts['user']) || isset($parts['pass'])) {
             return false;
         }
 
