@@ -66,7 +66,10 @@ final readonly class BlockAdapter implements
             return null;
         }
 
-        $blockData = $data[$key];
+        $blockData = $data[$key] ?? null;
+        if (!is_array($blockData)) {
+            return null;
+        }
 
         return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $isPatch, $contextData);
     }
