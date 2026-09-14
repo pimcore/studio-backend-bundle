@@ -36,9 +36,13 @@ instead carry a Pimcore Studio session cookie.
 
 ### Authenticator chain
 
-The firewall tries these authenticators in order. All but the last return `null` on failure so the next one can
-try; `PatAuthenticator` is last and therefore owns the terminal response, answering `401` (or `429` when
-throttled):
+The firewall tries these authenticators in order. Each returns `null` on failure so the next one can try, and
+each declines credentials it does not own, so the shapes do not overlap: `pmcp_` bearers belong to
+`McpAccessTokenAuthenticator`, JWT-shaped bearers to `OAuthAccessTokenAuthenticator`, anything else to
+`PatAuthenticator`. When no authenticator claims the request, or the one that claimed it fails, the firewall's
+`entry_point` produces the terminal response (see
+[Unauthenticated requests](#unauthenticated-requests)). `PatAuthenticator` answers `429` itself when a client
+is throttled.
 
 | Order | Authenticator | Trigger | Use case |
 |-------|---------------|---------|----------|
@@ -46,6 +50,29 @@ throttled):
 | 2 | `McpAccessTokenAuthenticator` | `Authorization: Bearer pmcp_…` | Internal: dynamically-issued, expiring, revocable per-chat-session tokens (Pimcore AI agent) |
 | 3 | `OAuthAccessTokenAuthenticator` | `Authorization: Bearer <JWT>` | External: clients using the [embedded OAuth 2.1 server](../02_Installation_and_Configuration/06_OAuth_Server.md); inert unless OAuth is enabled |
 | 4 | `PatAuthenticator` | `Authorization: Bearer <other>` | External: MCP clients using static Personal Access Tokens (Claude Desktop, Cursor, etc.) |
+
+### Unauthenticated requests
+
+When the chain produces no authenticated user, the firewall's `entry_point`, `McpAuthenticationEntryPoint`,
+writes the response. It always answers `401` with `{"error": "unauthorized"}`.
+
+With the [embedded OAuth server](../02_Installation_and_Configuration/06_OAuth_Server.md) **enabled** it adds
+the [RFC 9728](https://www.rfc-editor.org/rfc/rfc9728) discovery challenge, which is how a standards-based
+client learns where to authenticate:
+
+```
+WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-protected-resource/pimcore-mcp", scope="mcp:read"
+```
+
+The URL always names the MCP **base** resource, never the sub-path that was called, because that base is what
+`OAuthAccessTokenAuthenticator` validates every token's audience against. That resource has to be declared in
+`oauth.resources` for the metadata document to resolve; the bundle registers none on its own. See
+[Accepting tokens at the MCP endpoints][mcp-resource] on the OAuth server page.
+
+[mcp-resource]: ../02_Installation_and_Configuration/06_OAuth_Server.md#accepting-tokens-at-the-mcp-endpoints
+
+With OAuth **disabled** the header is omitted entirely and the response is a plain `401`, so behaviour is
+unchanged for installations that never opted in.
 
 ### `McpAccessTokenAuthenticator` (primary internal)
 
@@ -64,8 +91,13 @@ Authenticates a JWT access token issued by the [embedded OAuth 2.1 authorization
 server](../02_Installation_and_Configuration/06_OAuth_Server.md) (`Authorization: Bearer <jwt>`). It is
 **additive** to the chain: it only claims JWT-shaped bearers, declines the `pmcp_` prefix (owned by
 `McpAccessTokenAuthenticator`), and stays **inert unless the OAuth server is enabled**. It validates the
-token's signature, expiry and revocation status and resolves the Pimcore user. On failure it returns `null`,
-so `PatAuthenticator` still runs, hence it must precede it in the chain.
+token's signature, expiry and revocation status and resolves the Pimcore user.
+
+On failure it returns `null` rather than a response, but no later authenticator picks the request up:
+`PatAuthenticator` declines JWT-shaped bearers by design, so a rejected OAuth token is **not** retried as a
+PAT. The request finishes unauthenticated and the [entry point](#unauthenticated-requests) answers `401` with
+the discovery challenge. That is deliberate, and it is also why an expired or revoked OAuth token cannot
+consume the PAT brute-force throttle bucket.
 
 MCP is one application of the OAuth server, not its purpose. The same contracts protect Datahub Simple REST,
 and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
@@ -76,8 +108,11 @@ server.
 
 ### `PatAuthenticator` (external clients)
 
-External MCP clients authenticate with static Personal Access Tokens configured in YAML. It deliberately declines any
-`Bearer pmcp_…` token so it never collides with `McpAccessTokenAuthenticator`.
+External MCP clients authenticate with static Personal Access Tokens configured in YAML. It deliberately
+declines two shapes it does not own: any `Bearer pmcp_…` token (handled by `McpAccessTokenAuthenticator`) and
+any JWT-shaped bearer, i.e. three base64url segments separated by dots (handled by
+`OAuthAccessTokenAuthenticator`). Both exclusions are unconditional, including when the OAuth server is
+disabled, so a configured PAT must not itself look like a JWT.
 
 ```yaml
 # config/config.yaml or config/packages/pimcore_studio_backend.yaml

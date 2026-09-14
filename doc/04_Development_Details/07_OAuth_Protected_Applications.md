@@ -21,17 +21,23 @@ OAuth splits into two roles, and this bundle fills only the first by default:
 
 | Role | Responsibility | Who |
 |------|----------------|-----|
-| Authorization server | Authenticates the human, runs consent, issues and revokes tokens | This bundle, once enabled. Exactly one per installation. |
+| Authorization server | Authenticates the human, runs consent, issues tokens | This bundle, once enabled. Exactly one per installation. |
 | Resource server | Accepts a token on its own endpoints, resolves it to a Pimcore user, decides what that user may do | Any bundle. Several per installation. |
 
-A resource server never issues, refreshes or revokes tokens, and never needs the signing keys. It validates
-what it is handed and applies its own authorization rules.
+A resource server never issues or refreshes tokens, and never needs the signing keys. It validates what it is
+handed and applies its own authorization rules.
 
-## Applications today
+There is no token revocation endpoint ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)) and no
+client-facing revoke API. Every issued token is *recorded* so it can be refused, and the record is marked
+revoked by the library's own authorization-code and refresh-token rotation, but nothing today lets a client or
+an administrator revoke a token on demand. Treat the access-token TTL as the real upper bound on a leaked
+token.
 
-| Application         | Endpoint | Authenticates in | Authorization model                                                                                      |
-|---------------------|----------|------------------|----------------------------------------------------------------------------------------------------------|
-| Pimcore MCP servers | `/pimcore-mcp/…` | a Symfony firewall | The resolved user's own Pimcore permissions, plus per-server sharing                                     |
+## Applications that accept these tokens
+
+| Application | Endpoint | Authenticates in | Authorization model |
+|---|---|---|---|
+| Pimcore MCP servers | `/pimcore-mcp/…` | a Symfony firewall | The resolved user's own Pimcore permissions, plus per-server sharing |
 | Datahub Simple REST | `/pimcore-datahub-webservices/simplerest…` (REST and MCP) | a request-argument resolver and a controller base class | Per-configuration allow-list of users and roles; data exposure stays driven by the Datahub configuration |
 
 They differ deliberately, and in more than one dimension. Authentication is shared; **authorization is each
@@ -68,7 +74,7 @@ Five parts, in the order a request meets them.
 does:
 
 - **A Symfony firewall** over your own routes, stateless, using the `pimcore_studio_backend` user provider.
-  Right when your endpoints have no authentication of their own yet, or already use the security component.
+  Right when your endpoints have no authentication of their own, or already use the security component.
   This is what the MCP servers do. Declare your own firewall over your own prefix rather than putting your
   endpoints under another bundle's URL prefix to borrow its firewall.
 - **Your existing request pipeline**, if the bundle already authenticates somewhere else. Datahub Simple
@@ -88,7 +94,8 @@ discovers the authorization server, and it is what the authorization endpoint va
 
 Register on every request that might consult the registry. That includes your own endpoint, its metadata
 document, and the OAuth endpoints, since the authorization request is validated there. Deriving the URI from
-the configured issuer rather than the request host keeps registration idempotent.
+the configured issuer rather than the request host keeps registration idempotent. The bundle's own MCP
+authenticator is the exception rather than the model here, see [Deriving the resource URI](#deriving-the-resource-uri).
 
 **4. A 401 challenge** carrying `WWW-Authenticate: Bearer resource_metadata="…"`. Without this parameter a
 standards-based client cannot begin discovery, so the whole flow never starts.
@@ -135,7 +142,7 @@ Two decisions worth making consciously:
 - **Supply an explicit rate limiter.** Symfony's default builds a per-IP tier that every client on an address
   shares, so guesses against one credential can push an unrelated valid credential into a `429`.
 
-**If your bundle already authenticates elsewhere**, skip the firewall entirely and add a branch there. Datahub 
+**If your bundle already authenticates elsewhere**, skip the firewall entirely and add a branch there. Datahub
 Simple REST does this in `McpAuthContextResolver`, so integrators need no `security.yaml` change at all
 and existing traffic is untouched. The rest of the steps are the same; only step 2 changes shape.
 
@@ -214,16 +221,23 @@ is fetched on a `.well-known` request that matches none of your routes, and the 
 validated on an OAuth route, so a path filter would leave those lookups unresolvable. The cost is two array
 writes on requests that never consult the registry.
 
-Preferring the configured issuer over the request host also bounds the registry: with `oauth.issuer` unset,
-each distinct `Host` header registers its own set of URIs on a long-running worker.
+`oauth.issuer` is required whenever the server is enabled, so `$base` is a single configured value rather than
+one set of URIs per `Host` header on a long-running worker.
 
 ### Step 4: Emit the challenge
 
 An unauthenticated request must answer `401` with a `resource_metadata` pointer:
 
 ```
-WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-protected-resource/my-bundle-prefix/<config>"
+WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-protected-resource/my-bundle-prefix/endpoint"
 ```
+
+The URL must name **the resource you registered in Step 3 and pass to `validate()` in Step 2**, not the path
+of the request that produced the `401`. Those differ whenever one resource covers several endpoints: this
+bundle's own MCP firewall validates every token against `https://host/pimcore-mcp`, while requests arrive at
+`/pimcore-mcp/agent/<server>` and other sub-paths. Deriving the URL from the request path there would
+advertise a metadata document for a resource nobody declared, and the RFC 9728 endpoint answers an
+unregistered resource with `404`, so the client's discovery stops at a dead link.
 
 `error="invalid_token"` belongs there only when a token was actually presented and rejected. Omit it when no
 credential was sent at all.
@@ -278,16 +292,32 @@ more than one resource exists.
 
 Two consequences for an application:
 
-- **Pass your own resource URI to `validate()`**, and derive it the same way every time. Prefer the
-  configured issuer over the request's host: the URI has to be byte-identical when the resource is
-  registered, when a token is requested for it, and when that token is validated, and a Host header behind a
-  proxy will not be.
+- **Pass your own resource URI to `validate()`**, and derive it the same way every time. The URI has to be
+  byte-identical when the resource is declared, when a token is requested for it, and when that token is
+  validated. See [Deriving the resource URI](#deriving-the-resource-uri) for the two ways to do that.
 - **A token with no audience is refused.** The authorization request has to name a resource, and a token
   carrying no `aud` is rejected at every protected resource rather than accepted at all of them. Audience
   binding is a wall, not an opt-in, so a client that does not send `resource` gets an error at authorization
   time rather than a credential that fails later.
 
-## What the platform does not do yet
+### Deriving the resource URI
+
+Two ways, and the bundle's own applications use different ones:
+
+- **From `oauth.issuer`.** Recommended for an application that registers its resources programmatically. The
+  value is configured once, so it cannot drift with the incoming `Host` header and registration stays
+  idempotent on a long-running worker.
+- **From the request host** (`$request->getSchemeAndHttpHost()`). This is what
+  `OAuthAccessTokenAuthenticator` does for the MCP endpoints, because the MCP resource is declared in
+  `oauth.resources` rather than registered in code, and the authenticator has no configured base of its own.
+
+The consequence for an MCP deployment behind a reverse proxy: the host Pimcore sees has to match the `uri` in
+`oauth.resources` byte for byte. Set `oauth.issuer` to the public origin, configure Symfony `trusted_proxies`
+so the forwarded host is honoured, and write the resource URI with the same scheme, host and no trailing
+slash. Get this wrong and tokens are issued happily and then refused at the endpoint, with no error that says
+why.
+
+## What the platform leaves to each application
 
 **Scopes are not enforced at call time.** They are requested, consented to, narrowed to the resource, carried
 on the token and reported back, but nothing compares a granted scope against an operation. What a token carries

@@ -1,6 +1,6 @@
 ---
 title: OAuth 2.1 Authorization Server
-description: Embedded, opt-in OAuth 2.1 authorization server for authenticating MCP and other API clients against Pimcore.
+description: Embedded, opt-in OAuth 2.1 authorization server for authenticating MCP and other API clients.
 ---
 
 # OAuth 2.1 Authorization Server (Experimental)
@@ -22,15 +22,15 @@ firewalls behave.
 > between minor versions. Enable it consciously and pin the bundle version.
 
 Two applications accept its tokens: the bundle's own [MCP firewall](../04_Development_Details/08_MCP_Server.md),
-where OAuth is one of several accepted credentials, and Data Hub Simple REST. Neither is privileged; both build
+where OAuth is one of several accepted credentials, and Datahub Simple REST. Neither is privileged; both build
 on the same public contracts, and any bundle can do the same.
 
 ## What it provides
 
-- **Discovery** — Authorization Server Metadata ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)) and
+- **Discovery** - Authorization Server Metadata ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)) and
   Protected Resource Metadata ([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)).
-- **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) — the `S256`
-  method is **required**; `plain` is rejected.
+- **Authorization Code grant with PKCE** ([RFC 7636](https://www.rfc-editor.org/rfc/rfc7636)) - PKCE is
+  required for public clients, and when a challenge is sent only `S256` is accepted; `plain` is rejected.
 - **Refresh tokens**.
 - Three ways to onboard clients: **pre-registered** clients declared in config, optional **Dynamic Client
   Registration** ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata
@@ -43,24 +43,58 @@ on the same public contracts, and any bundle can do the same.
 
 ## Enabling
 
-The minimum configuration is the master switch, an issuer, and signing keys:
+The minimum configuration is the master switch, an issuer, signing keys, at least one protected resource,
+and at least one way for a client to identify itself:
 
 ```yaml
 # config/packages/pimcore_studio_backend.yaml
 pimcore_studio_backend:
     oauth:
         enabled: true
-        # Issuer identifier advertised in metadata and stamped on tokens.
-        # If null, it is derived from the incoming request — set it explicitly in production.
+        # Issuer identifier advertised in metadata, returned in the authorization
+        # response, and stamped on every issued token. Required once enabled is true.
         issuer: 'https://pimcore.example.com'
         keys:
             private_key: '%env(OAUTH_PRIVATE_KEY)%'
             public_key: '%env(OAUTH_PUBLIC_KEY)%'
             passphrase: '%env(OAUTH_KEY_PASSPHRASE)%'
             encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+        # Every token is issued for a named resource (RFC 8707), so at least one must
+        # exist or the authorize endpoint refuses every request. This is the bundle's
+        # own MCP endpoint; see "Protected resources (audiences)" below for more.
+        resources:
+            - uri: 'https://pimcore.example.com/pimcore-mcp'
+              scopes_supported: ['mcp:read', 'mcp:write']
+              authorization_servers: ['https://pimcore.example.com']
+        # A client has to be resolvable before a resource is ever consulted. With no
+        # pre-registered client and both self-registration mechanisms off, every
+        # authorization request fails with `invalid_client`. See "Onboarding clients".
+        clients:
+            my-desktop-app:
+                name: 'My Desktop App'
+                redirect_uris:
+                    - 'http://127.0.0.1:33418/callback'
 ```
 
 > Reference key material via environment variables or Symfony secrets. **Never commit keys.**
+
+> `issuer` is validated at container build time: enabling the server without one fails the build rather than
+> advertising an issuer in metadata that never reaches the tokens themselves.
+
+### What enabling it adds
+
+Three things become operator-visible the moment the server is switched on:
+
+- **Two database tables.** One records issued tokens so they can be revoked, one backs Dynamic Client
+  Registration. They ship as bundle migrations, so run `bin/console doctrine:migrations:migrate` (or the
+  Pimcore bundle installer) before the first authorization request.
+- **A maintenance task.** `OAuthTokenGcTask` prunes expired token records and runs as part of
+  `bin/console pimcore:maintenance`. Without that cron the table grows without bound.
+- **Two filesystem cache pools.** `pimcore_studio_backend.oauth.pending_authorization` and
+  `...oauth.client_metadata` are prepended into `framework.cache.pools`. The first deliberately uses the
+  filesystem adapter rather than your `cache.app`: the authorize request and the later consent approval can
+  land on different workers, and a per-process adapter such as APCu would lose the pending request between
+  them.
 
 ### Generating keys
 
@@ -80,34 +114,72 @@ php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'
 
 ## Exposing the endpoints
 
-The OAuth routes live at the **web root** — outside the `%pimcore_studio_backend.url_prefix%` (Studio API) and
-outside the `pimcore_mcp` firewall. Discovery, token, and (if enabled) registration must be **publicly
-reachable**; the authorize endpoint needs a logged-in Studio session for login/consent.
+The OAuth routes live at the **web root**, outside the `%pimcore_studio_backend.url_prefix%` (Pimcore Studio
+API) and outside the `pimcore_mcp` firewall. All of them must be **publicly reachable**, the authorize endpoint
+included: it performs no user lookup of its own. It validates the request, stashes it under an opaque id and
+redirects to `oauth.consent_path`; the login and the consent screen happen there, on a Pimcore Studio UI route
+that enforces the session.
 
 Make sure your `security.access_control` allows them:
 
 ```yaml
 security:
     access_control:
-        # Public discovery + token + dynamic registration
+        # Public discovery + authorize + token + dynamic registration
         - { path: '^/\.well-known/oauth-', roles: PUBLIC_ACCESS }
-        - { path: '^/pimcore-oauth/(token|register)$', roles: PUBLIC_ACCESS }
+        - { path: '^/pimcore-oauth/(authorize|token|register)$', roles: PUBLIC_ACCESS }
         # ... your existing pimcore_studio / pimcore_mcp rules ...
 ```
 
-For clients to actually *use* the token against an MCP server, the `pimcore_mcp` firewall must be enabled — see the
-[MCP firewall setup](./README.md) (the *Optional: MCP firewall* step). Its authenticator chain includes an OAuth
-bearer authenticator that validates these tokens.
+Leaving `authorize` out of that list hands it to whatever catch-all rule the project has, which usually means
+the flow dies at its first redirect rather than at the consent screen.
+
+### Accepting tokens at the MCP endpoints
+
+For clients to actually *use* the token against an MCP server, two things are needed. The `pimcore_mcp`
+firewall must be enabled, see the [MCP firewall setup](./README.md) (the *Optional: MCP firewall* step); its
+authenticator chain includes an OAuth bearer authenticator that validates these tokens.
+
+The MCP resource must also be **declared in configuration**. The bundle registers no protected resource of its
+own, so without this entry there is nothing for a client to request a token for, and
+`OAuthAccessTokenAuthenticator` has no registered resource matching the audience it enforces:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        resources:
+            # Must be the MCP base, with no trailing slash: the authenticator validates
+            # every /pimcore-mcp/... request against this one URI, not against the
+            # sub-path that was called.
+            - uri: 'https://pimcore.example.com/pimcore-mcp'
+              scopes_supported: ['mcp:read', 'mcp:write']
+              authorization_servers: ['https://pimcore.example.com']
+```
+
+The authenticator derives that URI from the **request** host, so behind a reverse proxy the host Pimcore sees
+must match the `uri` here byte for byte. Set `oauth.issuer` to the public origin and make sure the proxy
+forwards the host (Symfony `trusted_proxies`), or the audience check rejects otherwise valid tokens.
 
 ## Endpoints
 
 | Path | Method | Purpose |
 |------|--------|---------|
-| `/.well-known/oauth-authorization-server` | GET | Authorization Server Metadata (RFC 8414) — public discovery |
-| `/.well-known/oauth-protected-resource{/path}` | GET | Protected Resource Metadata (RFC 9728) — advertises the audience + auth server for a resource |
-| `/pimcore-oauth/authorize` | GET | Browser entry point; redirects to the Studio consent UI (`oauth.consent_path`) |
+| `/.well-known/oauth-authorization-server` | GET | Authorization Server Metadata (RFC 8414) - public discovery |
+| `/.well-known/oauth-protected-resource{/path}` | GET | Protected Resource Metadata (RFC 9728) - advertises the audience + auth server for a resource |
+| `/pimcore-oauth/authorize` | GET | Browser entry point; redirects to the Pimcore Studio consent UI (`oauth.consent_path`) |
 | `/pimcore-oauth/token` | POST | Token endpoint (authorization_code, refresh_token) |
-| `/pimcore-oauth/register` | POST | Dynamic Client Registration (RFC 7591) — returns `404` unless enabled |
+| `/pimcore-oauth/register` | POST | Dynamic Client Registration (RFC 7591) - returns `404` unless enabled |
+
+The consent screen is driven by two further endpoints. Unlike the ones above they sit **under the Pimcore
+Studio API prefix** and need an authenticated Pimcore Studio session, because they act for the logged-in user:
+
+| Path | Method | Purpose |
+|------|--------|---------|
+| `%url_prefix%/oauth/authorizations/{id}` | GET | Details of a pending authorization: client, user and the scopes being asked for |
+| `%url_prefix%/oauth/authorizations/{id}` | POST | Approve or deny it; returns the location to send the browser to |
+
+`%url_prefix%` is `pimcore_studio_backend.url_prefix` (`/pimcore-studio/api` by default). They are consumed by
+the Pimcore Studio consent screen rather than by OAuth clients directly.
 
 ## How a client authenticates
 
@@ -115,7 +187,7 @@ The Authorization Code + PKCE flow, end to end:
 
 1. The client reads `/.well-known/oauth-authorization-server` to discover the endpoints.
 2. It sends the user to `/pimcore-oauth/authorize` with a PKCE `code_challenge` (`S256`). The endpoint
-   redirects to the Studio consent UI (`oauth.consent_path`), where the user logs in and approves.
+   redirects to the Pimcore Studio consent UI (`oauth.consent_path`), where the user logs in and approves.
 3. On approval the client receives an authorization code and exchanges it at `/pimcore-oauth/token`, presenting
    the PKCE `code_verifier`. It gets an access token (a signed JWT) and, optionally, a refresh token.
 4. The client calls the resource it named, presenting `Authorization: Bearer <jwt>`. For an endpoint behind
@@ -140,7 +212,7 @@ use PKCE with no secret. A dynamically registered client gets a secret unless it
 
 ### Pre-registered clients
 
-Declare known clients directly in config — first-party clients you control, or any client that supports
+Declare known clients directly in config - first-party clients you control, or any client that supports
 neither of the self-registration mechanisms below. Each entry is a `client_id` (the map key) with an
 allow-list of redirect URIs:
 
@@ -155,9 +227,9 @@ pimcore_studio_backend:
                     - 'http://localhost:33418/callback'
 ```
 
-Pre-registered clients are **public only** — there is no `secret`, `confidential`, or `service_user` field,
+Pre-registered clients are **public only** - there is no `secret`, `confidential`, or `service_user` field,
 and no Client Credentials grant. They resolve **before** Client ID Metadata Documents and Dynamic Client
-Registration, and work even when both of those are disabled — so they are the onboarding path for a
+Registration, and work even when both of those are disabled - so they are the onboarding path for a
 locked-down deployment that exposes no open registration endpoint.
 
 ### Dynamic Client Registration (RFC 7591)
@@ -171,7 +243,7 @@ pimcore_studio_backend:
             enabled: true
 ```
 
-Enable it deliberately — the `/pimcore-oauth/register` endpoint becomes publicly writable and is advertised in
+Enable it deliberately - the `/pimcore-oauth/register` endpoint becomes publicly writable and is advertised in
 metadata.
 
 ### Client ID Metadata Documents
@@ -230,11 +302,11 @@ All keys live under `pimcore_studio_backend.oauth`.
 | Key | Default | Purpose |
 |-----|---------|---------|
 | `enabled` | `false` | Master switch for the embedded authorization server. |
-| `issuer` | `null` | Issuer (`iss`) advertised in metadata and stamped on tokens. Null derives it from the request. |
+| `issuer` | `null` | Issuer (`iss`) advertised in metadata, returned in the authorization response, stamped on tokens and verified by the resource server. **Required when `enabled` is `true`.** |
 | `access_token_ttl` | `3600` | Access-token lifetime (seconds). |
-| `auth_code_ttl` | `600` | Authorization-code lifetime (seconds). |
+| `auth_code_ttl` | `600` | Authorization-code lifetime (seconds). Also how long a pending authorization stays valid, i.e. how long the user has on the consent screen before it reports `oauth.consent.expired.*`. |
 | `refresh_token_ttl` | `2592000` | Refresh-token lifetime (seconds). |
-| `consent_path` | `/pimcore-studio/oauth/consent` | Studio UI route the authorize endpoint redirects to for login/consent. |
+| `consent_path` | `/pimcore-studio/oauth/consent` | Pimcore Studio UI route the authorize endpoint redirects to for login/consent. Hard-coupled to the UI base URL: if you change `pimcore_studio_ui.url_path`, change this to match or the redirect lands on a `404`. |
 | `allow_localhost_loopback_redirect` | `true` | Also accept `http://localhost:{port}` loopback redirect URIs. Set `false` for RFC 8252-strict (IP literals only). |
 | `cors_allowed_origins` | `[]` | Browser origins allowed to call the OAuth endpoints cross-origin. Empty = any origin (wildcard); credentials are never sent. |
 | `keys.private_key` | `null` | JWT signing private key (path or contents). |
@@ -247,7 +319,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
 | `client_id_metadata_documents.allow_insecure` | `false` | Dev only: permit http/loopback `client_id` URLs. |
 | `client_id_metadata_documents.cache_ttl` | `300` | Seconds to cache a fetched client metadata document. |
-| `resources` | `[]` | Protected resources / token audiences; `scopes_supported` caps a token's scopes. |
+| `resources` | `[]` | Protected resources / token audiences. Per entry: `uri` (required), `scopes_supported` (defaults to `['mcp:read']`, which is rarely what a non-MCP resource wants, so set it explicitly) and `authorization_servers` (defaults to `[]`). |
 
 ## Security considerations
 
@@ -260,6 +332,6 @@ All keys live under `pimcore_studio_backend.oauth`.
 
 ## Related
 
-- [MCP Server Infrastructure](../04_Development_Details/08_MCP_Server.md) — the `pimcore_mcp` firewall,
+- [MCP Server Infrastructure](../04_Development_Details/08_MCP_Server.md) - the `pimcore_mcp` firewall,
   authenticator chain, and static-token authentication.
-- [Installation and Configuration](./README.md) — bundle install and firewall setup.
+- [Installation and Configuration](./README.md) - bundle install and firewall setup.
