@@ -13,14 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server\Grant;
 
+use const PHP_URL_QUERY;
 use Codeception\Test\Unit;
 use DateInterval;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
@@ -39,7 +40,6 @@ use function array_map;
 use function array_values;
 use function parse_str;
 use function parse_url;
-use const PHP_URL_QUERY;
 
 final class LoopbackAuthCodeGrantTest extends Unit
 {
