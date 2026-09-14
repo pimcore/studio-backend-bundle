@@ -128,7 +128,7 @@ a compliant client can discover where to authenticate.
 > **Scopes.** A token carries only the scopes the resource it names declares, and the granted set is reported
 > back in the `scope` response parameter. Nothing compares a granted scope against an operation, though:
 > authorization is **each application's own rules** instead, meaning Pimcore user permissions plus per-server
-> access behind the MCP firewall, or a per-configuration allow-list in Data Hub Simple REST. Treat a scope as a
+> access behind the MCP firewall, or a per-configuration allow-list in Datahub Simple REST. Treat a scope as a
 > label shown at consent time rather than a permission.
 
 ## Onboarding clients
@@ -193,7 +193,7 @@ pimcore_studio_backend:
 
 Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
 Applications whose endpoints are only known at runtime register them programmatically instead, through
-`ResourceRegistryInterface`, which is how Data Hub Simple REST declares its own.
+`ResourceRegistryInterface`, which is how Datahub Simple REST declares its own.
 
 The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
 not enough on its own: something has to declare a resource, and something has to accept tokens at it.
