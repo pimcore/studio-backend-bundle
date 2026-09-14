@@ -18,17 +18,15 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\RegisteredClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ClientRegistrationException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\RedirectUriPolicy;
 use function array_is_list;
 use function bin2hex;
 use function hash;
 use function in_array;
 use function is_array;
 use function is_string;
-use function parse_url;
 use function preg_split;
 use function random_bytes;
-use function str_contains;
-use function strtolower;
 use function time;
 use function trim;
 
@@ -44,8 +42,6 @@ final readonly class ClientRegistrar
     private const array SUPPORTED_GRANTS = ['authorization_code', 'refresh_token'];
 
     private const array AUTH_METHODS = ['none', 'client_secret_basic', 'client_secret_post'];
-
-    private const array LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '::1'];
 
     public function __construct(
         private DynamicClientStoreInterface $store,
@@ -127,26 +123,13 @@ final readonly class ClientRegistrar
 
     private function assertValidRedirectUri(string $uri): void
     {
-        $parts = parse_url($uri);
-        if ($parts === false || !isset($parts['scheme'], $parts['host']) || str_contains($uri, '#')) {
-            throw new ClientRegistrationException(
-                'invalid_redirect_uri',
-                'redirect_uri must be an absolute URI without a fragment.'
-            );
-        }
-
-        $scheme = strtolower($parts['scheme']);
-        if ($scheme === 'https') {
-            return;
-        }
-
-        if ($scheme === 'http' && in_array(strtolower($parts['host']), self::LOOPBACK_HOSTS, true)) {
+        if (RedirectUriPolicy::isAcceptable($uri)) {
             return;
         }
 
         throw new ClientRegistrationException(
             'invalid_redirect_uri',
-            'redirect_uri must use https, or http on a loopback host.'
+            'redirect_uri must be an absolute URI without a fragment, using https or http on a loopback host.'
         );
     }
 
