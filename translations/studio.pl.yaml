@@ -1,0 +1,95 @@
+studio_ee_no_element_provided: Nie podano elementu
+ownership_management_type_grid_configuration: Konfiguracje siatki
+ownership_management_type_saved_search: Zapisane wyszukiwania
+studio_ee_element_not_found: Nie znaleziono elementu typu %type% o ID %id%
+studio_ee_user_not_found: Nie znaleziono użytkownika o ID %userId%
+studio_ee_environment_variable_not_found: Nie znaleziono zmiennej środowiskowej %variable%
+studio_ee_element_locked: Element typu %type% o ID %id% jest zablokowany
+studio_ee_element_permission_missing: Użytkownik o ID %userId% nie ma uprawnienia %permission% do elementu typu %type% o ID %id%
+studio_ee_report_permission_missing: Użytkownik o ID %userId% nie ma dostępu do raportu %name%
+studio_ee_element_delete_failed: "Nie można usunąć elementu typu %type% o ID %id%: %message%"
+studio_ee_element_batch_delete_failed: "Zbiorcze usuwanie elementu typu %type% o ID %id% i jego elementów podrzędnych nie powiodło się: %message%"
+studio_ee_zip_file_copy_failed: "Nie można skopiować pliku ZIP: %message%"
+studio_ee_zip_file_upload_failed: "Nie można przesłać pliku ZIP: %message%"
+studio_ee_zip_cleanup_failed: "Nie można usunąć katalogu ZIP %directory%: %message%"
+studio_ee_csv_creation_failed: "Eksport CSV nie powiódł się: %message%"
+studio_ee_xlsx_creation_failed: "Eksport XLSX nie powiódł się: %message%"
+studio_ee_ownership_management_reassign_failed: "Nie udało się ponownie przypisać właściciela konfiguracji o ID %id%: %message%"
+studio_ee_ownership_management_delete_failed: "Nie udało się usunąć konfiguracji o ID %id%: %message%"
+studio_ee_job_ownership_management_reassign_owner: Przypisz ponownie właściciela konfiguracji
+studio_ee_job_ownership_management_delete: Usuń konfiguracje
+studio_ee_job_step_ownership_management_reassign_owner: Ponowne przypisywanie właściciela konfiguracji
+studio_ee_job_step_ownership_management_delete: Usuwanie konfiguracji
+studio_ee_recycle_bin_delete_failed: "Nie udało się usunąć elementu o ID %id% z kosza: %message%"
+studio_ee_recycle_bin_restore_failed: "Nie można przywrócić elementu z kosza o ID %id%: %message%"
+studio_ee_csv_data_collection_failed: "Nie można pobrać danych do eksportu CSV dla %id%: %message%"
+studio_ee_element_patch_failed: "Nie można zaktualizować elementu typu %type% o ID %id%: %message%"
+studio_ee_element_rewrite_references_failed: "Nie można przepisać odwołań elementu typu %type% o ID %id%: %message%"
+studio_ee_element_tag_operation_failed: "Nie można wykonać operacji %operation% na tagach dla elementu typu %type% o ID %id%: %message%"
+studio_ee_no_element_data_found: Nie znaleziono danych
+studio_ee_job_create_download_zip: Utwórz ZIP do pobrania
+studio_ee_job_clone_assets: Klonuj assety
+studio_ee_job_upload_zip_file: Prześlij plik ZIP
+studio_ee_job_delete_assets: Usuń assety
+studio_ee_job_batch_delete_assets: Usuń assety zbiorczo
+studio_ee_job_patch_elements: Aktualizuj elementy
+studio_ee_job_create_csv: Utwórz CSV
+studio_ee_job_create_xlsx: Utwórz XLSX
+studio_ee_job_upload_assets: Prześlij assety
+studio_ee_job_clone_data_objects: Klonuj obiekty danych
+studio_ee_job_delete_data_objects: Usuń obiekty danych
+studio_ee_job_batch_delete_data_objects: Usuń obiekty danych zbiorczo
+studio_ee_job_clone_documents: Klonuj dokumenty
+studio_ee_job_delete_documents: Usuń dokumenty
+studio_ee_job_rewrite_element_references: Przepisz odwołania elementów
+studio_ee_job_batch_tag_assign: Przypisz tagi zbiorczo
+studio_ee_job_batch_tag_replace: Zamień tagi zbiorczo
+studio_ee_job_recycle_bin_delete: Usuń elementy z kosza
+studio_ee_job_recycle_bin_restore: Przywróć elementy z kosza
+studio_ee_job_step_zip_creation: Tworzenie ZIP do pobrania
+studio_ee_job_step_asset_cloning: Klonowanie assetów
+studio_ee_job_step_csv_file_not_found: Nie znaleziono pliku CSV
+studio_ee_jop_step_zip_uploading: Przesyłanie ZIP
+studio_ee_job_step_asset_uploading: Przesyłanie assetów
+studio_ee_job_step_csv_creation: Tworzenie CSV
+studio_ee_job_step_xlsx_creation: Tworzenie XLSX
+studio_ee_job_step_export_data_collection: Zbieranie danych do eksportu
+studio_ee_job_step_element_patching: Aktualizowanie elementów
+studio_ee_job_step_folder_patching: Aktualizowanie elementów folderów
+studio_ee_job_step_element_rewrite_references: Przepisywanie odwołań elementów
+studio_ee_job_step_element_deletion: Usuwanie elementów
+studio_ee_job_step_element_recycling: Dodawanie elementu do kosza
+studio_ee_job_step_data_object_cloning: Klonowanie obiektów danych
+studio_ee_job_step_document_cloning: Klonowanie dokumentów
+studio_ee_job_step_batch_tag_assign: Zbiorcze przypisywanie tagów
+studio_ee_job_step_batch_tag_replace: Zbiorcze zamienianie tagów
+studio_ee_job_step_recycle_bin_delete: Usuwanie elementów z kosza
+studio_ee_job_step_recycle_bin_restore: Przywracanie elementów z kosza
+studio_ee_element_folder_collection_not_supported: "Zbieranie danych dla folderów nie jest obsługiwane. ID: %folderId%"
+studio_ee_file_not_found_for_job_run: "Nie znaleziono pliku %type% dla uruchomienia zadania. ID: %jobRunId%"
+studio_ee_invalid_element_type_provided: Zbieranie danych dla elementu o ID %elementId% i typie %elementType% nie jest obsługiwane.
+studio_ee_no_assets_found_for_job_run: "Nie znaleziono assetów dla uruchomienia zadania. ID: %jobRunId%"
+studio_ee_asset_upload_failed: "Nie można przesłać pliku: %message%"
+studio_email_param_children: Elementy podrzędne (%count%)
+studio_ee_element_replace_assignment_failed: "Nie można zastąpić %sourceId% (%sourceType%) przez %targetId% (%targetType%) w %elementId% (%elementType%). Błąd: %message%"
+studio_ee_job_bulk_import_class_definitions: Import zbiorczy definicji klas
+studio_ee_job_step_field_collection_importing: Importowanie Field Collections
+studio_ee_job_step_class_importing: Importowanie klas
+studio_ee_job_step_custom_layout_importing: Importowanie Custom Layouts
+studio_ee_job_step_object_brick_importing: Importowanie Object Bricks
+studio_ee_job_step_bulk_import_cleanup: Czyszczenie po imporcie zbiorczym
+studio_ee_bulk_import_failed: 'Import zbiorczy %type% "%name%" nie powiódł się: %message%'
+studio_ee_job_element_usage_replace: Zamiana użycia elementu
+preview_generator_locale: Język
+main_site: Witryna główna
+preview_generator_site: Witryna
+notifications.email.greeting: Cześć %name%,
+notifications.email.cta: Zobacz w Pimcore Studio
+notifications.email.footer: Otrzymujesz tę wiadomość, ponieważ w Pimcore Studio zasubskrybowano te powiadomienia.
+notifications.channel.popup: Wyskakujące okno
+notifications.channel.email: E-mail
+notifications.channel.email.no-address: Brak adresu e-mail na Twoim koncie — dodaj go w profilu, aby je otrzymywać.
+notifications.type.general.label: Cała reszta
+notifications.type.general.description: Kroki workflow, komunikaty systemowe, powiadomienia z innych bundli. Zawsze trafiają do dzwonka powiadomień — wybierz, czy mają też pojawiać się jako wyskakujące okno.
+notifications.type.general.solo_label: Wszystkie powiadomienia
+notifications.type.general.solo_description: Wszystko, co wysyła Ci Pimcore — kroki workflow, komunikaty systemowe, powiadomienia z innych bundli. Zawsze trafiają do dzwonka powiadomień; wybierz, czy mają też pojawiać się na ekranie.
