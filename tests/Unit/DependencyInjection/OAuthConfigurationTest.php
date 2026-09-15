@@ -102,6 +102,34 @@ final class OAuthConfigurationTest extends Unit
     }
 
     /**
+     * `issuer` is a scalar node, so a number or a boolean is neither null nor a string. Such a
+     * value used to satisfy the required check and then skip the shape check, reaching runtime
+     * as the one thing the two rules exist to prevent: present and unusable.
+     *
+     * @dataProvider nonStringIssuerProvider
+     */
+    public function testEnabledWithANonStringIssuerIsRejected(mixed $issuer): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/must be a bare origin/');
+
+        $this->process(['enabled' => true, 'issuer' => $issuer, 'keys' => self::KEYS]);
+    }
+
+    /**
+     * @return array<string, array{0: mixed}>
+     */
+    public static function nonStringIssuerProvider(): array
+    {
+        return [
+            'integer' => [12345],
+            'float' => [1.5],
+            'boolean true' => [true],
+            'boolean false' => [false],
+        ];
+    }
+
+    /**
      * @dataProvider validIssuerProvider
      */
     public function testEnabledWithACanonicalOriginIsAccepted(string $issuer): void

@@ -963,8 +963,8 @@ class Configuration implements ConfigurationInterface
                 // look plausible and never match.
                 ->validate()
                     ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
-                        && is_string($oauth['issuer'] ?? null)
-                        && !self::isCanonicalOrigin($oauth['issuer']))
+                        && ($oauth['issuer'] ?? null) !== null
+                        && (!is_string($oauth['issuer']) || !self::isCanonicalOrigin($oauth['issuer'])))
                     ->thenInvalid(self::OAUTH_ISSUER_INVALID_ERROR)
                 ->end()
                 // Same shape, same reason: enabling the server without key material leaves

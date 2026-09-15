@@ -86,38 +86,16 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
-        // RFC 9068 section 4: an access token declares itself one in the JOSE header, and a
-        // resource server must refuse anything else. Without this any correctly signed JWT
-        // from the same issuer with a matching audience is accepted here - an ID token, or
-        // some other token type a future feature mints - which is the cross-JWT confusion
-        // the media type exists to prevent. Checked before the claims, because what the
-        // claims mean depends on the token actually being an access token.
-        if (!$this->isAccessToken($token)) {
-            return null;
-        }
-
-        $claims = $token->claims();
-
-        // Fail closed: LooseValidAt only checks time claims that are present, so
-        // a token without an expiry would otherwise never expire.
-        if (!$claims->has(RegisteredClaims::EXPIRATION_TIME)) {
-            return null;
-        }
-
-        // RFC 9068 requires `jti`, and this server stores revocation against it. Refused
-        // rather than skipped when absent or not a string: treating it as "nothing to check"
-        // accepted the token and, since there is no id to key a revocation on, made it
-        // permanently unrevocable. Every claim this method decides on is refused when
-        // missing rather than waved through; `client_id` and `scope` below are reported,
-        // not decided on.
-        $tokenId = $claims->get('jti');
-        if (!is_string($tokenId) || $tokenId === '') {
+        $tokenId = $this->accessTokenId($token);
+        if ($tokenId === null) {
             return null;
         }
 
         if ($this->revocationChecker->isRevoked($tokenId)) {
             return null;
         }
+
+        $claims = $token->claims();
 
         // Audience (resource) binding per RFC 8707. A token minted for one resource must
         // not be accepted at another, which is what keeps a token obtained for one
@@ -177,6 +155,39 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
      * qualified `application/at+jwt`. Compared case-insensitively, since a media type is
      * not case-sensitive.
      */
+    /**
+     * The shape RFC 9068 requires of an access token, checked before any claim is read
+     * because what the claims mean depends on the token being one. Returns the token id,
+     * since that is what the revocation lookup keys on; null means this is not a token this
+     * server decides on.
+     *
+     * Each of these refuses rather than skips. Without the type check, any correctly signed
+     * JWT from this issuer with a matching audience is accepted here - an ID token, or some
+     * other type a future feature mints - which is the cross-JWT confusion the media type
+     * exists to prevent. `LooseValidAt` only checks time claims that are present, so a token
+     * with no expiry would otherwise never expire. And treating an absent `jti` as "nothing
+     * to revoke" accepted the token while leaving no id to key a revocation on, making it
+     * permanently unrevocable.
+     *
+     * `client_id` and `scope` are deliberately not here: they are reported on
+     * {@see ResolvedAccess}, not decided on.
+     */
+    private function accessTokenId(UnencryptedToken $token): ?string
+    {
+        if (!$this->isAccessToken($token)) {
+            return null;
+        }
+
+        $claims = $token->claims();
+        if (!$claims->has(RegisteredClaims::EXPIRATION_TIME)) {
+            return null;
+        }
+
+        $tokenId = $claims->get('jti');
+
+        return is_string($tokenId) && $tokenId !== '' ? $tokenId : null;
+    }
+
     private function isAccessToken(UnencryptedToken $token): bool
     {
         $type = $token->headers()->get('typ');
