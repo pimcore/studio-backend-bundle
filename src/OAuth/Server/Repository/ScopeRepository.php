@@ -46,8 +46,14 @@ final class ScopeRepository implements ScopeRepositoryInterface
         ?string $userIdentifier = null,
         ?string $authCodeId = null,
     ): array {
-        // The delegation-ceiling logic (narrowing to what the user may delegate)
-        // is added with the scope/step-up work; pass validated scopes through.
+        // Still a pass-through. The client's registered scopes are now available here, via
+        // ClientEntity::getRegisteredScopes(), but intersecting against them is a policy
+        // decision rather than plumbing: ClientRegistrar::parseScopes() returns [] when a
+        // client registers no `scope` at all, which is the common DCR case, so an
+        // intersection has to decide whether [] means "nothing permitted" or "no
+        // restriction expressed". Refusing everything would break every client that
+        // registers without naming scopes. That decision, and the delegation ceiling
+        // (narrowing to what the user may delegate), belong with the scope work.
         return $scopes;
     }
 }

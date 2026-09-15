@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server\Grant;
 use Codeception\Test\Unit;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+use League\OAuth2\Server\Grant\AbstractGrant;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Nyholm\Psr7\ServerRequest;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\ResourceRefreshTokenGrant;
@@ -23,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreI
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
 use function json_encode;
+use function method_exists;
 use function time;
 
 /**
@@ -58,6 +60,31 @@ final class ResourceRefreshTokenGrantTest extends Unit
 
         $this->assertSame([self::REFRESH_TOKEN_ID], $seen);
         $this->assertSame(self::REFRESH_TOKEN_ID, $data['refresh_token_id']);
+    }
+
+    /**
+     * The one thing about league this feature depends on, pinned as a contract rather than
+     * by driving it.
+     *
+     * Enforcement works only because league asks the client entity whether it supports the
+     * grant in play: AbstractGrant::getClientEntityOrFail() refuses with
+     * `unauthorized_client`, and issueRefreshToken() omits the refresh token. That hook does
+     * not exist before league 9.2.0 - on 9.1.0 there is no supportsGrantType anywhere in the
+     * library - so on an older release nothing would ever ask and the registered grant types
+     * would be decorative again, silently. `composer.json` therefore requires ^9.2, and this
+     * fails if a future release drops the seam.
+     *
+     * Deliberately not driven through the protected call path by reflection: that is league's
+     * internal arrangement, it differs between 9.1 and 9.4, and a test coupled to it breaks
+     * on a dependency reshuffle and gets deleted rather than understood. What this bundle
+     * owns - that the entity answers truthfully - is asserted in ClientRepositoryTest.
+     */
+    public function testLeagueStillConsultsTheClientEntityForGrantSupport(): void
+    {
+        $this->assertTrue(
+            method_exists(AbstractGrant::class, 'supportsGrantType'),
+            'league no longer asks the client entity about grant types; registered grant_types are not enforced.',
+        );
     }
 
     private function grant(TokenRecordStoreInterface $store): ResourceRefreshTokenGrant

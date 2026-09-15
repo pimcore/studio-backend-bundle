@@ -202,6 +202,107 @@ final class ClientRepositoryTest extends Unit
         $this->assertTrue($repo->validateClient('dcr_pub', null, 'authorization_code'));
     }
 
+    /**
+     * The defect this closes: the registered grants were parsed, validated, persisted and
+     * echoed back in the registration response, then honoured by nothing. league consults
+     * the entity, so the entity has to carry them.
+     */
+    public function testDynamicClientSupportsOnlyItsRegisteredGrants(): void
+    {
+        $repo = $this->repository([], [], [
+            'dcr_authcode_only' => $this->dynamicClient('dcr_authcode_only', ['authorization_code']),
+        ]);
+
+        $client = $repo->getClientEntity('dcr_authcode_only');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertTrue($client->supportsGrantType('authorization_code'));
+        $this->assertFalse($client->supportsGrantType('refresh_token'));
+    }
+
+    public function testDynamicClientRegisteredForRefreshSupportsIt(): void
+    {
+        $repo = $this->repository([], [], [
+            'dcr_both' => $this->dynamicClient('dcr_both', ['authorization_code', 'refresh_token']),
+        ]);
+
+        $client = $repo->getClientEntity('dcr_both');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertTrue($client->supportsGrantType('authorization_code'));
+        $this->assertTrue($client->supportsGrantType('refresh_token'));
+    }
+
+    /**
+     * The most likely way this change breaks something. A client an operator wrote into
+     * `oauth.clients` has no `grant_types` key to read, so inferring a restriction from
+     * that silence would take `refresh_token` away from clients that work today - the
+     * demo's own `swagger-ui` and `my-dev-pimcore` entries among them.
+     */
+    public function testPreRegisteredClientIsUnrestricted(): void
+    {
+        $repo = $this->repository([
+            'swagger-ui' => ['name' => 'Data Hub Swagger UI', 'redirect_uris' => ['https://app/cb']],
+        ]);
+
+        $client = $repo->getClientEntity('swagger-ui');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertTrue($client->supportsGrantType('authorization_code'));
+        $this->assertTrue($client->supportsGrantType('refresh_token'));
+    }
+
+    /**
+     * Same reasoning for CIMD: a metadata document carries no grant_types either.
+     */
+    public function testCimdClientIsUnrestricted(): void
+    {
+        $repo = $this->repository([], [
+            'https://app.example/client.json' => new ClientMetadata(
+                'https://app.example/client.json',
+                'Cimd App',
+                ['https://app.example/cb'],
+            ),
+        ]);
+
+        $client = $repo->getClientEntity('https://app.example/client.json');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertTrue($client->supportsGrantType('authorization_code'));
+        $this->assertTrue($client->supportsGrantType('refresh_token'));
+    }
+
+    /**
+     * Plumbing only for now: the registered scopes reach the entity so the scope work can
+     * intersect against them, and nothing consults them yet.
+     */
+    public function testRegisteredScopesAreCarriedOntoTheEntity(): void
+    {
+        $repo = $this->repository([], [], [
+            'dcr_scoped' => $this->dynamicClient('dcr_scoped', ['authorization_code'], ['mcp:read']),
+        ]);
+
+        $client = $repo->getClientEntity('dcr_scoped');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertSame(['mcp:read'], $client->getRegisteredScopes());
+    }
+
+    public function testUnrestrictedClientsReportNullRegisteredScopes(): void
+    {
+        $repo = $this->repository([
+            'cfg' => ['name' => 'Configured', 'redirect_uris' => ['https://app/cb']],
+        ]);
+
+        $client = $repo->getClientEntity('cfg');
+        $this->assertInstanceOf(ClientEntity::class, $client);
+        $this->assertNull($client->getRegisteredScopes());
+    }
+
+    /**
+     * @param list<string> $grantTypes
+     * @param list<string> $scopes
+     */
+    private function dynamicClient(string $id, array $grantTypes, array $scopes = []): DynamicClient
+    {
+        return new DynamicClient($id, 'Dyn', ['https://app/cb'], $grantTypes, $scopes, false, null);
+    }
+
     public function testDynamicConfidentialClientValidatesSecret(): void
     {
         $repo = $this->repository([], [], [
