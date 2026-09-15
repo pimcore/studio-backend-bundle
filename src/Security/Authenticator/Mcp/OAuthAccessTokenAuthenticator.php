@@ -59,7 +59,9 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): bool
     {
-        if (!$this->enabled) {
+        // Inert without a configured issuer as well as when disabled. There is no safe
+        // fallback for the audience to check against: see self::resourceUri().
+        if (!$this->enabled || $this->issuer === null) {
             return false;
         }
 
@@ -79,9 +81,16 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
+        $issuer = $this->issuer;
+        if ($issuer === null) {
+            // supports() has already declined; refusing again rather than reconstructing
+            // an audience keeps the invariant in the code instead of in the wiring.
+            throw new AuthenticationException('The OAuth issuer is not configured.');
+        }
+
         $token = $this->bearerToken($request) ?? '';
 
-        $resolved = $this->tokenValidator->validate($token, $this->resourceUri($request));
+        $resolved = $this->tokenValidator->validate($token, $this->resourceUri($issuer));
         if ($resolved === null) {
             throw new AuthenticationException('Invalid or expired OAuth access token.');
         }
@@ -128,19 +137,21 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
      * The configured issuer, not the request host. `Host` is caller-supplied unless
      * `framework.trusted_hosts` is set, and deriving the expected audience from it would
      * make this check compare an attacker's string against the same attacker's string.
-     * The issuer is mandatory while OAuth is enabled, and the resource is registered from
+     * The issuer is mandatory while OAuth is enabled, and the resource is contributed from
      * that same value, so the two agree by construction rather than by coincidence.
      *
-     * The fallback is unreachable while enabled: a null issuer means OAuth is off, and
-     * `supports()` has already declined. It also fails closed, since nothing can have
-     * registered a resource for that host either.
+     * There is deliberately no fallback to the request when the issuer is absent. Being
+     * unregistered is not what refuses an audience: TokenValidatorInterface compares a
+     * token's `aud` against the URI it is handed and never consults the resource registry,
+     * so a request-derived URI here would be checked against itself and pass. The
+     * configuration forbids a null issuer while OAuth is enabled, but this does not rely
+     * on that - the authenticator simply declines.
+     *
+     * McpPath::BASE, not a local copy: the resource this validates against is the one
+     * Mcp\ProtectedResourceProvider declares, and they must be the same string.
      */
-    private function resourceUri(Request $request): string
+    private function resourceUri(string $issuer): string
     {
-        $base = $this->issuer ?? $request->getSchemeAndHttpHost();
-
-        // McpPath::BASE, not a local copy: the resource this validates against is the one
-        // Mcp\ProtectedResourceProvider declares, and they must be the same string.
-        return CanonicalUri::canonicalize($base . McpPath::BASE);
+        return CanonicalUri::canonicalize($issuer . McpPath::BASE);
     }
 }

@@ -101,6 +101,52 @@ final class OAuthAccessTokenAuthenticatorTest extends Unit
         $this->assertSame(['https://pimcore.example.com/pimcore-mcp'], $seen);
     }
 
+    /**
+     * Without a configured issuer there is no audience to check against, and falling back
+     * to the request would rebuild the caller-controlled value the issuer pinning exists
+     * to remove. Being unregistered is not what saves it: TokenValidatorInterface compares
+     * a token's `aud` against the URI it is handed and never consults the resource
+     * registry, so a request-derived URI would be compared with itself and pass.
+     */
+    public function testDeclinesWhenNoIssuerIsConfigured(): void
+    {
+        $auth = new OAuthAccessTokenAuthenticator(
+            true,
+            $this->makeEmpty(TokenValidatorInterface::class, ['validate' => null]),
+            null,
+        );
+
+        $this->assertFalse($auth->supports($this->requestWith(self::JWT)));
+    }
+
+    /**
+     * And refuses outright if reached anyway, so the invariant does not depend on the
+     * wiring that makes supports() the only caller.
+     */
+    public function testAuthenticateRefusesWhenNoIssuerIsConfigured(): void
+    {
+        $validated = false;
+        $auth = new OAuthAccessTokenAuthenticator(
+            true,
+            $this->makeEmpty(TokenValidatorInterface::class, [
+                'validate' => function () use (&$validated): ?ResolvedAccess {
+                    $validated = true;
+
+                    return null;
+                },
+            ]),
+            null,
+        );
+
+        $this->expectException(AuthenticationException::class);
+
+        try {
+            $auth->authenticate($this->requestWith(self::JWT));
+        } finally {
+            $this->assertFalse($validated, 'No audience may be built from the request.');
+        }
+    }
+
     private function makeAuthenticator(bool $enabled, ?ResolvedAccess $resolved): OAuthAccessTokenAuthenticator
     {
         return new OAuthAccessTokenAuthenticator(

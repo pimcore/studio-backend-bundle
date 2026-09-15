@@ -52,6 +52,16 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
             // OAuthAccessTokenAuthenticator validates every one of them against the base
             // alone; appending the request path would advertise a metadata document for
             // an unregistered resource, which the discovery endpoint answers with 404.
+            //
+            // The host comes from the request on purpose, unlike the audience the
+            // authenticator checks. This is a discovery URL - where the client should
+            // fetch metadata from - and ProtectedResourceMetadataController resolves the
+            // resource from the request too, so the two agree and a proxied deployment
+            // gets a reachable URL. Pinning it to oauth.issuer instead would hand clients
+            // an address that need not be the one they reached us on. Nothing is
+            // authorized on the strength of this value, so a spoofed Host only misdirects
+            // the caller that sent it; behind a proxy, set trusted_proxies so the
+            // forwarded scheme and host are honoured.
             $response->headers->set(
                 'WWW-Authenticate',
                 sprintf(

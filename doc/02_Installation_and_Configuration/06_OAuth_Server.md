@@ -259,8 +259,10 @@ REST declares its endpoints and how this bundle declares its
 [MCP endpoints](../04_Development_Details/08_MCP_Server.md#oauth-protected-resource) - so expect entries here
 you did not configure. Declaring the same URI yourself overrides the contributed one.
 
-The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
-not enough on its own: something has to declare a resource, and something has to accept tokens at it.
+The authorization server issues nothing until at least one protected resource exists. Enabling it is enough to
+get one: this bundle contributes its MCP endpoints, so a server with no `resources` entries at all still
+issues tokens for them. Something still has to *accept* those tokens at the other end, which for the MCP
+endpoints means enabling the `pimcore_mcp` firewall.
 
 Every token is bound to one resource. The client names it with the RFC 8707 `resource` parameter, the
 parameter is required, an unknown resource is rejected, and the resulting token is refused at any other
