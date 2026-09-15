@@ -50,12 +50,15 @@ final class AuthorizationConsentServiceTest extends Unit
     private array $dispatched = [];
 
     /** @var list<string> */
-    private array $removed = [];
+    private array $claimed = [];
+
+    private int $completionsAttempted = 0;
 
     public function _before(): void
     {
         $this->dispatched = [];
-        $this->removed = [];
+        $this->claimed = [];
+        $this->completionsAttempted = 0;
     }
 
     public function testGetConsentReturnsTheHydratedPayload(): void
@@ -144,16 +147,57 @@ final class AuthorizationConsentServiceTest extends Unit
     }
 
     /**
-     * Single use: the pending authorization is gone whichever way the user answered, so a
-     * replayed consent id cannot mint a second code.
+     * Single use, and claimed rather than read: the parameters are taken in the same step
+     * that removes them, whichever way the user answered.
      *
      * @dataProvider decisionProvider
      */
-    public function testCompletingConsumesThePendingAuthorization(bool $approved): void
+    public function testCompletingClaimsThePendingAuthorization(bool $approved): void
     {
         $this->service()->completeConsent(self::AUTHORIZATION_ID, $approved);
 
-        $this->assertSame([self::AUTHORIZATION_ID], $this->removed);
+        $this->assertSame([self::AUTHORIZATION_ID], $this->claimed);
+    }
+
+    /**
+     * The property Copilot asked for on #2042, pinned at the level that matters: a second
+     * approval of one id must be refused **before** league is asked to mint anything.
+     * Asserting only that the entry was eventually removed would still pass if both
+     * requests had walked away with a code each.
+     *
+     * The store is the one that makes this exclusive - see PendingAuthorizationStoreTest,
+     * which forces the interleaving - so here it is stubbed to hand the parameters over
+     * once, which is the contract this service is entitled to rely on.
+     *
+     * @dataProvider decisionProvider
+     */
+    public function testASecondApprovalIsRefusedBeforeAnythingIsMinted(bool $approved): void
+    {
+        $service = $this->service();
+
+        $service->completeConsent(self::AUTHORIZATION_ID, $approved);
+        $this->assertSame(1, $this->completionsAttempted);
+
+        try {
+            $service->completeConsent(self::AUTHORIZATION_ID, $approved);
+            $this->fail('The second approval of the same id must not succeed.');
+        } catch (NotFoundException) {
+            // expected
+        }
+
+        $this->assertSame(1, $this->completionsAttempted, 'league must never see the second approval.');
+        $this->assertSame([self::AUTHORIZATION_ID, self::AUTHORIZATION_ID], $this->claimed);
+    }
+
+    /**
+     * Looking at the consent screen must not end the authorization, or a reload would lose
+     * it. Only the approval claims.
+     */
+    public function testGetConsentDoesNotClaim(): void
+    {
+        $this->service()->getConsent(self::AUTHORIZATION_ID);
+
+        $this->assertSame([], $this->claimed);
     }
 
     /**
@@ -236,6 +280,8 @@ final class AuthorizationConsentServiceTest extends Unit
         ?string $issuer = self::ISSUER,
         ?callable $completion = null,
     ): AuthorizationConsentService {
+        $claimable = $storedParams;
+
         return new AuthorizationConsentService(
             $this->makeEmpty(EventDispatcherInterface::class, [
                 'dispatch' => function (object $event, ?string $eventName = null): object {
@@ -246,8 +292,14 @@ final class AuthorizationConsentServiceTest extends Unit
             ]),
             $this->makeEmpty(PendingAuthorizationStoreInterface::class, [
                 'get' => $storedParams,
-                'remove' => function (string $id): void {
-                    $this->removed[] = $id;
+                // Hands the parameters over once and answers empty after that, which is
+                // what the real store guarantees under a per-id lock.
+                'consume' => function (string $id) use (&$claimable): ?array {
+                    $this->claimed[] = $id;
+                    $params = $claimable;
+                    $claimable = null;
+
+                    return $params;
                 },
             ]),
             $this->makeEmpty(AuthorizationRequestValidatorInterface::class, [
@@ -255,10 +307,16 @@ final class AuthorizationConsentServiceTest extends Unit
             ]),
             $this->makeEmpty(AuthorizationServerFactoryInterface::class, [
                 'create' => $this->makeEmpty(AuthorizationServer::class, [
-                    'completeAuthorizationRequest' => $completion ?? static fn (
+                    'completeAuthorizationRequest' => function (
                         AuthorizationRequestInterface $request,
                         ResponseInterface $response,
-                    ): ResponseInterface => $response->withHeader('Location', self::REDIRECT),
+                    ) use ($completion): ResponseInterface {
+                        ++$this->completionsAttempted;
+
+                        return $completion !== null
+                            ? $completion($request, $response)
+                            : $response->withHeader('Location', self::REDIRECT);
+                    },
                 ]),
             ]),
             new AuthorizationConsentHydrator(),

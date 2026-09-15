@@ -27,9 +27,25 @@ interface PendingAuthorizationStoreInterface
     public function store(string $id, array $queryParams): void;
 
     /**
+     * The pending authorization's parameters, leaving them in place.
+     *
+     * For reads that must not end the authorization - the consent screen looking up what it
+     * has to show. Completing one goes through {@see self::consume()} instead.
+     *
      * @return array<string, mixed>|null
      */
     public function get(string $id): ?array;
 
-    public function remove(string $id): void;
+    /**
+     * Claims the pending authorization: returns its parameters and removes them in the same
+     * step, so of two concurrent callers exactly one is handed the parameters and the other
+     * is told there is nothing there.
+     *
+     * This is the single-use guarantee the authorization-code flow rests on, and it has to
+     * be a claim rather than a read followed by a delete: two approvals of one id that both
+     * read first would each go on to mint a code.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function consume(string $id): ?array;
 }

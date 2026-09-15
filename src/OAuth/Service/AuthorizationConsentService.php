@@ -66,7 +66,9 @@ final readonly class AuthorizationConsentService implements AuthorizationConsent
     {
         $consent = $this->consentHydrator->hydrate(
             $authorizationId,
-            $this->pendingAuthorizationRequest($authorizationId),
+            // Read, not claimed: looking at the consent screen must not end the
+            // authorization, or a reload would lose it.
+            $this->validated($authorizationId, $this->pendingAuthorizationStore->get($authorizationId)),
             $this->currentUser(),
         );
 
@@ -92,7 +94,15 @@ final readonly class AuthorizationConsentService implements AuthorizationConsent
             throw new NotFoundException(self::RESOURCE_NAME, $authorizationId);
         }
 
-        $authorizationRequest = $this->pendingAuthorizationRequest($authorizationId);
+        // Claimed before anything is minted, and this order is the point: consume() hands
+        // the parameters to exactly one caller, so a second approval of the same id arrives
+        // to nothing and is refused right here. Reading first and deleting afterwards - which
+        // is what this did - let two concurrent approvals each reach league with a valid
+        // request and walk away with a code apiece.
+        $authorizationRequest = $this->validated(
+            $authorizationId,
+            $this->pendingAuthorizationStore->consume($authorizationId),
+        );
         $authorizationRequest->setUser(new UserEntity((string) $user->getId()));
         $authorizationRequest->setAuthorizationApproved($approved);
 
@@ -105,8 +115,6 @@ final readonly class AuthorizationConsentService implements AuthorizationConsent
             // A denied request surfaces as an access_denied redirect.
             $psrResponse = $exception->generateHttpResponse($this->psrResponseFactory->createResponse());
         }
-
-        $this->pendingAuthorizationStore->remove($authorizationId);
 
         // No pre-response event here, deliberately, and it is the one place in this bundle
         // where that is the right call. This value is the location the browser is sent to
@@ -135,12 +143,13 @@ final readonly class AuthorizationConsentService implements AuthorizationConsent
     }
 
     /**
+     * @param array<string, mixed>|null $params
+     *
      * @throws MissingKeyMaterialException
      * @throws NotFoundException
      */
-    private function pendingAuthorizationRequest(string $authorizationId): AuthorizationRequestInterface
+    private function validated(string $authorizationId, ?array $params): AuthorizationRequestInterface
     {
-        $params = $this->pendingAuthorizationStore->get($authorizationId);
         if ($params === null) {
             throw new NotFoundException(self::RESOURCE_NAME, $authorizationId);
         }
