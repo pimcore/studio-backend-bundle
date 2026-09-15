@@ -36,7 +36,7 @@ use function sprintf;
  *
  * @internal
  */
-final class AuthorizationServerFactory
+final class AuthorizationServerFactory implements AuthorizationServerFactoryInterface
 {
     public function __construct(
         private readonly ClientRepository $clientRepository,
@@ -56,6 +56,9 @@ final class AuthorizationServerFactory
     ) {
     }
 
+    /**
+     * @throws MissingKeyMaterialException
+     */
     public function create(): AuthorizationServer
     {
         if ($this->privateKey === null || $this->encryptionKey === null) {

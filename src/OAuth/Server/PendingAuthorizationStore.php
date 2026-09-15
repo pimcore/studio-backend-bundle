@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\Lock\LockFactory;
+use function preg_match;
 
 /**
  * Holds a validated authorization request between the redirect to the consent
@@ -22,7 +24,7 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * @internal
  */
-final readonly class PendingAuthorizationStore
+final readonly class PendingAuthorizationStore implements PendingAuthorizationStoreInterface
 {
     private const string KEY_PREFIX = 'pimcore_oauth_pending_';
 
@@ -34,8 +36,15 @@ final readonly class PendingAuthorizationStore
      */
     private const string ID_PATTERN = '/^[a-f0-9]{64}$/u';
 
+    /**
+     * Separate namespace from the cache key, so a lock file can never be mistaken for an
+     * entry and the two cannot collide on the id.
+     */
+    private const string LOCK_PREFIX = 'pimcore_oauth_pending_claim_';
+
     public function __construct(
         private CacheItemPoolInterface $cache,
+        private LockFactory $lockFactory,
         private int $ttl,
     ) {
     }
@@ -64,13 +73,53 @@ final readonly class PendingAuthorizationStore
         return $item->isHit() ? $item->get() : null;
     }
 
-    public function remove(string $id): void
+    /**
+     * Read and delete under a per-id lock, so two concurrent approvals of one authorization
+     * cannot both be handed the parameters and go on to mint a code each.
+     *
+     * The lock is what makes this a claim; the cache pool cannot. PSR-6 has no atomic
+     * take, and the pool behind this store is a filesystem adapter whose deleteItem()
+     * answers true when the entry was already gone
+     * (FilesystemCommonTrait::doDelete() - `!is_file($file) || ... || !file_exists($file)`),
+     * so "my delete succeeded" says nothing about whether this caller is the one that
+     * removed it. Both racers would see true.
+     *
+     * Non-blocking on purpose: a second caller on the same id has nothing to wait for. Once
+     * the holder is done the entry is gone, so waiting only turns an immediate 404 into a
+     * delayed one. Losing the race is refused here, before league is asked for anything.
+     *
+     * Scope: flock over the same directory tree the pool writes into, so the lock reaches
+     * exactly as far as the data does - two workers that can both see a pending
+     * authorization share the filesystem holding it, and the same flock serialises them.
+     * Workers that do not share it cannot see each other's entries to race over. No TTL:
+     * flock is held by the file handle, so the kernel releases it if a worker dies
+     * mid-claim, which is the self-healing a time-based lease only approximates.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function consume(string $id): ?array
     {
         if (!$this->isValidId($id)) {
-            return;
+            return null;
         }
 
-        $this->cache->deleteItem(self::KEY_PREFIX . $id);
+        $lock = $this->lockFactory->createLock(self::LOCK_PREFIX . $id, ttl: null);
+        if (!$lock->acquire()) {
+            return null;
+        }
+
+        try {
+            $item = $this->cache->getItem(self::KEY_PREFIX . $id);
+            if (!$item->isHit()) {
+                return null;
+            }
+
+            $this->cache->deleteItem(self::KEY_PREFIX . $id);
+
+            return $item->get();
+        } finally {
+            $lock->release();
+        }
     }
 
     private function isValidId(string $id): bool

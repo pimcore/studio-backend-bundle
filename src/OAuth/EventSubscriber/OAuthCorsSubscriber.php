@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,6 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use function in_array;
-use function str_starts_with;
 
 /**
  * CORS for the embedded authorization server's browser-facing endpoints.
@@ -37,17 +37,19 @@ use function str_starts_with;
  * is used by default; an allow-list may be configured to restrict it. Credentials
  * are never enabled, so both "*" and the allow-list stay CORS-valid.
  *
- * Scoped to the OAuth paths and gated on `oauth.enabled`, so it is inert
- * everywhere else and when the server is off.
+ * Scoped to the authorization server's own root-level endpoints
+ * ({@see \Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath::ROOT_PREFIXES}) and gated on
+ * `oauth.enabled`, so it is inert everywhere else and when the server is off. The consent
+ * API is deliberately not covered: it lives under the Studio API prefix, it is
+ * cookie-authenticated, and {@see \Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber}
+ * already answers for it with the credentialed policy such an endpoint needs. Widening the
+ * wildcard here to reach it would be the one change to avoid.
  *
  * @internal
  */
 final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
 {
-    private const array PATH_PREFIXES = [
-        '/.well-known/oauth-',
-        '/pimcore-oauth/',
-    ];
+    use StudioBackendPathTrait;
 
     private const string ALLOW_METHODS = 'GET, POST, OPTIONS';
 
@@ -79,7 +81,7 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
-        if ($request->getMethod() !== 'OPTIONS' || !$this->isOAuthPath($request->getPathInfo())) {
+        if ($request->getMethod() !== 'OPTIONS' || !$this->isOAuthPath($this->routedPath($request))) {
             return;
         }
 
@@ -99,7 +101,7 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
         }
 
         $request = $event->getRequest();
-        if (!$this->isOAuthPath($request->getPathInfo())) {
+        if (!$this->isOAuthPath($this->routedPath($request))) {
             return;
         }
 
@@ -130,16 +132,5 @@ final readonly class OAuthCorsSubscriber implements EventSubscriberInterface
         $origin = $request->headers->get('Origin');
 
         return $origin !== null && in_array($origin, $this->allowedOrigins, true) ? $origin : null;
-    }
-
-    private function isOAuthPath(string $path): bool
-    {
-        foreach (self::PATH_PREFIXES as $prefix) {
-            if (str_starts_with($path, $prefix)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

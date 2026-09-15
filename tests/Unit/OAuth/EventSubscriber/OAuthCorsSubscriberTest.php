@@ -123,6 +123,54 @@ final class OAuthCorsSubscriberTest extends Unit
         $this->assertFalse($event->getResponse()->headers->has('Access-Control-Allow-Origin'));
     }
 
+    /**
+     * The router decodes the path once before matching, so "/%70imcore-oauth/token" is
+     * routed to the token endpoint. This subscriber and the endpoint guard next to it have
+     * to agree on which requests are OAuth requests, and they agree by matching the same
+     * decoded value: matched raw, a browser client that percent-encoded would have its
+     * token exchange served and then blocked for want of CORS headers.
+     */
+    public function testEncodedOAuthPathIsRecognisedLikeTheRouterSeesIt(): void
+    {
+        $optionsEvent = $this->requestEvent($this->request('/%70imcore-oauth/token', 'OPTIONS'));
+        $this->subscriber()->onKernelRequest($optionsEvent);
+        $this->assertTrue($optionsEvent->hasResponse());
+
+        $responseEvent = $this->responseEvent($this->request('/%70imcore-oauth/token'), new Response());
+        $this->subscriber()->onKernelResponse($responseEvent);
+        $this->assertSame('*', $responseEvent->getResponse()->headers->get('Access-Control-Allow-Origin'));
+    }
+
+    /**
+     * Decoded exactly once, like the router. Decoding repeatedly would claim paths the
+     * router never routes here.
+     */
+    public function testDoubleEncodedPathIsNotClaimed(): void
+    {
+        $event = $this->requestEvent($this->request('/%2570imcore-oauth/token', 'OPTIONS'));
+
+        $this->subscriber()->onKernelRequest($event);
+
+        $this->assertFalse($event->hasResponse());
+    }
+
+    /**
+     * The consent API is a Studio API endpoint: cookie-authenticated, under the Studio
+     * prefix, and answered by the Studio CORS subscriber with its credentialed policy.
+     * This one must not reach it with a wildcard origin.
+     */
+    public function testConsentApiIsNotGivenTheWildcardPolicy(): void
+    {
+        $event = $this->responseEvent(
+            $this->request('/pimcore-studio/api/oauth/authorizations/a1b2c3'),
+            new Response(),
+        );
+
+        $this->subscriber()->onKernelResponse($event);
+
+        $this->assertFalse($event->getResponse()->headers->has('Access-Control-Allow-Origin'));
+    }
+
     public function testSubRequestIsIgnored(): void
     {
         $event = $this->requestEvent(

@@ -113,6 +113,9 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStore
 
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrarInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar: ~
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController:
@@ -139,6 +142,9 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AuthCodeRepository: ~
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\RefreshTokenRepository: ~
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactoryInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory:
         arguments:
@@ -167,12 +173,45 @@ services:
     Psr\Http\Message\ServerRequestFactoryInterface:
         alias: pimcore_studio_backend.mcp.psr17_factory
 
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStoreInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore
+
+    # Serialises the claim on a pending authorization (see PendingAuthorizationStore::consume()).
+    #
+    # The bundle brings its own factory rather than reusing `lock.factory`, for two reasons.
+    # It does not depend on the operator having left `framework.lock` enabled, and pointing
+    # the flock store at the cache directory keeps the lock's reach identical to the pending
+    # authorizations' own: the pool below writes under %kernel.cache_dir%/pools, so any two
+    # workers that can see the same entry are sharing the filesystem the lock lives on.
+    pimcore_studio_backend.oauth.pending_authorization_lock_store:
+        class: Symfony\Component\Lock\Store\FlockStore
+        arguments: ['%kernel.cache_dir%/pimcore_studio_backend_oauth_locks']
+
+    pimcore_studio_backend.oauth.pending_authorization_lock_factory:
+        class: Symfony\Component\Lock\LockFactory
+        arguments: ['@pimcore_studio_backend.oauth.pending_authorization_lock_store']
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore:
         arguments:
             $cache: '@pimcore_studio_backend.oauth.pending_authorization'
+            $lockFactory: '@pimcore_studio_backend.oauth.pending_authorization_lock_factory'
             $ttl: 600
 
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidatorInterface:
+        alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator
+
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator: ~
+
+    # Consent hydrator + service. The controllers below hold no orchestration of their
+    # own: they take a request apart, call the service and serialize what comes back.
+    # $issuer is set from config in the extension (RFC 9207 `iss` on the redirect).
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Hydrator\AuthorizationConsentHydratorInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Hydrator\AuthorizationConsentHydrator
+
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Service\AuthorizationConsentServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\OAuth\Service\AuthorizationConsentService
+        arguments:
+            $issuer: null
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController:
         public: true
@@ -187,5 +226,3 @@ services:
     Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController:
         public: true
         tags: ['controller.service_arguments']
-        arguments:
-            $issuer: null

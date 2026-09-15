@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ClientRegistrationException;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrarInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,7 +33,7 @@ use function json_decode;
 final class ClientRegistrationController
 {
     public function __construct(
-        private readonly ClientRegistrar $registrar,
+        private readonly ClientRegistrarInterface $registrar,
         private readonly bool $enabled,
     ) {
     }

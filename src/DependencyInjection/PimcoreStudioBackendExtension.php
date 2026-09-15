@@ -39,7 +39,6 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Channel\Messenger\S
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Client\CimdClientMetadataResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationApprovalController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
@@ -49,6 +48,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\AuthorizationConsentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
@@ -324,7 +324,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->getDefinition(PendingAuthorizationStore::class)
             ->setArgument('$ttl', $config['oauth']['auth_code_ttl']);
 
-        $container->getDefinition(AuthorizationApprovalController::class)
+        $container->getDefinition(AuthorizationConsentServiceInterface::class)
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $definition = $container->getDefinition(SettingRepositoryInterface::class);

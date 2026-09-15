@@ -43,7 +43,7 @@ use function trim;
  *
  * @internal
  */
-final readonly class ClientRegistrar
+final readonly class ClientRegistrar implements ClientRegistrarInterface
 {
     private const array SUPPORTED_GRANTS = ['authorization_code', 'refresh_token'];
 

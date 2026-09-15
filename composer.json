@@ -37,7 +37,8 @@
     "twig/string-extra": "^3.11",
     "php-http/discovery": "^1.20",
     "psr/http-factory": "^1.0",
-    "symfony/psr-http-message-bridge": "^7.4"
+    "symfony/psr-http-message-bridge": "^7.4",
+    "symfony/lock": "^7.4"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",

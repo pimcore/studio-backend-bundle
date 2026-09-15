@@ -24,7 +24,6 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use function array_key_exists;
-use function rawurldecode;
 
 /**
  * @internal
@@ -49,9 +48,9 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        // Decoded once, like the router (CompiledUrlMatcherTrait::doMatch()), so an encoded
-        // path that reaches a Studio controller is still rendered as a Studio error.
-        $path = rawurldecode($request->getPathInfo());
+        // Decoded once, like the router, so an encoded path that reaches a Studio
+        // controller is still rendered as a Studio error. See the trait for the detail.
+        $path = $this->routedPath($request);
 
         // RateLimitException wherever it was raised. It is this bundle's own exception and
         // only this bundle throws it, so the path it happened on says nothing useful: what

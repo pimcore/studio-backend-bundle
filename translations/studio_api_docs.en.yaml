@@ -857,6 +857,19 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+oauth_authorization_approve_description: |
+  Complete the pending authorization with the given <strong>{id}</strong>. <br>
+  Send <strong>approved: true</strong> to grant the requested access or <strong>approved: false</strong> to deny it.
+  The pending authorization is consumed either way and the returned location is the client redirect URI
+  carrying the authorization code, the original state and the issuer
+oauth_authorization_approve_success_response: Location the browser must be sent to in order to complete the flow
+oauth_authorization_approve_summary: Approve or deny a pending authorization
+oauth_authorization_details_description: |
+  Get the details of the pending authorization with the given <strong>{id}</strong>. <br>
+  Returns everything the consent screen has to show: the requesting client, the redirect URI,
+  the requested scopes and the currently signed-in user
+oauth_authorization_details_success_response: Details of the pending authorization to be shown on the consent screen
+oauth_authorization_details_summary: Get pending authorization details by ID
 perspective_create_description: |
   Create a new perspective with default values.
 perspective_create_success_response: Id of the new perspective
