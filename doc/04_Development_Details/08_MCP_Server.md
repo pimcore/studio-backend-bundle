@@ -17,8 +17,9 @@ persistence. It is separate from the `pimcore_studio` firewall to provide securi
 leak to Studio Backend API routes and vice versa.
 
 All authenticators resolve to a Pimcore `User` object, and all existing Pimcore permissions (workspace ACLs, user/role
-permissions) apply automatically. There are no MCP-specific scopes: if a user cannot edit a data object via Pimcore
-Studio, they cannot edit it via MCP tools either.
+permissions) apply automatically: if a user cannot edit a data object via Pimcore Studio, they cannot edit it via MCP
+tools either. OAuth tokens carry `mcp:read` and `mcp:write`, but nothing compares a granted scope against an operation
+- they are consent labels, and authorization remains the resolved user's own permissions.
 
 ### Who calls MCP endpoints, and with which credential
 
@@ -36,14 +37,90 @@ instead carry a Pimcore Studio session cookie.
 
 ### Authenticator chain
 
-The firewall tries these authenticators in order. The first two return `null` on failure so the next one can try;
-`PatAuthenticator` is last and therefore owns the terminal response, answering `401` (or `429` when throttled):
+The firewall tries these authenticators in order. Each returns `null` on failure so the next one can try, and
+each declines credentials it does not own, so the shapes do not overlap: `pmcp_` bearers belong to
+`McpAccessTokenAuthenticator`, JWT-shaped bearers to `OAuthAccessTokenAuthenticator`, anything else to
+`PatAuthenticator`. When no authenticator claims the request, or the one that claimed it fails, the firewall's
+`entry_point` produces the terminal response (see
+[Unauthenticated requests](#unauthenticated-requests)). `PatAuthenticator` answers `429` itself when a client
+is throttled.
 
 | Order | Authenticator | Trigger | Use case |
 |-------|---------------|---------|----------|
 | 1 | `SessionBridgeAuthenticator` | Pimcore session cookie present | Requests that carry a Pimcore Studio session cookie |
 | 2 | `McpAccessTokenAuthenticator` | `Authorization: Bearer pmcp_…` | Internal: dynamically-issued, expiring, revocable per-chat-session tokens (Pimcore AI agent) |
-| 3 | `PatAuthenticator` | `Authorization: Bearer <other>` | External: MCP clients (Claude Desktop, Cursor, etc.) |
+| 3 | `OAuthAccessTokenAuthenticator` | `Authorization: Bearer <JWT>` | External: clients using the [embedded OAuth 2.1 server](../02_Installation_and_Configuration/06_OAuth_Server.md); inert unless OAuth is enabled |
+| 4 | `PatAuthenticator` | `Authorization: Bearer <other>` | External: MCP clients using static Personal Access Tokens (Claude Desktop, Cursor, etc.) |
+
+### Unauthenticated requests
+
+When the chain produces no authenticated user, the firewall's `entry_point`, `McpAuthenticationEntryPoint`,
+writes the response. It always answers `401` with `{"error": "unauthorized"}`.
+
+With the [embedded OAuth server](../02_Installation_and_Configuration/06_OAuth_Server.md) **enabled** it adds
+the [RFC 9728](https://www.rfc-editor.org/rfc/rfc9728) discovery challenge, which is how a standards-based
+client learns where to authenticate:
+
+```
+WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-protected-resource/pimcore-mcp"
+```
+
+The URL always names the MCP **base** resource, never the sub-path that was called, because that base is what
+`OAuthAccessTokenAuthenticator` validates every token's audience against. The challenge carries no `scope`
+hint: RFC 6750 makes it optional, and the metadata document it points at already advertises
+`scopes_supported` from the resource itself, so a second copy in the header could only
+disagree with it. The bundle registers that resource
+itself, at `<oauth.issuer>/pimcore-mcp`, so the metadata document resolves without any configuration. See
+[Accepting tokens at the MCP endpoints][mcp-resource] on the OAuth server page.
+
+[mcp-resource]: ../02_Installation_and_Configuration/06_OAuth_Server.md#accepting-tokens-at-the-mcp-endpoints
+
+With OAuth **disabled** the header is omitted entirely and the response is a plain `401`, so behaviour is
+unchanged for installations that never opted in.
+
+### OAuth protected resource
+
+The MCP endpoints are an OAuth **protected resource**, i.e. a token audience. The bundle contributes it
+automatically whenever `pimcore_studio_backend.oauth.enabled` is true, so there is nothing to configure:
+
+| | |
+|---|---|
+| Resource URI | `<oauth.issuer>/pimcore-mcp` |
+| Scopes | `mcp:read`, `mcp:write` |
+| Authorization server | `<oauth.issuer>` |
+
+The URI is the MCP **base**. Every `/pimcore-mcp/...` request is validated against that one audience, not
+against the sub-path that was called, which is also why the `401` challenge above points at the base.
+
+It is built from the configured issuer rather than from the request. `Host` is caller-supplied unless
+`framework.trusted_hosts` is set, so a resource named after it would let a caller declare their own host as an
+audience, obtain a token stamped with it, and then satisfy the audience check by replaying the same header.
+Both the contribution and `OAuthAccessTokenAuthenticator` read `oauth.issuer`, so they agree on a value the
+caller cannot choose, and a reverse proxy changes nothing.
+
+Those scopes are what put `mcp:read` and `mcp:write` in the server's catalogue: a scope exists because a
+resource supports it. Nothing compares a granted scope against an operation, though, so treat them as consent
+labels rather than permissions; MCP authorization is the resolved user's own Pimcore permissions plus
+per-server access.
+
+**To override it**, declare the same URI under `oauth.resources`. A configured entry replaces the contributed
+one rather than adding a second:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        resources:
+            # Exactly <oauth.issuer>/pimcore-mcp, no trailing slash. An entry whose URI
+            # differs does not override anything: it adds an unrelated second resource
+            # that nothing validates against, and the contributed one stays as it is.
+            - uri: 'https://pimcore.example.com/pimcore-mcp'
+              scopes_supported: ['mcp:read']
+              authorization_servers: ['https://pimcore.example.com']
+```
+
+See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
+server, and [OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) to do the same for your own
+bundle's endpoints.
 
 ### `McpAccessTokenAuthenticator` (primary internal)
 
@@ -56,10 +133,34 @@ The studio-backend bundle owns both validation (`McpAccessTokenAuthenticator`) a
 primitives. Consuming bundles (e.g. `pimcore-agent-bundle`) call those primitives to mint tokens for their own MCP
 servers - see [Minting MCP access tokens](#minting-mcp-access-tokens).
 
+### `OAuthAccessTokenAuthenticator` (OAuth 2.1 bearer)
+
+Authenticates a JWT access token issued by the [embedded OAuth 2.1 authorization
+server](../02_Installation_and_Configuration/06_OAuth_Server.md) (`Authorization: Bearer <jwt>`). It is
+**additive** to the chain: it only claims JWT-shaped bearers, declines the `pmcp_` prefix (owned by
+`McpAccessTokenAuthenticator`), and stays **inert unless the OAuth server is enabled**. It validates the
+token's signature, expiry and revocation status and resolves the Pimcore user.
+
+On failure it returns `null` rather than a response, but no later authenticator picks the request up:
+`PatAuthenticator` declines JWT-shaped bearers by design, so a rejected OAuth token is **not** retried as a
+PAT. The request finishes unauthenticated and the [entry point](#unauthenticated-requests) answers `401` with
+the discovery challenge. That is deliberate, and it is also why an expired or revoked OAuth token cannot
+consume the PAT brute-force throttle bucket.
+
+MCP is one application of the OAuth server, not its purpose. The same contracts protect Datahub Simple REST,
+and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
+so a token obtained for another application is refused here; scopes are advertised but not yet enforced. See
+[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint, and
+[OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
+server.
+
 ### `PatAuthenticator` (external clients)
 
-External MCP clients authenticate with static Personal Access Tokens configured in YAML. It deliberately declines any
-`Bearer pmcp_…` token so it never collides with `McpAccessTokenAuthenticator`.
+External MCP clients authenticate with static Personal Access Tokens configured in YAML. It deliberately
+declines two shapes it does not own: any `Bearer pmcp_…` token (handled by `McpAccessTokenAuthenticator`) and
+any JWT-shaped bearer, i.e. three base64url segments separated by dots (handled by
+`OAuthAccessTokenAuthenticator`). Both exclusions are unconditional, including when the OAuth server is
+disabled, so a configured PAT must not itself look like a JWT.
 
 ```yaml
 # config/config.yaml or config/packages/pimcore_studio_backend.yaml
@@ -301,8 +402,8 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
 
 ### Operational notes
 
-- **Transport security.** Dynamic MCP access tokens (`Bearer pmcp_…`) and static PATs are credentials. Serve Studio over
-  HTTPS in production; over plain HTTP these tokens are sniffable on the wire.
+- **Transport security.** Dynamic MCP access tokens (`Bearer pmcp_…`) and static PATs are credentials. Serve Studio
+  over HTTPS in production; over plain HTTP these tokens are sniffable on the wire.
 - **Log redaction.** Tools that log raw request headers must redact `Authorization`. See `pimcore-agent-bundle` for the
   Fastify (agent-server) and Symfony (bundle) configuration.
 - **Token lifecycle.** MCP access tokens expire after the consuming bundle's configured TTL (default 2h for
@@ -358,11 +459,19 @@ parameters:
         stateless: true
         login_throttling:
             limiter: Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface
+        entry_point: Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint
         custom_authenticators:
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator
+            # Must precede PatAuthenticator: it claims JWT-shaped bearers and yields to Pat
+            # for opaque ones. Reordering these two breaks OAuth bearer authentication.
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator
 ```
+
+That is the default verbatim. Dropping `OAuthAccessTokenAuthenticator` removes OAuth bearer authentication from
+the MCP endpoints, and dropping `entry_point` removes the RFC 9728 `401` challenge, so a standards-based client
+has no way to discover where to authenticate. Neither produces an error; both simply stop working.
 
 ### Request rate limiting
 
