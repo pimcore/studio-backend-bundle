@@ -13,15 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use function rawurldecode;
-use function rtrim;
-use function str_starts_with;
 
 /**
  * Makes the embedded authorization server's endpoints disappear while
@@ -38,8 +35,8 @@ use function str_starts_with;
  * since that controller only consults the sub-flag.
  *
  * Gating here rather than in each controller keeps the switch structural: a new
- * OAuth endpoint is covered by the path prefixes below without anyone having to
- * remember to gate it, which is the mistake this guards against.
+ * OAuth endpoint is covered by {@see \Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath}
+ * without anyone having to remember to gate it, which is the mistake this guards against.
  *
  * Responds `404` rather than `403`, so a disabled server is indistinguishable from
  * one that was never built — the same shape the registration endpoint already uses
@@ -49,17 +46,7 @@ use function str_starts_with;
  */
 final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInterface
 {
-    /**
-     * Root-level OAuth paths. Fixed, unlike the Studio API prefix, so they are
-     * matched literally.
-     */
-    private const array PATH_PREFIXES = [
-        '/.well-known/oauth-',
-        '/pimcore-oauth/',
-    ];
-
-    /** Consent API path below the (configurable) Studio API prefix. */
-    private const string API_SUFFIX = '/oauth/';
+    use StudioBackendPathTrait;
 
     public function __construct(
         private bool $enabled = false,
@@ -85,45 +72,10 @@ final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInte
             return;
         }
 
-        if (!$this->isOAuthPath($this->routedPath($event->getRequest()))) {
+        if (!$this->isOAuthPath($this->routedPath($event->getRequest()), $this->apiPrefix)) {
             return;
         }
 
         $event->setResponse(new JsonResponse(['error' => 'not_found'], Response::HTTP_NOT_FOUND));
-    }
-
-    /**
-     * The path the router will actually match on.
-     *
-     * Request::getPathInfo() is still percent-encoded, while the router matches on the
-     * decoded path (CompiledUrlMatcherTrait::doMatch() calls rawurldecode() on it).
-     * Comparing the raw path would let "/%70imcore-oauth/register" route to the
-     * registration controller with this guard skipped, and the set of encodings is
-     * unbounded.
-     *
-     * Decoded exactly once, like the router: decoding repeatedly would claim paths the
-     * router never routes here, so "%2570imcore-oauth" would be refused while the request
-     * it describes 404s anyway.
-     */
-    private function routedPath(Request $request): string
-    {
-        return rawurldecode($request->getPathInfo());
-    }
-
-    private function isOAuthPath(string $pathInfo): bool
-    {
-        foreach (self::PATH_PREFIXES as $prefix) {
-            if (str_starts_with($pathInfo, $prefix)) {
-                return true;
-            }
-        }
-
-        // Empty while the Studio API prefix is unset, which must not turn into a
-        // bare "/oauth/" prefix that could belong to the host application.
-        if ($this->apiPrefix === '') {
-            return false;
-        }
-
-        return str_starts_with($pathInfo, rtrim($this->apiPrefix, '/') . self::API_SUFFIX);
     }
 }

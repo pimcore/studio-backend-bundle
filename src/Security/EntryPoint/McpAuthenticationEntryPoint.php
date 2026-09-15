@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint;
 
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +33,7 @@ use function sprintf;
  */
 final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInterface
 {
-    private const string METADATA_PREFIX = '/.well-known/oauth-protected-resource';
+    private const string METADATA_PREFIX = OAuthPath::PROTECTED_RESOURCE_METADATA;
 
     public function __construct(
         private readonly bool $oauthEnabled,

@@ -13,32 +13,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Schema\AuthorizationConsent;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Schema\AuthorizationConsentClient;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Schema\AuthorizationConsentUser;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\ClientEntity;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\RedirectHost;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\AuthorizationConsentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Security\User\User as SecurityUser;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use function array_map;
-use function array_values;
-use function is_string;
 
 /**
  * Details of a pending authorization for the Studio UI consent screen: which
@@ -52,24 +41,26 @@ final class AuthorizationDetailsController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PendingAuthorizationStore $pendingAuthorizationStore,
-        private readonly AuthorizationRequestValidator $authorizationRequestValidator,
-        private readonly Security $security,
+        private readonly AuthorizationConsentServiceInterface $authorizationConsentService,
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws MissingKeyMaterialException
+     * @throws NotFoundException
+     */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_oauth_authorization_details', methods: ['GET'])]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'oauth_authorization_details',
-        description: 'Details of a pending OAuth authorization for the consent screen',
-        summary: 'Get pending OAuth authorization',
+        description: 'oauth_authorization_details_description',
+        summary: 'oauth_authorization_details_summary',
         tags: [Tags::Oauth->value],
     )]
     #[StringParameter('id', 'a1b2c3', 'Opaque id of the pending authorization')]
     #[SuccessResponse(
-        description: 'The pending authorization details',
+        description: 'oauth_authorization_details_success_response',
         content: new JsonContent(ref: AuthorizationConsent::class),
     )]
     #[DefaultResponses([
@@ -78,45 +69,6 @@ final class AuthorizationDetailsController extends AbstractApiController
     ])]
     public function __invoke(string $id): Response
     {
-        $params = $this->pendingAuthorizationStore->get($id);
-        if ($params === null) {
-            throw new NotFoundException('authorization', $id);
-        }
-
-        $authorizationRequest = $this->authorizationRequestValidator->validate($params);
-        if ($authorizationRequest === null) {
-            throw new NotFoundException('authorization', $id);
-        }
-
-        $user = $this->security->getUser();
-        $client = $authorizationRequest->getClient();
-        $redirectUri = $authorizationRequest->getRedirectUri() ?? $this->firstRedirectUri($client);
-
-        return $this->jsonResponse(new AuthorizationConsent(
-            $id,
-            new AuthorizationConsentClient(
-                $client->getIdentifier(),
-                $client->getName(),
-                RedirectHost::fromUri($redirectUri),
-                $client instanceof ClientEntity && $client->isPreRegistered(),
-            ),
-            array_values(array_map(
-                static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(),
-                $authorizationRequest->getScopes(),
-            )),
-            $user instanceof SecurityUser
-                ? new AuthorizationConsentUser($user->getId(), $user->getUserIdentifier())
-                : null,
-        ));
-    }
-
-    private function firstRedirectUri(ClientEntityInterface $client): ?string
-    {
-        $redirectUri = $client->getRedirectUri();
-        if (is_string($redirectUri)) {
-            return $redirectUri !== '' ? $redirectUri : null;
-        }
-
-        return $redirectUri[0] ?? null;
+        return $this->jsonResponse($this->authorizationConsentService->getConsent($id));
     }
 }

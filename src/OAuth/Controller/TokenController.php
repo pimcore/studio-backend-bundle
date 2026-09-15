@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
@@ -33,7 +33,7 @@ use function json_encode;
 final class TokenController
 {
     public function __construct(
-        private readonly AuthorizationServerFactory $authorizationServerFactory,
+        private readonly AuthorizationServerFactoryInterface $authorizationServerFactory,
         private readonly HttpMessageFactoryInterface $psrHttpFactory,
         private readonly HttpFoundationFactoryInterface $httpFoundationFactory,
         private readonly ResponseFactoryInterface $psrResponseFactory,
@@ -52,6 +52,9 @@ final class TokenController
         } catch (OAuthServerException $exception) {
             $psrResponse = $exception->generateHttpResponse($psrResponse);
         } catch (Throwable) {
+            // Covers MissingKeyMaterialException from create() as well: a server that was
+            // enabled without key material answers a token request with the RFC 6749
+            // server_error rather than leaking a stack trace on a public endpoint.
             $psrResponse = $this->psrResponseFactory->createResponse(Response::HTTP_INTERNAL_SERVER_ERROR)
                 ->withHeader('Content-Type', 'application/json');
             $psrResponse->getBody()->write((string) json_encode(['error' => 'server_error']));

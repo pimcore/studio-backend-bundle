@@ -22,7 +22,7 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * @internal
  */
-final readonly class PendingAuthorizationStore
+final readonly class PendingAuthorizationStore implements PendingAuthorizationStoreInterface
 {
     private const string KEY_PREFIX = 'pimcore_oauth_pending_';
 

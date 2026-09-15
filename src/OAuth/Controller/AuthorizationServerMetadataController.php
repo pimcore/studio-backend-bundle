@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -45,8 +46,8 @@ final class AuthorizationServerMetadataController
 
         $metadata = [
             'issuer' => $base,
-            'authorization_endpoint' => $base . '/pimcore-oauth/authorize',
-            'token_endpoint' => $base . '/pimcore-oauth/token',
+            'authorization_endpoint' => $base . OAuthPath::AUTHORIZE,
+            'token_endpoint' => $base . OAuthPath::TOKEN,
             'grant_types_supported' => ['authorization_code', 'refresh_token'],
             'response_types_supported' => ['code'],
             'code_challenge_methods_supported' => ['S256'],
@@ -65,7 +66,7 @@ final class AuthorizationServerMetadataController
         // Only advertised when Dynamic Client Registration is enabled, so clients
         // that key off this field don't attempt to register when it is off.
         if ($this->registrationEnabled) {
-            $metadata['registration_endpoint'] = $base . '/pimcore-oauth/register';
+            $metadata['registration_endpoint'] = $base . OAuthPath::REGISTER;
         }
 
         return new JsonResponse($metadata);

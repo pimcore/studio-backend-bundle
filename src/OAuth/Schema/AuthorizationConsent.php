@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * Details of a pending authorization shown on the Studio UI consent screen.
@@ -28,24 +30,31 @@ use OpenApi\Attributes\Schema;
     required: ['authorizationId', 'client', 'scopes'],
     type: 'object',
 )]
-final readonly class AuthorizationConsent
+final class AuthorizationConsent implements AdditionalAttributesInterface
 {
+    // Additional attributes are how this bundle's pre-response events let an integration
+    // add to a payload, and the only thing AuthorizationConsentEvent may do to this one.
+    // Everything the user is shown stays readonly below: the scopes in particular are what
+    // the authorization request actually carries, and a screen that disagreed with the
+    // token that follows would be worse than no screen.
+    use AdditionalAttributesTrait;
+
     /**
      * @param string[] $scopes
      */
     public function __construct(
         #[Property(description: 'Opaque id of the pending authorization', type: 'string', example: 'a1b2c3')]
-        private string $authorizationId,
+        private readonly string $authorizationId,
         #[Property(ref: AuthorizationConsentClient::class)]
-        private AuthorizationConsentClient $client,
+        private readonly AuthorizationConsentClient $client,
         #[Property(
             description: 'Requested scopes',
             type: 'array',
             items: new Items(type: 'string', example: 'mcp:read'),
         )]
-        private array $scopes,
+        private readonly array $scopes,
         #[Property(ref: AuthorizationConsentUser::class, nullable: true)]
-        private ?AuthorizationConsentUser $user,
+        private readonly ?AuthorizationConsentUser $user,
     ) {
     }
 

@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\OAuthPath;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 
 /**
@@ -24,21 +26,23 @@ use Psr\Http\Message\ServerRequestFactoryInterface;
  *
  * @internal
  */
-final readonly class AuthorizationRequestValidator
+final readonly class AuthorizationRequestValidator implements AuthorizationRequestValidatorInterface
 {
     public function __construct(
-        private AuthorizationServerFactory $authorizationServerFactory,
+        private AuthorizationServerFactoryInterface $authorizationServerFactory,
         private ServerRequestFactoryInterface $serverRequestFactory,
     ) {
     }
 
     /**
      * @param array<string, mixed> $queryParams
+     *
+     * @throws MissingKeyMaterialException
      */
     public function validate(array $queryParams): ?AuthorizationRequestInterface
     {
         $request = $this->serverRequestFactory
-            ->createServerRequest('GET', '/pimcore-oauth/authorize')
+            ->createServerRequest('GET', OAuthPath::AUTHORIZE)
             ->withQueryParams($queryParams);
 
         try {

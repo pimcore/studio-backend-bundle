@@ -13,32 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Controller;
 
-use League\OAuth2\Server\Exception\OAuthServerException;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Attribute\Request\ApproveAuthorizationRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\MissingKeyMaterialException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Schema\ApproveAuthorization;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Schema\AuthorizationRedirect;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationRequestValidator;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\UserEntity;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\AuthorizationConsentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\SingleParameterRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Security\User\User as SecurityUser;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Throwable;
-use function rawurlencode;
-use function str_contains;
 
 /**
  * Completes a pending authorization once the user has approved (or denied) it
@@ -53,92 +45,42 @@ final class AuthorizationApprovalController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PendingAuthorizationStore $pendingAuthorizationStore,
-        private readonly AuthorizationRequestValidator $authorizationRequestValidator,
-        private readonly AuthorizationServerFactory $authorizationServerFactory,
-        private readonly ResponseFactoryInterface $psrResponseFactory,
-        private readonly Security $security,
-        private readonly ?string $issuer,
+        private readonly AuthorizationConsentServiceInterface $authorizationConsentService,
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws MissingKeyMaterialException
+     * @throws NotFoundException
+     */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_oauth_authorization_approve', methods: ['POST'])]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'oauth_authorization_approve',
-        description: 'Approve or deny a pending OAuth authorization and get the redirect location',
-        summary: 'Complete OAuth authorization',
+        description: 'oauth_authorization_approve_description',
+        summary: 'oauth_authorization_approve_summary',
         tags: [Tags::Oauth->value],
     )]
     #[StringParameter('id', 'a1b2c3', 'Opaque id of the pending authorization')]
-    // `approved` is required: this endpoint decides an allow/deny, so an empty body
-    // must be rejected by the contract rather than silently read as a denial.
-    #[SingleParameterRequestBody('approved', true, 'boolean', parameterRequired: true)]
+    #[ApproveAuthorizationRequestBody]
     #[SuccessResponse(
-        description: 'The location to redirect the browser to',
+        description: 'oauth_authorization_approve_success_response',
         content: new JsonContent(ref: AuthorizationRedirect::class),
     )]
+    // 400 and 422 are not listed: DefaultResponses merges both into every operation
+    // already, and naming one again only prints it twice. Both are reachable here -
+    // Symfony answers them from the payload mapping below, before the action runs.
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function __invoke(string $id, Request $request): Response
-    {
-        $params = $this->pendingAuthorizationStore->get($id);
-        if ($params === null) {
-            throw new NotFoundException('authorization', $id);
-        }
-
-        $user = $this->security->getUser();
-        if (!$user instanceof SecurityUser) {
-            throw new NotFoundException('authorization', $id);
-        }
-
-        $authorizationRequest = $this->authorizationRequestValidator->validate($params);
-        if ($authorizationRequest === null) {
-            throw new NotFoundException('authorization', $id);
-        }
-
-        try {
-            $body = $request->toArray();
-        } catch (Throwable) {
-            $body = [];
-        }
-        $approved = ($body['approved'] ?? false) === true;
-
-        $authorizationRequest->setUser(new UserEntity((string) $user->getId()));
-        $authorizationRequest->setAuthorizationApproved($approved);
-
-        try {
-            $psrResponse = $this->authorizationServerFactory->create()->completeAuthorizationRequest(
-                $authorizationRequest,
-                $this->psrResponseFactory->createResponse(),
-            );
-        } catch (OAuthServerException $exception) {
-            // A denied request surfaces as an access_denied redirect.
-            $psrResponse = $exception->generateHttpResponse($this->psrResponseFactory->createResponse());
-        }
-
-        $this->pendingAuthorizationStore->remove($id);
-
+    public function __invoke(
+        string $id,
+        #[MapRequestPayload] ApproveAuthorization $approveAuthorization,
+    ): Response {
         return $this->jsonResponse(
-            new AuthorizationRedirect($this->withIssuer($psrResponse->getHeaderLine('Location'), $request)),
+            $this->authorizationConsentService->completeConsent($id, $approveAuthorization->isApproved()),
         );
-    }
-
-    private function withIssuer(string $location, Request $request): string
-    {
-        if ($location === '') {
-            return $location;
-        }
-
-        // RFC 9207: identify the issuer in the authorization response. Same configured
-        // value the metadata endpoint advertises and the token carries - a client that
-        // compares the three must see one identity, not three request-derived guesses.
-        $issuer = $this->issuer ?? $request->getSchemeAndHttpHost();
-        $separator = str_contains($location, '?') ? '&' : '?';
-
-        return $location . $separator . 'iss=' . rawurlencode($issuer);
     }
 }
