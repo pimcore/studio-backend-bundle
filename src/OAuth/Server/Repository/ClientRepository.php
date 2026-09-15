@@ -34,6 +34,12 @@ use function str_starts_with;
  * client is the only exception, validated at the token endpoint). There is no
  * service/machine client — machine access uses the PAT authenticator instead.
  *
+ * Only dynamically registered clients declare `grant_types` and `scope`. Config-declared
+ * and CIMD clients carry neither, so their entities are built without a restriction: an
+ * operator writing a client into `oauth.clients` never expressed one, and reading a
+ * restriction into that silence would take `refresh_token` away from clients that work
+ * today.
+ *
  * @internal
  */
 final class ClientRepository implements ClientRepositoryInterface
@@ -73,9 +79,25 @@ final class ClientRepository implements ClientRepositoryInterface
             return null;
         }
 
-        return new ClientEntity($dynamic->identifier, $dynamic->name, $dynamic->redirectUris, $dynamic->confidential);
+        // The registered grants and scopes travel with the entity: league asks it whether
+        // it supports the grant in play, so the metadata RFC 7591 had us record is finally
+        // answered from rather than merely echoed back.
+        return new ClientEntity(
+            $dynamic->identifier,
+            $dynamic->name,
+            $dynamic->redirectUris,
+            $dynamic->confidential,
+            grantTypes: $dynamic->grantTypes,
+            scopes: $dynamic->scopes,
+        );
     }
 
+    /**
+     * `$grantType` is deliberately unused: league checks the grant against the entity via
+     * ClientEntity::supportsGrantType(), which is consulted for every grant rather than
+     * only the ones that reach here. This method answers the narrower question of whether
+     * the credentials are good.
+     */
     public function validateClient(string $clientIdentifier, ?string $clientSecret, ?string $grantType): bool
     {
         // Pre-registered clients are public: PKCE on the auth-code flow, no secret.

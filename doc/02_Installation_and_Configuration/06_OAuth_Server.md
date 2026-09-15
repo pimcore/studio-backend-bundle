@@ -236,7 +236,17 @@ pimcore_studio_backend:
 Enable it deliberately - the `/pimcore-oauth/register` endpoint becomes publicly writable and is advertised in
 metadata.
 
-Two controls bound what that endpoint can be made to do, and they cover different callers.
+**The `grant_types` a client registers are enforced.** A client that registered
+`grant_types: ["authorization_code"]` is refused with `unauthorized_client` if it presents itself at the token
+endpoint for `refresh_token`, and is issued no refresh token by the authorization-code flow either. Register
+`["authorization_code", "refresh_token"]` for a client that needs to refresh. Omitting `grant_types` gives
+`["authorization_code"]`, so a client that wants refresh tokens has to say so.
+
+Clients declared in `oauth.clients` and clients identified by a Client ID Metadata Document carry no
+`grant_types` at all, and are unrestricted: neither form has a way to express a restriction, so none is
+inferred.
+
+Two further controls bound what that endpoint can be made to do, and they cover different callers.
 
 **Registration is idempotent for public clients.** A repeat registration whose metadata matches a client that
 already exists returns that same `client_id` instead of creating another record. The comparison is over the
