@@ -234,6 +234,12 @@ services:
             $issuer: '%pimcore_studio_backend.oauth.issuer%'
 ```
 
+**The tag is required, and `autoconfigure: true` does not apply it.** No
+`registerForAutoconfiguration()` hook exists for it, so an untagged provider is never read: its metadata
+document 404s, its scopes vanish from the catalogue, and a client requesting its resource is refused with
+`invalid_request`. Nothing logs a warning, because from the registry's point of view the resource was never
+declared. If your resource is missing, check the tag first.
+
 The scopes are not decoration. They cap what a token for this resource may carry, a client asking for more is
 narrowed to them before consent is shown, and they are how a scope comes to exist at all: the server's
 catalogue is the union of what every resource supports.
@@ -287,6 +293,24 @@ Declare on each resource exactly what it accepts. A scope attached to no resourc
 authorization request is narrowed to the named resource, so such a scope is either filtered out or refused
 with `invalid_scope`.
 
+#### Give the scope a name on the consent screen
+
+The consent screen reads scope labels from the Pimcore Studio translation catalogue, and that is the only
+place a scope is described. Ship two keys per scope in your bundle's `translations/studio.en.yaml`:
+
+```yaml
+oauth.consent.scope.mybundle-read.label: Read your products
+oauth.consent.scope.mybundle-read.description: List and search the products you already have access to.
+```
+
+The slug is the scope identifier with `:` replaced by `-`, because i18next reads `:` as a namespace
+separator: `mybundle:read` becomes `mybundle-read`. The `description` is optional; the `label` is what the
+user reads.
+
+A scope with no keys is still shown, as its raw identifier, so nothing is ever granted without appearing on
+the screen. It reads as `mybundle:read` rather than a sentence, which is a poor thing to ask someone to
+approve.
+
 ### Step 6: Apply your own authorization
 
 Authentication produced a Pimcore user. What that user may do is yours to decide, at the point where a
@@ -331,9 +355,20 @@ same header, so the check compares an attacker's string against the attacker's o
 the URI the same way is not sufficient; they have to agree on a value neither the caller nor a proxy can
 choose. A provider is handed no request at all, which is what makes that mistake hard to make.
 
-Because nothing reads the request host, a reverse proxy needs no special handling for audience binding. Set
-`oauth.issuer` to the public origin, and if you write a resource URI in configuration, write it with the same
-scheme and host and no trailing slash so it matches what is contributed.
+Because nothing reads the request host, **audience binding** needs no special handling behind a reverse
+proxy. Set `oauth.issuer` to the public origin, and if you write a resource URI in configuration, write it
+with the same scheme and host and no trailing slash so it matches what is contributed.
+
+**Discovery is a different matter, and does need the proxy configured.** The RFC 9728 metadata URL in the
+`401` challenge is built from the request (`McpAuthenticationEntryPoint`), and the endpoint serving that
+document resolves the resource from the request too (`ProtectedResourceMetadataController`). Behind a
+TLS-terminating proxy with `framework.trusted_proxies` unset, Symfony sees the internal scheme: the challenge
+advertises `http://host/.well-known/oauth-protected-resource/...` while the contributed resource is
+`https://...`, so the lookup misses and the document 404s. The token itself would have validated; the client
+never gets far enough to present one.
+
+Set `trusted_proxies` and `trusted_headers` so `X-Forwarded-Proto` and `X-Forwarded-Host` are honoured, and
+the request-derived URL matches the configured one again.
 
 ## What the platform leaves to each application
 

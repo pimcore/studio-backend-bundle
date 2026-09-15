@@ -58,8 +58,10 @@ pimcore_studio_backend:
         keys:
             private_key: '%env(OAUTH_PRIVATE_KEY)%'
             public_key: '%env(OAUTH_PUBLIC_KEY)%'
-            passphrase: '%env(OAUTH_KEY_PASSPHRASE)%'
             encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+            # Only when the private key has one. Keys generated as shown below do not,
+            # and naming an env var that is never defined fails the build.
+            #passphrase: '%env(OAUTH_KEY_PASSPHRASE)%'
         # A client has to be resolvable before a resource is ever consulted. With no
         # pre-registered client and both self-registration mechanisms off, every
         # authorization request fails with `invalid_client`. See "Onboarding clients".
@@ -72,11 +74,19 @@ pimcore_studio_backend:
 
 > Reference key material via environment variables or Symfony secrets. **Never commit keys.**
 
-> Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle registers
-> its own MCP endpoints for you, so this configuration is enough to get a working server; add entries under
+> `issuer`, `keys.private_key`, `keys.public_key` and `keys.encryption_key` are validated at container build
+> once `enabled` is `true`: leaving any of them unset fails the build with a message naming the key, rather
+> than starting a server that cannot issue a token. `passphrase` is genuinely optional.
+
+> Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle contributes
+> its own MCP endpoints, so this configuration is enough to get a working server; add entries under
 > `resources` only for further endpoints. See [Protected resources (audiences)](#protected-resources-audiences).
 
 ### What enabling it adds
+
+The corollary first: while `enabled` is `false` every OAuth path answers `404`, not `403` and not a routing
+error. That covers `/pimcore-oauth/*`, `/.well-known/oauth-*` and `<url_prefix>/oauth/*`, so a server that
+looks absent is usually a toggle that never took effect.
 
 Three things become operator-visible the moment the server is switched on:
 

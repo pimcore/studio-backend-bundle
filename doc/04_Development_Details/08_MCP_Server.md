@@ -17,8 +17,9 @@ persistence. It is separate from the `pimcore_studio` firewall to provide securi
 leak to Studio Backend API routes and vice versa.
 
 All authenticators resolve to a Pimcore `User` object, and all existing Pimcore permissions (workspace ACLs, user/role
-permissions) apply automatically. There are no MCP-specific scopes: if a user cannot edit a data object via Pimcore
-Studio, they cannot edit it via MCP tools either.
+permissions) apply automatically: if a user cannot edit a data object via Pimcore Studio, they cannot edit it via MCP
+tools either. OAuth tokens carry `mcp:read` and `mcp:write`, but nothing compares a granted scope against an operation
+- they are consent labels, and authorization remains the resolved user's own permissions.
 
 ### Who calls MCP endpoints, and with which credential
 
@@ -398,8 +399,8 @@ Or use `SecurityServiceInterface::getCurrentUser()` which works with all authent
 
 ### Operational notes
 
-- **Transport security.** Dynamic MCP access tokens (`Bearer pmcp_…`) and static PATs are credentials. Serve Studio over
-  HTTPS in production; over plain HTTP these tokens are sniffable on the wire.
+- **Transport security.** Dynamic MCP access tokens (`Bearer pmcp_…`) and static PATs are credentials. Serve Studio
+  over HTTPS in production; over plain HTTP these tokens are sniffable on the wire.
 - **Log redaction.** Tools that log raw request headers must redact `Authorization`. See `pimcore-agent-bundle` for the
   Fastify (agent-server) and Symfony (bundle) configuration.
 - **Token lifecycle.** MCP access tokens expire after the consuming bundle's configured TTL (default 2h for
@@ -455,11 +456,19 @@ parameters:
         stateless: true
         login_throttling:
             limiter: Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface
+        entry_point: Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint
         custom_authenticators:
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator
+            # Must precede PatAuthenticator: it claims JWT-shaped bearers and yields to Pat
+            # for opaque ones. Reordering these two breaks OAuth bearer authentication.
+            - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator
             - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator
 ```
+
+That is the default verbatim. Dropping `OAuthAccessTokenAuthenticator` removes OAuth bearer authentication from
+the MCP endpoints, and dropping `entry_point` removes the RFC 9728 `401` challenge, so a standards-based client
+has no way to discover where to authenticate. Neither produces an error; both simply stop working.
 
 ### Request rate limiting
 
