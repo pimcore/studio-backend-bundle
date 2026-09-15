@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Controller;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
@@ -81,14 +81,11 @@ final class ClientRegistrationControllerTest extends Unit
 
     private function registrar(DynamicClientStoreInterface $store): ClientRegistrar
     {
-        $provider = new class implements ScopeProviderInterface {
-            public function scopes(): array
-            {
-                return ['mcp:read'];
-            }
-        };
+        $registry = new ConfigProtectedResourceRegistry([
+            ['uri' => 'https://example.com/pimcore-mcp', 'scopes_supported' => ['mcp:read']],
+        ]);
 
-        return new ClientRegistrar($store, new ScopeRegistry([$provider]));
+        return new ClientRegistrar($store, new ScopeRegistry($registry));
     }
 
     /**
