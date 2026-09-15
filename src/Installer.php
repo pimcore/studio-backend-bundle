@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
-use Pimcore\Bundle\StudioBackendBundle\Migrations\Version20260914120000;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -56,27 +55,6 @@ final class Installer extends SettingsStoreAwareInstaller
     /**
      * @throws SchemaException|Exception
      */
-    /**
-     * Marks this bundle's migrations as executed at install time, so a fresh installation
-     * does not start life with its whole migration history pending.
-     *
-     * Safe only because install() reproduces the end state of every one of them on an empty
-     * database, which is checked by InstallerSchemaCoverageTest rather than by inspection:
-     * the table-creating migrations each have a builder, the column and index additions are
-     * folded into the builder that creates the table, the two JobRunHidden backfills have
-     * nothing to select from, and Version20260629120000's `users.theme` belongs to Pimcore
-     * core, whose own install schema already carries it.
-     *
-     * Returning the newest version marks everything, since markInstalled() walks the
-     * repository in version order and stops at the one named here. Do not point this at an
-     * older version to "be safe": that marks a prefix executed and leaves the rest pending,
-     * which is the confusing half-state this exists to avoid.
-     */
-    public function getLastMigrationVersionClassName(): string
-    {
-        return Version20260914120000::class;
-    }
-
     public function install(): void
     {
         $schema = $this->db->createSchemaManager()->introspectSchema();

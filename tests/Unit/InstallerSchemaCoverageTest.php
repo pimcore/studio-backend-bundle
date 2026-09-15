@@ -108,10 +108,9 @@ final class InstallerSchemaCoverageTest extends Unit
     /**
      * Every migration, and how install() reaches the same end state on an empty database.
      *
-     * The installer only marks migrations executed (see
-     * Installer::getLastMigrationVersionClassName()) because this holds. A migration absent
-     * from this list fails the test below, which forces whoever adds one to decide what the
-     * installer must do rather than letting the two paths drift apart quietly.
+     * A fresh install runs install() and never these, so the two paths have to agree. A
+     * migration absent from this list fails the test below, which forces whoever adds one to
+     * decide what the installer must do rather than letting the two drift apart quietly.
      *
      * @var array<string, string>
      */
@@ -154,8 +153,8 @@ final class InstallerSchemaCoverageTest extends Unit
             $listed,
             $onDisk,
             'Every migration must be listed in MIGRATION_COVERAGE with what the installer does instead. '
-            . 'Installer::getLastMigrationVersionClassName() marks them all executed on a fresh install, '
-            . 'so one the installer does not reproduce would leave that install unable to catch up.',
+            . 'A fresh install never runs them, so one the installer does not reproduce leaves that '
+            . 'install short until someone runs doctrine:migrations:migrate by hand.',
         );
     }
 
@@ -206,24 +205,6 @@ final class InstallerSchemaCoverageTest extends Unit
         }
 
         $this->assertSame([], $missing, 'Columns added by a migration but absent from Installer.php.');
-    }
-
-    /**
-     * The version the installer names has to be the newest, or markInstalled() stops early
-     * and leaves the rest pending.
-     */
-    public function testTheInstallerMarksThroughTheNewestMigration(): void
-    {
-        $onDisk = array_keys(self::MIGRATION_COVERAGE);
-        sort($onDisk);
-
-        $installer = (string) file_get_contents(self::INSTALLER);
-        $newest = end($onDisk);
-
-        $this->assertTrue(
-            str_contains($installer, $newest . '::class'),
-            sprintf('Installer::getLastMigrationVersionClassName() must return %s::class.', $newest),
-        );
     }
 
     /**
