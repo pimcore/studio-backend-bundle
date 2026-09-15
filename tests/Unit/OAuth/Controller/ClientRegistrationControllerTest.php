@@ -106,6 +106,17 @@ final class ClientRegistrationControllerTest extends Unit
             {
                 return $this->saved[$identifier] ?? null;
             }
+
+            public function findByMetadataHash(string $metadataHash): ?DynamicClient
+            {
+                foreach ($this->saved as $client) {
+                    if ($client->metadataHash === $metadataHash) {
+                        return $client;
+                    }
+                }
+
+                return null;
+            }
         };
     }
 
