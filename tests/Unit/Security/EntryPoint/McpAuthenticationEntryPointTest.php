@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\EntryPoint;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -57,7 +57,7 @@ final class McpAuthenticationEntryPointTest extends Unit
         $response = (new McpAuthenticationEntryPoint(true))->start($this->mcpRequest());
 
         $this->assertStringContainsString(
-            '/.well-known/oauth-protected-resource' . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH . '"',
+            '/.well-known/oauth-protected-resource' . McpPath::BASE . '"',
             (string) $response->headers->get('WWW-Authenticate'),
         );
     }

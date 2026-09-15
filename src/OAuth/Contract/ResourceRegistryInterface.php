@@ -17,19 +17,20 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResourceMetadata;
 
 /**
- * Registry of OAuth protected resources (audiences).
+ * Read model of the OAuth protected resources (audiences) this installation exposes.
  *
- * Supports multiple resources; lookups are keyed by the canonical resource URI.
- * Implementations canonicalise on both registration and lookup, so callers may
- * pass any equivalent form of a URI.
+ * Lookups are keyed by the canonical resource URI, and implementations canonicalise on
+ * lookup, so callers may pass any equivalent form of a URI.
  *
- * Public API. Bundles whose endpoints are protected resources register them here,
- * which is what makes their RFC 9728 metadata document resolvable.
+ * Read-only by design. A bundle contributes resources by implementing
+ * {@see ProtectedResourceProviderInterface}, not by mutating this: the set of valid
+ * audiences is a property of the configuration, and a request that could add to it is a
+ * request that could name its own audience.
+ *
+ * Public API.
  */
 interface ResourceRegistryInterface
 {
-    public function register(ProtectedResource $resource): void;
-
     public function has(string $canonicalUri): bool;
 
     public function get(string $canonicalUri): ?ProtectedResource;

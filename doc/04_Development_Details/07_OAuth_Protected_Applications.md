@@ -50,11 +50,11 @@ already authenticated.
 
 | Contract | Purpose |
 |----------|---------|
-| `OAuth\Contract\ScopeProviderInterface` | Contribute your own scope identifiers to the server's catalogue |
-| `OAuth\Contract\ScopeRegistryInterface` | Read the catalogue |
+| `OAuth\Contract\ScopeRegistryInterface` | Read the scope catalogue |
 | `OAuth\Contract\TokenValidatorInterface` | Validate a raw bearer token and resolve it to effective access |
 | `OAuth\Dto\ResolvedAccess` | Result of validation: the Pimcore user, granted scopes, audience, client id |
-| `OAuth\Contract\ResourceRegistryInterface` | Register endpoints as protected resources, making their RFC 9728 metadata resolvable |
+| `OAuth\Contract\ProtectedResourceProviderInterface` | Contribute your endpoints as protected resources, making their RFC 9728 metadata resolvable |
+| `OAuth\Contract\ResourceRegistryInterface` | Read the protected resources this installation exposes |
 | `OAuth\Dto\ProtectedResource` | One protected resource: canonical URI, supported scopes, authorization servers |
 | `OAuth\Dto\ProtectedResourceMetadata` | The metadata document served for a resource |
 
@@ -83,15 +83,13 @@ resolve the user. Whatever shape you chose, leave every other credential your bu
 is not proof, so a credential that looks like a token but does not resolve should fall through to your
 existing check rather than being rejected.
 
-**3. Resource registration.** One `ProtectedResource` per endpoint that acts as a token audience. This does
-two things: it makes `/.well-known/oauth-protected-resource/<path>` resolvable, which is how a client
-discovers the authorization server, and it is what the authorization endpoint validates a requested
+**3. A protected-resource provider.** One `ProtectedResource` per endpoint that acts as a token audience.
+This does two things: it makes `/.well-known/oauth-protected-resource/<path>` resolvable, which is how a
+client discovers the authorization server, and it is what the authorization endpoint validates a requested
 `resource` against. One endpoint means one resource, even when it serves many logical things behind it.
 
-Register on every request that might consult the registry. That includes your own endpoint, its metadata
-document, and the OAuth endpoints, since the authorization request is validated there. Deriving the URI from
-the configured issuer rather than the request host keeps registration idempotent. The bundle's own MCP
-authenticator is the exception rather than the model here, see [Deriving the resource URI](#deriving-the-resource-uri).
+You describe them once, in a tagged service; nothing is registered per request. See
+[Deriving the resource URI](#deriving-the-resource-uri) for where the URI must come from.
 
 **4. A 401 challenge** carrying `WWW-Authenticate: Bearer resource_metadata="…"`. Without this parameter a
 standards-based client cannot begin discovery, so the whole flow never starts.
@@ -191,30 +189,70 @@ credential, call `validate()`, resolve the user, and on failure continue to what
 Either way, gate it on `%pimcore_studio_backend.oauth.enabled%` so the code is inert when the authorization
 server is switched off.
 
-### Step 3: Register protected resources
+### Step 3: Declare your protected resources
 
-Inject `ResourceRegistryInterface` and register one resource per endpoint that acts as an audience. The
-registry is built per request rather than at compile time, so registration happens in a `kernel.request`
-subscriber:
+Implement `ProtectedResourceProviderInterface` and describe every resource your bundle owns:
 
 ```php
-$base = $this->issuer ?? $request->getSchemeAndHttpHost();
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ProtectedResourceProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 
-$this->resourceRegistry->register(
-    new ProtectedResource(
-        $base . '/my-bundle-prefix/endpoint',
-        ['mybundle:read'],
-        [$base],
-    )
-);
+final readonly class MyProtectedResourceProvider implements ProtectedResourceProviderInterface
+{
+    public function __construct(
+        private bool $enabled,
+        private ?string $issuer,
+    ) {
+    }
+
+    public function resources(): iterable
+    {
+        // Nothing to offer while the feature is off, or before an issuer exists to
+        // build a URI from. Yielding nothing fails closed: an unregistered resource is
+        // refused at the authorization endpoint.
+        if (!$this->enabled || $this->issuer === null) {
+            return;
+        }
+
+        yield new ProtectedResource(
+            $this->issuer . '/my-bundle-prefix/endpoint',
+            ['mybundle:read'],
+            [$this->issuer],
+        );
+    }
+}
 ```
 
-The scopes passed here are not decoration: they cap what a token for this resource may carry, and a client
-that asks for more is narrowed to them before consent is shown.
+Tag the service, and pass the issuer from `pimcore_studio_backend.oauth.issuer`:
 
-Register every resource you own on every main request, not only the one being addressed: a metadata document
-is fetched on a `.well-known` request that matches none of your routes, and the authorization request is
-validated on an OAuth route, so a path filter would leave those lookups unresolvable.
+```yaml
+services:
+    My\Bundle\OAuth\MyProtectedResourceProvider:
+        tags: ['pimcore_studio_backend.oauth.protected_resource_provider']
+        arguments:
+            $enabled: '%my_bundle.oauth_enabled%'
+            $issuer: '%pimcore_studio_backend.oauth.issuer%'
+```
+
+**The tag is required, and `autoconfigure: true` does not apply it.** No
+`registerForAutoconfiguration()` hook exists for it, so an untagged provider is never read: its metadata
+document 404s, its scopes vanish from the catalogue, and a client requesting its resource is refused with
+`invalid_request`. Nothing logs a warning, because from the registry's point of view the resource was never
+declared. If your resource is missing, check the tag first.
+
+The scopes are not decoration. They cap what a token for this resource may carry, a client asking for more is
+narrowed to them before consent is shown, and they are how a scope comes to exist at all: the server's
+catalogue is the union of what every resource supports.
+
+Providers are read lazily and only once. Symfony's tagged iterator does not instantiate anything until the
+registry is first read, and the registry memoises what it resolved, so a request touching neither OAuth nor
+your endpoints pays nothing. You therefore describe every resource you own unconditionally: there is no
+"current request" to filter by, which is the point. A metadata document is fetched on a `.well-known` path
+that matches none of your routes, and a requested `resource` is validated on an OAuth route, so filtering
+would have left both unresolvable anyway.
+
+`ResourceRegistryInterface` is the read side of this and has no `register()`: the set of valid audiences is a
+property of the configuration, and a request able to add to it is a request able to name its own audience.
 
 ### Step 4: Emit the challenge
 
@@ -236,26 +274,42 @@ credential was sent at all.
 
 ### Step 5: Declare your scopes
 
-Use your own prefix rather than another application's. Sharing `mcp:read` between two applications makes the
-consent screen ambiguous about what is being granted, and prevents a token being narrowed to one of them.
+There is nothing separate to do: **a scope exists because a resource supports it**. The `scopesSupported` you
+passed to `ProtectedResource` in step 3 is the declaration.
 
 ```php
-final class MyScopeProvider implements ScopeProviderInterface
-{
-    public function scopes(): array
-    {
-        return ['mybundle:read'];
-    }
-}
+new ProtectedResource($base . '/my-bundle-prefix/endpoint', ['mybundle:read'], [$base]);
 ```
 
-Tag the service with `ScopeProviderInterface::TAG`. The authorization endpoint then accepts the scope,
-dynamic clients may register it, and the server metadata advertises it. Ship only scopes that correspond to
-operations you actually have: a scope a user can consent to that grants nothing is worse than no scope.
+The authorization endpoint then accepts `mybundle:read`, dynamic clients may register it, and the server
+metadata advertises it. The server-wide catalogue is the union across every registered resource.
 
-The provider makes a scope *exist*; listing it in a resource's `scopesSupported` (step 3) is what lets a token
-for that resource carry it. Declare on each resource exactly what it accepts, because the server-wide
-catalogue is the union across every bundle.
+Use your own prefix rather than another application's. Sharing `mcp:read` between two applications makes the
+consent screen ambiguous about what is being granted, and prevents a token being narrowed to one of them.
+Ship only scopes that correspond to operations you actually have: a scope a user can consent to that grants
+nothing is worse than no scope.
+
+Declare on each resource exactly what it accepts. A scope attached to no resource cannot be used at all: the
+authorization request is narrowed to the named resource, so such a scope is either filtered out or refused
+with `invalid_scope`.
+
+#### Give the scope a name on the consent screen
+
+The consent screen reads scope labels from the Pimcore Studio translation catalogue, and that is the only
+place a scope is described. Ship two keys per scope in your bundle's `translations/studio.en.yaml`:
+
+```yaml
+oauth.consent.scope.mybundle-read.label: Read your products
+oauth.consent.scope.mybundle-read.description: List and search the products you already have access to.
+```
+
+The slug is the scope identifier with `:` replaced by `-`, because i18next reads `:` as a namespace
+separator: `mybundle:read` becomes `mybundle-read`. The `description` is optional; the `label` is what the
+user reads.
+
+A scope with no keys is still shown, as its raw identifier, so nothing is ever granted without appearing on
+the screen. It reads as `mybundle:read` rather than a sentence, which is a poor thing to ask someone to
+approve.
 
 ### Step 6: Apply your own authorization
 
@@ -289,20 +343,32 @@ an application:
 
 ### Deriving the resource URI
 
-Two ways, and the bundle's own applications use different ones:
+**Derive it from `oauth.issuer`**, on both the contributing side and the validating side. The issuer is
+required whenever the server is enabled, so it is always available, and it is configured rather than supplied
+by the caller. Every application in this bundle does this, the
+[MCP endpoints](./08_MCP_Server.md#oauth-protected-resource) included.
 
-- **From `oauth.issuer`.** Recommended for an application that registers its resources programmatically. The
-  value is configured once, so it cannot drift with the incoming `Host` header and registration stays
-  idempotent on a long-running worker.
-- **From the request host** (`$request->getSchemeAndHttpHost()`). This is what
-  `OAuthAccessTokenAuthenticator` does for the MCP endpoints, because the MCP resource is declared in
-  `oauth.resources` rather than registered in code, and the authenticator has no configured base of its own.
+**Do not derive it from the request host.** `$request->getSchemeAndHttpHost()` returns the `Host` header
+unless `framework.trusted_hosts` is configured, and that is empty by default. A resource named after it lets a
+caller invent an audience, obtain a token stamped with it, and then pass the audience check by replaying the
+same header, so the check compares an attacker's string against the attacker's own string. Two sides deriving
+the URI the same way is not sufficient; they have to agree on a value neither the caller nor a proxy can
+choose. A provider is handed no request at all, which is what makes that mistake hard to make.
 
-The consequence for an MCP deployment behind a reverse proxy: the host Pimcore sees has to match the `uri` in
-`oauth.resources` byte for byte. Set `oauth.issuer` to the public origin, configure Symfony `trusted_proxies`
-so the forwarded host is honoured, and write the resource URI with the same scheme, host and no trailing
-slash. Get this wrong and tokens are issued happily and then refused at the endpoint, with no error that says
-why.
+Because nothing reads the request host, **audience binding** needs no special handling behind a reverse
+proxy. Set `oauth.issuer` to the public origin, and if you write a resource URI in configuration, write it
+with the same scheme and host and no trailing slash so it matches what is contributed.
+
+**Discovery is a different matter, and does need the proxy configured.** The RFC 9728 metadata URL in the
+`401` challenge is built from the request (`McpAuthenticationEntryPoint`), and the endpoint serving that
+document resolves the resource from the request too (`ProtectedResourceMetadataController`). Behind a
+TLS-terminating proxy with `framework.trusted_proxies` unset, Symfony sees the internal scheme: the challenge
+advertises `http://host/.well-known/oauth-protected-resource/...` while the contributed resource is
+`https://...`, so the lookup misses and the document 404s. The token itself would have validated; the client
+never gets far enough to present one.
+
+Set `trusted_proxies` and `trusted_headers` so `X-Forwarded-Proto` and `X-Forwarded-Host` are honoured, and
+the request-derived URL matches the configured one again.
 
 ## What the platform leaves to each application
 

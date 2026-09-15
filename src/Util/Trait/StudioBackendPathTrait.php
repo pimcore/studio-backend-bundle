@@ -13,17 +13,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+
 /**
  * @internal
  */
 trait StudioBackendPathTrait
 {
     /**
-     * Kept in sync with PimcoreStudioBackendExtension::MCP_FIREWALL_PATTERN. The MCP firewall
-     * serves a path space of its own, outside the Studio API url_prefix, so anything that
-     * scopes itself to Studio traffic has to name it explicitly or MCP escapes.
+     * The MCP firewall serves a path space of its own, outside the Studio API url_prefix, so
+     * anything that scopes itself to Studio traffic has to name it explicitly or MCP escapes.
      */
-    private const string MCP_PATH_PREFIX = '/pimcore-mcp/';
+    private const string MCP_PATH_PREFIX = McpPath::PREFIX;
 
     private function isStudioBackendPath(string $path, string $urlPrefix): bool
     {

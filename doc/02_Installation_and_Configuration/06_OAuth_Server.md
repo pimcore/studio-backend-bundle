@@ -44,8 +44,8 @@ on the same public contracts, and any bundle can do the same.
 
 ## Enabling
 
-The minimum configuration is the master switch, an issuer, signing keys, at least one protected resource,
-and at least one way for a client to identify itself:
+The minimum configuration is the master switch, an issuer, signing keys, and at least one way for a client to
+identify itself:
 
 ```yaml
 # config/packages/pimcore_studio_backend.yaml
@@ -58,15 +58,10 @@ pimcore_studio_backend:
         keys:
             private_key: '%env(OAUTH_PRIVATE_KEY)%'
             public_key: '%env(OAUTH_PUBLIC_KEY)%'
-            passphrase: '%env(OAUTH_KEY_PASSPHRASE)%'
             encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
-        # Every token is issued for a named resource (RFC 8707), so at least one must
-        # exist or the authorize endpoint refuses every request. This is the bundle's
-        # own MCP endpoint; see "Protected resources (audiences)" below for more.
-        resources:
-            - uri: 'https://pimcore.example.com/pimcore-mcp'
-              scopes_supported: ['mcp:read', 'mcp:write']
-              authorization_servers: ['https://pimcore.example.com']
+            # Only when the private key has one. Keys generated as shown below do not,
+            # and naming an env var that is never defined fails the build.
+            #passphrase: '%env(OAUTH_KEY_PASSPHRASE)%'
         # A client has to be resolvable before a resource is ever consulted. With no
         # pre-registered client and both self-registration mechanisms off, every
         # authorization request fails with `invalid_client`. See "Onboarding clients".
@@ -79,7 +74,19 @@ pimcore_studio_backend:
 
 > Reference key material via environment variables or Symfony secrets. **Never commit keys.**
 
+> `issuer`, `keys.private_key`, `keys.public_key` and `keys.encryption_key` are validated at container build
+> once `enabled` is `true`: leaving any of them unset fails the build with a message naming the key, rather
+> than starting a server that cannot issue a token. `passphrase` is genuinely optional.
+
+> Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle contributes
+> its own MCP endpoints, so this configuration is enough to get a working server; add entries under
+> `resources` only for further endpoints. See [Protected resources (audiences)](#protected-resources-audiences).
+
 ### What enabling it adds
+
+The corollary first: while `enabled` is `false` every OAuth path answers `404`, not `403` and not a routing
+error. That covers `/pimcore-oauth/*`, `/.well-known/oauth-*` and `<url_prefix>/oauth/*`, so a server that
+looks absent is usually a toggle that never took effect.
 
 Three things become operator-visible the moment the server is switched on:
 
@@ -140,29 +147,10 @@ makes to fetch the pending authorization, not in serving the page.
 
 ### Accepting tokens at the MCP endpoints
 
-For clients to actually *use* the token against an MCP server, two things are needed. The `pimcore_mcp`
-firewall must be enabled, see the [MCP firewall setup](./README.md) (the *Optional: MCP firewall* step); its
-authenticator chain includes an OAuth bearer authenticator that validates these tokens.
-
-The MCP resource must also be **declared in configuration**. The bundle registers no protected resource of its
-own, so without this entry there is nothing for a client to request a token for, and
-`OAuthAccessTokenAuthenticator` has no registered resource matching the audience it enforces:
-
-```yaml
-pimcore_studio_backend:
-    oauth:
-        resources:
-            # Must be the MCP base, with no trailing slash: the authenticator validates
-            # every /pimcore-mcp/... request against this one URI, not against the
-            # sub-path that was called.
-            - uri: 'https://pimcore.example.com/pimcore-mcp'
-              scopes_supported: ['mcp:read', 'mcp:write']
-              authorization_servers: ['https://pimcore.example.com']
-```
-
-The authenticator derives that URI from the **request** host, so behind a reverse proxy the host Pimcore sees
-must match this `uri` byte for byte, or valid tokens are rejected. See
-[Deriving the resource URI](../04_Development_Details/07_OAuth_Protected_Applications.md#deriving-the-resource-uri).
+For clients to actually *use* the token against an MCP server, the `pimcore_mcp` firewall must be enabled, see
+the [MCP firewall setup](./README.md) (the *Optional: MCP firewall* step); its authenticator chain includes an
+OAuth bearer authenticator that validates these tokens. The MCP resource itself needs no configuration, and is
+described in [MCP Server Infrastructure](../04_Development_Details/08_MCP_Server.md#oauth-protected-resource).
 
 ## Endpoints
 
@@ -266,21 +254,29 @@ pimcore_studio_backend:
 ## Protected resources (audiences)
 
 Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
-Applications whose endpoints are only known at runtime register them programmatically instead, through
-`ResourceRegistryInterface`, which is how Datahub Simple REST declares its own.
+Bundles contribute their own by implementing `ProtectedResourceProviderInterface`, which is how Datahub Simple
+REST declares its endpoints and how this bundle declares its
+[MCP endpoints](../04_Development_Details/08_MCP_Server.md#oauth-protected-resource) - so expect entries here
+you did not configure. Declaring the same URI yourself overrides the contributed one.
 
-The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
-not enough on its own: something has to declare a resource, and something has to accept tokens at it.
+The authorization server issues nothing until at least one protected resource exists. Enabling it is enough to
+get one: this bundle contributes its MCP endpoints, so a server with no `resources` entries at all still
+issues tokens for them. Something still has to *accept* those tokens at the other end, which for the MCP
+endpoints means enabling the `pimcore_mcp` firewall.
 
 Every token is bound to one resource. The client names it with the RFC 8707 `resource` parameter, the
 parameter is required, an unknown resource is rejected, and the resulting token is refused at any other
 resource. See [Audience binding](../04_Development_Details/07_OAuth_Protected_Applications.md#audience-binding)
 for the full rules.
 
-`scopes_supported` caps what a token for that resource may carry: a client asking for more is narrowed to the
-intersection, and one asking **only** for scopes the resource does not declare is refused with
-`invalid_scope`. A resource declaring no scopes constrains nothing. Note the default is `['mcp:read']`, so set
-it explicitly on any non-MCP resource.
+`scopes_supported` does two jobs. It caps what a token for that resource may carry, so a client asking for
+more is narrowed to the intersection and one asking **only** for scopes the resource does not declare is
+refused with `invalid_scope`. And it is **how a scope comes to exist at all**: the server's catalogue, which
+the authorization endpoint accepts, dynamic clients may register and the metadata advertises, is the union of
+the `scopes_supported` of every registered resource. There is nothing else to declare, and nothing that can
+disagree with it.
+
+A resource declaring no scopes constrains nothing and contributes nothing, which is the default (`[]`).
 
 ```yaml
 pimcore_studio_backend:
@@ -315,7 +311,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
 | `client_id_metadata_documents.allow_insecure` | `false` | Dev only: permit http/loopback `client_id` URLs. |
 | `client_id_metadata_documents.cache_ttl` | `300` | Seconds to cache a fetched client metadata document. |
-| `resources` | `[]` | Protected resources / token audiences. Per entry: `uri` (required), `scopes_supported` (defaults to `['mcp:read']`, which is rarely what a non-MCP resource wants, so set it explicitly) and `authorization_servers` (defaults to `[]`). |
+| `resources` | `[]` | Additional protected resources / token audiences; the bundle's own `/pimcore-mcp` is registered without configuration. Per entry: `uri` (required), `scopes_supported` (default `[]`, and also what defines the scope catalogue) and `authorization_servers` (default `[]`). An entry whose `uri` matches a built-in one replaces it. |
 
 ## Security considerations
 

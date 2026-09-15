@@ -24,7 +24,6 @@ use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use League\OAuth2\Server\RequestTypes\AuthorizationRequestInterface;
 use Nyholm\Psr7\Response;
 use Nyholm\Psr7\ServerRequest;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Entity\AuthCodeEntity;
@@ -95,6 +94,8 @@ final class LoopbackAuthCodeGrantTest extends Unit
             new ClientEntity(self::CLIENT_ID, 'Test client', self::REDIRECT_URI),
         );
         $grant->setClientRepository($clientRepository);
+        // The catalogue is derived from the same resources the grant narrows against,
+        // so a scope exists exactly when some resource supports it.
         $grant->setScopeRepository(new ScopeRepository($this->scopeRegistry()));
         $grant->setDefaultScope($defaultScope);
 
@@ -103,14 +104,14 @@ final class LoopbackAuthCodeGrantTest extends Unit
 
     private function scopeRegistry(): ScopeRegistry
     {
-        return new ScopeRegistry([
-            new class implements ScopeProviderInterface {
-                public function scopes(): array
-                {
-                    return ['mcp:read', 'mcp:write'];
-                }
-            },
-        ]);
+        return new ScopeRegistry(
+            new ConfigProtectedResourceRegistry([
+                [
+                    'uri' => 'https://catalogue.example/pimcore-mcp',
+                    'scopes_supported' => ['mcp:read', 'mcp:write'],
+                ],
+            ]),
+        );
     }
 
     /**
@@ -222,6 +223,23 @@ final class LoopbackAuthCodeGrantTest extends Unit
         ]);
 
         $this->assertStringContainsString('resource', (string) $exception->getHint());
+    }
+
+    /**
+     * The other half of the spoofed-host regression. The registry is seeded from the
+     * configured issuer only, so a resource named after an attacker-supplied `Host` is
+     * not in it, and naming it here is refused rather than minting a token whose
+     * audience the attacker controls.
+     */
+    public function testResourceNamingAForeignHostIsRejected(): void
+    {
+        $exception = $this->assertRejectedAsInvalidRequest([
+            'code_challenge' => self::CODE_CHALLENGE,
+            'code_challenge_method' => 'S256',
+            'resource' => 'https://evil.example/pimcore-mcp',
+        ]);
+
+        $this->assertStringContainsString('not a known protected resource', $exception->getHint() ?? '');
     }
 
     public function testKnownResourceIsAcceptedAndCarriedOnTheRequest(): void
@@ -368,8 +386,9 @@ final class LoopbackAuthCodeGrantTest extends Unit
     }
 
     /**
-     * A resource may declare no scopes at all, through configuration or through the public
-     * registry. That constrains nothing, so it must not brick every request naming it.
+     * A resource may declare no scopes at all, and since `scopes_supported` now defaults
+     * to `[]` that is what an entry with no explicit scopes gets. It constrains nothing,
+     * so it must not brick every request naming it.
      */
     public function testAResourceDeclaringNoScopesConstrainsNothing(): void
     {

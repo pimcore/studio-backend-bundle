@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\ProtectedResourceProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
@@ -83,7 +85,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 {
     private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
 
-    private const string MCP_FIREWALL_PATTERN = '^/pimcore-mcp/';
+    private const string MCP_FIREWALL_PATTERN = McpPath::FIREWALL_PATTERN;
 
     private const string ARG_ISSUER = '$issuer';
 
@@ -250,7 +252,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(OAuthAccessTokenAuthenticator::class)
-            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
@@ -264,6 +267,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // the server is off.
         $container->getDefinition(OAuthEndpointGuardSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+
+        // The bundle's own MCP endpoints as a protected resource, so an installation that
+        // enables OAuth does not have to hand-write the entry to get a working server. The
+        // service lives in the MCP module and reads OAuth configuration, which is the correct
+        // direction: MCP is a consumer of the authorization server, not part of it.
+        $container->getDefinition(ProtectedResourceProvider::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         // Authorization server (token issuance).
         $container->getDefinition(ClientRepository::class)

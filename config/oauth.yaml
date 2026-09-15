@@ -14,11 +14,15 @@ services:
     # `pimcore_studio_backend.oauth.enabled` parameter.
     #
 
-    # Resource registry; $resources is populated from bundle config in the extension.
+    # Resource registry. $resources is populated from bundle config in the extension;
+    # $providers is every tagged ProtectedResourceProviderInterface. The tagged iterator is
+    # lazy and the registry only reads it on first lookup, so a request that never touches
+    # OAuth instantiates no provider.
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry
         arguments:
             $resources: []
+            $providers: !tagged_iterator pimcore_studio_backend.oauth.protected_resource_provider
 
     # Embedded identity resolution (subject = Pimcore user id).
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface:
@@ -50,6 +54,7 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator:
         arguments:
             $enabled: false
+            $issuer: null
 
     # Entry point for the pimcore_mcp firewall (401 + RFC 9728 challenge).
     # $oauthEnabled is set from config in the extension.
@@ -116,17 +121,14 @@ services:
         arguments:
             $enabled: false
 
-    # Scope catalogue. Any bundle exposing protected resources contributes its own
-    # identifiers by tagging a ScopeProviderInterface service.
-    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry:
-        arguments:
-            $providers: !tagged_iterator pimcore_studio_backend.oauth.scope_provider
+    # Scope catalogue, derived from the resources themselves: a bundle that exposes
+    # protected resources declares their scopes on the ProtectedResource it registers,
+    # and they appear here automatically. A scope belonging to no resource would be
+    # narrowed away at authorization time, so there is nothing else to declare.
+    Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry: ~
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry
-
-    Pimcore\Bundle\StudioBackendBundle\OAuth\Scope\McpScopeProvider:
-        tags: ['pimcore_studio_backend.oauth.scope_provider']
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 

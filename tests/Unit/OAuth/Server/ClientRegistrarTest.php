@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ClientRegistrationException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\ClientRegistrar;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
@@ -50,26 +50,19 @@ final class ClientRegistrarTest extends Unit
     }
 
     /**
-     * A registrar whose scope catalogue is the real registry, fed by a single
-     * provider contributing exactly the given scopes.
+     * A registrar whose scope catalogue is the real registry, derived from a single
+     * protected resource declaring exactly the given scopes.
      */
     private function createRegistrar(string ...$scopes): ClientRegistrar
     {
-        $provider = new class($scopes) implements ScopeProviderInterface {
-            /**
-             * @param list<string> $scopes
-             */
-            public function __construct(private readonly array $scopes)
-            {
-            }
-
-            public function scopes(): array
-            {
-                return $this->scopes;
-            }
-        };
-
-        return new ClientRegistrar($this->store, new ScopeRegistry([$provider]));
+        return new ClientRegistrar(
+            $this->store,
+            new ScopeRegistry(
+                new ConfigProtectedResourceRegistry([
+                    ['uri' => 'https://example.com/pimcore-mcp', 'scopes_supported' => $scopes],
+                ]),
+            ),
+        );
     }
 
     public function testRegistersPublicClient(): void
