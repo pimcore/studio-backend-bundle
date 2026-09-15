@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Server;
 
+use const JSON_THROW_ON_ERROR;
+use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\RegisteredClient;
@@ -20,13 +22,17 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Exception\ClientRegistrationExcepti
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\RedirectUriPolicy;
 use function array_is_list;
+use function array_unique;
+use function array_values;
 use function bin2hex;
 use function hash;
 use function in_array;
 use function is_array;
 use function is_string;
+use function json_encode;
 use function preg_split;
 use function random_bytes;
+use function sort;
 use function time;
 use function trim;
 
@@ -43,6 +49,11 @@ final readonly class ClientRegistrar
 
     private const array AUTH_METHODS = ['none', 'client_secret_basic', 'client_secret_post'];
 
+    /**
+     * Bump when the digested shape changes, so old and new digests cannot collide.
+     */
+    private const int DIGEST_VERSION = 1;
+
     public function __construct(
         private DynamicClientStoreInterface $store,
         private ScopeRegistryInterface $scopeRegistry,
@@ -53,6 +64,7 @@ final readonly class ClientRegistrar
      * @param array<string, mixed> $metadata
      *
      * @throws ClientRegistrationException
+     * @throws JsonException
      */
     public function register(array $metadata): RegisteredClient
     {
@@ -63,6 +75,22 @@ final readonly class ClientRegistrar
         $name = $this->parseName($metadata['client_name'] ?? null);
 
         $confidential = $authMethod !== 'none';
+        $metadataHash = $this->metadataHash($name, $redirectUris, $grantTypes, $scopes, $authMethod);
+
+        // Recognising a repeat registration keeps a well-behaved client that re-registers
+        // on every start to a single row. It is not a defence against a hostile caller,
+        // who controls every input to the digest and can make a new one with an extra
+        // space; the rate limiter is what bounds that. Done unconditionally all the same,
+        // and deliberately not gated on the rate limiter's enabled flag, so turning
+        // throttling off does not also turn this off.
+        if (!$confidential) {
+            $existing = $this->store->findByMetadataHash($metadataHash);
+
+            if ($existing !== null) {
+                return $this->asRegisteredClient($existing, $authMethod);
+            }
+        }
+
         $identifier = 'dcr_' . bin2hex(random_bytes(16));
 
         $secret = null;
@@ -85,6 +113,9 @@ final readonly class ClientRegistrar
             $scopes,
             $confidential,
             $secretHash,
+            // Only a public client is deduplicated, so only a public client stores a
+            // digest to be matched on.
+            $confidential ? null : $metadataHash,
         ));
 
         return new RegisteredClient(
@@ -96,6 +127,69 @@ final readonly class ClientRegistrar
             $authMethod,
             $secret,
             time(),
+        );
+    }
+
+    /**
+     * Digest of the metadata the client chose, which is what decides whether two
+     * registration requests describe the same client. The generated identifier and
+     * secret are ours rather than the client's, so they are deliberately not part of it.
+     *
+     * The three lists are sorted first: RFC 7591 gives their order no meaning, so a
+     * client listing the same redirect URIs in a different order has registered the same
+     * client and must not get a second row for it.
+     *
+     * @param list<string> $redirectUris
+     * @param list<string> $grantTypes
+     * @param list<string> $scopes
+     *
+     * @throws JsonException
+     */
+    private function metadataHash(
+        string $name,
+        array $redirectUris,
+        array $grantTypes,
+        array $scopes,
+        string $authMethod,
+    ): string {
+        sort($redirectUris);
+        sort($grantTypes);
+        sort($scopes);
+
+        // JSON_THROW_ON_ERROR rather than casting the result: `(string) false` is the empty
+        // string, so a silent encoding failure would hash every client to the same digest
+        // and hand each one the previous client's client_id.
+        //
+        // The version tag makes a future change to this canonicalisation deliberate. Bumping
+        // it moves every client to a new digest at once, which is a one-off wave of new rows
+        // rather than the silent partial duplication of changing the shape in place.
+        return hash('sha256', json_encode([
+            'v' => self::DIGEST_VERSION,
+            'client_name' => $name,
+            'redirect_uris' => $redirectUris,
+            'grant_types' => $grantTypes,
+            'scope' => $scopes,
+            'token_endpoint_auth_method' => $authMethod,
+        ], JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * The RFC 7591 response for a client that already existed. `client_secret` is absent
+     * by construction: only public clients reach here, and a public client has none.
+     * `client_id_issued_at` reports when the client was first registered rather than now,
+     * so a repeat call does not claim to have created something.
+     */
+    private function asRegisteredClient(DynamicClient $client, string $authMethod): RegisteredClient
+    {
+        return new RegisteredClient(
+            $client->identifier,
+            $client->name,
+            $client->redirectUris,
+            $client->grantTypes,
+            $client->scopes,
+            $authMethod,
+            null,
+            $client->createdAt ?? time(),
         );
     }
 
@@ -118,7 +212,9 @@ final readonly class ClientRegistrar
             $this->assertValidRedirectUri($uri);
         }
 
-        return $value;
+        // De-duplicated for the same reason the digest sorts them: the set is what
+        // identifies the client, so a repeated entry is the same client, not a new one.
+        return array_values(array_unique($value));
     }
 
     private function assertValidRedirectUri(string $uri): void
@@ -201,13 +297,20 @@ final readonly class ClientRegistrar
             }
         }
 
-        return $requested;
+        // "mcp:read mcp:read" grants exactly what "mcp:read" does, so it must not register
+        // as a different client.
+        return array_values(array_unique($requested));
     }
 
+    /**
+     * Trimmed, not merely tested for being non-blank: the stored value is what the digest
+     * is taken over, so returning it untrimmed made "Claude", " Claude" and "Claude " three
+     * separate clients whose consent screens are indistinguishable.
+     */
     private function parseName(mixed $value): string
     {
         if (is_string($value) && trim($value) !== '') {
-            return $value;
+            return trim($value);
         }
 
         return 'Dynamically Registered Client';

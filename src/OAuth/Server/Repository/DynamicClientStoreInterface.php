@@ -25,4 +25,10 @@ interface DynamicClientStoreInterface
     public function save(DynamicClient $client): void;
 
     public function find(string $identifier): ?DynamicClient;
+
+    /**
+     * The client previously registered with this metadata digest, if any. Only public
+     * clients carry a digest, so this never returns a confidential one.
+     */
+    public function findByMetadataHash(string $metadataHash): ?DynamicClient;
 }

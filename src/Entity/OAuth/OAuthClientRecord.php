@@ -26,6 +26,7 @@ use function time;
  */
 #[ORM\Entity]
 #[ORM\Table(name: OAuthClientRecord::TABLE_NAME)]
+#[ORM\Index(columns: ['metadata_hash'], name: 'idx_oauth_client_metadata_hash')]
 class OAuthClientRecord
 {
     public const string TABLE_NAME = 'bundle_studio_oauth_client';
@@ -64,6 +65,14 @@ class OAuthClientRecord
     #[ORM\Column(name: 'token_endpoint_auth_method', type: 'string', length: 40)]
     private string $tokenEndpointAuthMethod;
 
+    /**
+     * SHA-256 of the client-chosen metadata, so a repeat registration is recognised
+     * without scanning the table. Null for confidential clients: they are never
+     * deduplicated, and a null here cannot collide with anything.
+     */
+    #[ORM\Column(name: 'metadata_hash', type: 'string', length: 64, nullable: true)]
+    private ?string $metadataHash;
+
     #[ORM\Column(name: 'created_at', type: 'bigint', options: ['unsigned' => true])]
     private string $createdAt;
 
@@ -88,6 +97,7 @@ class OAuthClientRecord
         $this->scopes = $scopes;
         $this->confidential = $confidential;
         $this->secretHash = $secretHash;
+        $this->metadataHash = null;
         // Public clients authenticate via PKCE; confidential ones via their secret.
         $this->tokenEndpointAuthMethod = $confidential ? 'client_secret_basic' : 'none';
         $this->createdAt = (string) time();
@@ -140,6 +150,16 @@ class OAuthClientRecord
     public function getTokenEndpointAuthMethod(): string
     {
         return $this->tokenEndpointAuthMethod;
+    }
+
+    public function getMetadataHash(): ?string
+    {
+        return $this->metadataHash;
+    }
+
+    public function setMetadataHash(?string $metadataHash): void
+    {
+        $this->metadataHash = $metadataHash;
     }
 
     public function getCreatedAt(): int

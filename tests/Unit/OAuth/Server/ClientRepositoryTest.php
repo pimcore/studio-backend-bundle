@@ -80,6 +80,17 @@ final class ClientRepositoryTest extends Unit
             {
                 return $this->clients[$identifier] ?? null;
             }
+
+            public function findByMetadataHash(string $metadataHash): ?DynamicClient
+            {
+                foreach ($this->clients as $client) {
+                    if ($client->metadataHash === $metadataHash) {
+                        return $client;
+                    }
+                }
+
+                return null;
+            }
         };
     }
 
