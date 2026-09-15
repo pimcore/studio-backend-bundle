@@ -62,11 +62,14 @@ the [RFC 9728](https://www.rfc-editor.org/rfc/rfc9728) discovery challenge, whic
 client learns where to authenticate:
 
 ```
-WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-protected-resource/pimcore-mcp", scope="mcp:read"
+WWW-Authenticate: Bearer resource_metadata="https://host/.well-known/oauth-protected-resource/pimcore-mcp"
 ```
 
 The URL always names the MCP **base** resource, never the sub-path that was called, because that base is what
-`OAuthAccessTokenAuthenticator` validates every token's audience against. The bundle registers that resource
+`OAuthAccessTokenAuthenticator` validates every token's audience against. The challenge carries no `scope`
+hint: RFC 6750 makes it optional, and the metadata document it points at already advertises
+`scopes_supported` from the resource itself, so a second copy in the header could only
+disagree with it. The bundle registers that resource
 itself, at `<oauth.issuer>/pimcore-mcp`, so the metadata document resolves without any configuration. See
 [Accepting tokens at the MCP endpoints][mcp-resource] on the OAuth server page.
 

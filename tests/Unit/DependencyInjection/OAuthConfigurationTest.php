@@ -65,6 +65,75 @@ final class OAuthConfigurationTest extends Unit
         $this->assertSame('/keys/private.key', $config['keys']['private_key']);
     }
 
+    /**
+     * Everything downstream concatenates a root path onto the issuer and compares the result
+     * byte for byte, so a value that is merely present is not enough: a trailing slash or a
+     * path yields `https://host//pimcore-mcp`, and an uppercase host yields an audience the
+     * resource server never matches. Both compile happily without this.
+     *
+     * @dataProvider malformedIssuerProvider
+     */
+    public function testEnabledWithAMalformedIssuerIsRejected(string $issuer): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/must be a bare origin/');
+
+        $this->process(['enabled' => true, 'issuer' => $issuer, 'keys' => self::KEYS]);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function malformedIssuerProvider(): array
+    {
+        return [
+            'empty' => [''],
+            'trailing slash' => ['https://pimcore.example.com/'],
+            'with a path' => ['https://pimcore.example.com/oauth'],
+            'with a query' => ['https://pimcore.example.com?a=b'],
+            'with a fragment' => ['https://pimcore.example.com#x'],
+            'uppercase host' => ['https://PIMCORE.example.com'],
+            'redundant default port' => ['https://pimcore.example.com:443'],
+            'not absolute' => ['pimcore.example.com'],
+            'wrong scheme' => ['ftp://pimcore.example.com'],
+            'surrounding whitespace' => [' https://pimcore.example.com'],
+            'with credentials' => ['https://user:pw@pimcore.example.com'],
+        ];
+    }
+
+    /**
+     * @dataProvider validIssuerProvider
+     */
+    public function testEnabledWithACanonicalOriginIsAccepted(string $issuer): void
+    {
+        $config = $this->process(['enabled' => true, 'issuer' => $issuer, 'keys' => self::KEYS]);
+
+        $this->assertSame($issuer, $config['issuer']);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function validIssuerProvider(): array
+    {
+        return [
+            'https origin' => ['https://pimcore.example.com'],
+            'http for local development' => ['http://localhost'],
+            'explicit non-default port' => ['http://localhost:8080'],
+        ];
+    }
+
+    /**
+     * A malformed issuer only matters once the server is running, so it must not break the
+     * build of an installation that never enabled OAuth.
+     */
+    public function testAMalformedIssuerIsIgnoredWhileDisabled(): void
+    {
+        $config = $this->process(['enabled' => false, 'issuer' => 'https://pimcore.example.com/']);
+
+        $this->assertSame('https://pimcore.example.com/', $config['issuer']);
+    }
+
     public function testEnabledWithoutIssuerIsRejected(): void
     {
         $this->expectException(InvalidConfigurationException::class);

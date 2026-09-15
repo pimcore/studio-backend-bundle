@@ -145,6 +145,91 @@ final class EmbeddedTokenValidatorTest extends Unit
         $this->assertNull($this->validator($this->keyPair()['public'])->validate('not-a-jwt', self::RESOURCE));
     }
 
+    /**
+     * RFC 9068 section 4. Without this any correctly signed JWT from the same issuer with a
+     * matching audience passes as an access token - lcobucci's default `JWT` is what an ID
+     * token or any other JWT this issuer might mint carries, which is the cross-JWT
+     * confusion the media type exists to prevent.
+     *
+     * @dataProvider wrongTokenTypeProvider
+     */
+    public function testRejectsATokenThatIsNotAnAccessToken(?string $type): void
+    {
+        $keys = self::keyPair();
+
+        $this->assertNull(
+            $this->validator($keys['public'], new User())->validate($this->mint($keys, ['typ' => $type]), self::RESOURCE),
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string|null}>
+     */
+    public static function wrongTokenTypeProvider(): array
+    {
+        return [
+            'lcobucci default, i.e. any other JWT' => ['JWT'],
+            'an id token' => ['id+jwt'],
+            'empty' => [''],
+            'a prefix of the right type' => ['at+jw'],
+            'the right type with trailing content' => ['at+jwtx'],
+        ];
+    }
+
+    /**
+     * The media type is case-insensitive, and RFC 9068 recommends accepting the fully
+     * qualified form as well, so neither spelling may be refused.
+     *
+     * @dataProvider acceptedTokenTypeProvider
+     */
+    public function testAcceptsEverySpellingOfTheAccessTokenType(string $type): void
+    {
+        $keys = self::keyPair();
+
+        $this->assertNotNull(
+            $this->validator($keys['public'], new User())->validate($this->mint($keys, ['typ' => $type]), self::RESOURCE),
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function acceptedTokenTypeProvider(): array
+    {
+        return [
+            'canonical' => ['at+jwt'],
+            'uppercase' => ['AT+JWT'],
+            'fully qualified' => ['application/at+jwt'],
+        ];
+    }
+
+    /**
+     * A token with no id cannot be revoked, because `jti` is what the revocation store keys
+     * on. Skipping the check when it is absent accepted the token and made it permanently
+     * unrevocable; refusing it is the only outcome that keeps the control meaningful.
+     *
+     * @dataProvider unusableTokenIdProvider
+     */
+    public function testRejectsATokenWithNoUsableId(?string $jti): void
+    {
+        $keys = self::keyPair();
+
+        $this->assertNull(
+            $this->validator($keys['public'], new User())->validate($this->mint($keys, ['jti' => $jti]), self::RESOURCE),
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string|null}>
+     */
+    public static function unusableTokenIdProvider(): array
+    {
+        return [
+            'absent' => [null],
+            'empty' => [''],
+        ];
+    }
+
     public function testRejectsTokenWithoutExpiration(): void
     {
         $keys = $this->keyPair();
@@ -236,12 +321,21 @@ final class EmbeddedTokenValidatorTest extends Unit
         );
 
         $builder = $config->builder()
+            // RFC 9068's access-token media type, which is what the server stamps and what
+            // the validator now requires. lcobucci defaults this header to plain "JWT", so
+            // minting without it produces a token the resource server must refuse.
+            ->withHeader('typ', $overrides['typ'] ?? 'at+jwt')
             ->issuedBy($overrides['iss'] ?? self::ISSUER)
             ->relatedTo($overrides['sub'] ?? '42')
-            ->identifiedBy($overrides['jti'] ?? 'jti-1')
             ->issuedAt(new DateTimeImmutable($overrides['iat'] ?? '2026-07-15T12:00:00+00:00'))
             ->withClaim('scope', $overrides['scope'] ?? 'mcp:read mcp:write')
             ->withClaim('client_id', $overrides['client_id'] ?? 'studio-mcp');
+
+        // array_key_exists (not ??) so an explicit null omits the claim entirely, which is
+        // how a token carrying no id is minted.
+        if (!array_key_exists('jti', $overrides) || $overrides['jti'] !== null) {
+            $builder = $builder->identifiedBy($overrides['jti'] ?? 'jti-1');
+        }
 
         // array_key_exists (not ??) so an explicit null omits the audience entirely,
         // which is how a token that names no resource is minted.

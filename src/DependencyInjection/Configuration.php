@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
 use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
@@ -26,11 +27,15 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function in_array;
 use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+use function parse_url;
 use function sprintf;
+use function strtolower;
+use function trim;
 
 /**
  * This is the class that validates and merges configuration from your app/config files.
@@ -56,6 +61,14 @@ class Configuration implements ConfigurationInterface
         . 'when oauth.enabled is true. Without them AuthorizationServerFactory cannot build the server, '
         . 'and the failure surfaces as an uncaught 500 on the public /pimcore-oauth/authorize endpoint '
         . 'rather than as a configuration error. See the "Generating keys" section of the OAuth docs.';
+
+    private const string OAUTH_ISSUER_INVALID_ERROR =
+        'pimcore_studio_backend.oauth.issuer must be a bare origin: scheme, host and optional port, '
+        . 'nothing else. Write it as "https://pimcore.example.com" - lowercase host, no trailing slash, '
+        . 'no path, no query and no fragment, and http only for local development. Root paths such as '
+        . '/pimcore-mcp and /.well-known/... are appended to this value, so anything further in it '
+        . 'produces a double slash or an unusable resource URI, and a non-canonical spelling stops '
+        . 'matching the audience the resource server compares against.';
 
     private const string OAUTH_ISSUER_REQUIRED_ERROR =
         'pimcore_studio_backend.oauth.issuer must be set when oauth.enabled is true, '
@@ -944,6 +957,16 @@ class Configuration implements ConfigurationInterface
                         && ($oauth['issuer'] ?? null) === null)
                     ->thenInvalid(self::OAUTH_ISSUER_REQUIRED_ERROR)
                 ->end()
+                // Present is not the same as usable. Everything downstream concatenates a
+                // root path onto this value and compares the result byte for byte, so a
+                // trailing slash, a path, a query or an uppercase host produces URIs that
+                // look plausible and never match.
+                ->validate()
+                    ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
+                        && is_string($oauth['issuer'] ?? null)
+                        && !self::isCanonicalOrigin($oauth['issuer']))
+                    ->thenInvalid(self::OAUTH_ISSUER_INVALID_ERROR)
+                ->end()
                 // Same shape, same reason: enabling the server without key material leaves
                 // it unable to build at all, and AuthorizeController only catches
                 // OAuthServerException, so MissingKeyMaterialException escapes uncaught on a
@@ -956,6 +979,38 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+    /**
+     * A bare origin: scheme, host, optional port, and nothing else.
+     *
+     * Canonicality is decided by CanonicalUri rather than by a second set of rules here, so
+     * the shape accepted at build time is exactly the shape compared at runtime. That is
+     * what rejects a trailing slash, an uppercase host and a redundant default port; the
+     * explicit part checks below reject the components an origin may not carry at all.
+     */
+    private static function isCanonicalOrigin(string $issuer): bool
+    {
+        if ($issuer === '' || $issuer !== trim($issuer)) {
+            return false;
+        }
+
+        $parts = parse_url($issuer);
+        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+            return false;
+        }
+
+        if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return false;
+        }
+
+        foreach (['path', 'query', 'fragment', 'user', 'pass'] as $part) {
+            if (($parts[$part] ?? '') !== '') {
+                return false;
+            }
+        }
+
+        return $issuer === CanonicalUri::canonicalize($issuer);
     }
 
     /**

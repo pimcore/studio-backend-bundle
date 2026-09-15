@@ -23,8 +23,7 @@ final class McpAuthenticationEntryPointTest extends Unit
 {
     private const string EXPECTED_CHALLENGE =
         'Bearer resource_metadata='
-        . '"https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp",'
-        . ' scope="mcp:read"';
+        . '"https://pimcore.example.com/.well-known/oauth-protected-resource/pimcore-mcp"';
 
     public function testEnabledEmitsChallengeWithResourceMetadata(): void
     {

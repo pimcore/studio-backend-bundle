@@ -314,6 +314,49 @@ final class ClientRegistrarTest extends Unit
         $this->assertNotNull($stored->metadataHash);
     }
 
+    /**
+     * The transport a client uses is not distinguishable by the time this server sees the
+     * request, so `client_secret_post` cannot be enforced and is not accepted. Recording it
+     * would be metadata honoured by nothing, which is the pattern this rejects.
+     */
+    public function testClientSecretPostIsRefused(): void
+    {
+        $this->expectException(ClientRegistrationException::class);
+        $this->expectExceptionMessageMatches('/token_endpoint_auth_method/');
+
+        $this->registrar->register([
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'client_secret_post',
+        ]);
+    }
+
+    /**
+     * What is left is enforceable, and the stored method is then exactly what was
+     * registered rather than a value silently replaced on the way to the database.
+     */
+    public function testStoredAuthMethodMatchesWhatWasRegistered(): void
+    {
+        $confidential = $this->registrar->register([
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'client_secret_basic',
+        ]);
+        $public = $this->registrar->register([
+            'redirect_uris' => ['https://app.example/cb'],
+            'token_endpoint_auth_method' => 'none',
+        ]);
+
+        $this->assertSame('client_secret_basic', $confidential->tokenEndpointAuthMethod);
+        $this->assertSame('none', $public->tokenEndpointAuthMethod);
+
+        $storedConfidential = $this->store->find($confidential->identifier);
+        $this->assertNotNull($storedConfidential);
+        $this->assertTrue($storedConfidential->confidential);
+
+        $storedPublic = $this->store->find($public->identifier);
+        $this->assertNotNull($storedPublic);
+        $this->assertFalse($storedPublic->confidential);
+    }
+
     public function testDefaultsGrantAndScope(): void
     {
         $result = $this->registrar->register(['redirect_uris' => ['https://app.example/cb']]);

@@ -38,6 +38,7 @@ use function is_array;
 use function is_string;
 use function preg_split;
 use function str_contains;
+use function strtolower;
 use function trim;
 
 /**
@@ -53,6 +54,11 @@ use function trim;
  */
 final class EmbeddedTokenValidator implements TokenValidatorInterface
 {
+    /**
+     * The RFC 9068 media type an access token declares in its JOSE `typ` header.
+     */
+    private const string ACCESS_TOKEN_TYPE = 'at+jwt';
+
     private readonly ClockInterface $clock;
 
     private ?Configuration $configuration = null;
@@ -80,6 +86,16 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
+        // RFC 9068 section 4: an access token declares itself one in the JOSE header, and a
+        // resource server must refuse anything else. Without this any correctly signed JWT
+        // from the same issuer with a matching audience is accepted here - an ID token, or
+        // some other token type a future feature mints - which is the cross-JWT confusion
+        // the media type exists to prevent. Checked before the claims, because what the
+        // claims mean depends on the token actually being an access token.
+        if (!$this->isAccessToken($token)) {
+            return null;
+        }
+
         $claims = $token->claims();
 
         // Fail closed: LooseValidAt only checks time claims that are present, so
@@ -88,8 +104,18 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
             return null;
         }
 
+        // RFC 9068 requires `jti`, and this server stores revocation against it. Refused
+        // rather than skipped when absent or not a string: treating it as "nothing to check"
+        // accepted the token and, since there is no id to key a revocation on, made it
+        // permanently unrevocable. Every claim this method decides on is refused when
+        // missing rather than waved through; `client_id` and `scope` below are reported,
+        // not decided on.
         $tokenId = $claims->get('jti');
-        if (is_string($tokenId) && $this->revocationChecker->isRevoked($tokenId)) {
+        if (!is_string($tokenId) || $tokenId === '') {
+            return null;
+        }
+
+        if ($this->revocationChecker->isRevoked($tokenId)) {
             return null;
         }
 
@@ -144,6 +170,23 @@ final class EmbeddedTokenValidator implements TokenValidatorInterface
         }
 
         return false;
+    }
+
+    /**
+     * RFC 9068 mandates `at+jwt`, and recommends that recipients also accept the fully
+     * qualified `application/at+jwt`. Compared case-insensitively, since a media type is
+     * not case-sensitive.
+     */
+    private function isAccessToken(UnencryptedToken $token): bool
+    {
+        $type = $token->headers()->get('typ');
+        if (!is_string($type)) {
+            return false;
+        }
+
+        $type = strtolower($type);
+
+        return $type === self::ACCESS_TOKEN_TYPE || $type === 'application/' . self::ACCESS_TOKEN_TYPE;
     }
 
     private function parseVerifiedToken(Configuration $configuration, string $rawToken): ?UnencryptedToken

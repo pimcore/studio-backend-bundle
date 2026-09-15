@@ -50,7 +50,12 @@ final class AuthorizationServerMetadataController
             'grant_types_supported' => ['authorization_code', 'refresh_token'],
             'response_types_supported' => ['code'],
             'code_challenge_methods_supported' => ['S256'],
-            'token_endpoint_auth_methods_supported' => ['client_secret_post', 'client_secret_basic', 'none'],
+            // `client_secret_post` is not advertised: the transport a client uses is not
+            // distinguishable by the time this server sees the request, so it cannot be
+            // enforced, and advertising a method a client may register but that means
+            // nothing would be a promise this server does not keep. See
+            // ClientRegistrar::AUTH_METHODS.
+            'token_endpoint_auth_methods_supported' => ['client_secret_basic', 'none'],
             'scopes_supported' => $this->scopeRegistry->all(),
             'authorization_response_iss_parameter_supported' => true,
             // CIMD: clients may present an HTTPS URL as client_id (no registration).

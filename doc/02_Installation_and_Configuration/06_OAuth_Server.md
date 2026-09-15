@@ -37,7 +37,10 @@ on the same public contracts, and any bundle can do the same.
   Registration** ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), and optional **Client ID Metadata
   Documents**. Pre-registered and metadata-document clients are always public (PKCE, no secret). A dynamically
   registered client is public only when it registers `token_endpoint_auth_method: none`; RFC 7591 defaults an
-  omitted value to `client_secret_basic`, and the server then issues a secret. There is no Client Credentials
+  omitted value to `client_secret_basic`, and the server then issues a secret. Those two are the only accepted
+  values: `client_secret_post` is refused at registration and not advertised, because the transport a client
+  used is no longer distinguishable by the time the request reaches this server, so registering it would
+  record a preference nothing could honour. There is no Client Credentials
   grant either way, so a client always acts for a logged-in user. Non-interactive machine access uses whatever
   static credential the target application supports, for example the
   [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT).

@@ -47,7 +47,20 @@ final readonly class ClientRegistrar
 {
     private const array SUPPORTED_GRANTS = ['authorization_code', 'refresh_token'];
 
-    private const array AUTH_METHODS = ['none', 'client_secret_basic', 'client_secret_post'];
+    /**
+     * `client_secret_post` is deliberately absent. league collapses both transports before
+     * this bundle sees them - AbstractGrant::getClientCredentials() reads HTTP Basic, then
+     * lets a body `client_secret` fill or override it, and hands ClientRepository a single
+     * pair - so by the time any of our code runs the transport the client actually used is
+     * gone. A registered `client_secret_post` could therefore be recorded and echoed back
+     * but never enforced, which is the accepted-but-ignored metadata this list exists to
+     * avoid. Accepting only the method the server can honour keeps the registration
+     * response truthful.
+     *
+     * With only these two, the stored method is exactly what was registered: it follows
+     * from `confidential`, which is how OAuthClientRecord derives it.
+     */
+    private const array AUTH_METHODS = ['none', 'client_secret_basic'];
 
     /**
      * Bump when the digested shape changes, so old and new digests cannot collide.

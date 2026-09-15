@@ -97,6 +97,20 @@ final class AuthorizationServerMetadataControllerTest extends Unit
     }
 
     /**
+     * Advertising a method this server cannot enforce would be a promise it does not keep:
+     * the transport is not distinguishable by the time the request reaches us.
+     */
+    public function testDoesNotAdvertiseAnUnenforceableAuthMethod(): void
+    {
+        $methods = $this->metadata($this->controller())['token_endpoint_auth_methods_supported'];
+
+        $this->assertIsArray($methods);
+        $this->assertNotContains('client_secret_post', $methods);
+        $this->assertContains('client_secret_basic', $methods);
+        $this->assertContains('none', $methods);
+    }
+
+    /**
      * @param list<string> $scopes
      */
     private function controller(
