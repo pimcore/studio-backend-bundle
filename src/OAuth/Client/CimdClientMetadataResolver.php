@@ -239,6 +239,12 @@ final class CimdClientMetadataResolver implements ClientMetadataResolverInterfac
             }
         }
 
+        // `grant_types` and `scope` are deliberately not read, although the CIMD draft
+        // allows a document to carry them: honouring them means deciding what an absent or
+        // empty list means, which is the same policy question deferred for registered
+        // scopes. Until that is settled a CIMD client is unrestricted, which grants it
+        // nothing it did not already have. Documented in 06_OAuth_Server.md so nobody
+        // assumes a document's grant_types narrow anything.
         $name = is_string($data['client_name'] ?? null) && $data['client_name'] !== ''
             ? $data['client_name']
             : $clientId;

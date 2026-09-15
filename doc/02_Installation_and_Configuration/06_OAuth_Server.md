@@ -242,9 +242,14 @@ endpoint for `refresh_token`, and is issued no refresh token by the authorizatio
 `["authorization_code", "refresh_token"]` for a client that needs to refresh. Omitting `grant_types` gives
 `["authorization_code"]`, so a client that wants refresh tokens has to say so.
 
-Clients declared in `oauth.clients` and clients identified by a Client ID Metadata Document carry no
-`grant_types` at all, and are unrestricted: neither form has a way to express a restriction, so none is
-inferred.
+Clients declared in `oauth.clients` are unrestricted: the configuration has no `grant_types` key, so there is
+no restriction to read and none is inferred.
+
+Clients identified by a Client ID Metadata Document are also unrestricted, but for a different reason. A CIMD
+document **can** declare `grant_types`, since the draft draws its fields from the same registry dynamic
+registration uses, but this bundle reads only `client_id`, `redirect_uris` and `client_name` from it. A
+document that declares its grants is therefore not restricted by them. Nothing is granted that the document
+did not ask for, but do not rely on a CIMD `grant_types` to narrow a client.
 
 Two further controls bound what that endpoint can be made to do, and they cover different callers.
 

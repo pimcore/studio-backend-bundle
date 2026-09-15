@@ -33,9 +33,9 @@ final class ClientEntity implements ClientEntityInterface
     /**
      * @param string|string[]   $redirectUri
      * @param list<string>|null $grantTypes the grants this client registered for, or null
-     *                                      when it never declared a restriction
+     *                                      when this client source carries no grant metadata
      * @param list<string>|null $scopes     the scopes this client registered for, or null
-     *                                      when it never declared any
+     *                                      when this client source carries no scope metadata
      */
     public function __construct(
         string $identifier,
@@ -72,12 +72,15 @@ final class ClientEntity implements ClientEntityInterface
      * `authorization_code` alone still completes that flow and receives an access token;
      * it simply gets no refresh token, and is refused if it tries the refresh grant.
      *
-     * Null means the client never declared a restriction, which is every client an
-     * operator declared in `oauth.clients` and every CIMD client: neither form carries
-     * `grant_types`, and inferring a restriction from its absence would silently narrow
-     * what those clients can do. Dynamically registered clients always carry at least
-     * `authorization_code` (see ClientRegistrar::parseGrantTypes()), so the null case
-     * never means "a DCR client that registered nothing".
+     * Null means this client source carries no grant metadata at all, not that a client
+     * declared an empty list. It is every client an operator wrote into `oauth.clients`,
+     * where the configuration has no such key, and every CIMD client, whose document may
+     * declare `grant_types` but whose metadata this bundle does not read. Inferring a
+     * restriction from that silence would silently narrow what those clients can do.
+     *
+     * A dynamically registered client never produces null, and never produces an empty
+     * list either: ClientRegistrar::parseGrantTypes() always returns at least
+     * `authorization_code`.
      */
     public function supportsGrantType(string $grantType): bool
     {
@@ -85,7 +88,15 @@ final class ClientEntity implements ClientEntityInterface
     }
 
     /**
-     * The scopes this client registered for, or null when it declared none.
+     * The scopes this client registered for, or null when this client source carries no
+     * scope metadata.
+     *
+     * The distinction matters for the deferred intersection, and the two are not the same
+     * thing. Null is a config-declared or CIMD client, for which no scope metadata exists
+     * to intersect against. An empty array is a dynamically registered client that
+     * registered without naming any scope, which ClientRegistrar::parseScopes() normalises
+     * to `[]` and which is the common DCR case: whether that means "no restriction
+     * expressed" or "nothing permitted" is precisely the policy question left open.
      *
      * Carried here so the scope work can intersect against it, and deliberately consulted
      * by nothing yet: see ScopeRepository::finalizeScopes().

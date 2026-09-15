@@ -16,19 +16,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server\Grant;
 use Codeception\Test\Unit;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
-use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Grant\AbstractGrant;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Nyholm\Psr7\ServerRequest;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ClientMetadataResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\DynamicClient;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Grant\ResourceRefreshTokenGrant;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\DynamicClientStoreInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\TokenRecordStoreInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
 use function json_encode;
+use function method_exists;
 use function time;
 
 /**
@@ -67,81 +63,28 @@ final class ResourceRefreshTokenGrantTest extends Unit
     }
 
     /**
-     * The refusal happens inside league's own path: AbstractGrant::getClientEntityOrFail()
-     * asks the entity whether it supports the grant being used, and raises
-     * `unauthorized_client` when it does not. Driven through the real ClientRepository so
-     * this covers the whole chain from the persisted registration to the OAuth error.
+     * The one thing about league this feature depends on, pinned as a contract rather than
+     * by driving it.
+     *
+     * Enforcement works only because league asks the client entity whether it supports the
+     * grant in play: AbstractGrant::getClientEntityOrFail() refuses with
+     * `unauthorized_client`, and issueRefreshToken() omits the refresh token. That hook does
+     * not exist before league 9.2.0 - on 9.1.0 there is no supportsGrantType anywhere in the
+     * library - so on an older release nothing would ever ask and the registered grant types
+     * would be decorative again, silently. `composer.json` therefore requires ^9.2, and this
+     * fails if a future release drops the seam.
+     *
+     * Deliberately not driven through the protected call path by reflection: that is league's
+     * internal arrangement, it differs between 9.1 and 9.4, and a test coupled to it breaks
+     * on a dependency reshuffle and gets deleted rather than understood. What this bundle
+     * owns - that the entity answers truthfully - is asserted in ClientRepositoryTest.
      */
-    public function testClientRegisteredWithoutRefreshIsRefusedAtTheTokenEndpoint(): void
+    public function testLeagueStillConsultsTheClientEntityForGrantSupport(): void
     {
-        $grant = $this->grantForClient(['authorization_code']);
-
-        try {
-            $this->getClientEntityOrFail($grant, 'dcr_client');
-            $this->fail('A client that did not register refresh_token must be refused.');
-        } catch (OAuthServerException $exception) {
-            $this->assertSame('unauthorized_client', $exception->getErrorType());
-            // A client error, not a 500: league answers with the standard OAuth envelope.
-            $this->assertSame(400, $exception->getHttpStatusCode());
-        }
-    }
-
-    public function testClientRegisteredWithRefreshIsAccepted(): void
-    {
-        $grant = $this->grantForClient(['authorization_code', 'refresh_token']);
-
-        $client = $this->getClientEntityOrFail($grant, 'dcr_client');
-
-        $this->assertSame('dcr_client', $client->getIdentifier());
-    }
-
-    /**
-     * A client an operator declared in configuration carries no grant_types, so it must
-     * stay unrestricted rather than losing refresh_token to an inferred restriction.
-     */
-    public function testPreRegisteredClientIsNotRefused(): void
-    {
-        $grant = $this->grant($this->makeEmpty(TokenRecordStoreInterface::class));
-        $grant->setClientRepository(new ClientRepository(
-            ['swagger-ui' => ['name' => 'Swagger UI', 'redirect_uris' => ['https://app/cb']]],
-            $this->makeEmpty(ClientMetadataResolverInterface::class, ['resolve' => null]),
-            $this->makeEmpty(DynamicClientStoreInterface::class, ['find' => null]),
-        ));
-
-        $client = $this->getClientEntityOrFail($grant, 'swagger-ui');
-
-        $this->assertSame('swagger-ui', $client->getIdentifier());
-    }
-
-    /**
-     * @param list<string> $grantTypes
-     */
-    private function grantForClient(array $grantTypes): ResourceRefreshTokenGrant
-    {
-        $dynamic = new DynamicClient('dcr_client', 'Dyn', ['https://app/cb'], $grantTypes, [], false, null);
-
-        $grant = $this->grant($this->makeEmpty(TokenRecordStoreInterface::class));
-        $grant->setClientRepository(new ClientRepository(
-            [],
-            $this->makeEmpty(ClientMetadataResolverInterface::class, ['resolve' => null]),
-            $this->makeEmpty(DynamicClientStoreInterface::class, [
-                'find' => fn (string $id): ?DynamicClient => $id === 'dcr_client' ? $dynamic : null,
-            ]),
-        ));
-
-        return $grant;
-    }
-
-    /**
-     * @throws OAuthServerException
-     */
-    private function getClientEntityOrFail(
-        ResourceRefreshTokenGrant $grant,
-        string $clientId,
-    ): ClientEntityInterface {
-        $method = new ReflectionMethod($grant, 'getClientEntityOrFail');
-
-        return $method->invoke($grant, $clientId, new ServerRequest('POST', '/pimcore-oauth/token'));
+        $this->assertTrue(
+            method_exists(AbstractGrant::class, 'supportsGrantType'),
+            'league no longer asks the client entity about grant types; registered grant_types are not enforced.',
+        );
     }
 
     private function grant(TokenRecordStoreInterface $store): ResourceRefreshTokenGrant
