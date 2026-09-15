@@ -91,6 +91,54 @@ final class OAuthEndpointGuardSubscriberTest extends Unit
     }
 
     /**
+     * Security regression. `Request::getPathInfo()` is still percent-encoded while the
+     * router matches on the decoded path, so comparing the raw value let
+     * `/%70imcore-oauth/register` route to the registration controller with this guard
+     * skipped entirely. The set of encodings is unbounded, so the fix has to be decoding
+     * rather than a list of variants.
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function encodedOAuthPathProvider(): array
+    {
+        return [
+            'encoded prefix' => ['/%70imcore-oauth/register', 'POST'],
+            'encoded endpoint' => ['/pimcore-oauth/%72egister', 'POST'],
+            'encoded token endpoint' => ['/pimcore-oauth/%74oken', 'POST'],
+            'encoded well-known' => ['/.well-known/%6fauth-authorization-server', 'GET'],
+            'encoded api prefix' => [self::API_PREFIX . '/%6fauth/authorizations/abc', 'POST'],
+        ];
+    }
+
+    /**
+     * @dataProvider encodedOAuthPathProvider
+     */
+    public function testRefusesPercentEncodedOAuthPathsWhileDisabled(string $path, string $method): void
+    {
+        $event = $this->requestEvent($path, $method);
+
+        $this->subscriber()->onKernelRequest($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response, "$path must not reach routing while OAuth is disabled");
+        $this->assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
+    /**
+     * Decoded exactly once, like the router. A doubly-encoded path decodes to
+     * `/%70imcore-oauth/register`, which the router does not route to an OAuth endpoint,
+     * so refusing it here would 404 a request that was never going to arrive.
+     */
+    public function testDoesNotClaimDoublyEncodedPaths(): void
+    {
+        $event = $this->requestEvent('/%2570imcore-oauth/register', 'POST');
+
+        $this->subscriber()->onKernelRequest($event);
+
+        $this->assertNull($event->getResponse());
+    }
+
+    /**
      * @return array<string, array{0: string}>
      */
     public static function unrelatedPathProvider(): array

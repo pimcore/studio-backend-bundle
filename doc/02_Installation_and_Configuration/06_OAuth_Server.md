@@ -289,12 +289,12 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `consent_path` | `/pimcore-studio/oauth/consent` | Pimcore Studio UI route the authorize endpoint redirects to for login/consent. Hard-coupled to the UI base URL: if you change `pimcore_studio_ui.url_path`, change this to match or the redirect lands on a `404`. |
 | `allow_localhost_loopback_redirect` | `true` | Also accept `http://localhost:{port}` loopback redirect URIs. Set `false` for RFC 8252-strict (IP literals only). |
 | `cors_allowed_origins` | `[]` | Browser origins allowed to call the OAuth endpoints cross-origin. Empty = any origin (wildcard); credentials are never sent. |
-| `keys.private_key` | `null` | JWT signing private key (path or contents). |
-| `keys.public_key` | `null` | JWT signing public key (path or contents). |
-| `keys.passphrase` | `null` | Passphrase for the private key, if any. |
-| `keys.encryption_key` | `null` | Encryption key for authorization codes and refresh tokens. |
+| `keys.private_key` | `null` | JWT signing private key (path or contents). **Required when `enabled` is `true`**, validated at container build. |
+| `keys.public_key` | `null` | JWT signing public key (path or contents). **Required when `enabled` is `true`**, validated at container build. |
+| `keys.passphrase` | `null` | Passphrase for the private key, if any. Optional; a key without one is normal. |
+| `keys.encryption_key` | `null` | Encryption key for authorization codes and refresh tokens. **Required when `enabled` is `true`**, validated at container build. |
 | `clients` | `[]` | Pre-registered public clients, keyed by `client_id`; each has `name` + `redirect_uris` (see above). |
-| `dynamic_client_registration.enabled` | `false` | Expose `POST /pimcore-oauth/register` and advertise it. |
+| `dynamic_client_registration.enabled` | `false` | Expose `POST /pimcore-oauth/register` and advertise it. Has no effect while `enabled` is `false`: the endpoint answers `404` either way. |
 | `client_id_metadata_documents.enabled` | `false` | Resolve URL-form `client_id`s and advertise support. |
 | `client_id_metadata_documents.allowed_hosts` | `[]` | If non-empty, a `client_id` URL must be on one of these hosts. |
 | `client_id_metadata_documents.allow_insecure` | `false` | Dev only: permit http/loopback `client_id` URLs. |

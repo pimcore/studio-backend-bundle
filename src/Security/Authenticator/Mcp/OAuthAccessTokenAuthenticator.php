@@ -48,7 +48,7 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
 
     private const string BEARER_PREFIX = 'Bearer ';
 
-    private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/';
+    private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u';
 
     public function __construct(
         private readonly bool $enabled,

@@ -51,6 +51,12 @@ class Configuration implements ConfigurationInterface
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
+    private const string OAUTH_KEYS_REQUIRED_ERROR =
+        'pimcore_studio_backend.oauth.keys.private_key, .public_key and .encryption_key must all be set '
+        . 'when oauth.enabled is true. Without them AuthorizationServerFactory cannot build the server, '
+        . 'and the failure surfaces as an uncaught 500 on the public /pimcore-oauth/authorize endpoint '
+        . 'rather than as a configuration error. See the "Generating keys" section of the OAuth docs.';
+
     private const string OAUTH_ISSUER_REQUIRED_ERROR =
         'pimcore_studio_backend.oauth.issuer must be set when oauth.enabled is true, '
         . 'e.g. "https://pimcore.example.com". It is the one identity the server is '
@@ -938,8 +944,32 @@ class Configuration implements ConfigurationInterface
                         && ($oauth['issuer'] ?? null) === null)
                     ->thenInvalid(self::OAUTH_ISSUER_REQUIRED_ERROR)
                 ->end()
+                // Same shape, same reason: enabling the server without key material leaves
+                // it unable to build at all, and AuthorizeController only catches
+                // OAuthServerException, so MissingKeyMaterialException escapes uncaught on a
+                // public unauthenticated path. `passphrase` stays optional - a key without
+                // one is normal.
+                ->validate()
+                    ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
+                        && self::hasMissingOAuthKey($oauth['keys'] ?? []))
+                    ->thenInvalid(self::OAUTH_KEYS_REQUIRED_ERROR)
+                ->end()
             ->end()
         ->end();
+    }
+
+    /**
+     * @param array<string, mixed> $keys
+     */
+    private static function hasMissingOAuthKey(array $keys): bool
+    {
+        foreach (['private_key', 'public_key', 'encryption_key'] as $key) {
+            if (($keys[$key] ?? null) === null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function addOAuthClientIdMetadataDocumentsNode(): ArrayNodeDefinition

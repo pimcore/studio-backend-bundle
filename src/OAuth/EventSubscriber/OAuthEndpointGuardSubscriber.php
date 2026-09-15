@@ -15,9 +15,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use function rawurldecode;
 use function rtrim;
 use function str_starts_with;
 
@@ -83,11 +85,29 @@ final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInte
             return;
         }
 
-        if (!$this->isOAuthPath($event->getRequest()->getPathInfo())) {
+        if (!$this->isOAuthPath($this->routedPath($event->getRequest()))) {
             return;
         }
 
         $event->setResponse(new JsonResponse(['error' => 'not_found'], Response::HTTP_NOT_FOUND));
+    }
+
+    /**
+     * The path the router will actually match on.
+     *
+     * Request::getPathInfo() is still percent-encoded, while the router matches on the
+     * decoded path (CompiledUrlMatcherTrait::doMatch() calls rawurldecode() on it).
+     * Comparing the raw path would let "/%70imcore-oauth/register" route to the
+     * registration controller with this guard skipped, and the set of encodings is
+     * unbounded.
+     *
+     * Decoded exactly once, like the router: decoding repeatedly would claim paths the
+     * router never routes here, so "%2570imcore-oauth" would be refused while the request
+     * it describes 404s anyway.
+     */
+    private function routedPath(Request $request): string
+    {
+        return rawurldecode($request->getPathInfo());
     }
 
     private function isOAuthPath(string $pathInfo): bool
