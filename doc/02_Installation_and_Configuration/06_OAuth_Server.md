@@ -91,8 +91,10 @@ looks absent is usually a toggle that never took effect.
 Three things become operator-visible the moment the server is switched on:
 
 - **Two database tables.** One records issued tokens so they can be revoked, one backs Dynamic Client
-  Registration. They ship as bundle migrations, so run `bin/console doctrine:migrations:migrate` (or the
-  Pimcore bundle installer) before the first authorization request.
+  Registration. A fresh install of the bundle creates them; an installation that already exists gets them
+  from `bin/console doctrine:migrations:migrate`. Those cover different situations rather than being
+  alternatives, so on an existing installation run the migrations before the first authorization request.
+  Without the tables, enabling OAuth fails on that first request with a `TableNotFoundException`.
 - **A maintenance task.** `OAuthTokenGcTask` prunes expired token records and runs as part of
   `bin/console pimcore:maintenance`. Without that cron the table grows without bound.
 - **Two filesystem cache pools.** `pimcore_studio_backend.oauth.pending_authorization` and
