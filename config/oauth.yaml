@@ -14,11 +14,15 @@ services:
     # `pimcore_studio_backend.oauth.enabled` parameter.
     #
 
-    # Resource registry; $resources is populated from bundle config in the extension.
+    # Resource registry. $resources is populated from bundle config in the extension;
+    # $providers is every tagged ProtectedResourceProviderInterface. The tagged iterator is
+    # lazy and the registry only reads it on first lookup, so a request that never touches
+    # OAuth instantiates no provider.
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface:
         class: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry
         arguments:
             $resources: []
+            $providers: !tagged_iterator pimcore_studio_backend.oauth.protected_resource_provider
 
     # Embedded identity resolution (subject = Pimcore user id).
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\IdentityResolverInterface:
@@ -125,13 +129,6 @@ services:
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface:
         alias: Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry
-
-    # Registers this bundle's own /pimcore-mcp endpoints as a protected resource.
-    # $enabled is set from config in the extension.
-    Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\McpProtectedResourceSubscriber:
-        arguments:
-            $enabled: false
-            $issuer: null
 
     Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ScopeRepository: ~
 

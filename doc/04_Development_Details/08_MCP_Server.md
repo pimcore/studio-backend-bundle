@@ -74,6 +74,50 @@ itself, at `<oauth.issuer>/pimcore-mcp`, so the metadata document resolves witho
 With OAuth **disabled** the header is omitted entirely and the response is a plain `401`, so behaviour is
 unchanged for installations that never opted in.
 
+### OAuth protected resource
+
+The MCP endpoints are an OAuth **protected resource**, i.e. a token audience. The bundle contributes it
+automatically whenever `pimcore_studio_backend.oauth.enabled` is true, so there is nothing to configure:
+
+| | |
+|---|---|
+| Resource URI | `<oauth.issuer>/pimcore-mcp` |
+| Scopes | `mcp:read`, `mcp:write` |
+| Authorization server | `<oauth.issuer>` |
+
+The URI is the MCP **base**. Every `/pimcore-mcp/...` request is validated against that one audience, not
+against the sub-path that was called, which is also why the `401` challenge above points at the base.
+
+It is built from the configured issuer rather than from the request. `Host` is caller-supplied unless
+`framework.trusted_hosts` is set, so a resource named after it would let a caller declare their own host as an
+audience, obtain a token stamped with it, and then satisfy the audience check by replaying the same header.
+Both the contribution and `OAuthAccessTokenAuthenticator` read `oauth.issuer`, so they agree on a value the
+caller cannot choose, and a reverse proxy changes nothing.
+
+Those scopes are what put `mcp:read` and `mcp:write` in the server's catalogue: a scope exists because a
+resource supports it. Nothing compares a granted scope against an operation, though, so treat them as consent
+labels rather than permissions; MCP authorization is the resolved user's own Pimcore permissions plus
+per-server access.
+
+**To override it**, declare the same URI under `oauth.resources`. A configured entry replaces the contributed
+one rather than adding a second:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        resources:
+            # Exactly <oauth.issuer>/pimcore-mcp, no trailing slash. An entry whose URI
+            # differs does not override anything: it adds an unrelated second resource
+            # that nothing validates against, and the contributed one stays as it is.
+            - uri: 'https://pimcore.example.com/pimcore-mcp'
+              scopes_supported: ['mcp:read']
+              authorization_servers: ['https://pimcore.example.com']
+```
+
+See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
+server, and [OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) to do the same for your own
+bundle's endpoints.
+
 ### `McpAccessTokenAuthenticator` (primary internal)
 
 Validates a `pmcp_`-prefixed bearer token via `McpAccessTokenService` (DB-backed, hashed at rest, TTL-bounded,

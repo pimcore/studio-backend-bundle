@@ -137,39 +137,10 @@ makes to fetch the pending authorization, not in serving the page.
 
 ### Accepting tokens at the MCP endpoints
 
-For clients to actually *use* the token against an MCP server, two things are needed. The `pimcore_mcp`
-firewall must be enabled, see the [MCP firewall setup](./README.md) (the *Optional: MCP firewall* step); its
-authenticator chain includes an OAuth bearer authenticator that validates these tokens.
-
-The MCP resource itself needs no configuration. The bundle registers `<your-host>/pimcore-mcp` as a protected
-resource supporting `mcp:read` and `mcp:write` whenever OAuth is enabled, deriving the URI from the request
-host exactly as the authenticator does, so the two cannot disagree.
-
-Declare it yourself only to change something about it, most often the scopes. An entry for the same URI
-**replaces** the built-in one rather than adding a second:
-
-```yaml
-pimcore_studio_backend:
-    oauth:
-        resources:
-            # Must be the MCP base, with no trailing slash: the authenticator validates
-            # every /pimcore-mcp/... request against this one URI, not against the
-            # sub-path that was called.
-            - uri: 'https://pimcore.example.com/pimcore-mcp'
-              scopes_supported: ['mcp:read']
-              authorization_servers: ['https://pimcore.example.com']
-```
-
-If you do, the `uri` must be exactly `<oauth.issuer>/pimcore-mcp`, with no trailing slash. That is the value
-the built-in registration uses and the value the MCP authenticator checks a token's audience against, so an
-entry that differs does not override the built-in one: it adds a **second**, unrelated resource that nothing
-validates against, while the built-in one stays in place with its own scopes.
-
-Neither side reads the request's `Host`, so a reverse proxy changes nothing here. That is deliberate: `Host`
-is caller-supplied unless `framework.trusted_hosts` is set, and deriving an audience from it would let a
-caller name their own host as a protected resource and then satisfy the audience check with the same spoofed
-header. See
-[Deriving the resource URI](../04_Development_Details/07_OAuth_Protected_Applications.md#deriving-the-resource-uri).
+For clients to actually *use* the token against an MCP server, the `pimcore_mcp` firewall must be enabled, see
+the [MCP firewall setup](./README.md) (the *Optional: MCP firewall* step); its authenticator chain includes an
+OAuth bearer authenticator that validates these tokens. The MCP resource itself needs no configuration, and is
+described in [MCP Server Infrastructure](../04_Development_Details/08_MCP_Server.md#oauth-protected-resource).
 
 ## Endpoints
 
@@ -273,8 +244,10 @@ pimcore_studio_backend:
 ## Protected resources (audiences)
 
 Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
-Applications whose endpoints are only known at runtime register them programmatically instead, through
-`ResourceRegistryInterface`, which is how Datahub Simple REST declares its own.
+Bundles contribute their own by implementing `ProtectedResourceProviderInterface`, which is how Datahub Simple
+REST declares its endpoints and how this bundle declares its
+[MCP endpoints](../04_Development_Details/08_MCP_Server.md#oauth-protected-resource) - so expect entries here
+you did not configure. Declaring the same URI yourself overrides the contributed one.
 
 The authorization server issues nothing until at least one protected resource exists. Enabling it is therefore
 not enough on its own: something has to declare a resource, and something has to accept tokens at it.

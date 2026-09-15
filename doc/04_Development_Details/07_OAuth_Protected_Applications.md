@@ -53,7 +53,8 @@ already authenticated.
 | `OAuth\Contract\ScopeRegistryInterface` | Read the scope catalogue |
 | `OAuth\Contract\TokenValidatorInterface` | Validate a raw bearer token and resolve it to effective access |
 | `OAuth\Dto\ResolvedAccess` | Result of validation: the Pimcore user, granted scopes, audience, client id |
-| `OAuth\Contract\ResourceRegistryInterface` | Register endpoints as protected resources, making their RFC 9728 metadata resolvable |
+| `OAuth\Contract\ProtectedResourceProviderInterface` | Contribute your endpoints as protected resources, making their RFC 9728 metadata resolvable |
+| `OAuth\Contract\ResourceRegistryInterface` | Read the protected resources this installation exposes |
 | `OAuth\Dto\ProtectedResource` | One protected resource: canonical URI, supported scopes, authorization servers |
 | `OAuth\Dto\ProtectedResourceMetadata` | The metadata document served for a resource |
 
@@ -82,15 +83,13 @@ resolve the user. Whatever shape you chose, leave every other credential your bu
 is not proof, so a credential that looks like a token but does not resolve should fall through to your
 existing check rather than being rejected.
 
-**3. Resource registration.** One `ProtectedResource` per endpoint that acts as a token audience. This does
-two things: it makes `/.well-known/oauth-protected-resource/<path>` resolvable, which is how a client
-discovers the authorization server, and it is what the authorization endpoint validates a requested
+**3. A protected-resource provider.** One `ProtectedResource` per endpoint that acts as a token audience.
+This does two things: it makes `/.well-known/oauth-protected-resource/<path>` resolvable, which is how a
+client discovers the authorization server, and it is what the authorization endpoint validates a requested
 `resource` against. One endpoint means one resource, even when it serves many logical things behind it.
 
-Register on every request that might consult the registry. That includes your own endpoint, its metadata
-document, and the OAuth endpoints, since the authorization request is validated there. Deriving the URI from
-the configured issuer rather than the request host keeps registration idempotent. The bundle's own MCP
-authenticator is the exception rather than the model here, see [Deriving the resource URI](#deriving-the-resource-uri).
+You describe them once, in a tagged service; nothing is registered per request. See
+[Deriving the resource URI](#deriving-the-resource-uri) for where the URI must come from.
 
 **4. A 401 challenge** carrying `WWW-Authenticate: Bearer resource_metadata="…"`. Without this parameter a
 standards-based client cannot begin discovery, so the whole flow never starts.
@@ -190,30 +189,64 @@ credential, call `validate()`, resolve the user, and on failure continue to what
 Either way, gate it on `%pimcore_studio_backend.oauth.enabled%` so the code is inert when the authorization
 server is switched off.
 
-### Step 3: Register protected resources
+### Step 3: Declare your protected resources
 
-Inject `ResourceRegistryInterface` and register one resource per endpoint that acts as an audience. The
-registry is built per request rather than at compile time, so registration happens in a `kernel.request`
-subscriber:
+Implement `ProtectedResourceProviderInterface` and describe every resource your bundle owns:
 
 ```php
-$base = $this->issuer ?? $request->getSchemeAndHttpHost();
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ProtectedResourceProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 
-$this->resourceRegistry->register(
-    new ProtectedResource(
-        $base . '/my-bundle-prefix/endpoint',
-        ['mybundle:read'],
-        [$base],
-    )
-);
+final readonly class MyProtectedResourceProvider implements ProtectedResourceProviderInterface
+{
+    public function __construct(
+        private bool $enabled,
+        private ?string $issuer,
+    ) {
+    }
+
+    public function resources(): iterable
+    {
+        // Nothing to offer while the feature is off, or before an issuer exists to
+        // build a URI from. Yielding nothing fails closed: an unregistered resource is
+        // refused at the authorization endpoint.
+        if (!$this->enabled || $this->issuer === null) {
+            return;
+        }
+
+        yield new ProtectedResource(
+            $this->issuer . '/my-bundle-prefix/endpoint',
+            ['mybundle:read'],
+            [$this->issuer],
+        );
+    }
+}
 ```
 
-The scopes passed here are not decoration: they cap what a token for this resource may carry, and a client
-that asks for more is narrowed to them before consent is shown.
+Tag the service, and pass the issuer from `pimcore_studio_backend.oauth.issuer`:
 
-Register every resource you own on every main request, not only the one being addressed: a metadata document
-is fetched on a `.well-known` request that matches none of your routes, and the authorization request is
-validated on an OAuth route, so a path filter would leave those lookups unresolvable.
+```yaml
+services:
+    My\Bundle\OAuth\MyProtectedResourceProvider:
+        tags: ['pimcore_studio_backend.oauth.protected_resource_provider']
+        arguments:
+            $enabled: '%my_bundle.oauth_enabled%'
+            $issuer: '%pimcore_studio_backend.oauth.issuer%'
+```
+
+The scopes are not decoration. They cap what a token for this resource may carry, a client asking for more is
+narrowed to them before consent is shown, and they are how a scope comes to exist at all: the server's
+catalogue is the union of what every resource supports.
+
+Providers are read lazily and only once. Symfony's tagged iterator does not instantiate anything until the
+registry is first read, and the registry memoises what it resolved, so a request touching neither OAuth nor
+your endpoints pays nothing. You therefore describe every resource you own unconditionally: there is no
+"current request" to filter by, which is the point. A metadata document is fetched on a `.well-known` path
+that matches none of your routes, and a requested `resource` is validated on an OAuth route, so filtering
+would have left both unresolvable anyway.
+
+`ResourceRegistryInterface` is the read side of this and has no `register()`: the set of valid audiences is a
+property of the configuration, and a request able to add to it is a request able to name its own audience.
 
 ### Step 4: Emit the challenge
 
@@ -286,22 +319,21 @@ an application:
 
 ### Deriving the resource URI
 
-**Derive it from `oauth.issuer`**, on both the registering side and the validating side. The issuer is
-required whenever the server is enabled, so it is always available, and it is configured rather than
-supplied by the caller. Every application in this bundle does this, including the MCP endpoints: the
-resource is registered at `<issuer>/pimcore-mcp` and `OAuthAccessTokenAuthenticator` checks a token's
-audience against the same value.
+**Derive it from `oauth.issuer`**, on both the contributing side and the validating side. The issuer is
+required whenever the server is enabled, so it is always available, and it is configured rather than supplied
+by the caller. Every application in this bundle does this, the
+[MCP endpoints](./08_MCP_Server.md#oauth-protected-resource) included.
 
 **Do not derive it from the request host.** `$request->getSchemeAndHttpHost()` returns the `Host` header
-unless `framework.trusted_hosts` is configured, and that is empty by default. Registering a resource named
-after it lets a caller invent an audience, obtain a token stamped with it, and then pass the audience check
-by replaying the same header, so the check compares an attacker's string against the attacker's own string.
-Two sides deriving the URI the same way is not sufficient; they have to agree on a value neither the caller
-nor a proxy can choose.
+unless `framework.trusted_hosts` is configured, and that is empty by default. A resource named after it lets a
+caller invent an audience, obtain a token stamped with it, and then pass the audience check by replaying the
+same header, so the check compares an attacker's string against the attacker's own string. Two sides deriving
+the URI the same way is not sufficient; they have to agree on a value neither the caller nor a proxy can
+choose. A provider is handed no request at all, which is what makes that mistake hard to make.
 
 Because nothing reads the request host, a reverse proxy needs no special handling for audience binding. Set
 `oauth.issuer` to the public origin, and if you write a resource URI in configuration, write it with the same
-scheme and host and no trailing slash so it matches what is registered.
+scheme and host and no trailing slash so it matches what is contributed.
 
 ## What the platform leaves to each application
 

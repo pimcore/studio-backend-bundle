@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Registry;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ProtectedResourceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ScopeRegistry;
@@ -34,26 +35,24 @@ final class ScopeRegistryTest extends Unit
         $this->assertFalse($registry->has('nope:read'));
     }
 
-    public function testCatalogueComesFromRuntimeRegisteredResources(): void
+    public function testCatalogueComesFromProvidedResources(): void
     {
-        $resources = new ConfigProtectedResourceRegistry();
-        $registry = new ScopeRegistry($resources);
-
-        $resources->register(new ProtectedResource('https://example.com/my-bundle', ['mybundle:read'], []));
+        $registry = new ScopeRegistry(new ConfigProtectedResourceRegistry([], [
+            $this->provider(new ProtectedResource('https://example.com/my-bundle', ['mybundle:read'], [])),
+        ]));
 
         $this->assertSame(['mybundle:read'], $registry->all());
     }
 
-    public function testCatalogueIsTheUnionOfConfiguredAndRuntimeResources(): void
+    public function testCatalogueIsTheUnionOfConfiguredAndProvidedResources(): void
     {
-        $resources = new ConfigProtectedResourceRegistry([
-            ['uri' => 'https://example.com/pimcore-mcp', 'scopes_supported' => ['mcp:read']],
-        ]);
-        $registry = new ScopeRegistry($resources);
+        $registry = new ScopeRegistry(new ConfigProtectedResourceRegistry(
+            [['uri' => 'https://example.com/pimcore-mcp', 'scopes_supported' => ['mcp:read']]],
+            [$this->provider(new ProtectedResource('https://example.com/my-bundle', ['mybundle:read'], []))],
+        ));
 
-        $resources->register(new ProtectedResource('https://example.com/my-bundle', ['mybundle:read'], []));
-
-        $this->assertSame(['mcp:read', 'mybundle:read'], $registry->all());
+        // Providers resolve first, configuration second.
+        $this->assertSame(['mybundle:read', 'mcp:read'], $registry->all());
     }
 
     public function testScopeSharedByTwoResourcesAppearsOnce(): void
@@ -67,24 +66,21 @@ final class ScopeRegistryTest extends Unit
     }
 
     /**
-     * The catalogue must not be memoised. Resources are registered per request by a
-     * `kernel.request` subscriber, so freezing on first use would make the answer
-     * depend on whether anything happened to ask before registration ran, which is an
-     * ordering bug that only shows up under some request paths.
+     * Reading the catalogue repeatedly must not change it. Resources can no longer be
+     * added after construction, so both entry points answer the same thing however often
+     * and in whatever order they are called.
      */
-    public function testResourceRegisteredAfterAFirstLookupIsReflected(): void
+    public function testRepeatedLookupsAreStable(): void
     {
-        $resources = new ConfigProtectedResourceRegistry();
-        $registry = new ScopeRegistry($resources);
+        $registry = new ScopeRegistry(new ConfigProtectedResourceRegistry([], [
+            $this->provider(new ProtectedResource('https://example.com/a', ['a:read'], [])),
+        ]));
 
-        // Prime both entry points before anything is registered.
-        $this->assertSame([], $registry->all());
-        $this->assertFalse($registry->has('late:read'));
-
-        $resources->register(new ProtectedResource('https://example.com/late', ['late:read'], []));
-
-        $this->assertSame(['late:read'], $registry->all());
-        $this->assertTrue($registry->has('late:read'));
+        $this->assertTrue($registry->has('a:read'));
+        $this->assertSame(['a:read'], $registry->all());
+        $this->assertTrue($registry->has('a:read'));
+        $this->assertSame(['a:read'], $registry->all());
+        $this->assertFalse($registry->has('nope:read'));
     }
 
     public function testResourceDeclaringNoScopesContributesNothing(): void
@@ -107,20 +103,35 @@ final class ScopeRegistryTest extends Unit
     }
 
     /**
-     * Re-registering a URI replaces the resource, so a scope that only the replaced
-     * definition carried must disappear from the catalogue with it.
+     * Configuration overriding a provided resource replaces it wholesale, so a scope only
+     * the provider declared disappears from the catalogue with it. That is what lets an
+     * operator narrow what a bundle offers.
      */
-    public function testReplacingAResourceReplacesItsScopes(): void
+    public function testConfigOverridingAProviderReplacesItsScopes(): void
     {
-        $resources = new ConfigProtectedResourceRegistry([
-            ['uri' => 'https://example.com/a', 'scopes_supported' => ['old:read']],
-        ]);
-        $registry = new ScopeRegistry($resources);
-        $this->assertSame(['old:read'], $registry->all());
+        $registry = new ScopeRegistry(new ConfigProtectedResourceRegistry(
+            [['uri' => 'https://example.com/a', 'scopes_supported' => ['narrow:read']]],
+            [$this->provider(new ProtectedResource('https://example.com/a', ['wide:read', 'wide:write'], []))],
+        ));
 
-        $resources->register(new ProtectedResource('https://example.com/a', ['new:read'], []));
+        $this->assertSame(['narrow:read'], $registry->all());
+    }
 
-        $this->assertSame(['new:read'], $registry->all());
+    private function provider(ProtectedResource ...$resources): ProtectedResourceProviderInterface
+    {
+        return new class($resources) implements ProtectedResourceProviderInterface {
+            /**
+             * @param list<ProtectedResource> $resources
+             */
+            public function __construct(private readonly array $resources)
+            {
+            }
+
+            public function resources(): iterable
+            {
+                yield from $this->resources;
+            }
+        };
     }
 
     /**

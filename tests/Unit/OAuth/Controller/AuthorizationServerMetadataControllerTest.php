@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Controller;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ProtectedResourceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ScopeRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizationServerMetadataController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
@@ -72,9 +73,15 @@ final class AuthorizationServerMetadataControllerTest extends Unit
      */
     public function testAdvertisedScopesAreDerivedFromTheRegisteredResources(): void
     {
-        $resources = new ConfigProtectedResourceRegistry([
-            ['uri' => 'https://issuer.test/pimcore-mcp', 'scopes_supported' => ['mcp:read', 'mcp:write']],
-        ]);
+        $resources = new ConfigProtectedResourceRegistry(
+            [['uri' => 'https://issuer.test/pimcore-mcp', 'scopes_supported' => ['mcp:read', 'mcp:write']]],
+            [new class implements ProtectedResourceProviderInterface {
+                public function resources(): iterable
+                {
+                    yield new ProtectedResource('https://issuer.test/my-bundle', ['mybundle:read'], []);
+                }
+            }],
+        );
         $controller = new AuthorizationServerMetadataController(
             self::ISSUER,
             new ScopeRegistry($resources),
@@ -82,14 +89,9 @@ final class AuthorizationServerMetadataControllerTest extends Unit
             false,
         );
 
-        $this->assertSame(['mcp:read', 'mcp:write'], $this->metadata($controller)['scopes_supported']);
-
-        // A resource registered later in the request is advertised too, which it would
-        // not be if the catalogue were memoised on first read.
-        $resources->register(new ProtectedResource('https://issuer.test/my-bundle', ['mybundle:read'], []));
-
+        // Providers resolve first, configuration second.
         $this->assertSame(
-            ['mcp:read', 'mcp:write', 'mybundle:read'],
+            ['mybundle:read', 'mcp:read', 'mcp:write'],
             $this->metadata($controller)['scopes_supported'],
         );
     }

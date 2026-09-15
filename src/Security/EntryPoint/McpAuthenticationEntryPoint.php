@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint;
 
-use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,7 +58,7 @@ final class McpAuthenticationEntryPoint implements AuthenticationEntryPointInter
                     'Bearer resource_metadata="%s", scope="%s"',
                     $request->getSchemeAndHttpHost()
                         . self::METADATA_PREFIX
-                        . OAuthAccessTokenAuthenticator::MCP_RESOURCE_PATH,
+                        . McpPath::BASE,
                     self::DEFAULT_SCOPE,
                 )
             );

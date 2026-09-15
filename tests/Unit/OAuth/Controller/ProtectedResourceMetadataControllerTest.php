@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Controller;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ProtectedResourceMetadataController;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,12 +23,13 @@ final class ProtectedResourceMetadataControllerTest extends Unit
 {
     public function testServesMetadataForRegisteredResource(): void
     {
-        $registry = new ConfigProtectedResourceRegistry();
-        $registry->register(new ProtectedResource(
-            'https://pimcore.example.com/pimcore-mcp',
-            ['mcp:read'],
-            ['https://pimcore.example.com/pimcore-oauth'],
-        ));
+        $registry = new ConfigProtectedResourceRegistry([
+            [
+                'uri' => 'https://pimcore.example.com/pimcore-mcp',
+                'scopes_supported' => ['mcp:read'],
+                'authorization_servers' => ['https://pimcore.example.com/pimcore-oauth'],
+            ],
+        ]);
 
         $response = (new ProtectedResourceMetadataController($registry))(
             $this->requestFor('https://pimcore.example.com'),

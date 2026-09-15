@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
@@ -48,15 +49,6 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     private const string BEARER_PREFIX = 'Bearer ';
 
     private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/';
-
-    /**
-     * The single resource every MCP request is validated against, regardless of the
-     * sub-path it targets. Public because McpAuthenticationEntryPoint has to advertise
-     * this exact resource in its RFC 9728 challenge: a challenge naming anything else
-     * sends the client to a metadata document that does not describe what is enforced
-     * here.
-     */
-    public const string MCP_RESOURCE_PATH = '/pimcore-mcp';
 
     public function __construct(
         private readonly bool $enabled,
@@ -147,6 +139,8 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     {
         $base = $this->issuer ?? $request->getSchemeAndHttpHost();
 
-        return CanonicalUri::canonicalize($base . self::MCP_RESOURCE_PATH);
+        // McpPath::BASE, not a local copy: the resource this validates against is the one
+        // Mcp\ProtectedResourceProvider declares, and they must be the same string.
+        return CanonicalUri::canonicalize($base . McpPath::BASE);
     }
 }

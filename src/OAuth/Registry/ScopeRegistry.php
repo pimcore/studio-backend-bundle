@@ -37,10 +37,9 @@ final readonly class ScopeRegistry implements ScopeRegistryInterface
     }
 
     /**
-     * Recomputed on every call rather than memoised. Resources are not static: a
-     * bundle registers its own from a `kernel.request` subscriber, so a catalogue
-     * frozen on first use would depend on whether anything happened to ask before
-     * registration ran. The sets involved are a handful of short strings.
+     * Recomputed on every call. The resource registry memoises its own resolution, so
+     * this walks an in-memory array of a handful of short strings; keeping a second copy
+     * here would buy nothing and add a place for the two to disagree.
      */
     public function all(): array
     {
