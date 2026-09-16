@@ -80,6 +80,19 @@ final class AdapterServiceTest extends Unit
         $this->assertNull($this->capturedGetDataArguments[2]);
     }
 
+    public function testGetDataWithoutDataSourceConfig(): void
+    {
+        $service = $this->createService();
+
+        $config = new Config();
+        $config->setDataSourceConfig([]);
+
+        $service->getData($config, new ChartDataParameter('testReport'));
+
+        $this->assertNull($this->capturedGetDataArguments[1]);
+        $this->assertNull($this->capturedGetDataArguments[2]);
+    }
+
     private function createReportConfig(array $dataSourceConfig): Config
     {
         $config = new Config();
