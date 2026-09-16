@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Telemetry\LoginMarkerInterface;
 use Pimcore\Security\User\User;
 use Pimcore\Telemetry\TelemetryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -29,6 +30,9 @@ use function in_array;
  * session without re-authenticating (no event), and MCP is a separate firewall. The only property
  * is whether the user is an admin - never a username, email, or id.
  *
+ * It also leaves the login time in the session (see {@see LoginMarkerInterface}) so the logout twin can
+ * report the session duration.
+ *
  * @internal
  */
 final readonly class LoginTelemetrySubscriber implements EventSubscriberInterface
@@ -42,6 +46,7 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
 
     public function __construct(
         private TelemetryInterface $telemetry,
+        private LoginMarkerInterface $loginMarker,
     ) {
     }
 
@@ -57,6 +62,8 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
         if (!in_array($event->getRequest()->attributes->get('_route'), self::LOGIN_ROUTES, true)) {
             return;
         }
+
+        $this->loginMarker->record($event->getRequest());
 
         $this->telemetry->capture(self::EVENT_STUDIO_LOGIN, [
             'is_admin' => $this->isAdmin($event),

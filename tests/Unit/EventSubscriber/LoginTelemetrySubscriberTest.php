@@ -15,10 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\EventSubscriber;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\LoginTelemetrySubscriber;
+use Pimcore\Bundle\StudioBackendBundle\Telemetry\LoginMarkerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Telemetry\SessionLoginMarker;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
 use Pimcore\Telemetry\TelemetryInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
@@ -104,30 +108,65 @@ final class LoginTelemetrySubscriberTest extends Unit
         $this->assertFalse($this->captured[0]['properties']['is_admin']);
     }
 
+    /**
+     * The logout twin measures the session from a marker the login leaves behind; it holds the login
+     * time only, never who logged in.
+     */
+    public function testLeavesALoginTimeMarkerInTheSessionForTheLogoutTwin(): void
+    {
+        $event = $this->event('pimcore_studio_api_login', admin: false);
+
+        $this->subscriber()->onLoginSuccess($event);
+
+        $duration = (new SessionLoginMarker())->sessionDurationSeconds($event->getRequest());
+        $this->assertNotNull($duration);
+        $this->assertLessThanOrEqual(2, $duration);
+        $this->assertSame([LoginMarkerInterface::SESSION_KEY], array_keys($event->getRequest()->getSession()->all()));
+    }
+
+    public function testLeavesNoMarkerForLoginsOnUnrelatedRoutes(): void
+    {
+        $event = $this->event('some_other_firewall_login', admin: false);
+
+        $this->subscriber()->onLoginSuccess($event);
+
+        $this->assertSame([], $event->getRequest()->getSession()->all());
+    }
+
+    public function testAStudioLoginWithoutASessionStillCountsAndDoesNotFail(): void
+    {
+        $this->subscriber()->onLoginSuccess($this->event('pimcore_studio_api_login', admin: true, withSession: false));
+
+        $this->assertCount(1, $this->captured);
+    }
+
     private function subscriber(): LoginTelemetrySubscriber
     {
-        $telemetry = $this->createMock(TelemetryInterface::class);
+        $telemetry = $this->createStub(TelemetryInterface::class);
         $telemetry->method('capture')->willReturnCallback(
             function (string $event, array $properties = []): void {
                 $this->captured[] = ['event' => $event, 'properties' => $properties];
             }
         );
 
-        return new LoginTelemetrySubscriber($telemetry);
+        return new LoginTelemetrySubscriber($telemetry, new SessionLoginMarker());
     }
 
     /**
      * @param bool|null $admin true/false for a Pimcore user, null for a non-Pimcore user object
      */
-    private function event(?string $route, ?bool $admin): LoginSuccessEvent
+    private function event(?string $route, ?bool $admin, bool $withSession = true): LoginSuccessEvent
     {
         $request = new Request();
         if ($route !== null) {
             $request->attributes->set('_route', $route);
         }
+        if ($withSession) {
+            $request->setSession(new Session(new MockArraySessionStorage()));
+        }
 
         if ($admin === null) {
-            $user = $this->createMock(UserInterface::class);
+            $user = $this->createStub(UserInterface::class);
         } else {
             // Pimcore\Model\User is final, and both types are cheap value-ish objects, so build
             // them for real rather than doubling.
@@ -136,12 +175,12 @@ final class LoginTelemetrySubscriberTest extends Unit
             $user = new SecurityUser($pimcoreUser);
         }
 
-        $token = $this->createMock(TokenInterface::class);
+        $token = $this->createStub(TokenInterface::class);
         $token->method('getUser')->willReturn($user);
 
         return new LoginSuccessEvent(
-            $this->createMock(AuthenticatorInterface::class),
-            $this->createMock(Passport::class),
+            $this->createStub(AuthenticatorInterface::class),
+            $this->createStub(Passport::class),
             $token,
             $request,
             null,
