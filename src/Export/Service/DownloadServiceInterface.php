@@ -25,6 +25,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 interface DownloadServiceInterface
 {
+    public const EXPORT_DOWNLOAD_FILENAME = 'export_download_filename';
+
     /**
      * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
