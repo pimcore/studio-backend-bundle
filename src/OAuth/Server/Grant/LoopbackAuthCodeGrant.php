@@ -127,11 +127,18 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
         $supported = $this->resourceRegistry->get($resource)->scopesSupported ?? [];
         $requested = $request->getScopes();
 
-        // A resource that declares no scopes constrains nothing, and a request that names
-        // none has nothing to narrow. Neither is an error: both are reachable today, and
-        // refusing them would turn working clients away over a token nobody checks.
-        if ($supported === [] || $requested === []) {
+        // A resource that declares no scopes constrains nothing.
+        if ($supported === []) {
             return $requested;
+        }
+
+        // RFC 6749 section 3.3: a request that omits `scope` is processed with a default
+        // value or refused. Refusing would turn away clients that work today, so the default
+        // is everything the resource declares. Passing the empty set through instead issued a
+        // token with no scopes at all, whose consent screen told the user that nothing was
+        // requested while the token still reached the resource.
+        if ($requested === []) {
+            return $this->scopesOf($supported);
         }
 
         $narrowed = array_values(
@@ -161,6 +168,27 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
         }
 
         return $narrowed;
+    }
+
+    /**
+     * The catalogue is derived from the same resources, so every declared scope resolves;
+     * the null check only keeps the return type honest.
+     *
+     * @param list<string> $identifiers
+     *
+     * @return ScopeEntityInterface[]
+     */
+    private function scopesOf(array $identifiers): array
+    {
+        $scopes = [];
+        foreach ($identifiers as $identifier) {
+            $scope = $this->scopeRepository->getScopeEntityByIdentifier($identifier);
+            if ($scope !== null) {
+                $scopes[] = $scope;
+            }
+        }
+
+        return $scopes;
     }
 
     /**

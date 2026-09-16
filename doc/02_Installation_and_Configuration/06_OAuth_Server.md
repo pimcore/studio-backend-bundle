@@ -354,7 +354,9 @@ for the full rules.
 
 `scopes_supported` does two jobs. It caps what a token for that resource may carry, so a client asking for
 more is narrowed to the intersection and one asking **only** for scopes the resource does not declare is
-refused with `invalid_scope`. And it is **how a scope comes to exist at all**: the server's catalogue, which
+refused with `invalid_scope`. A client naming no scope at all is given every scope the resource declares, so
+the consent screen always shows what the token will carry. And it is **how a scope comes to exist at all**:
+the server's catalogue, which
 the authorization endpoint accepts, dynamic clients may register and the metadata advertises, is the union of
 the `scopes_supported` of every registered resource. There is nothing else to declare, and nothing that can
 disagree with it.

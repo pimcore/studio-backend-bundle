@@ -409,12 +409,30 @@ final class LoopbackAuthCodeGrantTest extends Unit
 
     /**
      * The production configuration: no default scope is ever set, so a client that names
-     * none arrives with an empty list. Narrowing must leave it alone rather than read it
-     * as "asked for nothing this resource supports" and refuse a working client.
+     * none arrives with an empty list. It is still accepted, but given everything the
+     * resource declares: passing the empty set through issued a token whose consent screen
+     * said nothing was requested while the token still reached the resource.
      */
-    public function testARequestNamingNoScopeIsAccepted(): void
+    public function testARequestNamingNoScopeIsGivenEveryScopeTheResourceDeclares(): void
     {
-        $authRequest = $this->grant(defaultScope: '', supportedScopes: ['mcp:read'])
+        $authRequest = $this->grant(defaultScope: '', supportedScopes: ['mcp:read', 'mcp:write'])
+            ->validateAuthorizationRequest($this->authorizeRequest([
+                'code_challenge' => self::CODE_CHALLENGE,
+                'code_challenge_method' => 'S256',
+                'resource' => self::KNOWN_RESOURCE,
+                'scope' => null,
+            ]));
+
+        $this->assertSame(['mcp:read', 'mcp:write'], $this->scopeIdentifiers($authRequest));
+    }
+
+    /**
+     * Without declared scopes there is no default to apply, so the request keeps its empty
+     * list rather than being refused.
+     */
+    public function testARequestNamingNoScopeForAResourceDeclaringNoneStaysEmpty(): void
+    {
+        $authRequest = $this->grant(defaultScope: '', supportedScopes: [])
             ->validateAuthorizationRequest($this->authorizeRequest([
                 'code_challenge' => self::CODE_CHALLENGE,
                 'code_challenge_method' => 'S256',

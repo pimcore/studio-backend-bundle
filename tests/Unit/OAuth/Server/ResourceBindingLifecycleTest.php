@@ -125,6 +125,19 @@ final class ResourceBindingLifecycleTest extends Unit
     }
 
     /**
+     * A client that omits `scope` gets the resource's declared scopes on the token, not an
+     * empty set. Driven end to end because the scopes travel from the authorization request
+     * through the encrypted code to the JWT claim, and the claim is what an application reads.
+     */
+    public function testARequestWithoutScopeIsIssuedTheScopesTheResourceDeclares(): void
+    {
+        $issued = $this->exchange($this->authorize(null));
+
+        $this->assertSame(self::SCOPE, $this->claims($issued['access_token'])->claims()->get('scope'));
+        $this->assertSame(self::SCOPE, $issued['scope'] ?? null);
+    }
+
+    /**
      * league validates a refresh token from its own encrypted payload and reads an unknown
      * identifier as "not revoked", so nothing but this refuses a token whose record is gone.
      * Refreshing it anyway answers 200 with an audience-less token that every protected
@@ -181,17 +194,21 @@ final class ResourceBindingLifecycleTest extends Unit
     /**
      * Runs the authorization leg and returns the authorization code it redirects with.
      */
-    private function authorize(): string
+    private function authorize(?string $scope = self::SCOPE): string
     {
-        $request = (new ServerRequest('GET', self::ISSUER . '/pimcore-oauth/authorize'))->withQueryParams([
+        $query = [
             'client_id' => self::CLIENT_ID,
             'response_type' => 'code',
             'redirect_uri' => self::REDIRECT_URI,
-            'scope' => self::SCOPE,
             'resource' => self::RESOURCE,
             'code_challenge' => $this->codeChallenge(),
             'code_challenge_method' => 'S256',
-        ]);
+        ];
+        if ($scope !== null) {
+            $query['scope'] = $scope;
+        }
+
+        $request = (new ServerRequest('GET', self::ISSUER . '/pimcore-oauth/authorize'))->withQueryParams($query);
 
         $authorizationRequest = $this->server->validateAuthorizationRequest($request);
         $authorizationRequest->setUser(new UserEntity('21'));

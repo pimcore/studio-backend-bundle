@@ -241,8 +241,8 @@ document 404s, its scopes vanish from the catalogue, and a client requesting its
 declared. If your resource is missing, check the tag first.
 
 The scopes are not decoration. They cap what a token for this resource may carry, a client asking for more is
-narrowed to them before consent is shown, and they are how a scope comes to exist at all: the server's
-catalogue is the union of what every resource supports.
+narrowed to them before consent is shown, a client asking for none is given all of them, and they are how a
+scope comes to exist at all: the server's catalogue is the union of what every resource supports.
 
 Providers are read lazily and only once. Symfony's tagged iterator does not instantiate anything until the
 registry is first read, and the registry memoises what it resolved, so a request touching neither OAuth nor
@@ -376,6 +376,10 @@ the request-derived URL matches the configured one again.
 on the token and reported back, but nothing compares a granted scope against an operation. What a token carries
 is therefore an upper bound the server maintains, not a check anyone performs: treat a scope as a label shown
 at consent time, not a guarantee, and enforce it yourself if your operations differ in privilege.
+
+Check for your scope even when every operation has the same privilege. The authorization request always leads to
+a consent screen listing your scopes, but a client refreshing a token may ask for fewer scopes than were granted,
+including none, and no screen is shown then. Requiring your scope keeps such a token from reaching your resource.
 
 ## Related
 
