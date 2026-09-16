@@ -48,6 +48,8 @@ final class PatAuthenticatorTest extends Unit
         $this->assertTrue((bool) $auth->supports($this->requestWith('Bearer static-pat')));
         // pmcp_-prefixed tokens belong to McpAccessTokenAuthenticator.
         $this->assertSame(false, $auth->supports($this->requestWith('Bearer pmcp_abc')));
+        // JWT-shaped bearers belong to OAuthAccessTokenAuthenticator.
+        $this->assertSame(false, $auth->supports($this->requestWith('Bearer aaa.bbb.ccc')));
         $this->assertSame(false, $auth->supports($this->requestWith('')));
     }
 

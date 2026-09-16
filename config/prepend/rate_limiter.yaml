@@ -27,3 +27,14 @@ framework:
       policy: 'sliding_window'
       limit: 3000
       interval: '1 minute'
+    # Dynamic client registrations on /pimcore-oauth/register, keyed on client IP. Sized
+    # as a denial-of-service ceiling rather than a quota, for the same reason as
+    # studio_mcp_general: a hosted AI connector registers from its provider's egress
+    # range, shared by every customer of that provider, so this bucket is not one
+    # organisation's. Registration is idempotent (ClientRegistrar::register), so repeat
+    # registrations of the same client create no rows and legitimate traffic stays far
+    # below this.
+    studio_oauth_register:
+      policy: 'fixed_window'
+      limit: 60
+      interval: '1 hour'

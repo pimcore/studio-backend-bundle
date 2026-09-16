@@ -47,15 +47,23 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
     {
         $exception = $event->getThrowable();
         $request = $event->getRequest();
-        $path = $request->getPathInfo();
 
-        // MCP is JSON-RPC and owns its own error shapes, so only the one exception this
-        // bundle raises there is claimed: RateLimitSubscriber's 429, which would otherwise
-        // fall through to Symfony's default error rendering rather than the JSON envelope
-        // every other Studio error uses. Anything else the MCP server produces is left alone.
+        // Decoded once, like the router, so an encoded path that reaches a Studio
+        // controller is still rendered as a Studio error. See the trait for the detail.
+        $path = $this->routedPath($request);
+
+        // RateLimitException wherever it was raised. It is this bundle's own exception and
+        // only this bundle throws it, so the path it happened on says nothing useful: what
+        // matters is that the client gets the JSON envelope and a 429 rather than Symfony's
+        // default error rendering. That covers the MCP endpoints, which are JSON-RPC and own
+        // every other error shape they produce, and the OAuth registration endpoint, which
+        // sits outside the Studio prefix entirely.
+        //
+        // Anything else outside the Studio API is left alone: those responses belong to
+        // whoever serves that path.
         if (
             !$this->isStudioBackendPath($path, $this->urlPrefix)
-            && !($this->isMcpPath($path) && $exception instanceof RateLimitException)
+            && !$exception instanceof RateLimitException
         ) {
             return;
         }
