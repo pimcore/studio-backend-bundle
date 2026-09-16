@@ -81,6 +81,10 @@ pimcore_studio_backend:
 > once `enabled` is `true`: leaving any of them unset fails the build with a message naming the key, rather
 > than starting a server that cannot issue a token. `passphrase` is genuinely optional.
 
+> The issuer is an origin without a path, and the authorization server's endpoints and every protected
+> resource URI are built on it. Pimcore therefore has to be served from the root of that origin: an installation
+> under a path prefix such as `/cms` advertises URIs that do not match its routes, and is not supported.
+
 > Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle contributes
 > its own MCP endpoints, so this configuration is enough to get a working server; add entries under
 > `resources` only for further endpoints. See [Protected resources (audiences)](#protected-resources-audiences).
@@ -377,7 +381,7 @@ All keys live under `pimcore_studio_backend.oauth`.
 | Key | Default | Purpose |
 |-----|---------|---------|
 | `enabled` | `false` | Master switch for the embedded authorization server. |
-| `issuer` | `null` | Issuer (`iss`) advertised in metadata, returned in the authorization response, stamped on tokens and verified by the resource server. **Required when `enabled` is `true`.** |
+| `issuer` | `null` | Issuer (`iss`) advertised in metadata, returned in the authorization response, stamped on tokens and verified by the resource server. An origin only (scheme, host, optional port), without a path. **Required when `enabled` is `true`.** |
 | `access_token_ttl` | `3600` | Access-token lifetime (seconds). |
 | `auth_code_ttl` | `600` | Authorization-code lifetime (seconds). Also how long a pending authorization stays valid, i.e. how long the user has on the consent screen before it reports `oauth.consent.expired.*`. |
 | `refresh_token_ttl` | `2592000` | Refresh-token lifetime (seconds). |

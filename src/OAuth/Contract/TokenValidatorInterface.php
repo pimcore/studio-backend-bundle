@@ -30,8 +30,13 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ResolvedAccess;
 interface TokenValidatorInterface
 {
     /**
+     * Audience binding (RFC 8707) is part of this contract, not left to the caller: a token
+     * that is not bound to $resourceUri, including one that names no audience at all, must
+     * yield null. Callers rely on that to keep a token minted for one resource from opening
+     * another, and do not repeat the comparison.
+     *
      * @return ResolvedAccess|null resolved access, or null if the token is not
-     *                             ours / invalid / expired / revoked
+     *                             ours / invalid / expired / revoked / not bound to $resourceUri
      */
     public function validate(string $rawToken, string $resourceUri): ?ResolvedAccess;
 }
