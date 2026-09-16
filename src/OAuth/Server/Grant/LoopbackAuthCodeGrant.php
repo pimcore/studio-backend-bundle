@@ -57,6 +57,9 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
 {
     private const string REQUIRED_CODE_CHALLENGE_METHOD = 'S256';
 
+    private const string UNBOUND_AUTH_CODE_HINT = 'The authorization code is not bound to a protected resource '
+        . 'of this server. Start a new authorization request.';
+
     public function validateAuthorizationRequest(ServerRequestInterface $request): AuthorizationRequestInterface
     {
         $this->assertPkce($request);
@@ -317,6 +320,17 @@ final class LoopbackAuthCodeGrant extends AuthCodeGrant
         ?string $userIdentifier,
         array $scopes = []
     ): AccessTokenEntityInterface {
+        // The binding is recovered from the record written when the code was issued, so a
+        // code whose record is gone - a wiped or restored store, or the expired-record
+        // cleanup - arrives here unbound. league validates the code from its own encrypted
+        // payload and never notices. Minting anyway returns HTTP 200 with a token the
+        // validator refuses at every protected resource, turning a lost binding into an
+        // unexplained 401 at the resource; refusing here tells the client to authorize again.
+        // Checked before the parent call so no token record is written for a refused request.
+        if ($this->pendingResource === null) {
+            throw OAuthServerException::invalidGrant(self::UNBOUND_AUTH_CODE_HINT);
+        }
+
         $accessToken = parent::issueAccessToken($accessTokenTTL, $client, $userIdentifier, $scopes);
 
         if ($accessToken instanceof AccessTokenEntity) {

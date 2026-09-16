@@ -18,6 +18,7 @@ use Codeception\Test\Unit;
 use DateInterval;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
+use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use League\OAuth2\Server\Repositories\AuthCodeRepositoryInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
@@ -327,6 +328,45 @@ final class LoopbackAuthCodeGrantTest extends Unit
         );
 
         $this->assertSame(self::KNOWN_RESOURCE, $recovered);
+    }
+
+    /**
+     * The mirror of the round trip above: when the binding cannot be recovered - the record
+     * store was wiped, restored from an older backup, or the expired-record cleanup removed
+     * the row - the exchange must be refused instead of minting an unbound token. league
+     * validates the code from its own encrypted payload and never consults the record, so
+     * without this the client is handed HTTP 200 and a credential the validator refuses at
+     * every protected resource, and the lost binding only surfaces as a 401 somewhere else.
+     *
+     * The access-token repository is asserted untouched: the refusal has to come before the
+     * token is minted and persisted, not after.
+     */
+    public function testAnUnboundAuthorizationCodeIsRefusedWithoutMintingAToken(): void
+    {
+        $accessTokenRepository = $this->createMock(AccessTokenRepositoryInterface::class);
+        $accessTokenRepository->expects($this->never())->method('getNewToken');
+        $accessTokenRepository->expects($this->never())->method('persistNewAccessToken');
+
+        // resourceFor() answers null for every identifier: the record is gone.
+        $grant = $this->grant(store: $this->makeEmpty(TokenRecordStoreInterface::class));
+        $grant->setAccessTokenRepository($accessTokenRepository);
+
+        $this->expectException(OAuthServerException::class);
+
+        try {
+            (new ReflectionMethod($grant, 'issueAccessToken'))->invoke(
+                $grant,
+                new DateInterval('PT1H'),
+                new ClientEntity(self::CLIENT_ID, 'Test client', self::REDIRECT_URI),
+                '21',
+                [],
+            );
+        } catch (OAuthServerException $exception) {
+            $this->assertSame('invalid_grant', $exception->getErrorType());
+            $this->assertStringContainsString('not bound to a protected resource', (string) $exception->getHint());
+
+            throw $exception;
+        }
     }
 
     /**

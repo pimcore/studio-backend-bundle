@@ -98,6 +98,10 @@ Three things become operator-visible the moment the server is switched on:
   from `bin/console doctrine:migrations:migrate`. Those cover different situations rather than being
   alternatives, so on an existing installation run the migrations before the first authorization request.
   Without the tables, enabling OAuth fails on that first request with a `TableNotFoundException`.
+  The token table also holds the resource each token was issued for, so it is not a cache: emptying it, or
+  restoring the database from a backup taken before a token was issued, invalidates the authorization codes
+  and refresh tokens issued until then. Those are refused with `invalid_grant`, and the client has to run a
+  new authorization.
 - **A maintenance task.** `OAuthTokenGcTask` prunes expired token records and runs as part of
   `bin/console pimcore:maintenance`. Without that cron the table grows without bound.
 - **Two filesystem cache pools.** `pimcore_studio_backend.oauth.pending_authorization` and

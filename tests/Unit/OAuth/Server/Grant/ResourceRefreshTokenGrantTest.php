@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\Server\Grant;
 use Codeception\Test\Unit;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Key;
+use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\AbstractGrant;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use Nyholm\Psr7\ServerRequest;
@@ -60,6 +61,34 @@ final class ResourceRefreshTokenGrantTest extends Unit
 
         $this->assertSame([self::REFRESH_TOKEN_ID], $seen);
         $this->assertSame(self::REFRESH_TOKEN_ID, $data['refresh_token_id']);
+    }
+
+    /**
+     * A refresh token whose record is gone must be refused, not refreshed into an
+     * audience-less token. league lets such a token through on its own - its revocation
+     * check reads an unknown identifier as "not revoked" - so nothing else in the chain
+     * stops it, and the client would get HTTP 200 plus a credential the validator refuses
+     * at every protected resource.
+     *
+     * Asserted on `validateOldRefreshToken` rather than on the issuing step because that
+     * is what makes the refusal free of side effects: league revokes the old access and
+     * refresh tokens after validation, so refusing later would leave the client with
+     * nothing while still returning an error.
+     */
+    public function testARefreshTokenWithNoRecordedResourceIsRefused(): void
+    {
+        $store = $this->makeEmpty(TokenRecordStoreInterface::class, ['resourceFor' => null]);
+
+        try {
+            $this->validateOldRefreshToken($this->grant($store), $this->refreshRequest());
+        } catch (OAuthServerException $exception) {
+            $this->assertSame('invalid_grant', $exception->getErrorType());
+            $this->assertStringContainsString('not bound to a protected resource', (string) $exception->getHint());
+
+            return;
+        }
+
+        $this->fail('A refresh token with no recoverable resource binding was accepted.');
     }
 
     /**

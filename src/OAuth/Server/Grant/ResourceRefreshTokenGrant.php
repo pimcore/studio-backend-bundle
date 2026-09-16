@@ -39,6 +39,9 @@ use function is_string;
  */
 final class ResourceRefreshTokenGrant extends RefreshTokenGrant
 {
+    private const string UNBOUND_REFRESH_TOKEN_HINT = 'The refresh token is not bound to a protected resource '
+        . 'of this server. Start a new authorization request.';
+
     private TokenRecordStoreInterface $tokenRecordStore;
 
     /**
@@ -56,6 +59,21 @@ final class ResourceRefreshTokenGrant extends RefreshTokenGrant
     }
 
     /**
+     * Refuses a refresh token whose binding cannot be recovered, rather than refreshing it
+     * into an audience-less token. That happens whenever the record is gone - the store was
+     * wiped, restored from an older backup, or the expired-record cleanup removed it - and
+     * league accepts such a token regardless, because its revocation check reads an unknown
+     * identifier as "not revoked".
+     *
+     * Minting anyway hands the client HTTP 200 and a credential the validator refuses at
+     * every protected resource, so the failure surfaces later as an unexplained 401 loop at
+     * the resource instead of here. `invalid_grant` is the answer a client knows how to act
+     * on: start a new authorization.
+     *
+     * Checked here rather than at {@see self::issueAccessToken()} because league revokes the
+     * old access and refresh tokens in between: refusing first leaves the client's existing
+     * credentials intact for a request that was refused.
+     *
      * @return array<string, mixed>
      *
      * @throws OAuthServerException
@@ -65,9 +83,13 @@ final class ResourceRefreshTokenGrant extends RefreshTokenGrant
         $refreshTokenData = parent::validateOldRefreshToken($request, $clientId);
 
         $tokenId = $refreshTokenData['refresh_token_id'] ?? null;
-        $this->pendingResource = is_string($tokenId)
-            ? $this->tokenRecordStore->resourceFor($tokenId)
-            : null;
+        $resource = is_string($tokenId) ? $this->tokenRecordStore->resourceFor($tokenId) : null;
+
+        if ($resource === null) {
+            throw OAuthServerException::invalidRefreshToken(self::UNBOUND_REFRESH_TOKEN_HINT);
+        }
+
+        $this->pendingResource = $resource;
 
         return $refreshTokenData;
     }
