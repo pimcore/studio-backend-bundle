@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\EventSubscriber;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\LoginTelemetrySubscriber;
+use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\SessionCloseSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Telemetry\LoginMarkerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Telemetry\SessionLoginMarker;
 use Pimcore\Model\User;
@@ -28,6 +29,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
+use function is_array;
 
 /**
  * @internal
@@ -39,10 +41,41 @@ final class LoginTelemetrySubscriberTest extends Unit
      */
     private array $captured = [];
 
+    /**
+     * SessionCloseSubscriber saves and closes the Studio session on the same event at priority 0; the
+     * login marker has to be written before that, or setting it would start the session again and hold
+     * its lock for the rest of the request.
+     */
+    public function testSubscribesToLoginSuccessAheadOfTheSessionClose(): void
+    {
+        $events = LoginTelemetrySubscriber::getSubscribedEvents();
+        $sessionClose = SessionCloseSubscriber::getSubscribedEvents()[LoginSuccessEvent::class];
+        $sessionClosePriority = is_array($sessionClose) ? ($sessionClose[1] ?? 0) : 0;
+
+        $this->assertSame(['onLoginSuccess', 16], $events[LoginSuccessEvent::class] ?? null);
+        $this->assertGreaterThan($sessionClosePriority, $events[LoginSuccessEvent::class][1]);
+    }
+
+    /**
+     * Interaction with the session close: after both listeners ran in priority order, the session is
+     * closed (its lock released) and the marker is in it.
+     */
+    public function testTheMarkerSurvivesTheSessionCloseWithoutReopeningTheSession(): void
+    {
+        $event = $this->event('pimcore_studio_api_login', admin: false);
+        $event->getRequest()->server->set('REQUEST_URI', '/pimcore-studio/api/login');
+
+        $this->subscriber()->onLoginSuccess($event);
+        (new SessionCloseSubscriber('/pimcore-studio/api'))->onLoginSuccess($event);
+
+        $this->assertFalse($event->getRequest()->getSession()->isStarted(), 'the close still releases the lock');
+        $this->assertNotNull((new SessionLoginMarker())->sessionDurationSeconds($event->getRequest()));
+    }
+
     public function testSubscribesToLoginSuccess(): void
     {
         $this->assertSame(
-            [LoginSuccessEvent::class => 'onLoginSuccess'],
+            [LoginSuccessEvent::class => ['onLoginSuccess', 16]],
             LoginTelemetrySubscriber::getSubscribedEvents()
         );
     }

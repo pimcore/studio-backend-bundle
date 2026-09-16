@@ -31,7 +31,7 @@ use function in_array;
  * is whether the user is an admin - never a username, email, or id.
  *
  * It also leaves the login time in the session (see {@see LoginMarkerInterface}) so the logout twin can
- * report the session duration.
+ * report the session duration - before {@see SessionCloseSubscriber} closes the session for this request.
  *
  * @internal
  */
@@ -44,6 +44,12 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
         'pimcore_studio_api_token_login',
     ];
 
+    /**
+     * SessionCloseSubscriber saves and closes the session on the same event at priority 0; writing the
+     * marker after that would start the session again and hold its lock for the rest of the request.
+     */
+    private const PRIORITY_BEFORE_SESSION_CLOSE = 16;
+
     public function __construct(
         private TelemetryInterface $telemetry,
         private LoginMarkerInterface $loginMarker,
@@ -53,7 +59,7 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
     public static function getSubscribedEvents(): array
     {
         return [
-            LoginSuccessEvent::class => 'onLoginSuccess',
+            LoginSuccessEvent::class => ['onLoginSuccess', self::PRIORITY_BEFORE_SESSION_CLOSE],
         ];
     }
 
