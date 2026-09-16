@@ -377,6 +377,11 @@ on the token and reported back, but nothing compares a granted scope against an 
 is therefore an upper bound the server maintains, not a check anyone performs: treat a scope as a label shown
 at consent time, not a guarantee, and enforce it yourself if your operations differ in privilege.
 
+Check for your scope even when every operation has the same privilege. A client may omit `scope` when it asks
+for authorization, and the token then carries no scope at all while the consent screen lists no permissions. A
+client refreshing a token may likewise ask for fewer scopes than were granted, including none, and no consent
+screen is shown then. Without the check, such a token still reaches your resource.
+
 ## Related
 
 - [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) - enabling and
