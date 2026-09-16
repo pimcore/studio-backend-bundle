@@ -21,6 +21,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\EventSubscriber\LoginTelemetrySubscriber:
     tags: [ 'kernel.event_subscriber' ]
 
+  # captures studio.logout telemetry on explicit Studio logouts, with the session duration from the
+  # login marker (TelemetryInterface and LoginMarkerInterface autowired)
+  Pimcore\Bundle\StudioBackendBundle\EventSubscriber\LogoutTelemetrySubscriber:
+    tags: [ 'kernel.event_subscriber' ]
+
   Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber:
     tags: [ 'kernel.event_subscriber' ]
     arguments: ["%kernel.environment%", '%pimcore_studio_backend.url_prefix%']
