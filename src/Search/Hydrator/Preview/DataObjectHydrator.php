@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DataObjectSearchPreview;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
@@ -33,6 +34,7 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
         private DataServiceInterface $dataService,
         private SecurityServiceInterface $securityService,
         private UserServiceInterface $userService,
+        private DraftElementResolverInterface $draftElementResolver,
     ) {
     }
 
@@ -59,8 +61,9 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 
     private function hydratePreviewDetailData(DataObject $dataObject): array
     {
-        $version = $this->getLatestVersionForUser($dataObject, $this->securityService->getCurrentUser());
-        $versionData = $this->getVersionData($dataObject, $version);
+        $versionData = $this->draftElementResolver
+            ->resolve($dataObject, $this->securityService->getCurrentUser())
+            ->getElement();
 
         if (!$versionData instanceof Concrete) {
             return [];
