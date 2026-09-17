@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use function is_string;
 
 /**
  * @internal
@@ -37,15 +38,44 @@ final readonly class AdapterService implements AdapterServiceInterface
 
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
+        [$sortBy, $sortOrder] = $this->resolveSort($report, $chartDataParameter);
+
         return $this->getAdapter($report)->getData(
             $chartDataParameter->getFilters()->getColumnFilters(),
-            $chartDataParameter->getSortBy(),
-            $chartDataParameter->getSortOrder(),
+            $sortBy,
+            $sortOrder,
             ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
             $chartDataParameter->getPageSize(),
             $chartDataParameter->getFields(),
             $chartDataParameter->getFilters()->getDrillDownFilters()
         );
+    }
+
+    /**
+     * Falls back to the sort defined in the report configuration (orderby/orderbydir)
+     * when the request does not specify an explicit sort.
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function resolveSort(Config $report, ChartDataParameter $chartDataParameter): array
+    {
+        $sortBy = $chartDataParameter->getSortBy();
+        if ($sortBy !== null && $sortBy !== '') {
+            return [$sortBy, $chartDataParameter->getSortOrder()];
+        }
+
+        $configuration = $report->getDataSourceConfig();
+        $orderBy = $configuration->orderby ?? null;
+        if (!is_string($orderBy) || $orderBy === '') {
+            return [null, null];
+        }
+
+        $orderByDir = $configuration->orderbydir ?? null;
+        if (!is_string($orderByDir) || $orderByDir === '') {
+            $orderByDir = 'ASC';
+        }
+
+        return [$orderBy, $orderByDir];
     }
 
     /**
