@@ -74,6 +74,11 @@ final class TransferDataValidatorTest extends Unit
         (new TransferDataValidator())->validate($data);
     }
 
+    private static function column(array $overrides = []): array
+    {
+        return array_merge(['name' => 'id', 'display' => true, 'export' => true, 'order' => true], $overrides);
+    }
+
     public static function malformedValues(): iterable
     {
         yield 'string property as array' => [
@@ -108,16 +113,24 @@ final class TransferDataValidatorTest extends Unit
             ['columnConfiguration' => ['id']],
             'Invalid value for "columnConfiguration[0]": expected object, got string.',
         ];
+        yield 'column without display flag' => [
+            ['columnConfiguration' => [self::column(), ['name' => 'path', 'export' => true, 'order' => true]]],
+            'Invalid value for "columnConfiguration[1]": missing required field "display".',
+        ];
+        yield 'column without name' => [
+            ['columnConfiguration' => [['display' => true, 'export' => true, 'order' => true]]],
+            'Invalid value for "columnConfiguration[0]": missing required field "name".',
+        ];
         yield 'column name as array' => [
-            ['columnConfiguration' => [['name' => []]]],
+            ['columnConfiguration' => [self::column(['name' => []])]],
             'Invalid value for "columnConfiguration[0].name": expected string, got array.',
         ];
         yield 'column display flag as string' => [
-            ['columnConfiguration' => [['name' => 'id'], ['name' => 'path', 'display' => 'yes']]],
+            ['columnConfiguration' => [self::column(), self::column(['name' => 'path', 'display' => 'yes'])]],
             'Invalid value for "columnConfiguration[1].display": expected boolean, got string.',
         ];
         yield 'column width as float' => [
-            ['columnConfiguration' => [['name' => 'id', 'width' => 1.5]]],
+            ['columnConfiguration' => [self::column(['width' => 1.5])]],
             'Invalid value for "columnConfiguration[0].width": expected integer or string or NULL, got double.',
         ];
         yield 'data source config entry as string' => [

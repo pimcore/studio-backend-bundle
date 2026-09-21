@@ -53,6 +53,8 @@ final class TransferableProperties
 
     private const string DATA_SOURCE_CONFIG = 'dataSourceConfig';
 
+    private const array REQUIRED_COLUMN_FIELDS = ['name', 'display', 'export', 'order'];
+
     private const array COLUMN_FIELD_TYPES = [
         'name' => ['string'],
         'display' => ['boolean'],
@@ -101,6 +103,14 @@ final class TransferableProperties
     public static function isDataSourceConfig(string $property): bool
     {
         return $property === self::DATA_SOURCE_CONFIG;
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function requiredColumnFields(): array
+    {
+        return self::REQUIRED_COLUMN_FIELDS;
     }
 
     public static function columnFields(array $column): array

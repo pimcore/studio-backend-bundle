@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Util\TransferableProperties;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use function array_is_list;
+use function array_key_exists;
 use function gettype;
 use function implode;
 use function in_array;
@@ -75,6 +76,14 @@ final readonly class TransferDataValidator implements TransferDataValidatorInter
         $this->validateListOfArrays($property, $columns);
 
         foreach ($columns as $index => $column) {
+            foreach (TransferableProperties::requiredColumnFields() as $field) {
+                if (!array_key_exists($field, $column)) {
+                    throw new InvalidArgumentException(
+                        sprintf('Invalid value for "%s[%d]": missing required field "%s".', $property, $index, $field)
+                    );
+                }
+            }
+
             foreach (TransferableProperties::columnFields($column) as $field => $value) {
                 $this->assertType(
                     sprintf('%s[%d].%s', $property, $index, $field),

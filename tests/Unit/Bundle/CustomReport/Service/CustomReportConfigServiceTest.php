@@ -73,7 +73,20 @@ final class CustomReportConfigServiceTest extends Unit
         $this->expectExceptionMessage('Invalid value for "columnConfiguration[0].name": expected string, got array.');
 
         $this->createService($repository)->importCustomReport(
-            '{"name": "BadReport", "columnConfiguration": [{"name": []}]}'
+            '{"name": "BadReport", "columnConfiguration": [{"name": [], "display": true, "export": true, "order": true}]}'
+        );
+    }
+
+    public function testImportRejectsColumnsWithoutRequiredFlagsWithoutSaving(): void
+    {
+        $repository = $this->createMock(CustomReportRepositoryInterface::class);
+        $repository->expects($this->never())->method('importConfig');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for "columnConfiguration[0]": missing required field "display".');
+
+        $this->createService($repository)->importCustomReport(
+            '{"name": "BadReport", "columnConfiguration": [{"name": "id"}]}'
         );
     }
 
