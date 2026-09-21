@@ -91,6 +91,11 @@ final readonly class AdapterService implements AdapterServiceInterface
         return $this->createAdapterFromConfig($configuration, $report);
     }
 
+    public function hasAdapter(string $type): bool
+    {
+        return $this->adapters->has($type);
+    }
+
     /**
      * {@inheritdoc}
      */

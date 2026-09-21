@@ -53,6 +53,10 @@ final class TransferableProperties
 
     private const string DATA_SOURCE_CONFIG = 'dataSourceConfig';
 
+    private const string DATA_SOURCE_TYPE_FIELD = 'type';
+
+    private const string DEFAULT_DATA_SOURCE_TYPE = 'sql';
+
     private const array REQUIRED_COLUMN_FIELDS = ['name', 'display', 'export', 'order'];
 
     private const array COLUMN_FIELD_TYPES = [
@@ -111,6 +115,16 @@ final class TransferableProperties
     public static function requiredColumnFields(): array
     {
         return self::REQUIRED_COLUMN_FIELDS;
+    }
+
+    public static function dataSourceTypeField(): string
+    {
+        return self::DATA_SOURCE_TYPE_FIELD;
+    }
+
+    public static function defaultDataSourceType(): string
+    {
+        return self::DEFAULT_DATA_SOURCE_TYPE;
     }
 
     public static function columnFields(array $column): array

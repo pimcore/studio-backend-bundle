@@ -29,6 +29,11 @@ use function sprintf;
  */
 final readonly class TransferDataValidator implements TransferDataValidatorInterface
 {
+    public function __construct(
+        private AdapterServiceInterface $adapterService,
+    ) {
+    }
+
     public function validate(array $data): void
     {
         foreach (TransferableProperties::filter($data) as $property => $value) {
@@ -43,7 +48,7 @@ final readonly class TransferDataValidator implements TransferDataValidatorInter
             }
 
             if (TransferableProperties::isDataSourceConfig($property)) {
-                $this->validateListOfArrays($property, $value);
+                $this->validateDataSourceConfig($property, $value);
             }
         }
     }
@@ -89,6 +94,30 @@ final readonly class TransferDataValidator implements TransferDataValidatorInter
                     sprintf('%s[%d].%s', $property, $index, $field),
                     $value,
                     TransferableProperties::allowedColumnFieldTypes($field)
+                );
+            }
+        }
+    }
+
+    /**
+     * Only the first data source entry is used by the report, but every entry must name
+     * a known adapter so the import never persists a configuration nobody can hydrate.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function validateDataSourceConfig(string $property, array $dataSources): void
+    {
+        $this->validateListOfArrays($property, $dataSources);
+
+        $typeField = TransferableProperties::dataSourceTypeField();
+        foreach ($dataSources as $index => $dataSource) {
+            $path = sprintf('%s[%d].%s', $property, $index, $typeField);
+            $type = $dataSource[$typeField] ?? TransferableProperties::defaultDataSourceType();
+            $this->assertType($path, $type, ['string']);
+
+            if (!$this->adapterService->hasAdapter($type)) {
+                throw new InvalidArgumentException(
+                    sprintf('Invalid value for "%s": unknown adapter type "%s".', $path, $type)
                 );
             }
         }

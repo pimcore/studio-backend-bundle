@@ -18,6 +18,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigService;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataValidator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -184,6 +185,29 @@ final class CustomReportConfigServiceTest extends Unit
         $this->assertSame($details, $result);
     }
 
+    public function testImportRejectsUnknownAdapterTypeWithoutSaving(): void
+    {
+        $repository = $this->createMock(CustomReportRepositoryInterface::class);
+        $repository->expects($this->never())->method('importConfig');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for "dataSourceConfig[0].type": unknown adapter type "graphql".');
+
+        $this->createService($repository)->importCustomReport(
+            '{"name": "BadReport", "dataSourceConfig": [{"type": "graphql"}]}'
+        );
+    }
+
+    private function createAdapterService(): AdapterServiceInterface
+    {
+        $adapterService = $this->createMock(AdapterServiceInterface::class);
+        $adapterService->method('hasAdapter')->willReturnCallback(
+            static fn (string $type): bool => $type === 'sql'
+        );
+
+        return $adapterService;
+    }
+
     private function createService(
         CustomReportRepositoryInterface $repository,
         ?CustomReportHydratorInterface $hydrator = null,
@@ -194,7 +218,7 @@ final class CustomReportConfigServiceTest extends Unit
             $repository,
             $this->createMock(EventDispatcherInterface::class),
             $downloadService ?? $this->createMock(DownloadServiceInterface::class),
-            new TransferDataValidator(),
+            new TransferDataValidator($this->createAdapterService()),
         );
     }
 }

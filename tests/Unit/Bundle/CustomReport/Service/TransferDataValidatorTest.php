@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Bundle\CustomReport\Service;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataValidator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
@@ -26,7 +27,7 @@ final class TransferDataValidatorTest extends Unit
     {
         $this->expectNotToPerformAssertions();
 
-        (new TransferDataValidator())->validate([
+        $this->createValidator()->validate([
             'name' => 'Report',
             'sql' => '',
             'dataSourceConfig' => [['type' => 'sql', 'sql' => 'SELECT 1']],
@@ -71,7 +72,24 @@ final class TransferDataValidatorTest extends Unit
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage($expectedMessage);
 
-        (new TransferDataValidator())->validate($data);
+        $this->createValidator()->validate($data);
+    }
+
+    public function testAcceptsDataSourceWithoutExplicitTypeWhenDefaultAdapterExists(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $this->createValidator()->validate(['dataSourceConfig' => [['sql' => 'SELECT 1']]]);
+    }
+
+    private function createValidator(): TransferDataValidator
+    {
+        $adapterService = $this->createMock(AdapterServiceInterface::class);
+        $adapterService->method('hasAdapter')->willReturnCallback(
+            static fn (string $type): bool => $type === 'sql'
+        );
+
+        return new TransferDataValidator($adapterService);
     }
 
     private static function column(array $overrides = []): array
@@ -136,6 +154,14 @@ final class TransferDataValidatorTest extends Unit
         yield 'data source config entry as string' => [
             ['dataSourceConfig' => ['SELECT 1']],
             'Invalid value for "dataSourceConfig[0]": expected object, got string.',
+        ];
+        yield 'data source type as array' => [
+            ['dataSourceConfig' => [['type' => []]]],
+            'Invalid value for "dataSourceConfig[0].type": expected string, got array.',
+        ];
+        yield 'data source with unknown adapter type' => [
+            ['dataSourceConfig' => [['type' => 'sql'], ['type' => 'graphql']]],
+            'Invalid value for "dataSourceConfig[1].type": unknown adapter type "graphql".',
         ];
     }
 }
