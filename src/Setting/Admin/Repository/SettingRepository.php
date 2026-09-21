@@ -77,15 +77,20 @@ final class SettingRepository implements SettingRepositoryInterface
      */
     private function loadConfig(): array
     {
-        $data = $this->getRepository()->loadConfigByKey(Configuration::ADMIN_SETTINGS_NODE);
+        [$data, $dataSource] = $this->getRepository()->loadConfigByKey(Configuration::ADMIN_SETTINGS_NODE);
         $loadType = $this->getRepository()->getReadTargets()[0] ?? null;
 
+        // The settings store only holds the admin settings once they have been saved through the UI.
+        // Until then the symfony configuration is their only source, so it has to serve as the
+        // fallback - otherwise configured branding silently disappears as soon as the read target is
+        // switched to the settings store, which is the only way to keep the settings writeable in a
+        // production environment. The data source stays unset: the settings are still written to the
+        // settings store, so they remain writeable.
         if (!$data && $loadType === LocationAwareConfigRepository::LOCATION_SETTINGS_STORE) {
-            $data = $this->adminConfig;
-            $data['writeable'] = $this->isRepositoryWritable();
+            $data = $this->adminConfig[Configuration::ADMIN_SETTINGS_NODE] ?? [];
         }
 
-        return $data;
+        return [$data, $dataSource];
     }
 
     /**
