@@ -48,7 +48,7 @@ final class CustomReportRepositoryTest extends Unit
         $this->assertSame('clonedReport', $target->getName());
         $this->assertSame($source->getSql(), $target->getSql());
         $this->assertEquals($source->getDataSourceConfig(), $target->getDataSourceConfig());
-        $this->assertSame($source->getColumnConfiguration(), $target->getColumnConfiguration());
+        $this->assertSame($data['columnConfiguration'], $target->getColumnConfiguration());
         $this->assertSame($source->getNiceName(), $target->getNiceName());
         $this->assertSame($source->getGroup(), $target->getGroup());
         $this->assertSame($source->getGroupIconClass(), $target->getGroupIconClass());
@@ -66,6 +66,20 @@ final class CustomReportRepositoryTest extends Unit
         $this->assertSame($source->getSharedRoleNames(), $target->getSharedRoleNames());
         $this->assertNull($target->getCreationDate());
         $this->assertNull($target->getModificationDate());
+    }
+
+    public function testExtractTransferableDataFillsMissingColumnFlags(): void
+    {
+        $config = new Config();
+        $config->setName('legacyReport');
+        $config->setColumnConfiguration([['name' => 'id', 'display' => true, 'export' => true]]);
+
+        $data = $this->createRepository()->extractTransferableData($config);
+
+        $this->assertSame(
+            [['name' => 'id', 'display' => true, 'export' => true, 'order' => false]],
+            $data['columnConfiguration']
+        );
     }
 
     public function testApplyTransferableDataIgnoresUnknownProperties(): void
@@ -96,7 +110,7 @@ final class CustomReportRepositoryTest extends Unit
         $config->setName('sourceReport');
         $config->setSql('SELECT 1');
         $config->setDataSourceConfig([['type' => 'sql', 'sql' => 'SELECT a.id', 'from' => 'FROM assets a']]);
-        $config->setColumnConfiguration([['name' => 'id', 'display' => true, 'export' => true]]);
+        $config->setColumnConfiguration([['name' => 'id', 'display' => true, 'export' => true, 'order' => true]]);
         $config->setNiceName('Source Report');
         $config->setGroup('assets');
         $config->setGroupIconClass('pimcore_icon_asset');

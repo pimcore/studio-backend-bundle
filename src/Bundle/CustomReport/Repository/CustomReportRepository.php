@@ -168,7 +168,7 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
 
     public function extractTransferableData(Config $config): array
     {
-        return TransferableProperties::filter($config->getObjectVars());
+        return TransferableProperties::normalize(TransferableProperties::filter($config->getObjectVars()));
     }
 
     public function applyTransferableData(Config $config, array $data): Config

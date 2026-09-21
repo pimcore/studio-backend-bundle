@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Util;
 use function array_intersect_key;
 use function array_keys;
 use function in_array;
+use function is_array;
 
 /**
  * Report configuration properties that travel between environments via export, import and clone,
@@ -59,6 +60,8 @@ final class TransferableProperties
 
     private const array REQUIRED_COLUMN_FIELDS = ['name', 'display', 'export', 'order'];
 
+    private const array COLUMN_FIELD_DEFAULTS = ['display' => false, 'export' => false, 'order' => false];
+
     private const array COLUMN_FIELD_TYPES = [
         'name' => ['string'],
         'display' => ['boolean'],
@@ -84,6 +87,29 @@ final class TransferableProperties
     public static function filter(array $data): array
     {
         return array_intersect_key($data, self::TYPES);
+    }
+
+    /**
+     * Fills the boolean column flags legacy report definitions may omit, so exported files
+     * and imported files carry the complete shape the column DTO requires. Structural
+     * problems are left untouched for the validator to report.
+     */
+    public static function normalize(array $data): array
+    {
+        $columns = $data[self::COLUMN_CONFIGURATION] ?? null;
+        if (!is_array($columns)) {
+            return $data;
+        }
+
+        foreach ($columns as $index => $column) {
+            if (is_array($column)) {
+                $columns[$index] = $column + self::COLUMN_FIELD_DEFAULTS;
+            }
+        }
+
+        $data[self::COLUMN_CONFIGURATION] = $columns;
+
+        return $data;
     }
 
     /**

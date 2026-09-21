@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Bundle\CustomReport\Serv
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StaticResolverBundle\Models\Tool\CustomReportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepository;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
@@ -24,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataV
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -78,17 +81,68 @@ final class CustomReportConfigServiceTest extends Unit
         );
     }
 
-    public function testImportRejectsColumnsWithoutRequiredFlagsWithoutSaving(): void
+    public function testImportDefaultsMissingColumnFlagsBeforeSaving(): void
     {
+        $importedConfig = new Config();
+        $importedConfig->setName('LegacyReport');
+
         $repository = $this->createMock(CustomReportRepositoryInterface::class);
-        $repository->expects($this->never())->method('importConfig');
+        $repository->method('exists')->willReturn(false);
+        $repository->expects($this->once())
+            ->method('importConfig')
+            ->with('LegacyReport', [
+                'name' => 'LegacyReport',
+                'columnConfiguration' => [
+                    ['name' => 'id', 'display' => false, 'export' => false, 'order' => false],
+                ],
+            ])
+            ->willReturn($importedConfig);
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid value for "columnConfiguration[0]": missing required field "display".');
-
-        $this->createService($repository)->importCustomReport(
-            '{"name": "BadReport", "columnConfiguration": [{"name": "id"}]}'
+        $this->createService($repository, $this->createHydrator($importedConfig))->importCustomReport(
+            '{"name": "LegacyReport", "columnConfiguration": [{"name": "id"}]}'
         );
+    }
+
+    public function testExportedFileWithLegacyColumnsCanBeImportedAgain(): void
+    {
+        $sourceReport = new Config();
+        $sourceReport->setName('LegacyReport');
+        $sourceReport->setColumnConfiguration([['name' => 'id', 'display' => true, 'export' => true]]);
+
+        $repository = new CustomReportRepository(
+            $this->createMock(SecurityServiceInterface::class),
+            $this->createMock(CustomReportResolverInterface::class)
+        );
+        $exportedData = $repository->extractTransferableData($sourceReport);
+
+        $exportedJson = null;
+        $downloadService = $this->createMock(DownloadServiceInterface::class);
+        $downloadService->method('downloadJSON')->willReturnCallback(
+            static function (string $json) use (&$exportedJson): Response {
+                $exportedJson = $json;
+
+                return new Response($json);
+            }
+        );
+
+        $exportRepository = $this->createMock(CustomReportRepositoryInterface::class);
+        $exportRepository->method('loadByNameForCurrentUser')->willReturn($sourceReport);
+        $exportRepository->method('extractTransferableData')->willReturn($exportedData);
+        $this->createService($exportRepository, downloadService: $downloadService)->exportCustomReport('LegacyReport');
+
+        $importRepository = $this->createMock(CustomReportRepositoryInterface::class);
+        $importRepository->method('exists')->willReturn(false);
+        $importRepository->expects($this->once())
+            ->method('importConfig')
+            ->with('LegacyReport', $this->callback(static function (array $data): bool {
+                return $data['columnConfiguration'] === [
+                    ['name' => 'id', 'display' => true, 'export' => true, 'order' => false],
+                ];
+            }))
+            ->willReturn($sourceReport);
+
+        $this->createService($importRepository, $this->createHydrator($sourceReport))
+            ->importCustomReport((string) $exportedJson);
     }
 
     public function testExportDeniesReportsTheCurrentUserMayNotAccess(): void
@@ -196,6 +250,16 @@ final class CustomReportConfigServiceTest extends Unit
         $this->createService($repository)->importCustomReport(
             '{"name": "BadReport", "dataSourceConfig": [{"type": "graphql"}]}'
         );
+    }
+
+    private function createHydrator(Config $config): CustomReportHydratorInterface
+    {
+        $hydrator = $this->createMock(CustomReportHydratorInterface::class);
+        $hydrator->method('extractReportDetails')->with($config)->willReturn(
+            new CustomReportDetails($config->getName(), '', [], '', '', '', '', true, '', '', 0, 0, [], [], true, true)
+        );
+
+        return $hydrator;
     }
 
     private function createAdapterService(): AdapterServiceInterface

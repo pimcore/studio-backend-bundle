@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Util\TransferableProperties;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
@@ -146,7 +147,7 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
      */
     public function importCustomReport(string $json): CustomReportDetails
     {
-        $data = $this->decodeImportData($json);
+        $data = TransferableProperties::normalize($this->decodeImportData($json));
         $this->transferDataValidator->validate($data);
         $configName = $this->getValidConfigName($data);
         $this->ensureReportNameIsAvailable($configName);
