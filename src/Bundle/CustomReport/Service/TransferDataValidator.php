@@ -19,6 +19,7 @@ use function array_is_list;
 use function gettype;
 use function implode;
 use function in_array;
+use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -30,22 +31,18 @@ final readonly class TransferDataValidator implements TransferDataValidatorInter
     public function validate(array $data): void
     {
         foreach (TransferableProperties::filter($data) as $property => $value) {
-            $allowedTypes = TransferableProperties::TYPES[$property];
-            $type = gettype($value);
+            $this->assertType($property, $value, TransferableProperties::allowedTypes($property));
 
-            if (!in_array($type, $allowedTypes, true)) {
-                throw new InvalidArgumentException(
-                    sprintf(
-                        'Invalid value for "%s": expected %s, got %s.',
-                        $property,
-                        implode(' or ', $allowedTypes),
-                        $type
-                    )
-                );
+            if (TransferableProperties::isStringList($property)) {
+                $this->validateStringList($property, $value);
             }
 
-            if (in_array($property, TransferableProperties::STRING_LIST_PROPERTIES, true)) {
-                $this->validateStringList($property, $value);
+            if (TransferableProperties::isColumnConfiguration($property)) {
+                $this->validateColumnConfiguration($property, $value);
+            }
+
+            if (TransferableProperties::isDataSourceConfig($property)) {
+                $this->validateListOfArrays($property, $value);
             }
         }
     }
@@ -67,6 +64,60 @@ final readonly class TransferDataValidator implements TransferDataValidatorInter
                     sprintf('Invalid value for "%s": expected a list of strings, got %s.', $property, gettype($item))
                 );
             }
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateColumnConfiguration(string $property, array $columns): void
+    {
+        $this->validateListOfArrays($property, $columns);
+
+        foreach ($columns as $index => $column) {
+            foreach (TransferableProperties::columnFields($column) as $field => $value) {
+                $this->assertType(
+                    sprintf('%s[%d].%s', $property, $index, $field),
+                    $value,
+                    TransferableProperties::allowedColumnFieldTypes($field)
+                );
+            }
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateListOfArrays(string $property, array $value): void
+    {
+        if (!array_is_list($value)) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid value for "%s": expected a list of objects.', $property)
+            );
+        }
+
+        foreach ($value as $index => $item) {
+            if (!is_array($item)) {
+                throw new InvalidArgumentException(
+                    sprintf('Invalid value for "%s[%d]": expected object, got %s.', $property, $index, gettype($item))
+                );
+            }
+        }
+    }
+
+    /**
+     * @param string[] $allowedTypes
+     *
+     * @throws InvalidArgumentException
+     */
+    private function assertType(string $path, mixed $value, array $allowedTypes): void
+    {
+        $type = gettype($value);
+
+        if (!in_array($type, $allowedTypes, true)) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid value for "%s": expected %s, got %s.', $path, implode(' or ', $allowedTypes), $type)
+            );
         }
     }
 }

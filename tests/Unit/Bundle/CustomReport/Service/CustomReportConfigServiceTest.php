@@ -20,9 +20,11 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomRepo
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigService;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataValidator;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -60,6 +62,61 @@ final class CustomReportConfigServiceTest extends Unit
         $this->expectExceptionMessage('Invalid value for "niceName": expected string, got array.');
 
         $this->createService($repository)->importCustomReport('{"name": "BadReport", "niceName": []}');
+    }
+
+    public function testImportRejectsMalformedColumnConfigurationWithoutSaving(): void
+    {
+        $repository = $this->createMock(CustomReportRepositoryInterface::class);
+        $repository->expects($this->never())->method('importConfig');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for "columnConfiguration[0].name": expected string, got array.');
+
+        $this->createService($repository)->importCustomReport(
+            '{"name": "BadReport", "columnConfiguration": [{"name": []}]}'
+        );
+    }
+
+    public function testExportDeniesReportsTheCurrentUserMayNotAccess(): void
+    {
+        $repository = $this->createMock(CustomReportRepositoryInterface::class);
+        $repository->method('loadByNameForCurrentUser')->with('HiddenReport')->willReturn(null);
+        $repository->expects($this->never())->method('extractTransferableData');
+
+        $downloadService = $this->createMock(DownloadServiceInterface::class);
+        $downloadService->expects($this->never())->method('downloadJSON');
+
+        $this->expectException(ForbiddenException::class);
+
+        $this->createService($repository, downloadService: $downloadService)->exportCustomReport('HiddenReport');
+    }
+
+    public function testExportDownloadsTransferableDataAsPrettyPrintedJson(): void
+    {
+        $report = new Config();
+        $report->setName('MyReport');
+
+        $repository = $this->createMock(CustomReportRepositoryInterface::class);
+        $repository->method('loadByNameForCurrentUser')->with('MyReport')->willReturn($report);
+        $repository->method('extractTransferableData')->with($report)->willReturn([
+            'name' => 'MyReport',
+            'niceName' => 'My Report',
+            'sharedUserNames' => ['editor'],
+        ]);
+
+        $response = new Response('{}');
+        $downloadService = $this->createMock(DownloadServiceInterface::class);
+        $downloadService->expects($this->once())
+            ->method('downloadJSON')
+            ->with(
+                "{\n    \"name\": \"MyReport\",\n    \"niceName\": \"My Report\",\n    \"sharedUserNames\": [\n        \"editor\"\n    ]\n}",
+                'custom_report_MyReport_export.json'
+            )
+            ->willReturn($response);
+
+        $result = $this->createService($repository, downloadService: $downloadService)->exportCustomReport('MyReport');
+
+        $this->assertSame($response, $result);
     }
 
     public function testImportRejectsExistingReportName(): void
@@ -116,13 +173,14 @@ final class CustomReportConfigServiceTest extends Unit
 
     private function createService(
         CustomReportRepositoryInterface $repository,
-        ?CustomReportHydratorInterface $hydrator = null
+        ?CustomReportHydratorInterface $hydrator = null,
+        ?DownloadServiceInterface $downloadService = null
     ): CustomReportConfigService {
         return new CustomReportConfigService(
             $hydrator ?? $this->createMock(CustomReportHydratorInterface::class),
             $repository,
             $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(DownloadServiceInterface::class),
+            $downloadService ?? $this->createMock(DownloadServiceInterface::class),
             new TransferDataValidator(),
         );
     }

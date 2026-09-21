@@ -30,7 +30,20 @@ final class TransferDataValidatorTest extends Unit
             'name' => 'Report',
             'sql' => '',
             'dataSourceConfig' => [['type' => 'sql', 'sql' => 'SELECT 1']],
-            'columnConfiguration' => [['name' => 'id']],
+            'columnConfiguration' => [[
+                'name' => 'id',
+                'display' => true,
+                'export' => true,
+                'order' => false,
+                'label' => '',
+                'action' => '',
+                'id' => 'col-1',
+                'width' => '',
+                'displayType' => null,
+                'filter' => 'text',
+                'filter_drilldown' => null,
+                'unknownField' => 'is ignored',
+            ]],
             'niceName' => 'Report',
             'group' => '',
             'groupIconClass' => '',
@@ -86,6 +99,30 @@ final class TransferDataValidatorTest extends Unit
         yield 'shared role names with non string item' => [
             ['sharedRoleNames' => ['admin', 3]],
             'Invalid value for "sharedRoleNames": expected a list of strings, got integer.',
+        ];
+        yield 'column configuration as map' => [
+            ['columnConfiguration' => ['first' => ['name' => 'id']]],
+            'Invalid value for "columnConfiguration": expected a list of objects.',
+        ];
+        yield 'column configuration entry as string' => [
+            ['columnConfiguration' => ['id']],
+            'Invalid value for "columnConfiguration[0]": expected object, got string.',
+        ];
+        yield 'column name as array' => [
+            ['columnConfiguration' => [['name' => []]]],
+            'Invalid value for "columnConfiguration[0].name": expected string, got array.',
+        ];
+        yield 'column display flag as string' => [
+            ['columnConfiguration' => [['name' => 'id'], ['name' => 'path', 'display' => 'yes']]],
+            'Invalid value for "columnConfiguration[1].display": expected boolean, got string.',
+        ];
+        yield 'column width as float' => [
+            ['columnConfiguration' => [['name' => 'id', 'width' => 1.5]]],
+            'Invalid value for "columnConfiguration[0].width": expected integer or string or NULL, got double.',
+        ];
+        yield 'data source config entry as string' => [
+            ['dataSourceConfig' => ['SELECT 1']],
+            'Invalid value for "dataSourceConfig[0]": expected object, got string.',
         ];
     }
 }

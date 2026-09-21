@@ -13,15 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Util;
 
+use function array_intersect_key;
+use function array_keys;
+use function in_array;
+
 /**
- * Report configuration properties that travel between environments via export, import and clone.
- * Values are the PHP types (as returned by gettype()) a property may hold.
+ * Report configuration properties that travel between environments via export, import and clone,
+ * together with the PHP types (as returned by gettype()) each property may hold.
  *
  * @internal
  */
 final class TransferableProperties
 {
-    public const array TYPES = [
+    private const array TYPES = [
         'name' => ['string'],
         'sql' => ['string'],
         'dataSourceConfig' => ['array'],
@@ -43,7 +47,25 @@ final class TransferableProperties
         'sharedRoleNames' => ['array'],
     ];
 
-    public const array STRING_LIST_PROPERTIES = ['sharedUserNames', 'sharedRoleNames'];
+    private const array STRING_LIST_PROPERTIES = ['sharedUserNames', 'sharedRoleNames'];
+
+    private const string COLUMN_CONFIGURATION = 'columnConfiguration';
+
+    private const string DATA_SOURCE_CONFIG = 'dataSourceConfig';
+
+    private const array COLUMN_FIELD_TYPES = [
+        'name' => ['string'],
+        'display' => ['boolean'],
+        'export' => ['boolean'],
+        'order' => ['boolean'],
+        'label' => ['string'],
+        'action' => ['string'],
+        'id' => ['string'],
+        'width' => ['integer', 'string', 'NULL'],
+        'displayType' => ['string', 'NULL'],
+        'filter' => ['string', 'NULL'],
+        'filter_drilldown' => ['string', 'NULL'],
+    ];
 
     /**
      * @return string[]
@@ -56,5 +78,41 @@ final class TransferableProperties
     public static function filter(array $data): array
     {
         return array_intersect_key($data, self::TYPES);
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function allowedTypes(string $property): array
+    {
+        return self::TYPES[$property] ?? [];
+    }
+
+    public static function isStringList(string $property): bool
+    {
+        return in_array($property, self::STRING_LIST_PROPERTIES, true);
+    }
+
+    public static function isColumnConfiguration(string $property): bool
+    {
+        return $property === self::COLUMN_CONFIGURATION;
+    }
+
+    public static function isDataSourceConfig(string $property): bool
+    {
+        return $property === self::DATA_SOURCE_CONFIG;
+    }
+
+    public static function columnFields(array $column): array
+    {
+        return array_intersect_key($column, self::COLUMN_FIELD_TYPES);
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function allowedColumnFieldTypes(string $field): array
+    {
+        return self::COLUMN_FIELD_TYPES[$field] ?? [];
     }
 }
