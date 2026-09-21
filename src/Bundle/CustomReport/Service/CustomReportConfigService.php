@@ -44,11 +44,14 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
 {
     use ValidateConfigurationTrait;
 
+    private const string REPORT_EXISTS_MESSAGE = 'Custom report with name "%s" already exists.';
+
     public function __construct(
         private CustomReportHydratorInterface $customReportHydrator,
         private CustomReportRepositoryInterface $customReportRepository,
         private EventDispatcherInterface $eventDispatcher,
         private DownloadServiceInterface $downloadService,
+        private TransferDataValidatorInterface $transferDataValidator,
     ) {
     }
 
@@ -92,12 +95,7 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
     public function createCustomReport(CustomReportAdd $parameters): CustomReportDetails
     {
         $configName = $this->getValidConfigName(['name' => $parameters->getName()]);
-
-        if ($this->customReportRepository->exists($configName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $configName)
-            );
-        }
+        $this->ensureReportNameIsAvailable($configName);
         $config = $this->customReportRepository->create($configName);
 
         return $this->customReportHydrator->extractReportDetails($config);
@@ -121,11 +119,7 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
     public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails
     {
         $newName = $this->getValidConfigName(['name' => $parameters->getNewName()]);
-        if ($this->customReportRepository->exists($newName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $newName)
-            );
-        }
+        $this->ensureReportNameIsAvailable($newName);
 
         $reportToClone = $this->getAllowedReport($reportName);
         $config = $this->customReportRepository->cloneConfig($reportToClone, $newName);
@@ -153,13 +147,9 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
     public function importCustomReport(string $json): CustomReportDetails
     {
         $data = $this->decodeImportData($json);
+        $this->transferDataValidator->validate($data);
         $configName = $this->getValidConfigName($data);
-
-        if ($this->customReportRepository->exists($configName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $configName)
-            );
-        }
+        $this->ensureReportNameIsAvailable($configName);
 
         $config = $this->customReportRepository->importConfig($configName, $data);
 
@@ -228,6 +218,16 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
         }
 
         return $csvData;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function ensureReportNameIsAvailable(string $configName): void
+    {
+        if ($this->customReportRepository->exists($configName)) {
+            throw new InvalidArgumentException(sprintf(self::REPORT_EXISTS_MESSAGE, $configName));
+        }
     }
 
     /**

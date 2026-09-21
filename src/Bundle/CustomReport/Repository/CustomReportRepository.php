@@ -17,10 +17,10 @@ use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\CustomReportResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Util\TransferableProperties;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Controller\Traits\JsonHelperTrait;
 use Pimcore\Model\User;
 use function sprintf;
 
@@ -29,30 +29,6 @@ use function sprintf;
  */
 final class CustomReportRepository implements CustomReportRepositoryInterface
 {
-    use JsonHelperTrait;
-
-    private const array TRANSFERABLE_PROPERTIES = [
-        'name',
-        'sql',
-        'dataSourceConfig',
-        'columnConfiguration',
-        'niceName',
-        'group',
-        'groupIconClass',
-        'iconClass',
-        'menuShortcut',
-        'reportClass',
-        'chartType',
-        'pieColumn',
-        'pieLabelColumn',
-        'xAxis',
-        'yAxis',
-        'shareGlobally',
-        'pagination',
-        'sharedUserNames',
-        'sharedRoleNames',
-    ];
-
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
         private readonly CustomReportResolverInterface $customReportResolver
@@ -192,9 +168,19 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
 
     public function extractTransferableData(Config $config): array
     {
-        $data = $this->decodeJson($this->encodeJson($config));
+        return TransferableProperties::filter($config->getObjectVars());
+    }
 
-        return array_intersect_key($data, array_flip(self::TRANSFERABLE_PROPERTIES));
+    public function applyTransferableData(Config $config, array $data): Config
+    {
+        foreach (TransferableProperties::filter($data) as $property => $value) {
+            $setter = 'set' . ucfirst($property);
+            if (method_exists($config, $setter)) {
+                $config->$setter($value);
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -210,16 +196,8 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
             );
         }
 
-        $data = array_intersect_key($data, array_flip(self::TRANSFERABLE_PROPERTIES));
         $data['name'] = $name;
-
-        foreach ($data as $key => $value) {
-            $setter = 'set' . ucfirst($key);
-            if (method_exists($newConfig, $setter)) {
-                $newConfig->$setter($value);
-            }
-        }
-
+        $this->applyTransferableData($newConfig, $data);
         $newConfig->save();
 
         return $newConfig;

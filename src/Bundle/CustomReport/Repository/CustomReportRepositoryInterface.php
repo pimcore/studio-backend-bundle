@@ -70,6 +70,11 @@ interface CustomReportRepositoryInterface
     public function extractTransferableData(Config $config): array;
 
     /**
+     * Applies transferable properties to the given configuration without saving it.
+     */
+    public function applyTransferableData(Config $config, array $data): Config;
+
+    /**
      * @throws NotWriteableException
      */
     public function delete(Config $config): void;

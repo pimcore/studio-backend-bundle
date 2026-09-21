@@ -10,6 +10,7 @@ declare(strict_types=1);
  *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
  *  @license    Pimcore Open Core License (POCL)
  */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Controller\Config;
 
 use OpenApi\Attributes\Get;

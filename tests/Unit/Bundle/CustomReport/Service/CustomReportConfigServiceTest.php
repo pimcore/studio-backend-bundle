@@ -10,6 +10,7 @@ declare(strict_types=1);
  *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
  *  @license    Pimcore Open Core License (POCL)
  */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Bundle\CustomReport\Service;
 
 use Codeception\Test\Unit;
@@ -18,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReport
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigService;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataValidator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -47,6 +49,17 @@ final class CustomReportConfigServiceTest extends Unit
         $this->expectExceptionMessage('missing report "name"');
 
         $this->createService($repository)->importCustomReport('{"sql": "SELECT 1"}');
+    }
+
+    public function testImportRejectsMalformedPropertyTypesWithoutSaving(): void
+    {
+        $repository = $this->createMock(CustomReportRepositoryInterface::class);
+        $repository->expects($this->never())->method('importConfig');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid value for "niceName": expected string, got array.');
+
+        $this->createService($repository)->importCustomReport('{"name": "BadReport", "niceName": []}');
     }
 
     public function testImportRejectsExistingReportName(): void
@@ -110,6 +123,7 @@ final class CustomReportConfigServiceTest extends Unit
             $repository,
             $this->createMock(EventDispatcherInterface::class),
             $this->createMock(DownloadServiceInterface::class),
+            new TransferDataValidator(),
         );
     }
 }
