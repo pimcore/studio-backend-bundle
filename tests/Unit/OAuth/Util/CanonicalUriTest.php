@@ -59,4 +59,62 @@ final class CanonicalUriTest extends Unit
             CanonicalUri::equals('https://example.com/a', 'https://example.com/b')
         );
     }
+
+    /**
+     * @dataProvider canonicalOriginProvider
+     */
+    public function testAcceptsACanonicalOrigin(string $uri): void
+    {
+        $this->assertTrue(CanonicalUri::isCanonicalOrigin($uri));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function canonicalOriginProvider(): array
+    {
+        return [
+            'https host' => ['https://pimcore.example.com'],
+            'http localhost' => ['http://localhost'],
+            'custom port' => ['http://localhost:8080'],
+            'ipv4' => ['https://127.0.0.1'],
+            'ipv6' => ['http://[::1]:8080'],
+            'hyphenated label' => ['https://my-pimcore.example.com'],
+        ];
+    }
+
+    /**
+     * parse_url() accepts authorities no client resolves to the same host: it reads
+     * "https://[::1" as host "[:" and port 1, and passes spaces and percent-encoding through.
+     * canonicalize() rebuilds such a string unchanged, so comparing against it is not enough.
+     *
+     * @dataProvider malformedOriginProvider
+     */
+    public function testRejectsAMalformedOrigin(string $uri): void
+    {
+        $this->assertFalse(CanonicalUri::isCanonicalOrigin($uri));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function malformedOriginProvider(): array
+    {
+        return [
+            'unbalanced ipv6 bracket' => ['https://[::1'],
+            'doubled ipv6 bracket' => ['https://[[::1]]'],
+            'bracketed non-address' => ['https://[zz]'],
+            'unbracketed ipv6' => ['https://::1'],
+            'space in host' => ['https://pim core.example.com'],
+            'control character in host' => ["https://pim\x01core.example.com"],
+            'backslash' => ['https://pimcore.example.com\\'],
+            'percent-encoded host' => ['https://ex%41mple.com'],
+            'empty label' => ['https://pimcore..example.com'],
+            'label starting with a hyphen' => ['https://-pimcore.example.com'],
+            'underscore' => ['https://pim_core.example.com'],
+            'port zero' => ['https://pimcore.example.com:0'],
+            'path' => ['https://pimcore.example.com/oauth'],
+            'uppercase host' => ['https://PIMCORE.example.com'],
+        ];
+    }
 }

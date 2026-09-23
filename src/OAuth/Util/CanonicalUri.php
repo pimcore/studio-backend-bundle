@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Util;
 
+use function filter_var;
 use function in_array;
 use function parse_url;
+use function preg_match;
 use function rtrim;
 use function strtolower;
 use function trim;
@@ -68,16 +70,23 @@ final class CanonicalUri
      * Canonicality is decided by canonicalize() rather than by a second set of rules, so
      * the shape accepted is exactly the shape compared. That is what rejects a trailing
      * slash, an uppercase host and a redundant default port; the explicit part checks
-     * reject the components an origin may not carry at all.
+     * reject the components an origin may not carry at all. The host and port are checked
+     * on their own because parse_url() accepts authorities no client resolves the same way,
+     * such as "https://[::1" (host "[:", port 1), and canonicalize() rebuilds them unchanged.
      */
     public static function isCanonicalOrigin(string $uri): bool
     {
-        if ($uri === '' || $uri !== trim($uri)) {
+        // Whitespace, control characters and the backslash, which browsers read as a slash.
+        if ($uri === '' || preg_match('/[\x00-\x20\x7f\\\\]/u', $uri) !== 0) {
             return false;
         }
 
         $parts = parse_url($uri);
-        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+        if ($parts === false
+            || !isset($parts['scheme'], $parts['host'])
+            || !self::isValidHost($parts['host'])
+            || (isset($parts['port']) && $parts['port'] < 1)
+        ) {
             return false;
         }
 
@@ -92,5 +101,18 @@ final class CanonicalUri
         }
 
         return $uri === self::canonicalize($uri);
+    }
+
+    /**
+     * A DNS host name, an IPv4 address, or an IPv6 address in exactly one pair of brackets.
+     */
+    private static function isValidHost(string $host): bool
+    {
+        if (preg_match('/^\[([^\[\]]+)\]$/u', $host, $matches) === 1) {
+            return filter_var($matches[1], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
+        }
+
+        return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false
+            || filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
     }
 }

@@ -99,6 +99,8 @@ final class OAuthConfigurationTest extends Unit
             'wrong scheme' => ['ftp://pimcore.example.com'],
             'surrounding whitespace' => [' https://pimcore.example.com'],
             'with credentials' => ['https://user:pw@pimcore.example.com'],
+            'unbalanced ipv6 bracket' => ['https://[::1'],
+            'space in host' => ['https://pim core.example.com'],
         ];
     }
 
