@@ -32,10 +32,7 @@ use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
-use function parse_url;
 use function sprintf;
-use function strtolower;
-use function trim;
 
 /**
  * This is the class that validates and merges configuration from your app/config files.
@@ -839,6 +836,20 @@ class Configuration implements ConfigurationInterface
                             . 'oauth.enabled is true.'
                         )
                         ->defaultNull()
+                        // Present is not the same as usable. Everything downstream concatenates a
+                        // root path onto this value and compares the result byte for byte, so a
+                        // trailing slash, a path, a query or an uppercase host produces URIs that
+                        // look plausible and never match. Checked on this node rather than on
+                        // `oauth` because Symfony skips a node's own validation for `%env()%`
+                        // values, which are placeholder strings at build time and never an origin;
+                        // OAuthEndpointGuardSubscriber checks the resolved value at runtime. The
+                        // empty string is left to the required check below: it is also the dummy
+                        // value Symfony validates string placeholders with.
+                        ->validate()
+                            ->ifTrue(static fn (mixed $issuer): bool => $issuer !== null && $issuer !== ''
+                                && (!is_string($issuer) || !CanonicalUri::isCanonicalOrigin($issuer)))
+                            ->thenInvalid(self::OAUTH_ISSUER_INVALID_ERROR)
+                        ->end()
                     ->end()
                     ->integerNode('access_token_ttl')
                         ->info('Access-token lifetime in seconds.')
@@ -954,18 +965,8 @@ class Configuration implements ConfigurationInterface
                 // - a check the documentation promises, silently disabled.
                 ->validate()
                     ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
-                        && ($oauth['issuer'] ?? null) === null)
+                        && in_array($oauth['issuer'] ?? null, [null, ''], true))
                     ->thenInvalid(self::OAUTH_ISSUER_REQUIRED_ERROR)
-                ->end()
-                // Present is not the same as usable. Everything downstream concatenates a
-                // root path onto this value and compares the result byte for byte, so a
-                // trailing slash, a path, a query or an uppercase host produces URIs that
-                // look plausible and never match.
-                ->validate()
-                    ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
-                        && ($oauth['issuer'] ?? null) !== null
-                        && (!is_string($oauth['issuer']) || !self::isCanonicalOrigin($oauth['issuer'])))
-                    ->thenInvalid(self::OAUTH_ISSUER_INVALID_ERROR)
                 ->end()
                 // Same shape, same reason: enabling the server without key material leaves
                 // it unable to build at all, and AuthorizeController only catches
@@ -979,38 +980,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
-    }
-
-    /**
-     * A bare origin: scheme, host, optional port, and nothing else.
-     *
-     * Canonicality is decided by CanonicalUri rather than by a second set of rules here, so
-     * the shape accepted at build time is exactly the shape compared at runtime. That is
-     * what rejects a trailing slash, an uppercase host and a redundant default port; the
-     * explicit part checks below reject the components an origin may not carry at all.
-     */
-    private static function isCanonicalOrigin(string $issuer): bool
-    {
-        if ($issuer === '' || $issuer !== trim($issuer)) {
-            return false;
-        }
-
-        $parts = parse_url($issuer);
-        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
-            return false;
-        }
-
-        if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
-            return false;
-        }
-
-        foreach (['path', 'query', 'fragment', 'user', 'pass'] as $part) {
-            if (($parts[$part] ?? '') !== '') {
-                return false;
-            }
-        }
-
-        return $issuer === CanonicalUri::canonicalize($issuer);
     }
 
     /**

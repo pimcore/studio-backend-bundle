@@ -266,7 +266,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // unconditionally, so without this they stay reachable (and erroring) while
         // the server is off.
         $container->getDefinition(OAuthEndpointGuardSubscriber::class)
-            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
         // The bundle's own MCP endpoints as a protected resource, so an installation that
         // enables OAuth does not have to hand-write the entry to get a working server. The

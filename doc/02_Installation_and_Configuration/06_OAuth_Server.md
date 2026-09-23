@@ -57,7 +57,8 @@ pimcore_studio_backend:
         enabled: true
         # Issuer identifier advertised in metadata, returned in the authorization
         # response, and stamped on every issued token. Required once enabled is true.
-        issuer: 'https://pimcore.example.com'
+        # A literal such as 'https://pimcore.example.com' works as well.
+        issuer: '%env(OAUTH_ISSUER)%'
         keys:
             private_key: '%env(OAUTH_PRIVATE_KEY)%'
             public_key: '%env(OAUTH_PUBLIC_KEY)%'
@@ -84,6 +85,12 @@ pimcore_studio_backend:
 > The issuer is an origin without a path, and the authorization server's endpoints and every protected
 > resource URI are built on it. Pimcore therefore has to be served from the root of that origin: an installation
 > under a path prefix such as `/cms` advertises URIs that do not match its routes, and is not supported.
+
+> A literal issuer is checked for this shape at container build. A value from an environment variable is only
+> known at runtime, so it is checked on the first request to an OAuth endpoint instead: while it is malformed,
+> every OAuth endpoint answers `500 server_error` and the reason is logged. The issuer has to come from one
+> variable as a whole (`'%env(OAUTH_ISSUER)%'`); a value assembled around one, such as
+> `'https://%env(OAUTH_HOST)%'`, fails the build.
 
 > Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle contributes
 > its own MCP endpoints, so this configuration is enough to get a working server; add entries under

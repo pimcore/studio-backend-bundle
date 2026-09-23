@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,6 +44,11 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * one that was never built — the same shape the registration endpoint already uses
  * for its own sub-flag.
  *
+ * While enabled, it also refuses the endpoints with a `500` when the issuer is not a
+ * bare origin. A literal issuer is checked at build by OAuthIssuerPass; one taken from
+ * an environment variable is only known here, and serving OAuth with it malformed would
+ * issue tokens and metadata whose URIs look plausible and never match.
+ *
  * @internal
  */
 final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInterface
@@ -51,6 +58,8 @@ final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInte
     public function __construct(
         private bool $enabled = false,
         private string $apiPrefix = '',
+        private ?string $issuer = null,
+        private ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -68,14 +77,26 @@ final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInte
 
     public function onKernelRequest(RequestEvent $event): void
     {
-        if ($this->enabled || !$event->isMainRequest()) {
+        if (!$event->isMainRequest()
+            || !$this->isOAuthPath($this->routedPath($event->getRequest()), $this->apiPrefix)
+        ) {
             return;
         }
 
-        if (!$this->isOAuthPath($this->routedPath($event->getRequest()), $this->apiPrefix)) {
+        if (!$this->enabled) {
+            $event->setResponse(new JsonResponse(['error' => 'not_found'], Response::HTTP_NOT_FOUND));
+
             return;
         }
 
-        $event->setResponse(new JsonResponse(['error' => 'not_found'], Response::HTTP_NOT_FOUND));
+        if ($this->issuer !== null && !CanonicalUri::isCanonicalOrigin($this->issuer)) {
+            // The cause goes to the log, not to the public response.
+            $this->logger?->error(
+                'pimcore_studio_backend.oauth.issuer must be a bare origin such as "https://pimcore.example.com"'
+                . ' (lowercase host, no trailing slash, no path), got "{issuer}". Refusing OAuth requests.',
+                ['issuer' => $this->issuer],
+            );
+            $event->setResponse(new JsonResponse(['error' => 'server_error'], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 }
