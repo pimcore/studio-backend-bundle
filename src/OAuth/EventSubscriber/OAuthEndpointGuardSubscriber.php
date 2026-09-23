@@ -44,10 +44,10 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * one that was never built — the same shape the registration endpoint already uses
  * for its own sub-flag.
  *
- * While enabled, it also refuses the endpoints with a `500` when the issuer is not a
- * bare origin. A literal issuer is checked at build by OAuthIssuerPass; one taken from
- * an environment variable is only known here, and serving OAuth with it malformed would
- * issue tokens and metadata whose URIs look plausible and never match.
+ * While enabled, it also refuses the endpoints with a `500` when the issuer is missing or
+ * not a bare origin. A literal issuer is checked at build by Configuration; one taken from
+ * an environment variable is only known here, and serving OAuth with it missing or
+ * malformed would issue tokens and metadata whose URIs look plausible and never match.
  *
  * @internal
  */
@@ -89,12 +89,13 @@ final readonly class OAuthEndpointGuardSubscriber implements EventSubscriberInte
             return;
         }
 
-        if ($this->issuer !== null && !CanonicalUri::isCanonicalOrigin($this->issuer)) {
+        // Null only arrives here from an env var: a literal null fails the build while enabled.
+        if ($this->issuer === null || !CanonicalUri::isCanonicalOrigin($this->issuer)) {
             // The cause goes to the log, not to the public response.
             $this->logger?->error(
                 'pimcore_studio_backend.oauth.issuer must be a bare origin such as "https://pimcore.example.com"'
                 . ' (lowercase host, no trailing slash, no path), got "{issuer}". Refusing OAuth requests.',
-                ['issuer' => $this->issuer],
+                ['issuer' => $this->issuer ?? ''],
             );
             $event->setResponse(new JsonResponse(['error' => 'server_error'], Response::HTTP_INTERNAL_SERVER_ERROR));
         }

@@ -86,9 +86,9 @@ pimcore_studio_backend:
 > resource URI are built on it. Pimcore therefore has to be served from the root of that origin: an installation
 > under a path prefix such as `/cms` advertises URIs that do not match its routes, and is not supported.
 
-> A literal issuer is checked for this shape at container build. A value from an environment variable is only
-> known at runtime, so it is checked on the first request to an OAuth endpoint instead: while it is malformed,
-> every OAuth endpoint answers `500 server_error` and the reason is logged. The issuer has to come from one
+> A literal issuer, and the default of an `env()` parameter, are checked for this shape at container build. The
+> value of an environment variable is checked on every request to an OAuth endpoint: while it is missing or
+> malformed, those endpoints answer `500 server_error` and the reason is logged. The issuer has to come from one
 > variable as a whole (`'%env(OAUTH_ISSUER)%'`); a value assembled around one, such as
 > `'https://%env(OAUTH_HOST)%'`, fails the build.
 

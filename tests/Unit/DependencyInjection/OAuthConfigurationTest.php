@@ -17,8 +17,6 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
-use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
-use Symfony\Component\DependencyInjection\Compiler\ValidateEnvPlaceholdersPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 
@@ -170,36 +168,17 @@ final class OAuthConfigurationTest extends Unit
     /**
      * At build time an environment variable is only a placeholder string, never an origin,
      * so checking its shape failed every build that took the issuer from the environment.
-     * Symfony skips a node's own validation for placeholders; the resolved value is checked
-     * at runtime by OAuthEndpointGuardSubscriber. Driven through the real passes, since the
-     * placeholder only exists there, including the one that validates placeholders with
-     * typed dummy values. Symfony only skips a value that is a placeholder as a whole, so
-     * the issuer has to come from one variable rather than be assembled around one.
+     * Symfony does not validate the placeholder; it validates a typed dummy value instead,
+     * `''` for a string, which the node leaves to the required check. The resolved value is
+     * checked at runtime by OAuthEndpointGuardSubscriber. Symfony only does this for a value
+     * that is a placeholder as a whole, so the issuer has to come from one variable rather
+     * than be assembled around one.
      *
      * @dataProvider envIssuerProvider
      */
     public function testAnIssuerFromAnEnvironmentVariablePassesTheBuild(string $issuer): void
     {
-        $container = new ContainerBuilder();
-        $container->registerExtension(new class() extends Extension {
-            public function load(array $configs, ContainerBuilder $container): void
-            {
-                $oauth = $this->processConfiguration(new Configuration(), $configs)['oauth'];
-                $container->setParameter('probe.oauth.issuer', $oauth['issuer']);
-            }
-
-            public function getAlias(): string
-            {
-                return 'pimcore_studio_backend';
-            }
-        });
-        $container->loadFromExtension(
-            'pimcore_studio_backend',
-            ['oauth' => ['enabled' => true, 'issuer' => $issuer, 'keys' => self::KEYS]],
-        );
-
-        (new ValidateEnvPlaceholdersPass())->process($container);
-        (new MergeExtensionConfigurationPass())->process($container);
+        $container = $this->compile($issuer);
 
         $this->assertSame(
             $issuer,
@@ -215,7 +194,20 @@ final class OAuthConfigurationTest extends Unit
         return [
             'plain' => ['%env(OAUTH_ISSUER)%'],
             'with a processor' => ['%env(string:OAUTH_ISSUER)%'],
+            'with a default' => ['%env(default::OAUTH_ISSUER)%'],
         ];
+    }
+
+    /**
+     * When the `env(NAME)` parameter supplies a default, Symfony validates that default in
+     * place of the dummy value, so a malformed one is caught at build like a literal.
+     */
+    public function testAMalformedEnvironmentDefaultIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/must be a bare origin/');
+
+        $this->compile('%env(OAUTH_ISSUER)%', ['env(OAUTH_ISSUER)' => 'https://pimcore.example.com/']);
     }
 
     /**
@@ -294,6 +286,45 @@ final class OAuthConfigurationTest extends Unit
 
         $this->assertFalse($config['enabled']);
         $this->assertTrue($config['dynamic_client_registration']['enabled']);
+    }
+
+    /**
+     * Compiles a real container, so the placeholder handling is exactly the build's: the
+     * merge pass substitutes placeholders and ValidateEnvPlaceholdersPass later validates
+     * them with typed dummy values.
+     *
+     * @param array<string, string> $parameters
+     */
+    private function compile(string $issuer, array $parameters = []): ContainerBuilder
+    {
+        $container = new ContainerBuilder();
+        foreach ($parameters as $name => $value) {
+            $container->setParameter($name, $value);
+        }
+        $container->registerExtension(new class() extends Extension {
+            public function load(array $configs, ContainerBuilder $container): void
+            {
+                $oauth = $this->processConfiguration(new Configuration(), $configs)['oauth'];
+                $container->setParameter('probe.oauth.issuer', $oauth['issuer']);
+            }
+
+            public function getConfiguration(array $config, ContainerBuilder $container): Configuration
+            {
+                return new Configuration();
+            }
+
+            public function getAlias(): string
+            {
+                return 'pimcore_studio_backend';
+            }
+        });
+        $container->loadFromExtension(
+            'pimcore_studio_backend',
+            ['oauth' => ['enabled' => true, 'issuer' => $issuer, 'keys' => self::KEYS]],
+        );
+        $container->compile();
+
+        return $container;
     }
 
     /**

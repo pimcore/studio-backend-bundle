@@ -840,11 +840,12 @@ class Configuration implements ConfigurationInterface
                         // root path onto this value and compares the result byte for byte, so a
                         // trailing slash, a path, a query or an uppercase host produces URIs that
                         // look plausible and never match. Checked on this node rather than on
-                        // `oauth` because Symfony skips a node's own validation for `%env()%`
-                        // values, which are placeholder strings at build time and never an origin;
-                        // OAuthEndpointGuardSubscriber checks the resolved value at runtime. The
-                        // empty string is left to the required check below: it is also the dummy
-                        // value Symfony validates string placeholders with.
+                        // `oauth` because for a node whose whole value is an `%env()%` placeholder,
+                        // Symfony validates a typed dummy value instead of the placeholder string:
+                        // the `env(NAME)` default parameter if one is defined, '' otherwise. The
+                        // parent node would see the placeholder string, which is never an origin.
+                        // '' is therefore left to the required check below, and the resolved
+                        // value is checked at runtime by OAuthEndpointGuardSubscriber.
                         ->validate()
                             ->ifTrue(static fn (mixed $issuer): bool => $issuer !== null && $issuer !== ''
                                 && (!is_string($issuer) || !CanonicalUri::isCanonicalOrigin($issuer)))

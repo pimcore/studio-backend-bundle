@@ -145,6 +145,23 @@ final class OAuthEndpointGuardSubscriberTest extends Unit
         $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()?->getStatusCode());
     }
 
+    /**
+     * The build requires an issuer while OAuth is enabled, but `%env(default::OAUTH_ISSUER)%`
+     * passes that check as a placeholder and resolves to null at runtime. Serving OAuth
+     * without an issuer is exactly what the required check exists to prevent: metadata
+     * falls back to the request host and tokens carry no `iss`.
+     */
+    public function testRefusesOAuthPathsWhileTheIssuerIsMissing(): void
+    {
+        $event = $this->requestEvent('/pimcore-oauth/token', 'POST');
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())->method('error');
+
+        $this->subscriber(enabled: true, issuer: null, logger: $logger)->onKernelRequest($event);
+
+        $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()?->getStatusCode());
+    }
+
     public function testLeavesUnrelatedPathsAloneWhileTheIssuerIsMalformed(): void
     {
         $event = $this->requestEvent('/pimcore-studio/api/assets/1');
