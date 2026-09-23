@@ -87,13 +87,14 @@ pimcore_studio_backend:
 > under a path prefix such as `/cms` advertises URIs that do not match its routes, and is not supported.
 
 > A literal issuer, and the default of an `env()` parameter, are checked for this shape at container build. The
-> value an environment variable holds at runtime is not checked, so set it to the same form. The issuer has to come
-> from one variable as a whole (`'%env(OAUTH_ISSUER)%'`); a value assembled around one, such as
-> `'https://%env(OAUTH_HOST)%'`, fails the build.
+> value an environment variable holds at runtime is not checked, and neither is a fallback given with the
+> `default:` processor, so set both to the same form. The issuer has to come from one variable as a whole
+> (`'%env(OAUTH_ISSUER)%'`); a value assembled around one, such as `'https://%env(OAUTH_HOST)%'`, fails the build.
 
 > Define every environment variable the configuration references, also while `enabled` is `false`. Services that
-> read the issuer or the keys fail with `Environment variable not found` when they are created, which happens on
-> OAuth and MCP requests and on requests to bundles that accept these tokens, such as Data Hub.
+> read the issuer or the keys fail with `Environment variable not found` when they are created. Bundles that accept
+> these tokens, such as Data Hub, create them on almost every request, so an undefined variable can break the whole
+> application.
 
 > Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle contributes
 > its own MCP endpoints, so this configuration is enough to get a working server; add entries under

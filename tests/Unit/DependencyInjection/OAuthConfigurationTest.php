@@ -199,7 +199,20 @@ final class OAuthConfigurationTest extends Unit
 
     /**
      * When the `env(NAME)` parameter supplies a default, Symfony validates that default in
-     * place of the dummy value, so a malformed one is caught at build like a literal.
+     * place of the dummy value.
+     */
+    public function testACanonicalEnvironmentDefaultIsAccepted(): void
+    {
+        $container = $this->compile('%env(OAUTH_ISSUER)%', ['env(OAUTH_ISSUER)' => 'https://pimcore.example.com']);
+
+        $this->assertSame(
+            '%env(OAUTH_ISSUER)%',
+            $container->resolveEnvPlaceholders($container->getParameter('probe.oauth.issuer'), '%%env(%s)%%'),
+        );
+    }
+
+    /**
+     * The same validation catches a malformed default at build, like a literal.
      */
     public function testAMalformedEnvironmentDefaultIsRejected(): void
     {
