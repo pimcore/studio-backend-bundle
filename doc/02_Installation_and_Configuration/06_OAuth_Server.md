@@ -141,6 +141,35 @@ php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'
 
 `private_key`/`public_key` accept either a file path or the key contents.
 
+### Keys as environment variables
+
+A PEM key spans several lines, which does not fit a single-line environment variable. Store the keys
+base64-encoded and decode them with Symfony's `base64:` processor. A single-line value can go into `.env.local`,
+or be entered at a `pimcore-install` prompt when the install profile defines these variables:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        keys:
+            private_key: '%env(base64:OAUTH_PRIVATE_KEY)%'
+            public_key: '%env(base64:OAUTH_PUBLIC_KEY)%'
+            # Already a single-line random string, used as is.
+            encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+```
+
+Generate the three values:
+
+```bash
+openssl genrsa -out /tmp/oauth.key 2048
+echo "OAUTH_PRIVATE_KEY=$(base64 -w0 /tmp/oauth.key)"
+echo "OAUTH_PUBLIC_KEY=$(openssl rsa -in /tmp/oauth.key -pubout 2>/dev/null | base64 -w0)"
+echo "OAUTH_ENCRYPTION_KEY=$(openssl rand -base64 32)"
+rm /tmp/oauth.key
+```
+
+Use the values without quotes, both at an installer prompt and in `.env.local`. `base64 -w0` is GNU coreutils; on
+macOS, use `base64 -i <file>` instead, which does not wrap lines either.
+
 ## Exposing the endpoints
 
 The OAuth routes live at the **web root**, outside the `%pimcore_studio_backend.url_prefix%` (Pimcore Studio
