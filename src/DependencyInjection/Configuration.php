@@ -844,8 +844,8 @@ class Configuration implements ConfigurationInterface
                         // Symfony validates a typed dummy value instead of the placeholder string:
                         // the `env(NAME)` default parameter if one is defined, '' otherwise. The
                         // parent node would see the placeholder string, which is never an origin.
-                        // '' is therefore left to the required check below, and the resolved
-                        // value is checked at runtime by OAuthEndpointGuardSubscriber.
+                        // '' is therefore left to the required check below. The value the variable
+                        // holds at runtime is not checked.
                         ->validate()
                             ->ifTrue(static fn (mixed $issuer): bool => $issuer !== null && $issuer !== ''
                                 && (!is_string($issuer) || !CanonicalUri::isCanonicalOrigin($issuer)))

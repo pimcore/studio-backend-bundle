@@ -265,14 +265,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // Master switch for the endpoints themselves: the OAuth routes are declared
         // unconditionally, so without this they stay reachable (and erroring) while
         // the server is off.
-        // The subscriber is built on every request, so it only gets the issuer while OAuth
-        // can be on: an issuer from an unset env var would otherwise fail every page of an
-        // installation that has OAuth switched off. `!== false` keeps an env-driven switch.
-        $guard = $container->getDefinition(OAuthEndpointGuardSubscriber::class)
+        $container->getDefinition(OAuthEndpointGuardSubscriber::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled']);
-        if ($config['oauth']['enabled'] !== false) {
-            $guard->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
-        }
 
         // The bundle's own MCP endpoints as a protected resource, so an installation that
         // enables OAuth does not have to hand-write the entry to get a working server. The

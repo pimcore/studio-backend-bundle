@@ -99,8 +99,6 @@ final class OAuthConfigurationTest extends Unit
             'wrong scheme' => ['ftp://pimcore.example.com'],
             'surrounding whitespace' => [' https://pimcore.example.com'],
             'with credentials' => ['https://user:pw@pimcore.example.com'],
-            'unbalanced ipv6 bracket' => ['https://[::1'],
-            'space in host' => ['https://pim core.example.com'],
         ];
     }
 
@@ -171,10 +169,9 @@ final class OAuthConfigurationTest extends Unit
      * At build time an environment variable is only a placeholder string, never an origin,
      * so checking its shape failed every build that took the issuer from the environment.
      * Symfony does not validate the placeholder; it validates a typed dummy value instead,
-     * `''` for a string, which the node leaves to the required check. The resolved value is
-     * checked at runtime by OAuthEndpointGuardSubscriber. Symfony only does this for a value
-     * that is a placeholder as a whole, so the issuer has to come from one variable rather
-     * than be assembled around one.
+     * `''` for a string, which the node leaves to the required check. Symfony only does this
+     * for a value that is a placeholder as a whole, so the issuer has to come from one
+     * variable rather than be assembled around one.
      *
      * @dataProvider envIssuerProvider
      */

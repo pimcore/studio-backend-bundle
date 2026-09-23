@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\OAuth\EventSubscriber;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthEndpointGuardSubscriber;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -25,15 +24,11 @@ final class OAuthEndpointGuardSubscriberTest extends Unit
 {
     private const string API_PREFIX = '/pimcore-studio/api';
 
-    private const string ISSUER = 'https://pimcore.example.com';
-
     private function subscriber(
         bool $enabled = false,
         string $apiPrefix = self::API_PREFIX,
-        ?string $issuer = self::ISSUER,
-        ?LoggerInterface $logger = null,
     ): OAuthEndpointGuardSubscriber {
-        return new OAuthEndpointGuardSubscriber($enabled, $apiPrefix, $issuer, $logger);
+        return new OAuthEndpointGuardSubscriber($enabled, $apiPrefix);
     }
 
     private function requestEvent(
@@ -93,94 +88,6 @@ final class OAuthEndpointGuardSubscriberTest extends Unit
         $this->subscriber(enabled: true)->onKernelRequest($event);
 
         $this->assertNull($event->getResponse());
-    }
-
-    /**
-     * An issuer taken from an environment variable is only known at runtime, so the build
-     * cannot check its shape. Serving OAuth with a malformed one issues tokens and metadata
-     * whose URIs look plausible and never match, so the endpoints refuse instead, naming the
-     * cause in the log rather than in the public response.
-     *
-     * @dataProvider oauthPathProvider
-     */
-    public function testRefusesOAuthPathsWhileTheIssuerIsMalformed(string $path, string $method): void
-    {
-        $event = $this->requestEvent($path, $method);
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects($this->once())
-            ->method('error')
-            ->with($this->stringContains('must be a bare origin'));
-
-        $this->subscriber(enabled: true, issuer: 'https://pimcore.example.com/', logger: $logger)
-            ->onKernelRequest($event);
-
-        $response = $event->getResponse();
-        $this->assertNotNull($response, "$path must not be served with a malformed issuer");
-        $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $response->getStatusCode());
-        $this->assertSame(['error' => 'server_error'], json_decode((string) $response->getContent(), true));
-    }
-
-    /**
-     * @return array<string, array{0: string}>
-     */
-    public static function malformedIssuerProvider(): array
-    {
-        return [
-            'empty' => [''],
-            'trailing slash' => ['https://pimcore.example.com/'],
-            'not absolute' => ['pimcore.example.com'],
-            'uppercase host' => ['https://PIMCORE.example.com'],
-        ];
-    }
-
-    /**
-     * @dataProvider malformedIssuerProvider
-     */
-    public function testRefusesTheTokenEndpointForEveryMalformedIssuer(string $issuer): void
-    {
-        $event = $this->requestEvent('/pimcore-oauth/token', 'POST');
-
-        $this->subscriber(enabled: true, issuer: $issuer)->onKernelRequest($event);
-
-        $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()?->getStatusCode());
-    }
-
-    /**
-     * The build requires an issuer while OAuth is enabled, but `%env(default::OAUTH_ISSUER)%`
-     * passes that check as a placeholder and resolves to null at runtime. Serving OAuth
-     * without an issuer is exactly what the required check exists to prevent: metadata
-     * falls back to the request host and tokens carry no `iss`.
-     */
-    public function testRefusesOAuthPathsWhileTheIssuerIsMissing(): void
-    {
-        $event = $this->requestEvent('/pimcore-oauth/token', 'POST');
-        $logger = $this->createMock(LoggerInterface::class);
-        $logger->expects($this->once())->method('error');
-
-        $this->subscriber(enabled: true, issuer: null, logger: $logger)->onKernelRequest($event);
-
-        $this->assertSame(Response::HTTP_INTERNAL_SERVER_ERROR, $event->getResponse()?->getStatusCode());
-    }
-
-    public function testLeavesUnrelatedPathsAloneWhileTheIssuerIsMalformed(): void
-    {
-        $event = $this->requestEvent('/pimcore-studio/api/assets/1');
-
-        $this->subscriber(enabled: true, issuer: 'https://pimcore.example.com/')->onKernelRequest($event);
-
-        $this->assertNull($event->getResponse());
-    }
-
-    /**
-     * Disabled wins: the endpoints do not exist, whatever the issuer.
-     */
-    public function testAMalformedIssuerStillAnswersNotFoundWhileDisabled(): void
-    {
-        $event = $this->requestEvent('/pimcore-oauth/token', 'POST');
-
-        $this->subscriber(issuer: 'https://pimcore.example.com/')->onKernelRequest($event);
-
-        $this->assertSame(Response::HTTP_NOT_FOUND, $event->getResponse()?->getStatusCode());
     }
 
     /**
