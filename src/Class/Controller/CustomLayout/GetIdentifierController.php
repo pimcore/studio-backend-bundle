@@ -45,7 +45,7 @@ final class GetIdentifierController extends AbstractApiController
         name: 'pimcore_studio_api_class_custom_layout_get_identifier_data',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_custom_layout_get_identifier_data',
