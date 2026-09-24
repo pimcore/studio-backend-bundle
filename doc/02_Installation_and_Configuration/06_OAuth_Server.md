@@ -57,7 +57,8 @@ pimcore_studio_backend:
         enabled: true
         # Issuer identifier advertised in metadata, returned in the authorization
         # response, and stamped on every issued token. Required once enabled is true.
-        issuer: 'https://pimcore.example.com'
+        # A literal such as 'https://pimcore.example.com' works as well.
+        issuer: '%env(OAUTH_ISSUER)%'
         keys:
             private_key: '%env(OAUTH_PRIVATE_KEY)%'
             public_key: '%env(OAUTH_PUBLIC_KEY)%'
@@ -84,6 +85,18 @@ pimcore_studio_backend:
 > The issuer is an origin without a path, and the authorization server's endpoints and every protected
 > resource URI are built on it. Pimcore therefore has to be served from the root of that origin: an installation
 > under a path prefix such as `/cms` advertises URIs that do not match its routes, and is not supported.
+
+> A literal issuer, and the default of an `env()` parameter, are checked for this shape at container build. The
+> value an environment variable holds at runtime is not checked, and neither is a fallback given with the
+> `default:` processor, so set both to the same form. The issuer has to come from one variable as a whole
+> (`'%env(OAUTH_ISSUER)%'`); a value assembled around one, such as `'https://%env(OAUTH_HOST)%'`, fails the build.
+> Do not give the issuer an empty fallback such as `'%env(default::OAUTH_ISSUER)%'`: with the variable unset, the
+> server runs without an issuer, so tokens carry no `iss` and the bundle's own resources are not registered.
+
+> Define every environment variable the configuration references, also while `enabled` is `false`. Services that
+> read the issuer or the keys fail with `Environment variable not found` when they are created. Bundles that accept
+> these tokens, such as Data Hub, create them on almost every request, so an undefined variable can break the whole
+> application.
 
 > Every token is issued for a named resource (RFC 8707), so at least one has to exist. The bundle contributes
 > its own MCP endpoints, so this configuration is enough to get a working server; add entries under
@@ -128,7 +141,53 @@ openssl rsa -in oauth-private.key -pubout -out oauth-public.key
 php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'
 ```
 
-`private_key`/`public_key` accept either a file path or the key contents.
+### Referencing the keys
+
+`private_key` and `public_key` accept either a file path or the key contents. `encryption_key` is always the
+string itself.
+
+**As files.** Store the generated key files outside the web root, keep them out of version control, and make them
+readable by the PHP user. Use absolute paths, because a relative path resolves against the working directory of
+the current process:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        keys:
+            private_key: '%kernel.project_dir%/config/oauth/private.key'
+            public_key: '%kernel.project_dir%/config/oauth/public.key'
+            encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+```
+
+The paths can come from environment variables as well, for example `'%env(OAUTH_PRIVATE_KEY_PATH)%'`.
+
+**As environment variables.** A PEM key spans several lines, which does not fit a single-line environment
+variable. Store the keys base64-encoded and decode them with Symfony's `base64:` processor. A single-line value
+can go into `.env.local`, or be entered at a `pimcore-install` prompt when the install profile defines these
+variables:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        keys:
+            private_key: '%env(base64:OAUTH_PRIVATE_KEY)%'
+            public_key: '%env(base64:OAUTH_PUBLIC_KEY)%'
+            # Already a single-line random string, used as is.
+            encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+```
+
+Generate the three values:
+
+```bash
+openssl genrsa -out /tmp/oauth.key 2048
+echo "OAUTH_PRIVATE_KEY=$(base64 -w0 /tmp/oauth.key)"
+echo "OAUTH_PUBLIC_KEY=$(openssl rsa -in /tmp/oauth.key -pubout 2>/dev/null | base64 -w0)"
+echo "OAUTH_ENCRYPTION_KEY=$(openssl rand -base64 32)"
+rm /tmp/oauth.key
+```
+
+Use the values without quotes, both at an installer prompt and in `.env.local`. `base64 -w0` is GNU coreutils; on
+macOS, use `base64 -i <file>` instead, which does not wrap lines either.
 
 ## Exposing the endpoints
 
