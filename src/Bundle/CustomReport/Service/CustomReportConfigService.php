@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service;
 
+use JsonException;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\ReportEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\TreeConfigNodeEvent;
@@ -25,11 +26,16 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDe
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportTreeNodeFolder;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportUpdate;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Util\TransferableProperties;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
+use function is_array;
+use function is_string;
 use function sprintf;
 
 /**
@@ -39,10 +45,14 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
 {
     use ValidateConfigurationTrait;
 
+    private const string REPORT_EXISTS_MESSAGE = 'Custom report with name "%s" already exists.';
+
     public function __construct(
         private CustomReportHydratorInterface $customReportHydrator,
         private CustomReportRepositoryInterface $customReportRepository,
         private EventDispatcherInterface $eventDispatcher,
+        private DownloadServiceInterface $downloadService,
+        private TransferDataValidatorInterface $transferDataValidator,
     ) {
     }
 
@@ -86,12 +96,7 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
     public function createCustomReport(CustomReportAdd $parameters): CustomReportDetails
     {
         $configName = $this->getValidConfigName(['name' => $parameters->getName()]);
-
-        if ($this->customReportRepository->exists($configName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $configName)
-            );
-        }
+        $this->ensureReportNameIsAvailable($configName);
         $config = $this->customReportRepository->create($configName);
 
         return $this->customReportHydrator->extractReportDetails($config);
@@ -115,14 +120,39 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
     public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails
     {
         $newName = $this->getValidConfigName(['name' => $parameters->getNewName()]);
-        if ($this->customReportRepository->exists($newName)) {
-            throw new InvalidArgumentException(
-                sprintf('Custom report with name "%s" already exists.', $newName)
-            );
-        }
+        $this->ensureReportNameIsAvailable($newName);
 
         $reportToClone = $this->getAllowedReport($reportName);
         $config = $this->customReportRepository->cloneConfig($reportToClone, $newName);
+
+        return $this->customReportHydrator->extractReportDetails($config);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exportCustomReport(string $reportName): Response
+    {
+        $report = $this->getAllowedReport($reportName);
+        $data = $this->customReportRepository->extractTransferableData($report);
+
+        return $this->downloadService->downloadJSON(
+            json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            sprintf('custom_report_%s_export.json', $report->getName())
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function importCustomReport(string $json): CustomReportDetails
+    {
+        $data = TransferableProperties::normalize($this->decodeImportData($json));
+        $this->transferDataValidator->validate($data);
+        $configName = $this->getValidConfigName($data);
+        $this->ensureReportNameIsAvailable($configName);
+
+        $config = $this->customReportRepository->importConfig($configName, $data);
 
         return $this->customReportHydrator->extractReportDetails($config);
     }
@@ -189,6 +219,36 @@ final readonly class CustomReportConfigService implements CustomReportConfigServ
         }
 
         return $csvData;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function ensureReportNameIsAvailable(string $configName): void
+    {
+        if ($this->customReportRepository->exists($configName)) {
+            throw new InvalidArgumentException(sprintf(self::REPORT_EXISTS_MESSAGE, $configName));
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function decodeImportData(string $json): array
+    {
+        try {
+            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException('Uploaded file is not valid JSON: ' . $e->getMessage(), $e);
+        }
+
+        if (!is_array($data) || !isset($data['name']) || !is_string($data['name'])) {
+            throw new InvalidArgumentException(
+                'Uploaded file is not a custom report export: missing report "name".'
+            );
+        }
+
+        return $data;
     }
 
     /**
