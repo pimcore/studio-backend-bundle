@@ -35,6 +35,7 @@ final readonly class ConfigSettingsProvider implements SettingsProviderInterface
             'asset_frontend_prefix' => $this->config['assets']['frontend_prefixes']['source'] ?: null,
             'document_tree_paging_limit' => $this->config['documents']['tree_paging_limit'],
             'object_tree_paging_limit' => $this->config['objects']['tree_paging_limit'],
+            'object_auto_save_interval' => $this->config['objects']['auto_save_interval'],
             'timezone' => $this->config['general']['timezone'] ?: date_default_timezone_get(),
             'maps' => $this->config['maps'],
         ];
