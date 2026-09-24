@@ -49,7 +49,7 @@ final class ExportController extends AbstractApiController
     #[Route('/class/custom-layout/export/{customLayoutId}',
         name: 'pimcore_studio_api_class_custom_layout_export',
         methods: ['GET'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . '/class/custom-layout/export/{customLayoutId}',
         operationId: 'class_custom_layout_export',

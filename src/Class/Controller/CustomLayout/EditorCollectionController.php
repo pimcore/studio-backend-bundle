@@ -57,7 +57,7 @@ final class EditorCollectionController extends AbstractApiController
         requirements: ['id' => '\d+'],
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . '/class/custom-layout/editor/collection/{objectId}',
         operationId: 'class_custom_layout_editor_collection',
