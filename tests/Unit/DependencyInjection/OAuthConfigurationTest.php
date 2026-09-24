@@ -193,7 +193,6 @@ final class OAuthConfigurationTest extends Unit
         return [
             'plain' => ['%env(OAUTH_ISSUER)%'],
             'with a processor' => ['%env(string:OAUTH_ISSUER)%'],
-            'with a default' => ['%env(default::OAUTH_ISSUER)%'],
         ];
     }
 

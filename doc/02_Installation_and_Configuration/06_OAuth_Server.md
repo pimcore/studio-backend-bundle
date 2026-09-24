@@ -90,6 +90,8 @@ pimcore_studio_backend:
 > value an environment variable holds at runtime is not checked, and neither is a fallback given with the
 > `default:` processor, so set both to the same form. The issuer has to come from one variable as a whole
 > (`'%env(OAUTH_ISSUER)%'`); a value assembled around one, such as `'https://%env(OAUTH_HOST)%'`, fails the build.
+> Do not give the issuer an empty fallback such as `'%env(default::OAUTH_ISSUER)%'`: with the variable unset, the
+> server runs without an issuer, so tokens carry no `iss` and the bundle's own resources are not registered.
 
 > Define every environment variable the configuration references, also while `enabled` is `false`. Services that
 > read the issuer or the keys fail with `Environment variable not found` when they are created. Bundles that accept
@@ -139,13 +141,30 @@ openssl rsa -in oauth-private.key -pubout -out oauth-public.key
 php -r 'echo base64_encode(random_bytes(32)), PHP_EOL;'
 ```
 
-`private_key`/`public_key` accept either a file path or the key contents.
+### Referencing the keys
 
-### Keys as environment variables
+`private_key` and `public_key` accept either a file path or the key contents. `encryption_key` is always the
+string itself.
 
-A PEM key spans several lines, which does not fit a single-line environment variable. Store the keys
-base64-encoded and decode them with Symfony's `base64:` processor. A single-line value can go into `.env.local`,
-or be entered at a `pimcore-install` prompt when the install profile defines these variables:
+**As files.** Store the generated key files outside the web root, keep them out of version control, and make them
+readable by the PHP user. Use absolute paths, because a relative path resolves against the working directory of
+the current process:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        keys:
+            private_key: '%kernel.project_dir%/config/oauth/private.key'
+            public_key: '%kernel.project_dir%/config/oauth/public.key'
+            encryption_key: '%env(OAUTH_ENCRYPTION_KEY)%'
+```
+
+The paths can come from environment variables as well, for example `'%env(OAUTH_PRIVATE_KEY_PATH)%'`.
+
+**As environment variables.** A PEM key spans several lines, which does not fit a single-line environment
+variable. Store the keys base64-encoded and decode them with Symfony's `base64:` processor. A single-line value
+can go into `.env.local`, or be entered at a `pimcore-install` prompt when the install profile defines these
+variables:
 
 ```yaml
 pimcore_studio_backend:
