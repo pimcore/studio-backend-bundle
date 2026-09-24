@@ -101,11 +101,7 @@ final readonly class RenderletService implements RenderletServiceInterface
 
     private function getAttributes(RenderletParameter $parameter, UserInterface $user): array
     {
-        $attributes = [];
-
-        if ($parameter->getParentDocumentId() !== null) {
-            $attributes = $this->getAttributesFromDocument($parameter->getParentDocumentId(), $user);
-        }
+        $attributes = $this->getAttributesFromDocument($parameter->getParentDocumentId(), $user);
 
         if ($parameter->getTemplate()) {
             $attributes[DynamicRouter::CONTENT_TEMPLATE] = $parameter->getTemplate();
