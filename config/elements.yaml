@@ -42,6 +42,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\VersionDraftElementResolver
+
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexService
 
