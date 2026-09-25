@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function in_array;
 
 /**
@@ -26,7 +26,7 @@ final class TaggedIteratorAdapter implements AdapterLoaderInterface
     public const string ADAPTER_TAG = 'pimcore.studio_backend.update_adapter';
 
     public function __construct(
-        #[TaggedIterator(self::ADAPTER_TAG)]
+        #[AutowireIterator(self::ADAPTER_TAG)]
         private readonly iterable $taggedAdapter,
     ) {
     }

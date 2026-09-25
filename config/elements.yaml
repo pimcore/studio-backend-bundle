@@ -39,6 +39,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService
+
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexService
 

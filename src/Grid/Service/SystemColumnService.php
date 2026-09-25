@@ -50,6 +50,8 @@ final readonly class SystemColumnService implements SystemColumnServiceInterface
 
         // Add missing columns
         $columns['type'] = 'string';
+        $columns['userModification'] = 'user';
+        $columns['userOwner'] = 'user';
 
         return $columns;
     }

@@ -35,6 +35,14 @@ final class RateLimitSubscriberTest extends Unit
 {
     private const string URL_PREFIX = '/pimcore-studio/api';
 
+    private const string MCP_PATH = '/pimcore-mcp/agent/documents';
+
+    private const int MCP_LIMIT = 3000;
+
+    private const string OAUTH_REGISTER_PATH = '/pimcore-oauth/register';
+
+    private const int REGISTER_LIMIT = 60;
+
     public function testGetSubscribedEvents(): void
     {
         $events = RateLimitSubscriber::getSubscribedEvents();
@@ -103,6 +111,87 @@ final class RateLimitSubscriberTest extends Unit
     {
         $subscriber = $this->createSubscriber();
         $event = $this->createRequestEvent('/admin/some-route');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * The MCP firewall lives at /pimcore-mcp/, a separate path space from the Studio
+     * API url_prefix, so without an explicit branch it escapes this limiter entirely.
+     *
+     * @throws Exception
+     */
+    public function testMcpPathIsRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent(self::MCP_PATH);
+
+        $subscriber->onKernelRequest($event);
+
+        $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        // The MCP budget, not the Studio one - MCP carries machine traffic and is sized
+        // separately.
+        $this->assertSame(self::MCP_LIMIT, $rateLimit->getLimit());
+        $this->assertSame(self::MCP_LIMIT - 1, $rateLimit->getRemainingTokens());
+    }
+
+    /**
+     * The two limiters must not share a bucket, or MCP traffic would silently eat the
+     * Studio UI's budget - which is the coupling this separation exists to remove.
+     *
+     * @throws Exception
+     */
+    public function testMcpTrafficDoesNotConsumeTheStudioBudget(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $subscriber->onKernelRequest($this->createRequestEvent(self::MCP_PATH));
+
+        $studioEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($studioEvent);
+
+        $rateLimit = $studioEvent->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        $this->assertSame(499, $rateLimit->getRemainingTokens());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testMcpOverflowThrowsRateLimitException(): void
+    {
+        $subscriber = $this->createSubscriber(mcpLimit: 1);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::MCP_PATH));
+
+        $this->expectException(RateLimitException::class);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::MCP_PATH));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testMcpOptionsRequestIsIgnored(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent(self::MCP_PATH, 'OPTIONS');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * Guards against matching a bare "/pimcore-mcp" prefix, which would also swallow
+     * unrelated sibling routes.
+     *
+     * @throws Exception
+     */
+    public function testPathMerelyResemblingTheMcpPrefixIsIgnored(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent('/pimcore-mcp-something-else/route');
 
         $subscriber->onKernelRequest($event);
 
@@ -229,21 +318,195 @@ final class RateLimitSubscriberTest extends Unit
     private function createSubscriber(
         int $limit = 500,
         bool $enabled = true,
+        int $mcpLimit = self::MCP_LIMIT,
+        int $registerLimit = self::REGISTER_LIMIT,
     ): RateLimitSubscriber {
-        $factory = new RateLimiterFactory(
+        return new RateLimitSubscriber(
+            self::URL_PREFIX,
+            $this->createLimiterFactory('test_studio_api', $limit),
+            $this->createLimiterFactory('test_studio_mcp', $mcpLimit),
+            $this->createLimiterFactory('test_oauth_register', $registerLimit),
+            $enabled,
+        );
+    }
+
+    /**
+     * The registration endpoint is open, unauthenticated and writes a row, so it is the
+     * one OAuth path that carries a limiter.
+     *
+     * @throws Exception
+     */
+    public function testOauthRegisterPathIsRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        $this->assertSame(self::REGISTER_LIMIT, $rateLimit->getLimit());
+        $this->assertSame(self::REGISTER_LIMIT - 1, $rateLimit->getRemainingTokens());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testOauthRegisterOverflowThrowsRateLimitException(): void
+    {
+        $subscriber = $this->createSubscriber(registerLimit: 1);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST'));
+
+        $this->expectException(RateLimitException::class);
+        $subscriber->onKernelRequest($this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST'));
+    }
+
+    /**
+     * The token and authorize endpoints must stay unlimited. For a hosted AI connector
+     * every user's token exchange arrives from the provider's egress range, so an IP
+     * bucket there would throttle one provider's entire user base against this
+     * installation. Pinned as a test so nobody "completes" the match arm later.
+     *
+     * @throws Exception
+     */
+    public function testOtherOauthEndpointsAreNotRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+
+        foreach (['/pimcore-oauth/token', '/pimcore-oauth/authorize'] as $path) {
+            $event = $this->createRequestEvent($path, 'POST');
+            $subscriber->onKernelRequest($event);
+
+            $this->assertNull(
+                $event->getRequest()->attributes->get('_studio_rate_limit'),
+                $path . ' must not be rate limited.',
+            );
+        }
+    }
+
+    /**
+     * Security regression. `Request::getPathInfo()` is still percent-encoded while the
+     * router matches on the decoded path, so comparing the raw value let
+     * `/pimcore-oauth/%72egister` reach the controller and write a row while consuming no
+     * budget at all. The set of encodings is unbounded, so this has to be fixed by
+     * decoding rather than by listing variants.
+     *
+     * @throws Exception
+     */
+    public function testPercentEncodedRegisterPathIsStillRateLimited(): void
+    {
+        foreach (
             [
-                'id' => 'test_studio_api',
+                '/pimcore-oauth/%72egister',
+                '/pimcore-oauth/registe%72',
+                '/%70imcore-oauth/register',
+            ] as $encoded
+        ) {
+            $subscriber = $this->createSubscriber();
+            $event = $this->createRequestEvent($encoded, 'POST');
+
+            $subscriber->onKernelRequest($event);
+
+            $rateLimit = $event->getRequest()->attributes->get('_studio_rate_limit');
+            $this->assertInstanceOf(RateLimit::class, $rateLimit, $encoded . ' must be rate limited.');
+            $this->assertSame(self::REGISTER_LIMIT, $rateLimit->getLimit());
+        }
+    }
+
+    /**
+     * The Studio and MCP prefixes are matched on the same decoded value, so they cannot be
+     * escaped the same way.
+     *
+     * @throws Exception
+     */
+    public function testPercentEncodedStudioAndMcpPathsAreStillRateLimited(): void
+    {
+        $subscriber = $this->createSubscriber();
+
+        // Encoded inside the prefix itself, so the raw path does not match it at all.
+        $studio = $this->createRequestEvent('/pimcore-studio/%61pi/assets/1');
+        $subscriber->onKernelRequest($studio);
+        $this->assertInstanceOf(RateLimit::class, $studio->getRequest()->attributes->get('_studio_rate_limit'));
+
+        $mcp = $this->createRequestEvent('/pimcore-%6dcp/agent/documents');
+        $subscriber->onKernelRequest($mcp);
+        $mcpLimit = $mcp->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $mcpLimit);
+        $this->assertSame(self::MCP_LIMIT, $mcpLimit->getLimit());
+    }
+
+    /**
+     * Decoded exactly once, like the router. A doubly-encoded path decodes to
+     * `/pimcore-oauth/%72egister`, which the router does not route to the controller, so
+     * claiming it here would limit a request that 404s.
+     *
+     * @throws Exception
+     */
+    public function testDoublyEncodedPathIsNotClaimed(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent('/pimcore-oauth/%2572egister', 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * Guards against matching the register path by prefix, which would drag the sibling
+     * OAuth endpoints into the same bucket.
+     *
+     * @throws Exception
+     */
+    public function testPathMerelyResemblingTheRegisterPathIsIgnored(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $event = $this->createRequestEvent(self::OAUTH_REGISTER_PATH . '/something', 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDisabledSubscriberSkipsOauthRegister(): void
+    {
+        $subscriber = $this->createSubscriber(enabled: false);
+        $event = $this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST');
+
+        $subscriber->onKernelRequest($event);
+
+        $this->assertNull($event->getRequest()->attributes->get('_studio_rate_limit'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRegisterTrafficDoesNotConsumeTheStudioBudget(): void
+    {
+        $subscriber = $this->createSubscriber();
+        $subscriber->onKernelRequest($this->createRequestEvent(self::OAUTH_REGISTER_PATH, 'POST'));
+
+        $studioEvent = $this->createRequestEvent('/pimcore-studio/api/assets/1');
+        $subscriber->onKernelRequest($studioEvent);
+
+        $rateLimit = $studioEvent->getRequest()->attributes->get('_studio_rate_limit');
+        $this->assertInstanceOf(RateLimit::class, $rateLimit);
+        $this->assertSame(499, $rateLimit->getRemainingTokens());
+    }
+
+    private function createLimiterFactory(string $id, int $limit): RateLimiterFactory
+    {
+        return new RateLimiterFactory(
+            [
+                'id' => $id,
                 'policy' => 'sliding_window',
                 'limit' => $limit,
                 'interval' => '60 seconds',
             ],
             new InMemoryStorage(),
-        );
-
-        return new RateLimitSubscriber(
-            self::URL_PREFIX,
-            $factory,
-            $enabled,
         );
     }
 

@@ -18,12 +18,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
@@ -57,11 +59,13 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ServiceResolverInterface $serviceResolver,
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
+        private CoauthorServiceInterface $coauthorService,
     ) {
     }
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
@@ -91,12 +95,18 @@ final readonly class UpdateService implements UpdateServiceInterface
             $adapter->update($element, $data);
         }
 
-        try {
-            $this->elementSaveService->save($element, $user, $task);
+        $coauthor = $this->coauthorService->extractFromPayload($data);
 
-            if (isset($data['index'])) {
-                $this->indexService->indexRelatedElements($element, $data['index']);
-            }
+        try {
+            $save = function () use ($element, $user, $task, $data): void {
+                $this->elementSaveService->save($element, $user, $task);
+
+                if (isset($data['index'])) {
+                    $this->indexService->indexRelatedElements($element, $data['index']);
+                }
+            };
+
+            $this->coauthorService->runWithCoauthor($coauthor, $save);
         } catch (DuplicateFullPathException) {
             throw new ElementExistsException(
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())

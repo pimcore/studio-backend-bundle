@@ -38,6 +38,36 @@ This keeps the full catalogue private until the user has logged in.
 
 ---
 
+## Auto-Creating Missing Keys
+
+When the Studio frontend renders a translation key that does not yet exist in the `studio`
+catalogue, it reports the key to the backend, which creates an empty entry in the
+`translations_studio` database table. This mirrors the behaviour of the Classic UI and makes
+newly introduced keys immediately visible in the Translations editor.
+
+In setups where translations are provided exclusively through YAML files (for example
+`translations/studio.en.yaml`), this auto-creation is often undesirable: non-translatable
+labels such as numeric values or select-field choices end up polluting the `studio` domain
+with keys that never need a translation.
+
+Auto-creation can be disabled globally:
+
+```yaml
+# config/config.yaml
+pimcore_studio_backend:
+    translations:
+        auto_create_missing_keys: false # default: true
+```
+
+When disabled, missing keys are no longer persisted automatically. Manually adding keys
+through the Translations editor (and importing them) continues to work unchanged.
+
+> **Note:** This setting only affects auto-creation triggered by the Studio frontend. Keys
+> that the backend itself resolves through the Symfony translator may still be created by
+> Pimcore core's write-on-miss behaviour for registered translation domains.
+
+---
+
 ## OpenAPI Documentation Translations
 
 Endpoint descriptions, summaries, and success response texts in OpenAPI attributes are

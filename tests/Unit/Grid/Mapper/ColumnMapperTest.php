@@ -102,4 +102,16 @@ final class ColumnMapperTest extends Unit
         $mapper = new ColumnMapper();
         $this->assertSame('integer', $mapper->getType('index'));
     }
+
+    public function testMapperForUserModification(): void
+    {
+        $mapper = new ColumnMapper();
+        $this->assertSame('user', $mapper->getType('userModification'));
+    }
+
+    public function testMapperForUserOwner(): void
+    {
+        $mapper = new ColumnMapper();
+        $this->assertSame('user', $mapper->getType('userOwner'));
+    }
 }

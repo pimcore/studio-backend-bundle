@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Loader;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use function get_class;
 use function sprintf;
 
@@ -26,7 +26,7 @@ use function sprintf;
 final readonly class TaggedIteratorDataAdapter implements DataAdapterLoaderInterface
 {
     public function __construct(
-        #[TaggedIterator(self::ADAPTER_TAG)]
+        #[AutowireIterator(self::ADAPTER_TAG)]
         private iterable $taggedAdapter,
     ) {
     }

@@ -18,6 +18,7 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
@@ -40,7 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
     ],
     type: 'object'
 )]
-class Asset extends Element implements AdditionalAttributesInterface
+class Asset extends Element implements AdditionalAttributesInterface, WorkflowPermissionsAwareInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;

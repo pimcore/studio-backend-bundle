@@ -22,10 +22,11 @@ see [Extending Pimcore](https://github.com/pimcore/pimcore/blob/2026.x/doc/10_Ex
 - **Tagged service discovery** for registering custom endpoints, filters, columns, and adapters
 - **Perspective and widget system** for customizing Pimcore Studio layout
 - **MCP server infrastructure** (experimental) for Model Context Protocol integrations
+- **OAuth 2.1 authorization server** (experimental, opt-in) for token-based access by standards-based clients
 
 ## Documentation
 
 - [Architecture Overview](./01_Architecture_Overview/README.md) - API design, request flow, Grid system, and Execution Engine
 - [Installation and Configuration](./02_Installation_and_Configuration/README.md) - Setup, Mercure, security, and configuration options
 - [Extending](./03_Extending/README.md) - Adding custom endpoints, filters, columns, events, and adapters
-- [Development Details](./04_Development_Details/README.md) - Dot notation, API testing, MCP server infrastructure
+- [Development Details](./04_Development_Details/README.md) - Dot notation, API testing, MCP and OAuth server infrastructure

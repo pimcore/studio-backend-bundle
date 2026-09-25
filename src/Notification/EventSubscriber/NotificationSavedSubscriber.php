@@ -13,14 +13,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\EventSubscriber;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Topics;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Registry\NotificationTypeRegistryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Dispatch\Subscription\SubscriptionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Pimcore\Event\Model\NotificationEvent;
 use Pimcore\Event\NotificationEvents;
+use Pimcore\Model\Notification;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -33,6 +39,10 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
         private NotificationHydratorInterface $notificationHydrator,
         private NotificationRepositoryInterface $notificationRepository,
         private PublishServiceInterface $publishService,
+        private UserTopicServiceInterface $userTopicService,
+        private NotificationTypeRegistryInterface $typeRegistry,
+        private SubscriptionResolverInterface $subscriptionResolver,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -50,14 +60,55 @@ final readonly class NotificationSavedSubscriber implements EventSubscriberInter
             return;
         }
 
+        $recipient = $notification->getRecipient();
+        if ($recipient === null) {
+            return;
+        }
+
+        // The recipient's own topic, not the shared studio topic every client subscribes to —
+        // else the payload and unread count reach all users behind only a client-side filter.
         $this->publishService->publish(
-            Topics::STUDIO->value,
+            $this->userTopicService->getUserTopic($recipient->getId()),
             [
-                'unreadNotificationsCount' => $this->notificationRepository->getUnreadCountByUser(
-                    $notification->getRecipient()
+                'unreadNotificationsCount' => $this->notificationRepository->getUnreadCountByUser($recipient),
+                'notification' => $this->notificationHydrator->hydrateMinimal(
+                    $notification,
+                    $this->wantsPopup($notification)
                 ),
-                'notification' => $this->notificationHydrator->hydrateMinimal($notification),
             ]
         );
+    }
+
+    /**
+     * Resolved here rather than by the producer, so every existing producer gets a working
+     * pop-up toggle untouched. Any resolution error falls back to showing the toast — the
+     * behaviour before this setting existed.
+     */
+    private function wantsPopup(Notification $notification): bool
+    {
+        $recipientId = $notification->getRecipient()?->getId();
+
+        if ($recipientId === null) {
+            return true;
+        }
+
+        try {
+            return $this->subscriptionResolver->resolve(
+                $recipientId,
+                $this->typeRegistry->resolveBucket($notification->getType())
+            )->wantsPopup();
+        } catch (Exception $e) {
+            $this->logger->error(
+                sprintf(
+                    'Could not resolve the notification pop-up preference for user %d, ' .
+                    'defaulting to showing it: %s',
+                    $recipientId,
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
+
+            return true;
+        }
     }
 }

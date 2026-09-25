@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,7 +48,23 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        if (!$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)) {
+        // Decoded once, like the router, so an encoded path that reaches a Studio
+        // controller is still rendered as a Studio error. See the trait for the detail.
+        $path = $this->routedPath($request);
+
+        // RateLimitException wherever it was raised. It is this bundle's own exception and
+        // only this bundle throws it, so the path it happened on says nothing useful: what
+        // matters is that the client gets the JSON envelope and a 429 rather than Symfony's
+        // default error rendering. That covers the MCP endpoints, which are JSON-RPC and own
+        // every other error shape they produce, and the OAuth registration endpoint, which
+        // sits outside the Studio prefix entirely.
+        //
+        // Anything else outside the Studio API is left alone: those responses belong to
+        // whoever serves that path.
+        if (
+            !$this->isStudioBackendPath($path, $this->urlPrefix)
+            && !$exception instanceof RateLimitException
+        ) {
             return;
         }
 

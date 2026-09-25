@@ -24,6 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Mcp\McpAccessToken;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Notification\NotificationSubscription;
+use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthClientRecord;
+use Pimcore\Bundle\StudioBackendBundle\Entity\OAuth\OAuthTokenRecord;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Search\SavedSearchConfigurationShare;
@@ -65,6 +68,9 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createUserPerspectivesTable($schema);
         $this->createJobRunHiddenTable($schema);
         $this->createMcpAccessTokenTable($schema);
+        $this->createNotificationSubscriptionTable($schema);
+        $this->createOAuthTokenTable($schema);
+        $this->createOAuthClientTable($schema);
         $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
@@ -109,6 +115,18 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(McpAccessToken::TABLE_NAME)) {
             $schema->dropTable(McpAccessToken::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {
+            $schema->dropTable(NotificationSubscription::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(OAuthTokenRecord::TABLE_NAME)) {
+            $schema->dropTable(OAuthTokenRecord::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(OAuthClientRecord::TABLE_NAME)) {
+            $schema->dropTable(OAuthClientRecord::TABLE_NAME);
         }
 
         $this->removeUserPermission($schema);
@@ -471,6 +489,35 @@ final class Installer extends SettingsStoreAwareInstaller
     }
 
     /**
+     * Per-user notification preferences; see the NotificationSubscription entity.
+     *
+     * @throws SchemaException
+     */
+    private function createNotificationSubscriptionTable(Schema $schema): void
+    {
+        if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(NotificationSubscription::TABLE_NAME);
+
+        $table->addColumn('user_id', 'integer', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('type_id', 'string', ['notnull' => true, 'length' => 190]);
+        $table->addColumn('subscribed', 'boolean', ['notnull' => true, 'default' => true]);
+        $table->addColumn('channels', 'json', ['notnull' => false]);
+
+        $table->setPrimaryKey(['user_id', 'type_id'], 'pk_' . NotificationSubscription::TABLE_NAME);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user_id'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . NotificationSubscription::TABLE_NAME . '_users'
+        );
+    }
+
+    /**
      * @throws SchemaException
      */
     private function createMcpAccessTokenTable(Schema $schema): void
@@ -499,6 +546,67 @@ final class Installer extends SettingsStoreAwareInstaller
             ['onDelete' => 'CASCADE'],
             'fk_' . McpAccessToken::TABLE_NAME . '_users'
         );
+    }
+
+    /**
+     * The final shape, not the one the first migration created: a fresh install has to land
+     * exactly where a fully migrated install lands, so `resource` is included here even
+     * though Version20260901120000 adds it by ALTER.
+     *
+     * Deliberately no foreign key on `user_id`, mirroring Version20260717120000. An INT FK
+     * across differing table collations trips MariaDB, and revocation for a deleted user is
+     * handled in the application layer instead. Adding one here that the migration never
+     * creates would make executeDiffSql() emit it, and a fresh install would then carry a
+     * constraint an upgraded install does not.
+     */
+    private function createOAuthTokenTable(Schema $schema): void
+    {
+        if ($schema->hasTable(OAuthTokenRecord::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(OAuthTokenRecord::TABLE_NAME);
+
+        $table->addColumn('identifier', 'string', ['notnull' => true, 'length' => 128]);
+        $table->addColumn('type', 'string', ['notnull' => true, 'length' => 16]);
+        $table->addColumn('expires_at', 'bigint', ['notnull' => true, 'unsigned' => true]);
+        $table->addColumn('revoked', 'boolean', ['notnull' => true, 'default' => false]);
+        $table->addColumn('user_id', 'integer', ['notnull' => false, 'unsigned' => true]);
+        $table->addColumn('resource', 'string', ['notnull' => false, 'length' => 512]);
+        $table->addColumn('client_id', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('created_at', 'bigint', ['notnull' => true, 'unsigned' => true]);
+
+        $table->setPrimaryKey(['identifier'], 'pk_' . OAuthTokenRecord::TABLE_NAME);
+        $table->addIndex(['user_id'], 'idx_oauth_token_user');
+        $table->addIndex(['expires_at'], 'idx_oauth_token_expires');
+    }
+
+    /**
+     * As above: `metadata_hash` and its index come from Version20260914120000 rather than
+     * from the table's own migration, and belong here so both paths converge. The index
+     * name has to match that migration's hasIndex() guard character for character.
+     */
+    private function createOAuthClientTable(Schema $schema): void
+    {
+        if ($schema->hasTable(OAuthClientRecord::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(OAuthClientRecord::TABLE_NAME);
+
+        $table->addColumn('client_id', 'string', ['notnull' => true, 'length' => 128]);
+        $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
+        $table->addColumn('redirect_uris', 'json', ['notnull' => true]);
+        $table->addColumn('grant_types', 'json', ['notnull' => true]);
+        $table->addColumn('scopes', 'json', ['notnull' => true]);
+        $table->addColumn('confidential', 'boolean', ['notnull' => true, 'default' => false]);
+        $table->addColumn('secret_hash', 'string', ['notnull' => false, 'length' => 255]);
+        $table->addColumn('token_endpoint_auth_method', 'string', ['notnull' => true, 'length' => 40]);
+        $table->addColumn('metadata_hash', 'string', ['notnull' => false, 'length' => 64]);
+        $table->addColumn('created_at', 'bigint', ['notnull' => true, 'unsigned' => true]);
+
+        $table->setPrimaryKey(['client_id'], 'pk_' . OAuthClientRecord::TABLE_NAME);
+        $table->addIndex(['metadata_hash'], 'idx_oauth_client_metadata_hash');
     }
 
     /**

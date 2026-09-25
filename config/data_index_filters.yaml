@@ -71,7 +71,13 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\NumberFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FileSizeFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SelectFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SystemUserFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\BooleanFilter:

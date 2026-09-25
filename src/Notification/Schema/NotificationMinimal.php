@@ -19,7 +19,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'NotificationMinimal',
     title: 'Notification Minimal Data',
-    required: ['id', 'type', 'title', 'read', 'creationDate', 'recipient', 'sender'],
+    required: ['id', 'type', 'title', 'read', 'creationDate', 'recipient', 'sender', 'popup'],
     type: 'object'
 )]
 final readonly class NotificationMinimal
@@ -39,6 +39,11 @@ final readonly class NotificationMinimal
         private int $recipient,
         #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin')]
         private ?string $sender = null,
+        // resolved from the recipient's preferences at publish time; true keeps the pre-field behaviour
+        #[Property(description: 'whether to show a toast on screen', type: 'bool', example: true)]
+        private bool $popup = true,
+        #[Property(description: 'type specific payload as JSON', type: 'string', example: '{"threadId":42}')]
+        private ?string $payload = null,
     ) {
 
     }
@@ -76,5 +81,15 @@ final readonly class NotificationMinimal
     public function getSender(): ?string
     {
         return $this->sender;
+    }
+
+    public function isPopup(): bool
+    {
+        return $this->popup;
+    }
+
+    public function getPayload(): ?string
+    {
+        return $this->payload;
     }
 }

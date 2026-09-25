@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\Loader;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Provider\OwnershipProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OwnershipManagement\Service\ProviderLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -27,7 +27,7 @@ final readonly class TaggedIteratorProviderLoader implements ProviderLoaderInter
      * @param iterable<OwnershipProviderInterface> $providers
      */
     public function __construct(
-        #[TaggedIterator(self::OWNERSHIP_PROVIDER_TAG)]
+        #[AutowireIterator(self::OWNERSHIP_PROVIDER_TAG)]
         private iterable $providers,
     ) {
     }

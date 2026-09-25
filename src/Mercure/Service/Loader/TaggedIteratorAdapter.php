@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ClientTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ final class TaggedIteratorAdapter implements TopicLoaderInterface
     public const TOPIC_LOADER_TAG = 'pimcore.studio_backend.mercure.topic.provider';
 
     public function __construct(
-        #[TaggedIterator(self::TOPIC_LOADER_TAG)]
+        #[AutowireIterator(self::TOPIC_LOADER_TAG)]
         private readonly iterable $taggedTopicProviders,
     ) {
     }

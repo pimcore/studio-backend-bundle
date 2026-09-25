@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\Loader;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Provider\DataProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Gdpr\Service\DataProviderLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 final readonly class TaggedIteratorDataProviderLoader implements DataProviderLoaderInterface
 {
     public function __construct(
-        #[TaggedIterator(self::DATA_PROVIDER_TAG)]
+        #[AutowireIterator(self::DATA_PROVIDER_TAG)]
         private iterable $providers,
     ) {
     }

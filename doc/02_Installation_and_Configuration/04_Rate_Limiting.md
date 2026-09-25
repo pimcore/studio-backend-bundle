@@ -4,7 +4,7 @@ The Studio Backend Bundle includes built-in rate limiting for all API endpoints 
 
 ## Overview
 
-Rate limiting is **enabled by default** for all Studio API endpoints. Every request to a `/pimcore-studio/api/` path is tracked using a sliding window algorithm, keyed by the client's IP address. When the limit is exceeded, the API responds with HTTP `429 Too Many Requests`.
+Rate limiting is **enabled by default**. Every request to a `/pimcore-studio/api/` or `/pimcore-mcp/` path is tracked using a sliding window algorithm, keyed by the client's IP address. When the limit is exceeded, the API responds with HTTP `429 Too Many Requests`.
 
 Additionally, specific public endpoints have their own stricter limits that apply on top of the general one.
 
@@ -13,14 +13,20 @@ Additionally, specific public endpoints have their own stricter limits that appl
 | Limiter | Scope | Policy | Limit | Interval |
 |---------|-------|--------|-------|----------|
 | `studio_api_general` | All Studio API endpoints | Sliding window | 500 requests | 1 minute |
+| `studio_mcp_general` | All MCP endpoints (`/pimcore-mcp/`) | Sliding window | 3000 requests | 1 minute |
+| `studio_mcp_login` | Failed MCP authentication attempts | Fixed window | 5 requests | 5 minutes |
 | `reset_password` | `POST /user/reset-password` | Fixed window | 5 requests | 5 minutes |
 | `setting_admin_thumbnail` | `GET /setting/admin/thumbnail` | Fixed window | 60 requests | 1 minute |
 
 The per-endpoint limits are layered on top of the general limit. For example, the `reset_password` endpoint is subject to both its own 5/5min limit and the general 500/min limit.
 
+MCP endpoints are the exception: they use `studio_mcp_general` **instead of** `studio_api_general`, not on top of it.
+
+`studio_mcp_login` is not a request limiter - it counts failed authentication attempts on the MCP firewall. See [MCP Server](../04_Development_Details/08_MCP_Server.md#throttling-guessed-credentials).
+
 ## Response Headers
 
-Every Studio API response includes rate limit information in the following headers:
+Every Studio API and MCP response includes rate limit information in the following headers:
 
 | Header | Description |
 |--------|-------------|
@@ -34,7 +40,7 @@ These headers are also included on `429` responses, so clients can determine whe
 
 ### Disabling Rate Limiting
 
-To disable the general rate limiter entirely, add the following to your project configuration:
+To disable the general rate limiters entirely, add the following to your project configuration:
 
 ```yaml
 # config/config.yaml
@@ -42,6 +48,8 @@ pimcore_studio_backend:
     rate_limiting:
         enabled: false
 ```
+
+This switches off both `studio_api_general` and `studio_mcp_general`, and with them the `X-RateLimit-*` headers. It does **not** affect `studio_mcp_login`, which lives on the MCP firewall - see [MCP Server](../04_Development_Details/08_MCP_Server.md#throttling-guessed-credentials).
 
 ### Customizing Limits
 

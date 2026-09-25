@@ -83,3 +83,13 @@ studio_ee_job_element_usage_replace: Element Usage Replace
 preview_generator_locale: Language
 main_site: 'Main Site'
 preview_generator_site: Site
+notifications.email.greeting: 'Hi %name%,'
+notifications.email.cta: 'View in Pimcore Studio'
+notifications.email.footer: 'You are receiving this email because you subscribed to these notifications in Pimcore Studio.'
+notifications.channel.popup: 'Pop-up'
+notifications.channel.email: 'Email'
+notifications.channel.email.no-address: 'No email address on your account — add one in your profile to receive these.'
+notifications.type.general.label: 'Everything else'
+notifications.type.general.description: 'Workflow steps, system messages, notifications from other bundles. These always reach your bell — choose whether they also pop up.'
+notifications.type.general.solo_label: 'All notifications'
+notifications.type.general.solo_description: 'Everything Pimcore sends you — workflow steps, system messages, notifications from other bundles. These always reach your bell; choose whether they also pop up on screen.'

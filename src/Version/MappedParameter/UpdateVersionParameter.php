@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
+use Symfony\Component\Validator\Constraints\Length;
+
 /**
  * @internal
  */
@@ -21,6 +24,10 @@ final readonly class UpdateVersionParameter
     public function __construct(
         private ?bool $public = null,
         private ?string $note = null,
+        #[Length(max: VersionCoauthor::MAX_TYPE_LENGTH)]
+        private ?string $coauthorType = null,
+        #[Length(max: VersionCoauthor::MAX_COAUTHOR_LENGTH)]
+        private ?string $coauthor = null,
     ) {
     }
 
@@ -32,5 +39,15 @@ final readonly class UpdateVersionParameter
     public function getNote(): ?string
     {
         return $this->note;
+    }
+
+    public function getCoauthorType(): ?string
+    {
+        return $this->coauthorType;
+    }
+
+    public function getCoauthor(): ?string
+    {
+        return $this->coauthor;
     }
 }

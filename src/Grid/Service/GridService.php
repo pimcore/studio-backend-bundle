@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolver
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -40,6 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -88,6 +90,7 @@ final class GridService implements GridServiceInterface
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
+        private readonly WorkflowPermissionMergerInterface $workflowPermissionMerger,
         private readonly LoggerInterface $pimcoreLogger,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ToolResolverInterface $toolResolver,
@@ -283,6 +286,8 @@ final class GridService implements GridServiceInterface
             );
         }
 
+        $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId);
+
         foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver
             if (!$this->supports($column, $elementType)) {
@@ -305,7 +310,7 @@ final class GridService implements GridServiceInterface
             $data['id'] = $elementId;
             $data['columns'][] = $columnData;
             $data['isLocked'] = $element?->getIsLocked();
-            $data['permissions'] = $element?->getPermissions();
+            $data['permissions'] = $permissions;
         }
 
         return $data;
@@ -375,6 +380,31 @@ final class GridService implements GridServiceInterface
 
         return $localizedFields instanceof Localizedfields
             && $localizedFields->getFieldDefinition($key) !== null;
+    }
+
+    /**
+     * Resolves the grid row permissions, further restricting the workspace/user permissions by the
+     * element's current workflow place permissions when the element has a workflow with permissions.
+     */
+    private function resolvePermissions(
+        ?StudioElementInterface $element,
+        ?ElementInterface $databaseElement,
+        string $elementType,
+        int $elementId,
+    ): ?Permissions {
+        if ($element === null) {
+            return null;
+        }
+
+        $permissions = $element->getPermissions();
+
+        if (!$element instanceof WorkflowPermissionsAwareInterface || !$element->getHasWorkflowWithPermissions()) {
+            return $permissions;
+        }
+
+        $workflowElement = $databaseElement ?? $this->getElement($this->serviceResolver, $elementType, $elementId);
+
+        return $this->workflowPermissionMerger->mergeWorkflowPermissions($permissions, $workflowElement);
     }
 
     /**

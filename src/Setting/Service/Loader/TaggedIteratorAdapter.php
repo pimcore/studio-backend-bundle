@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ final class TaggedIteratorAdapter implements SettingProviderLoaderInterface
     public const SETTINGS_PROVIDER_TAG = 'pimcore.studio_backend.settings_provider';
 
     public function __construct(
-        #[TaggedIterator(self::SETTINGS_PROVIDER_TAG)]
+        #[AutowireIterator(self::SETTINGS_PROVIDER_TAG)]
         private readonly iterable $taggedSettingProviders,
     ) {
     }

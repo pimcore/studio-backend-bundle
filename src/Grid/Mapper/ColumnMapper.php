@@ -36,6 +36,8 @@ final readonly class ColumnMapper implements ColumnMapperInterface
         'classname' => 'string',
         'index' => 'integer',
         'mimetype' => 'string',
+        'userModification' => 'user',
+        'userOwner' => 'user',
     ];
 
     public function getType(string $column): string

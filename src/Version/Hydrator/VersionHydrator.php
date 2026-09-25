@@ -55,7 +55,9 @@ final class VersionHydrator implements VersionHydratorInterface
             versionCount: $versionCount,
             autosave: $version->isAutoSave(),
             user: $user,
-            scheduled: $scheduledTasks[$versionId] ?? null
+            scheduled: $scheduledTasks[$versionId] ?? null,
+            coauthorType: $version->getCoauthorType(),
+            coauthor: $version->getCoauthor()
         );
     }
 }

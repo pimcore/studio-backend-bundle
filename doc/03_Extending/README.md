@@ -42,6 +42,7 @@ pimcore_studio_backend:
   - [Search Index Filters](./09_Extending_Filters/01_Extending_Search_Index_Filters.md)
   - [Listing Filters](./09_Extending_Filters/02_Extending_Listing_Filters.md)
 - [Update and Patch Adapters](./10_Extending_Updater_and_Patcher.md)
+- [Notifications](./14_Extending_Notifications.md)
 
 ### UI and Specialized
 

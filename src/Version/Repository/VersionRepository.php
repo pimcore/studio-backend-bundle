@@ -135,6 +135,14 @@ final readonly class VersionRepository implements VersionRepositoryInterface
             $version->setPublic($parameter->isPublic());
         }
 
+        if ($parameter->getCoauthorType() !== null) {
+            $version->setCoauthorType($parameter->getCoauthorType() === '' ? null : $parameter->getCoauthorType());
+        }
+
+        if ($parameter->getCoauthor() !== null) {
+            $version->setCoauthor($parameter->getCoauthor() === '' ? null : $parameter->getCoauthor());
+        }
+
         try {
             $version->save();
         } catch (Exception $exception) {

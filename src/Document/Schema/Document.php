@@ -17,6 +17,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
@@ -39,7 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
     ],
     type: 'object'
 )]
-class Document extends Element implements AdditionalAttributesInterface
+class Document extends Element implements AdditionalAttributesInterface, WorkflowPermissionsAwareInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;

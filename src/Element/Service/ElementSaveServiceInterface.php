@@ -26,6 +26,10 @@ interface ElementSaveServiceInterface
 {
     public const string INDEX_TASK = 'task';
 
+    public const string INDEX_COAUTHOR_TYPE = 'coauthorType';
+
+    public const string INDEX_COAUTHOR = 'coauthor';
+
     /**
      * @throws Exception|DuplicateFullPathException|ValidationException
      */

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
 use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
@@ -26,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function in_array;
 use function is_array;
 use function is_int;
 use function is_null;
@@ -51,6 +53,27 @@ class Configuration implements ConfigurationInterface
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
+    private const string OAUTH_KEYS_REQUIRED_ERROR =
+        'pimcore_studio_backend.oauth.keys.private_key, .public_key and .encryption_key must all be set '
+        . 'when oauth.enabled is true. Without them AuthorizationServerFactory cannot build the server, '
+        . 'and the failure surfaces as an uncaught 500 on the public /pimcore-oauth/authorize endpoint '
+        . 'rather than as a configuration error. See the "Generating keys" section of the OAuth docs.';
+
+    private const string OAUTH_ISSUER_INVALID_ERROR =
+        'pimcore_studio_backend.oauth.issuer must be a bare origin: scheme, host and optional port, '
+        . 'nothing else. Write it as "https://pimcore.example.com" - lowercase host, no trailing slash, '
+        . 'no path, no query and no fragment, and http only for local development. Root paths such as '
+        . '/pimcore-mcp and /.well-known/... are appended to this value, so anything further in it '
+        . 'produces a double slash or an unusable resource URI, and a non-canonical spelling stops '
+        . 'matching the audience the resource server compares against.';
+
+    private const string OAUTH_ISSUER_REQUIRED_ERROR =
+        'pimcore_studio_backend.oauth.issuer must be set when oauth.enabled is true, '
+        . 'e.g. "https://pimcore.example.com". It is the one identity the server is '
+        . 'known by: discovery advertises it, the authorization response carries it, '
+        . 'issued tokens are stamped with it, and the resource server verifies it '
+        . 'against it. Deriving it per request would let those disagree.';
+
     /**
      * {@inheritdoc}
      *
@@ -75,6 +98,7 @@ class Configuration implements ConfigurationInterface
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
+        $this->addNotificationsNode($rootNode);
         $this->addClassMapping($rootNode, 'asset_metadata_adapter_mapping');
         $this->addClassMapping($rootNode, 'data_object_data_adapter_mapping');
         $this->addClassMapping($rootNode, 'document_type_adapter_mapping');
@@ -87,6 +111,7 @@ class Configuration implements ConfigurationInterface
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
+        $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
         $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
@@ -357,6 +382,50 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
+    }
+
+    /**
+     * The administrator's only lever: switching a channel off installation-wide. Deliberately
+     * not a per-type matrix — a disabled channel disappears from the API entirely.
+     */
+    private function addNotificationsNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('notifications')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('channels')
+                        ->info(
+                            'Enable or disable notification delivery channels contributed by ' .
+                            'bundles, keyed by channel name.'
+                        )
+                        ->useAttributeAsKey('name')
+                        ->arrayPrototype()
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->booleanNode('enabled')
+                                    ->defaultTrue()
+                                    ->info('Disabling removes the channel from the preferences screen.')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('email')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('template')
+                                ->defaultValue('@PimcoreStudioBackend/notification/email.html.twig')
+                                ->cannotBeEmpty()
+                                ->info(
+                                    'Twig template for notification emails. ' .
+                                    'Receives: title, message, link, name, locale.'
+                                )
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 
     private function addNoteTypes(ArrayNodeDefinition $node): void
@@ -745,6 +814,245 @@ class Configuration implements ConfigurationInterface
         ->end();
     }
 
+    private function addOAuthNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('oauth')
+                ->addDefaultsIfNotSet()
+                ->info(
+                    'Embedded OAuth 2.1 authorization server (experimental; opt-in). '
+                    . 'Isolated from the application\'s global security configuration.'
+                )
+                ->children()
+                    ->booleanNode('enabled')
+                        ->info('Master switch for the embedded OAuth authorization server. Default off.')
+                        ->defaultFalse()
+                    ->end()
+                    ->scalarNode('issuer')
+                        ->info(
+                            'Issuer identifier (iss) advertised in metadata, returned in the '
+                            . 'authorization response, stamped on issued tokens and verified by the '
+                            . 'resource server, e.g. "https://pimcore.example.com". Required once '
+                            . 'oauth.enabled is true.'
+                        )
+                        ->defaultNull()
+                        // Present is not the same as usable. Everything downstream concatenates a
+                        // root path onto this value and compares the result byte for byte, so a
+                        // trailing slash, a path, a query or an uppercase host produces URIs that
+                        // look plausible and never match. Checked on this node rather than on
+                        // `oauth` because for a node whose whole value is an `%env()%` placeholder,
+                        // Symfony validates a typed dummy value instead of the placeholder string:
+                        // the `env(NAME)` default parameter if one is defined, '' otherwise. The
+                        // parent node would see the placeholder string, which is never an origin.
+                        // '' is therefore left to the required check below. The value the variable
+                        // holds at runtime is not checked.
+                        ->validate()
+                            ->ifTrue(static fn (mixed $issuer): bool => $issuer !== null && $issuer !== ''
+                                && (!is_string($issuer) || !CanonicalUri::isCanonicalOrigin($issuer)))
+                            ->thenInvalid(self::OAUTH_ISSUER_INVALID_ERROR)
+                        ->end()
+                    ->end()
+                    ->integerNode('access_token_ttl')
+                        ->info('Access-token lifetime in seconds.')
+                        ->defaultValue(3600)
+                    ->end()
+                    ->integerNode('auth_code_ttl')
+                        ->info('Authorization-code lifetime in seconds.')
+                        ->defaultValue(600)
+                    ->end()
+                    ->integerNode('refresh_token_ttl')
+                        ->info('Refresh-token lifetime in seconds.')
+                        ->defaultValue(2592000)
+                    ->end()
+                    ->scalarNode('consent_path')
+                        ->info('Studio UI route the authorize endpoint redirects to for login/consent.')
+                        ->defaultValue('/pimcore-studio/oauth/consent')
+                    ->end()
+                    ->booleanNode('allow_localhost_loopback_redirect')
+                        ->info(
+                            'Also accept http://localhost:{port} loopback redirect URIs (any port), alongside the '
+                            . 'RFC 8252 IP literals 127.0.0.1/[::1]. RFC 8252 marks "localhost" as NOT RECOMMENDED, '
+                            . 'but some native clients use it; see '
+                            . 'https://github.com/anthropics/claude-code/issues/42765. Set to false to require IP '
+                            . 'literals (RFC-strict).'
+                        )
+                        ->defaultTrue()
+                    ->end()
+                    ->arrayNode('cors_allowed_origins')
+                        ->info(
+                            'Browser origins allowed to call the OAuth endpoints cross-origin (discovery, '
+                            . 'token, register). Empty = any origin (wildcard); list to restrict. Credentials '
+                            . 'are never sent, so a wildcard stays CORS-valid.'
+                        )
+                        ->scalarPrototype()->end()
+                        ->defaultValue([])
+                    ->end()
+                    ->append($this->addOAuthClientIdMetadataDocumentsNode())
+                    ->append($this->addOAuthDynamicClientRegistrationNode())
+                    ->arrayNode('keys')
+                        ->addDefaultsIfNotSet()
+                        ->info('Signing/encryption key material. Reference via env vars; never commit secrets.')
+                        ->children()
+                            ->scalarNode('private_key')
+                                ->info('Path or contents of the JWT signing private key.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('public_key')
+                                ->info('Path or contents of the JWT signing public key.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('passphrase')
+                                ->info('Passphrase for the private key, if any.')
+                                ->defaultNull()
+                            ->end()
+                            ->scalarNode('encryption_key')
+                                ->info('Encryption key for auth codes and refresh tokens.')
+                                ->defaultNull()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('clients')
+                        ->info(
+                            'Pre-registered public clients (e.g. Studio MCP, Pimcore Agent). Each '
+                            . 'authenticates a logged-in user via the authorization_code + PKCE flow; '
+                            . 'no secret and no client_credentials. Active regardless of the '
+                            . 'dynamic_client_registration / client_id_metadata_documents toggles, so '
+                            . 'these are the onboarding path when both self-registration mechanisms '
+                            . 'are off. The map key is the client_id.'
+                        )
+                        ->useAttributeAsKey('identifier')
+                        ->normalizeKeys(false)
+                        ->arrayPrototype()
+                            ->children()
+                                ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
+                                ->arrayNode('redirect_uris')
+                                    ->info('Exact-match allow-list of redirect URIs for this client.')
+                                    ->isRequired()
+                                    ->requiresAtLeastOneElement()
+                                    ->scalarPrototype()->cannotBeEmpty()->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('resources')
+                        ->info('Protected resources (audiences). Each entry is one endpoint bound as a token audience.')
+                        ->arrayPrototype()
+                            ->children()
+                                ->scalarNode('uri')
+                                    ->isRequired()
+                                    ->info('Canonical resource URI (audience).')
+                                ->end()
+                                ->arrayNode('scopes_supported')
+                                    ->info(
+                                        'Scopes a token for this resource may carry. These are also what '
+                                        . 'the server advertises as its catalogue, so an entry here is how '
+                                        . 'a scope comes to exist at all. Empty constrains nothing.'
+                                    )
+                                    ->scalarPrototype()->end()
+                                    ->defaultValue([])
+                                ->end()
+                                ->arrayNode('authorization_servers')
+                                    ->scalarPrototype()->end()
+                                    ->defaultValue([])
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+                // Fail at container build time rather than shipping an issuer that is
+                // advertised but never stamped: with a null issuer the metadata endpoint
+                // still derives one from the request while token issuance omits `iss`
+                // entirely, and EmbeddedTokenValidator then drops its IssuedBy constraint
+                // - a check the documentation promises, silently disabled.
+                ->validate()
+                    ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
+                        && in_array($oauth['issuer'] ?? null, [null, ''], true))
+                    ->thenInvalid(self::OAUTH_ISSUER_REQUIRED_ERROR)
+                ->end()
+                // Same shape, same reason: enabling the server without key material leaves
+                // it unable to build at all, and AuthorizeController only catches
+                // OAuthServerException, so MissingKeyMaterialException escapes uncaught on a
+                // public unauthenticated path. `passphrase` stays optional - a key without
+                // one is normal.
+                ->validate()
+                    ->ifTrue(static fn (array $oauth): bool => ($oauth['enabled'] ?? false) === true
+                        && self::hasMissingOAuthKey($oauth['keys'] ?? []))
+                    ->thenInvalid(self::OAUTH_KEYS_REQUIRED_ERROR)
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    /**
+     * @param array<string, mixed> $keys
+     */
+    private static function hasMissingOAuthKey(array $keys): bool
+    {
+        foreach (['private_key', 'public_key', 'encryption_key'] as $key) {
+            if (($keys[$key] ?? null) === null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function addOAuthClientIdMetadataDocumentsNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('client_id_metadata_documents'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'Client ID Metadata Documents (CIMD): accept an HTTPS URL as the client_id and '
+                . 'fetch the client metadata from it, instead of pre-registration. No registration '
+                . 'endpoint is exposed. Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Resolve URL-form client_ids and advertise support in metadata.')
+                    ->defaultFalse()
+                ->end()
+                ->arrayNode('allowed_hosts')
+                    ->info('If non-empty, a client_id URL must be hosted on one of these hosts.')
+                    ->scalarPrototype()->end()
+                    ->defaultValue([])
+                ->end()
+                ->booleanNode('allow_insecure')
+                    ->info(
+                        'Dev only: permit http and private/loopback client_id URLs. '
+                        . 'Never enable in production.'
+                    )
+                    ->defaultFalse()
+                ->end()
+                ->integerNode('cache_ttl')
+                    ->info('Seconds to cache a fetched client metadata document.')
+                    ->defaultValue(300)
+                ->end()
+            ->end();
+
+        return $node;
+    }
+
+    private function addOAuthDynamicClientRegistrationNode(): ArrayNodeDefinition
+    {
+        $node = (new TreeBuilder('dynamic_client_registration'))->getRootNode();
+        $node
+            ->addDefaultsIfNotSet()
+            ->info(
+                'RFC 7591 Dynamic Client Registration. Exposes an open (unauthenticated) '
+                . 'registration endpoint so clients without prior credentials can self-register. '
+                . 'Opt-in; default off.'
+            )
+            ->children()
+                ->booleanNode('enabled')
+                    ->info('Expose POST /pimcore-oauth/register and advertise it in metadata.')
+                    ->defaultFalse()
+                ->end()
+            ->end();
+
+        return $node;
+    }
+
     private function addDefaultFromEmail(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -868,6 +1176,7 @@ class Configuration implements ConfigurationInterface
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('path')->defaultNull()->end()
+                        ->booleanNode('auto_create_missing_keys')->defaultTrue()->end()
                     ->end()
                 ->end()
             ->end();

@@ -38,6 +38,9 @@ use Pimcore\Twig\Extension\Templating\Placeholder\Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 use function is_array;
+use function is_bool;
+use function is_scalar;
+use function is_string;
 use function sprintf;
 
 /**
@@ -178,7 +181,7 @@ final readonly class EmailLogService implements EmailLogServiceInterface
 
             $parsedParam = new EmailLogEntryParameter(
                 $entry['key'],
-                $value
+                $this->normalizeParamValue($value)
             );
 
             $this->eventDispatcher->dispatch(
@@ -295,6 +298,28 @@ final readonly class EmailLogService implements EmailLogServiceInterface
         }
 
         return null;
+    }
+
+    private function normalizeParamValue(mixed $value): ?string
+    {
+        if ($value === null || is_string($value)) {
+            return $value;
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        $encoded = json_encode(
+            $value,
+            JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+        );
+
+        return $encoded === false ? null : $encoded;
     }
 
     private function handleObjectParam(ElementInterface $object, string $name): EmailLogEntryParameter

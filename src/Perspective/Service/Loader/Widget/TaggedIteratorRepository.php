@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\WidgetConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\MustImplementInterfaceTrait;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 /**
  * @internal
@@ -29,7 +29,7 @@ final class TaggedIteratorRepository implements ConfigRepositoryLoaderInterface
     public const string REPOSITORY_TAG = 'pimcore.studio_backend.widget_repository';
 
     public function __construct(
-        #[TaggedIterator(self::REPOSITORY_TAG)]
+        #[AutowireIterator(self::REPOSITORY_TAG)]
         private readonly iterable $taggedRepositories,
     ) {
     }
