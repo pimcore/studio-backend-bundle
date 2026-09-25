@@ -22,6 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
 use function is_string;
 use function sprintf;
 
+/**
+ * @internal
+ */
 final class TwigOperator implements TransformerInterface
 {
     public function __construct(

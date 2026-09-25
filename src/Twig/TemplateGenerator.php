@@ -21,15 +21,21 @@ use Twig\Error\Error as TwigError;
 use Twig\Extension\SandboxExtension;
 use function sprintf;
 
+/**
+ * @internal
+ */
 final class TemplateGenerator implements TemplateGeneratorInterface
 {
+    private readonly Environment $environment;
+
     private readonly SandboxExtension $sandboxExtension;
 
-    public function __construct(
-        private readonly Environment $twig,
-        SandboxExtensionInitializerInterface $sandboxInitializer
-    ) {
+    public function __construct(SandboxExtensionInitializerInterface $sandboxInitializer)
+    {
         $this->sandboxExtension = $sandboxInitializer->initialize();
+        // Rendering must go through the isolated environment the sandbox belongs to, never
+        // through the application's shared `twig` service - see SandboxExtensionInitializer.
+        $this->environment = $sandboxInitializer->getEnvironment();
     }
 
     public function generate(string $twigTemplate, array $arguments): string
@@ -37,7 +43,7 @@ final class TemplateGenerator implements TemplateGeneratorInterface
         $this->sandboxExtension->enableSandbox();
 
         try {
-            return $this->twig->createTemplate($twigTemplate)->render($arguments);
+            return $this->environment->createTemplate($twigTemplate)->render($arguments);
         } catch (TwigError $e) {
             throw new InvalidTemplateException(
                 sprintf(

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Twig;
 
 use Codeception\Test\Unit;
+use DateTime;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
@@ -105,8 +106,8 @@ final class TemplateGeneratorTest extends Unit
 
     public function testRendersShuffleFilter(): void
     {
-        // shuffle is non-deterministic; sorting afterwards makes the assertion stable while still
-        // exercising the filter.
+        // shuffle is non-deterministic; sorting afterwards makes the assertion stable while
+        // still exercising the filter.
         $this->assertSame('1,2,3', $this->generate('{{ value|shuffle|sort|join(",") }}', ['value' => [3, 1, 2]]));
     }
 
@@ -179,30 +180,96 @@ final class TemplateGeneratorTest extends Unit
         $this->generate('{% apply upper %}{{ value }}{% endapply %}', ['value' => 'x']);
     }
 
+    public function testBlocksIncludeTag(): void
+    {
+        // "include" would let a template pull in an arbitrary sibling template; it is not
+        // part of the allowed tags and must be rejected.
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{% include "unknown.twig" %}', []);
+    }
+
+    /**
+     * The isolated environment registers no Pimcore Twig extension, so "pimcore_object" does
+     * not exist for it to resolve - the element loader is unreachable, not merely sandboxed.
+     * This is the exploit from the original report: an open policy let this call delete an
+     * object straight from a grid's advanced column template.
+     */
+    public function testBlocksElementDeleteViaPimcoreFunction(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ pimcore_object(1).delete() }}', []);
+    }
+
+    /**
+     * @dataProvider pimcoreFunctionProvider
+     */
+    public function testBlocksPimcoreServiceFunctions(string $call): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ ' . $call . ' }}', []);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public function pimcoreFunctionProvider(): iterable
+    {
+        yield 'pimcore_object' => ['pimcore_object(1)'];
+        yield 'pimcore_object_by_path' => ['pimcore_object_by_path("/foo")'];
+        yield 'pimcore_asset' => ['pimcore_asset(1)'];
+        yield 'pimcore_document' => ['pimcore_document(1)'];
+        yield 'pimcore_user' => ['pimcore_user(1)'];
+    }
+
+    /**
+     * A value reaching the template unblocked (e.g. a DateTime for a date column) must stay
+     * read-only: mutating methods are hard-blocked regardless of the class denylist.
+     */
+    public function testBlocksSetterCallOnUnblockedValue(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate("{{ value.modify('+1 day') }}", ['value' => new DateTime('2020-01-01')]);
+    }
+
+    /**
+     * Rendering a TwigOperator template must never touch the application's shared sandbox -
+     * previously this called setSecurityPolicy() on the shared SandboxExtension, permanently
+     * weakening the policy core uses for its own Twig rendering (Mailer, "Text" layout
+     * component, ...) for the remainder of the process.
+     */
+    public function testCorePolicyUnchangedAfterRender(): void
+    {
+        $corePolicy = new SecurityPolicy(['set'], ['escape', 'trans', 'default'], ['path', 'asset']);
+        $coreSandbox = new SandboxExtension($corePolicy);
+        $coreTwig = new Environment(new ArrayLoader());
+        $coreTwig->addExtension($coreSandbox);
+
+        $this->generate('{{ value|upper }}', ['value' => 'twig-operator-render']);
+
+        try {
+            $this->generate('{{ pimcore_object(1).delete() }}', []);
+        } catch (InvalidTemplateException) {
+            // Expected - the attempted exploit itself must not have side effects either.
+        }
+
+        $this->assertSame(
+            $corePolicy,
+            $coreSandbox->getSecurityPolicy(),
+            'Rendering a TwigOperator template must not replace the shared SandboxExtension policy.'
+        );
+    }
+
     private function generate(string $template, array $context): string
     {
-        $twig = new Environment(new ArrayLoader());
-        // The initializer expects the SandboxExtension to be present on the environment.
-        $twig->addExtension(new SandboxExtension(new SecurityPolicy()));
-
-        if (class_exists(StringExtension::class)) {
-            $twig->addExtension(new StringExtension());
-        }
-        if (class_exists(IntlExtension::class)) {
-            $twig->addExtension(new IntlExtension());
-        }
-
         $policy = $this->getDefaultSandboxPolicy();
 
-        $generator = new TemplateGenerator(
-            $twig,
-            new SandboxExtensionInitializer(
-                $twig,
-                $policy['tags'],
-                $policy['filters'],
-                $policy['functions']
-            )
+        $initializer = new SandboxExtensionInitializer(
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
         );
+
+        $generator = new TemplateGenerator($initializer);
 
         return $generator->generate($template, $context);
     }
