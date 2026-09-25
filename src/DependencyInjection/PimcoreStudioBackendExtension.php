@@ -545,6 +545,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$allowedFunctions',
             $config['twig']['sandbox_security_policy']['functions']
         );
+
+        // Reuse core's own object/function protection lists instead of re-declaring them here,
+        // so this sandbox cannot silently drift from the one Pimcore core configures.
+        $definition->setArgument(
+            '$blockedClasses',
+            '%pimcore.templating.twig.sandbox_security_policy.blocked_classes%'
+        );
+        $definition->setArgument(
+            '$allowedClasses',
+            '%pimcore.templating.twig.sandbox_security_policy.allowed_classes%'
+        );
+        $definition->setArgument(
+            '$blockedFunctions',
+            '%pimcore.templating.twig.sandbox_security_policy.blocked_functions%'
+        );
+        $definition->setArgument(
+            '$hardBlockedMethods',
+            '%pimcore.templating.twig.sandbox_security_policy.hard_blocked_methods%'
+        );
     }
 
     /**

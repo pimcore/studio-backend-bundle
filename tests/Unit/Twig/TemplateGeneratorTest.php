@@ -179,8 +179,76 @@ final class TemplateGeneratorTest extends Unit
         $this->generate('{% apply upper %}{{ value }}{% endapply %}', ['value' => 'x']);
     }
 
-    private function generate(string $template, array $context): string
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: the initializer used to build the
+     * SecurityPolicy from only 3 of its 7 constructor arguments, so a configured
+     * blocked class was silently ignored and every method on it stayed callable.
+     */
+    public function testBlocksMethodCallOnBlockedClass(): void
     {
+        $fixture = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ value.getSecret() }}',
+            ['value' => $fixture],
+            blockedClasses: [$fixture::class]
+        );
+    }
+
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: hard-blocked methods must be enforced
+     * even when the owning class is not (also) in the blocked-class list.
+     */
+    public function testBlocksHardBlockedMethod(): void
+    {
+        $fixture = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ value.getSecret() }}',
+            ['value' => $fixture],
+            hardBlockedMethods: [$fixture::class => ['getSecret']]
+        );
+    }
+
+    /**
+     * Legitimate templates must keep working when no object-protection lists apply
+     * to the object in question.
+     */
+    public function testAllowsMethodCallWhenObjectIsNotRestricted(): void
+    {
+        $fixture = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->assertSame(
+            'super-secret',
+            $this->generate('{{ value.getSecret() }}', ['value' => $fixture])
+        );
+    }
+
+    private function generate(
+        string $template,
+        array $context,
+        array $blockedClasses = [],
+        array $allowedClasses = [],
+        array $blockedFunctions = [],
+        array $hardBlockedMethods = [],
+    ): string {
         $twig = new Environment(new ArrayLoader());
         // The initializer expects the SandboxExtension to be present on the environment.
         $twig->addExtension(new SandboxExtension(new SecurityPolicy()));
@@ -200,7 +268,11 @@ final class TemplateGeneratorTest extends Unit
                 $twig,
                 $policy['tags'],
                 $policy['filters'],
-                $policy['functions']
+                $policy['functions'],
+                $blockedClasses,
+                $allowedClasses,
+                $blockedFunctions,
+                $hardBlockedMethods,
             )
         );
 
