@@ -19,14 +19,23 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Twig\Sandbox\SecurityPolicy;
+use Psr\Log\AbstractLogger;
 use ReflectionMethod;
+use ReflectionNamedType;
+use Stringable;
 use Symfony\Component\Config\Definition\Processor;
 use Twig\Environment;
+use Twig\Extension\AbstractExtension;
 use Twig\Extension\SandboxExtension;
 use Twig\Extra\Intl\IntlExtension;
 use Twig\Extra\String\StringExtension;
 use Twig\Loader\ArrayLoader;
+use Twig\TwigFunction;
+use function array_merge;
+use function sprintf;
+use function strtoupper;
 
 /**
  * @internal
@@ -232,31 +241,210 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * Rendering a TwigOperator template must never touch the application's shared sandbox -
-     * previously this called setSecurityPolicy() on the shared SandboxExtension, permanently
-     * weakening the policy core uses for its own Twig rendering (Mailer, "Text" layout
-     * component, ...) for the remainder of the process.
+     * A Pimcore element reaching the template (a bug, not something that should legitimately
+     * happen - {@see \Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator}
+     * sanitizes every value before it gets here) must still have every method call denied.
+     * The mock's delete() itself fails the test if invoked, so this also proves the policy
+     * rejects the call before it ever reaches the object - not merely that some exception
+     * bubbles up afterward.
      */
-    public function testCorePolicyUnchangedAfterRender(): void
+    public function testBlocksMethodCallOnElementInterfaceValue(): void
     {
-        $corePolicy = new SecurityPolicy(['set'], ['escape', 'trans', 'default'], ['path', 'asset']);
-        $coreSandbox = new SandboxExtension($corePolicy);
-        $coreTwig = new Environment(new ArrayLoader());
-        $coreTwig->addExtension($coreSandbox);
+        $element = $this->makeEmpty(ElementInterface::class, [
+            'delete' => function (): void {
+                self::fail('delete() must never be invoked from a sandboxed template.');
+            },
+        ]);
 
-        $this->generate('{{ value|upper }}', ['value' => 'twig-operator-render']);
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ value.delete() }}', ['value' => $element]);
+    }
+
+    public function testRangeFunctionWithinTheCapWorks(): void
+    {
+        $this->assertSame('1,2,3,4,5', $this->generate('{{ range(1, 5)|join(",") }}', []));
+    }
+
+    public function testRangeFunctionAtExactlyTheCapWorks(): void
+    {
+        $this->assertSame('1000', $this->generate('{{ range(1, 1000)|length }}', []));
+    }
+
+    /**
+     * range() maps directly onto PHP's own range(): an uncapped call like range(0, 1000000)
+     * would allocate a huge array straight from template text - a memory/CPU DoS reachable
+     * with no object or method call involved at all.
+     */
+    public function testRangeFunctionRejectsASpanBeyondTheCap(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ range(0, 1000000)|length }}', []);
+    }
+
+    /**
+     * A character range is inherently bounded (at most the codepoint distance between the two
+     * characters) and must keep working uncapped.
+     */
+    public function testRangeFunctionStillSupportsCharacterRanges(): void
+    {
+        $this->assertSame('a,b,c,d,e', $this->generate('{{ range("a", "e")|join(",") }}', []));
+    }
+
+    /**
+     * The constructor must never accept a Twig Environment at all - the isolated environment
+     * is always built from scratch inside SandboxExtensionInitializer (see its class
+     * docblock). A structural guard against regressing to the old design, where an injected
+     * shared `twig` service's SandboxExtension had its policy replaced in place.
+     */
+    public function testInitializerConstructorNeverAcceptsATwigEnvironment(): void
+    {
+        $constructor = new ReflectionMethod(SandboxExtensionInitializer::class, '__construct');
+
+        foreach ($constructor->getParameters() as $parameter) {
+            $type = $parameter->getType();
+            $isEnvironment = $type instanceof ReflectionNamedType && $type->getName() === Environment::class;
+
+            $this->assertFalse(
+                $isEnvironment,
+                sprintf('Constructor parameter "$%s" must not accept a Twig Environment.', $parameter->getName())
+            );
+        }
+    }
+
+    /**
+     * Rendering a TwigOperator template must never touch an external SandboxExtension's
+     * policy - previously this called setSecurityPolicy() on the application's shared
+     * SandboxExtension, permanently weakening the policy core uses for its own Twig rendering
+     * (Mailer, the "Text" layout component, ...) for the remainder of the process. Unlike the
+     * original version of this test, $externalTwig below is not a disconnected fixture:
+     * getEnvironment() is asserted to be a distinct instance, so this fails if
+     * TemplateGenerator/SandboxExtensionInitializer is ever changed to reuse an
+     * externally-supplied environment instead of building its own.
+     */
+    public function testGeneratorNeverTouchesAnExternalSandboxExtension(): void
+    {
+        $externalPolicy = new SecurityPolicy(['set'], ['escape', 'trans', 'default'], ['path', 'asset']);
+        $externalSandbox = new SandboxExtension($externalPolicy);
+        $externalTwig = new Environment(new ArrayLoader());
+        $externalTwig->addExtension($externalSandbox);
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer($policy['tags'], $policy['filters'], $policy['functions']);
+        $generator = new TemplateGenerator($initializer);
+
+        $rendered = $generator->generate('{{ value|upper }}', ['value' => 'twig-operator-render']);
+        $this->assertSame('TWIG-OPERATOR-RENDER', $rendered);
 
         try {
-            $this->generate('{{ pimcore_object(1).delete() }}', []);
+            $generator->generate('{{ pimcore_object(1).delete() }}', []);
         } catch (InvalidTemplateException) {
             // Expected - the attempted exploit itself must not have side effects either.
         }
 
-        $this->assertSame(
-            $corePolicy,
-            $coreSandbox->getSecurityPolicy(),
-            'Rendering a TwigOperator template must not replace the shared SandboxExtension policy.'
+        $this->assertNotSame(
+            $externalTwig,
+            $initializer->getEnvironment(),
+            'The isolated environment must never be the externally-supplied one.'
         );
+        $this->assertSame(
+            $externalPolicy,
+            $externalSandbox->getSecurityPolicy(),
+            "Rendering a TwigOperator template must not touch an external SandboxExtension's policy."
+        );
+    }
+
+    /**
+     * The DI extension point ({@see SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG})
+     * is the supported way to add a project-defined filter/function/tag: the isolated
+     * environment never sees the application's shared `twig` service (see finding 2 of the
+     * review this test accompanies), so a tagged extension is registered directly onto it.
+     */
+    public function testAdditionalTaggedExtensionIsRegisteredIntoTheIsolatedEnvironment(): void
+    {
+        $extension = new class extends AbstractExtension {
+            public function getFunctions(): array
+            {
+                return [
+                    new TwigFunction('project_shout', static fn (string $value): string => strtoupper($value) . '!!!'),
+                ];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            $policy['tags'],
+            $policy['filters'],
+            array_merge($policy['functions'], ['project_shout']),
+            [$extension]
+        );
+        $generator = new TemplateGenerator($initializer);
+
+        $this->assertSame('HI!!!', $generator->generate('{{ project_shout(value) }}', ['value' => 'hi']));
+    }
+
+    /**
+     * A `sandbox_security_policy` allow-list entry only takes effect if a Twig extension in
+     * the isolated environment actually registers it (see the docblock on
+     * warnAboutUnregisteredAllowListNames()). Misconfiguring it - adding a name nothing
+     * registers - must be surfaced, not fail silently until a template happens to use it.
+     */
+    public function testWarnsOnceWhenAnAllowListedFunctionIsNeverRegistered(): void
+    {
+        $logger = new class extends AbstractLogger {
+            /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = [(string) $level, (string) $message, $context];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            $policy['tags'],
+            $policy['filters'],
+            array_merge($policy['functions'], ['does_not_exist_anywhere']),
+            [],
+            $logger
+        );
+
+        // build() memoizes; calling twice must still log only once.
+        $initializer->getEnvironment();
+        $initializer->getEnvironment();
+
+        $this->assertCount(1, $logger->records, 'The warning must be logged exactly once.');
+        $this->assertSame('warning', $logger->records[0][0]);
+        $this->assertContains('does_not_exist_anywhere', $logger->records[0][2]['functions']);
+    }
+
+    /**
+     * Sanity check on the diffing logic itself: the bundle's own default configuration must
+     * never trigger a false-positive warning.
+     */
+    public function testDoesNotWarnWhenEveryAllowListedNameIsRegistered(): void
+    {
+        $logger = new class extends AbstractLogger {
+            /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = [(string) $level, (string) $message, $context];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions'],
+            [],
+            $logger
+        );
+        $initializer->getEnvironment();
+
+        $this->assertSame([], $logger->records);
     }
 
     private function generate(string $template, array $context): string
