@@ -14,11 +14,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
+use DateTimeInterface;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
+use function array_map;
+use function is_array;
+use function is_object;
 use function is_string;
 use function sprintf;
 
@@ -80,16 +84,60 @@ final class TwigOperator implements TransformerInterface
                 continue;
             }
 
+            $value = $this->sanitizeForTemplate($item->getValue());
+
             if ($item->getRelation() !== null) {
-                $assoc[$item->getRelation()][$item->getFieldName()] = $item->getValue();
+                $assoc[$item->getRelation()][$item->getFieldName()] = $value;
 
                 continue;
             }
 
-            $assoc[$item->getFieldName()] = $item->getValue();
+            $assoc[$item->getFieldName()] = $value;
         }
 
         return $assoc;
+    }
+
+    /**
+     * Recursively strips every value down to plain data (scalars, arrays, null) before it
+     * reaches the Twig sandbox - regardless of how well the sandbox policy is locked down,
+     * an object reaching the template can expose whatever methods/properties are reachable
+     * on it. This is what closes the exploit reported against
+     * {@see \Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateRangeAdapter}: its
+     * `normalize()` returns raw `Carbon\Carbon` instances (a `DateTime` subclass with dozens
+     * of methods, including `macro()`, which registers an arbitrary PHP callable - even a
+     * global function name - as a callable method), which the security-policy denylist did
+     * not, and structurally cannot exhaustively, cover.
+     *
+     * - Arrays are walked recursively, keys preserved.
+     * - `DateTimeInterface` (covers `DateTime`, `DateTimeImmutable`, and Carbon's subclasses
+     *   of both) is converted to an ISO 8601 string. This is deliberately narrow: it is the
+     *   one object type known to legitimately reach this context today (date/date-range
+     *   columns). The `date`/`date_modify`/`format_date` filters all accept a string in this
+     *   format the same way they accept a DateTime instance, so formatting keeps working.
+     * - Any other object is dropped (replaced with null) rather than string-cast: casting
+     *   would silently invoke `__toString()` on whatever reaches this method next, which is
+     *   exactly the kind of implicit method call this sanitizer exists to avoid. There is no
+     *   other object type this transformer has a legitimate use for; if one is ever needed,
+     *   it should be added here explicitly, converted to its own plain-data representation.
+     * - Scalars and null pass through unchanged.
+     */
+    private function sanitizeForTemplate(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            return array_map($this->sanitizeForTemplate(...), $value);
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format(DateTimeInterface::ATOM);
+        }
+
+        if (is_object($value)) {
+            return null;
+        }
+
+        // Only scalars and null remain at this point.
+        return $value;
     }
 
     public function getName(): string
