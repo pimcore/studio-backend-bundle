@@ -26,7 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout\UpdateContr
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionMethod;
+use RuntimeException;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use function sprintf;
 
 /**
  * Regression test for GHSA-5r9r-72j4-gv74.
@@ -65,11 +69,12 @@ final class CustomLayoutControllerPermissionTest extends Unit
     public function testInvokeRequiresClassDefinitionPermission(string $controllerClass): void
     {
         $reflection = new ReflectionClass($controllerClass);
-        $attributes = $reflection->getMethod('__invoke')->getAttributes(IsGranted::class);
+        $actionMethod = $this->resolveActionMethod($reflection);
+        $attributes = $actionMethod->getAttributes(IsGranted::class);
 
         $this->assertNotEmpty(
             $attributes,
-            sprintf('%s::__invoke() is missing an #[IsGranted] attribute.', $controllerClass)
+            sprintf('%s::%s() is missing an #[IsGranted] attribute.', $controllerClass, $actionMethod->getName())
         );
 
         $isGranted = $attributes[0]->newInstance();
@@ -78,11 +83,28 @@ final class CustomLayoutControllerPermissionTest extends Unit
             UserPermissions::CLASS_DEFINITION->value,
             $isGranted->attribute,
             sprintf(
-                '%s::__invoke() must require the "%s" permission (GHSA-5r9r-72j4-gv74), not "%s".',
+                '%s::%s() must require the "%s" permission (GHSA-5r9r-72j4-gv74), not "%s".',
                 $controllerClass,
+                $actionMethod->getName(),
                 UserPermissions::CLASS_DEFINITION->value,
                 (string) $isGranted->attribute
             )
+        );
+    }
+
+    /**
+     * @param ReflectionClass<object> $reflection
+     */
+    private function resolveActionMethod(ReflectionClass $reflection): ReflectionMethod
+    {
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if (!$method->isConstructor() && $method->getAttributes(Route::class) !== []) {
+                return $method;
+            }
+        }
+
+        throw new RuntimeException(
+            sprintf('%s has no public method with a #[Route] attribute.', $reflection->getName())
         );
     }
 }
