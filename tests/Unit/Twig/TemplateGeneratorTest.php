@@ -26,6 +26,7 @@ use Twig\Extension\SandboxExtension;
 use Twig\Extra\Intl\IntlExtension;
 use Twig\Extra\String\StringExtension;
 use Twig\Loader\ArrayLoader;
+use Twig\TwigFunction;
 
 /**
  * @internal
@@ -241,6 +242,46 @@ final class TemplateGeneratorTest extends Unit
         );
     }
 
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: $blockedFunctions must actually reach the
+     * policy, not just $blockedClasses and $hardBlockedMethods. A `pimcore_*`-prefixed
+     * function is auto-allowed unless it is named here.
+     */
+    public function testBlocksBlockedPimcoreFunction(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ pimcore_test_lookup() }}',
+            [],
+            blockedFunctions: ['pimcore_test_lookup'],
+            registerFunctions: ['pimcore_test_lookup' => static fn (): string => 'secret'],
+        );
+    }
+
+    /**
+     * Regression test for GHSA-9g62-2rj4-v227: $allowedClasses must actually reach the
+     * policy. Once non-empty it switches the sandbox from denylist to allowlist mode, so a
+     * class that was never blocklisted must still be denied for not being on the list.
+     */
+    public function testAllowlistModeBlocksClassNotOnTheAllowList(): void
+    {
+        $allowed = new class {
+        };
+        $other = new class {
+            public function getSecret(): string
+            {
+                return 'super-secret';
+            }
+        };
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate(
+            '{{ value.getSecret() }}',
+            ['value' => $other],
+            allowedClasses: [$allowed::class]
+        );
+    }
+
     private function generate(
         string $template,
         array $context,
@@ -248,6 +289,7 @@ final class TemplateGeneratorTest extends Unit
         array $allowedClasses = [],
         array $blockedFunctions = [],
         array $hardBlockedMethods = [],
+        array $registerFunctions = [],
     ): string {
         $twig = new Environment(new ArrayLoader());
         // The initializer expects the SandboxExtension to be present on the environment.
@@ -258,6 +300,10 @@ final class TemplateGeneratorTest extends Unit
         }
         if (class_exists(IntlExtension::class)) {
             $twig->addExtension(new IntlExtension());
+        }
+
+        foreach ($registerFunctions as $name => $callable) {
+            $twig->addFunction(new TwigFunction($name, $callable));
         }
 
         $policy = $this->getDefaultSandboxPolicy();
