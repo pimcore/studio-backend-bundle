@@ -29,6 +29,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class DeleteController extends AbstractApiController
 {
     public function __construct(
@@ -45,7 +48,7 @@ final class DeleteController extends AbstractApiController
         name: 'pimcore_studio_api_class_custom_layout_delete',
         methods: ['DELETE'])
     ]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Delete(
         path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
         operationId: 'class_custom_layout_delete',
