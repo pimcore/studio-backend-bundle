@@ -49,13 +49,21 @@ final readonly class SubscribableType
          * registered type, so the frontend renders what it is given and stays unaware of the
          * rule.
          */
-        #[Property(description: 'translation key for the row label', type: 'string')]
+        #[Property(
+            description: 'translation key for the row label',
+            type: 'string',
+            example: 'notifications.type.general.label'
+        )]
         private string $translationKey,
-        #[Property(description: 'translation key for the row description', type: 'string')]
+        #[Property(
+            description: 'translation key for the row description',
+            type: 'string',
+            example: 'notifications.type.general.description'
+        )]
         private string $descriptionKey,
         #[Property(description: 'grouping key', type: 'string', example: 'general')]
         private string $group,
-        #[Property(description: 'explicit order; never rely on registration order', type: 'integer')]
+        #[Property(description: 'explicit order; never rely on registration order', type: 'integer', example: 10)]
         private int $sortOrder,
         #[Property(description: 'whether the user is subscribed', type: 'bool', example: true)]
         private bool $subscribed,

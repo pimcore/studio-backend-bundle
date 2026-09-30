@@ -27,7 +27,11 @@ final readonly class AvailableChannel
     public function __construct(
         #[Property(description: 'channel id', type: 'string', example: 'popup')]
         private string $id,
-        #[Property(description: 'translation key for the column label', type: 'string')]
+        #[Property(
+            description: 'translation key for the column label',
+            type: 'string',
+            example: 'notifications.channel.email'
+        )]
         private string $translationKey,
         /**
          * Set when the channel cannot reach this user at all — an email channel with no address on
