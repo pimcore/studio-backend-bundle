@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDef
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\ProtectedResourceProvider;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
@@ -45,10 +46,10 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthEndpointGuardSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\ClientRepository;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Service\AuthorizationConsentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -521,7 +522,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $scopes = $server['scopes'] ?? [];
             $resources[] = [
                 'uri' => $base . '/pimcore-mcp/studio/' . $slug,
-                'scopes_supported' => $scopes !== [] ? $scopes : ['mcp:read', 'mcp:write'],
+                'scopes_supported' => $scopes !== [] ? $scopes : [McpScopes::READ, McpScopes::WRITE],
                 'authorization_servers' => [$issuer],
             ];
         }
