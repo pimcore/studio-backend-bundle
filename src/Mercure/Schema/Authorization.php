@@ -29,10 +29,12 @@ use OpenApi\Attributes\Schema;
 final readonly class Authorization
 {
     public function __construct(
+        /**
+         * The hub authorises a subscription once, at connect time, so an expired cookie leaves every
+         * reconnect anonymous and silently drops all private updates.
+         */
         #[Property(
-            description: 'Lifetime of the authorization cookie in seconds. A client has to request a new ' .
-                'cookie before it elapses: the hub authorises a subscription once, at connect time, so an ' .
-                'expired cookie leaves every reconnect anonymous and silently drops all private updates.',
+            description: 'Lifetime of the authorization cookie in seconds, renew it before it elapses',
             type: 'integer',
             example: 3600
         )]
