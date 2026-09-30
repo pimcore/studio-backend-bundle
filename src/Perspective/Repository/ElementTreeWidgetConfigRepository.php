@@ -147,7 +147,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function listConfigurations(): array
     {
         $configurations = [];
-        $keys = array_merge(ElementTreeWidgets::values(), $this->getRepository()->fetchAllKeys());
+        $keys = array_merge(ElementTreeWidgets::values(), $this->getConfigurationKeys());
         foreach ($keys as $key) {
             $configurations[] = $this->getConfiguration($key);
         }
@@ -177,6 +177,23 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
                 $exception
             );
         }
+    }
+
+    /**
+     * Only the keys the configured read target can actually load: getConfiguration() reads through
+     * the read target, so listing a key that lives in the other location makes it fail with a not
+     * found error and takes the whole listing down with it. Without a read target both locations
+     * are read, so both sets of keys belong in the listing.
+     *
+     * @throws Exception
+     */
+    private function getConfigurationKeys(): array
+    {
+        $repository = $this->getRepository();
+
+        return $repository->getReadTargets() === []
+            ? $repository->fetchAllKeys()
+            : $repository->fetchAllKeysByReadTargets();
     }
 
     private function getRepository(): LocationAwareConfigRepository
