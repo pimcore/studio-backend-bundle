@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\HttpFoundation\Request;
 use function is_array;
 use function parse_url;
@@ -28,6 +29,8 @@ use function strlen;
  */
 final readonly class RequestResourceResolver implements RequestResourceResolverInterface
 {
+    use StudioBackendPathTrait;
+
     public function __construct(
         private ResourceRegistryInterface $resourceRegistry,
         private ?string $issuer = null,
@@ -36,11 +39,21 @@ final readonly class RequestResourceResolver implements RequestResourceResolverI
 
     public function resolve(Request $request): ?ProtectedResource
     {
-        // Resources are registered under the issuer, so the request has to be
-        // expressed the same way. Behind a proxy the request host is not the
-        // issuer, and comparing the two would refuse a correctly issued token.
-        $base = rtrim($this->issuer ?? $request->getSchemeAndHttpHost(), '/');
-        $target = CanonicalUri::canonicalize($base . $request->getPathInfo());
+        // Resources are registered under the issuer, so the request has to be expressed
+        // the same way; behind a proxy the request host is not the issuer. There is
+        // deliberately no fallback to the request host when no issuer is configured:
+        // TokenValidatorInterface compares a token's `aud` against the URI it is handed,
+        // so an audience rebuilt from the caller-supplied `Host` would be checked against
+        // itself and pass (#2039).
+        if ($this->issuer === null) {
+            return null;
+        }
+
+        // The routed path, decoded once like the router: the raw path is still
+        // percent-encoded, so `/pimcore-mcp/studio/%70roduct-read` would reach the
+        // product-read server while resolving only to the broader /pimcore-mcp base,
+        // and a token bound to the base would be accepted there.
+        $target = CanonicalUri::canonicalize(rtrim($this->issuer, '/') . $this->routedPath($request));
 
         $match = null;
         $matchLength = -1;

@@ -84,7 +84,12 @@ final class RequestResourceResolverTest extends Unit
         $this->assertSame(self::STUDIO_SERVER, $resource->canonicalUri);
     }
 
-    public function testWithoutAnIssuerTheRequestHostIsUsed(): void
+    /**
+     * No issuer, no resolution - never the request host instead. The validator compares
+     * a token's `aud` against the URI it is handed, so an audience rebuilt from the
+     * caller-supplied `Host` would be compared with itself and pass.
+     */
+    public function testWithoutAnIssuerNothingResolves(): void
     {
         $registry = new ConfigProtectedResourceRegistry([
             ['uri' => 'http://localhost/pimcore-mcp/agent/content'],
@@ -94,8 +99,33 @@ final class RequestResourceResolverTest extends Unit
             Request::create('http://localhost/pimcore-mcp/agent/content'),
         );
 
+        $this->assertNull($resource);
+    }
+
+    /**
+     * The router decodes the path once before matching, so a percent-encoded request
+     * reaches the same server as the plain one. Resolving on the raw path would miss that
+     * server's own resource and fall back to the broader base, accepting a token bound
+     * to the base at an endpoint that has its own audience.
+     */
+    public function testAPercentEncodedPathResolvesToTheResourceTheRouterServes(): void
+    {
+        $resource = $this->resolve('/pimcore-mcp/studio/%70roduct-read', self::ISSUER . '/pimcore-mcp', self::STUDIO_SERVER);
+
         $this->assertNotNull($resource);
-        $this->assertSame('http://localhost/pimcore-mcp/agent/content', $resource->canonicalUri);
+        $this->assertSame(self::STUDIO_SERVER, $resource->canonicalUri);
+    }
+
+    /**
+     * Decoded exactly once, like the router, which routes "%2570roduct-read" as the
+     * literal "%70roduct-read" and so never to the product-read server.
+     */
+    public function testADoublyEncodedPathIsNotDecodedTwice(): void
+    {
+        $resource = $this->resolve('/pimcore-mcp/studio/%2570roduct-read', self::ISSUER . '/pimcore-mcp', self::STUDIO_SERVER);
+
+        $this->assertNotNull($resource);
+        $this->assertSame(self::ISSUER . '/pimcore-mcp', $resource->canonicalUri);
     }
 
     /**

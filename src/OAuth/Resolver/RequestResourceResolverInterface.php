@@ -30,7 +30,8 @@ interface RequestResourceResolverInterface
 {
     /**
      * The most specific registered resource covering this request, or null when
-     * none does - meaning no audience-bound token can address this endpoint.
+     * none does or no issuer is configured - meaning no audience-bound token can
+     * address this endpoint.
      */
     public function resolve(Request $request): ?ProtectedResource;
 }
