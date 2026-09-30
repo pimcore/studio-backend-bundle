@@ -9,6 +9,12 @@ imports:
     - { resource: data_object_adapters.yaml }
     - { resource: document_adapters.yaml }
 
+# Required by services autowiring HttpClientInterface. Symfony only enables it by
+# default when symfony/http-client is installed as a non-dev dependency.
+framework:
+    http_client:
+        enabled: true
+
 pimcore:
     translations:
         domains:
