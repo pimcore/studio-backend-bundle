@@ -44,6 +44,7 @@ use function array_keys;
 use function array_map;
 use function array_values;
 use function class_exists;
+use function floor;
 use function get_debug_type;
 use function is_numeric;
 use function is_string;
@@ -291,7 +292,7 @@ final class SandboxExtensionInitializer implements
         }
 
         // PHP treats a non-numeric bound as 0 when the other bound is numeric.
-        $span = abs((self::toNumber($high) - self::toNumber($low)) / (float) $step) + 1;
+        $span = floor(abs((self::toNumber($high) - self::toNumber($low)) / (float) $step)) + 1;
 
         if ($span > self::MAX_RANGE_SIZE) {
             throw new RuntimeError(sprintf(

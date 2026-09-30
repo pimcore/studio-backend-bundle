@@ -272,6 +272,11 @@ final class TemplateGeneratorTest extends Unit
         $this->assertSame('1000', $this->generate('{{ range(1, 1000)|length }}', []));
     }
 
+    public function testRangeFunctionWithNonUnitStepAtTheCapWorks(): void
+    {
+        $this->assertSame('1000', $this->generate('{{ range(0, 1999, 2)|length }}', []));
+    }
+
     /**
      * range() maps directly onto PHP's own range(): an uncapped call like range(0, 1000000)
      * would allocate a huge array straight from template text - a memory/CPU DoS reachable
