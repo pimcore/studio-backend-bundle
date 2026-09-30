@@ -30,8 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpServerResourceProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\ProtectedResourceProvider;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
@@ -248,13 +248,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $container->setParameter('pimcore_studio_backend.oauth.resources', $config['oauth']['resources']);
 
         $container->getDefinition(ResourceRegistryInterface::class)
-            ->setArgument('$resources', [
-                ...$config['oauth']['resources'],
-                ...$this->buildMcpServerResources(
-                    $config[Configuration::MCP_SERVERS_NODE],
-                    $config['oauth']['issuer'],
-                ),
-            ]);
+            ->setArgument('$resources', $config['oauth']['resources']);
 
         $container->getDefinition(TokenValidatorInterface::class)
             ->setArgument('$publicKey', $config['oauth']['keys']['public_key'])
@@ -285,6 +279,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // service lives in the MCP module and reads OAuth configuration, which is the correct
         // direction: MCP is a consumer of the authorization server, not part of it.
         $container->getDefinition(ProtectedResourceProvider::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        // Same for the MCP servers managed through Studio, one resource each.
+        $container->getDefinition(McpServerResourceProvider::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
@@ -493,41 +492,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::MCP_SERVERS_NODE);
-    }
-
-    /**
-     * Advertises each enabled MCP server as an RFC 9728 protected resource, so the
-     * per-server discovery and 401 challenge resolve. Requires a configured issuer
-     * to build the absolute resource URL; skipped otherwise (a null issuer derives
-     * from the request at runtime, which cannot be seeded at container-build time).
-     *
-     * @param array<string, array<string, mixed>> $servers
-     *
-     * @return list<array{uri: string, scopes_supported: list<string>, authorization_servers: list<string>}>
-     */
-    private function buildMcpServerResources(array $servers, ?string $issuer): array
-    {
-        if ($issuer === null) {
-            return [];
-        }
-
-        $base = rtrim($issuer, '/');
-        $resources = [];
-        foreach ($servers as $id => $server) {
-            if (($server['enabled'] ?? true) === false) {
-                continue;
-            }
-
-            $slug = $server['url_slug'] ?? $id;
-            $scopes = $server['scopes'] ?? [];
-            $resources[] = [
-                'uri' => $base . '/pimcore-mcp/studio/' . $slug,
-                'scopes_supported' => $scopes !== [] ? $scopes : [McpScopes::READ, McpScopes::WRITE],
-                'authorization_servers' => [$issuer],
-            ];
-        }
-
-        return $resources;
     }
 
     /**

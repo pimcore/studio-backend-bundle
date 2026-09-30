@@ -224,6 +224,37 @@ final class McpServerConfigurationServiceTest extends Unit
         $this->assertSame('original.owner', $repository->get('srv')->access->owner);
     }
 
+    /**
+     * Scopes derived from the tools are computed on read, so the stored definition keeps
+     * only what an operator declared. Persisting the derived list would freeze it at save
+     * time and make it indistinguishable from a deliberate override.
+     */
+    public function testSaveConfigurationDerivesScopesWithoutPersistingThem(): void
+    {
+        $repository = $this->repository();
+        $service = $this->service($repository, self::USER_NAME);
+
+        $server = $service->saveConfiguration($this->parameter('mixed', tools: ['get_car_info', 'delete_object']));
+
+        $this->assertSame(['mcp:read', 'mcp:write'], $server->getScopes());
+        $this->assertSame([], $repository->get('mixed')->scopes);
+    }
+
+    /**
+     * An explicitly declared scope list survives an edit made through the API, which has
+     * no field for it, and keeps overriding what the tools would derive.
+     */
+    public function testUpdateConfigurationKeepsDeclaredScopes(): void
+    {
+        $repository = $this->repository(['srv' => $this->definition('srv', new McpServerAccess(owner: self::USER_NAME))]);
+        $service = $this->service($repository, self::USER_NAME);
+
+        $server = $service->updateConfiguration('srv', $this->parameter('srv', tools: ['delete_object']));
+
+        $this->assertSame(['mcp:read'], $repository->get('srv')->scopes);
+        $this->assertSame(['mcp:read'], $server->getScopes());
+    }
+
     public function testUpdateConfigurationDeniedForViewOnlyUser(): void
     {
         $access = new McpServerAccess(owner: 'someone', sharedUsers: [new McpServerAccessEntry(self::USER_NAME)]);

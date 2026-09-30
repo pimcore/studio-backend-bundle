@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Event\PreResponse\McpServerEvent;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Hydrator\McpServerHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter\McpServerParameter;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpScopes;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
@@ -31,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolverInter
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use function array_keys;
 use function rtrim;
 use function sprintf;
 
@@ -100,7 +100,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         $existing = $this->repository->get($id);
         $this->assert($existing, McpServerCapability::Edit);
 
-        $definition = $this->buildDefinition($id, $parameter, $existing->access->owner);
+        $definition = $this->buildDefinition($id, $parameter, $existing->access->owner, $existing->scopes);
         $this->repository->save($definition);
 
         return $this->buildServer($definition);
@@ -114,15 +114,25 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         $this->repository->delete($id);
     }
 
-    private function buildDefinition(string $id, McpServerParameter $parameter, ?string $owner): McpServerDefinition
-    {
+    /**
+     * @param list<string> $scopes explicitly declared scopes to keep; [] derives them from the tools
+     */
+    private function buildDefinition(
+        string $id,
+        McpServerParameter $parameter,
+        ?string $owner,
+        array $scopes = [],
+    ): McpServerDefinition {
         return new McpServerDefinition(
             id: $id,
             displayName: $parameter->getName(),
             description: $parameter->getDescription() ?? '',
             urlSlug: $id,
             toolIds: $parameter->getTools(),
-            scopes: $this->deriveScopes($parameter->getTools()),
+            // Only an operator's explicit declaration is stored. Scopes derived from the
+            // tools are computed on read (McpScopes::forServer), so they follow the tool
+            // assignment instead of freezing whatever it was at save time.
+            scopes: $scopes,
             enabled: $parameter->isEnabled(),
             access: new McpServerAccess(
                 owner: $owner,
@@ -144,7 +154,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         $server = $this->serverHydrator->hydrate(
             $definition,
             $this->buildUrl($definition->urlSlug),
-            $this->deriveScopes($definition->toolIds),
+            McpScopes::forServer($definition, $this->toolRegistry),
             $this->repository->isWriteable(),
             new McpServerUserPermissions($resolved['view'], $resolved['access'], $resolved['edit']),
         );
@@ -245,26 +255,8 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
         return $entries;
     }
 
-    /**
-     * @param list<string> $toolIds
-     *
-     * @return list<string>
-     */
-    private function deriveScopes(array $toolIds): array
-    {
-        $scopes = [];
-        foreach ($toolIds as $toolId) {
-            $tool = $this->toolRegistry->get($toolId);
-            if ($tool !== null) {
-                $scopes[McpScopes::forReadOnly($tool->isReadOnly())] = true;
-            }
-        }
-
-        return array_keys($scopes);
-    }
-
     private function buildUrl(string $slug): string
     {
-        return rtrim($this->issuer ?? '', '/') . '/pimcore-mcp/studio/' . $slug;
+        return rtrim($this->issuer ?? '', '/') . McpPath::STUDIO . '/' . $slug;
     }
 }
