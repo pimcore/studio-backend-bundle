@@ -91,7 +91,8 @@ The tool then appears in the catalogue (`GET /pimcore-studio/api/mcp/tools`) and
 | `openWorldHint` | The tool interacts with the outside world (hint). |
 
 The fail-safe default (no `readOnlyHint`, or `false`) is treated as a write. A server's advertised scopes are the
-union of its tools' required scopes.
+union of its tools' required scopes, unless the server declares its own. They are what the server's OAuth protected
+resource advertises as `scopes_supported`; a granted scope is not yet checked against the tool being called.
 
 ## Results and errors
 

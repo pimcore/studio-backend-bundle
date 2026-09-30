@@ -16,7 +16,20 @@ other authenticators in the chain).
 
 Every enabled server is its own OAuth protected resource, at `<issuer>/pimcore-mcp/studio/{urlSlug}`. That URI is
 what a client names in its RFC 8707 `resource` parameter, what the server's metadata document is published under,
-and what the token's audience is checked against, so a token obtained for one server is refused at another.
+and what the token's audience is checked against, so a token obtained for one server is refused at another. The URI
+is built from `oauth.issuer`, never from the request host, and the `401` challenge of an unauthenticated request
+points at the server's own metadata document.
+
+The resources are read from the server configuration when the authorization or resource server first needs them,
+so a server created or changed through the Studio API is covered without a cache clear. They are then kept for the
+life of the PHP process: under PHP-FPM that is one request, while a long-running worker (for example FrankenPHP
+worker mode or RoadRunner) only sees servers created after it started once it is restarted. Disabled servers are not
+advertised.
+
+For installations that expect many AI clients, in particular hosted connectors, prefer Client ID Metadata Documents
+over Dynamic Client Registration; see
+[Hosted AI connectors](../02_Installation_and_Configuration/06_OAuth_Server.md#hosted-ai-connectors). Like the token
+and authorize endpoints, `/pimcore-mcp/studio/*` has no rate limit of its own.
 
 > **Experimental.** Configuration keys, API, and UI may change between minor versions.
 
@@ -61,8 +74,10 @@ All endpoints live under the Studio API prefix (`/pimcore-studio/api`) and are d
 | `DELETE /mcp/servers/{id}` | **Config Edit** on the server |
 | `GET /mcp/tools` | `mcp_servers` |
 
-A server's advertised `scopes` are **derived** from its tools' required scopes and cannot be set directly; the
-`urlSlug` is fixed on create and locked on update.
+A server's advertised `scopes` are **derived** from its tools' required scopes and cannot be set through the API.
+A server defined in the `studio_mcp_servers` configuration may declare `scopes` explicitly, which then replaces the
+derived list; an edit through the API keeps such a declaration. The `urlSlug` is fixed on create and locked on
+update.
 
 ## Access and sharing
 
