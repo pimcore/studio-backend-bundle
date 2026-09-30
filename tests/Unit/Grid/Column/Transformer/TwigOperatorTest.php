@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
 use ReflectionMethod;
 use stdClass;
 use Symfony\Component\Config\Definition\Processor;
+use Twig\Environment;
+use Twig\Loader\ArrayLoader;
 
 /**
  * Regression tests for the RCE reported against the `twigOperator` transformer: a
@@ -118,8 +120,13 @@ final class TwigOperatorTest extends Unit
     {
         $policy = $this->getDefaultSandboxPolicy();
 
-        $initializer = new SandboxExtensionInitializer($policy['tags'], $policy['filters'], $policy['functions']);
-        $operator = new TwigOperator(new TemplateGenerator($initializer));
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+        $operator = new TwigOperator(new TemplateGenerator(new Environment(new ArrayLoader()), $initializer));
 
         $result = $operator->transform($values, ['template' => $template]);
 

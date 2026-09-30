@@ -18,12 +18,13 @@ use DateTime;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\TwigOperatorEnvironmentProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Twig\Sandbox\SecurityPolicy;
 use Psr\Log\AbstractLogger;
 use ReflectionMethod;
-use ReflectionNamedType;
 use Stringable;
 use Symfony\Component\Config\Definition\Processor;
 use Twig\Environment;
@@ -34,7 +35,8 @@ use Twig\Extra\String\StringExtension;
 use Twig\Loader\ArrayLoader;
 use Twig\TwigFunction;
 use function array_merge;
-use function sprintf;
+use function restore_error_handler;
+use function set_error_handler;
 use function strtoupper;
 
 /**
@@ -291,24 +293,98 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * The constructor must never accept a Twig Environment at all - the isolated environment
-     * is always built from scratch inside SandboxExtensionInitializer (see its class
-     * docblock). A structural guard against regressing to the old design, where an injected
-     * shared `twig` service's SandboxExtension had its policy replaced in place.
+     * The 2026.x constructor shapes must keep working.
      */
-    public function testInitializerConstructorNeverAcceptsATwigEnvironment(): void
+    public function testOldConstructorSignaturesStillWork(): void
     {
-        $constructor = new ReflectionMethod(SandboxExtensionInitializer::class, '__construct');
+        $policy = $this->getDefaultSandboxPolicy();
+        $twig = new Environment(new ArrayLoader());
+        $initializer = new SandboxExtensionInitializer($twig, $policy['tags'], $policy['filters'], $policy['functions']);
+        $generator = new TemplateGenerator($twig, $initializer);
 
-        foreach ($constructor->getParameters() as $parameter) {
-            $type = $parameter->getType();
-            $isEnvironment = $type instanceof ReflectionNamedType && $type->getName() === Environment::class;
+        $this->assertSame('HI', $generator->generate('{{ value|upper }}', ['value' => 'hi']));
+        $this->assertNotSame($twig, $initializer->getEnvironment());
+    }
 
-            $this->assertFalse(
-                $isEnvironment,
-                sprintf('Constructor parameter "$%s" must not accept a Twig Environment.', $parameter->getName())
-            );
+    /**
+     * A custom initializer without the provider interface falls back to the injected
+     * environment and emits a deprecation.
+     */
+    public function testCustomInitializerWithoutProviderInterfaceFallsBackWithDeprecation(): void
+    {
+        $twig = new Environment(new ArrayLoader());
+        $sandbox = new SandboxExtension(new SecurityPolicy(['if'], ['upper', 'escape'], []));
+        $twig->addExtension($sandbox);
+        $custom = new class($sandbox) implements SandboxExtensionInitializerInterface {
+            public function __construct(private readonly SandboxExtension $sandbox)
+            {
+            }
+
+            public function initialize(): SandboxExtension
+            {
+                return $this->sandbox;
+            }
+        };
+
+        $deprecations = [];
+        set_error_handler(static function (int $no, string $message) use (&$deprecations): bool {
+            $deprecations[] = $message;
+
+            return true;
+        }, E_USER_DEPRECATED);
+
+        try {
+            $generator = new TemplateGenerator($twig, $custom);
+        } finally {
+            restore_error_handler();
         }
+
+        $this->assertCount(1, $deprecations);
+        $this->assertStringContainsString(TwigOperatorEnvironmentProviderInterface::class, $deprecations[0]);
+        $this->assertSame('HI', $generator->generate('{{ value|upper }}', ['value' => 'hi']));
+    }
+
+    public function testProviderInitializerIsUsedWithoutDeprecation(): void
+    {
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+
+        $deprecations = [];
+        set_error_handler(static function (int $no, string $message) use (&$deprecations): bool {
+            $deprecations[] = $message;
+
+            return true;
+        }, E_USER_DEPRECATED);
+
+        try {
+            new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $deprecations);
+        $this->assertInstanceOf(TwigOperatorEnvironmentProviderInterface::class, $initializer);
+    }
+
+    /**
+     * @dataProvider mixedRangeProvider
+     */
+    public function testRangeFunctionRejectsMixedBoundsBeyondTheCap(string $call): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ ' . $call . '|length }}', []);
+    }
+
+    public function mixedRangeProvider(): iterable
+    {
+        yield 'non-numeric low' => ['range("a", 1000000)'];
+        yield 'non-numeric high' => ['range(1000000, "a")'];
+        yield 'float step tiny' => ['range(0, 10, 0.000001)'];
     }
 
     /**
@@ -329,8 +405,13 @@ final class TemplateGeneratorTest extends Unit
         $externalTwig->addExtension($externalSandbox);
 
         $policy = $this->getDefaultSandboxPolicy();
-        $initializer = new SandboxExtensionInitializer($policy['tags'], $policy['filters'], $policy['functions']);
-        $generator = new TemplateGenerator($initializer);
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
 
         $rendered = $generator->generate('{{ value|upper }}', ['value' => 'twig-operator-render']);
         $this->assertSame('TWIG-OPERATOR-RENDER', $rendered);
@@ -354,7 +435,7 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * The DI extension point ({@see SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG})
+     * The DI extension point ({@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG})
      * is the supported way to add a project-defined filter/function/tag: the isolated
      * environment never sees the application's shared `twig` service (see finding 2 of the
      * review this test accompanies), so a tagged extension is registered directly onto it.
@@ -372,12 +453,13 @@ final class TemplateGeneratorTest extends Unit
 
         $policy = $this->getDefaultSandboxPolicy();
         $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
             $policy['tags'],
             $policy['filters'],
             array_merge($policy['functions'], ['project_shout']),
             [$extension]
         );
-        $generator = new TemplateGenerator($initializer);
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
 
         $this->assertSame('HI!!!', $generator->generate('{{ project_shout(value) }}', ['value' => 'hi']));
     }
@@ -402,6 +484,7 @@ final class TemplateGeneratorTest extends Unit
 
         $policy = $this->getDefaultSandboxPolicy();
         $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
             $policy['tags'],
             $policy['filters'],
             array_merge($policy['functions'], ['does_not_exist_anywhere']),
@@ -436,6 +519,7 @@ final class TemplateGeneratorTest extends Unit
 
         $policy = $this->getDefaultSandboxPolicy();
         $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
             $policy['tags'],
             $policy['filters'],
             $policy['functions'],
@@ -452,12 +536,13 @@ final class TemplateGeneratorTest extends Unit
         $policy = $this->getDefaultSandboxPolicy();
 
         $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
             $policy['tags'],
             $policy['filters'],
             $policy['functions']
         );
 
-        $generator = new TemplateGenerator($initializer);
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
 
         return $generator->generate($template, $context);
     }

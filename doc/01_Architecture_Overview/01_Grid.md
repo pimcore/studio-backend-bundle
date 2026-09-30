@@ -567,7 +567,8 @@ This isolated environment is deliberately not the application's shared `twig` se
 > **DoS:** `range()` is replaced with a capped implementation that rejects a numeric span of more
 > than 1000 elements before calling the real `range()` - an uncapped `range(0, 100000000)` would
 > otherwise allocate a huge array straight from template text, independent of any object or method
-> call. A character range (`range('a', 'z')`) is unaffected: it is inherently bounded.
+> call. A character range (both bounds non-numeric strings, e.g. `range('a', 'z')`) is unaffected: it is inherently
+> bounded. A mixed range such as `range('a', 1000000)` is capped, because PHP treats the non-numeric bound as 0.
 
 The allow-list can be customized per project via the bundle configuration:
 
@@ -594,6 +595,7 @@ pimcore_studio_backend:
 >         tags: [ 'pimcore_studio_backend.twig_operator_extension' ]
 > ```
 >
+> (The tag name is also available as `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`.)
 > It is registered into the isolated environment alongside the built-in extensions, and its
 > filter/function/tag names still need to be added to `sandbox_security_policy` above to be usable.
 > Keep it narrowly scoped to safe, side-effect-free formatting - it runs in the same sandbox as

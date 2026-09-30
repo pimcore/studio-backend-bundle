@@ -22,20 +22,21 @@ The following steps are necessary during updating to newer versions.
   fully-populated denylist-plus-allowlist `SecurityPolicy`, and every value is converted to plain data (dates become
   ISO 8601 strings) before it reaches the template.
 
-> **Note:** `SandboxExtensionInitializer`, `TemplateGenerator`, `SandboxExtensionInitializerInterface` and
-> `TemplateGeneratorInterface` are marked `@internal` and are not covered by the backward-compatibility promise; the
-> classes changed regardless, so custom code touching them directly (rather than through `TwigOperator`'s `template`
-> configuration) needs to be checked. `SandboxExtensionInitializerInterface` gained a `getEnvironment(): Environment`
-> method - the isolated environment `TemplateGenerator` must render through, never the application's shared one - and
-> `SandboxExtensionInitializer`'s constructor no longer takes a `Twig\Environment $twig` argument (it builds its own);
-> it gained two additive, defaulted constructor arguments instead: `iterable $additionalExtensions = []` (services
-> tagged `pimcore_studio_backend.twig_operator_extension`, the new supported way to add a project-defined
-> filter/function/tag to the isolated environment) and `?LoggerInterface $logger = null` (warns once, at build time,
-> about an allow-listed tag/filter/function name that no registered extension actually provides). A project extending
-> the `sandbox_security_policy` allow-list with a name not covered by the bundle's own extensions (e.g. `trans`, or a
-> project-specific filter) must now additionally register a matching Twig extension via that service tag - see
-> `doc/01_Architecture_Overview/01_Grid.md`. `range()` is also capped at 1000 elements to prevent a large-array
-> denial-of-service from an uncapped span.
+> **Note:** All public constructor signatures and interfaces stay backward compatible.
+> `SandboxExtensionInitializerInterface` is unchanged; the isolated environment is exposed through the new
+> `TwigOperatorEnvironmentProviderInterface::getEnvironment()`, which `SandboxExtensionInitializer` implements.
+> `TemplateGenerator` renders through it. A custom `SandboxExtensionInitializerInterface` implementation that does not
+> also implement the new interface keeps rendering through the shared `twig` service (as before) but triggers a
+> deprecation; implementing the provider interface becomes mandatory in the next major version.
+> `SandboxExtensionInitializer`'s `Twig\Environment $twig` constructor argument is kept but unused. It gained two
+> optional trailing arguments: `iterable $additionalExtensions = []` (services tagged
+> `pimcore_studio_backend.twig_operator_extension`, the supported way to add a project-defined filter/function/tag to
+> the isolated environment; the tag name is `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`)
+> and `?LoggerInterface $logger = null` (warns once, at build time, about an allow-listed tag/filter/function name
+> that no registered extension provides). A project extending the `sandbox_security_policy` allow-list with a name not
+> covered by the bundle's own extensions (e.g. `trans`, or a project-specific filter) must now additionally register a
+> matching Twig extension via that service tag - see `doc/01_Architecture_Overview/01_Grid.md`. `range()` is also
+> capped at 1000 elements to prevent a large-array denial-of-service from an uncapped span.
 
 ## Upgrade to 2025.4.13
 - [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.

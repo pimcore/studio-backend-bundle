@@ -46,6 +46,7 @@ use function array_values;
 use function class_exists;
 use function get_debug_type;
 use function is_numeric;
+use function is_string;
 use function range;
 use function sprintf;
 use function str_starts_with;
@@ -63,7 +64,7 @@ use function str_starts_with;
  *    environment to resolve. TwigOperator templates have no legitimate use for an
  *    element/service loader; formatting a value never needs one. A project that needs an
  *    additional SAFE filter/function/tag registers its own Twig extension under the
- *    {@see SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG} service tag
+ *    {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG} service tag
  *    instead - it is added to this isolated environment, never to the shared one.
  * 2. The {@see SecurityPolicy} is built with all seven constructor arguments and attached to
  *    a SandboxExtension instance that belongs only to this isolated environment.
@@ -77,10 +78,10 @@ use function str_starts_with;
  *    policy into allowlist mode: even an object that reaches the template unsanitized has
  *    every method/property access denied, regardless of the {@see BLOCKED_CLASSES}
  *    enumeration below.
- *
- * @internal
  */
-final class SandboxExtensionInitializer implements SandboxExtensionInitializerInterface
+final class SandboxExtensionInitializer implements
+    SandboxExtensionInitializerInterface,
+    TwigOperatorEnvironmentProviderInterface
 {
     /**
      * FQCNs that must never be traversable (method calls or property access) from a
@@ -151,15 +152,19 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
     private SandboxExtension $sandboxExtension;
 
     /**
+     * @param Environment $twig Unused since the environment is isolated (built from scratch here);
+     *   kept only so the constructor stays backward compatible.
      * @param iterable<mixed> $additionalExtensions Every service tagged
-     *   {@see SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG}, registered
+     *   {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG}, registered
      *   into the isolated environment. This is the supported extension point for a project
      *   that needs an additional SAFE filter/function/tag beyond the built-in allow-list.
      *   Typed as `mixed` deliberately: the DI tag cannot itself guarantee every tagged
      *   service implements {@see ExtensionInterface}, which is exactly why
      *   {@see registerAdditionalExtensions()} checks it at runtime instead of trusting it.
      */
+    // @phpstan-ignore constructor.unusedParameter
     public function __construct(
+        Environment $twig,
         private readonly array $allowedTags,
         private readonly array $allowedFilters,
         private readonly array $allowedFunctions,
@@ -241,7 +246,7 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
             if (!$extension instanceof ExtensionInterface) {
                 throw new LogicException(sprintf(
                     'Every service tagged "%s" must implement %s, got "%s".',
-                    SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG,
+                    TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG,
                     ExtensionInterface::class,
                     get_debug_type($extension)
                 ));
@@ -268,18 +273,25 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
      * Pre-computes the resulting element count for a numeric span and rejects it before the
      * real `range()` call, instead of letting PHP materialize the array first and counting it
      * afterwards - the latter would already have paid the allocation cost the cap exists to
-     * avoid. A character range (`range('a', 'z')`) is skipped: it is inherently bounded to at
-     * most the codepoint distance between the two characters, far below MAX_RANGE_SIZE.
+     * avoid. A character range (both bounds non-numeric strings) is skipped: it is inherently bounded
+     * to at most the codepoint distance between the two characters. A mixed range such as
+     * `range('a', 1000000)` is not: PHP treats the non-numeric bound as 0.
      *
      * @throws RuntimeError if the span would exceed MAX_RANGE_SIZE
      */
     private static function assertRangeIsBounded(int|float|string $low, int|float|string $high, int|float $step): void
     {
-        if (!is_numeric($low) || !is_numeric($high)) {
+        if (self::isNonNumericString($low) && self::isNonNumericString($high)) {
             return;
         }
 
-        $span = abs(((float) $high - (float) $low) / (float) ($step ?: 1)) + 1;
+        // A step of 0 is left to PHP, which rejects it itself.
+        if ($step == 0) {
+            return;
+        }
+
+        // PHP treats a non-numeric bound as 0 when the other bound is numeric.
+        $span = abs((self::toNumber($high) - self::toNumber($low)) / (float) $step) + 1;
 
         if ($span > self::MAX_RANGE_SIZE) {
             throw new RuntimeError(sprintf(
@@ -291,6 +303,16 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
                 self::MAX_RANGE_SIZE
             ));
         }
+    }
+
+    private static function isNonNumericString(int|float|string $value): bool
+    {
+        return is_string($value) && !is_numeric($value);
+    }
+
+    private static function toNumber(int|float|string $value): float
+    {
+        return is_numeric($value) ? (float) $value : 0.0;
     }
 
     /**
@@ -316,7 +338,7 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
      * Twig extension in this isolated environment actually registers it - the app's shared
      * `twig` service and its extensions are never reachable here (see the class docblock).
      * Adding a name to the allow-list without also registering a matching extension via
-     * {@see SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG} is a
+     * {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG} is a
      * configuration mistake that otherwise fails silently until a template actually uses the
      * name - logged once here, at build time, instead.
      */
@@ -341,7 +363,7 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
             'names that no Twig extension in the isolated environment registers - templates ' .
             'using them will fail at render time even though the name is allow-listed. Register ' .
             'a matching Twig extension via the "' .
-            SandboxExtensionInitializerInterface::TWIG_OPERATOR_EXTENSION_TAG .
+            TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG .
             '" service tag, or remove the name from the configuration.',
             $unregistered
         );

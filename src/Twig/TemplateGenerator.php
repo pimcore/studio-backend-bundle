@@ -16,26 +16,42 @@ namespace Pimcore\Bundle\StudioBackendBundle\Twig;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\TwigOperatorEnvironmentProviderInterface;
 use Twig\Environment;
 use Twig\Error\Error as TwigError;
 use Twig\Extension\SandboxExtension;
 use function sprintf;
+use function trigger_deprecation;
 
-/**
- * @internal
- */
 final class TemplateGenerator implements TemplateGeneratorInterface
 {
     private readonly Environment $environment;
 
     private readonly SandboxExtension $sandboxExtension;
 
-    public function __construct(SandboxExtensionInitializerInterface $sandboxInitializer)
-    {
+    public function __construct(
+        Environment $twig,
+        SandboxExtensionInitializerInterface $sandboxInitializer
+    ) {
         $this->sandboxExtension = $sandboxInitializer->initialize();
-        // Rendering must go through the isolated environment the sandbox belongs to, never
-        // through the application's shared `twig` service - see SandboxExtensionInitializer.
-        $this->environment = $sandboxInitializer->getEnvironment();
+
+        if ($sandboxInitializer instanceof TwigOperatorEnvironmentProviderInterface) {
+            // Rendering must go through the isolated environment the sandbox belongs to, never
+            // through the application's shared `twig` service.
+            $this->environment = $sandboxInitializer->getEnvironment();
+
+            return;
+        }
+
+        trigger_deprecation(
+            'pimcore/studio-backend-bundle',
+            '2026.4',
+            'Not implementing "%s" in "%s" is deprecated. Implement it so templates render in an isolated ' .
+            'Twig environment; this becomes mandatory in the next major version.',
+            TwigOperatorEnvironmentProviderInterface::class,
+            $sandboxInitializer::class
+        );
+        $this->environment = $twig;
     }
 
     public function generate(string $twigTemplate, array $arguments): string
