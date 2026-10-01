@@ -27,6 +27,7 @@ interface ExportServiceInterface
         GridExportData $gridExportData,
         UserInterface $user,
         ?string $delimiter = null,
+        ?string $sheetName = null,
     ): void;
 
     /**

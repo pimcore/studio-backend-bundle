@@ -47,6 +47,7 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         GridExportData $gridExportData,
         UserInterface $user,
         ?string $delimiter = null,
+        ?string $sheetName = null,
     ): void {
         $storage = $this->storageService->getTempStorage();
 
@@ -64,7 +65,7 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
             );
         }
 
-        $this->generateExportFile($id, $storage, $headers, $gridExportData->getExportData(), $delimiter);
+        $this->generateExportFile($id, $storage, $headers, $gridExportData->getExportData(), $delimiter, $sheetName);
     }
 
     /**
@@ -89,7 +90,8 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         FilesystemOperator $storage,
         array $headers,
         array $exportData,
-        string $delimiter
+        string $delimiter,
+        ?string $sheetName = null,
     ): void;
 
     /**

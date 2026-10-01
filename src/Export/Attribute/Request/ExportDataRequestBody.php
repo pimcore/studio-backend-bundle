@@ -44,6 +44,12 @@ final class ExportDataRequestBody extends RequestBody
                 type: 'string',
                 example: ';'
             );
+        } else {
+            $configProperties[] = new Property(
+                property: StepConfig::SETTINGS_SHEET_NAME->value,
+                type: 'string',
+                example: 'Sheet1'
+            );
         }
         parent::__construct(
             content: new JsonContent(

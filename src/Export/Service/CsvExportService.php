@@ -36,7 +36,8 @@ final readonly class CsvExportService extends AbstractExportService
         FilesystemOperator $storage,
         array $headers,
         array $exportData,
-        string $delimiter
+        string $delimiter,
+        ?string $sheetName = null,
     ): void {
 
         $data = [];
