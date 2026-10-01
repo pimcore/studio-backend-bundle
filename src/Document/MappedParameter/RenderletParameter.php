@@ -32,7 +32,9 @@ final readonly class RenderletParameter
         private string $type,
         #[NotBlank(message: 'Controller is required')]
         private string $controller,
-        private ?int $parentDocumentId = null,
+        #[NotBlank(message: 'Parent document id is required')]
+        #[Positive]
+        private int $parentDocumentId,
         private ?string $template = null
     ) {
         if (!in_array($this->type, ElementTypes::ALLOWED_TYPES, true)) {
@@ -55,7 +57,7 @@ final readonly class RenderletParameter
         return $this->controller;
     }
 
-    public function getParentDocumentId(): ?int
+    public function getParentDocumentId(): int
     {
         return $this->parentDocumentId;
     }
