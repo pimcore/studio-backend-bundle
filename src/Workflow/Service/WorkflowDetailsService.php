@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -42,6 +43,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private WorkflowDetailsHydratorInterface $hydrator,
+        private DraftElementResolverInterface $draftElementResolver,
     ) {
     }
 
@@ -110,8 +112,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
             $elementType,
             $elementId,
         );
-        $version = $this->getLatestVersionForUser($element, $user);
 
-        return $this->getVersionData($element, $version);
+        return $this->draftElementResolver->resolve($element, $user)->getElement();
     }
 }

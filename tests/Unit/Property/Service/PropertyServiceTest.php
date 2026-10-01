@@ -18,6 +18,8 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\DraftElementResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\VersionDraftElementResolver;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
@@ -92,6 +94,7 @@ final class PropertyServiceTest extends Unit
         ?SecurityServiceInterface $securityService = null,
         ?ServiceResolverInterface $serviceResolver = null,
         ?EventDispatcherInterface $eventDispatcher = null,
+        ?DraftElementResolverInterface $draftElementResolver = null,
     ): PropertyService {
         return new PropertyService(
             $repository ?? $this->makeEmpty(PropertyRepositoryInterface::class),
@@ -99,6 +102,7 @@ final class PropertyServiceTest extends Unit
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
+            $draftElementResolver ?? new VersionDraftElementResolver(),
         );
     }
 
