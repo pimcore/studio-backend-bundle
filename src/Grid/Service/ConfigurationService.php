@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -341,6 +342,11 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
             /** @var Data $fieldDefinition */
             $fieldDefinition = $column->getConfig()['fieldDefinition'];
+            // The bare field has no group/key and can never be resolved into a value
+            if ($fieldDefinition instanceof Classificationstore) {
+                continue;
+            }
+
             if ($search && $fieldDefinition->getVisibleSearch()) {
                 $defaultColumns[] = new ColumnSchema(
                     key: $column->getKey(),

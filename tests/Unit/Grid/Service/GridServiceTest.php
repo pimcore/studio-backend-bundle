@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInte
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
@@ -579,6 +580,47 @@ final class GridServiceTest extends Unit
      * User is final and cannot be doubled - a real instance with just the admin flag set is
      * enough for the permission checks under test here.
      */
+    /**
+     * The Studio UI can send `config: false` (or omit it) for a column. That must not fatal with a
+     * TypeError in the Column constructor.
+     *
+     * @dataProvider invalidColumnConfigProvider
+     */
+    public function testGetConfigurationForExportNormalizesInvalidColumnConfig(array $columnOverride): void
+    {
+        $definition = new ColumnConfiguration(
+            'cs',
+            ['data_object'],
+            false,
+            false,
+            true,
+            false,
+            false,
+            null,
+            'dataobject.classificationstore',
+            'classificationstore',
+            [],
+        );
+
+        $result = $this->createService()->getConfigurationForExport(
+            [['key' => 'cs', 'type' => 'dataobject.classificationstore', ...$columnOverride]],
+            [$definition]
+        );
+
+        $columns = $result->getColumns();
+        $this->assertCount(1, $columns);
+        $this->assertSame([], $columns[0]->getConfig());
+    }
+
+    public static function invalidColumnConfigProvider(): array
+    {
+        return [
+            'false' => [['config' => false]],
+            'null' => [['config' => null]],
+            'missing' => [[]],
+        ];
+    }
+
     private function buildUser(bool $isAdmin): User
     {
         $user = new User();

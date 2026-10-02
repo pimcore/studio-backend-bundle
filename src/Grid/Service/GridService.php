@@ -57,6 +57,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
+use function is_array;
 
 /**
  * @internal
@@ -509,7 +510,7 @@ final class GridService implements GridServiceInterface
                     locale: $column['locale'] ?? null,
                     type: $column['type'],
                     group: $column['group'] ?? null,
-                    config: $column['config'],
+                    config: is_array($column['config'] ?? null) ? $column['config'] : [],
                     width: $column['width'] ?? null
                 );
             } catch (Exception) {
