@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
 use InvalidArgumentException;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Discovery\DocBlockParser;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistry;
 use ReflectionClass;
 use ReflectionException;
@@ -48,8 +49,13 @@ final class McpToolPass implements CompilerPassInterface
         $metadata = [];
         $locatorRefs = [];
 
+        $docBlockParser = new DocBlockParser();
+
         foreach ($container->findTaggedServiceIds(McpToolRegistry::TAG) as $serviceId => $tags) {
-            $tools = $this->extractToolMetadata($container, $serviceId);
+            // The class, not the service id: the registry hands this value to ReflectionMethod
+            // and to the SDK as the handler class, and a service id need not be its class.
+            $class = $this->resolveClass($container, $serviceId);
+            $tools = $this->extractToolMetadata($class, $docBlockParser);
             if ($tools === []) {
                 throw new InvalidArgumentException(sprintf(
                     'Service "%s" is tagged "%s" but exposes no #[McpTool] method.',
@@ -58,7 +64,9 @@ final class McpToolPass implements CompilerPassInterface
                 ));
             }
 
-            $locatorRefs[$serviceId] = new Reference($serviceId);
+            // Keyed by class, so the SDK's container lookup for the handler class finds the
+            // service whatever its id is.
+            $locatorRefs[$class] = new Reference($serviceId);
 
             foreach ($tools as $tool) {
                 if (isset($metadata[$tool['name']])) {
@@ -71,7 +79,7 @@ final class McpToolPass implements CompilerPassInterface
                 }
 
                 $metadata[$tool['name']] = [
-                    'class' => $serviceId,
+                    'class' => $class,
                     'method' => $tool['method'],
                     'title' => $tool['title'],
                     'description' => $tool['description'],
@@ -100,10 +108,8 @@ final class McpToolPass implements CompilerPassInterface
      *     outputSchema: array<string, mixed>|null
      * }>
      */
-    private function extractToolMetadata(ContainerBuilder $container, string $serviceId): array
+    private function extractToolMetadata(string $class, DocBlockParser $docBlockParser): array
     {
-        $class = $container->getDefinition($serviceId)->getClass() ?? $serviceId;
-
         try {
             $reflection = new ReflectionClass($class);
         } catch (ReflectionException) {
@@ -122,12 +128,28 @@ final class McpToolPass implements CompilerPassInterface
                 'name' => $attribute->name ?? $method->getName(),
                 'method' => $method->getName(),
                 'title' => $attribute->title,
-                'description' => $attribute->description ?? '',
+                // Without a description on the attribute the DocBlock supplies it, as the SDK
+                // does for the tools it discovers itself. An empty string here would suppress
+                // that fallback, since the SDK only consults the DocBlock for a null one.
+                'description' => $attribute->description
+                    ?? $docBlockParser->getDescription($docBlockParser->parseDocBlock($method->getDocComment()))
+                    ?? '',
                 'annotations' => $attribute->annotations?->jsonSerialize(),
                 'outputSchema' => $attribute->outputSchema,
             ];
         }
 
         return $tools;
+    }
+
+    /**
+     * The service's class, with any `%parameter%` in it resolved, or the id itself when the
+     * definition names no class (an id that is the class, the usual case).
+     */
+    private function resolveClass(ContainerBuilder $container, string $serviceId): string
+    {
+        $class = $container->getDefinition($serviceId)->getClass() ?? $serviceId;
+
+        return (string) $container->getParameterBag()->resolveValue($class);
     }
 }

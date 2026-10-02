@@ -56,7 +56,7 @@ final class GetObjectNameTool
 ```
 
 A service may carry more than one `#[McpTool]` method; each becomes a separate tool. The `name` defaults to the
-method name and the `description` to the DocBlock summary when omitted.
+method name and the `description` to the method's DocBlock (summary and description) when omitted.
 
 ## Registering the tool
 
