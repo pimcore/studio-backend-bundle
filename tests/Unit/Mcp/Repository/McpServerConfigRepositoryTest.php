@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Mcp\Repository;
 
 use Codeception\Test\Unit;
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
@@ -28,30 +30,68 @@ final class McpServerConfigRepositoryTest extends Unit
      * In-memory {@see LocationAwareConfigRepository} standing in for the real
      * settings-store/YAML backend, so the repository orchestration is unit-testable.
      *
+     * `$seed` is the location a configured read target reads; `$otherLocation` stands for the
+     * second one (e.g. symfony-config next to the settings store). Mirroring the real class, a
+     * read target restricts loading to `$seed`, while without one both locations are read.
+     *
      * @param array<string, array<string, mixed>> $seed
+     * @param list<string> $readTargets
+     * @param array<string, array<string, mixed>> $otherLocation
      */
-    private function inMemoryStore(array $seed = [], bool $writeable = true): LocationAwareConfigRepository
-    {
-        return new class($seed, $writeable) extends LocationAwareConfigRepository {
-            /** @param array<string, array<string, mixed>> $data */
-            public function __construct(public array $data, private readonly bool $writeable)
-            {
+    private function inMemoryStore(
+        array $seed = [],
+        bool $writeable = true,
+        array $readTargets = [],
+        array $otherLocation = [],
+        ?Exception $saveFailure = null,
+    ): LocationAwareConfigRepository {
+        return new class($seed, $writeable, $readTargets, $otherLocation, $saveFailure) extends LocationAwareConfigRepository {
+            /**
+             * @param array<string, array<string, mixed>> $data
+             * @param list<string> $readTargets
+             * @param array<string, array<string, mixed>> $otherLocation
+             */
+            public function __construct(
+                public array $data,
+                private readonly bool $writeable,
+                private readonly array $readTargets,
+                private readonly array $otherLocation,
+                private readonly ?Exception $saveFailure,
+            ) {
                 // Intentionally does not call parent::__construct — every method
                 // the repository touches is overridden below.
             }
 
             public function loadConfigByKey(string $key): array
             {
-                return [$this->data[$key] ?? null, 'settings-store'];
+                if ($this->readTargets !== []) {
+                    return [$this->data[$key] ?? null, 'settings-store'];
+                }
+
+                return [$this->data[$key] ?? $this->otherLocation[$key] ?? null, 'settings-store'];
             }
 
             public function fetchAllKeys(): array
             {
+                return array_values(array_unique([...array_keys($this->data), ...array_keys($this->otherLocation)]));
+            }
+
+            public function fetchAllKeysByReadTargets(): array
+            {
                 return array_keys($this->data);
+            }
+
+            public function getReadTargets(): array
+            {
+                return $this->readTargets;
             }
 
             public function saveConfig(string $key, mixed $data, ?callable $yamlStructureCallback = null): void
             {
+                if ($this->saveFailure !== null) {
+                    throw $this->saveFailure;
+                }
+
                 $this->data[$key] = $data;
             }
 
@@ -116,6 +156,61 @@ final class McpServerConfigRepositoryTest extends Unit
 
         $this->assertCount(2, $servers);
         $this->assertSame(['a', 'b'], array_map(static fn (McpServerDefinition $s): string => $s->id, $servers));
+    }
+
+    /**
+     * get() reads through the configured read target, so a key that only exists in the other
+     * location cannot be loaded. Listing it anyway made list() throw NotFoundException for the
+     * whole listing - and with it every managed server's OAuth protected resource.
+     */
+    public function testListOnlyEnumeratesKeysTheReadTargetCanLoad(): void
+    {
+        $store = $this->inMemoryStore(
+            ['in-read-target' => ['name' => 'Read target']],
+            readTargets: ['settings-store'],
+            otherLocation: ['in-other-location' => ['name' => 'Other location']],
+        );
+
+        $servers = $this->repository($store)->list();
+
+        $this->assertSame(['in-read-target'], array_map(static fn (McpServerDefinition $s): string => $s->id, $servers));
+    }
+
+    /**
+     * Without a read target both locations are read, so both sets of keys are listed.
+     */
+    public function testListWithoutAReadTargetIncludesBothLocations(): void
+    {
+        $store = $this->inMemoryStore(
+            ['a' => ['name' => 'A']],
+            otherLocation: ['b' => ['name' => 'B']],
+        );
+
+        $servers = $this->repository($store)->list();
+
+        $this->assertSame(['a', 'b'], array_map(static fn (McpServerDefinition $s): string => $s->id, $servers));
+    }
+
+    public function testSaveFailureKeepsTheStorageExceptionAsItsCause(): void
+    {
+        $cause = new Exception('disk full');
+        $repository = $this->repository($this->inMemoryStore(saveFailure: $cause));
+
+        try {
+            $repository->save(new McpServerDefinition(
+                id: 'x',
+                displayName: 'X',
+                description: '',
+                urlSlug: 'x',
+                toolIds: [],
+                scopes: [],
+                enabled: true,
+                access: new McpServerAccess(),
+            ));
+            $this->fail('Expected ElementSavingFailedException.');
+        } catch (ElementSavingFailedException $exception) {
+            $this->assertSame($cause, $exception->getPrevious());
+        }
     }
 
     public function testSaveThenGetRoundTrip(): void

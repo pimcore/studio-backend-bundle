@@ -51,7 +51,7 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
     public function list(): array
     {
         $servers = [];
-        foreach ($this->getRepository()->fetchAllKeys() as $id) {
+        foreach ($this->getConfigurationKeys() as $id) {
             $servers[] = $this->get((string) $id);
         }
 
@@ -99,7 +99,7 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
                 ]
             );
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException(null, $exception->getMessage());
+            throw new ElementSavingFailedException(null, $exception->getMessage(), $exception);
         }
     }
 
@@ -119,6 +119,26 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
                 $exception
             );
         }
+    }
+
+    /**
+     * Only the keys the configured read target can actually load: get() reads through the read
+     * target, so listing a key that lives in the other location makes it fail with a not found
+     * error and takes the whole listing down with it - and with it every server's OAuth protected
+     * resource. Without a read target both locations are read, so both sets of keys belong in the
+     * listing. Same rule as PerspectiveConfigRepository::getConfigurationKeys().
+     *
+     * @return array<int|string>
+     *
+     * @throws Exception
+     */
+    private function getConfigurationKeys(): array
+    {
+        $repository = $this->getRepository();
+
+        return $repository->getReadTargets() === []
+            ? $repository->fetchAllKeys()
+            : $repository->fetchAllKeysByReadTargets();
     }
 
     private function getRepository(): LocationAwareConfigRepository
