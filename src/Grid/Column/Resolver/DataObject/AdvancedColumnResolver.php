@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
@@ -76,6 +77,7 @@ final class AdvancedColumnResolver implements
         private readonly ResolverTypeGuesserInterface $resolverTypeGuesser,
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
+        private readonly AdvancedColumnSourceFieldContextInterface $sourceFieldContext,
     ) {
     }
 
@@ -137,17 +139,7 @@ final class AdvancedColumnResolver implements
 
         $returnValue = [];
         foreach ($this->values as $value) {
-            if ($this->isStringConvertible($value->getValue())) {
-                $returnValue[] = $value->getValue();
-
-                continue;
-            }
-
-            try {
-                $returnValue[] = json_encode($value->getValue(), JSON_THROW_ON_ERROR);
-            } catch (JsonException) {
-                $returnValue[] = 'Unable to export value';
-            }
+            $returnValue[] = $this->stringifyForExport($value->getValue());
         }
 
         return new ColumnData(
@@ -157,6 +149,34 @@ final class AdvancedColumnResolver implements
             fieldType: 'advanced'
         );
 
+    }
+
+    /**
+     * A missing source value (no data at the resolved locale, no fallback) is `null`, not an empty
+     * string - `null` is neither {@see is_scalar()} nor `Stringable`, so it used to fall through to
+     * `json_encode()`, which turns PHP `null` into the four literal characters "null". Empty/null
+     * must export as an empty string here, exactly like every other "no value" case in this
+     * resolver and like {@see self::resolveField()}'s export branch, which never reaches
+     * `json_encode()` at all for a missing value (`getForCsvExport()` always returns a string, `''`
+     * at worst). A `null` *inside* an array (e.g. one related element's field left empty) is left
+     * to `json_encode()` as-is: a JSON `null` nested in a JSON array is standard, unambiguous
+     * representation of a missing element, unlike a bare top-level `null`.
+     */
+    private function stringifyForExport(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if ($this->isStringConvertible($value)) {
+            return (string)$value;
+        }
+
+        try {
+            return json_encode($value, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return 'Unable to export value';
+        }
     }
 
     private function isStringConvertible(mixed $value): bool
@@ -182,22 +202,35 @@ final class AdvancedColumnResolver implements
             throw new InvalidArgumentException('Element must be a concrete object');
         }
 
-        foreach ($column->getAdvancedColumnConfig()->getColumns() as $advancedColumn) {
-            if ($advancedColumn instanceof SimpleFieldConfig) {
-                $this->resolveField($advancedColumn, $column, $element, $export);
-            }
+        // Source fields must resolve with export-consistent localization semantics - the same
+        // whether or not the column has a transformer pipeline attached - never the interactive
+        // grid's extra "jump to the default language" nicety. See
+        // AdvancedColumnSourceFieldContextInterface for why this can't just be the ambient
+        // fallback-values flag, and AdapterResolver::allowDefaultLanguageFallback() for the
+        // consumer.
+        $wasResolvingSourceField = $this->sourceFieldContext->isResolvingSourceField();
+        $this->sourceFieldContext->setResolvingSourceField(true);
 
-            if ($advancedColumn instanceof RelationFieldConfig) {
-                $this->resolveRelationField($advancedColumn, $column, $element, $export);
-            }
+        try {
+            foreach ($column->getAdvancedColumnConfig()->getColumns() as $advancedColumn) {
+                if ($advancedColumn instanceof SimpleFieldConfig) {
+                    $this->resolveField($advancedColumn, $column, $element, $export);
+                }
 
-            if ($advancedColumn instanceof StaticTextConfig) {
-                $this->values[] = new AdvancedValue(
-                    type: 'string',
-                    value: $advancedColumn->getText(),
-                    fieldName: $column->getKey()
-                );
+                if ($advancedColumn instanceof RelationFieldConfig) {
+                    $this->resolveRelationField($advancedColumn, $column, $element, $export);
+                }
+
+                if ($advancedColumn instanceof StaticTextConfig) {
+                    $this->values[] = new AdvancedValue(
+                        type: 'string',
+                        value: $advancedColumn->getText(),
+                        fieldName: $column->getKey()
+                    );
+                }
             }
+        } finally {
+            $this->sourceFieldContext->setResolvingSourceField($wasResolvingSourceField);
         }
     }
 

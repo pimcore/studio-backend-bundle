@@ -3,11 +3,40 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.3.0
+- [Grid] Fixed: an advanced column's source fields now resolve localized values with the same, export-consistent semantics whether or not the column has a transformer pipeline attached. Previously, a source field resolved through a transformer pipeline (`AdvancedColumnResolver::resolveForExport()`'s "core element" branch) could unconditionally jump to the class's default language once the requested locale's value was empty, ignoring Pimcore's configured fallback languages (`Tool::getFallbackLanguagesFor()`) that a transformer-less advanced column, a plain grid column export, and Pimcore's own `Localizedfield` already honour. That default-language jump remains intentional for the interactive Studio grid displaying a plain column directly (`AdapterResolver`, `ClassificationStoreResolver`, `ObjectBrickResolver`), so a blank cell still falls back to something visible - only an advanced column's own source-field resolution is now export-consistent, whether displayed live in the grid or exported. Also fixed: an advanced column's export value rendered a missing (`null`) source value as the four literal characters `"null"` instead of an empty string, because `json_encode(null)` was indistinguishable from a legitimately exported literal.
+
+> **Note:** `LocalizedValueTrait` gained a new protected `allowDefaultLanguageFallback(): bool` hook (default `true`), and a new `@internal` `AdvancedColumnSourceFieldContextInterface`/`AdvancedColumnSourceFieldContext` service tracks whether the current localized-value resolution is an advanced column's source field; `AdapterResolver` and `AdvancedColumnResolver` both gained a constructor dependency on it. Both are purely internal wiring with no public signature change.
+
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:
   - `inheritable` (bool): whether the field type can take part in inheritance at all. It is `false` for field types whose `supportsInheritance()` returns `false` (e.g. `urlSlug`, `calculatedValue`, `fieldcollections`) and for field types without a Studio data adapter, so a client can tell an overridden value (`inherited: false, inheritable: true`) apart from a field that can never inherit (`inheritable: false`).
   - `inheritedValue` (mixed): the value the field inherits — or would inherit if its own value were removed — from the nearest ancestor that holds a non-empty value, normalized to the same shape as `objectData`. It is `null` when no ancestor holds a value, when the field is not inheritable, or when it was not requested: resolving it costs a walk up the tree for every field holding an own value, so it is opt-in. The data object detail response requests it; grid columns do not and always report `null`.
 
 > **Note:** both properties are additive; `objectId` and `inherited` keep their meaning. `InheritanceServiceInterface::getInheritanceData()` gained a `bool $resolveInheritedValues = false` parameter and `getFieldInheritanceData()`, which returns the complete `InheritanceData` for a single field. The opt-in travels through the recursion as `FieldContextData::shouldResolveInheritedValue()` (constructor argument `resolveInheritedValue`). Custom `DataInheritanceInterface` adapters that build `InheritanceData` themselves should switch to `getFieldInheritanceData()` and pass `resolveInheritedValue` on to the `FieldContextData` they create for their child fields; instances they construct directly keep working and default to `inheritable: true`, `inheritedValue: null`.
+
+- [Grid] Fixed: the `twigOperator` transformer rendered its template through the application's shared `twig` service,
+  with a `SecurityPolicy` missing four of its seven constructor arguments (`blockedClasses`, `allowedClasses`,
+  `blockedFunctions`, `hardBlockedMethods` were never set). Method calls and property access on any object reaching
+  the template were unrestricted, and `pimcore_*` functions (`pimcore_object`, `pimcore_asset`, ...) were reachable,
+  letting a grid's advanced-column template load and mutate/delete arbitrary elements. `TwigOperator` templates now
+  render inside a dedicated, isolated Twig `Environment` that has no Pimcore Twig extension registered at all, with a
+  fully-populated denylist-plus-allowlist `SecurityPolicy`, and every value is converted to plain data (dates become
+  ISO 8601 strings) before it reaches the template.
+
+> **Note:** All public constructor signatures and interfaces stay backward compatible.
+> `SandboxExtensionInitializerInterface` is unchanged; the isolated environment is exposed through the new
+> `TwigOperatorEnvironmentProviderInterface::getEnvironment()`, which `SandboxExtensionInitializer` implements.
+> `TemplateGenerator` renders through it. A custom `SandboxExtensionInitializerInterface` implementation that does not
+> also implement the new interface keeps rendering through the shared `twig` service (as before) but triggers a
+> deprecation; implementing the provider interface becomes mandatory in the next major version.
+> `SandboxExtensionInitializer`'s `Twig\Environment $twig` constructor argument is kept but unused. It gained two
+> optional trailing arguments: `iterable $additionalExtensions = []` (services tagged
+> `pimcore_studio_backend.twig_operator_extension`, the supported way to add a project-defined filter/function/tag to
+> the isolated environment; the tag name is `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`)
+> and `?LoggerInterface $logger = null` (warns once, at build time, about an allow-listed tag/filter/function name
+> that no registered extension provides). A project extending the `sandbox_security_policy` allow-list with a name not
+> covered by the bundle's own extensions (e.g. `trans`, or a project-specific filter) must now additionally register a
+> matching Twig extension via that service tag - see `doc/01_Architecture_Overview/01_Grid.md`. `range()` is also
+> capped at 1000 elements to prevent a large-array denial-of-service from an uncapped span.
 
 ## Upgrade to 2025.4.13
 - [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.

@@ -14,18 +14,30 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Twig;
 
 use Codeception\Test\Unit;
+use DateTime;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\TwigOperatorEnvironmentProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Twig\Sandbox\SecurityPolicy;
+use Psr\Log\AbstractLogger;
 use ReflectionMethod;
+use Stringable;
 use Symfony\Component\Config\Definition\Processor;
 use Twig\Environment;
+use Twig\Extension\AbstractExtension;
 use Twig\Extension\SandboxExtension;
 use Twig\Extra\Intl\IntlExtension;
 use Twig\Extra\String\StringExtension;
 use Twig\Loader\ArrayLoader;
+use Twig\TwigFunction;
+use function array_merge;
+use function restore_error_handler;
+use function set_error_handler;
+use function strtoupper;
 
 /**
  * @internal
@@ -105,8 +117,8 @@ final class TemplateGeneratorTest extends Unit
 
     public function testRendersShuffleFilter(): void
     {
-        // shuffle is non-deterministic; sorting afterwards makes the assertion stable while still
-        // exercising the filter.
+        // shuffle is non-deterministic; sorting afterwards makes the assertion stable while
+        // still exercising the filter.
         $this->assertSame('1,2,3', $this->generate('{{ value|shuffle|sort|join(",") }}', ['value' => [3, 1, 2]]));
     }
 
@@ -179,30 +191,363 @@ final class TemplateGeneratorTest extends Unit
         $this->generate('{% apply upper %}{{ value }}{% endapply %}', ['value' => 'x']);
     }
 
-    private function generate(string $template, array $context): string
+    public function testBlocksIncludeTag(): void
+    {
+        // "include" would let a template pull in an arbitrary sibling template; it is not
+        // part of the allowed tags and must be rejected.
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{% include "unknown.twig" %}', []);
+    }
+
+    /**
+     * The isolated environment registers no Pimcore Twig extension, so "pimcore_object" does
+     * not exist for it to resolve - the element loader is unreachable, not merely sandboxed.
+     * This is the exploit from the original report: an open policy let this call delete an
+     * object straight from a grid's advanced column template.
+     */
+    public function testBlocksElementDeleteViaPimcoreFunction(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ pimcore_object(1).delete() }}', []);
+    }
+
+    /**
+     * @dataProvider pimcoreFunctionProvider
+     */
+    public function testBlocksPimcoreServiceFunctions(string $call): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ ' . $call . ' }}', []);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public function pimcoreFunctionProvider(): iterable
+    {
+        yield 'pimcore_object' => ['pimcore_object(1)'];
+        yield 'pimcore_object_by_path' => ['pimcore_object_by_path("/foo")'];
+        yield 'pimcore_asset' => ['pimcore_asset(1)'];
+        yield 'pimcore_document' => ['pimcore_document(1)'];
+        yield 'pimcore_user' => ['pimcore_user(1)'];
+    }
+
+    /**
+     * A value reaching the template unblocked (e.g. a DateTime for a date column) must stay
+     * read-only: mutating methods are hard-blocked regardless of the class denylist.
+     */
+    public function testBlocksSetterCallOnUnblockedValue(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate("{{ value.modify('+1 day') }}", ['value' => new DateTime('2020-01-01')]);
+    }
+
+    /**
+     * A Pimcore element reaching the template (a bug, not something that should legitimately
+     * happen - {@see \Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator}
+     * sanitizes every value before it gets here) must still have every method call denied.
+     * The mock's delete() itself fails the test if invoked, so this also proves the policy
+     * rejects the call before it ever reaches the object - not merely that some exception
+     * bubbles up afterward.
+     */
+    public function testBlocksMethodCallOnElementInterfaceValue(): void
+    {
+        $element = $this->makeEmpty(ElementInterface::class, [
+            'delete' => function (): void {
+                self::fail('delete() must never be invoked from a sandboxed template.');
+            },
+        ]);
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ value.delete() }}', ['value' => $element]);
+    }
+
+    public function testRangeFunctionWithinTheCapWorks(): void
+    {
+        $this->assertSame('1,2,3,4,5', $this->generate('{{ range(1, 5)|join(",") }}', []));
+    }
+
+    public function testRangeFunctionAtExactlyTheCapWorks(): void
+    {
+        $this->assertSame('1000', $this->generate('{{ range(1, 1000)|length }}', []));
+    }
+
+    public function testRangeFunctionWithNonUnitStepAtTheCapWorks(): void
+    {
+        $this->assertSame('1000', $this->generate('{{ range(0, 1999, 2)|length }}', []));
+    }
+
+    /**
+     * range() maps directly onto PHP's own range(): an uncapped call like range(0, 1000000)
+     * would allocate a huge array straight from template text - a memory/CPU DoS reachable
+     * with no object or method call involved at all.
+     */
+    public function testRangeFunctionRejectsASpanBeyondTheCap(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ range(0, 1000000)|length }}', []);
+    }
+
+    /**
+     * A character range is inherently bounded (at most the codepoint distance between the two
+     * characters) and must keep working uncapped.
+     */
+    public function testRangeFunctionStillSupportsCharacterRanges(): void
+    {
+        $this->assertSame('a,b,c,d,e', $this->generate('{{ range("a", "e")|join(",") }}', []));
+    }
+
+    /**
+     * The 2026.x constructor shapes must keep working.
+     */
+    public function testOldConstructorSignaturesStillWork(): void
+    {
+        $policy = $this->getDefaultSandboxPolicy();
+        $twig = new Environment(new ArrayLoader());
+        $initializer = new SandboxExtensionInitializer($twig, $policy['tags'], $policy['filters'], $policy['functions']);
+        $generator = new TemplateGenerator($twig, $initializer);
+
+        $this->assertSame('HI', $generator->generate('{{ value|upper }}', ['value' => 'hi']));
+        $this->assertNotSame($twig, $initializer->getEnvironment());
+    }
+
+    /**
+     * A custom initializer without the provider interface falls back to the injected
+     * environment and emits a deprecation.
+     */
+    public function testCustomInitializerWithoutProviderInterfaceFallsBackWithDeprecation(): void
     {
         $twig = new Environment(new ArrayLoader());
-        // The initializer expects the SandboxExtension to be present on the environment.
-        $twig->addExtension(new SandboxExtension(new SecurityPolicy()));
+        $sandbox = new SandboxExtension(new SecurityPolicy(['if'], ['upper', 'escape'], []));
+        $twig->addExtension($sandbox);
+        $custom = new class($sandbox) implements SandboxExtensionInitializerInterface {
+            public function __construct(private readonly SandboxExtension $sandbox)
+            {
+            }
 
-        if (class_exists(StringExtension::class)) {
-            $twig->addExtension(new StringExtension());
+            public function initialize(): SandboxExtension
+            {
+                return $this->sandbox;
+            }
+        };
+
+        $deprecations = [];
+        set_error_handler(static function (int $no, string $message) use (&$deprecations): bool {
+            $deprecations[] = $message;
+
+            return true;
+        }, E_USER_DEPRECATED);
+
+        try {
+            $generator = new TemplateGenerator($twig, $custom);
+        } finally {
+            restore_error_handler();
         }
-        if (class_exists(IntlExtension::class)) {
-            $twig->addExtension(new IntlExtension());
+
+        $this->assertCount(1, $deprecations);
+        $this->assertStringContainsString(TwigOperatorEnvironmentProviderInterface::class, $deprecations[0]);
+        $this->assertSame('HI', $generator->generate('{{ value|upper }}', ['value' => 'hi']));
+    }
+
+    public function testProviderInitializerIsUsedWithoutDeprecation(): void
+    {
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+
+        $deprecations = [];
+        set_error_handler(static function (int $no, string $message) use (&$deprecations): bool {
+            $deprecations[] = $message;
+
+            return true;
+        }, E_USER_DEPRECATED);
+
+        try {
+            new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
+        } finally {
+            restore_error_handler();
         }
+
+        $this->assertSame([], $deprecations);
+        $this->assertInstanceOf(TwigOperatorEnvironmentProviderInterface::class, $initializer);
+    }
+
+    /**
+     * @dataProvider mixedRangeProvider
+     */
+    public function testRangeFunctionRejectsMixedBoundsBeyondTheCap(string $call): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ ' . $call . '|length }}', []);
+    }
+
+    public function mixedRangeProvider(): iterable
+    {
+        yield 'non-numeric low' => ['range("a", 1000000)'];
+        yield 'non-numeric high' => ['range(1000000, "a")'];
+        yield 'float step tiny' => ['range(0, 10, 0.000001)'];
+    }
+
+    /**
+     * Rendering a TwigOperator template must never touch an external SandboxExtension's
+     * policy - previously this called setSecurityPolicy() on the application's shared
+     * SandboxExtension, permanently weakening the policy core uses for its own Twig rendering
+     * (Mailer, the "Text" layout component, ...) for the remainder of the process. Unlike the
+     * original version of this test, $externalTwig below is not a disconnected fixture:
+     * getEnvironment() is asserted to be a distinct instance, so this fails if
+     * TemplateGenerator/SandboxExtensionInitializer is ever changed to reuse an
+     * externally-supplied environment instead of building its own.
+     */
+    public function testGeneratorNeverTouchesAnExternalSandboxExtension(): void
+    {
+        $externalPolicy = new SecurityPolicy(['set'], ['escape', 'trans', 'default'], ['path', 'asset']);
+        $externalSandbox = new SandboxExtension($externalPolicy);
+        $externalTwig = new Environment(new ArrayLoader());
+        $externalTwig->addExtension($externalSandbox);
 
         $policy = $this->getDefaultSandboxPolicy();
-
-        $generator = new TemplateGenerator(
-            $twig,
-            new SandboxExtensionInitializer(
-                $twig,
-                $policy['tags'],
-                $policy['filters'],
-                $policy['functions']
-            )
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
         );
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
+
+        $rendered = $generator->generate('{{ value|upper }}', ['value' => 'twig-operator-render']);
+        $this->assertSame('TWIG-OPERATOR-RENDER', $rendered);
+
+        try {
+            $generator->generate('{{ pimcore_object(1).delete() }}', []);
+        } catch (InvalidTemplateException) {
+            // Expected - the attempted exploit itself must not have side effects either.
+        }
+
+        $this->assertNotSame(
+            $externalTwig,
+            $initializer->getEnvironment(),
+            'The isolated environment must never be the externally-supplied one.'
+        );
+        $this->assertSame(
+            $externalPolicy,
+            $externalSandbox->getSecurityPolicy(),
+            "Rendering a TwigOperator template must not touch an external SandboxExtension's policy."
+        );
+    }
+
+    /**
+     * The DI extension point ({@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG})
+     * is the supported way to add a project-defined filter/function/tag: the isolated
+     * environment never sees the application's shared `twig` service (see finding 2 of the
+     * review this test accompanies), so a tagged extension is registered directly onto it.
+     */
+    public function testAdditionalTaggedExtensionIsRegisteredIntoTheIsolatedEnvironment(): void
+    {
+        $extension = new class extends AbstractExtension {
+            public function getFunctions(): array
+            {
+                return [
+                    new TwigFunction('project_shout', static fn (string $value): string => strtoupper($value) . '!!!'),
+                ];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            array_merge($policy['functions'], ['project_shout']),
+            [$extension]
+        );
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
+
+        $this->assertSame('HI!!!', $generator->generate('{{ project_shout(value) }}', ['value' => 'hi']));
+    }
+
+    /**
+     * A `sandbox_security_policy` allow-list entry only takes effect if a Twig extension in
+     * the isolated environment actually registers it (see the docblock on
+     * warnAboutUnregisteredAllowListNames()). Misconfiguring it - adding a name nothing
+     * registers - must be surfaced, not fail silently until a template happens to use it.
+     */
+    public function testWarnsOnceWhenAnAllowListedFunctionIsNeverRegistered(): void
+    {
+        $logger = new class extends AbstractLogger {
+            /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = [(string) $level, (string) $message, $context];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            array_merge($policy['functions'], ['does_not_exist_anywhere']),
+            [],
+            $logger
+        );
+
+        // build() memoizes; calling twice must still log only once.
+        $initializer->getEnvironment();
+        $initializer->getEnvironment();
+
+        $this->assertCount(1, $logger->records, 'The warning must be logged exactly once.');
+        $this->assertSame('warning', $logger->records[0][0]);
+        $this->assertContains('does_not_exist_anywhere', $logger->records[0][2]['functions']);
+    }
+
+    /**
+     * Sanity check on the diffing logic itself: the bundle's own default configuration must
+     * never trigger a false-positive warning.
+     */
+    public function testDoesNotWarnWhenEveryAllowListedNameIsRegistered(): void
+    {
+        $logger = new class extends AbstractLogger {
+            /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = [(string) $level, (string) $message, $context];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions'],
+            [],
+            $logger
+        );
+        $initializer->getEnvironment();
+
+        $this->assertSame([], $logger->records);
+    }
+
+    private function generate(string $template, array $context): string
+    {
+        $policy = $this->getDefaultSandboxPolicy();
+
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
 
         return $generator->generate($template, $context);
     }

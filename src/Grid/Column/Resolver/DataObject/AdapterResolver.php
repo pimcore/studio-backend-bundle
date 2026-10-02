@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInte
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
@@ -55,6 +56,7 @@ final class AdapterResolver implements
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
+        private readonly AdvancedColumnSourceFieldContextInterface $sourceFieldContext,
     ) {
     }
 
@@ -68,6 +70,12 @@ final class AdapterResolver implements
     protected function getDefaultLanguage(): ?string
     {
         return $this->toolResolver->getDefaultLanguage();
+    }
+
+    /** @see LocalizedValueTrait::allowDefaultLanguageFallback() */
+    protected function allowDefaultLanguageFallback(): bool
+    {
+        return !$this->sourceFieldContext->isResolvingSourceField();
     }
 
     /**

@@ -525,13 +525,27 @@ In this example, `{{ value.name }} - {{ value.manufacturer.name }}` resolves to 
 
 **Available Twig Filters, Functions and Tags:**
 
-Templates are rendered inside a [Twig sandbox](https://twig.symfony.com/doc/3.x/api.html#sandbox-extension).
-Only the tags, filters and functions listed below are allowed; anything else (method calls, property
-access, file includes, etc.) is rejected and the template fails to render. This prevents arbitrary
-code execution through user-provided templates.
+Templates are rendered inside a [Twig sandbox](https://twig.symfony.com/doc/3.x/api.html#sandbox-extension),
+in a dedicated Twig `Environment` built from scratch for this purpose alone. Only the tags, filters
+and functions listed below are allowed; anything else (method calls, property access, file includes,
+etc.) is rejected and the template fails to render. This prevents arbitrary code execution through
+user-provided templates.
+
+This isolated environment is deliberately not the application's shared `twig` service:
+
+- No Pimcore Twig extension is registered on it, so functions like `pimcore_object`,
+  `pimcore_asset` or `pimcore_document` do not exist for it to resolve at all - they are not
+  merely sandboxed, there is no element/service loader reachable here to begin with.
+- Values are converted to plain data (scalars, arrays, `null`) before they ever reach the
+  template - a `DateTime`/`Carbon` value, for example, arrives as an ISO 8601 string, not as an
+  object. `date`, `date_modify` and `format_date` all accept that string the same way they accept
+  a `DateTime` instance, so date formatting keeps working.
+- `strict_variables` is off (Twig's default), which can differ from the application's shared
+  `twig` service (commonly on in a debug/dev environment): an undefined variable or array key in
+  a template renders as empty rather than raising an error.
 
 - **Tags:** `if`, `for`, `set`
-- **Functions:** `date`, `max`, `min`, `random`, `range`
+- **Functions:** `date`, `max`, `min`, `random`, `range` (capped - see the range() note below)
 - **Filters:**
   - *Core:* `abs`, `capitalize`, `date`, `date_modify`, `default`, `escape`, `filter`, `find`,
     `first`, `format`, `join`, `json_encode`, `keys`, `last`, `length`, `lower`, `map`, `merge`,
@@ -543,9 +557,18 @@ code execution through user-provided templates.
   - *String* (require [`twig/string-extra`](https://packagist.org/packages/twig/string-extra)):
     `plural`, `singular`
 
-> **Note:** The localization and string filters depend on the corresponding Twig extra packages being
-> installed and registered (they are auto-registered by `twig/extra-bundle`). The localization filters
-> additionally require the PHP `intl` extension.
+> **Note:** The localization and string filters depend on the corresponding Twig extra packages
+> being installed - the isolated environment registers `Twig\Extra\Intl\IntlExtension` and
+> `Twig\Extra\String\StringExtension` on itself directly whenever their classes are present, which
+> is independent of whatever the application's own `twig.yaml`/`twig/extra-bundle` configuration
+> does for the shared `twig` service. The localization filters additionally require the PHP `intl`
+> extension.
+
+> **DoS:** `range()` is replaced with a capped implementation that rejects a numeric span of more
+> than 1000 elements before calling the real `range()` - an uncapped `range(0, 100000000)` would
+> otherwise allocate a huge array straight from template text, independent of any object or method
+> call. A character range (both bounds non-numeric strings, e.g. `range('a', 'z')`) is unaffected: it is inherently
+> bounded. A mixed range such as `range('a', 1000000)` is capped, because PHP treats the non-numeric bound as 0.
 
 The allow-list can be customized per project via the bundle configuration:
 
@@ -558,9 +581,28 @@ pimcore_studio_backend:
             functions: [ 'date', 'max', 'min' ]
 ```
 
+> **A name in this list only takes effect if a Twig extension in the isolated environment actually
+> registers it.** Because the isolated environment never sees the application's shared `twig`
+> service (see above), adding e.g. `trans` or a project-defined filter name here alone does not make
+> it available - the template still fails with "is not allowed"/"Unknown filter" at render time, and
+> the bundle logs a warning at build time for any allow-listed name nothing registers. To add a
+> project-defined filter, function or tag, register your own `Twig\Extension\ExtensionInterface`
+> service tagged `pimcore_studio_backend.twig_operator_extension`:
+>
+> ```yaml
+> services:
+>     App\Twig\MyTwigOperatorExtension:
+>         tags: [ 'pimcore_studio_backend.twig_operator_extension' ]
+> ```
+>
+> (The tag name is also available as `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`.)
+> It is registered into the isolated environment alongside the built-in extensions, and its
+> filter/function/tag names still need to be added to `sandbox_security_policy` above to be usable.
+> Keep it narrowly scoped to safe, side-effect-free formatting - it runs in the same sandbox as
+> everything else on this page, with the same consequences if it is not.
+
 > **Security:** Be careful when extending the allow-list. Filters such as `raw` disable output
-> escaping (potential XSS if the value is rendered as HTML), and functions such as `range` combined
-> with `for` loops can be abused to build very large outputs. Do not add Twig functions like
+> escaping (potential XSS if the value is rendered as HTML). Do not add Twig functions like
 > `constant`, `attribute`, `include` or `source`, as they can expose internal data or read files.
 
 ---
