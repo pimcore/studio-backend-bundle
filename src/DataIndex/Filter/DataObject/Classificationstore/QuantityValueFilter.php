@@ -73,45 +73,12 @@ final class QuantityValueFilter implements FilterInterface
                 throw new InvalidArgumentException('This filter requires a setting value');
             }
 
-            $setting = $value['setting'];
-
-            if (isset($value['is']) && $setting == 'is') {
+            $valueFilter = $this->createValueFilter($key->getName(), $value['setting'], $value);
+            if ($valueFilter !== null) {
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberFilter($key->getName() . self::VALUE_FIELD_SUFFIX, $value['is'], true),
-                    null
-                );
-            }
-
-            if (isset($value['to']) && $setting == 'less') {
-                $query->classificationStoreFilter(
-                    $column->getKeyWithOutLocale(),
-                    $group->getName(),
-                    new NumberRangeFilter($key->getName() . self::VALUE_FIELD_SUFFIX, null, $value['to'], true),
-                    null
-                );
-            }
-
-            if (isset($value['from']) && $setting == 'more') {
-                $query->classificationStoreFilter(
-                    $column->getKeyWithOutLocale(),
-                    $group->getName(),
-                    new NumberRangeFilter($key->getName() . self::VALUE_FIELD_SUFFIX, $value['from'], null, true),
-                    null
-                );
-            }
-
-            if ($setting == 'between') {
-                $query->classificationStoreFilter(
-                    $column->getKeyWithOutLocale(),
-                    $group->getName(),
-                    new NumberRangeFilter(
-                        $key->getName() . self::VALUE_FIELD_SUFFIX,
-                        $value['from'],
-                        $value['to'],
-                        true
-                    ),
+                    $valueFilter,
                     null
                 );
             }
@@ -125,5 +92,37 @@ final class QuantityValueFilter implements FilterInterface
         }
 
         return $query;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function createValueFilter(
+        string $keyName,
+        string $setting,
+        array $value
+    ): NumberFilter|NumberRangeFilter|null
+    {
+        $field = $keyName . self::VALUE_FIELD_SUFFIX;
+
+        return match (true) {
+            $setting === 'is' && isset($value['is']) => new NumberFilter($field, $value['is'], true),
+            $setting === 'less' && isset($value['to']) => new NumberRangeFilter($field, null, $value['to'], true),
+            $setting === 'more' && isset($value['from']) => new NumberRangeFilter($field, $value['from'], null, true),
+            $setting === 'between' => $this->createBetweenFilter($field, $value),
+            default => null,
+        };
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function createBetweenFilter(string $field, array $value): NumberRangeFilter
+    {
+        if (!isset($value['from'], $value['to'])) {
+            throw new InvalidArgumentException('Between filter requires from and to');
+        }
+
+        return new NumberRangeFilter($field, $value['from'], $value['to'], true);
     }
 }

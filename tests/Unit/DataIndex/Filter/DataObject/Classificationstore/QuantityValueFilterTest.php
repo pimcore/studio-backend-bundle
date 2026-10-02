@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfi
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore\QuantityValueFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\ColumnFilterMockTrait;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -41,9 +42,10 @@ final class QuantityValueFilterTest extends Unit
     {
         $calls = $this->applyFilter(['setting' => 'is', 'is' => 5, 'unitId' => 'kg']);
 
+        $this->assertCalls($calls);
         $filter = $calls[0]['filter'];
         $this->assertInstanceOf(NumberFilter::class, $filter);
-        $this->assertSame('weight.value', $filter->getFieldName());
+        $this->assertSame(self::KEY_NAME . '.value', $filter->getFieldName());
         $this->assertSame(5, $filter->getSearchTerm());
         $this->assertUnitFilter($calls[1]['filter']);
     }
@@ -52,6 +54,7 @@ final class QuantityValueFilterTest extends Unit
     {
         $calls = $this->applyFilter(['setting' => 'less', 'to' => 10, 'unitId' => 'kg']);
 
+        $this->assertCalls($calls);
         $filter = $this->assertRangeFilter($calls[0]['filter']);
         $this->assertNull($filter->getMin());
         $this->assertSame(10, $filter->getMax());
@@ -62,6 +65,7 @@ final class QuantityValueFilterTest extends Unit
     {
         $calls = $this->applyFilter(['setting' => 'more', 'from' => 3, 'unitId' => 'kg']);
 
+        $this->assertCalls($calls);
         $filter = $this->assertRangeFilter($calls[0]['filter']);
         $this->assertSame(3, $filter->getMin());
         $this->assertNull($filter->getMax());
@@ -72,24 +76,54 @@ final class QuantityValueFilterTest extends Unit
     {
         $calls = $this->applyFilter(['setting' => 'between', 'from' => 3, 'to' => 10, 'unitId' => 'kg']);
 
+        $this->assertCalls($calls);
         $filter = $this->assertRangeFilter($calls[0]['filter']);
         $this->assertSame(3, $filter->getMin());
         $this->assertSame(10, $filter->getMax());
         $this->assertUnitFilter($calls[1]['filter']);
     }
 
+    /**
+     * @dataProvider incompleteBetweenValueProvider
+     */
+    public function testBetweenSettingWithMissingBoundThrows(array $bounds): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Between filter requires from and to');
+
+        $this->applyFilter(['setting' => 'between', 'unitId' => 'kg', ...$bounds]);
+    }
+
+    public static function incompleteBetweenValueProvider(): array
+    {
+        return [
+            'missing from' => [['to' => 10]],
+            'missing to' => [['from' => 3]],
+            'missing both' => [[]],
+        ];
+    }
+
     private function assertRangeFilter(mixed $filter): NumberRangeFilter
     {
         $this->assertInstanceOf(NumberRangeFilter::class, $filter);
-        $this->assertSame('weight.value', $filter->getField());
+        $this->assertSame(self::KEY_NAME . '.value', $filter->getField());
 
         return $filter;
+    }
+
+    private function assertCalls(array $calls): void
+    {
+        $this->assertCount(2, $calls);
+        foreach ($calls as $call) {
+            $this->assertSame('classificationStoreField', $call['fieldName']);
+            $this->assertSame(self::GROUP_NAME, $call['group']);
+        }
     }
 
     private function assertUnitFilter(mixed $filter): void
     {
         $this->assertInstanceOf(WildcardSearch::class, $filter);
-        $this->assertSame('weight.unitId', $filter->getFieldName());
+        $this->assertSame(self::KEY_NAME . '.unitId', $filter->getFieldName());
         $this->assertSame('kg', $filter->getSearchTerm());
     }
 
