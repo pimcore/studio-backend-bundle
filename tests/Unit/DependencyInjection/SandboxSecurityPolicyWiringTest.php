@@ -20,6 +20,7 @@ use ReflectionMethod;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use function dirname;
 
 /**
  * Regression test for GHSA-9g62-2rj4-v227: TemplateGeneratorTest only exercises
