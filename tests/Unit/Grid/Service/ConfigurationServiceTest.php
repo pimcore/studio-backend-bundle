@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -480,6 +481,42 @@ final class ConfigurationServiceTest extends Unit
             'getName' => $name,
             'isShareGlobal' => $shareGlobal,
         ]);
+    }
+
+    public function testBuildDefaultConfigurationSkipsClassificationstoreField(): void
+    {
+        $fieldDefinition = $this->makeEmpty(Classificationstore::class, [
+            'getVisibleSearch' => true,
+            'getVisibleGridView' => true,
+        ]);
+
+        $regularField = $this->makeEmpty(Data::class, [
+            'getVisibleSearch' => true,
+            'getVisibleGridView' => true,
+        ]);
+
+        $service = $this->createService();
+
+        $available = [
+            $this->createColumnConfiguration(
+                'cs',
+                ['data_object'],
+                null,
+                ['fieldDefinition' => $fieldDefinition]
+            ),
+            $this->createColumnConfiguration(
+                'name',
+                ['data_object'],
+                null,
+                ['fieldDefinition' => $regularField]
+            ),
+        ];
+
+        $result = $service->buildDefaultConfiguration($available, [], true, true);
+
+        $columns = $result->getColumns();
+        $this->assertCount(1, $columns);
+        $this->assertSame('name', $columns[0]->getKey());
     }
 
     private function createColumnConfiguration(
