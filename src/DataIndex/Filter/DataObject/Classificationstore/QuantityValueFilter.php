@@ -33,6 +33,8 @@ final class QuantityValueFilter implements FilterInterface
 {
     use GetClassificationStoreFilterValueTrait;
 
+    private const VALUE_FIELD_SUFFIX = '.value';
+
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
         private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
@@ -77,7 +79,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberFilter($key->getName(). '.value', $value['is'], true),
+                    new NumberFilter($key->getName() . self::VALUE_FIELD_SUFFIX, $value['is'], true),
                     null
                 );
             }
@@ -86,7 +88,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($key->getName() . '.value', null, $value['to'], true),
+                    new NumberRangeFilter($key->getName() . self::VALUE_FIELD_SUFFIX, null, $value['to'], true),
                     null
                 );
             }
@@ -95,7 +97,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($key->getName() . '.value', $value['from'], null, true),
+                    new NumberRangeFilter($key->getName() . self::VALUE_FIELD_SUFFIX, $value['from'], null, true),
                     null
                 );
             }
@@ -104,7 +106,12 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($key->getName() . '.value', $value['from'], $value['to'], true),
+                    new NumberRangeFilter(
+                        $key->getName() . self::VALUE_FIELD_SUFFIX,
+                        $value['from'],
+                        $value['to'],
+                        true
+                    ),
                     null
                 );
             }
