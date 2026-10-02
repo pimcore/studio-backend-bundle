@@ -55,6 +55,7 @@ use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use TypeError;
 use function array_key_exists;
 use function in_array;
 use function is_array;
@@ -513,7 +514,7 @@ final class GridService implements GridServiceInterface
                     config: is_array($column['config'] ?? null) ? $column['config'] : [],
                     width: $column['width'] ?? null
                 );
-            } catch (Exception) {
+            } catch (Exception|TypeError) {
                 throw new InvalidArgumentException('Invalid column configuration');
             }
         }

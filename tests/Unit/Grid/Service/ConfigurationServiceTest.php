@@ -490,6 +490,11 @@ final class ConfigurationServiceTest extends Unit
             'getVisibleGridView' => true,
         ]);
 
+        $regularField = $this->makeEmpty(Data::class, [
+            'getVisibleSearch' => true,
+            'getVisibleGridView' => true,
+        ]);
+
         $service = $this->createService();
 
         $available = [
@@ -499,11 +504,19 @@ final class ConfigurationServiceTest extends Unit
                 null,
                 ['fieldDefinition' => $fieldDefinition]
             ),
+            $this->createColumnConfiguration(
+                'name',
+                ['data_object'],
+                null,
+                ['fieldDefinition' => $regularField]
+            ),
         ];
 
         $result = $service->buildDefaultConfiguration($available, [], true, true);
 
-        $this->assertCount(0, $result->getColumns());
+        $columns = $result->getColumns();
+        $this->assertCount(1, $columns);
+        $this->assertSame('name', $columns[0]->getKey());
     }
 
     private function createColumnConfiguration(
