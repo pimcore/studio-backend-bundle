@@ -63,6 +63,9 @@ final class NumberFilter implements FilterInterface
             $toValue = $value['to'] ?? null;
 
             $this->validate($isValue, $fromValue, $toValue, $mode);
+            $isValue = $this->toNumber($isValue);
+            $fromValue = $this->toNumber($fromValue);
+            $toValue = $this->toNumber($toValue);
             $this->addFilterToQuery(
                 $query,
                 $column,
@@ -170,5 +173,10 @@ final class NumberFilter implements FilterInterface
                 'Unable to apply number filter, unknown mode: '.$mode
             )
         };
+    }
+
+    private function toNumber(mixed $value): int|float|null
+    {
+        return is_numeric($value) ? $value + 0 : null;
     }
 }
