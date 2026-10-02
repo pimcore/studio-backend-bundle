@@ -862,7 +862,10 @@ class Configuration implements ConfigurationInterface
                             ->info('Who may access the server: owner (username) + public flag + user/role grants.')
                             ->children()
                                 ->scalarNode('owner')
-                                    ->info('Creator username; auto-listed with full capabilities. Names, not ids.')
+                                    ->info(
+                                        'Creator username. Implicitly holds Config Read and Config Edit; '
+                                        . 'MCP Server Access must be granted explicitly. Names, not ids.'
+                                    )
                                     ->defaultNull()
                                 ->end()
                                 ->booleanNode('share_global')
