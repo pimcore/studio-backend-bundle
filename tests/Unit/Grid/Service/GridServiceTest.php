@@ -585,19 +585,7 @@ final class GridServiceTest extends Unit
      */
     public function testGetConfigurationForExportNormalizesInvalidColumnConfig(array $columnOverride): void
     {
-        $definition = new ColumnConfiguration(
-            'cs',
-            ['data_object'],
-            false,
-            false,
-            true,
-            false,
-            false,
-            null,
-            'dataobject.classificationstore',
-            'classificationstore',
-            [],
-        );
+        $definition = $this->createExportableColumnConfiguration();
 
         $result = $this->createService()->getConfigurationForExport(
             [['key' => 'cs', 'type' => 'dataobject.classificationstore', ...$columnOverride]],
@@ -623,19 +611,7 @@ final class GridServiceTest extends Unit
      */
     public function testGetConfigurationForExportThrowsInvalidArgumentForMalformedColumn(array $column): void
     {
-        $definition = new ColumnConfiguration(
-            'cs',
-            ['data_object'],
-            false,
-            false,
-            true,
-            false,
-            false,
-            null,
-            'dataobject.classificationstore',
-            'classificationstore',
-            [],
-        );
+        $definition = $this->createExportableColumnConfiguration();
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid column configuration');
@@ -698,6 +674,23 @@ final class GridServiceTest extends Unit
                 return $this->workflowFlag;
             }
         };
+    }
+
+    private function createExportableColumnConfiguration(): ColumnConfiguration
+    {
+        return new ColumnConfiguration(
+            'cs',
+            ['data_object'],
+            false,
+            false,
+            true,
+            false,
+            false,
+            null,
+            'dataobject.classificationstore',
+            'classificationstore',
+            [],
+        );
     }
 
     private function createTestColumnCollection(): ColumnCollection

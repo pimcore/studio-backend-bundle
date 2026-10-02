@@ -67,6 +67,27 @@ final class ClassificationStoreResolverTest extends Unit
         $this->createResolver()->validateConfig([]);
     }
 
+    /**
+     * @dataProvider partialKeyConfigProvider
+     */
+    public function testResolveForCoreElementThrowsForPartialKeyConfig(array $config): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createResolver()->resolveForCoreElement(
+            new Column(key: 'cs', locale: null, type: 'dataobject.classificationstore', group: null, config: $config),
+            $this->makeEmpty(Concrete::class)
+        );
+    }
+
+    public static function partialKeyConfigProvider(): array
+    {
+        return [
+            'only groupId' => [['groupId' => 1]],
+            'only keyId' => [['keyId' => 2]],
+        ];
+    }
+
     private function createBareColumn(): Column
     {
         return new Column(

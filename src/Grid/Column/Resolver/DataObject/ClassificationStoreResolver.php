@@ -219,7 +219,8 @@ final class ClassificationStoreResolver implements
     }
 
     /**
-     * A bare classification store field column (no group/key) cannot be resolved to a value.
+     * A bare classification store field column (neither groupId nor keyId) cannot be resolved to a value.
+     * A column with only one of groupId/keyId is malformed and still goes to validateConfig(), which throws.
      */
     private function hasKeyConfig(array $config): bool
     {

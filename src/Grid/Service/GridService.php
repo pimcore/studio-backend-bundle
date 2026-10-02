@@ -514,8 +514,9 @@ final class GridService implements GridServiceInterface
                     config: is_array($column['config'] ?? null) ? $column['config'] : [],
                     width: $column['width'] ?? null
                 );
-            } catch (Exception|TypeError) {
-                throw new InvalidArgumentException('Invalid column configuration');
+            } catch (Exception|TypeError $e) {
+                // Column's strictly typed constructor raises a TypeError for malformed request data
+                throw new InvalidArgumentException('Invalid column configuration', $e);
             }
         }
 
