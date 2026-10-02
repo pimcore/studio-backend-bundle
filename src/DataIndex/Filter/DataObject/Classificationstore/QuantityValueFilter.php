@@ -86,7 +86,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($column->getKey().'value', null, $value['to'], true),
+                    new NumberRangeFilter($key->getName() . '.value', null, $value['to'], true),
                     null
                 );
             }
@@ -95,7 +95,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($column->getKey().'value', $value['from'], null, true),
+                    new NumberRangeFilter($key->getName() . '.value', $value['from'], null, true),
                     null
                 );
             }
@@ -104,7 +104,7 @@ final class QuantityValueFilter implements FilterInterface
                 $query->classificationStoreFilter(
                     $column->getKeyWithOutLocale(),
                     $group->getName(),
-                    new NumberRangeFilter($column->getKey().'value', $value['from'], $value['to'], true),
+                    new NumberRangeFilter($key->getName() . '.value', $value['from'], $value['to'], true),
                     null
                 );
             }
