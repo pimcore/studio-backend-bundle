@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller\Element;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Note\Attribute\Parameter\Query\NoteFieldFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attribute\Parameter\Query\NoteSortByParameter;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
@@ -23,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\FieldFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
@@ -82,7 +82,7 @@ final class CollectionController extends AbstractApiController
     #[NoteSortByParameter]
     #[SortOrderParameter]
     #[FilterParameter('notes')]
-    #[FieldFilterParameter]
+    #[NoteFieldFilterParameter]
     #[SuccessResponse(
         description: 'note_element_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(Note::class))
