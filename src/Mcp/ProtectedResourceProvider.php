@@ -50,7 +50,7 @@ final readonly class ProtectedResourceProvider implements ProtectedResourceProvi
      * The scopes the bundle's MCP servers use. Declared on the resource rather than in a
      * catalogue of their own: the resource that supports a scope is what defines it.
      */
-    private const array SCOPES = ['mcp:read', 'mcp:write'];
+    private const array SCOPES = [McpScopes::READ, McpScopes::WRITE];
 
     public function __construct(
         private bool $enabled = false,
