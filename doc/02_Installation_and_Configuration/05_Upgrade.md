@@ -2,6 +2,11 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.4.0
+- [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
+
+> **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
+
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:
   - `inheritable` (bool): whether the field type can take part in inheritance at all. It is `false` for field types whose `supportsInheritance()` returns `false` (e.g. `urlSlug`, `calculatedValue`, `fieldcollections`) and for field types without a Studio data adapter, so a client can tell an overridden value (`inherited: false, inheritable: true`) apart from a field that can never inherit (`inheritable: false`).
