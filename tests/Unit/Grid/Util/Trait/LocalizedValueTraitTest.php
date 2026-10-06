@@ -58,8 +58,8 @@ final class LocalizedValueTraitTest extends Unit
 
         $result = $host->resolve($this->makeColumn('de'), $element);
 
-        self::assertSame('', $result, 'must stay whatever the requested-locale getter returned, never the default language');
-        self::assertSame(['de'], $calls, 'the default-language getter must never be called once the jump is suppressed');
+        self::assertSame('', $result, 'must keep the requested-locale value, never the default language');
+        self::assertSame(['de'], $calls, 'the default-language getter must not be called once the jump is off');
     }
 
     public function testConfiguredFallbackLanguageAlreadyAppliedByTheGetterIsNeverOverridden(): void
@@ -81,7 +81,7 @@ final class LocalizedValueTraitTest extends Unit
         self::assertSame(
             ['de'],
             $calls,
-            'the unconfigured default language must never be consulted once the configured chain already resolved a value'
+            'the default language must not be consulted once the configured chain resolved a value'
         );
     }
 

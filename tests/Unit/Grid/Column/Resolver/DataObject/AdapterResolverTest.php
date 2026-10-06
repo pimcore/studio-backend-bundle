@@ -45,7 +45,6 @@ final class AdapterResolverTest extends Unit
         );
 
         $method = new ReflectionMethod($resolver, 'allowDefaultLanguageFallback');
-        $method->setAccessible(true);
 
         self::assertTrue(
             $method->invoke($resolver),

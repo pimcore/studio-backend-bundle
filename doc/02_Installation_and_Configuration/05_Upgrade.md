@@ -3,10 +3,10 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.3.1
-- [Grid] Fixed: localized source fields of an advanced column with a transformer pipeline jumped to the class's
-  default language when the requested locale was empty, ignoring the configured fallback languages. They now resolve
-  like a transformer-less advanced column or a plain column export. The interactive grid still falls back to the
-  default language for plain columns. A missing source value now exports as an empty string instead of `"null"`.
+- [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
+  default language, ignoring the configured fallback languages. The export now uses only the configured fallback
+  languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
+  an empty string instead of `"null"`.
 
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:

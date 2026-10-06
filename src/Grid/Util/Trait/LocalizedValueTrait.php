@@ -71,14 +71,8 @@ trait LocalizedValueTrait
     }
 
     /**
-     * Whether an empty localized value may fall further back to {@see self::getDefaultLanguage()}
-     * once Pimcore's own configured fallback chain ({@see \Pimcore\Tool::getFallbackLanguagesFor()},
-     * already applied by the field getter itself when {@see self::doGetFallbackValues()} is true)
-     * still left it empty. True by default: the interactive Studio grid intentionally shows the
-     * class's default-language value rather than a blank cell as a last resort. A caller that needs
-     * export-consistent semantics - the real, configured fallback chain only, never an unconditional
-     * default-language jump - overrides this to return false; see
-     * {@see \Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface}.
+     * Whether an empty localized value may jump to {@see self::getDefaultLanguage()} after Pimcore's configured
+     * fallback languages left it empty. True by default, so the grid shows something instead of a blank cell.
      */
     protected function allowDefaultLanguageFallback(): bool
     {
