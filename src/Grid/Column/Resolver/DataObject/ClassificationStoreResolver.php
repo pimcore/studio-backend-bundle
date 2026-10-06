@@ -80,6 +80,10 @@ final class ClassificationStoreResolver implements
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
+        if (!$this->hasKeyConfig($column->getConfig())) {
+            return $this->getEmptyColumnData($column);
+        }
+
         $config = $this->validateConfig($column->getConfig());
         $baseResolver = $this->gridService->getColumnResolvers()['dataobject.adapter'];
 
@@ -126,6 +130,10 @@ final class ClassificationStoreResolver implements
 
     public function resolveForExport(Column $column, ElementInterface $element, UserInterface $user): ColumnData
     {
+        if (!$this->hasKeyConfig($column->getConfig())) {
+            return $this->getEmptyColumnData($column);
+        }
+
         if (!$element instanceof Concrete) {
             throw new InvalidArgumentException('Element must be a concrete object');
         }
@@ -208,5 +216,19 @@ final class ClassificationStoreResolver implements
         }
 
         return new ClassificationStoreConfig($config['groupId'], $config['keyId']);
+    }
+
+    /**
+     * A bare classification store field column (neither groupId nor keyId) cannot be resolved to a value.
+     * A column with only one of groupId/keyId is malformed and still goes to validateConfig(), which throws.
+     */
+    private function hasKeyConfig(array $config): bool
+    {
+        return array_key_exists('groupId', $config) || array_key_exists('keyId', $config);
+    }
+
+    private function getEmptyColumnData(Column $column): ColumnData
+    {
+        return $this->getColumnData($column, null, $column->getType());
     }
 }

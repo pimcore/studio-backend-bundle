@@ -2,6 +2,12 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.3.1
+- [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
+  default language, ignoring the configured fallback languages. The export now uses only the configured fallback
+  languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
+  an empty string instead of `"null"`.
+
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:
   - `inheritable` (bool): whether the field type can take part in inheritance at all. It is `false` for field types whose `supportsInheritance()` returns `false` (e.g. `urlSlug`, `calculatedValue`, `fieldcollections`) and for field types without a Studio data adapter, so a client can tell an overridden value (`inherited: false, inheritable: true`) apart from a field that can never inherit (`inheritable: false`).
