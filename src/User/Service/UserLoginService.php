@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function in_array;
 
@@ -39,6 +38,8 @@ use function in_array;
  */
 final readonly class UserLoginService implements UserLoginServiceInterface
 {
+    private const array RESET_PASSWORD_URL_ALLOWED_SCHEMES = ['http', 'https'];
+
     public function __construct(
         private AuthenticationResolverInterface $authenticationResolver,
         private MailServiceInterface $mailService,
@@ -47,7 +48,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private UserRepositoryInterface $userRepository,
         private UserResolverInterface $userResolver,
         private SecurityServiceInterface $securityService,
-        private RequestStack $requestStack,
         private SettingsProviderInterface $settingsProvider,
         private SiteRepositoryInterface $siteRepository,
     ) {
@@ -116,18 +116,15 @@ final readonly class UserLoginService implements UserLoginServiceInterface
     {
         $parsed = parse_url($url);
 
-        if ($parsed === false || !isset($parsed['scheme'], $parsed['host'])) {
+        if (
+            $parsed === false
+            || !isset($parsed['scheme'], $parsed['host'])
+            || !in_array($parsed['scheme'], self::RESET_PASSWORD_URL_ALLOWED_SCHEMES, true)
+        ) {
             throw new InvalidArgumentException('Invalid reset password URL provided');
         }
 
-        $urlHost = $parsed['host'];
-
-        $request = $this->requestStack->getCurrentRequest();
-        if ($request !== null && $urlHost === $request->getHost()) {
-            return;
-        }
-
-        if ($this->isRegisteredDomain($urlHost)) {
+        if ($this->isRegisteredDomain($parsed['host'])) {
             return;
         }
 
