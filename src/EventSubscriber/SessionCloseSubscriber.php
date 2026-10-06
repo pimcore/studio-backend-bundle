@@ -39,10 +39,12 @@ final readonly class SessionCloseSubscriber implements EventSubscriberInterface
             LoginSuccessEvent::class => 'onLoginSuccess',
             // Must run on CONTROLLER_ARGUMENTS, not REQUEST: with lazy firewalls the session
             // is only opened when the token is first accessed, which happens in
-            // IsGrantedAttributeListener (CONTROLLER_ARGUMENTS, priority 20). Priority 0 puts
-            // us right after it, so the session is open and we can release the lock before
-            // the controller runs.
-            KernelEvents::CONTROLLER_ARGUMENTS => ['onKernelControllerArguments', 0],
+            // IsGrantedAttributeListener (CONTROLLER_ARGUMENTS, priority 20, or -10000 since
+            // Symfony 8.1 where controller attributes are handled after the other listeners).
+            // Priority -10500 puts us after it and after the request payload mapping (-10100
+            // since Symfony 8.1), so the session is open for both and we can release the lock
+            // before the controller runs.
+            KernelEvents::CONTROLLER_ARGUMENTS => ['onKernelControllerArguments', -10500],
         ];
     }
 
