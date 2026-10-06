@@ -70,7 +70,7 @@ class DataObject extends Element implements AdditionalAttributesInterface, Workf
         private readonly string $childrenSortBy,
         #[Property(description: 'Sort order of children', type: 'string', example: 'asc')]
         private readonly string $childrenSortOrder,
-        #[Property(description: 'Allow variants', type: 'bool', example: false)]
+        #[Property(description: 'Allow variants', type: 'bool', example: false, nullable: true)]
         private ?bool $allowVariants,
         int $id,
         int $parentId,

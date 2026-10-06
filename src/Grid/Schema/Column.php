@@ -39,11 +39,17 @@ final readonly class Column
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
         private string $key,
-        #[Property(description: 'Locale', type: 'string', example: 'en')]
+        #[Property(description: 'Locale', type: 'string', example: 'en', nullable: true)]
         private ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'system.id')]
         private string $type,
-        #[Property(description: 'Group', type: 'array', items: new Items(type: 'string'), example: ['system'])]
+        #[Property(
+            description: 'Group',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['system'],
+            nullable: true
+        )]
         private ?array $group,
         #[Property(
             description: 'Config',

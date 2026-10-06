@@ -29,11 +29,11 @@ final readonly class CustomMetadataVersion
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
         private string $name,
-        #[Property(description: 'Language', type: 'string', example: 'en')]
+        #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
         private ?string $language,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private string $type,
-        #[Property(description: 'Data', type: 'string', example: 'data')]
+        #[Property(description: 'Data', type: 'string', example: 'data', nullable: true)]
         private mixed $data
     ) {
     }

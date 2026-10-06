@@ -34,37 +34,57 @@ final class Redirect implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'ID', type: 'integer', example: 1)]
+        #[Property(description: 'ID', type: 'integer', example: 1, nullable: true)]
         public readonly ?int $id,
         #[Property(description: 'Type of redirect', type: 'string', example: CoreRedirect::TYPE_AUTO_CREATE)]
         public readonly string $type,
-        #[Property(description: 'Source URL', type: 'string', example: '/old-path')]
+        #[Property(description: 'Source URL', type: 'string', example: '/old-path', nullable: true)]
         public readonly ?string $source,
-        #[Property(description: 'ID of the source site', type: 'integer', example: 1)]
+        #[Property(description: 'ID of the source site', type: 'integer', example: 1, nullable: true)]
         public readonly ?int $sourceSite,
         #[Property(description: 'Whether to pass through parameters', type: 'boolean', example: true)]
         public readonly bool $passThroughParameters,
-        #[Property(description: 'Target URL', type: 'string', example: '/new-path')]
+        #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public readonly ?string $target,
-        #[Property(description: 'ID of the target site', type: 'integer', example: 1)]
+        #[Property(description: 'ID of the target site', type: 'integer', example: 1, nullable: true)]
         public readonly ?int $targetSite,
         #[Property(description: 'Status code', type: 'integer', example: 301)]
         public readonly int $statusCode,
         #[Property(description: 'Priority', type: 'integer', example: 8)]
         public readonly int $priority,
-        #[Property(description: 'Whether the redirect uses regex', type: 'boolean', example: true)]
+        #[Property(description: 'Whether the redirect uses regex', type: 'boolean', example: true, nullable: true)]
         public readonly ?bool $regex,
         #[Property(description: 'Whether the redirect is active', type: 'boolean', example: true)]
         public readonly bool $active,
-        #[Property(description: 'Expiry date in timestamp format', type: 'integer', example: 1712345678)]
+        #[Property(
+            description: 'Expiry date in timestamp format',
+            type: 'integer',
+            example: 1712345678,
+            nullable: true
+        )]
         public readonly int|string|null $expiry,
-        #[Property(description: 'Creation date in timestamp format', type: 'integer', example: 1712345678)]
+        #[Property(
+            description: 'Creation date in timestamp format',
+            type: 'integer',
+            example: 1712345678,
+            nullable: true
+        )]
         public readonly ?int $creationDate,
-        #[Property(description: 'Modification date in timestamp format', type: 'integer', example: 1712345678)]
+        #[Property(
+            description: 'Modification date in timestamp format',
+            type: 'integer',
+            example: 1712345678,
+            nullable: true
+        )]
         public readonly ?int $modificationDate,
-        #[Property(description: 'ID of the user who owns the redirect', type: 'integer', example: 1)]
+        #[Property(description: 'ID of the user who owns the redirect', type: 'integer', example: 1, nullable: true)]
         public readonly ?int $userOwner,
-        #[Property(description: 'ID of the user who last modified the redirect', type: 'integer', example: 1)]
+        #[Property(
+            description: 'ID of the user who last modified the redirect',
+            type: 'integer',
+            example: 1,
+            nullable: true
+        )]
         public readonly ?int $userModification
     ) {
 

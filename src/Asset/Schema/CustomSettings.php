@@ -32,8 +32,9 @@ final class CustomSettings implements AdditionalAttributesInterface
         #[Property(
             description: 'fixed custom settings',
             type: FixedCustomSettings::class,
-            example: '{ embeddedMetadata: { FileSize: 360 KiB }, checksum: b3685e8348e7ac4d30d0268f7e58902a }')
-        ]
+            example: '{ embeddedMetadata: { FileSize: 360 KiB }, checksum: b3685e8348e7ac4d30d0268f7e58902a }',
+            nullable: true
+        )]
         private readonly ?FixedCustomSettings $fixedCustomSettings = null,
         #[Property(
             description: 'dynamic custom settings - can be any key-value pair',

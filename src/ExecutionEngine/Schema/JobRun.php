@@ -36,7 +36,7 @@ final class JobRun implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'ID', type: 'int', example: 1)]
         private readonly int $id,
-        #[Property(description: 'Owner ID', type: 'int', example: 123)]
+        #[Property(description: 'Owner ID', type: 'int', example: 123, nullable: true)]
         private readonly ?int $ownerId,
         #[Property(description: 'State', type: 'string', example: JobRunStates::RUNNING->value)]
         private readonly string $state,
@@ -46,15 +46,15 @@ final class JobRun implements AdditionalAttributesInterface
         private readonly int $totalElements,
         #[Property(description: 'Current Message og the last Event', type: 'string', example: 'Message')]
         private readonly string $currentMessage,
-        #[Property(description: 'Id of the child Job run', type: 'integer', example: 55)]
+        #[Property(description: 'Id of the child Job run', type: 'integer', example: 55, nullable: true)]
         private readonly ?int $jobRunChildId = null,
-        #[Property(description: 'Current Step of a running Job', type: 'integer', example: 0)]
+        #[Property(description: 'Current Step of a running Job', type: 'integer', example: 0, nullable: true)]
         private readonly ?int $currentStep = null,
-        #[Property(description: 'Number of total Steps of a running Job', type: 'integer', example: 0)]
+        #[Property(description: 'Number of total Steps of a running Job', type: 'integer', example: 0, nullable: true)]
         private readonly ?int $totalSteps = null,
-        #[Property(description: 'Creation date', type: 'integer', example: null)]
+        #[Property(description: 'Creation date', type: 'integer', example: null, nullable: true)]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'Modification date', type: 'integer', example: null)]
+        #[Property(description: 'Modification date', type: 'integer', example: null, nullable: true)]
         private readonly ?int $modificationDate = null,
         #[Property(description: 'The name of the job', type: 'string', example: 'studio_ee_job_delete_assets')]
         private readonly string $jobName = '',

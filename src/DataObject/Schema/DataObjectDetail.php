@@ -71,7 +71,7 @@ class DataObjectDetail extends DataObject
             example: ['fieldKey' => new InheritanceData(1, true)])
         ]
         private array $inheritanceData = [],
-        #[Property(ref: DataObjectDraftData::class)]
+        #[Property(ref: DataObjectDraftData::class, nullable: true)]
         private ?DataObjectDraftData $draftData = null,
     ) {
         parent::__construct(

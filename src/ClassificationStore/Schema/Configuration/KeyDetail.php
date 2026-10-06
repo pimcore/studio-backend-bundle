@@ -42,13 +42,23 @@ final class KeyDetail implements AdditionalAttributesInterface
         private readonly string $type,
         #[Property(description: 'Whether the key is enabled', type: 'boolean', example: true)]
         private readonly bool $enabled,
-        #[Property(description: 'Description of the key', type: 'string', example: 'Key description')]
+        #[Property(description: 'Description of the key', type: 'string', example: 'Key description', nullable: true)]
         private readonly ?string $description = null,
         #[Property(description: 'Definition of the key', type: 'object', nullable: true)]
         private readonly ?array $definition = [],
-        #[Property(description: 'Creation date as Unix timestamp', type: 'integer', example: 1734567890)]
+        #[Property(
+            description: 'Creation date as Unix timestamp',
+            type: 'integer',
+            example: 1734567890,
+            nullable: true
+        )]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'Modification date as Unix timestamp', type: 'integer', example: 1734567890)]
+        #[Property(
+            description: 'Modification date as Unix timestamp',
+            type: 'integer',
+            example: 1734567890,
+            nullable: true
+        )]
         private readonly ?int $modificationDate = null,
     ) {
     }

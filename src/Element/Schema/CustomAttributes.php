@@ -27,9 +27,9 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 final class CustomAttributes
 {
     public function __construct(
-        #[Property(description: 'Custom Icon', type: ElementIcon::class)]
+        #[Property(description: 'Custom Icon', type: ElementIcon::class, nullable: true)]
         private ?ElementIcon $icon = null,
-        #[Property(description: 'Custom Tooltip', type: 'string', example: '<b>My Tooltip</b>')]
+        #[Property(description: 'Custom Tooltip', type: 'string', example: '<b>My Tooltip</b>', nullable: true)]
         private ?string $tooltip = null,
         #[Property(
             description: 'AdditionalIcons',
@@ -37,7 +37,7 @@ final class CustomAttributes
             items: new Items(type: 'string', example: 'some_other_icon'),
         )]
         private array $additionalIcons = [],
-        #[Property(description: 'Custom Key/Filename', type: 'string', example: 'my_custom_key')]
+        #[Property(description: 'Custom Key/Filename', type: 'string', example: 'my_custom_key', nullable: true)]
         private ?string $key = null,
         #[Property(
             description: 'Additional Css Classes',

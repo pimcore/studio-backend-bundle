@@ -50,15 +50,15 @@ class Element implements StudioElementInterface
         private readonly ElementIcon $icon,
         #[Property(description: 'ID of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
-        #[Property(description: 'User that modified the element', type: 'integer', example: 1)]
+        #[Property(description: 'User that modified the element', type: 'integer', example: 1, nullable: true)]
         private readonly ?int $userModification,
-        #[Property(description: 'Locked', type: 'string', example: 'locked')]
+        #[Property(description: 'Locked', type: 'string', example: 'locked', nullable: true)]
         private readonly ?string $locked,
         #[Property(description: 'Is locked', type: 'boolean', example: false)]
         private readonly bool $isLocked,
-        #[Property(description: 'Creation date', type: 'integer', example: 221846400)]
+        #[Property(description: 'Creation date', type: 'integer', example: 221846400, nullable: true)]
         private readonly ?int $creationDate,
-        #[Property(description: 'Modification date', type: 'integer', example: 327417600)]
+        #[Property(description: 'Modification date', type: 'integer', example: 327417600, nullable: true)]
         private readonly ?int $modificationDate,
         #[Property(description: 'elementType', type: 'string', example: 'asset')]
         private readonly string $elementType,
