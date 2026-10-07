@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\OptionsProviderDefaultsTrait;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -33,6 +34,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class KeyService implements KeyServiceInterface
 {
+    use OptionsProviderDefaultsTrait;
+
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
@@ -83,13 +86,18 @@ final readonly class KeyService implements KeyServiceInterface
      */
     public function updateKey(int $id, KeyUpdate $parameters): KeyDetail
     {
+        $definition = $parameters->getDefinition();
+        if ($definition !== null) {
+            $definition = $this->applyOptionsProviderDefaults($definition);
+        }
+
         $keyConfig = $this->keyConfigurationRepository->update(
             $id,
             $parameters->getName(),
             $parameters->getTitle(),
             $parameters->getDescription(),
             $parameters->getType(),
-            $parameters->getDefinition(),
+            $definition,
         );
 
         return $this->getHydratedKeyDetail($keyConfig);

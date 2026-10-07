@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Telemetry\LoginMarkerInterface;
 use Pimcore\Security\User\User;
 use Pimcore\Telemetry\TelemetryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -29,6 +30,9 @@ use function in_array;
  * session without re-authenticating (no event), and MCP is a separate firewall. The only property
  * is whether the user is an admin - never a username, email, or id.
  *
+ * It also leaves the login time in the session (see {@see LoginMarkerInterface}) so the logout twin can
+ * report the session duration - before {@see SessionCloseSubscriber} closes the session for this request.
+ *
  * @internal
  */
 final readonly class LoginTelemetrySubscriber implements EventSubscriberInterface
@@ -40,15 +44,22 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
         'pimcore_studio_api_token_login',
     ];
 
+    /**
+     * SessionCloseSubscriber saves and closes the session on the same event at priority 0; writing the
+     * marker after that would start the session again and hold its lock for the rest of the request.
+     */
+    private const PRIORITY_BEFORE_SESSION_CLOSE = 16;
+
     public function __construct(
         private TelemetryInterface $telemetry,
+        private LoginMarkerInterface $loginMarker,
     ) {
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            LoginSuccessEvent::class => 'onLoginSuccess',
+            LoginSuccessEvent::class => ['onLoginSuccess', self::PRIORITY_BEFORE_SESSION_CLOSE],
         ];
     }
 
@@ -57,6 +68,8 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
         if (!in_array($event->getRequest()->attributes->get('_route'), self::LOGIN_ROUTES, true)) {
             return;
         }
+
+        $this->loginMarker->record($event->getRequest());
 
         $this->telemetry->capture(self::EVENT_STUDIO_LOGIN, [
             'is_admin' => $this->isAdmin($event),

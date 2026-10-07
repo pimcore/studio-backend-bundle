@@ -23,11 +23,13 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface;
@@ -576,6 +578,59 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * The Studio UI can send `config: false` (or omit it) for a column. That must not fatal with a
+     * TypeError in the Column constructor.
+     *
+     * @dataProvider invalidColumnConfigProvider
+     */
+    public function testGetConfigurationForExportNormalizesInvalidColumnConfig(array $columnOverride): void
+    {
+        $definition = $this->createExportableColumnConfiguration();
+
+        $result = $this->createService()->getConfigurationForExport(
+            [['key' => 'cs', 'type' => 'dataobject.classificationstore', ...$columnOverride]],
+            [$definition]
+        );
+
+        $columns = $result->getColumns();
+        $this->assertCount(1, $columns);
+        $this->assertSame([], $columns[0]->getConfig());
+    }
+
+    public static function invalidColumnConfigProvider(): array
+    {
+        return [
+            'false' => [['config' => false]],
+            'null' => [['config' => null]],
+            'missing' => [[]],
+        ];
+    }
+
+    /**
+     * @dataProvider malformedColumnProvider
+     */
+    public function testGetConfigurationForExportThrowsInvalidArgumentForMalformedColumn(array $column): void
+    {
+        $definition = $this->createExportableColumnConfiguration();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid column configuration');
+
+        $this->createService()->getConfigurationForExport(
+            [['key' => 'cs', 'type' => 'dataobject.classificationstore', ...$column]],
+            [$definition]
+        );
+    }
+
+    public static function malformedColumnProvider(): array
+    {
+        return [
+            'non numeric width' => [['width' => 'abc']],
+            'non array group' => [['group' => 'data_object']],
+        ];
+    }
+
+    /**
      * User is final and cannot be doubled - a real instance with just the admin flag set is
      * enough for the permission checks under test here.
      */
@@ -619,6 +674,23 @@ final class GridServiceTest extends Unit
                 return $this->workflowFlag;
             }
         };
+    }
+
+    private function createExportableColumnConfiguration(): ColumnConfiguration
+    {
+        return new ColumnConfiguration(
+            'cs',
+            ['data_object'],
+            false,
+            false,
+            true,
+            false,
+            false,
+            null,
+            'dataobject.classificationstore',
+            'classificationstore',
+            [],
+        );
     }
 
     private function createTestColumnCollection(): ColumnCollection

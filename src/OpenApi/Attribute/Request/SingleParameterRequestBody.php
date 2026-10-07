@@ -24,8 +24,18 @@ use OpenApi\Attributes\RequestBody;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class SingleParameterRequestBody extends RequestBody
 {
-    public function __construct(string $parameterName, mixed $example, string $type = 'string')
-    {
+    /**
+     * @param bool $parameterRequired marks the single property as required in the schema,
+     *                                so an empty object no longer validates. Opt-in: it
+     *                                changes the published contract, and a body whose one
+     *                                parameter is genuinely optional stays as it was.
+     */
+    public function __construct(
+        string $parameterName,
+        mixed $example,
+        string $type = 'string',
+        bool $parameterRequired = false,
+    ) {
         parent::__construct(
             required: true,
             content: new JsonContent(
@@ -37,6 +47,7 @@ final class SingleParameterRequestBody extends RequestBody
                     ),
                 ],
                 type: 'object',
+                required: $parameterRequired ? [$parameterName] : null,
             ),
         );
     }

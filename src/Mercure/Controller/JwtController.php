@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Controller;
 
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\Authorization;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -45,15 +47,21 @@ final class JwtController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'mercure_create_cookie_success_response',
+        content: new JsonContent(ref: Authorization::class)
     )]
     #[DefaultResponses]
     public function auth(): Response
     {
-        $res = new Response();
-        $res->headers->setCookie(
+        // The cookie authorises the subscription; the body tells the client when to come back for
+        // a new one. The hub checks authorisation once, at connect time, so a client that lets the
+        // cookie lapse reconnects anonymously and loses every private update without any error.
+        $response = $this->jsonResponse(
+            new Authorization($this->hubService->getCookieLifetime())
+        );
+        $response->headers->setCookie(
             $this->hubService->createCookie()
         );
 
-        return $res;
+        return $response;
     }
 }

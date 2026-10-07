@@ -31,9 +31,11 @@ final readonly class AssetBatchInfo
         private bool $exists,
         #[Property(description: 'Id of existing asset', type: 'integer', example: 83)]
         private ?int $assetId = null,
+        /**
+         * The name is then reported as not existing, since no ID can be handed out.
+         */
         #[Property(
-            description: 'True if an asset with that name exists but the current user may not view it. ' .
-                'The name is therefore reported as not existing, since no ID can be handed out.',
+            description: 'True if an asset with that name exists but the current user may not view it',
             type: 'boolean',
             example: false
         )]

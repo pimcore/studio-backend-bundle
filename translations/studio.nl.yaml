@@ -1,0 +1,95 @@
+studio_ee_no_element_provided: Geen element opgegeven
+ownership_management_type_grid_configuration: Rasterconfiguraties
+ownership_management_type_saved_search: Opgeslagen zoekopdrachten
+studio_ee_element_not_found: Element van type %type% met ID %id% niet gevonden
+studio_ee_user_not_found: Gebruiker met ID %userId% niet gevonden
+studio_ee_environment_variable_not_found: Omgevingsvariabele %variable% niet gevonden
+studio_ee_element_locked: Element van type %type% met ID %id% is vergrendeld
+studio_ee_element_permission_missing: Gebruiker met ID %userId% mist toestemming %permission% op element van type %type% met ID %id%
+studio_ee_report_permission_missing: Gebruiker met ID %userId% heeft geen toegang tot rapport %name%
+studio_ee_element_delete_failed: "Element van type %type% met ID %id% kon niet worden verwijderd: %message%"
+studio_ee_element_batch_delete_failed: "Batchverwijdering van element van type %type% met ID %id% en onderliggende items is mislukt: %message%"
+studio_ee_zip_file_copy_failed: "Zip-bestand kon niet worden gekopieerd: %message%"
+studio_ee_zip_file_upload_failed: "Zip-bestand kon niet worden geüpload: %message%"
+studio_ee_zip_cleanup_failed: "Zip-map %directory% kon niet worden verwijderd: %message%"
+studio_ee_csv_creation_failed: "CSV-export mislukt: %message%"
+studio_ee_xlsx_creation_failed: "XLSX-export mislukt: %message%"
+studio_ee_ownership_management_reassign_failed: "Eigenaar van configuratie met ID %id% kon niet opnieuw worden toegewezen: %message%"
+studio_ee_ownership_management_delete_failed: "Configuratie met ID %id% kon niet worden verwijderd: %message%"
+studio_ee_job_ownership_management_reassign_owner: Eigenaar van configuraties opnieuw toewijzen
+studio_ee_job_ownership_management_delete: Configuraties verwijderen
+studio_ee_job_step_ownership_management_reassign_owner: Eigenaar van configuraties opnieuw toewijzen
+studio_ee_job_step_ownership_management_delete: Configuraties verwijderen
+studio_ee_recycle_bin_delete_failed: "Item met ID %id% kon niet uit de prullenbak worden verwijderd: %message%"
+studio_ee_recycle_bin_restore_failed: "Item uit de prullenbak met ID %id% kon niet worden hersteld: %message%"
+studio_ee_csv_data_collection_failed: "Gegevens voor CSV-export konden niet worden opgehaald voor %id%: %message%"
+studio_ee_element_patch_failed: "Element van type %type% met ID %id% kon niet worden bijgewerkt: %message%"
+studio_ee_element_rewrite_references_failed: "Verwijzingen van element van type %type% met ID %id% konden niet worden herschreven: %message%"
+studio_ee_element_tag_operation_failed: "Kon tags niet %operation% voor elementtype %type% met ID %id%: %message%"
+studio_ee_no_element_data_found: Geen gegevens gevonden
+studio_ee_job_create_download_zip: Download-zip aanmaken
+studio_ee_job_clone_assets: Assets klonen
+studio_ee_job_upload_zip_file: Zip-bestand uploaden
+studio_ee_job_delete_assets: Assets verwijderen
+studio_ee_job_batch_delete_assets: Assets batchgewijs verwijderen
+studio_ee_job_patch_elements: Elementen patchen
+studio_ee_job_create_csv: CSV aanmaken
+studio_ee_job_create_xlsx: XLSX aanmaken
+studio_ee_job_upload_assets: Assets uploaden
+studio_ee_job_clone_data_objects: Gegevensobjecten klonen
+studio_ee_job_delete_data_objects: Gegevensobjecten verwijderen
+studio_ee_job_batch_delete_data_objects: Gegevensobjecten batchgewijs verwijderen
+studio_ee_job_clone_documents: Documenten klonen
+studio_ee_job_delete_documents: Documenten verwijderen
+studio_ee_job_rewrite_element_references: Elementverwijzingen herschrijven
+studio_ee_job_batch_tag_assign: Tags batchgewijs toewijzen
+studio_ee_job_batch_tag_replace: Tags batchgewijs vervangen
+studio_ee_job_recycle_bin_delete: Items uit de prullenbak verwijderen
+studio_ee_job_recycle_bin_restore: Items uit de prullenbak herstellen
+studio_ee_job_step_zip_creation: Aanmaken van download-zip
+studio_ee_job_step_asset_cloning: Assets klonen
+studio_ee_job_step_csv_file_not_found: CSV-bestand niet gevonden
+studio_ee_jop_step_zip_uploading: Zip uploaden
+studio_ee_job_step_asset_uploading: Assets uploaden
+studio_ee_job_step_csv_creation: CSV aanmaken
+studio_ee_job_step_xlsx_creation: XLSX aanmaken
+studio_ee_job_step_export_data_collection: Verzamelen van te exporteren gegevens
+studio_ee_job_step_element_patching: Elementen patchen
+studio_ee_job_step_folder_patching: Mapelementen patchen
+studio_ee_job_step_element_rewrite_references: Elementverwijzingen herschrijven
+studio_ee_job_step_element_deletion: Elementen verwijderen
+studio_ee_job_step_element_recycling: Element aan de prullenbak toevoegen
+studio_ee_job_step_data_object_cloning: Gegevensobjecten klonen
+studio_ee_job_step_document_cloning: Documenten klonen
+studio_ee_job_step_batch_tag_assign: Tags batchgewijs toewijzen
+studio_ee_job_step_batch_tag_replace: Tags batchgewijs vervangen
+studio_ee_job_step_recycle_bin_delete: Items uit de prullenbak verwijderen
+studio_ee_job_step_recycle_bin_restore: Items uit de prullenbak herstellen
+studio_ee_element_folder_collection_not_supported: "Verzamelen voor mappen wordt niet ondersteund. ID: %folderId%"
+studio_ee_file_not_found_for_job_run: "Bestand %type% niet gevonden voor taakuitvoering. ID: %jobRunId%"
+studio_ee_invalid_element_type_provided: Verzamelen voor element met ID %elementId% en type %elementType% wordt niet ondersteund.
+studio_ee_no_assets_found_for_job_run: "Geen assets gevonden voor taakuitvoering. ID: %jobRunId%"
+studio_ee_asset_upload_failed: "Bestand kon niet worden geüpload: %message%"
+studio_email_param_children: Onderliggende items (%count%)
+studio_ee_element_replace_assignment_failed: "Kon %sourceId% (%sourceType%) niet vervangen door %targetId% (%targetType%) in %elementId% (%elementType%). Fout: %message%"
+studio_ee_job_bulk_import_class_definitions: Klassedefinities bulksgewijs importeren
+studio_ee_job_step_field_collection_importing: Field Collections importeren
+studio_ee_job_step_class_importing: Klassen importeren
+studio_ee_job_step_custom_layout_importing: Custom Layouts importeren
+studio_ee_job_step_object_brick_importing: Object Bricks importeren
+studio_ee_job_step_bulk_import_cleanup: Opruimen na bulkimport
+studio_ee_bulk_import_failed: 'Bulkimport van %type% "%name%" mislukt: %message%'
+studio_ee_job_element_usage_replace: Elementgebruik vervangen
+preview_generator_locale: Taal
+main_site: Hoofdsite
+preview_generator_site: Site
+notifications.email.greeting: Hallo %name%,
+notifications.email.cta: Bekijken in Pimcore Studio
+notifications.email.footer: Je ontvangt deze e-mail omdat je je in Pimcore Studio op deze meldingen hebt geabonneerd.
+notifications.channel.popup: Pop-up
+notifications.channel.email: E-mail
+notifications.channel.email.no-address: Geen e-mailadres op je account — voeg er een toe in je profiel om deze te ontvangen.
+notifications.type.general.label: Al het overige
+notifications.type.general.description: Workflowstappen, systeemberichten, meldingen van andere bundels. Deze bereiken altijd je meldingenbel — kies of ze ook als pop-up verschijnen.
+notifications.type.general.solo_label: Alle meldingen
+notifications.type.general.solo_description: Alles wat Pimcore je stuurt — workflowstappen, systeemberichten, meldingen van andere bundels. Deze bereiken altijd je meldingenbel; kies of ze ook als pop-up op het scherm verschijnen.

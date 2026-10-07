@@ -99,6 +99,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_notifications_description'
 )]
 #[Tag(
+    name: Tags::Oauth->value,
+    description: 'tag_oauth_description'
+)]
+#[Tag(
     name: Tags::OwnershipManagement->value,
     description: 'tag_ownership_management_description'
 )]
@@ -203,6 +207,7 @@ enum Tags: string
     case Metadata = 'Metadata';
     case Notes = 'Notes';
     case Notifications = 'Notifications';
+    case Oauth = 'OAuth';
     case OwnershipManagement = 'Ownership Management';
     case Perspectives = 'Perspectives';
     case Properties = 'Properties';

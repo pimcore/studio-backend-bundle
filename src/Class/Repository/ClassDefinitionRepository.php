@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Exception;
-use Pimcore\Bundle\CoreBundle\OptionsProvider\SelectOptionsOptionsProvider;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CreateClassDefinitionParameters;
@@ -27,12 +26,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\OptionsProviderDefaultsTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
-use function is_array;
 use function sprintf;
 
 /**
@@ -40,6 +39,8 @@ use function sprintf;
  */
 readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInterface
 {
+    use OptionsProviderDefaultsTrait;
+
     private const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Class Definition';
 
     public function __construct(
@@ -334,26 +335,6 @@ readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInt
         );
 
         return $values;
-    }
-
-    private function applyOptionsProviderDefaults(array $config): array
-    {
-        $type = $config['optionsProviderType'] ?? null;
-        $class = $config['optionsProviderClass'] ?? null;
-
-        if ($type === 'select_options' && empty($class)) {
-            $config['optionsProviderClass'] = SelectOptionsOptionsProvider::class;
-        }
-
-        if (isset($config['children']) && is_array($config['children'])) {
-            foreach ($config['children'] as $key => $child) {
-                if (is_array($child)) {
-                    $config['children'][$key] = $this->applyOptionsProviderDefaults($child);
-                }
-            }
-        }
-
-        return $config;
     }
 
     private function prepareLayoutConfiguration(array $config): array

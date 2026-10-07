@@ -34,3 +34,13 @@ services:
         decorates: Pimcore\Telemetry\Snapshot\Statistics\ElementStatisticsProviderInterface
         arguments:
             $inner: '@.inner'
+
+    #
+    # Telemetry session login marker — written by LoginTelemetrySubscriber, read by
+    # LogoutTelemetrySubscriber for studio.logout's session_duration_s
+    #
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\SessionLoginMarker: ~
+
+    Pimcore\Bundle\StudioBackendBundle\Telemetry\LoginMarkerInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Telemetry\SessionLoginMarker
+

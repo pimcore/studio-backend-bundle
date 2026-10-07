@@ -163,7 +163,7 @@ final class ObjectBrickResolver implements
             $brick = $brickContainer->get($objectBrickKey->getBrickName());
 
             if ($column->getLocale()) {
-                $brick = $brick->get('localizedfields');
+                $brick = $brick?->get('localizedfields');
             }
 
             if (!$brick) {

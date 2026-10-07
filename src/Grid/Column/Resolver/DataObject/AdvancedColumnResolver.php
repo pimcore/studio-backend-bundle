@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
@@ -76,6 +77,7 @@ final class AdvancedColumnResolver implements
         private readonly ResolverTypeGuesserInterface $resolverTypeGuesser,
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
+        private readonly AdvancedColumnSourceFieldContextInterface $sourceFieldContext,
     ) {
     }
 
@@ -129,25 +131,24 @@ final class AdvancedColumnResolver implements
 
         /*
          * If no transformers are configured, call export resolver directly
-         * Otherwise, call core resolver and apply transformers afterwards
+         * Otherwise, call core resolver and apply transformers afterwards.
+         * Either way, source fields must only use Pimcore's configured fallback languages, never the
+         * grid's extra jump to the default language (see AdvancedColumnSourceFieldContextInterface).
          */
-        $this->doResolve($column, $element, empty($column->getAdvancedColumnConfig()->getTransformers()));
+        $wasResolvingSourceField = $this->sourceFieldContext->isResolvingSourceField();
+        $this->sourceFieldContext->setResolvingSourceField(true);
+
+        try {
+            $this->doResolve($column, $element, empty($column->getAdvancedColumnConfig()->getTransformers()));
+        } finally {
+            $this->sourceFieldContext->setResolvingSourceField($wasResolvingSourceField);
+        }
 
         $this->doApplyTransformers($column);
 
         $returnValue = [];
         foreach ($this->values as $value) {
-            if ($this->isStringConvertible($value->getValue())) {
-                $returnValue[] = $value->getValue();
-
-                continue;
-            }
-
-            try {
-                $returnValue[] = json_encode($value->getValue(), JSON_THROW_ON_ERROR);
-            } catch (JsonException) {
-                $returnValue[] = 'Unable to export value';
-            }
+            $returnValue[] = $this->stringifyForExport($value->getValue());
         }
 
         return new ColumnData(
@@ -157,6 +158,27 @@ final class AdvancedColumnResolver implements
             fieldType: 'advanced'
         );
 
+    }
+
+    /**
+     * A missing top-level value exports as '' instead of json_encode(null), i.e. the literal string "null".
+     * A null inside an array stays valid JSON.
+     */
+    private function stringifyForExport(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if ($this->isStringConvertible($value)) {
+            return (string)$value;
+        }
+
+        try {
+            return json_encode($value, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return 'Unable to export value';
+        }
     }
 
     private function isStringConvertible(mixed $value): bool
