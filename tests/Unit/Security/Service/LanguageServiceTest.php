@@ -87,6 +87,41 @@ final class LanguageServiceTest extends Unit
         $this->resolveLanguages(['de'], 'view');
     }
 
+    public function testWebsiteTranslationLanguagesAreLimitedToValidLanguages(): void
+    {
+        $service = $this->createTranslationLanguageService(['de', 'en', 'fr_BE']);
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getAllowedLanguagesForViewingWebsiteTranslations' => ['fr_BE', 'xx_unknown', 'de'],
+        ]);
+
+        $this->assertSame(['fr_BE', 'de'], $service->getTranslationAllowedLanguages($user, 'messages'));
+    }
+
+    public function testAdminTranslationLanguagesAreNotLimitedToValidLanguages(): void
+    {
+        $service = $this->createTranslationLanguageService(['de']);
+        $user = $this->makeEmpty(UserInterface::class);
+
+        $this->assertSame(['en', 'cs', 'zh_Hans'], $service->getTranslationAllowedLanguages($user, 'admin'));
+        $this->assertSame(['en', 'cs', 'zh_Hans'], $service->getTranslationAllowedLanguages($user, 'studio'));
+    }
+
+    /**
+     * @param array<int, string> $validLanguages
+     */
+    private function createTranslationLanguageService(array $validLanguages): LanguageService
+    {
+        return new LanguageService(
+            $this->makeEmpty(AdminLanguageServiceInterface::class, [
+                'getAvailableAdminLanguages' => ['en', 'cs', 'zh_Hans'],
+            ]),
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $this->makeEmpty(ToolResolverInterface::class, [
+                'getValidLanguages' => $validLanguages,
+            ]),
+        );
+    }
+
     /**
      * @param array<int, string> $languagePermissions
      *
