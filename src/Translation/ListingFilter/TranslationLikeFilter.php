@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
 use Pimcore\Model\Translation\Listing;
 use function in_array;
+use function iterator_to_array;
 use function sprintf;
 
 /**
@@ -45,23 +46,30 @@ final readonly class TranslationLikeFilter implements FilterInterface
             return $listing;
         }
 
-        $equalsColumn = $parameters->getFirstColumnFilterByType(FilterType::TRANSLATION_LIKE->value);
-
-        if ($equalsColumn === null) {
-            return $listing;
-        }
-
-        $language = $equalsColumn->getKey();
-        if (!in_array($language, $listing->getLanguages() ?? [], true)) {
-            throw new InvalidArgumentException(sprintf('Invalid translation language "%s"', $language));
-        }
-
-        $listing->addConditionParam(
-            // Use the 'text' field for language like filtering
-            // This is necessary because language fields are joined together
-            $this->dbResolver->get()->quoteIdentifier($language) . '.text LIKE :' . self::VALUE_PARAMETER,
-            [self::VALUE_PARAMETER => "%{$equalsColumn->getFilterValue()}%"]
+        $columnFilters = iterator_to_array(
+            $parameters->getColumnFilterByType(FilterType::TRANSLATION_LIKE->value),
+            false
         );
+
+        $languages = $listing->getLanguages() ?? [];
+        foreach ($columnFilters as $columnFilter) {
+            if (!in_array($columnFilter->getKey(), $languages, true)) {
+                throw new InvalidArgumentException(
+                    sprintf('Invalid translation language "%s"', $columnFilter->getKey())
+                );
+            }
+        }
+
+        $db = $this->dbResolver->get();
+        foreach ($columnFilters as $index => $columnFilter) {
+            $parameterName = self::VALUE_PARAMETER . $index;
+            $listing->addConditionParam(
+                // Use the 'text' field for language like filtering
+                // This is necessary because language fields are joined together
+                $db->quoteIdentifier($columnFilter->getKey()) . '.text LIKE :' . $parameterName,
+                [$parameterName => "%{$columnFilter->getFilterValue()}%"]
+            );
+        }
 
         return $listing;
     }

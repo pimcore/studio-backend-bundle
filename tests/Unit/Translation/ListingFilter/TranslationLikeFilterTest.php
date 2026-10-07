@@ -33,8 +33,39 @@ final class TranslationLikeFilterTest extends Unit
 
         $this->createFilter()->apply($this->createParameters('fr_BE', 'car'), $listing);
 
-        $this->assertStringContainsString('`fr_BE`.text LIKE :translationLikeValue', $listing->getCondition());
-        $this->assertSame(['translationLikeValue' => '%car%'], $listing->getConditionVariables());
+        $this->assertStringContainsString('`fr_BE`.text LIKE :translationLikeValue0', $listing->getCondition());
+        $this->assertSame(['translationLikeValue0' => '%car%'], $listing->getConditionVariables());
+    }
+
+    public function testEveryTranslationFilterIsApplied(): void
+    {
+        $listing = $this->createListing(['de', 'fr_BE']);
+        $parameters = new FilterParameter(columnFilters: [
+            ['key' => 'de', 'type' => 'translationLike', 'filterValue' => 'Auto'],
+            ['key' => 'fr_BE', 'type' => 'translationLike', 'filterValue' => 'voiture'],
+        ]);
+
+        $this->createFilter()->apply($parameters, $listing);
+
+        $this->assertStringContainsString('`de`.text LIKE :translationLikeValue0', $listing->getCondition());
+        $this->assertStringContainsString('`fr_BE`.text LIKE :translationLikeValue1', $listing->getCondition());
+        $this->assertSame(
+            ['translationLikeValue0' => '%Auto%', 'translationLikeValue1' => '%voiture%'],
+            $listing->getConditionVariables()
+        );
+    }
+
+    public function testFilterIsRejectedForUnknownLanguageAfterValidOne(): void
+    {
+        $listing = $this->createListing(['de', 'fr_BE']);
+        $parameters = new FilterParameter(columnFilters: [
+            ['key' => 'de', 'type' => 'translationLike', 'filterValue' => 'Auto'],
+            ['key' => 'xx_unknown', 'type' => 'translationLike', 'filterValue' => 'car'],
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createFilter()->apply($parameters, $listing);
     }
 
     public function testFilterIsRejectedForUnknownLanguage(): void
