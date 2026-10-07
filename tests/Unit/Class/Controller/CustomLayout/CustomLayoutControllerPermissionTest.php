@@ -39,6 +39,10 @@ use function sprintf;
  * ('classes') permission, matching ClassDefinitionType::CustomLayout->permission(),
  * not DATA_OBJECTS ('objects') as they did before the fix.
  *
+ * The editor collection route is the exception: the data object editor calls it whenever an
+ * object is opened. It is read-only, and the service enforces view permission on the object,
+ * so it requires DATA_OBJECTS ('objects') (pimcore/platform-version#597).
+ *
  * @internal
  */
 final class CustomLayoutControllerPermissionTest extends Unit
@@ -55,7 +59,6 @@ final class CustomLayoutControllerPermissionTest extends Unit
         yield ExportController::class => [ExportController::class];
         yield GetController::class => [GetController::class];
         yield GetIdentifierController::class => [GetIdentifierController::class];
-        yield EditorCollectionController::class => [EditorCollectionController::class];
         yield ClassCollectionController::class => [ClassCollectionController::class];
     }
 
@@ -89,6 +92,22 @@ final class CustomLayoutControllerPermissionTest extends Unit
                 UserPermissions::CLASS_DEFINITION->value,
                 (string) $isGranted->attribute
             )
+        );
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function testEditorCollectionRequiresDataObjectsPermission(): void
+    {
+        $reflection = new ReflectionClass(EditorCollectionController::class);
+        $attributes = $this->resolveActionMethod($reflection)->getAttributes(IsGranted::class);
+
+        $this->assertNotEmpty($attributes, 'EditorCollectionController is missing an #[IsGranted] attribute.');
+        $this->assertSame(
+            UserPermissions::DATA_OBJECTS->value,
+            $attributes[0]->newInstance()->attribute,
+            'The editor collection route must be available to every user who can open data objects.'
         );
     }
 
