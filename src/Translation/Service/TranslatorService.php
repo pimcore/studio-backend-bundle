@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Event\TranslationsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
@@ -57,7 +58,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private TranslatorInterface $translator,
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService,
-        private AdminLanguageServiceInterface $adminLanguageService,
+        private LanguageServiceInterface $languageService,
         private ListingFilterInterface $listingFilter,
         private FilterMapperServiceInterface $filterMapper,
         private TranslationsHydratorInterface $translationsHydrator,
@@ -208,7 +209,10 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
     public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing
     {
-        $validLanguages = $this->adminLanguageService->getAvailableAdminLanguages();
+        $validLanguages = $this->languageService->getTranslationAllowedLanguages(
+            $this->securityService->getCurrentUser(),
+            $domain
+        );
 
         $list = $this->translationRepository->getTranslationList($domain);
         $filters = $parameter->getFilters();

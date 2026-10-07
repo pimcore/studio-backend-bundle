@@ -18,15 +18,20 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Config;
+use Pimcore\Model\Translation\Listing;
+use Pimcore\Model\UserInterface;
 use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -78,16 +83,72 @@ final class TranslatorServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function mockTranslatorService(bool $loggedIn = true): TranslatorServiceInterface
+    public function testGetTranslationListUsesDomainSpecificLanguages(): void
     {
+        $user = $this->makeEmpty(UserInterface::class);
+        $websiteLanguages = ['en', 'fr', 'fr_BE', 'nl_BE'];
+
+        $languageService = $this->createMock(LanguageServiceInterface::class);
+        $languageService->expects($this->once())
+            ->method('getTranslationAllowedLanguages')
+            ->with($user, 'messages')
+            ->willReturn($websiteLanguages);
+
+        $listing = $this->createMock(Listing::class);
+        $listing->expects($this->once())
+            ->method('setLanguages')
+            ->with($websiteLanguages);
+
+        $repository = $this->createMock(TranslationRepositoryInterface::class);
+        $repository->method('getTranslationList')->willReturn($listing);
+        $repository->expects($this->once())
+            ->method('joinLanguageColumns')
+            ->with($listing, ['fr_BE'], 'messages')
+            ->willReturn($listing);
+
+        $listingFilter = $this->makeEmpty(ListingFilterInterface::class, [
+            'applyFilters' => $listing,
+        ]);
+
+        $filterParameter = new FilterParameter(sortFilter: new SortFilter('fr_BE', 'DESC'));
+
+        $translatorService = $this->mockTranslatorService(
+            repository: $repository,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'isLoggedIn' => true,
+                'getCurrentUser' => $user,
+            ]),
+            languageService: $languageService,
+            listingFilter: $listingFilter,
+            filterMapper: $this->makeEmpty(FilterMapperServiceInterface::class, [
+                'getFilterParameters' => $filterParameter,
+            ]),
+        );
+
+        $parameter = new CollectionFilterParameter($filterParameter);
+
+        $this->assertSame($listing, $translatorService->getTranslationList('messages', $parameter));
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockTranslatorService(
+        bool $loggedIn = true,
+        ?TranslationRepositoryInterface $repository = null,
+        ?SecurityServiceInterface $securityService = null,
+        ?LanguageServiceInterface $languageService = null,
+        ?ListingFilterInterface $listingFilter = null,
+        ?FilterMapperServiceInterface $filterMapper = null,
+    ): TranslatorServiceInterface {
         $translator = $this->makeEmpty(Translator::class);
-        $repository = $this->makeEmpty(TranslationRepositoryInterface::class);
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+        $repository ??= $this->makeEmpty(TranslationRepositoryInterface::class);
+        $securityService ??= $this->makeEmpty(SecurityServiceInterface::class, [
             'isLoggedIn' => $loggedIn,
         ]);
-        $adminLanguageService = $this->makeEmpty(AdminLanguageServiceInterface::class);
-        $listingFilter = $this->makeEmpty(ListingFilterInterface::class);
-        $filterMapper = $this->makeEmpty(FilterMapperServiceInterface::class);
+        $languageService ??= $this->makeEmpty(LanguageServiceInterface::class);
+        $listingFilter ??= $this->makeEmpty(ListingFilterInterface::class);
+        $filterMapper ??= $this->makeEmpty(FilterMapperServiceInterface::class);
         $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
         $cacheResolver = $this->makeEmpty(CacheResolverInterface::class);
@@ -98,7 +159,7 @@ final class TranslatorServiceTest extends Unit
             $translator,
             $repository,
             $securityService,
-            $adminLanguageService,
+            $languageService,
             $listingFilter,
             $filterMapper,
             $translationsHydrator,
