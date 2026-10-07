@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Event\TranslationsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
@@ -50,6 +51,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 {
     private const string API_DOCS_DOMAIN = 'studio_api_docs';
 
+    private const string BYPASS_LISTING_CACHE_CONDITION = '1 = 1';
+
     private TranslatorBagInterface $translatorBag;
 
     public function __construct(
@@ -57,7 +60,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         private TranslatorInterface $translator,
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService,
-        private AdminLanguageServiceInterface $adminLanguageService,
+        private LanguageServiceInterface $languageService,
         private ListingFilterInterface $listingFilter,
         private FilterMapperServiceInterface $filterMapper,
         private TranslationsHydratorInterface $translationsHydrator,
@@ -208,18 +211,27 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
     public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing
     {
-        $validLanguages = $this->adminLanguageService->getAvailableAdminLanguages();
+        $validLanguages = $this->languageService->getTranslationAllowedLanguages(
+            $this->securityService->getCurrentUser(),
+            $domain
+        );
 
         $list = $this->translationRepository->getTranslationList($domain);
+        $list->setLanguages($validLanguages);
+        // The core listing caches loaded translations by query only, not by languages.
+        // Any condition param bypasses that cache, so users with different languages never share results.
+        $list->addConditionParam(self::BYPASS_LISTING_CACHE_CONDITION);
+
         $filters = $parameter->getFilters();
         if (null === $filters) {
             return $list;
         }
 
-        $sortFilter = $filters->getSortFilter();
         $joins = [];
-        if (in_array($sortFilter->getKey(), $validLanguages, true)) {
-            $joins[] = $sortFilter->getKey();
+        foreach ($filters->getSortFilters() as $sortFilter) {
+            if (in_array($sortFilter->getKey(), $validLanguages, true)) {
+                $joins[] = $sortFilter->getKey();
+            }
         }
 
         foreach ($filters->getColumnFilters() as $columnFilter) {
@@ -239,8 +251,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         if ($searchFilter) {
             $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
         }
-
-        $list->setLanguages($validLanguages);
 
         return $this->listingFilter->applyFilters(
             $this->filterMapper->getFilterParameters($parameter),
