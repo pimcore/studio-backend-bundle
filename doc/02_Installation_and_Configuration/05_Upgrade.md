@@ -2,6 +2,27 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.4.0
+- [Grid] Changed: `twigOperator` templates now render in a dedicated, isolated Twig `Environment` without Pimcore's
+  Twig extensions and with a stricter sandbox policy (no method or property access). Values are converted to plain
+  data before rendering (dates become ISO 8601 strings), and `range()` is capped at 1000 elements.
+
+> **Note:** All public constructor signatures and interfaces stay backward compatible.
+> `SandboxExtensionInitializerInterface` is unchanged; the isolated environment is exposed through the new
+> `TwigOperatorEnvironmentProviderInterface::getEnvironment()`, which `SandboxExtensionInitializer` implements.
+> `TemplateGenerator` renders through it. A custom `SandboxExtensionInitializerInterface` implementation that does not
+> also implement the new interface keeps rendering through the shared `twig` service (as before) but triggers a
+> deprecation; implementing the provider interface becomes mandatory in the next major version.
+> `SandboxExtensionInitializer`'s `Twig\Environment $twig` constructor argument is kept but unused. Core's
+> `pimcore.templating.twig.sandbox_security_policy.*` lists are still applied, on top of the bundle's own ones. The
+> constructor gained two optional trailing arguments: `iterable $additionalExtensions = []` (services tagged
+> `pimcore_studio_backend.twig_operator_extension`, the supported way to add a project-defined filter/function/tag to
+> the isolated environment; the tag name is `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`)
+> and `?LoggerInterface $logger = null` (warns once, at build time, about an allow-listed tag/filter/function name
+> that no registered extension provides). A project extending the `sandbox_security_policy` allow-list with a name not
+> covered by the bundle's own extensions (e.g. `trans`, or a project-specific filter) must now additionally register a
+> matching Twig extension via that service tag - see `doc/01_Architecture_Overview/01_Grid.md`.
+
 ## Upgrade to 2026.3.1
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
