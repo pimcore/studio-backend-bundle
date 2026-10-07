@@ -29,6 +29,12 @@ final class TemplateGenerator implements TemplateGeneratorInterface
 
     private readonly SandboxExtension $sandboxExtension;
 
+    /**
+     * False for the isolated environment, whose sandbox is always enabled; true for the deprecated
+     * fallback, which toggles the sandbox of the shared `twig` service around each render.
+     */
+    private readonly bool $togglesSandbox;
+
     public function __construct(
         Environment $twig,
         SandboxExtensionInitializerInterface $sandboxInitializer
@@ -39,6 +45,7 @@ final class TemplateGenerator implements TemplateGeneratorInterface
             // Rendering must go through the isolated environment the sandbox belongs to, never
             // through the application's shared `twig` service.
             $this->environment = $sandboxInitializer->getEnvironment();
+            $this->togglesSandbox = false;
 
             return;
         }
@@ -52,12 +59,55 @@ final class TemplateGenerator implements TemplateGeneratorInterface
             $sandboxInitializer::class
         );
         $this->environment = $twig;
+        $this->togglesSandbox = true;
     }
 
+    /**
+     * @throws InvalidTemplateException
+     */
     public function generate(string $twigTemplate, array $arguments): string
     {
+        if (!$this->togglesSandbox) {
+            return $this->render($twigTemplate, $arguments);
+        }
+
+        $this->assertSandboxIsRegisteredOnSharedEnvironment();
         $this->sandboxExtension->enableSandbox();
 
+        try {
+            return $this->render($twigTemplate, $arguments);
+        } finally {
+            $this->sandboxExtension->disableSandbox();
+        }
+    }
+
+    /**
+     * Fails closed when the sandbox the initializer returned is not the one registered on the environment that
+     * renders the template, e.g. a decorator around the isolated initializer that does not forward
+     * {@see TwigOperatorEnvironmentProviderInterface}.
+     *
+     * @throws InvalidTemplateException
+     */
+    private function assertSandboxIsRegisteredOnSharedEnvironment(): void
+    {
+        if ($this->environment->hasExtension(SandboxExtension::class)
+            && $this->environment->getExtension(SandboxExtension::class) === $this->sandboxExtension
+        ) {
+            return;
+        }
+
+        throw new InvalidTemplateException(sprintf(
+            'The TwigOperator sandbox is not registered on the rendering Twig environment. ' .
+            'Implement "%s" in the sandbox initializer (or forward it from a decorator).',
+            TwigOperatorEnvironmentProviderInterface::class
+        ));
+    }
+
+    /**
+     * @throws InvalidTemplateException
+     */
+    private function render(string $twigTemplate, array $arguments): string
+    {
         try {
             return $this->environment->createTemplate($twigTemplate)->render($arguments);
         } catch (TwigError $e) {
@@ -67,8 +117,6 @@ final class TemplateGenerator implements TemplateGeneratorInterface
                     $e->getMessage()
                 )
             );
-        } finally {
-            $this->sandboxExtension->disableSandbox();
         }
     }
 }

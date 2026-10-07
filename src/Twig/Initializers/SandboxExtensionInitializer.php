@@ -14,20 +14,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Twig\Initializers;
 
-use DateTime;
-use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
 use LogicException;
-use PDO;
-use PDOStatement;
-use Pimcore\Model\Dao\AbstractDao;
-use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\User;
 use Pimcore\Twig\Sandbox\SecurityPolicy;
-use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Process\Process;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\ExtensionInterface;
@@ -56,68 +45,24 @@ use function str_starts_with;
 /**
  * Builds a dedicated, isolated Twig environment for TwigOperator template rendering.
  *
- * Two things distinguish this from a "normal" sandbox setup, both deliberate:
- *
- * 1. The environment is built from scratch here (an {@see ArrayLoader}, plus the two
- *    formatting-only Twig Extra extensions) instead of reusing the application's shared
- *    `twig` service. That shared environment carries every Pimcore Twig extension
- *    (`pimcore_object`, `pimcore_asset`, `pimcore_document`, ...) - none of those functions
- *    are registered here, so they are not merely sandboxed, they do not exist for this
- *    environment to resolve. TwigOperator templates have no legitimate use for an
- *    element/service loader; formatting a value never needs one. A project that needs an
- *    additional SAFE filter/function/tag registers its own Twig extension under the
- *    {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG} service tag
- *    instead - it is added to this isolated environment, never to the shared one.
- * 2. The {@see SecurityPolicy} is built with all seven constructor arguments and attached to
- *    a SandboxExtension instance that belongs only to this isolated environment.
- *    Previously this initializer fetched the application's shared SandboxExtension
- *    (`$twig->getExtension(SandboxExtension::class)`) and replaced its policy in place -
- *    which both left method/property access on every object unrestricted (blockedClasses/
- *    allowedClasses/blockedFunctions/hardBlockedMethods were never populated) and
- *    permanently overwrote the policy core itself uses for its own sandboxed Twig
- *    rendering (Mailer, the "Text" layout component, ...) for the remainder of the process.
- *    `allowedClasses` is populated too (see {@see NoObjectAccessAllowed}), switching the
- *    policy into allowlist mode: even an object that reaches the template unsanitized has
- *    every method/property access denied, regardless of the {@see BLOCKED_CLASSES}
- *    enumeration below.
+ * - The environment is built from scratch (an {@see ArrayLoader} plus the formatting-only Twig Extra
+ *   extensions) instead of reusing the application's shared `twig` service, so no Pimcore Twig function
+ *   (`pimcore_object`, `pimcore_asset`, ...) exists here. A project that needs a further safe
+ *   filter/function/tag tags its own Twig extension with
+ *   {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG}. Symfony also autoconfigures
+ *   every Twig extension into the shared `twig` service unless the service sets `autoconfigure: false`.
+ * - The sandbox is enabled for every template rendered through this environment, and its
+ *   {@see SecurityPolicy} denies method and property access on every object (see {@see NoObjectAccessAllowed}).
+ *   Core's `pimcore.templating.twig.sandbox_security_policy.*` class and method lists therefore do not apply
+ *   here; core's blocked functions do.
  */
 final class SandboxExtensionInitializer implements
     SandboxExtensionInitializerInterface,
     TwigOperatorEnvironmentProviderInterface
 {
     /**
-     * FQCNs that must never be traversable (method calls or property access) from a
-     * TwigOperator template. The first block mirrors Pimcore core's own sandbox denylist
-     * (`pimcore.templating.twig.sandbox_security_policy.blocked_classes`): the
-     * persistence/infrastructure layer and the admin user model. The second block is
-     * specific to TwigOperator: it has no legitimate use for any Pimcore element getter,
-     * let alone save()/delete(), so every element type is blocked wholesale rather than
-     * enumerating individual methods.
-     *
-     * Kept and populated even though {@see ALLOWED_CLASSES} switches the policy into
-     * allowlist mode (where {@see SecurityPolicy} ignores blockedClasses entirely): it
-     * documents intent, and it is what actually protects the sandbox the moment anyone ever
-     * adds a legitimate class to the allowlist in the future.
-     *
-     * @var list<class-string>
-     */
-    private const array BLOCKED_CLASSES = [
-        AbstractDao::class,
-        Connection::class,
-        PDO::class,
-        PDOStatement::class,
-        ContainerInterface::class,
-        PsrContainerInterface::class,
-        Process::class,
-        User::class,
-        ElementInterface::class,
-    ];
-
-    /**
-     * Switches {@see SecurityPolicy} into allowlist mode: once non-empty, every object that
-     * is not an instance of one of these classes has ALL method/property access denied,
-     * unconditionally. {@see NoObjectAccessAllowed} is never instantiated, so this denies
-     * every real object - see its docblock for why that is the point.
+     * Switches {@see SecurityPolicy} into allowlist mode with nothing allowed: {@see NoObjectAccessAllowed}
+     * is never instantiated, so every method and property access on an object is denied.
      *
      * @var list<class-string>
      */
@@ -126,24 +71,8 @@ final class SandboxExtensionInitializer implements
     ];
 
     /**
-     * Per-class method denylist, enforced regardless of {@see BLOCKED_CLASSES}/allowlist
-     * mode. Defense in depth for value types that do legitimately reach a TwigOperator
-     * template unblocked - e.g. a DateTime instance for a date/datetime column - so that
-     * only read-only formatting (format(), diff(), ...) remains reachable, never mutation.
-     *
-     * @var array<class-string, list<string>>
-     */
-    private const array HARD_BLOCKED_METHODS = [
-        DateTime::class => ['modify', 'setDate', 'setISODate', 'setTime', 'setTimestamp', 'setTimezone', 'add', 'sub'],
-        DateTimeImmutable::class => [
-            'modify', 'setDate', 'setISODate', 'setTime', 'setTimestamp', 'setTimezone', 'add', 'sub',
-        ],
-    ];
-
-    /**
-     * Maximum number of elements the isolated environment's `range()` allows. `range()` maps
-     * directly onto PHP's own `range()` (see Twig's CoreExtension), which materializes the
-     * whole result array immediately, so a large span would allocate a huge array.
+     * Maximum number of elements the `range()` function returns. Best effort only: the `..` operator and
+     * nested loops are not limited; `memory_limit` and `max_execution_time` remain the hard limits.
      * See {@see buildSafeRangeFunction()}.
      */
     private const int MAX_RANGE_SIZE = 1000;
@@ -155,11 +84,10 @@ final class SandboxExtensionInitializer implements
     /**
      * @param Environment $twig Unused since the environment is isolated (built from scratch here);
      *   kept only so the constructor stays backward compatible.
-     * @param list<class-string> $blockedClasses Core's blocked classes, added to {@see BLOCKED_CLASSES}.
-     * @param list<class-string> $allowedClasses Core's allowed classes, added to {@see ALLOWED_CLASSES}.
+     * @param list<class-string> $blockedClasses Not applied: all object access is denied.
+     * @param list<class-string> $allowedClasses Not applied: all object access is denied.
      * @param list<string> $blockedFunctions Core's blocked functions, added to every registered `pimcore_*` one.
-     * @param array<class-string, list<string>> $hardBlockedMethods Core's hard-blocked methods, merged per class
-     *   with {@see HARD_BLOCKED_METHODS}.
+     * @param array<class-string, list<string>> $hardBlockedMethods Not applied: all object access is denied.
      * @param iterable<mixed> $additionalExtensions Every service tagged
      *   {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG}, registered
      *   into the isolated environment. This is the supported extension point for a project
@@ -168,19 +96,20 @@ final class SandboxExtensionInitializer implements
      *   service implements {@see ExtensionInterface}, which is exactly why
      *   {@see registerAdditionalExtensions()} checks it at runtime instead of trusting it.
      */
-    // @phpstan-ignore constructor.unusedParameter
     public function __construct(
         Environment $twig,
         private readonly array $allowedTags,
         private readonly array $allowedFilters,
         private readonly array $allowedFunctions,
-        private readonly array $blockedClasses = [],
-        private readonly array $allowedClasses = [],
+        array $blockedClasses = [],
+        array $allowedClasses = [],
         private readonly array $blockedFunctions = [],
-        private readonly array $hardBlockedMethods = [],
+        array $hardBlockedMethods = [],
         private readonly iterable $additionalExtensions = [],
         private readonly ?LoggerInterface $logger = null
     ) {
+        // Kept for backward compatibility only, see the parameter docs above.
+        unset($twig, $blockedClasses, $allowedClasses, $hardBlockedMethods);
     }
 
     public function initialize(): SandboxExtension
@@ -220,7 +149,7 @@ final class SandboxExtensionInitializer implements
         $environment->addFunction($this->buildSafeRangeFunction());
 
         $policy = $this->buildSecurityPolicy();
-        $sandbox = new SandboxExtension($policy);
+        $sandbox = new SandboxExtension($policy, true);
         $environment->addExtension($sandbox);
 
         // Environment::getFunctions() finalizes (locks) the extension set as a side effect,
@@ -243,24 +172,11 @@ final class SandboxExtensionInitializer implements
             $this->allowedTags,
             $this->allowedFilters,
             $this->allowedFunctions,
-            array_values(array_unique([...self::BLOCKED_CLASSES, ...$this->blockedClasses])),
-            array_values(array_unique([...self::ALLOWED_CLASSES, ...$this->allowedClasses])),
+            [],
+            self::ALLOWED_CLASSES,
             $this->blockedFunctions,
-            $this->mergeHardBlockedMethods()
+            []
         );
-    }
-
-    /**
-     * @return array<class-string, list<string>>
-     */
-    private function mergeHardBlockedMethods(): array
-    {
-        $methods = self::HARD_BLOCKED_METHODS;
-        foreach ($this->hardBlockedMethods as $class => $classMethods) {
-            $methods[$class] = array_values(array_unique([...($methods[$class] ?? []), ...$classMethods]));
-        }
-
-        return $methods;
     }
 
     /**

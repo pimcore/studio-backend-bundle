@@ -3,25 +3,18 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
-- [Grid] Changed: `twigOperator` templates now render in a dedicated, isolated Twig `Environment` without Pimcore's
-  Twig extensions and with a stricter sandbox policy (no method or property access). Values are converted to plain
-  data before rendering (dates become ISO 8601 strings), and `range()` is capped at 1000 elements.
+- [Grid] Changed: `twigOperator` templates render in a dedicated Twig environment with the sandbox always enabled
+  and without Pimcore's Twig extensions or the application's Twig configuration. Method calls and property access on
+  objects are denied. Values are converted to plain data first: dates become ISO 8601 strings, consent values,
+  `JsonSerializable` objects and enums become their data, other objects render as empty. `range()` returns at most
+  1000 elements (best effort). See `doc/01_Architecture_Overview/01_Grid.md`.
 
-> **Note:** All public constructor signatures and interfaces stay backward compatible.
-> `SandboxExtensionInitializerInterface` is unchanged; the isolated environment is exposed through the new
-> `TwigOperatorEnvironmentProviderInterface::getEnvironment()`, which `SandboxExtensionInitializer` implements.
-> `TemplateGenerator` renders through it. A custom `SandboxExtensionInitializerInterface` implementation that does not
-> also implement the new interface keeps rendering through the shared `twig` service (as before) but triggers a
-> deprecation; implementing the provider interface becomes mandatory in the next major version.
-> `SandboxExtensionInitializer`'s `Twig\Environment $twig` constructor argument is kept but unused. Core's
-> `pimcore.templating.twig.sandbox_security_policy.*` lists are still applied, on top of the bundle's own ones. The
-> constructor gained two optional trailing arguments: `iterable $additionalExtensions = []` (services tagged
-> `pimcore_studio_backend.twig_operator_extension`, the supported way to add a project-defined filter/function/tag to
-> the isolated environment; the tag name is `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`)
-> and `?LoggerInterface $logger = null` (warns once, at build time, about an allow-listed tag/filter/function name
-> that no registered extension provides). A project extending the `sandbox_security_policy` allow-list with a name not
-> covered by the bundle's own extensions (e.g. `trans`, or a project-specific filter) must now additionally register a
-> matching Twig extension via that service tag - see `doc/01_Architecture_Overview/01_Grid.md`.
+> **Note:** `SandboxExtensionInitializer` implements the new `TwigOperatorEnvironmentProviderInterface`. A custom
+> `SandboxExtensionInitializerInterface` implementation or decorator should implement it too: without it, templates
+> keep rendering through the shared `twig` service with a deprecation, and fail if the returned sandbox is not
+> registered there. The initializer's `$blockedClasses`, `$allowedClasses` and `$hardBlockedMethods` arguments no
+> longer apply, since all object access is denied. To add a filter, function or tag, tag a Twig extension with
+> `pimcore_studio_backend.twig_operator_extension` and add its name to `sandbox_security_policy`.
 
 ## Upgrade to 2026.3.1
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system

@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Twig\Initializers;
 
+use LogicException;
 use Twig\Environment;
 
 /**
@@ -35,7 +36,9 @@ interface TwigOperatorEnvironmentProviderInterface
     public const string TWIG_OPERATOR_EXTENSION_TAG = 'pimcore_studio_backend.twig_operator_extension';
 
     /**
-     * The isolated environment the initializer's SandboxExtension is registered on.
+     * The isolated environment the initializer's SandboxExtension is registered on. Its sandbox is always enabled.
+     *
+     * @throws LogicException if a service tagged {@see self::TWIG_OPERATOR_EXTENSION_TAG} is not a Twig extension
      */
     public function getEnvironment(): Environment;
 }

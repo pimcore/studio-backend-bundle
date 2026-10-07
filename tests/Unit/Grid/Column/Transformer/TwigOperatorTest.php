@@ -15,14 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Column\Transformer;
 
 use Carbon\Carbon;
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ConsentData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Twig\DefaultSandboxPolicyTrait;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
-use ReflectionMethod;
+use JsonSerializable;
+use Random\IntervalBoundary;
 use stdClass;
-use Symfony\Component\Config\Definition\Processor;
+use Stringable;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
 
@@ -34,6 +37,8 @@ use Twig\Loader\ArrayLoader;
  */
 final class TwigOperatorTest extends Unit
 {
+    use DefaultSandboxPolicyTrait;
+
     public function testDateValueReachesTheTemplateAsAString(): void
     {
         $result = $this->transform(
@@ -81,6 +86,77 @@ final class TwigOperatorTest extends Unit
         );
     }
 
+    public function testConsentValueIsConvertedToData(): void
+    {
+        $value = new AdvancedValue('consent', new ConsentData(true, 5, 'Signed up at the fair'), 'newsletter');
+
+        $result = $this->transform(
+            [$value],
+            '{{ value.newsletter.consent ? "yes" : "no" }}|{{ value.newsletter.noteId }}|' .
+            '{{ value.newsletter.noteContent }}'
+        );
+
+        $this->assertSame('yes|5|Signed up at the fair', $result);
+    }
+
+    public function testJsonSerializableIsConvertedToItsData(): void
+    {
+        $object = new class implements JsonSerializable {
+            public function jsonSerialize(): array
+            {
+                return ['label' => 'Red', 'createdAt' => Carbon::parse('2020-01-01T00:00:00+00:00')];
+            }
+        };
+
+        $result = $this->transform(
+            [new AdvancedValue('object', $object, 'color')],
+            '{{ value.color.label }}|{{ value.color.createdAt }}'
+        );
+
+        $this->assertSame('Red|2020-01-01T00:00:00+00:00', $result);
+    }
+
+    public function testEnumsAreConvertedToScalars(): void
+    {
+        $result = $this->transform(
+            [
+                new AdvancedValue('enum', Perspectives::DEFAULT_ID, 'backed'),
+                new AdvancedValue('enum', IntervalBoundary::ClosedOpen, 'pure'),
+            ],
+            '{{ value.backed }}|{{ value.pure }}'
+        );
+
+        $this->assertSame('studio_default_perspective|ClosedOpen', $result);
+    }
+
+    public function testStringableObjectIsNotCastToString(): void
+    {
+        $object = new class implements Stringable {
+            public function __toString(): string
+            {
+                return 'cast';
+            }
+        };
+
+        $result = $this->transform([new AdvancedValue('object', $object, 'thing')], '[{{ value.thing }}]');
+
+        $this->assertSame('[]', $result);
+    }
+
+    public function testSelfReferencingJsonSerializableDoesNotRecurseForever(): void
+    {
+        $object = new class implements JsonSerializable {
+            public function jsonSerialize(): mixed
+            {
+                return $this;
+            }
+        };
+
+        $result = $this->transform([new AdvancedValue('object', $object, 'loop')], '[{{ value.loop }}]');
+
+        $this->assertSame('[]', $result);
+    }
+
     /**
      * @param list<AdvancedValue> $values
      */
@@ -99,19 +175,5 @@ final class TwigOperatorTest extends Unit
         $result = $operator->transform($values, ['template' => $template]);
 
         return (string) $result[0]->getValue();
-    }
-
-    /**
-     * @return array{tags: list<string>, filters: list<string>, functions: list<string>}
-     */
-    private function getDefaultSandboxPolicy(): array
-    {
-        $method = new ReflectionMethod(Configuration::class, 'addTwigSandboxNode');
-        $method->setAccessible(true);
-        $node = $method->invoke(new Configuration())->getNode(true);
-
-        $processed = (new Processor())->process($node, []);
-
-        return $processed['sandbox_security_policy'];
     }
 }

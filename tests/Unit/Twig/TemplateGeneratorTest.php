@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Twig;
 
 use Codeception\Test\Unit;
 use DateTime;
-use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
@@ -24,19 +23,19 @@ use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Twig\Sandbox\SecurityPolicy;
 use Psr\Log\AbstractLogger;
-use ReflectionMethod;
 use Stringable;
-use Symfony\Component\Config\Definition\Processor;
 use Twig\Environment;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\SandboxExtension;
 use Twig\Extra\Intl\IntlExtension;
 use Twig\Extra\String\StringExtension;
 use Twig\Loader\ArrayLoader;
+use Twig\Sandbox\SecurityError;
 use Twig\TwigFunction;
 use function array_merge;
 use function restore_error_handler;
 use function set_error_handler;
+use function str_contains;
 use function strtoupper;
 
 /**
@@ -44,6 +43,8 @@ use function strtoupper;
  */
 final class TemplateGeneratorTest extends Unit
 {
+    use DefaultSandboxPolicyTrait;
+
     public function testRendersDefaultTemplate(): void
     {
         $this->assertSame('5', $this->generate('{{ value }}', ['value' => 5]));
@@ -231,13 +232,20 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * A value reaching the template unblocked (e.g. a DateTime for a date column) must stay
-     * read-only: mutating methods are hard-blocked regardless of the class denylist.
+     * Every method on an object is denied, read-only ones included; dates are formatted with filters.
+     *
+     * @dataProvider dateMethodProvider
      */
-    public function testBlocksSetterCallOnUnblockedValue(): void
+    public function testDeniesEveryMethodOnADateObject(string $template): void
     {
         $this->expectException(InvalidTemplateException::class);
-        $this->generate("{{ value.modify('+1 day') }}", ['value' => new DateTime('2020-01-01')]);
+        $this->generate($template, ['value' => new DateTime('2020-01-01')]);
+    }
+
+    public static function dateMethodProvider(): iterable
+    {
+        yield 'mutating' => ["{{ value.modify('+1 day') }}"];
+        yield 'read-only' => ["{{ value.format('Y') }}"];
     }
 
     /**
@@ -302,11 +310,97 @@ final class TemplateGeneratorTest extends Unit
     {
         $policy = $this->getDefaultSandboxPolicy();
         $twig = new Environment(new ArrayLoader());
-        $initializer = new SandboxExtensionInitializer($twig, $policy['tags'], $policy['filters'], $policy['functions']);
+        $initializer = new SandboxExtensionInitializer(
+            $twig,
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
         $generator = new TemplateGenerator($twig, $initializer);
 
         $this->assertSame('HI', $generator->generate('{{ value|upper }}', ['value' => 'hi']));
         $this->assertNotSame($twig, $initializer->getEnvironment());
+    }
+
+    /**
+     * A decorator that does not forward {@see TwigOperatorEnvironmentProviderInterface} returns the isolated
+     * sandbox, which is not registered on the shared environment: rendering must fail instead of running
+     * the template without a sandbox.
+     */
+    public function testDecoratorWithoutProviderInterfaceFailsClosed(): void
+    {
+        $policy = $this->getDefaultSandboxPolicy();
+        $inner = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+        $decorator = new class($inner) implements SandboxExtensionInitializerInterface {
+            public function __construct(private readonly SandboxExtensionInitializerInterface $inner)
+            {
+            }
+
+            public function initialize(): SandboxExtension
+            {
+                return $this->inner->initialize();
+            }
+        };
+        $shared = new Environment(new ArrayLoader());
+        $shared->addExtension(new SandboxExtension(new SecurityPolicy()));
+
+        set_error_handler(static fn (): bool => true, E_USER_DEPRECATED);
+
+        try {
+            $generator = new TemplateGenerator($shared, $decorator);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->expectException(InvalidTemplateException::class);
+        $this->expectExceptionMessage(TwigOperatorEnvironmentProviderInterface::class);
+        $generator->generate('{{ value|upper }}', ['value' => 'hi']);
+    }
+
+    /**
+     * The isolated environment is sandboxed on its own, also for callers rendering through it directly.
+     */
+    public function testIsolatedEnvironmentIsSandboxedWithoutToggling(): void
+    {
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            $policy['functions']
+        );
+
+        $this->expectException(SecurityError::class);
+        $initializer->getEnvironment()->createTemplate('{% include "other" %}')->render([]);
+    }
+
+    /**
+     * Rendering through the isolated environment does not toggle the sandbox, so Twig 3.29's
+     * enableSandbox()/disableSandbox() deprecations are not triggered.
+     */
+    public function testRenderingTriggersNoDeprecation(): void
+    {
+        $deprecations = [];
+        set_error_handler(static function (int $no, string $message) use (&$deprecations): bool {
+            if (str_contains($message, 'Sandbox()')) {
+                $deprecations[] = $message;
+            }
+
+            return true;
+        }, E_USER_DEPRECATED);
+
+        try {
+            $this->generate('{{ value|upper }}', ['value' => 'hi']);
+        } finally {
+            restore_error_handler();
+        }
+
+        $this->assertSame([], $deprecations);
     }
 
     /**
@@ -391,14 +485,8 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * Rendering a TwigOperator template must never touch an external SandboxExtension's
-     * policy - previously this called setSecurityPolicy() on the application's shared
-     * SandboxExtension, permanently weakening the policy core uses for its own Twig rendering
-     * (Mailer, the "Text" layout component, ...) for the remainder of the process. Unlike the
-     * original version of this test, $externalTwig below is not a disconnected fixture:
-     * getEnvironment() is asserted to be a distinct instance, so this fails if
-     * TemplateGenerator/SandboxExtensionInitializer is ever changed to reuse an
-     * externally-supplied environment instead of building its own.
+     * The application's `twig` service passed to both constructors is never used for rendering, and its
+     * SandboxExtension policy stays untouched.
      */
     public function testGeneratorNeverTouchesAnExternalSandboxExtension(): void
     {
@@ -409,12 +497,12 @@ final class TemplateGeneratorTest extends Unit
 
         $policy = $this->getDefaultSandboxPolicy();
         $initializer = new SandboxExtensionInitializer(
-            new Environment(new ArrayLoader()),
+            $externalTwig,
             $policy['tags'],
             $policy['filters'],
             $policy['functions']
         );
-        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
+        $generator = new TemplateGenerator($externalTwig, $initializer);
 
         $rendered = $generator->generate('{{ value|upper }}', ['value' => 'twig-operator-render']);
         $this->assertSame('TWIG-OPERATOR-RENDER', $rendered);
@@ -440,8 +528,8 @@ final class TemplateGeneratorTest extends Unit
     /**
      * The DI extension point ({@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG})
      * is the supported way to add a project-defined filter/function/tag: the isolated
-     * environment never sees the application's shared `twig` service (see finding 2 of the
-     * review this test accompanies), so a tagged extension is registered directly onto it.
+     * environment never sees the application's shared `twig` service, so a tagged extension is
+     * registered directly onto it.
      */
     public function testAdditionalTaggedExtensionIsRegisteredIntoTheIsolatedEnvironment(): void
     {
@@ -533,66 +621,16 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * Core's allowed classes (pimcore.templating.twig.sandbox_security_policy.allowed_classes)
-     * still reach the policy next to the deny-all sentinel.
+     * Regression test for GHSA-9g62-2rj4-v227, extended: core's class and method lists can neither open nor
+     * widen object access. The "allowed" cases would render if core's allowed classes were applied.
+     *
+     * @dataProvider coreClassListProvider
      */
-    public function testCoreAllowedClassIsStillAccessible(): void
-    {
-        $fixture = new class {
-            public function getLabel(): string
-            {
-                return 'label';
-            }
-        };
-
-        $this->assertSame(
-            'label',
-            $this->generate('{{ value.getLabel() }}', ['value' => $fixture], allowedClasses: [$fixture::class])
-        );
-    }
-
-    /**
-     * Core's hard-blocked methods are merged in and enforced even on an allowed class.
-     */
-    public function testCoreHardBlockedMethodIsEnforcedOnAnAllowedClass(): void
-    {
-        $fixture = new class {
-            public function getSecret(): string
-            {
-                return 'secret';
-            }
-        };
-
-        $this->expectException(InvalidTemplateException::class);
-        $this->generate(
-            '{{ value.getSecret() }}',
-            ['value' => $fixture],
-            allowedClasses: [$fixture::class],
-            hardBlockedMethods: [$fixture::class => ['getSecret']]
-        );
-    }
-
-    /**
-     * Regression test for GHSA-9g62-2rj4-v227: a configured blocked class stays blocked.
-     */
-    public function testBlocksMethodCallOnBlockedClass(): void
-    {
-        $fixture = new class {
-            public function getSecret(): string
-            {
-                return 'super-secret';
-            }
-        };
-
-        $this->expectException(InvalidTemplateException::class);
-        $this->generate('{{ value.getSecret() }}', ['value' => $fixture], blockedClasses: [$fixture::class]);
-    }
-
-    /**
-     * Regression test for GHSA-9g62-2rj4-v227: hard-blocked methods are enforced.
-     */
-    public function testBlocksHardBlockedMethod(): void
-    {
+    public function testCoreClassListsDoNotOpenObjectAccess(
+        bool $blocked,
+        bool $allowed,
+        bool $hardBlocked
+    ): void {
         $fixture = new class {
             public function getSecret(): string
             {
@@ -604,8 +642,19 @@ final class TemplateGeneratorTest extends Unit
         $this->generate(
             '{{ value.getSecret() }}',
             ['value' => $fixture],
-            hardBlockedMethods: [$fixture::class => ['getSecret']]
+            blockedClasses: $blocked ? [$fixture::class] : [],
+            allowedClasses: $allowed ? [$fixture::class] : [],
+            hardBlockedMethods: $hardBlocked ? [$fixture::class => ['getSecret']] : []
         );
+    }
+
+    public static function coreClassListProvider(): iterable
+    {
+        yield 'no lists' => [false, false, false];
+        yield 'blocked class' => [true, false, false];
+        yield 'allowed class' => [false, true, false];
+        yield 'hard-blocked method' => [false, false, true];
+        yield 'allowed class with hard-blocked method' => [false, true, true];
     }
 
     /**
@@ -628,24 +677,6 @@ final class TemplateGeneratorTest extends Unit
             blockedFunctions: ['pimcore_test_lookup'],
             additionalExtensions: [$extension]
         );
-    }
-
-    /**
-     * Regression test for GHSA-9g62-2rj4-v227: allowlist mode denies a class that is not on the list.
-     */
-    public function testAllowlistModeBlocksClassNotOnTheAllowList(): void
-    {
-        $allowed = new class {
-        };
-        $other = new class {
-            public function getSecret(): string
-            {
-                return 'super-secret';
-            }
-        };
-
-        $this->expectException(InvalidTemplateException::class);
-        $this->generate('{{ value.getSecret() }}', ['value' => $other], allowedClasses: [$allowed::class]);
     }
 
     private function generate(
@@ -676,20 +707,4 @@ final class TemplateGeneratorTest extends Unit
         return $generator->generate($template, $context);
     }
 
-    /**
-     * Reads the real default whitelist from the bundle Configuration so the test tracks any
-     * future changes to the sandbox policy instead of duplicating the list.
-     *
-     * @return array{tags: list<string>, filters: list<string>, functions: list<string>}
-     */
-    private function getDefaultSandboxPolicy(): array
-    {
-        $method = new ReflectionMethod(Configuration::class, 'addTwigSandboxNode');
-        $method->setAccessible(true);
-        $node = $method->invoke(new Configuration())->getNode(true);
-
-        $processed = (new Processor())->process($node, []);
-
-        return $processed['sandbox_security_policy'];
-    }
 }

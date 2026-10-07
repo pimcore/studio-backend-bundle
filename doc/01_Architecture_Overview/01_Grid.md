@@ -536,10 +536,16 @@ This isolated environment is deliberately not the application's shared `twig` se
 - No Pimcore Twig extension is registered on it, so functions like `pimcore_object`,
   `pimcore_asset` or `pimcore_document` do not exist for it to resolve at all - they are not
   merely sandboxed, there is no element/service loader reachable here to begin with.
-- Values are converted to plain data (scalars, arrays, `null`) before they ever reach the
-  template - a `DateTime`/`Carbon` value, for example, arrives as an ISO 8601 string, not as an
-  object. `date`, `date_modify` and `format_date` all accept that string the same way they accept
-  a `DateTime` instance, so date formatting keeps working.
+- Values are converted to plain data (scalars, arrays, `null`) before they reach the template:
+  - dates arrive as ISO 8601 strings; `date`, `date_modify` and `format_date` accept them like a
+    date object,
+  - consent values become `{consent, noteId, noteContent}`, `JsonSerializable` objects their
+    serialized data and enums their value,
+  - any other object renders as empty.
+- Method calls and property access on objects are denied, also for objects created inside the
+  template (e.g. by `date()`); use filters instead.
+- The application's Twig configuration (e.g. default date format and timezone, `number_format`
+  defaults) does not apply to this environment.
 - `strict_variables` is off (Twig's default), which can differ from the application's shared
   `twig` service (commonly on in a debug/dev environment): an undefined variable or array key in
   a template renders as empty rather than raising an error.
@@ -564,11 +570,9 @@ This isolated environment is deliberately not the application's shared `twig` se
 > does for the shared `twig` service. The localization filters additionally require the PHP `intl`
 > extension.
 
-> **DoS:** `range()` is replaced with a capped implementation that rejects a numeric span of more
-> than 1000 elements before calling the real `range()` - an uncapped `range(0, 100000000)` would
-> otherwise allocate a huge array straight from template text, independent of any object or method
-> call. A character range (both bounds non-numeric strings, e.g. `range('a', 'z')`) is unaffected: it is inherently
-> bounded. A mixed range such as `range('a', 1000000)` is capped, because PHP treats the non-numeric bound as 0.
+> **Resource limits:** the `range()` function returns at most 1000 elements. This is best effort: the
+> `..` operator and nested loops are not limited, so `memory_limit` and `max_execution_time` remain the
+> limits for expensive templates.
 
 The allow-list can be customized per project via the bundle configuration:
 
@@ -592,6 +596,7 @@ pimcore_studio_backend:
 > ```yaml
 > services:
 >     App\Twig\MyTwigOperatorExtension:
+>         autoconfigure: false # otherwise Symfony also adds it to the shared `twig` service
 >         tags: [ 'pimcore_studio_backend.twig_operator_extension' ]
 > ```
 >

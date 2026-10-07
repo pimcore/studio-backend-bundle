@@ -14,23 +14,26 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
+use BackedEnum;
 use DateTimeInterface;
 use Exception;
+use JsonSerializable;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ConsentData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface;
+use UnitEnum;
 use function array_map;
 use function is_array;
 use function is_object;
 use function is_string;
 use function sprintf;
 
-/**
- * @internal
- */
 final class TwigOperator implements TransformerInterface
 {
+    private const int MAX_DEPTH = 32;
+
     public function __construct(
         private readonly TemplateGeneratorInterface $templateGenerator
     ) {
@@ -99,38 +102,36 @@ final class TwigOperator implements TransformerInterface
     }
 
     /**
-     * Recursively strips every value down to plain data (scalars, arrays, null) before it
-     * reaches the Twig sandbox, so no object methods or properties are reachable from a template.
-     *
-     * - Arrays are walked recursively, keys preserved.
-     * - `DateTimeInterface` (covers `DateTime`, `DateTimeImmutable`, and Carbon's subclasses
-     *   of both) is converted to an ISO 8601 string. This is deliberately narrow: it is the
-     *   one object type known to legitimately reach this context today (date/date-range
-     *   columns). The `date`/`date_modify`/`format_date` filters all accept a string in this
-     *   format the same way they accept a DateTime instance, so formatting keeps working.
-     * - Any other object is dropped (replaced with null) rather than string-cast: casting
-     *   would silently invoke `__toString()` on whatever reaches this method next, which is
-     *   exactly the kind of implicit method call this sanitizer exists to avoid. There is no
-     *   other object type this transformer has a legitimate use for; if one is ever needed,
-     *   it should be added here explicitly, converted to its own plain-data representation.
-     * - Scalars and null pass through unchanged.
+     * Reduces a value to plain data (scalars, arrays, null) before it reaches the Twig sandbox, so no object
+     * method or property is reachable from a template:
+     * - arrays are walked recursively, keys preserved, up to {@see self::MAX_DEPTH} levels;
+     * - dates become ISO 8601 strings, which the `date` filters accept like a date object;
+     * - consent values, `JsonSerializable` objects and enums become their data;
+     * - any other object becomes null; it is never string-cast, which would call `__toString()`.
      */
-    private function sanitizeForTemplate(mixed $value): mixed
+    private function sanitizeForTemplate(mixed $value, int $depth = 0): mixed
     {
-        if (is_array($value)) {
-            return array_map($this->sanitizeForTemplate(...), $value);
-        }
-
-        if ($value instanceof DateTimeInterface) {
-            return $value->format(DateTimeInterface::ATOM);
-        }
-
-        if (is_object($value)) {
+        if ($depth > self::MAX_DEPTH) {
             return null;
         }
 
-        // Only scalars and null remain at this point.
-        return $value;
+        if (is_array($value)) {
+            return array_map(fn (mixed $item): mixed => $this->sanitizeForTemplate($item, $depth + 1), $value);
+        }
+
+        return match (true) {
+            $value instanceof DateTimeInterface => $value->format(DateTimeInterface::ATOM),
+            $value instanceof ConsentData => [
+                'consent' => $value->getConsent(),
+                'noteId' => $value->getNoteId(),
+                'noteContent' => $value->getNoteContent(),
+            ],
+            $value instanceof JsonSerializable => $this->sanitizeForTemplate($value->jsonSerialize(), $depth + 1),
+            $value instanceof BackedEnum => $value->value,
+            $value instanceof UnitEnum => $value->name,
+            is_object($value) => null,
+            default => $value,
+        };
     }
 
     public function getName(): string
