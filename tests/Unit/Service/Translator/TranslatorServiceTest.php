@@ -98,6 +98,9 @@ final class TranslatorServiceTest extends Unit
         $listing->expects($this->once())
             ->method('setLanguages')
             ->with($websiteLanguages);
+        $listing->expects($this->once())
+            ->method('addConditionParam')
+            ->with('1 = 1');
 
         $repository = $this->createMock(TranslationRepositoryInterface::class);
         $repository->method('getTranslationList')->willReturn($listing);
@@ -142,6 +145,10 @@ final class TranslatorServiceTest extends Unit
         $listing->expects($this->once())
             ->method('setLanguages')
             ->with($websiteLanguages);
+        // The core listing cache is not scoped by languages, so it must be bypassed
+        $listing->expects($this->once())
+            ->method('addConditionParam')
+            ->with('1 = 1');
 
         $translatorService = $this->mockTranslatorService(
             repository: $this->makeEmpty(TranslationRepositoryInterface::class, [

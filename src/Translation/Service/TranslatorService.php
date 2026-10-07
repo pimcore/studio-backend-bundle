@@ -51,6 +51,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 {
     private const string API_DOCS_DOMAIN = 'studio_api_docs';
 
+    private const string BYPASS_LISTING_CACHE_CONDITION = '1 = 1';
+
     private TranslatorBagInterface $translatorBag;
 
     public function __construct(
@@ -216,6 +218,9 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
         $list = $this->translationRepository->getTranslationList($domain);
         $list->setLanguages($validLanguages);
+        // The core listing caches loaded translations by query only, not by languages.
+        // Any condition param bypasses that cache, so users with different languages never share results.
+        $list->addConditionParam(self::BYPASS_LISTING_CACHE_CONDITION);
 
         $filters = $parameter->getFilters();
         if (null === $filters) {
