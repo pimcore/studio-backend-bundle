@@ -215,6 +215,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         );
 
         $list = $this->translationRepository->getTranslationList($domain);
+        $list->setLanguages($validLanguages);
+
         $filters = $parameter->getFilters();
         if (null === $filters) {
             return $list;
@@ -243,8 +245,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         if ($searchFilter) {
             $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
         }
-
-        $list->setLanguages($validLanguages);
 
         return $this->listingFilter->applyFilters(
             $this->filterMapper->getFilterParameters($parameter),

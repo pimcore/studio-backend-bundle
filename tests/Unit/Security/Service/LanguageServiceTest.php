@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -95,6 +96,18 @@ final class LanguageServiceTest extends Unit
         ]);
 
         $this->assertSame(['fr_BE', 'de'], $service->getTranslationAllowedLanguages($user, 'messages'));
+    }
+
+    public function testWebsiteTranslationsAreForbiddenWithoutAnyValidLanguage(): void
+    {
+        $service = $this->createTranslationLanguageService(['de', 'en']);
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getAllowedLanguagesForViewingWebsiteTranslations' => ['xx_unknown'],
+        ]);
+
+        $this->expectException(ForbiddenException::class);
+
+        $service->getTranslationAllowedLanguages($user, 'messages');
     }
 
     public function testAdminTranslationLanguagesAreNotLimitedToValidLanguages(): void

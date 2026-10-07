@@ -111,6 +111,9 @@ final readonly class LanguageService implements LanguageServiceInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array
     {
         if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
@@ -119,13 +122,20 @@ final readonly class LanguageService implements LanguageServiceInterface
 
         // Languages granted via user or role settings are stored unvalidated,
         // so only keep the ones that are configured as valid system languages.
-        /** @var string[] $allowedLanguages */
-        $allowedLanguages = array_intersect(
+        /** @var string[] $validAllowedLanguages */
+        $validAllowedLanguages = array_intersect(
             $user->getAllowedLanguagesForViewingWebsiteTranslations(),
             $this->toolResolver->getValidLanguages()
         );
+        $allowedLanguages = array_values($validAllowedLanguages);
 
-        return array_values($allowedLanguages);
+        // An empty language list means "all languages" for the core translation APIs,
+        // so a user without any valid language must be denied explicitly.
+        if ($allowedLanguages === []) {
+            throw new ForbiddenException('User is not allowed to access any website translation language');
+        }
+
+        return $allowedLanguages;
     }
 
     /**

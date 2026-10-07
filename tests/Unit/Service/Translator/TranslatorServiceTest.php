@@ -133,6 +133,37 @@ final class TranslatorServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testGetTranslationListWithoutFiltersUsesDomainSpecificLanguages(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class);
+        $websiteLanguages = ['fr_BE'];
+
+        $listing = $this->createMock(Listing::class);
+        $listing->expects($this->once())
+            ->method('setLanguages')
+            ->with($websiteLanguages);
+
+        $translatorService = $this->mockTranslatorService(
+            repository: $this->makeEmpty(TranslationRepositoryInterface::class, [
+                'getTranslationList' => $listing,
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user,
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getTranslationAllowedLanguages' => $websiteLanguages,
+            ]),
+        );
+
+        $this->assertSame(
+            $listing,
+            $translatorService->getTranslationList('messages', new CollectionFilterParameter())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     private function mockTranslatorService(
         bool $loggedIn = true,
         ?TranslationRepositoryInterface $repository = null,
