@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -78,7 +79,7 @@ final class PreviewUrlServiceTest extends Unit
     ): PreviewUrlService {
         // Not a Pimcore\Model\DataObject\Concrete, so PreviewUrlService::getPreviewUrl() falls
         // through to its existing NotFoundException branch once the permission check passes.
-        $element = $this->makeEmpty(ElementInterface::class, ['getId' => 7221]);
+        $element = $this->makeEmpty(AbstractObject::class, ['getId' => 7221]);
         $user = $this->makeEmpty(UserInterface::class, ['getId' => 42]);
 
         $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [

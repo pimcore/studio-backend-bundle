@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
@@ -71,7 +72,7 @@ final class TextServiceTest extends Unit
         bool $forbidden = false,
         bool &$encoderCalled = false
     ): TextService {
-        $element = $this->makeEmpty(ElementInterface::class, ['getId' => 7221]);
+        $element = $this->makeEmpty(Asset::class, ['getId' => 7221]);
         $user = $this->makeEmpty(UserInterface::class, ['getId' => 42]);
 
         $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
