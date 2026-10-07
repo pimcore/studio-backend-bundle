@@ -2,6 +2,16 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2025.4.15
+- [Translations] Fixed: website translations for locales that are not admin UI languages (e.g. `fr_BE`, `nl_BE`) could not be maintained. `POST /translations/list` only returned values for the available admin UI languages, so these columns stayed empty, and sorting by such a locale failed. The list now returns the languages the user is allowed to view for the requested domain (admin UI languages for the `admin` and `studio` domains), as in the classic admin UI.
+
+> **Note:** this comes with the following behavioral changes for the translation list (`POST /translations/list`) and, where noted, the CSV export (`POST /translations/export`) and import:
+> - Users with restricted website translation languages only receive values for their allowed languages, also for requests without `filters`.
+> - Website translation languages configured on a user or role that are not valid system languages are ignored. A user without any valid website translation language left receives `403` for list, export and import (previously an empty result).
+> - All `translationLike` column filters of a request are applied (previously only the first one). A `translationLike` filter on a language that is not available to the user returns `422`. The filter only applies to translation listings.
+> - Additional sort filters on a locale are supported (previously failed with a database error).
+> - The translation list no longer uses the core translation listing cache for the list of keys, as that cache does not take the requested languages into account. Translation values are still cached per key and language.
+
 ## Upgrade to 2025.4.13
 - [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.
 
