@@ -148,11 +148,19 @@ the discovery challenge. That is deliberate, and it is also why an expired or re
 consume the PAT brute-force throttle bucket.
 
 MCP is one application of the OAuth server, not its purpose. The same contracts protect Datahub Simple REST,
-and any bundle can use them for its own endpoints. Tokens are bound to the resource they were requested for,
-so a token obtained for another application is refused here; scopes are advertised but not yet enforced. See
-[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint, and
-[OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling the
-server.
+and any bundle can use them for its own endpoints. See
+[OAuth-Protected Applications](./07_OAuth_Protected_Applications.md) for the contracts and the blueprint.
+
+The audience it validates against is **the protected resource registered for the endpoint being called**, not a
+path this bundle derives. The endpoints behind this firewall belong to different bundles, so the most specific
+registered resource covering the request is what the token is held to, and its URI is built from the configured
+issuer, never from the request host. The bundle's own `/pimcore-mcp` resource covers every endpoint under it
+that registers nothing more specific; servers managed through
+[MCP Server Management](./09_MCP_Server_Management.md) each register their own, so a token obtained for one
+server, or for another application, is refused at the others. Scopes are advertised but not yet enforced.
+
+See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling and
+configuring the server.
 
 ### `PatAuthenticator` (external clients)
 

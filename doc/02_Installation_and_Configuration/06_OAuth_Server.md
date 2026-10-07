@@ -127,6 +127,11 @@ Three things become operator-visible the moment the server is switched on:
   land on different workers, and a per-process adapter such as APCu would lose the pending request between
   them.
 
+> The `issuer` must be the **public** URL clients use: behind a reverse proxy set it to the external address
+> (`https://studio.acme.com`), not the internal upstream (`http://php:9000`). Keep it **stable**, because
+> changing it re-keys every protected resource, including each managed MCP server, and invalidates the `iss`
+> on tokens already issued.
+
 ### Generating keys
 
 The signing keys are an RSA key pair; the encryption key is a random string used for authorization codes and
