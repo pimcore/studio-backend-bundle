@@ -136,6 +136,44 @@ final class TranslatorServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testGetTranslationListJoinsLanguagesOfAdditionalSortFilters(): void
+    {
+        $listing = $this->createMock(Listing::class);
+
+        $repository = $this->createMock(TranslationRepositoryInterface::class);
+        $repository->method('getTranslationList')->willReturn($listing);
+        $repository->expects($this->once())
+            ->method('joinLanguageColumns')
+            ->with($listing, ['fr_BE', 'nl_BE'], 'messages')
+            ->willReturn($listing);
+
+        $filterParameter = new FilterParameter(
+            sortFilter: new SortFilter('key', 'ASC'),
+            additionalSortFilters: [new SortFilter('fr_BE', 'DESC'), new SortFilter('nl_BE', 'ASC')]
+        );
+
+        $translatorService = $this->mockTranslatorService(
+            repository: $repository,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->makeEmpty(UserInterface::class),
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getTranslationAllowedLanguages' => ['en', 'fr_BE', 'nl_BE'],
+            ]),
+            listingFilter: $this->makeEmpty(ListingFilterInterface::class, [
+                'applyFilters' => $listing,
+            ]),
+            filterMapper: $this->makeEmpty(FilterMapperServiceInterface::class, [
+                'getFilterParameters' => $filterParameter,
+            ]),
+        );
+
+        $translatorService->getTranslationList('messages', new CollectionFilterParameter($filterParameter));
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testGetTranslationListWithoutFiltersUsesDomainSpecificLanguages(): void
     {
         $user = $this->makeEmpty(UserInterface::class);

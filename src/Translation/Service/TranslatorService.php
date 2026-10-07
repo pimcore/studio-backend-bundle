@@ -227,10 +227,11 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             return $list;
         }
 
-        $sortFilter = $filters->getSortFilter();
         $joins = [];
-        if (in_array($sortFilter->getKey(), $validLanguages, true)) {
-            $joins[] = $sortFilter->getKey();
+        foreach ($filters->getSortFilters() as $sortFilter) {
+            if (in_array($sortFilter->getKey(), $validLanguages, true)) {
+                $joins[] = $sortFilter->getKey();
+            }
         }
 
         foreach ($filters->getColumnFilters() as $columnFilter) {
