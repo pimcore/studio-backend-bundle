@@ -57,6 +57,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServi
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\UserCondition;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
@@ -468,9 +469,33 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             );
         }
 
+        $this->prependTwoFactorConfig($container, $processedConfig[Configuration::TWO_FACTOR_AUTHENTICATION_NODE]);
+
         $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
+    }
+
+    /**
+     * Prepended, so the application's own scheb_two_factor config still wins. `security_tokens`
+     * is left to scheb's defaults: lists are merged, so a prepended one could never be narrowed.
+     *
+     * @param array{issuer: string, server_name: ?string} $config
+     */
+    private function prependTwoFactorConfig(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->hasExtension('scheb_two_factor')) {
+            return;
+        }
+
+        $container->prependExtensionConfig('scheb_two_factor', [
+            'two_factor_condition' => UserCondition::class,
+            'google' => [
+                'enabled' => true,
+                'issuer' => $config['issuer'],
+                'server_name' => $config['server_name'] ?? '%router.request_context.host%',
+            ],
+        ]);
     }
 
     /**

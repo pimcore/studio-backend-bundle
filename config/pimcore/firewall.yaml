@@ -14,3 +14,5 @@ pimcore_studio_backend:
       check_path: pimcore_studio_api_login
     custom_authenticators:
       - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\AdminTokenAuthenticator
+    two_factor:
+      authentication_required_handler: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\AuthenticationRequiredHandler
