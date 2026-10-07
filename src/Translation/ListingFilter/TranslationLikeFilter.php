@@ -13,21 +13,35 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\ListingFilter;
 
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
-use Pimcore\Model\Listing\AbstractListing;
+use Pimcore\Model\Translation\Listing;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class TranslationLikeFilter implements FilterInterface
 {
+    private const string VALUE_PARAMETER = 'translationLikeValue';
+
+    public function __construct(
+        private DbResolverInterface $dbResolver,
+    ) {
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
     public function apply(
         mixed $parameters,
         mixed $listing
     ): mixed {
-        if (!$parameters instanceof FilterParameter) {
+        if (!$parameters instanceof FilterParameter || !$listing instanceof Listing) {
             return $listing;
         }
 
@@ -37,11 +51,16 @@ final readonly class TranslationLikeFilter implements FilterInterface
             return $listing;
         }
 
+        $language = $equalsColumn->getKey();
+        if (!in_array($language, $listing->getLanguages() ?? [], true)) {
+            throw new InvalidArgumentException(sprintf('Invalid translation language "%s"', $language));
+        }
+
         $listing->addConditionParam(
             // Use the 'text' field for language like filtering
             // This is necessary because language fields are joined together
-            $equalsColumn->getKey() .'.text' . ' LIKE :' . $equalsColumn->getKey(),
-            [$equalsColumn->getKey() => "%{$equalsColumn->getFilterValue()}%"]
+            $this->dbResolver->get()->quoteIdentifier($language) . '.text LIKE :' . self::VALUE_PARAMETER,
+            [self::VALUE_PARAMETER => "%{$equalsColumn->getFilterValue()}%"]
         );
 
         return $listing;
@@ -49,6 +68,6 @@ final readonly class TranslationLikeFilter implements FilterInterface
 
     public function supports(mixed $listing): bool
     {
-        return $listing instanceof AbstractListing;
+        return $listing instanceof Listing;
     }
 }
