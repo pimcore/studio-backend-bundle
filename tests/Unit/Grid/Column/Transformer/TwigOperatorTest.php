@@ -15,15 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Column\Transformer;
 
 use Carbon\Carbon;
 use Codeception\Test\Unit;
+use JsonSerializable;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ConsentData;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
-use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Twig\DefaultSandboxPolicyTrait;
+use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer;
 use Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator;
-use JsonSerializable;
 use Random\IntervalBoundary;
+use RuntimeException;
 use stdClass;
 use Stringable;
 use Twig\Environment;
@@ -155,6 +157,19 @@ final class TwigOperatorTest extends Unit
         $result = $this->transform([new AdvancedValue('object', $object, 'loop')], '[{{ value.loop }}]');
 
         $this->assertSame('[]', $result);
+    }
+
+    public function testFailingJsonSerializeBecomesATransformerError(): void
+    {
+        $object = new class implements JsonSerializable {
+            public function jsonSerialize(): mixed
+            {
+                throw new RuntimeException('broken');
+            }
+        };
+
+        $this->expectException(TransformerException::class);
+        $this->transform([new AdvancedValue('object', $object, 'thing')], '{{ value.thing }}');
     }
 
     /**

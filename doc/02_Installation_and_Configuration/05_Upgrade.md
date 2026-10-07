@@ -10,11 +10,13 @@ The following steps are necessary during updating to newer versions.
   1000 elements (best effort). See `doc/01_Architecture_Overview/01_Grid.md`.
 
 > **Note:** `SandboxExtensionInitializer` implements the new `TwigOperatorEnvironmentProviderInterface`. A custom
-> `SandboxExtensionInitializerInterface` implementation or decorator should implement it too: without it, templates
-> keep rendering through the shared `twig` service with a deprecation, and fail if the returned sandbox is not
-> registered there. The initializer's `$blockedClasses`, `$allowedClasses` and `$hardBlockedMethods` arguments no
-> longer apply, since all object access is denied. To add a filter, function or tag, tag a Twig extension with
-> `pimcore_studio_backend.twig_operator_extension` and add its name to `sandbox_security_policy`.
+> `SandboxExtensionInitializerInterface` implementation or decorator should implement it too: without it, templates keep
+> rendering through the shared `twig` service with a deprecation, and fail if the returned sandbox is not registered
+> there. `SandboxExtensionInitializer::initialize()` returns the isolated environment's sandbox, which is not registered
+> on the shared `twig` service; render through `TemplateGeneratorInterface` instead. The initializer's
+> `$blockedClasses`, `$allowedClasses` and `$hardBlockedMethods` arguments no longer apply, since all object access is
+> denied. To add a filter, function or tag, tag a Twig extension with `pimcore_studio_backend.twig_operator_extension`
+> and add its name to `sandbox_security_policy`.
 
 ## Upgrade to 2026.3.1
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system

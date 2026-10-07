@@ -540,7 +540,7 @@ This isolated environment is deliberately not the application's shared `twig` se
   - dates arrive as ISO 8601 strings; `date`, `date_modify` and `format_date` accept them like a
     date object,
   - consent values become `{consent, noteId, noteContent}`, `JsonSerializable` objects their
-    serialized data and enums their value,
+    serialized data, backed enums their value and other enums their name,
   - any other object renders as empty.
 - Method calls and property access on objects are denied, also for objects created inside the
   template (e.g. by `date()`); use filters instead.
@@ -589,9 +589,10 @@ pimcore_studio_backend:
 > registers it.** Because the isolated environment never sees the application's shared `twig`
 > service (see above), adding e.g. `trans` or a project-defined filter name here alone does not make
 > it available - the template still fails with "is not allowed"/"Unknown filter" at render time, and
-> the bundle logs a warning at build time for any allow-listed name nothing registers. To add a
-> project-defined filter, function or tag, register your own `Twig\Extension\ExtensionInterface`
-> service tagged `pimcore_studio_backend.twig_operator_extension`:
+> the bundle logs a warning when the environment is first built (on the first render) for any
+> allow-listed name nothing registers. To add a project-defined filter, function or tag, register
+> your own `Twig\Extension\ExtensionInterface` service tagged
+> `pimcore_studio_backend.twig_operator_extension`:
 >
 > ```yaml
 > services:

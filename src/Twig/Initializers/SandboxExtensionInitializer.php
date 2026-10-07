@@ -86,7 +86,8 @@ final class SandboxExtensionInitializer implements
      *   kept only so the constructor stays backward compatible.
      * @param list<class-string> $blockedClasses Not applied: all object access is denied.
      * @param list<class-string> $allowedClasses Not applied: all object access is denied.
-     * @param list<string> $blockedFunctions Core's blocked functions, added to every registered `pimcore_*` one.
+     * @param list<string> $blockedFunctions Core's blocked functions, added to every registered `pimcore_*` one
+     *   (which are blocked anyway).
      * @param array<class-string, list<string>> $hardBlockedMethods Not applied: all object access is denied.
      * @param iterable<mixed> $additionalExtensions Every service tagged
      *   {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG}, registered
@@ -112,6 +113,10 @@ final class SandboxExtensionInitializer implements
         unset($twig, $blockedClasses, $allowedClasses, $hardBlockedMethods);
     }
 
+    /**
+     * The isolated environment's sandbox. It is not registered on the shared `twig` service: render through
+     * {@see \Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface} or {@see getEnvironment()}.
+     */
     public function initialize(): SandboxExtension
     {
         $this->build();

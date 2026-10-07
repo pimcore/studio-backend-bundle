@@ -37,6 +37,7 @@ use function restore_error_handler;
 use function set_error_handler;
 use function str_contains;
 use function strtoupper;
+use const E_USER_DEPRECATED;
 
 /**
  * @internal
@@ -439,6 +440,49 @@ final class TemplateGeneratorTest extends Unit
         $this->assertCount(1, $deprecations);
         $this->assertStringContainsString(TwigOperatorEnvironmentProviderInterface::class, $deprecations[0]);
         $this->assertSame('HI', $generator->generate('{{ value|upper }}', ['value' => 'hi']));
+
+        set_error_handler(static fn (): bool => true, E_USER_DEPRECATED);
+
+        try {
+            $this->expectException(InvalidTemplateException::class);
+            $generator->generate('{{ value|lower }}', ['value' => 'HI']);
+        } finally {
+            restore_error_handler();
+        }
+    }
+
+    /**
+     * A provider whose environment is not sandboxed must not render.
+     */
+    public function testProviderWithoutEnabledSandboxFailsClosed(): void
+    {
+        $environment = new Environment(new ArrayLoader());
+        $sandbox = new SandboxExtension(new SecurityPolicy(['if'], ['upper'], []));
+        $environment->addExtension($sandbox);
+        $provider = new class($environment, $sandbox) implements
+            SandboxExtensionInitializerInterface,
+            TwigOperatorEnvironmentProviderInterface {
+            public function __construct(
+                private readonly Environment $environment,
+                private readonly SandboxExtension $sandbox
+            ) {
+            }
+
+            public function initialize(): SandboxExtension
+            {
+                return $this->sandbox;
+            }
+
+            public function getEnvironment(): Environment
+            {
+                return $this->environment;
+            }
+        };
+
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $provider);
+
+        $this->expectException(InvalidTemplateException::class);
+        $generator->generate('{{ value|upper }}', ['value' => 'hi']);
     }
 
     public function testProviderInitializerIsUsedWithoutDeprecation(): void

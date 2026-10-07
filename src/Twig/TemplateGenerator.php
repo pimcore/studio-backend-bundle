@@ -68,6 +68,8 @@ final class TemplateGenerator implements TemplateGeneratorInterface
     public function generate(string $twigTemplate, array $arguments): string
     {
         if (!$this->togglesSandbox) {
+            $this->assertEnvironmentIsSandboxed();
+
             return $this->render($twigTemplate, $arguments);
         }
 
@@ -79,6 +81,24 @@ final class TemplateGenerator implements TemplateGeneratorInterface
         } finally {
             $this->sandboxExtension->disableSandbox();
         }
+    }
+
+    /**
+     * Fails closed when a provider returns an environment whose sandbox is missing or not enabled.
+     *
+     * @throws InvalidTemplateException
+     */
+    private function assertEnvironmentIsSandboxed(): void
+    {
+        if ($this->environment->hasExtension(SandboxExtension::class)
+            && $this->environment->getExtension(SandboxExtension::class)->isSandboxed()
+        ) {
+            return;
+        }
+
+        throw new InvalidTemplateException(
+            'The Twig environment provided for TwigOperator templates does not have its sandbox enabled.'
+        );
     }
 
     /**
