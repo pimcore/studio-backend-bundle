@@ -771,7 +771,9 @@ login_2fa_description: |
   answers 429, even for the right code, until the waiting time is over.
 login_2fa_success_response: Code accepted, login successful.
 login_2fa_summary: Finish the login with a two-factor code.
-login_description: Logs in a user with the provided credentials and returns the user information.
+login_description: |
+  Logs in a user with the provided credentials. For users with two-factor authentication, the password is only the
+  first step; see the success response.
 login_success_response: |
   Login successful, with an empty body.
   When the user needs a two-factor code, the password was correct but the login is not finished:

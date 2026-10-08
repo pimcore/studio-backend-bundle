@@ -58,7 +58,9 @@ The limiter is `studio_two_factor_code`; adjust it under `framework.rate_limiter
 4. To go back, `POST /logout`.
 
 The setup endpoint is opened for this step by Studio itself; the `access_control` rules from the
-[installation](./README.md) stay as they are.
+[installation](./README.md) stay as they are. This relies on the documented rule (`ROLE_PIMCORE_USER` for the Studio
+API) and Symfony's default access decision strategy (`affirmative`). With a different role in that rule or another
+strategy, the setup endpoint stays closed and users who must set up two-factor authentication cannot log in.
 
 ## Profile and user management
 
