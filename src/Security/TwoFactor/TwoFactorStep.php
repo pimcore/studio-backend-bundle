@@ -21,4 +21,5 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor;
 enum TwoFactorStep: string
 {
     case VERIFY = 'verify';
+    case SETUP = 'setup';
 }

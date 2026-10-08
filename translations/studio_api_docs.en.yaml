@@ -765,7 +765,8 @@ export_xlsx_folder_description: |
   Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
 export_xlsx_folder_summary: Creating XLSX file for elements based on folder
 login_2fa_description: |
-  Finishes a login that needs a two-factor code. Send the current code from the authenticator app.
+  Finishes a login that needs a two-factor code. Send the current code from the authenticator app;
+  in the `setup` step, the first code from the new secret, which also enables two-factor authentication.
   A wrong code answers 401 and the code can be tried again; after too many wrong codes the endpoint
   answers 429, even for the right code, until the waiting time is over.
 login_2fa_success_response: Code accepted, login successful.
@@ -774,7 +775,9 @@ login_description: Logs in a user with the provided credentials and returns the 
 login_success_response: |
   Login successful, with an empty body.
   When the user needs a two-factor code, the password was correct but the login is not finished:
-  the body says so and names the next step, `verify` (send the code to `/login/2fa`).
+  the body says so and names the next step: `verify` (send the code to `/login/2fa`), or `setup` when the user
+  must use two-factor authentication but has not set it up (create a secret with `/user/two-factor/setup`,
+  then send the first code from it to `/login/2fa`).
   Until then, other endpoints answer 401. To go back, log out.
 login_summary: Session-based login with user credentials.
 login_token_description: |
@@ -1355,6 +1358,7 @@ user_two_factor_setup_description: |
   Creates a new secret for the current user's authenticator app, for a first setup or a renewal.
   The secret is not active yet: it waits in the session until a first code confirms it, so during a
   renewal the current secret keeps working. Show `otpauthUri` as a QR code and `secret` for manual entry.
+  It is also the only endpoint open during a login in the `setup` step; the first code then goes to `/login/2fa`.
 user_two_factor_setup_success_response: The new secret and its otpauth URI.
 user_two_factor_setup_summary: Set up or renew two-factor authentication
 user_update_active_perspective_summary: Update the active perspective for the current user.

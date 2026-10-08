@@ -33,7 +33,9 @@ final readonly class LoginSuccessHandler implements AuthenticationSuccessHandler
         if ($token instanceof TwoFactorTokenInterface) {
             return new JsonResponse([
                 'twoFactorRequired' => true,
-                'twoFactorStep' => TwoFactorStep::VERIFY->value,
+                'twoFactorStep' => $token->getCurrentTwoFactorProvider() === SetupProvider::ALIAS
+                    ? TwoFactorStep::SETUP->value
+                    : TwoFactorStep::VERIFY->value,
             ]);
         }
 

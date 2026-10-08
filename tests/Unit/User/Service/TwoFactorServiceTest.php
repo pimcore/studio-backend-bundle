@@ -20,10 +20,13 @@ use OTPHP\TOTP;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\TwoFactorSetupEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\TwoFactorService;
 use Pimcore\Model\User;
+use Pimcore\Security\User\User as SecurityUser;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorToken;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticator;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleTotpFactory;
 use Symfony\Component\Clock\MockClock;
@@ -32,11 +35,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use function sprintf;
 
 final class TwoFactorServiceTest extends Unit
 {
     private RequestStack $requestStack;
+
+    private TokenStorage $tokenStorage;
 
     private EventDispatcher $eventDispatcher;
 
@@ -50,6 +57,7 @@ final class TwoFactorServiceTest extends Unit
         $this->requestStack = new RequestStack();
         $this->requestStack->push($request);
         $this->eventDispatcher = new EventDispatcher();
+        $this->tokenStorage = new TokenStorage();
         $this->clock = new MockClock('2026-10-08 12:00:10');
     }
 
@@ -205,6 +213,126 @@ final class TwoFactorServiceTest extends Unit
         $this->assertSame('', $user->getTwoFactorAuthentication('type'));
     }
 
+    /**
+     * A login that waits for its first setup may create the secret it needs.
+     */
+    public function testSetupIsAllowedWhileTheLoginWaitsForSetup(): void
+    {
+        $user = $this->user(required: true);
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+
+        $setup = $this->service($this->repository($user, saves: 0))->createSetup($user);
+
+        $this->assertNotSame('', $setup->getSecret());
+    }
+
+    /**
+     * A login that waits for a verify code must not replace the secret: that would be a way in
+     * with the password alone.
+     */
+    public function testSetupIsRefusedWhileTheLoginWaitsForAVerifyCode(): void
+    {
+        $user = $this->user(enabled: true, secret: 'OLDSECRETOLDSECRET');
+        $this->tokenStorage->setToken($this->pendingLogin('google'));
+
+        try {
+            $this->service($this->repository($user, saves: 0))->createSetup($user);
+            $this->fail('Setup was allowed while the login waits for a verify code.');
+        } catch (ForbiddenException) {
+        }
+
+        $this->assertSame([], $this->requestStack->getSession()->all());
+    }
+
+    public function testConfirmIsRefusedWhileTheLoginWaitsForAVerifyCode(): void
+    {
+        $user = $this->user(enabled: true, secret: 'OLDSECRETOLDSECRET');
+        $service = $this->service($this->repository($user, saves: 0));
+        $secret = $service->createSetup($user)->getSecret();
+        $this->tokenStorage->setToken($this->pendingLogin('google'));
+
+        $this->expectException(ForbiddenException::class);
+        $service->confirmSetup($user, $this->code($secret));
+    }
+
+    /**
+     * The first code of a login's setup step goes through the setup provider into this service.
+     */
+    public function testSetupProviderCompletesTheSetupStepWithTheRealService(): void
+    {
+        $user = $this->user(required: true);
+        $service = $this->service($this->repository($user, saves: 1));
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+        $secret = $service->createSetup($user)->getSecret();
+        $provider = new SetupProvider($service);
+
+        $this->assertFalse($provider->validateAuthenticationCode(new SecurityUser($user), $this->wrongCode($secret)));
+        $this->assertTrue($provider->validateAuthenticationCode(new SecurityUser($user), $this->code($secret)));
+        $this->assertTrue($user->getTwoFactorAuthentication('enabled'));
+        $this->assertSame($secret, $user->getTwoFactorAuthentication('secret'));
+    }
+
+    /**
+     * The setup step was decided at the password; if the user has set up two-factor
+     * authentication since, that old login must not replace the new secret.
+     */
+    public function testSetupStepNoLongerCountsOnceTheUserHasSetUpTwoFactor(): void
+    {
+        $user = $this->user(enabled: true, secret: 'NEWSECRETNEWSECRET', required: true);
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+        $service = $this->service($this->repository($user, saves: 0));
+
+        try {
+            $service->createSetup($user);
+            $this->fail('An outdated setup step could create a secret.');
+        } catch (ForbiddenException) {
+        }
+
+        $this->expectException(ForbiddenException::class);
+        $service->confirmSetup($user, '123456');
+    }
+
+    public function testSetupStoresThePendingSecretForThisUser(): void
+    {
+        $user = $this->user(id: 42, required: true);
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+
+        $secret = $this->service($this->repository($user, saves: 0))->createSetup($user)->getSecret();
+
+        $this->assertSame(
+            [['userId' => 42, 'secret' => $secret]],
+            array_values($this->requestStack->getSession()->all())
+        );
+    }
+
+    public function testDisableIsRefusedDuringTheSetupStep(): void
+    {
+        $user = $this->user(required: true);
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+
+        $this->expectException(ForbiddenException::class);
+        $this->service($this->repository($user, saves: 0))->disable($user);
+    }
+
+    public function testDisableIsRefusedDuringAPendingLogin(): void
+    {
+        $user = $this->user(enabled: true, secret: 'OLDSECRETOLDSECRET');
+        $this->tokenStorage->setToken($this->pendingLogin('google'));
+
+        $this->expectException(ForbiddenException::class);
+        $this->service($this->repository($user, saves: 0))->disable($user);
+    }
+
+    private function pendingLogin(string $provider): TwoFactorToken
+    {
+        return new TwoFactorToken(
+            new UsernamePasswordToken(new SecurityUser(new User()), 'pimcore_studio'),
+            null,
+            'pimcore_studio',
+            [$provider]
+        );
+    }
+
     private function service(UserRepositoryInterface $repository): TwoFactorService
     {
         $authenticator = new GoogleAuthenticator(
@@ -213,7 +341,13 @@ final class TwoFactorServiceTest extends Unit
             0
         );
 
-        return new TwoFactorService($authenticator, $repository, $this->requestStack, $this->eventDispatcher);
+        return new TwoFactorService(
+            $authenticator,
+            $repository,
+            $this->requestStack,
+            $this->eventDispatcher,
+            $this->tokenStorage
+        );
     }
 
     private function repository(User $user, int $saves): UserRepositoryInterface

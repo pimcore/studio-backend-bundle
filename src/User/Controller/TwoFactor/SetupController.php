@@ -33,6 +33,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class SetupController extends AbstractApiController
 {
+    public const string ROUTE_NAME = 'pimcore_studio_api_user_two_factor_setup';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly TwoFactorServiceInterface $twoFactorService
@@ -40,7 +42,7 @@ final class SetupController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/user/two-factor/setup', name: 'pimcore_studio_api_user_two_factor_setup', methods: ['POST'])]
+    #[Route('/user/two-factor/setup', name: self::ROUTE_NAME, methods: ['POST'])]
     #[Post(
         path: self::PREFIX . '/user/two-factor/setup',
         operationId: 'user_two_factor_setup',

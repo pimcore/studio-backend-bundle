@@ -62,6 +62,14 @@ services:
     arguments:
       $limiterFactory: '@limiter.studio_two_factor_code'
 
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider:
+    tags:
+      - { name: scheb_two_factor.provider, alias: studio_setup }
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupStepVoter:
+    tags:
+      - { name: security.voter }
+
   Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionCheckerInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionChecker
 

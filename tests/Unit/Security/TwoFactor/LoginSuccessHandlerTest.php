@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\TwoFactor;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider;
 use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,6 +36,23 @@ final class LoginSuccessHandlerTest extends Unit
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame(
             ['twoFactorRequired' => true, 'twoFactorStep' => 'verify'],
+            json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)
+        );
+    }
+
+    /**
+     * A user who must use two-factor authentication but has not set it up is sent to the setup.
+     */
+    public function testLoginWaitingForTheFirstSetupAnswersTheSetupStep(): void
+    {
+        $token = $this->makeEmpty(TwoFactorTokenInterface::class, [
+            'getCurrentTwoFactorProvider' => SetupProvider::ALIAS,
+        ]);
+
+        $response = (new LoginSuccessHandler())->onAuthenticationSuccess(Request::create('/login'), $token);
+
+        $this->assertSame(
+            ['twoFactorRequired' => true, 'twoFactorStep' => 'setup'],
             json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)
         );
     }

@@ -30,7 +30,7 @@ final readonly class TwoFactorLoginStep
     public function __construct(
         #[Property(description: 'A code is needed', type: 'boolean', example: true)]
         private bool $twoFactorRequired,
-        #[Property(description: 'What to do next', type: 'string', enum: ['verify'], example: 'verify')]
+        #[Property(description: 'What to do next', type: 'string', enum: ['verify', 'setup'], example: 'verify')]
         private string $twoFactorStep,
     ) {
     }

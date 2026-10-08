@@ -16,14 +16,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\TwoFactorSetupEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TwoFactorSetup;
 use Pimcore\Bundle\StudioBackendBundle\User\TwoFactor\PendingSecret;
 use Pimcore\Model\UserInterface;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use function is_array;
 
 /**
@@ -41,11 +44,14 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         private UserRepositoryInterface $userRepository,
         private RequestStack $requestStack,
         private EventDispatcherInterface $eventDispatcher,
+        private TokenStorageInterface $tokenStorage,
     ) {
     }
 
     public function createSetup(UserInterface $user): TwoFactorSetup
     {
+        $this->denyDuringPendingLogin($user, allowSetupStep: true);
+
         $secret = $this->googleAuthenticator->generateSecret();
         $this->requestStack->getSession()->set(self::SESSION_KEY, ['userId' => $user->getId(), 'secret' => $secret]);
 
@@ -60,6 +66,8 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
 
     public function confirmSetup(UserInterface $user, string $code): void
     {
+        $this->denyDuringPendingLogin($user, allowSetupStep: true);
+
         $session = $this->requestStack->getSession();
         $pending = $session->get(self::SESSION_KEY);
         if (!is_array($pending) || ($pending['userId'] ?? null) !== $user->getId()) {
@@ -80,6 +88,8 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
 
     public function disable(UserInterface $user): void
     {
+        $this->denyDuringPendingLogin($user);
+
         if ($user->getTwoFactorAuthentication('required')) {
             throw new ForbiddenException('Two-factor authentication is required for this user.');
         }
@@ -88,5 +98,30 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         $user->setTwoFactorAuthentication('type', '');
         $user->setTwoFactorAuthentication('secret', '');
         $this->userRepository->updateUser($user);
+    }
+
+    /**
+     * During a login only its first setup may create and confirm a secret. A login waiting for a
+     * verify code must not: it would swap the secret with the password alone. The setup step was
+     * decided at the password, so it only counts while the user still has no two-factor setup.
+     *
+     * @throws ForbiddenException
+     */
+    private function denyDuringPendingLogin(UserInterface $user, bool $allowSetupStep = false): void
+    {
+        $token = $this->tokenStorage->getToken();
+        if (!$token instanceof TwoFactorTokenInterface) {
+            return;
+        }
+
+        if ($allowSetupStep
+            && $token->getCurrentTwoFactorProvider() === SetupProvider::ALIAS
+            && $user->getTwoFactorAuthentication('required')
+            && !$user->getTwoFactorAuthentication('enabled')
+        ) {
+            return;
+        }
+
+        throw new ForbiddenException('Two-factor authentication is not completed.');
     }
 }
