@@ -585,6 +585,9 @@ pimcore_studio_backend:
             functions: [ 'date', 'max', 'min' ]
 ```
 
+A configured list replaces the default list of the same type, so repeat every default you want to keep. These
+lists only apply to Twig operator templates; core's `pimcore.templating.twig.sandbox_security_policy` is separate.
+
 > **A name in this list only takes effect if a Twig extension in the isolated environment actually
 > registers it.** Because the isolated environment never sees the application's shared `twig`
 > service (see above), adding e.g. `trans` or a project-defined filter name here alone does not make
