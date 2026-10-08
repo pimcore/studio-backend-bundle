@@ -2,6 +2,23 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.4.0
+- [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
+  [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
+  - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
+    `server_name` (default: the router's request context host, i.e. `framework.router.default_uri`, or `localhost`
+    without it).
+  - New rate limiter `studio_two_factor_code` (5 wrong codes per user in 5 minutes).
+  - New endpoints: `POST /login/2fa`, `POST /user/two-factor/setup`, `POST /user/two-factor/confirm`,
+    `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.
+
+> **Note:** `POST /login` changes for users with two-factor authentication required or enabled: it answers `200` with
+> `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup"}` instead of an empty body, and the user is not logged
+> in until the code is sent to `POST /login/2fa`. Clients that treat any `200` from `POST /login` as logged in break
+> for these users only; users without two-factor authentication get the same empty `200` as before. Users who have
+> `required` set but no authenticator app yet can no longer use Studio with the password alone: they set it up during
+> the login. The login token (`POST /login/token`) still skips the code.
+
 ## Upgrade to 2026.3.1
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
