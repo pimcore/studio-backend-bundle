@@ -36,10 +36,14 @@ final readonly class DataObjectHydratorService implements DataObjectHydratorServ
     {
         $class = get_class($item);
         if ($this->hydratorLocator->has($class)) {
-            return $this->hydratorLocator->get($class)->hydrate($item);
+            $dataObject = $this->hydratorLocator->get($class)->hydrate($item);
+        } else {
+            $dataObject = $this->dataObjectHydrator->hydrate($item);
         }
 
-        return $this->dataObjectHydrator->hydrate($item);
+        $dataObject->setScore($item->getScore());
+
+        return $dataObject;
     }
 
     public function hydrateDetailObjects(DataObjectSearchResultItem $item): DataObjectDetail|DataObjectFolder

@@ -2,6 +2,12 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.4.0
+- [Grid] Added: asset and data object grid rows carry an optional `score` (the search engine score of the hit, `null`
+  without a scored query). The `Asset` and `DataObject` response schemas implement the new public
+  `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
+  new signatures.
+
 ## Upgrade to 2026.3.1
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback

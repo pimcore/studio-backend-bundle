@@ -43,9 +43,13 @@ final readonly class AssetHydratorService implements AssetHydratorServiceInterfa
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
         $class = get_class($item);
         if ($this->hydratorLocator->has($class)) {
-            return $this->hydratorLocator->get($class)->hydrate($item);
+            $asset = $this->hydratorLocator->get($class)->hydrate($item);
+        } else {
+            $asset = $this->assetHydrator->hydrate($item);
         }
 
-        return $this->assetHydrator->hydrate($item);
+        $asset->setScore($item->getScore());
+
+        return $asset;
     }
 }
