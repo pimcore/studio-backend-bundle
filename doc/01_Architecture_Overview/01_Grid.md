@@ -544,11 +544,11 @@ This isolated environment is deliberately not the application's shared `twig` se
   - any other object renders as empty.
 - Method calls and property access on objects are denied, also for objects created inside the
   template (e.g. by `date()`); use filters instead.
-- The application's Twig configuration (e.g. default date format and timezone, `number_format`
-  defaults) does not apply to this environment.
-- `strict_variables` is off (Twig's default), which can differ from the application's shared
-  `twig` service (commonly on in a debug/dev environment): an undefined variable or array key in
-  a template renders as empty rather than raising an error.
+- The environment uses Twig's defaults and has no settings of its own; the application's Twig
+  configuration does not apply. Dates use PHP's default timezone and Twig's default format
+  (`F j, Y H:i`), `number_format` defaults to no decimals, output is HTML-escaped, and
+  `strict_variables` is off, so an undefined variable or key renders as empty instead of raising
+  an error. Pass formats explicitly where they matter, e.g. `value.date|date('d.m.Y')`.
 
 - **Tags:** `if`, `for`, `set`
 - **Functions:** `date`, `max`, `min`, `random`, `range` (capped - see the range() note below)
