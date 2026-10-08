@@ -81,7 +81,10 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 
         $result = [];
         foreach ($searchResult->getItems() as $item) {
-            $result[] = $this->hydratorService->hydrateAssets($item);
+            $asset = $this->hydratorService->hydrateAssets($item);
+            // Only search results are scored; the detail path (getAssetById) stays unscored.
+            $asset->setScore($item->getScore());
+            $result[] = $asset;
         }
 
         return new AssetSearchResult(
