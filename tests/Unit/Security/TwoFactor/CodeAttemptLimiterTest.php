@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeAttemptLimiter;
 use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Scheb\TwoFactorBundle\Security\Http\Authenticator\Passport\Credentials\TwoFactorCodeCredentials;
+use Scheb\TwoFactorBundle\Security\Http\EventListener\CheckTwoFactorCodeListener;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
@@ -41,6 +42,22 @@ final class CodeAttemptLimiterTest extends Unit
             ['id' => 'two_factor_code', 'policy' => 'fixed_window', 'limit' => self::LIMIT, 'interval' => '5 minutes'],
             new InMemoryStorage()
         ));
+    }
+
+    /**
+     * The limit must refuse an attempt before scheb checks its code; afterwards a right code
+     * would already have logged in.
+     */
+    public function testRunsBeforeSchebChecksTheCode(): void
+    {
+        $events = CodeAttemptLimiter::getSubscribedEvents();
+
+        $this->assertSame('checkPassport', $events[CheckPassportEvent::class][0]);
+        $this->assertGreaterThan(
+            CheckTwoFactorCodeListener::getSubscribedEvents()[CheckPassportEvent::class][1],
+            $events[CheckPassportEvent::class][1]
+        );
+        $this->assertSame('onLoginSuccess', $events[LoginSuccessEvent::class]);
     }
 
     public function testAttemptsBelowTheLimitPass(): void
