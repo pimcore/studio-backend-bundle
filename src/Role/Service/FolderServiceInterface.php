@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
@@ -29,7 +30,7 @@ interface FolderServiceInterface
     public function deleteFolder(int $folderId): void;
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws ConflictException|DatabaseException|NotFoundException
      */
     public function createFolder(CreateParameter $createParameter): TreeNode;
 }
