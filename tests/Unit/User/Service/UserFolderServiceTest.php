@@ -15,11 +15,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Doctrine\DBAL\Driver\PDO\Exception as PDODriverException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
+use PDOException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService;
 use Pimcore\Model\User\Folder;
@@ -80,5 +85,41 @@ final class UserFolderServiceTest extends Unit
 
         $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
         $userFolderService->deleteUserFolderById(1);
+    }
+
+    public function testCreateUserFolderThrowsConflictExceptionOnDuplicateName(): void
+    {
+        $userFolderService = $this->createServiceWithFailingCreate(
+            new UniqueConstraintViolationException(
+                PDODriverException::new(new PDOException('Duplicate entry')),
+                null
+            )
+        );
+
+        $this->expectException(ConflictException::class);
+        $this->expectExceptionMessage('Folder with name "duplicate" already exists in this location');
+        $userFolderService->createUserFolder(new CreateParameter(0, 'duplicate'));
+    }
+
+    public function testCreateUserFolderThrowsDatabaseExceptionOnGenericError(): void
+    {
+        $userFolderService = $this->createServiceWithFailingCreate(new Exception('something went wrong'));
+
+        $this->expectException(DatabaseException::class);
+        $this->expectExceptionMessage('Failed to create user folder: something went wrong');
+        $userFolderService->createUserFolder(new CreateParameter(0, 'duplicate'));
+    }
+
+    private function createServiceWithFailingCreate(Exception $repositoryException): UserFolderService
+    {
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class);
+        $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class, [
+            'createUserFolder' => static function () use ($repositoryException): void {
+                throw $repositoryException;
+            },
+        ]);
+        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
+
+        return new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
     }
 }

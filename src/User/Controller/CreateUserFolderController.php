@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -49,7 +50,7 @@ final class CreateUserFolderController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws ConflictException|DatabaseException|NotFoundException
      */
     #[Route('/user/folder', name: 'pimcore_studio_api_user_folder_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -66,6 +67,7 @@ final class CreateUserFolderController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::CONFLICT,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function createUserFolder(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse

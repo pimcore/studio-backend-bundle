@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
@@ -55,6 +57,9 @@ final readonly class FolderService implements FolderServiceInterface
         }
     }
 
+    /**
+     * @throws ConflictException|NotFoundException|DatabaseException
+     */
     public function createFolder(CreateParameter $createParameter): TreeNode
     {
         $parentFolderId = 0;
@@ -77,6 +82,10 @@ final readonly class FolderService implements FolderServiceInterface
 
             return $folder;
 
+        } catch (UniqueConstraintViolationException) {
+            throw new ConflictException(
+                sprintf('Folder with name "%s" already exists in this location', $createParameter->getName())
+            );
         } catch (Exception $exception) {
             throw new DatabaseException(
                 sprintf(

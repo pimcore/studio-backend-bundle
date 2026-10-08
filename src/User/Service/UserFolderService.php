@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -57,7 +59,7 @@ final readonly class UserFolderService implements UserFolderServiceInterface
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws ConflictException|DatabaseException|NotFoundException
      */
     public function createUserFolder(CreateParameter $createParameter): TreeNode
     {
@@ -70,6 +72,10 @@ final readonly class UserFolderService implements UserFolderServiceInterface
 
         try {
             $folder = $this->userFolderRepository->createUserFolder($createParameter->getName(), $parentFolderId);
+        } catch (UniqueConstraintViolationException) {
+            throw new ConflictException(
+                sprintf('Folder with name "%s" already exists in this location', $createParameter->getName())
+            );
         } catch (Exception $e) {
             throw new DatabaseException(
                 sprintf('Failed to create user folder: %s', $e->getMessage())
