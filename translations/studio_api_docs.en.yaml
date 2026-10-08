@@ -764,8 +764,18 @@ export_xlsx_folder_description: |
   Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
 export_xlsx_folder_summary: Creating XLSX file for elements based on folder
+login_2fa_description: |
+  Finishes a login that needs a two-factor code. Send the current code from the authenticator app.
+  A wrong code answers 401 and the code can be tried again; after too many wrong codes the endpoint
+  answers 429, even for the right code, until the waiting time is over.
+login_2fa_success_response: Code accepted, login successful.
+login_2fa_summary: Finish the login with a two-factor code.
 login_description: Logs in a user with the provided credentials and returns the user information.
-login_success_response: Login successful.
+login_success_response: |
+  Login successful, with an empty body.
+  When the user needs a two-factor code, the password was correct but the login is not finished:
+  the body says so and names the next step, `verify` (send the code to `/login/2fa`).
+  Until then, other endpoints answer 401. To go back, log out.
 login_summary: Session-based login with user credentials.
 login_token_description: |
   Logs in a user based on the provided token and returns the user information.

@@ -54,6 +54,17 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\AuthenticationRequiredHandler: ~
 
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeFailureHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeAttemptLimiter:
+    arguments:
+      $limiterFactory: '@limiter.studio_two_factor_code'
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionCheckerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionChecker
+
   #Rate limiters
   # Referenced by service id from the MCP firewall's login_throttling.limiter, which makes
   # Symfony skip building its own two-tier DefaultLoginRateLimiter.
