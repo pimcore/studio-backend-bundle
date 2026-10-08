@@ -202,22 +202,37 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * The isolated environment registers no Pimcore Twig extension, so "pimcore_object" does
-     * not exist for it to resolve - the element loader is unreachable, not merely sandboxed.
-     */
-    public function testPimcoreObjectFunctionIsNotAvailable(): void
-    {
-        $this->expectException(InvalidTemplateException::class);
-        $this->generate('{{ pimcore_object(1) }}', []);
-    }
-
-    /**
+     * Pimcore functions registered on the application's `twig` service are not reachable: the template renders in
+     * the isolated environment, where they do not exist, and the shared ones are never called.
+     *
      * @dataProvider pimcoreFunctionProvider
      */
-    public function testBlocksPimcoreServiceFunctions(string $call): void
+    public function testPimcoreFunctionsOfTheSharedEnvironmentAreUnreachable(string $call): void
     {
-        $this->expectException(InvalidTemplateException::class);
-        $this->generate('{{ ' . $call . ' }}', []);
+        $calls = 0;
+        $shared = new Environment(new ArrayLoader());
+        $names = ['pimcore_object', 'pimcore_object_by_path', 'pimcore_asset', 'pimcore_document', 'pimcore_user'];
+        foreach ($names as $name) {
+            $shared->addFunction(new TwigFunction($name, static function () use (&$calls): string {
+                ++$calls;
+
+                return 'loaded';
+            }));
+        }
+        $policy = $this->getDefaultSandboxPolicy();
+        $generator = new TemplateGenerator(
+            $shared,
+            new SandboxExtensionInitializer($shared, $policy['tags'], $policy['filters'], $policy['functions'])
+        );
+
+        try {
+            $generator->generate('{{ ' . $call . ' }}', []);
+            self::fail('The function must not be callable.');
+        } catch (InvalidTemplateException $exception) {
+            $this->assertStringContainsString('Unknown "pimcore_', $exception->getMessage());
+        }
+
+        $this->assertSame(0, $calls);
     }
 
     /**
@@ -245,28 +260,30 @@ final class TemplateGeneratorTest extends Unit
 
     public static function dateMethodProvider(): iterable
     {
-        yield 'mutating' => ["{{ value.modify('+1 day') }}"];
+        yield 'mutating' => ["{{ value.modify('+1 day')|date('Y') }}"];
         yield 'read-only' => ["{{ value.format('Y') }}"];
     }
 
     /**
-     * A Pimcore element reaching the template (a bug, not something that should legitimately
-     * happen - {@see \Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TwigOperator}
-     * sanitizes every value before it gets here) must still have every method call denied.
-     * The mock's delete() itself fails the test if invoked, so this also proves the policy
-     * rejects the call before it ever reaches the object - not merely that some exception
-     * bubbles up afterward.
+     * A Pimcore element reaching the template has every method call denied before the call reaches it.
      */
     public function testBlocksMethodCallOnElementInterfaceValue(): void
     {
+        $deleted = false;
         $element = $this->makeEmpty(ElementInterface::class, [
-            'delete' => function (): void {
-                self::fail('delete() must never be invoked from a sandboxed template.');
+            'delete' => function () use (&$deleted): void {
+                $deleted = true;
             },
         ]);
 
-        $this->expectException(InvalidTemplateException::class);
-        $this->generate('{{ value.delete() }}', ['value' => $element]);
+        try {
+            $this->generate('{{ value.delete() }}', ['value' => $element]);
+            self::fail('The method call must be rejected.');
+        } catch (InvalidTemplateException $exception) {
+            $this->assertStringContainsString('is not allowed', $exception->getMessage());
+        }
+
+        $this->assertFalse($deleted, 'delete() must never be invoked from a sandboxed template.');
     }
 
     public function testRangeFunctionWithinTheCapWorks(): void
@@ -285,13 +302,12 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
-     * range() maps directly onto PHP's own range(): an uncapped call like range(0, 1000000)
-     * would allocate a huge array straight from template text - a memory/CPU DoS reachable
-     * with no object or method call involved at all.
+     * range() rejects a span beyond the cap before PHP allocates the array.
      */
     public function testRangeFunctionRejectsASpanBeyondTheCap(): void
     {
         $this->expectException(InvalidTemplateException::class);
+        $this->expectExceptionMessage('would generate more than 1000 elements');
         $this->generate('{{ range(0, 1000000)|length }}', []);
     }
 
@@ -301,7 +317,26 @@ final class TemplateGeneratorTest extends Unit
     public function testRangeFunctionRejectsALargeIntegerSpanBeyondTheCap(): void
     {
         $this->expectException(InvalidTemplateException::class);
+        $this->expectExceptionMessage('would generate more than 1000 elements');
         $this->generate('{{ range(4611686018427388428, 4611686018427389428)|length }}', []);
+    }
+
+    /**
+     * PHP counts 1001 elements for range(0, 1100, 1.1); the estimate must not fall one short because of float drift.
+     */
+    public function testRangeFunctionRejectsAFloatSpanJustBeyondTheCap(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->expectExceptionMessage('would generate more than 1000 elements');
+        $this->generate('{{ range(0, 1100, 1.1)|length }}', []);
+    }
+
+    /**
+     * An undefined bound is null and counts as 0, like Twig's own range().
+     */
+    public function testRangeFunctionTreatsAnUndefinedBoundAsZero(): void
+    {
+        $this->assertSame('0,1,2,3', $this->generate('{{ range(value.missing, 3)|join(",") }}', ['value' => []]));
     }
 
     /**
@@ -570,8 +605,9 @@ final class TemplateGeneratorTest extends Unit
 
         try {
             $generator->generate('{{ pimcore_object(1) }}', []);
-        } catch (InvalidTemplateException) {
-            // Expected: pimcore_* functions are not registered in the isolated environment.
+            self::fail('pimcore_object() must not be available.');
+        } catch (InvalidTemplateException $exception) {
+            $this->assertStringContainsString('Unknown "pimcore_object" function', $exception->getMessage());
         }
 
         $this->assertNotSame(
@@ -650,6 +686,35 @@ final class TemplateGeneratorTest extends Unit
         $this->assertCount(1, $logger->records, 'The warning must be logged exactly once.');
         $this->assertSame('warning', $logger->records[0][0]);
         $this->assertContains('does_not_exist_anywhere', $logger->records[0][2]['functions']);
+    }
+
+    /**
+     * Allow-listed `pimcore_*` names are ignored, and the warning says so instead of asking for an extension.
+     */
+    public function testWarnsAboutIgnoredPimcoreFunctionNames(): void
+    {
+        $logger = new class extends AbstractLogger {
+            /** @var list<array{0: string, 1: string, 2: array<string, mixed>}> */
+            public array $records = [];
+
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                $this->records[] = [(string) $level, (string) $message, $context];
+            }
+        };
+
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            array_merge($policy['functions'], ['pimcore_object']),
+            logger: $logger
+        );
+        $initializer->getEnvironment();
+
+        $this->assertCount(1, $logger->records);
+        $this->assertSame(['ignored_functions' => ['pimcore_object']], $logger->records[0][2]);
     }
 
     /**

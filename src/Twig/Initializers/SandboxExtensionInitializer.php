@@ -81,6 +81,12 @@ final class SandboxExtensionInitializer implements
 
     private const string PIMCORE_FUNCTION_PREFIX = 'pimcore_';
 
+    /**
+     * PHP's range() corrects float drift when counting steps; this tolerance keeps the estimate from falling one
+     * element short of it.
+     */
+    private const float FLOAT_SPAN_TOLERANCE = 1e-9;
+
     private Environment $environment;
 
     private SandboxExtension $sandboxExtension;
@@ -180,16 +186,26 @@ final class SandboxExtensionInitializer implements
         return new SecurityPolicy(
             $this->allowedTags,
             $this->allowedFilters,
-            // Allowed functions win over blocked ones in the policy, so `pimcore_*` names are never allowed.
-            array_values(array_filter(
-                $this->allowedFunctions,
-                static fn (string $name): bool => !str_starts_with($name, self::PIMCORE_FUNCTION_PREFIX)
-            )),
+            $this->allowedNonPimcoreFunctions(),
             [],
             self::ALLOWED_CLASSES,
             $this->blockedFunctions,
             []
         );
+    }
+
+    /**
+     * The configured allowed functions without `pimcore_*` names: allowed functions win over blocked ones in the
+     * policy, so these names are never allowed.
+     *
+     * @return list<string>
+     */
+    private function allowedNonPimcoreFunctions(): array
+    {
+        return array_values(array_filter(
+            $this->allowedFunctions,
+            static fn (string $name): bool => !str_starts_with($name, self::PIMCORE_FUNCTION_PREFIX)
+        ));
     }
 
     /**
@@ -215,10 +231,13 @@ final class SandboxExtensionInitializer implements
     {
         // Same parameter names as PHP's range(), which Twig's own `range` maps to, so named arguments keep working.
         return new TwigFunction('range', static function (
-            int|float|string $start,
-            int|float|string $end,
+            int|float|string|null $start,
+            int|float|string|null $end,
             int|float $step = 1
         ): array {
+            // An undefined variable is null (strict_variables is off); Twig's own range() treats it as 0.
+            $start ??= 0;
+            $end ??= 0;
             self::assertRangeIsBounded($start, $end, $step);
 
             return range($start, $end, $step);
@@ -254,7 +273,7 @@ final class SandboxExtensionInitializer implements
         $distance = abs(self::toNumber($end) - self::toNumber($start));
         $span = is_int($distance) && is_int($step)
             ? intdiv($distance, abs($step)) + 1
-            : floor($distance / abs((float) $step)) + 1;
+            : floor($distance / abs((float) $step) + self::FLOAT_SPAN_TOLERANCE) + 1;
 
         if ($span > self::MAX_RANGE_SIZE) {
             throw new RuntimeError(sprintf(
@@ -279,12 +298,8 @@ final class SandboxExtensionInitializer implements
     }
 
     /**
-     * Blocks every `pimcore_*` function actually registered on this isolated environment.
-     * In practice this is always an empty list - no Pimcore Twig extension is registered
-     * here - but computing it instead of hardcoding `[]` means a future change that
-     * accidentally adds one does not silently reopen the element/service loader hole: the
-     * blanket `pimcore_*` prefix auto-allow in {@see SecurityPolicy::checkSecurity()} would
-     * otherwise let it straight through.
+     * Every `pimcore_*` function registered on this environment, e.g. by a tagged extension, so it is blocked:
+     * {@see SecurityPolicy::checkSecurity()} otherwise allows any `pimcore_*` function by prefix.
      *
      * @return list<string>
      */
@@ -303,7 +318,7 @@ final class SandboxExtensionInitializer implements
      * Adding a name to the allow-list without also registering a matching extension via
      * {@see TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG} is a
      * configuration mistake that otherwise fails silently until a template actually uses the
-     * name - logged once here, at build time, instead.
+     * name. Logged when the environment is built, once per process, when the TwigOperator transformer is created.
      */
     private function warnAboutUnregisteredAllowListNames(Environment $environment): void
     {
@@ -311,10 +326,19 @@ final class SandboxExtensionInitializer implements
             return;
         }
 
+        $ignoredFunctions = array_values(array_diff($this->allowedFunctions, $this->allowedNonPimcoreFunctions()));
+        if ($ignoredFunctions !== []) {
+            $this->logger->warning(
+                'TwigOperator sandbox_security_policy allow-lists pimcore_* functions, which are ignored: ' .
+                'no pimcore_* function can be called from a TwigOperator template.',
+                ['ignored_functions' => $ignoredFunctions]
+            );
+        }
+
         $unregistered = array_filter([
             'tags' => array_diff($this->allowedTags, $this->registeredTagNames($environment)),
             'filters' => array_diff($this->allowedFilters, array_keys($environment->getFilters())),
-            'functions' => array_diff($this->allowedFunctions, array_keys($environment->getFunctions())),
+            'functions' => array_diff($this->allowedNonPimcoreFunctions(), array_keys($environment->getFunctions())),
         ]);
 
         if ($unregistered === []) {

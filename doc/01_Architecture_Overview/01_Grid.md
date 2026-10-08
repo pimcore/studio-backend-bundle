@@ -586,14 +586,15 @@ pimcore_studio_backend:
 ```
 
 A configured list replaces the default list of the same type, so repeat every default you want to keep. These
-lists only apply to Twig operator templates; core's `pimcore.templating.twig.sandbox_security_policy` is separate.
-`pimcore_*` function names are ignored: no `pimcore_*` function can be called from a Twig operator template.
+lists only apply to Twig operator templates and are independent of core's
+`pimcore.templating.twig.sandbox_security_policy` allow-lists. `pimcore_*` function names are ignored (and logged as a
+warning): no `pimcore_*` function can be called from a Twig operator template.
 
 > **A name in this list only takes effect if a Twig extension in the isolated environment actually
 > registers it.** Because the isolated environment never sees the application's shared `twig`
 > service (see above), adding e.g. `trans` or a project-defined filter name here alone does not make
 > it available - the template still fails with "is not allowed"/"Unknown filter" at render time, and
-> the bundle logs a warning when the environment is first built (on the first render) for any
+> the bundle logs a warning (once per process, when the transformer is created) for any
 > allow-listed name nothing registers. To add a project-defined filter, function or tag, register
 > your own `Twig\Extension\ExtensionInterface` service tagged
 > `pimcore_studio_backend.twig_operator_extension`:
@@ -609,7 +610,9 @@ lists only apply to Twig operator templates; core's `pimcore.templating.twig.san
 > It is registered into the isolated environment alongside the built-in extensions, and its
 > filter/function/tag names still need to be added to `sandbox_security_policy` above to be usable.
 > Keep it narrowly scoped to safe, side-effect-free formatting - it runs in the same sandbox as
-> everything else on this page, with the same consequences if it is not.
+> everything else on this page, with the same consequences if it is not. The isolated environment has
+> no runtime loader, so filters and functions must be callable directly, not through a Twig runtime
+> (`RuntimeExtensionInterface`).
 
 > **Security:** Be careful when extending the allow-list. Filters such as `raw` disable output
 > escaping (potential XSS if the value is rendered as HTML). Do not add Twig functions like
