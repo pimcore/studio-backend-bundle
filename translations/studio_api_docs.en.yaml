@@ -1340,6 +1340,23 @@ user_token_link_get_description: |
   The <strong>{id}</strong> must be an ID of existing user.
 user_token_link_get_success_response: Token login link for the user
 user_token_link_get_summary: Generate login link and token for a user by ID
+user_two_factor_confirm_description: |
+  Confirms the pending secret from the setup with a first code from the authenticator app.
+  Only then is two-factor authentication enabled with this secret; a previous secret is replaced.
+  A wrong code answers 422 and the setup stays pending; without a pending setup the answer is 409.
+user_two_factor_confirm_success_response: Two-factor authentication is enabled with the new secret.
+user_two_factor_confirm_summary: Confirm two-factor authentication setup
+user_two_factor_disable_description: |
+  Disables two-factor authentication for the current user and removes the secret.
+  Refused with 403 while two-factor authentication is required for the user.
+user_two_factor_disable_success_response: Two-factor authentication is disabled.
+user_two_factor_disable_summary: Disable two-factor authentication
+user_two_factor_setup_description: |
+  Creates a new secret for the current user's authenticator app, for a first setup or a renewal.
+  The secret is not active yet: it waits in the session until a first code confirms it, so during a
+  renewal the current secret keeps working. Show `otpauthUri` as a QR code and `secret` for manual entry.
+user_two_factor_setup_success_response: The new secret and its otpauth URI.
+user_two_factor_setup_summary: Set up or renew two-factor authentication
 user_update_active_perspective_summary: Update the active perspective for the current user.
 user_update_active_perspective_success_response: Updated active perspective for the current user.
 user_update_by_id_success_response: Updated data.
