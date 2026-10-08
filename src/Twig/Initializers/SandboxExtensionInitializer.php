@@ -36,6 +36,8 @@ use function array_values;
 use function class_exists;
 use function floor;
 use function get_debug_type;
+use function intdiv;
+use function is_int;
 use function is_numeric;
 use function is_string;
 use function range;
@@ -76,6 +78,8 @@ final class SandboxExtensionInitializer implements
      * See {@see buildSafeRangeFunction()}.
      */
     private const int MAX_RANGE_SIZE = 1000;
+
+    private const string PIMCORE_FUNCTION_PREFIX = 'pimcore_';
 
     private Environment $environment;
 
@@ -176,7 +180,11 @@ final class SandboxExtensionInitializer implements
         return new SecurityPolicy(
             $this->allowedTags,
             $this->allowedFilters,
-            $this->allowedFunctions,
+            // Allowed functions win over blocked ones in the policy, so `pimcore_*` names are never allowed.
+            array_values(array_filter(
+                $this->allowedFunctions,
+                static fn (string $name): bool => !str_starts_with($name, self::PIMCORE_FUNCTION_PREFIX)
+            )),
             [],
             self::ALLOWED_CLASSES,
             $this->blockedFunctions,
@@ -205,14 +213,15 @@ final class SandboxExtensionInitializer implements
 
     private function buildSafeRangeFunction(): TwigFunction
     {
+        // Same parameter names as PHP's range(), which Twig's own `range` maps to, so named arguments keep working.
         return new TwigFunction('range', static function (
-            int|float|string $low,
-            int|float|string $high,
+            int|float|string $start,
+            int|float|string $end,
             int|float $step = 1
         ): array {
-            self::assertRangeIsBounded($low, $high, $step);
+            self::assertRangeIsBounded($start, $end, $step);
 
-            return range($low, $high, $step);
+            return range($start, $end, $step);
         });
     }
 
@@ -226,9 +235,12 @@ final class SandboxExtensionInitializer implements
      *
      * @throws RuntimeError if the span would exceed MAX_RANGE_SIZE
      */
-    private static function assertRangeIsBounded(int|float|string $low, int|float|string $high, int|float $step): void
-    {
-        if (self::isNonNumericString($low) && self::isNonNumericString($high)) {
+    private static function assertRangeIsBounded(
+        int|float|string $start,
+        int|float|string $end,
+        int|float $step
+    ): void {
+        if (self::isNonNumericString($start) && self::isNonNumericString($end)) {
             return;
         }
 
@@ -237,15 +249,19 @@ final class SandboxExtensionInitializer implements
             return;
         }
 
-        // PHP treats a non-numeric bound as 0 when the other bound is numeric.
-        $span = floor(abs((self::toNumber($high) - self::toNumber($low)) / (float) $step)) + 1;
+        // PHP treats a non-numeric bound as 0 when the other bound is numeric. Integer bounds are subtracted as
+        // integers, since large ones lose precision as floats; an overflow turns the difference into a float.
+        $distance = abs(self::toNumber($end) - self::toNumber($start));
+        $span = is_int($distance) && is_int($step)
+            ? intdiv($distance, abs($step)) + 1
+            : floor($distance / abs((float) $step)) + 1;
 
         if ($span > self::MAX_RANGE_SIZE) {
             throw new RuntimeError(sprintf(
                 'range(%s, %s, %s) would generate more than %d elements, which is not allowed ' .
                 'in a TwigOperator template.',
-                $low,
-                $high,
+                $start,
+                $end,
                 $step,
                 self::MAX_RANGE_SIZE
             ));
@@ -257,9 +273,9 @@ final class SandboxExtensionInitializer implements
         return is_string($value) && !is_numeric($value);
     }
 
-    private static function toNumber(int|float|string $value): float
+    private static function toNumber(int|float|string $value): int|float
     {
-        return is_numeric($value) ? (float) $value : 0.0;
+        return is_numeric($value) ? $value + 0 : 0;
     }
 
     /**
@@ -276,7 +292,7 @@ final class SandboxExtensionInitializer implements
     {
         return array_values(array_filter(
             array_keys($environment->getFunctions()),
-            static fn (string $name): bool => str_starts_with($name, 'pimcore_')
+            static fn (string $name): bool => str_starts_with($name, self::PIMCORE_FUNCTION_PREFIX)
         ));
     }
 

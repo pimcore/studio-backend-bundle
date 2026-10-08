@@ -296,6 +296,23 @@ final class TemplateGeneratorTest extends Unit
     }
 
     /**
+     * Large integer bounds are compared as integers; as floats they would round to the same value.
+     */
+    public function testRangeFunctionRejectsALargeIntegerSpanBeyondTheCap(): void
+    {
+        $this->expectException(InvalidTemplateException::class);
+        $this->generate('{{ range(4611686018427388428, 4611686018427389428)|length }}', []);
+    }
+
+    /**
+     * The capped `range` keeps the parameter names of PHP's range(), so named arguments still work.
+     */
+    public function testRangeFunctionSupportsNamedArguments(): void
+    {
+        $this->assertSame('1,3,5', $this->generate('{{ range(start=1, end=5, step=2)|join(",") }}', []));
+    }
+
+    /**
      * A character range is inherently bounded (at most the codepoint distance between the two
      * characters) and must keep working uncapped.
      */
@@ -699,6 +716,32 @@ final class TemplateGeneratorTest extends Unit
         yield 'allowed class' => [false, true, false];
         yield 'hard-blocked method' => [false, false, true];
         yield 'allowed class with hard-blocked method' => [false, true, true];
+    }
+
+    /**
+     * Allowed functions win over blocked ones in the policy, so allow-listing a registered `pimcore_*`
+     * function must not make it callable.
+     */
+    public function testAllowListedPimcoreFunctionStaysBlocked(): void
+    {
+        $extension = new class extends AbstractExtension {
+            public function getFunctions(): array
+            {
+                return [new TwigFunction('pimcore_test_lookup', static fn (): string => 'secret')];
+            }
+        };
+        $policy = $this->getDefaultSandboxPolicy();
+        $initializer = new SandboxExtensionInitializer(
+            new Environment(new ArrayLoader()),
+            $policy['tags'],
+            $policy['filters'],
+            array_merge($policy['functions'], ['pimcore_test_lookup']),
+            additionalExtensions: [$extension]
+        );
+        $generator = new TemplateGenerator(new Environment(new ArrayLoader()), $initializer);
+
+        $this->expectException(InvalidTemplateException::class);
+        $generator->generate('{{ pimcore_test_lookup() }}', []);
     }
 
     /**
