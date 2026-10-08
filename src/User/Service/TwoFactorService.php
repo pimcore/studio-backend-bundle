@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\TwoFactorSetupEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
@@ -45,6 +46,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         private RequestStack $requestStack,
         private EventDispatcherInterface $eventDispatcher,
         private TokenStorageInterface $tokenStorage,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -94,6 +96,24 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
             throw new ForbiddenException('Two-factor authentication is required for this user.');
         }
 
+        $this->clear($user);
+    }
+
+    public function resetForUser(int $userId): void
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+        $user = $this->userRepository->getUserById($userId);
+
+        // The Classic admin UI's rule.
+        if (!$currentUser->isAdmin() && $currentUser->getId() !== $user->getId()) {
+            throw new ForbiddenException('Only admins may reset the two-factor authentication of other users.');
+        }
+
+        $this->clear($user);
+    }
+
+    private function clear(UserInterface $user): void
+    {
         $user->setTwoFactorAuthentication('enabled', false);
         $user->setTwoFactorAuthentication('type', '');
         $user->setTwoFactorAuthentication('secret', '');

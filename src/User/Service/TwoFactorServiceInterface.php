@@ -16,7 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TwoFactorSetup;
 use Pimcore\Model\UserInterface;
 
@@ -44,4 +46,12 @@ interface TwoFactorServiceInterface
      * @throws DatabaseException
      */
     public function disable(UserInterface $user): void;
+
+    /**
+     * Resets another user's two-factor authentication: admins may reset anyone, other users only
+     * themselves. Whether it is required stays as it is.
+     *
+     * @throws NotFoundException|ForbiddenException|UserNotFoundException|DatabaseException
+     */
+    public function resetForUser(int $userId): void;
 }

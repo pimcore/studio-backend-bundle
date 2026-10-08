@@ -1354,6 +1354,12 @@ user_two_factor_disable_description: |
   Refused with 403 while two-factor authentication is required for the user.
 user_two_factor_disable_success_response: Two-factor authentication is disabled.
 user_two_factor_disable_summary: Disable two-factor authentication
+user_two_factor_reset_by_id_description: |
+  Resets the two-factor authentication of a user: disables it and removes the secret.
+  Whether it is required for the user stays as it is; a required user sets it up again at the next login.
+  Admins may reset any user, other users with user management only themselves.
+user_two_factor_reset_by_id_success_response: Two-factor authentication of the user is reset.
+user_two_factor_reset_by_id_summary: Reset two-factor authentication of a user
 user_two_factor_setup_description: |
   Creates a new secret for the current user's authenticator app, for a first setup or a renewal.
   The secret is not active yet: it waits in the session until a first code confirms it, so during a

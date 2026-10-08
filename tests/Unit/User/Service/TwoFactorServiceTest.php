@@ -19,7 +19,10 @@ use LogicException;
 use OTPHP\TOTP;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\TwoFactorSetupEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
@@ -323,6 +326,97 @@ final class TwoFactorServiceTest extends Unit
         $this->service($this->repository($user, saves: 0))->disable($user);
     }
 
+    public function testAdminResetsAnotherUser(): void
+    {
+        $admin = $this->user(id: 1, admin: true);
+        $target = $this->user(id: 7, enabled: true, secret: 'OLDSECRETOLDSECRET', required: true);
+
+        $this->service($this->repository($target, saves: 1, byId: [7 => $target]), $admin)->resetForUser(7);
+
+        $this->assertFalse($target->getTwoFactorAuthentication('enabled'));
+        $this->assertSame('', $target->getTwoFactorAuthentication('secret'));
+        $this->assertSame('', $target->getTwoFactorAuthentication('type'));
+        $this->assertTrue($target->getTwoFactorAuthentication('required'), 'required stays as the admin set it');
+    }
+
+    public function testAdminResetsAnotherAdmin(): void
+    {
+        $admin = $this->user(id: 1, admin: true);
+        $target = $this->user(id: 2, enabled: true, secret: 'OLDSECRETOLDSECRET', admin: true);
+
+        $this->service($this->repository($target, saves: 1, byId: [2 => $target]), $admin)->resetForUser(2);
+
+        $this->assertFalse($target->getTwoFactorAuthentication('enabled'));
+    }
+
+    public function testNonAdminResetsThemselves(): void
+    {
+        $self = $this->user(id: 7, enabled: true, secret: 'OLDSECRETOLDSECRET');
+
+        $this->service($this->repository($self, saves: 1, byId: [7 => $self]), $self)->resetForUser(7);
+
+        $this->assertFalse($self->getTwoFactorAuthentication('enabled'));
+        $this->assertSame('', $self->getTwoFactorAuthentication('secret'));
+    }
+
+    /**
+     * @dataProvider othersOfANonAdminProvider
+     */
+    public function testNonAdminCannotResetAnotherUser(bool $targetIsAdmin): void
+    {
+        $actor = $this->user(id: 7);
+        $target = $this->user(id: 8, enabled: true, secret: 'OLDSECRETOLDSECRET', admin: $targetIsAdmin);
+
+        try {
+            $this->service($this->repository($target, saves: 0, byId: [8 => $target]), $actor)->resetForUser(8);
+            $this->fail('A non-admin reset another user.');
+        } catch (ForbiddenException) {
+        }
+
+        $this->assertTrue($target->getTwoFactorAuthentication('enabled'));
+        $this->assertSame('OLDSECRETOLDSECRET', $target->getTwoFactorAuthentication('secret'));
+    }
+
+    /**
+     * @return array<string, array{0: bool}>
+     */
+    public static function othersOfANonAdminProvider(): array
+    {
+        return [
+            'another non-admin' => [false],
+            'an admin' => [true],
+        ];
+    }
+
+    /**
+     * Without a current user (e.g. a login whose code is still pending) nothing is reset.
+     */
+    public function testResetWithoutACurrentUserChangesNothing(): void
+    {
+        $target = $this->user(id: 8, enabled: true, secret: 'OLDSECRETOLDSECRET');
+
+        try {
+            $this->service($this->repository($target, saves: 0, byId: [8 => $target]))->resetForUser(8);
+            $this->fail('A reset without a current user was accepted.');
+        } catch (UserNotFoundException) {
+        }
+
+        $this->assertTrue($target->getTwoFactorAuthentication('enabled'));
+        $this->assertSame('OLDSECRETOLDSECRET', $target->getTwoFactorAuthentication('secret'));
+    }
+
+    public function testResetOfAnUnknownUserIsNotFound(): void
+    {
+        $admin = $this->user(id: 1, admin: true);
+        $repository = $this->makeEmpty(UserRepositoryInterface::class, [
+            'getUserById' => static fn () => throw new NotFoundException('User', 99),
+            'updateUser' => Expected::never(),
+        ]);
+
+        $this->expectException(NotFoundException::class);
+        $this->service($repository, $admin)->resetForUser(99);
+    }
+
     private function pendingLogin(string $provider): TwoFactorToken
     {
         return new TwoFactorToken(
@@ -333,7 +427,7 @@ final class TwoFactorServiceTest extends Unit
         );
     }
 
-    private function service(UserRepositoryInterface $repository): TwoFactorService
+    private function service(UserRepositoryInterface $repository, ?User $currentUser = null): TwoFactorService
     {
         $authenticator = new GoogleAuthenticator(
             new GoogleTotpFactory('pim.acme.test', 'Acme PIM', 6, $this->clock),
@@ -346,13 +440,20 @@ final class TwoFactorServiceTest extends Unit
             $repository,
             $this->requestStack,
             $this->eventDispatcher,
-            $this->tokenStorage
+            $this->tokenStorage,
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $currentUser ?? static fn () => throw new UserNotFoundException(),
+            ])
         );
     }
 
-    private function repository(User $user, int $saves): UserRepositoryInterface
+    /**
+     * @param array<int, User> $byId
+     */
+    private function repository(User $user, int $saves, array $byId = []): UserRepositoryInterface
     {
         return $this->makeEmpty(UserRepositoryInterface::class, [
+            'getUserById' => static fn (int $id) => $byId[$id] ?? throw new NotFoundException('User', $id),
             'updateUser' => Expected::exactly($saves, static function (User $saved) use ($user): void {
                 if ($saved !== $user) {
                     throw new LogicException('Saved another user.');
@@ -361,10 +462,16 @@ final class TwoFactorServiceTest extends Unit
         ]);
     }
 
-    private function user(int $id = 7, bool $enabled = false, string $secret = '', bool $required = false): User
-    {
+    private function user(
+        int $id = 7,
+        bool $enabled = false,
+        string $secret = '',
+        bool $required = false,
+        bool $admin = false
+    ): User {
         $user = new User();
         $user->setId($id);
+        $user->setAdmin($admin);
         $user->setName('john');
         $user->setTwoFactorAuthentication([
             'required' => $required,
