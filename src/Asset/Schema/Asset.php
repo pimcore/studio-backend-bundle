@@ -18,11 +18,13 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Response\ScoreAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ScoreAwareTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
@@ -41,10 +43,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
     ],
     type: 'object'
 )]
-class Asset extends Element implements AdditionalAttributesInterface, WorkflowPermissionsAwareInterface
+class Asset extends Element implements
+    AdditionalAttributesInterface,
+    ScoreAwareInterface,
+    WorkflowPermissionsAwareInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
+    use ScoreAwareTrait;
     use WorkflowAvailableTrait;
 
     public function __construct(
@@ -54,7 +60,7 @@ class Asset extends Element implements AdditionalAttributesInterface, WorkflowPe
         private readonly string $type,
         #[Property(description: 'Filename', type: 'string', example: 'cool.jpg')]
         private readonly string $filename,
-        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]
+        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg', nullable: true)]
         private readonly ?string $mimeType,
         #[Property(description: 'Has metadata', type: 'bool', example: false)]
         private readonly bool $hasMetadata,

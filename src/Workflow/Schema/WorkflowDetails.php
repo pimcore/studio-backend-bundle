@@ -67,7 +67,8 @@ final class WorkflowDetails implements AdditionalAttributesInterface
         #[Property(
             description: 'workflowLayoutId',
             type: 'string',
-            example: 'someWorkflowLayoutId'
+            example: 'someWorkflowLayoutId',
+            nullable: true
         )]
         private readonly ?string $workflowLayoutId,
         #[Property(

@@ -17,11 +17,13 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Response\ScoreAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ScoreAwareTrait;
 
 #[Schema(
     title: 'DataObject',
@@ -42,10 +44,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
     ],
     type: 'object'
 )]
-class DataObject extends Element implements AdditionalAttributesInterface, WorkflowPermissionsAwareInterface
+class DataObject extends Element implements
+    AdditionalAttributesInterface,
+    ScoreAwareInterface,
+    WorkflowPermissionsAwareInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
+    use ScoreAwareTrait;
 
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
@@ -70,7 +76,7 @@ class DataObject extends Element implements AdditionalAttributesInterface, Workf
         private readonly string $childrenSortBy,
         #[Property(description: 'Sort order of children', type: 'string', example: 'asc')]
         private readonly string $childrenSortOrder,
-        #[Property(description: 'Allow variants', type: 'bool', example: false)]
+        #[Property(description: 'Allow variants', type: 'bool', example: false, nullable: true)]
         private ?bool $allowVariants,
         int $id,
         int $parentId,

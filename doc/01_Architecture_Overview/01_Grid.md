@@ -525,13 +525,33 @@ In this example, `{{ value.name }} - {{ value.manufacturer.name }}` resolves to 
 
 **Available Twig Filters, Functions and Tags:**
 
-Templates are rendered inside a [Twig sandbox](https://twig.symfony.com/doc/3.x/api.html#sandbox-extension).
-Only the tags, filters and functions listed below are allowed; anything else (method calls, property
-access, file includes, etc.) is rejected and the template fails to render. This prevents arbitrary
-code execution through user-provided templates.
+Templates are rendered inside a [Twig sandbox](https://twig.symfony.com/doc/3.x/api.html#sandbox-extension),
+in a dedicated Twig `Environment` built from scratch for this purpose alone. Only the tags, filters
+and functions listed below are allowed; anything else (method calls, property access, file includes,
+etc.) is rejected and the template fails to render. This prevents arbitrary code execution through
+user-provided templates.
+
+This isolated environment is deliberately not the application's shared `twig` service:
+
+- No Pimcore Twig extension is registered on it, so functions like `pimcore_object`,
+  `pimcore_asset` or `pimcore_document` do not exist for it to resolve at all - they are not
+  merely sandboxed, there is no element/service loader reachable here to begin with.
+- Values are converted to plain data (scalars, arrays, `null`) before they reach the template:
+  - dates arrive as ISO 8601 strings; `date`, `date_modify` and `format_date` accept them like a
+    date object,
+  - consent values become `{consent, noteId, noteContent}`, `JsonSerializable` objects their
+    serialized data, backed enums their value and other enums their name,
+  - any other object renders as empty.
+- Method calls and property access on objects are denied, also for objects created inside the
+  template (e.g. by `date()`); use filters instead.
+- The environment uses Twig's defaults and has no settings of its own; the application's Twig
+  configuration does not apply. Dates use PHP's default timezone and Twig's default format
+  (`F j, Y H:i`), `number_format` defaults to no decimals, output is HTML-escaped, and
+  `strict_variables` is off, so an undefined variable or key renders as empty instead of raising
+  an error. Pass formats explicitly where they matter, e.g. `value.date|date('d.m.Y')`.
 
 - **Tags:** `if`, `for`, `set`
-- **Functions:** `date`, `max`, `min`, `random`, `range`
+- **Functions:** `date`, `max`, `min`, `random`, `range` (capped - see the range() note below)
 - **Filters:**
   - *Core:* `abs`, `capitalize`, `date`, `date_modify`, `default`, `escape`, `filter`, `find`,
     `first`, `format`, `join`, `json_encode`, `keys`, `last`, `length`, `lower`, `map`, `merge`,
@@ -543,9 +563,16 @@ code execution through user-provided templates.
   - *String* (require [`twig/string-extra`](https://packagist.org/packages/twig/string-extra)):
     `plural`, `singular`
 
-> **Note:** The localization and string filters depend on the corresponding Twig extra packages being
-> installed and registered (they are auto-registered by `twig/extra-bundle`). The localization filters
-> additionally require the PHP `intl` extension.
+> **Note:** The localization and string filters depend on the corresponding Twig extra packages
+> being installed - the isolated environment registers `Twig\Extra\Intl\IntlExtension` and
+> `Twig\Extra\String\StringExtension` on itself directly whenever their classes are present, which
+> is independent of whatever the application's own `twig.yaml`/`twig/extra-bundle` configuration
+> does for the shared `twig` service. The localization filters additionally require the PHP `intl`
+> extension.
+
+> **Resource limits:** the `range()` function returns at most 1000 elements. This is best effort: the
+> `..` operator and nested loops are not limited, so `memory_limit` and `max_execution_time` remain the
+> limits for expensive templates.
 
 The allow-list can be customized per project via the bundle configuration:
 
@@ -558,9 +585,37 @@ pimcore_studio_backend:
             functions: [ 'date', 'max', 'min' ]
 ```
 
+A configured list replaces the default list of the same type, so repeat every default you want to keep. These
+lists only apply to Twig operator templates and are independent of core's
+`pimcore.templating.twig.sandbox_security_policy` allow-lists. `pimcore_*` function names are ignored (and logged as a
+warning): no `pimcore_*` function can be called from a Twig operator template.
+
+> **A name in this list only takes effect if a Twig extension in the isolated environment actually
+> registers it.** Because the isolated environment never sees the application's shared `twig`
+> service (see above), adding e.g. `trans` or a project-defined filter name here alone does not make
+> it available - the template still fails with "is not allowed"/"Unknown filter" at render time, and
+> the bundle logs a warning (once per process, when the transformer is created) for any
+> allow-listed name nothing registers. To add a project-defined filter, function or tag, register
+> your own `Twig\Extension\ExtensionInterface` service tagged
+> `pimcore_studio_backend.twig_operator_extension`:
+>
+> ```yaml
+> services:
+>     App\Twig\MyTwigOperatorExtension:
+>         autoconfigure: false # otherwise Symfony also adds it to the shared `twig` service
+>         tags: [ 'pimcore_studio_backend.twig_operator_extension' ]
+> ```
+>
+> (The tag name is also available as `TwigOperatorEnvironmentProviderInterface::TWIG_OPERATOR_EXTENSION_TAG`.)
+> It is registered into the isolated environment alongside the built-in extensions, and its
+> filter/function/tag names still need to be added to `sandbox_security_policy` above to be usable.
+> Keep it narrowly scoped to safe, side-effect-free formatting - it runs in the same sandbox as
+> everything else on this page, with the same consequences if it is not. The isolated environment has
+> no runtime loader, so filters and functions must be callable directly, not through a Twig runtime
+> (`RuntimeExtensionInterface`).
+
 > **Security:** Be careful when extending the allow-list. Filters such as `raw` disable output
-> escaping (potential XSS if the value is rendered as HTML), and functions such as `range` combined
-> with `for` loops can be abused to build very large outputs. Do not add Twig functions like
+> escaping (potential XSS if the value is rendered as HTML). Do not add Twig functions like
 > `constant`, `attribute`, `include` or `source`, as they can expose internal data or read files.
 
 ---

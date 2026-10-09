@@ -40,7 +40,7 @@ class NotificationListItem implements AdditionalAttributesInterface
         private readonly bool $hasAttachment,
         #[Property(description: 'creation date', type: 'integer', example: 1707312457)]
         private readonly int $creationDate,
-        #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin')]
+        #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin', nullable: true)]
         private readonly ?string $sender = null,
     ) {
 

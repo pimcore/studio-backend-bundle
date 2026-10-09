@@ -54,7 +54,8 @@ final readonly class WorkflowStatus
         #[Property(
             description: 'layoutId',
             type: 'string',
-            example: 'someStatusLayoutId'
+            example: 'someStatusLayoutId',
+            nullable: true
         )]
         private ?string $layoutId,
         #[Property(

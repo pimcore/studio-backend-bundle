@@ -29,15 +29,20 @@ final readonly class UpdatePredefinedProperty
     public function __construct(
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
         private string $name,
-        #[Property(description: 'description', type: 'string', example: 'Detailed description of the property')]
+        #[Property(
+            description: 'description',
+            type: 'string',
+            example: 'Detailed description of the property',
+            nullable: true
+        )]
         private ?string $description,
         #[Property(description: 'key', type: 'string', example: 'Key for referencing')]
         private string $key,
         #[Property(description: 'type', type: 'string', example: 'text')]
         private string $type,
-        #[Property(description: 'data', type: 'string', example: 'test')]
+        #[Property(description: 'data', type: 'string', example: 'test', nullable: true)]
         private ?string $data,
-        #[Property(description: 'config', type: 'string', example: 'comma,separated,values')]
+        #[Property(description: 'config', type: 'string', example: 'comma,separated,values', nullable: true)]
         private ?string $config,
         #[Property(description: 'ctype', type: 'string', example: 'document')]
         private string $ctype,

@@ -36,7 +36,7 @@ final class SelectOptionTree implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Group', type: 'string', example: 'system')]
+        #[Property(description: 'Group', type: 'string', example: 'system', nullable: true)]
         private readonly ?string $group = null,
         #[Property(description: 'Only for admin user', type: 'bool', example: false)]
         private readonly bool $adminOnly = false,

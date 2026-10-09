@@ -30,7 +30,7 @@ readonly class ColumnSchema
     public function __construct(
         #[Property(description: 'Key of the Column', type: 'string', example: 'id')]
         private string $key,
-        #[Property(description: 'Locale of the Column', type: 'string', example: 'de')]
+        #[Property(description: 'Locale of the Column', type: 'string', example: 'de', nullable: true)]
         private ?string $locale,
         #[Property(description: 'Define the group structure', type: 'object', example: ['system'])]
         private array $group,

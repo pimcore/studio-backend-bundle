@@ -34,9 +34,9 @@ final class DocumentSearchPreview extends SimpleSearchPreview
         ?string $userModificationName,
         ?int $creationDate,
         ?int $modificationDate,
-        #[Property(description: 'Document Language', type: 'string', example: 'English')]
+        #[Property(description: 'Document Language', type: 'string', example: 'English', nullable: true)]
         private readonly ?string $language,
-        #[Property(description: 'Page document data', type: PageSearchPreview::class)]
+        #[Property(description: 'Page document data', type: PageSearchPreview::class, nullable: true)]
         private readonly ?PageSearchPreview $documentData = null,
     ) {
         parent::__construct(

@@ -32,7 +32,7 @@ final readonly class UpdateTranslation
     public function __construct(
         #[Property(description: 'Key of the translation', type: 'string', example: 'car')]
         private string $key,
-        #[Property(description: 'Type of the translation', type: 'string', example: 'simple')]
+        #[Property(description: 'Type of the translation', type: 'string', example: 'simple', nullable: true)]
         private ?string $type = null,
         #[Property(description: 'Translation Data', type: 'array', items: new Items(ref: TranslationData::class))]
         private array $translationData = []

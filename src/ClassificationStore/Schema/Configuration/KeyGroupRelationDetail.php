@@ -37,11 +37,11 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         private readonly int $sorter,
         #[Property(description: 'Whether the key is mandatory in this group', type: 'boolean', example: false)]
         private readonly bool $mandatory,
-        #[Property(description: 'Name of the key', type: 'string', example: 'My Key')]
+        #[Property(description: 'Name of the key', type: 'string', example: 'My Key', nullable: true)]
         private readonly ?string $keyName = null,
-        #[Property(description: 'Description of the key', type: 'string', example: 'Key description')]
+        #[Property(description: 'Description of the key', type: 'string', example: 'Key description', nullable: true)]
         private readonly ?string $keyDescription = null,
-        #[Property(description: 'Name of the group', type: 'string', example: 'My Group')]
+        #[Property(description: 'Name of the group', type: 'string', example: 'My Group', nullable: true)]
         private readonly ?string $groupName = null,
     ) {
     }

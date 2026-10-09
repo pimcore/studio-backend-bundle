@@ -33,7 +33,12 @@ final class StoreDetail implements AdditionalAttributesInterface
         private readonly int $id,
         #[Property(description: 'Name of the store', type: 'string', example: 'My Store')]
         private readonly string $name,
-        #[Property(description: 'Description of the store', type: 'string', example: 'Store description')]
+        #[Property(
+            description: 'Description of the store',
+            type: 'string',
+            example: 'Store description',
+            nullable: true
+        )]
         private readonly ?string $description = null,
     ) {
     }

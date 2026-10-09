@@ -46,7 +46,7 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
         private readonly bool $filterable,
         #[Property(description: 'Localizable', type: 'boolean', example: false)]
         private readonly bool $localizable,
-        #[Property(description: 'Locale', type: 'string', example: 'en')]
+        #[Property(description: 'Locale', type: 'string', example: 'en', nullable: true)]
         private readonly ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'integer')]
         private readonly string $type,

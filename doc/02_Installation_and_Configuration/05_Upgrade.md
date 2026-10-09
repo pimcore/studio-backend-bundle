@@ -3,6 +3,30 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Grid] Changed: `twigOperator` templates render in a dedicated Twig environment with the sandbox always enabled
+  and without Pimcore's Twig extensions or the application's Twig configuration. Method calls and property access on
+  objects are denied. Values are converted to plain data first: dates become ISO 8601 strings, consent values,
+  `JsonSerializable` objects and enums become their data, other objects render as empty. `range()` returns at most
+  1000 elements (best effort). See `doc/01_Architecture_Overview/01_Grid.md`.
+
+> **Note:** `SandboxExtensionInitializer` implements the new `TwigOperatorEnvironmentProviderInterface`. A custom
+> `SandboxExtensionInitializerInterface` implementation or decorator should implement it too: without it, templates keep
+> rendering through the shared `twig` service with a deprecation, and fail if the returned sandbox is not registered
+> there. `SandboxExtensionInitializer::initialize()` returns the isolated environment's sandbox, which is not registered
+> on the shared `twig` service; render through `TemplateGeneratorInterface` instead. The initializer's
+> `$blockedClasses`, `$allowedClasses` and `$hardBlockedMethods` arguments no longer apply, since all object access is
+> denied. To add a filter, function or tag, tag a Twig extension with `pimcore_studio_backend.twig_operator_extension`
+> and add its name to `sandbox_security_policy`.
+
+- [Grid] Added: asset and data object grid rows carry an optional `score` (the search engine score of the hit, `null`
+  without a scored query). The `Asset` and `DataObject` response schemas implement the new public
+  `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
+  new signatures.
+
+- [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
+
+> **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
+
 - [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
   [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
   - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
@@ -19,7 +43,7 @@ The following steps are necessary during updating to newer versions.
 > `required` set but no authenticator app yet can no longer use Studio with the password alone: they set it up during
 > the login. The login token (`POST /login/token`) still skips the code.
 
-## Upgrade to 2026.3.1
+## Upgrade to 2026.3.2
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as

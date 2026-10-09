@@ -63,6 +63,16 @@ final class TranslatorServiceTest extends Unit
         $this->assertCount(count(PublicTranslations::PUBLIC_KEYS), $translations->getKeys());
     }
 
+    public function testLoginErrorDialogKeysArePublic(): void
+    {
+        $translatorService = $this->mockTranslatorService(false);
+
+        $keys = $translatorService->getAllTranslationsByLocale('en', true)->getKeys();
+
+        $this->assertArrayHasKey('error', $keys);
+        $this->assertArrayHasKey('alert-modal.ok-text', $keys);
+    }
+
     /**
      * @throws Exception
      */

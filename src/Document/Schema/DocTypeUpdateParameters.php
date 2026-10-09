@@ -32,15 +32,21 @@ final readonly class DocTypeUpdateParameters
         private string $name,
         #[Property(description: 'Type', type: 'string', example: DocumentTypes::PAGE->value)]
         private string $type,
-        #[Property(description: 'Group', type: 'string', example: 'Default')]
+        #[Property(description: 'Group', type: 'string', example: 'Default', nullable: true)]
         private ?string $group = null,
         #[Property(
             description: 'Controller',
             type: 'string',
-            example: 'App\\Controller\\DefaultController::indexAction'
+            example: 'App\\Controller\\DefaultController::indexAction',
+            nullable: true
         )]
         private ?string $controller = null,
-        #[Property(description: 'Template', type: 'string', example: '@App/Resources/views/default.html.twig')]
+        #[Property(
+            description: 'Template',
+            type: 'string',
+            example: '@App/Resources/views/default.html.twig',
+            nullable: true
+        )]
         private ?string $template = null,
         #[Property(description: 'Priority', type: 'integer', example: 0)]
         private int $priority = 0,

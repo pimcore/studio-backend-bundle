@@ -40,13 +40,33 @@ final class TextLayoutPreview implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Name of class definition', type: 'string', example: 'Car')]
         private readonly string $className,
-        #[Property(description: 'Path of the data object for preview', type: 'string', example: '/cars/my-car')]
+        #[Property(
+            description: 'Path of the data object for preview',
+            type: 'string',
+            example: '/cars/my-car',
+            nullable: true
+        )]
         private readonly ?string $path = null,
-        #[Property(description: 'Data for preview', type: 'string', example: '{"field1":"value1","field2":"value2"}')]
+        #[Property(
+            description: 'Data for preview',
+            type: 'string',
+            example: '{"field1":"value1","field2":"value2"}',
+            nullable: true
+        )]
         private readonly ?string $renderingData = null,
-        #[Property(description: 'Rendering class for preview', type: 'string', example: 'App\\DataObject\\Car')]
+        #[Property(
+            description: 'Rendering class for preview',
+            type: 'string',
+            example: 'App\\DataObject\\Car',
+            nullable: true
+        )]
         private readonly ?string $renderingClass = null,
-        #[Property(description: 'HTML preview of the layout', type: 'string', example: '<div>...</div>')]
+        #[Property(
+            description: 'HTML preview of the layout',
+            type: 'string',
+            example: '<div>...</div>',
+            nullable: true
+        )]
         private readonly ?string $html = null
     ) {
     }
