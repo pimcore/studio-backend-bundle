@@ -57,6 +57,13 @@ The limiter is `studio_two_factor_code`; adjust it under `framework.rate_limiter
    authentication and finishes the login.
 4. To go back, `POST /logout`.
 
+Until the code is in, the `401` from other endpoints carries the step as well:
+`{"message": "Two-factor authentication is required.", "twoFactorRequired": true, "twoFactorStep": "verify"}` (or
+`"setup"`). A client uses it when it did not send the login itself, e.g. after the redirect back from an OpenID
+Connect (SSO) login. An SSO login asks for the code too when its authenticator creates a token type that scheb covers;
+the default `security_tokens` cover Symfony's `PostAuthenticationToken`, which authenticators create unless they use
+their own token class.
+
 The setup endpoint is opened for this step by Studio itself; the `access_control` rules from the
 [installation](./README.md) stay as they are. This relies on the documented rule (`ROLE_PIMCORE_USER` for the Studio
 API) and Symfony's default access decision strategy (`affirmative`). With a different role in that rule or another

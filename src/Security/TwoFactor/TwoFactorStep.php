@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor;
 
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
+
 /**
  * What the login waits for after the password.
  *
@@ -22,4 +24,9 @@ enum TwoFactorStep: string
 {
     case VERIFY = 'verify';
     case SETUP = 'setup';
+
+    public static function fromToken(TwoFactorTokenInterface $token): self
+    {
+        return $token->getCurrentTwoFactorProvider() === SetupProvider::ALIAS ? self::SETUP : self::VERIFY;
+    }
 }

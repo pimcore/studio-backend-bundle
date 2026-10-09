@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor;
 
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Scheb\TwoFactorBundle\Security\Http\Authentication\AuthenticationRequiredHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,9 +29,15 @@ final readonly class AuthenticationRequiredHandler implements AuthenticationRequ
 {
     public function onAuthenticationRequired(Request $request, TokenInterface $token): Response
     {
-        return new JsonResponse(
-            ['message' => 'Two-factor authentication is required.'],
-            Response::HTTP_UNAUTHORIZED
-        );
+        $data = ['message' => 'Two-factor authentication is required.'];
+
+        // Same fields as the login answer, so the UI can show the right step after a login it did not send
+        // itself, e.g. an SSO redirect.
+        if ($token instanceof TwoFactorTokenInterface) {
+            $data['twoFactorRequired'] = true;
+            $data['twoFactorStep'] = TwoFactorStep::fromToken($token)->value;
+        }
+
+        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
     }
 }
