@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PublicTranslationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -90,10 +89,6 @@ final class PublicAuthorizationVoter extends Voter
 
     private function getSubjectName(mixed $subject): string
     {
-        if ($subject instanceof MapRequestPayload) {
-            return $subject->metadata->getName();
-        }
-
         if (is_string($subject)) {
             return $subject;
         }

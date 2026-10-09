@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\Translation
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -48,7 +49,7 @@ final class TranslationController extends AbstractApiController
      * @throws InvalidLocaleException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations', methods: ['POST'])]
-    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
+    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, new Expression('"translation"'))]
     #[POST(
         path: self::PREFIX . self::ROUTE,
         operationId: 'translation_get_collection',
