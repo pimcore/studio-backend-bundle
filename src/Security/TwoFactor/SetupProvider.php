@@ -60,6 +60,7 @@ final readonly class SetupProvider implements TwoFactorProviderInterface
 
     public function prepareAuthentication(object $user): void
     {
+        // Nothing to prepare: the secret is created by the setup endpoint, not when the login starts.
     }
 
     public function validateAuthenticationCode(object $user, string $authenticationCode): bool
