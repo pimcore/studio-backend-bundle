@@ -28,6 +28,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\TwoFactorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\TwoFactorService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService
 

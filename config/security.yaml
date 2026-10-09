@@ -52,6 +52,31 @@ services:
     arguments:
       $tokenMap: '%pimcore_studio_backend.mcp.token_map%'
 
+  #Two-factor authentication
+  # Referenced by service id from the scheb_two_factor config and the firewall's two_factor block.
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\UserCondition: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\AuthenticationRequiredHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeFailureHandler: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeAttemptLimiter:
+    arguments:
+      $limiterFactory: '@limiter.studio_two_factor_code'
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider:
+    tags:
+      - { name: scheb_two_factor.provider, alias: studio_setup }
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupStepVoter:
+    tags:
+      - { name: security.voter }
+
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionCheckerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionChecker
+
   #Rate limiters
   # Referenced by service id from the MCP firewall's login_throttling.limiter, which makes
   # Symfony skip building its own two-tier DefaultLoginRateLimiter.

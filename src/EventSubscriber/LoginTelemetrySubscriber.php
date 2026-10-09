@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Telemetry\LoginMarkerInterface;
 use Pimcore\Security\User\User;
 use Pimcore\Telemetry\TelemetryInterface;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 use function in_array;
@@ -24,10 +25,12 @@ use function in_array;
  * Captures a content-never `studio.login_succeeded` event on each interactive Studio login
  * (PM question #23: how many logins, how often - a usage/churn/upsell signal).
  *
- * Scoped to the two Studio login routes - credentials (`json_login` at `pimcore_studio_api_login`)
+ * Scoped to the Studio login routes - credentials (`json_login` at `pimcore_studio_api_login`)
  * and token (`pimcore_studio_api_token_login`). These are alternative methods on the stateful Studio
- * firewall, so exactly one event fires per login: subsequent requests restore the token from the
- * session without re-authenticating (no event), and MCP is a separate firewall. The only property
+ * firewall. When a two-factor code is needed, the password step is skipped and the login is counted
+ * at the code step (`pimcore_studio_api_login_2fa`) instead. So exactly one event fires per login:
+ * subsequent requests restore the token from the session without re-authenticating (no event), and
+ * MCP is a separate firewall. The only property
  * is whether the user is an admin - never a username, email, or id.
  *
  * It also leaves the login time in the session (see {@see LoginMarkerInterface}) so the logout twin can
@@ -42,6 +45,8 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
     private const LOGIN_ROUTES = [
         'pimcore_studio_api_login',
         'pimcore_studio_api_token_login',
+        // Completes a login that needed a two-factor code; the password step before it is not counted.
+        'pimcore_studio_api_login_2fa',
     ];
 
     /**
@@ -66,6 +71,10 @@ final readonly class LoginTelemetrySubscriber implements EventSubscriberInterfac
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
         if (!in_array($event->getRequest()->attributes->get('_route'), self::LOGIN_ROUTES, true)) {
+            return;
+        }
+
+        if ($event->getAuthenticatedToken() instanceof TwoFactorTokenInterface) {
             return;
         }
 
