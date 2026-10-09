@@ -62,9 +62,9 @@ final readonly class DownloadService implements DownloadServiceInterface
     ): StreamedResponse {
         $this->executionEngineService->validateJobRun($jobRunId);
 
-        if ($downloadName === null) {
-            $downloadName = $this->resolveDownloadName($jobRunId);
-        }
+        $downloadName = $this->resolveDownloadName($jobRunId)
+            ?? $downloadName
+            ?? DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
 
         $fileName = $this->getTempFileName($jobRunId, $tempFileName);
         $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
@@ -157,16 +157,17 @@ final readonly class DownloadService implements DownloadServiceInterface
         return $response;
     }
 
-    private function resolveDownloadName(int $jobRunId): string
+    private function resolveDownloadName(int $jobRunId): ?string
     {
         try {
             $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
             $environmentData = $jobRun->getJob()?->getEnvironmentData() ?? [];
 
-            return $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ??
-                DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+            return $environmentData[DownloadServiceInterface::EXPORT_DOWNLOAD_FILENAME] ??
+                $environmentData[ZipServiceInterface::ZIP_DOWNLOAD_FILENAME] ??
+                null;
         } catch (Exception) {
-            return DownloadDefaults::DEFAULT_ZIP_FILENAME->value;
+            return null;
         }
     }
 

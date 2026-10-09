@@ -34,7 +34,11 @@ final class ExportDataRequestBody extends RequestBody
             new Property(
                 property: StepConfig::SETTINGS_HEADER->value,
                 type: 'string',
-                enum: StepConfig::values(),
+                enum: [
+                    StepConfig::SETTINGS_HEADER_NO_HEADER->value,
+                    StepConfig::SETTINGS_HEADER_TITLE->value,
+                    StepConfig::SETTINGS_HEADER_NAME->value,
+                ],
                 example: StepConfig::SETTINGS_HEADER_TITLE->value
             ),
         ];
@@ -45,6 +49,12 @@ final class ExportDataRequestBody extends RequestBody
                 example: ';'
             );
         }
+        $configProperties[] = new Property(
+            property: StepConfig::SETTINGS_FILE_NAME->value,
+            type: 'string',
+            example: $addDelimiter ? 'my-grid-export.csv' : 'my-grid-export.xlsx',
+            nullable: true
+        );
         parent::__construct(
             content: new JsonContent(
                 properties: [
