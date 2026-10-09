@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\User;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
@@ -52,6 +53,16 @@ interface CustomReportConfigServiceInterface
      * @throws ForbiddenException|NotFoundException|NotWriteableException
      */
     public function cloneCustomReport(string $reportName, CustomReportClone $parameters): CustomReportDetails;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function exportCustomReport(string $reportName): Response;
+
+    /**
+     * @throws InvalidArgumentException|NotWriteableException
+     */
+    public function importCustomReport(string $json): CustomReportDetails;
 
     /**
      * @throws ForbiddenException|NotFoundException|NotWriteableException
