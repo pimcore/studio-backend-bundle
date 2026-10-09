@@ -95,8 +95,8 @@ final class TranslationService implements TranslationServiceInterface
             throw new DatabaseException($exception->getMessage());
         }
 
-        foreach ($links as $language => $documentId) {
-            $translationLinks[] = new TranslationLink($language, $documentId);
+        foreach ($links as $linkLanguage => $documentId) {
+            $translationLinks[] = new TranslationLink($linkLanguage, $documentId);
         }
 
         $translations = new TranslationLinks($language, $translationLinks);
