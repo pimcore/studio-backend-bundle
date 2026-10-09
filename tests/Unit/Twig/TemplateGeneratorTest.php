@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Twig;
 
+use const E_USER_DEPRECATED;
 use Codeception\Test\Unit;
 use DateTime;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidTemplateException;
@@ -37,7 +38,6 @@ use function restore_error_handler;
 use function set_error_handler;
 use function str_contains;
 use function strtoupper;
-use const E_USER_DEPRECATED;
 
 /**
  * @internal
@@ -858,5 +858,4 @@ final class TemplateGeneratorTest extends Unit
 
         return $generator->generate($template, $context);
     }
-
 }
