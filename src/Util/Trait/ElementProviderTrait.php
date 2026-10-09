@@ -84,7 +84,13 @@ trait ElementProviderTrait
             return $element;
         }
 
-        return $version->getData();
+        $versionData = $version->getData();
+        // version data cannot be loaded, e.g. the version file is missing or unreadable
+        if (!$versionData instanceof ElementInterface) {
+            return $element;
+        }
+
+        return $versionData;
     }
 
     /**
