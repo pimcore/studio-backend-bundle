@@ -30,7 +30,7 @@ trait LocalizedValueTrait
 
         $value = $element->$getter($column->getLocale());
 
-        if ($this->isEmptyValue($value) && $this->doGetFallbackValues()) {
+        if ($this->isEmptyValue($value) && $this->doGetFallbackValues() && $this->allowDefaultLanguageFallback()) {
             $defaultLanguage = $this->getDefaultLanguage();
             if ($defaultLanguage !== null && $defaultLanguage !== $column->getLocale()) {
                 $value = $element->$getter($defaultLanguage);
@@ -68,5 +68,14 @@ trait LocalizedValueTrait
     protected function getDefaultLanguage(): ?string
     {
         return null;
+    }
+
+    /**
+     * Whether an empty localized value may jump to {@see self::getDefaultLanguage()} after Pimcore's configured
+     * fallback languages left it empty. True by default, so the grid shows something instead of a blank cell.
+     */
+    protected function allowDefaultLanguageFallback(): bool
+    {
+        return true;
     }
 }

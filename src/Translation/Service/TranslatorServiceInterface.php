@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -71,9 +73,14 @@ interface TranslatorServiceInterface
     /**
      * Returns a list of all available translations including all languages.
      * Used for grid listing including filters and pagination.
+     *
+     * @throws ForbiddenException|InvalidArgumentException
      */
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection;
 
+    /**
+     * @throws ForbiddenException|InvalidArgumentException
+     */
     public function getTranslationList(string $domain, CollectionFilterParameter $parameter): Listing;
 
     /**

@@ -3,9 +3,20 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Grid] Added: asset and data object grid rows carry an optional `score` (the search engine score of the hit, `null`
+  without a scored query). The `Asset` and `DataObject` response schemas implement the new public
+  `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
+  new signatures.
+
 - [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
 
 > **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
+
+## Upgrade to 2026.3.1
+- [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
+  default language, ignoring the configured fallback languages. The export now uses only the configured fallback
+  languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
+  an empty string instead of `"null"`.
 
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:
@@ -13,6 +24,16 @@ The following steps are necessary during updating to newer versions.
   - `inheritedValue` (mixed): the value the field inherits — or would inherit if its own value were removed — from the nearest ancestor that holds a non-empty value, normalized to the same shape as `objectData`. It is `null` when no ancestor holds a value, when the field is not inheritable, or when it was not requested: resolving it costs a walk up the tree for every field holding an own value, so it is opt-in. The data object detail response requests it; grid columns do not and always report `null`.
 
 > **Note:** both properties are additive; `objectId` and `inherited` keep their meaning. `InheritanceServiceInterface::getInheritanceData()` gained a `bool $resolveInheritedValues = false` parameter and `getFieldInheritanceData()`, which returns the complete `InheritanceData` for a single field. The opt-in travels through the recursion as `FieldContextData::shouldResolveInheritedValue()` (constructor argument `resolveInheritedValue`). Custom `DataInheritanceInterface` adapters that build `InheritanceData` themselves should switch to `getFieldInheritanceData()` and pass `resolveInheritedValue` on to the `FieldContextData` they create for their child fields; instances they construct directly keep working and default to `inheritable: true`, `inheritedValue: null`.
+
+## Upgrade to 2025.4.15
+- [Translations] Fixed: website translations for locales that are not admin UI languages (e.g. `fr_BE`, `nl_BE`) could not be maintained. `POST /translations/list` only returned values for the available admin UI languages, so these columns stayed empty, and sorting by such a locale failed. The list now returns the languages the user is allowed to view for the requested domain (admin UI languages for the `admin` and `studio` domains), as in the classic admin UI.
+
+> **Note:** this comes with the following behavioral changes for the translation list (`POST /translations/list`) and, where noted, the CSV export (`POST /translations/export`) and import:
+> - Users with restricted website translation languages only receive values for their allowed languages, also for requests without `filters`.
+> - Website translation languages configured on a user or role that are not valid system languages are ignored. A user without any valid website translation language left receives `403` for list, export and import (previously an empty result).
+> - All `translationLike` column filters of a request are applied (previously only the first one). A `translationLike` filter on a language that is not available to the user returns `422`. The filter only applies to translation listings.
+> - Additional sort filters on a locale are supported (previously failed with a database error).
+> - The translation list no longer uses the core translation listing cache for the list of keys, as that cache does not take the requested languages into account. Translation values are still cached per key and language.
 
 ## Upgrade to 2025.4.13
 - [Data Objects] Fixed: `POST /data-objects/select-options` failed with `Call to a member function getDataFromEditmode() on null` as soon as `changedData` contained unsaved localized fields. The endpoint decoded `changedData` with the classic editmode format (localized fields as language → attribute) while Studio sends its own data format (attribute → language). `changedData` is now applied through the same data adapters as a regular save, so it expects the Studio data format for every field type. Language edit permissions of non-admin users are now respected per language as well, instead of being matched against attribute names.

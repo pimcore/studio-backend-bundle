@@ -74,7 +74,10 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         }
 
         $result = array_map(function (DataObjectSearchResultItem $item) {
-            return $this->hydratorService->hydrateDataObjects($item);
+            $dataObject = $this->hydratorService->hydrateDataObjects($item);
+            $dataObject->setScore($item->getScore());
+
+            return $dataObject;
         }, $searchResult->getItems());
 
         return new DataObjectSearchResult(
