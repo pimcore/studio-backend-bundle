@@ -30,7 +30,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     ];
 
     /**
-     * @var array<int, array>
+     * @var array<string, array>
      */
     private array $cache = [];
 
@@ -40,8 +40,9 @@ final class ReferenceResolver implements ReferenceResolverInterface
 
     public function resolve(ElementInterface $element): array
     {
-        if (isset($this->cache[$element->getId()])) {
-            return $this->cache[$element->getId()];
+        $cacheKey = $element::class . '_' . $element->getId();
+        if (isset($this->cache[$cacheKey])) {
+            return $this->cache[$cacheKey];
         }
 
         /**
@@ -54,7 +55,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
 
         $data['fullPath'] = $element->getFullPath();
 
-        $this->cache[$element->getId()] = $data;
+        $this->cache[$cacheKey] = $data;
 
         return $data;
     }
