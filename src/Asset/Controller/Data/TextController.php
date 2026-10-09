@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -49,7 +50,7 @@ final class TextController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
      */
     #[Route('/assets/{id}/text', name: 'pimcore_studio_api_get_asset_data_text', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -66,6 +67,7 @@ final class TextController extends AbstractApiController
         content: new DataJson('UTF 8 encoded text data')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

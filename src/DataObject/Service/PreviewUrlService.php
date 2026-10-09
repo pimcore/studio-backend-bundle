@@ -16,8 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
@@ -32,16 +35,26 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
 
     public function __construct(
         private PreviewGeneratorInterface $defaultPreviewGenerator,
+        private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
     ) {
     }
 
+    /**
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
+     */
     public function getPreviewUrl(PreviewParameter $parameter, array $additionalParams = []): string
     {
         $dataObject = $this->getElement(
             $this->serviceResolver,
             ElementTypes::TYPE_OBJECT,
             $parameter->getId()
+        );
+
+        $this->securityService->hasElementPermission(
+            $dataObject,
+            $this->securityService->getCurrentUser(),
+            ElementPermissions::VIEW_PERMISSION
         );
 
         if (!$dataObject instanceof Concrete) {
