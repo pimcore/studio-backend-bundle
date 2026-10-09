@@ -55,8 +55,10 @@ use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use TypeError;
 use function array_key_exists;
 use function in_array;
+use function is_array;
 
 /**
  * @internal
@@ -509,11 +511,12 @@ final class GridService implements GridServiceInterface
                     locale: $column['locale'] ?? null,
                     type: $column['type'],
                     group: $column['group'] ?? null,
-                    config: $column['config'],
+                    config: is_array($column['config'] ?? null) ? $column['config'] : [],
                     width: $column['width'] ?? null
                 );
-            } catch (Exception) {
-                throw new InvalidArgumentException('Invalid column configuration');
+            } catch (Exception|TypeError $e) {
+                // Column's strictly typed constructor raises a TypeError for malformed request data
+                throw new InvalidArgumentException('Invalid column configuration', $e);
             }
         }
 

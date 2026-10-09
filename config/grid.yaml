@@ -69,6 +69,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContext
+
   #
   # Repository
   #

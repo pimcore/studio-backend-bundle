@@ -23,9 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -71,6 +73,29 @@ final class LocalizedFieldsAdapterTest extends Unit
         // without the opt-in, no value ever crosses the wire - the inheritable/inherited flags remain
         // structural metadata and are still built for every configured language, unfiltered by permission
         $this->assertSame(['en', 'de', 'fr'], array_keys($result['title']));
+    }
+
+    public function testNullLocalizedDataKeepsTheLocalizedFieldUnchanged(): void
+    {
+        // the detail data of localized fields without any value is null, e.g. in a newly added object brick,
+        // and the editor sends it back unchanged when the brick is saved
+        $adapter = $this->createAdapter(allowedLanguages: ['en'], allLanguages: ['en', 'de', 'fr']);
+        $localizedField = new Localizedfield(['en' => ['title' => 'Existing']]);
+        $object = $this->makeEmpty(Concrete::class, [
+            'get' => $localizedField,
+            'getClass' => new ClassDefinition(),
+        ]);
+
+        $result = $adapter->getDataForSetter(
+            $object,
+            $this->makeEmpty(Localizedfields::class),
+            'localizedfields',
+            ['localizedfields' => null],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => true])
+        );
+
+        $this->assertSame($localizedField, $result);
+        $this->assertSame(['en' => ['title' => 'Existing']], $result->getItems());
     }
 
     /**
