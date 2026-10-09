@@ -47,11 +47,11 @@ final class DetailedRole implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'ID of the User', type: 'integer', example: '1')]
         private readonly int $id,
-        #[Property(description: 'Name of Folder or Role', type: 'string', example: 'admin')]
+        #[Property(description: 'Name of Folder or Role', type: 'string', example: 'admin', nullable: true)]
         private readonly ?string $name,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
-        #[Property(description: 'Parent ID', type: 'integer', example: 2)]
+        #[Property(description: 'Parent ID', type: 'integer', example: 2, nullable: true)]
         private readonly ?int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
         private readonly array $permissions,

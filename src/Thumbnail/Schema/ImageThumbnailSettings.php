@@ -31,9 +31,9 @@ final readonly class ImageThumbnailSettings
     public function __construct(
         #[Property(description: 'Thumbnail name', type: 'string', example: 'portalCarousel')]
         private string $name,
-        #[Property(description: 'Thumbnail description', type: 'string', example: '')]
+        #[Property(description: 'Thumbnail description', type: 'string', example: '', nullable: true)]
         private ?string $description,
-        #[Property(description: 'Thumbnail group', type: 'string', example: 'Areas')]
+        #[Property(description: 'Thumbnail group', type: 'string', example: 'Areas', nullable: true)]
         private ?string $group,
         #[Property(description: 'Output format', type: 'string', example: 'SOURCE')]
         private string $format,

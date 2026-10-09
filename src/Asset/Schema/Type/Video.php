@@ -26,16 +26,17 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 class Video extends Asset implements ThumbnailPathInterface
 {
     public function __construct(
-        #[Property(description: 'Duration', type: 'float', example: 43560.5)]
+        #[Property(description: 'Duration', type: 'float', example: 43560.5, nullable: true)]
         private readonly ?float $duration,
-        #[Property(description: 'Width', type: 'integer', example: 1920)]
+        #[Property(description: 'Width', type: 'integer', example: 1920, nullable: true)]
         private readonly ?int $width,
-        #[Property(description: 'Height', type: 'integer', example: 1080)]
+        #[Property(description: 'Height', type: 'integer', example: 1080, nullable: true)]
         private readonly ?int $height,
         #[Property(
             description: 'Path to Image Thumbnail',
             type: 'string',
-            example: '/path/to/video/imagethumbnail.jpg'
+            example: '/path/to/video/imagethumbnail.jpg',
+            nullable: true
         )]
         private readonly ?string $imageThumbnailPath,
         bool $hasChildren,

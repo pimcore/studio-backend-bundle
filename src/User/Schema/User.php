@@ -40,13 +40,13 @@ final class User implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'ID of the User', type: 'integer', example: '1')]
         private readonly int $id,
-        #[Property(description: 'Name of Folder or User', type: 'string', example: 'admin')]
+        #[Property(description: 'Name of Folder or User', type: 'string', example: 'admin', nullable: true)]
         private readonly ?string $name,
-        #[Property(description: 'Email of the User', type: 'string', example: '')]
+        #[Property(description: 'Email of the User', type: 'string', example: '', nullable: true)]
         private readonly ?string $email,
-        #[Property(description: 'Firstname of the User', type: 'string', example: '')]
+        #[Property(description: 'Firstname of the User', type: 'string', example: '', nullable: true)]
         private readonly ?string $firstname,
-        #[Property(description: 'Lastname of the User', type: 'string', example: '')]
+        #[Property(description: 'Lastname of the User', type: 'string', example: '', nullable: true)]
         private readonly ?string $lastname,
         #[Property(description: 'If a User is active', type: 'boolean', example: true)]
         private readonly bool $active,
@@ -76,15 +76,15 @@ final class User implements AdditionalAttributesInterface
         private readonly array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private readonly string $language,
-        #[Property(description: 'Locale for dateTime', type: 'string', example: '')]
+        #[Property(description: 'Locale for dateTime', type: 'string', example: '', nullable: true)]
         private readonly ?string $dateTimeLocale,
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private readonly string $theme,
-        #[Property(description: 'Timestamp of the last login', type: 'integer', example: '1718757677')]
+        #[Property(description: 'Timestamp of the last login', type: 'integer', example: '1718757677', nullable: true)]
         private readonly ?int $lastLogin,
         #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private readonly bool $memorizeTabs,
-        #[Property(description: 'Parent ID', type: 'integer', example: 2)]
+        #[Property(description: 'Parent ID', type: 'integer', example: 2, nullable: true)]
         private readonly ?int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
         private readonly array $permissions,

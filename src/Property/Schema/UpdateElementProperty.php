@@ -29,7 +29,7 @@ final readonly class UpdateElementProperty
     public function __construct(
         #[Property(description: 'key', type: 'string', example: 'Mister Proper')]
         private string $key,
-        #[Property(description: 'data', type: 'mixed', example: '123')]
+        #[Property(description: 'data', type: 'mixed', example: '123', nullable: true)]
         private mixed $data,
         #[Property(description: 'type', type: 'string', example: 'document')]
         private string $type,

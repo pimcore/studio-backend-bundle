@@ -27,7 +27,7 @@ final readonly class AssetInfo
     public function __construct(
         #[Property(description: 'True if asset exists', type: 'boolean', example: true)]
         private bool $exists,
-        #[Property(description: 'Id of existing asset', type: 'integer', example: 83)]
+        #[Property(description: 'Id of existing asset', type: 'integer', example: 83, nullable: true)]
         private ?int $assetId = null,
     ) {
     }

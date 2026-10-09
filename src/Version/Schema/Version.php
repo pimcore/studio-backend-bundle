@@ -48,11 +48,11 @@ final class Version implements AdditionalAttributesInterface
         private readonly bool $autosave,
         #[Property(description: 'user', type: VersionUser::class, example: '{"id":2,"name":"John Doe"}')]
         private readonly VersionUser $user,
-        #[Property(description: 'scheduled', type: 'integer', example: null)]
+        #[Property(description: 'scheduled', type: 'integer', example: null, nullable: true)]
         private readonly ?int $scheduled,
-        #[Property(description: 'coauthor type', type: 'string', example: 'agent')]
+        #[Property(description: 'coauthor type', type: 'string', example: 'agent', nullable: true)]
         private readonly ?string $coauthorType = null,
-        #[Property(description: 'coauthor', type: 'string', example: 'product-data-agent')]
+        #[Property(description: 'coauthor', type: 'string', example: 'product-data-agent', nullable: true)]
         private readonly ?string $coauthor = null
     ) {
 

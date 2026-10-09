@@ -25,9 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface
 final readonly class LinkSettingsData implements SettingsDataInterface
 {
     public function __construct(
-        #[Property(description: 'Internal ID', type: 'integer', example: 83)]
+        #[Property(description: 'Internal ID', type: 'integer', example: 83, nullable: true)]
         private ?int $internal,
-        #[Property(description: 'Internal type', type: 'string', example: 'asset')]
+        #[Property(description: 'Internal type', type: 'string', example: 'asset', nullable: true)]
         private ?string $internalType,
         #[Property(description: 'Direct', type: 'string', example: '/path/to/asset')]
         private string $direct,

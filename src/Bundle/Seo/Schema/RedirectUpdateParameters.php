@@ -34,13 +34,13 @@ final readonly class RedirectUpdateParameters
     public function __construct(
         #[Property(description: 'Type of redirect', type: 'string', example: CoreRedirect::TYPE_ENTIRE_URI)]
         public string $type = CoreRedirect::TYPE_ENTIRE_URI,
-        #[Property(description: 'ID of the source site', type: 'integer', example: 1)]
+        #[Property(description: 'ID of the source site', type: 'integer', example: 1, nullable: true)]
         public ?int $sourceSite = null,
-        #[Property(description: 'Source URL', type: 'string', example: '/old-path')]
+        #[Property(description: 'Source URL', type: 'string', example: '/old-path', nullable: true)]
         public ?string $source = null,
-        #[Property(description: 'ID of the target site', type: 'integer', example: 1)]
+        #[Property(description: 'ID of the target site', type: 'integer', example: 1, nullable: true)]
         public ?int $targetSite = null,
-        #[Property(description: 'Target URL', type: 'string', example: '/new-path')]
+        #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public ?string $target = null,
         #[Property(description: 'Status code', type: 'integer', example: 301)]
         public int $statusCode = 301,
@@ -52,7 +52,12 @@ final readonly class RedirectUpdateParameters
         public bool $active = true,
         #[Property(description: 'Whether to pass through parameters', type: 'boolean', example: false)]
         public bool $passThroughParameters = false,
-        #[Property(description: 'Expiry date in timestamp format', type: 'integer', example: 1712345678)]
+        #[Property(
+            description: 'Expiry date in timestamp format',
+            type: 'integer',
+            example: 1712345678,
+            nullable: true
+        )]
         public int|string|null $expiry = null,
     ) {
     }

@@ -37,12 +37,17 @@ final readonly class NotificationMinimal
         private int $creationDate,
         #[Property(description: 'recipient ID', type: 'integet', example: 1)]
         private int $recipient,
-        #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin')]
+        #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin', nullable: true)]
         private ?string $sender = null,
         // resolved from the recipient's preferences at publish time; true keeps the pre-field behaviour
         #[Property(description: 'whether to show a toast on screen', type: 'bool', example: true)]
         private bool $popup = true,
-        #[Property(description: 'type specific payload as JSON', type: 'string', example: '{"threadId":42}')]
+        #[Property(
+            description: 'type specific payload as JSON',
+            type: 'string',
+            example: '{"threadId":42}',
+            nullable: true
+        )]
         private ?string $payload = null,
     ) {
 

@@ -56,7 +56,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly ?int $ownerId,
         #[Property(description: 'Name', type: 'string', example: 'My Saved Search')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string', example: 'My Saved Search Description')]
+        #[Property(description: 'Description', type: 'string', example: 'My Saved Search Description', nullable: true)]
         private readonly ?string $description,
         #[Property(description: 'shareGlobal', type: 'boolean', example: false)]
         private readonly bool $shareGlobal,
@@ -89,11 +89,11 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
             ]
         ))]
         private readonly array $columns,
-        #[Property(description: 'Filter data', type: 'array', items: new Items(ref: Filter::class))]
+        #[Property(description: 'Filter data', type: 'array', items: new Items(ref: Filter::class), nullable: true)]
         private readonly ?array $filter,
-        #[Property(description: 'Modification Date', type: 'integer', example: 1634025600)]
+        #[Property(description: 'Modification Date', type: 'integer', example: 1634025600, nullable: true)]
         private readonly ?int $modificationDate = null,
-        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
+        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600, nullable: true)]
         private readonly ?int $creationDate = null,
     ) {
     }
