@@ -2,7 +2,7 @@
 
 The following steps are necessary during updating to newer versions.
 
-## Upgrade to 2026.3.1
+## Upgrade to 2026.3.2
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
