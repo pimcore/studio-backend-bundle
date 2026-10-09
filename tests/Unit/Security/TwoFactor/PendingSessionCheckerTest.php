@@ -49,6 +49,11 @@ final class PendingSessionCheckerTest extends Unit
         );
     }
 
+    public function testSessionValueThatIsNoSerializedObjectIsNotPending(): void
+    {
+        $this->assertFalse((new PendingSessionChecker())->isCodePending($this->request(serialize('a token'))));
+    }
+
     public function testCompletedLoginIsNotPending(): void
     {
         $this->assertFalse(
