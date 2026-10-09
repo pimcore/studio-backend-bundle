@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor;
 
-use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorToken;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Symfony\Component\HttpFoundation\Request;
+use function is_a;
 use function is_string;
-use function sprintf;
-use function strlen;
+use function preg_match;
 
 /**
  * Core's session helper accepts a login whose code is still pending, so Studio code that reads
@@ -42,9 +42,11 @@ final readonly class PendingSessionChecker implements PendingSessionCheckerInter
             return false;
         }
 
-        return str_starts_with(
-            $serializedToken,
-            sprintf('O:%d:"%s":', strlen(TwoFactorToken::class), TwoFactorToken::class)
-        );
+        // Any pending token, also one from a custom scheb `two_factor_token_factory`.
+        if (preg_match('/^O:\d+:"([^"]+)":/', $serializedToken, $matches) !== 1) {
+            return false;
+        }
+
+        return is_a($matches[1], TwoFactorTokenInterface::class, true);
     }
 }

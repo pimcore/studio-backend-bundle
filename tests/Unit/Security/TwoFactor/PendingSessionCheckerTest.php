@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\TwoFactor;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionChecker;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\TwoFactor\Fixture\CustomTwoFactorToken;
 use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorToken;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -29,6 +30,23 @@ final class PendingSessionCheckerTest extends Unit
         $token = new TwoFactorToken($this->passwordToken(), null, 'pimcore_studio', ['google']);
 
         $this->assertTrue((new PendingSessionChecker())->isCodePending($this->request(serialize($token))));
+    }
+
+    /**
+     * Scheb lets an installation swap the token class; a pending login must not pass as a full session then.
+     */
+    public function testSessionWaitingForTheCodeWithACustomTokenClassIsPending(): void
+    {
+        $token = new CustomTwoFactorToken($this->passwordToken(), null, 'pimcore_studio', ['google']);
+
+        $this->assertTrue((new PendingSessionChecker())->isCodePending($this->request(serialize($token))));
+    }
+
+    public function testSessionWithAnUnknownTokenClassIsNotPending(): void
+    {
+        $this->assertFalse(
+            (new PendingSessionChecker())->isCodePending($this->request('O:12:"Acme\\NoSuch":0:{}'))
+        );
     }
 
     public function testCompletedLoginIsNotPending(): void
