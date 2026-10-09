@@ -80,9 +80,9 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         private readonly bool $showRoot = false,
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]
         private readonly array $classes = [],
-        #[Property(description: 'PQL', type: 'string', example: null)]
+        #[Property(description: 'PQL', type: 'string', example: null, nullable: true)]
         private readonly ?string $pql = null,
-        #[Property(description: 'Page size', type: 'int', example: 20)]
+        #[Property(description: 'Page size', type: 'int', example: 20, nullable: true)]
         private readonly ?int $pageSize = null,
         #[Property(description: 'Is Writeable', type: 'bool', example: true)]
         private readonly bool $isWriteable = true,

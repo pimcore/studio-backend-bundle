@@ -38,23 +38,23 @@ class QuantityValueUnit implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'ID', type: 'string', example: 'mm')]
+        #[Property(description: 'ID', type: 'string', example: 'mm', nullable: true)]
         private readonly ?string $id,
-        #[Property(description: 'Abbreviation', type: 'string', example: 'mm')]
+        #[Property(description: 'Abbreviation', type: 'string', example: 'mm', nullable: true)]
         private readonly ?string $abbreviation,
-        #[Property(description: 'Group', type: 'string', example: null)]
+        #[Property(description: 'Group', type: 'string', example: null, nullable: true)]
         private readonly ?string $group,
-        #[Property(description: 'Long Name', type: 'string', example: 'Millimeter')]
+        #[Property(description: 'Long Name', type: 'string', example: 'Millimeter', nullable: true)]
         private readonly ?string $longName,
-        #[Property(description: 'Base Unit', type: 'string', example: 'm')]
+        #[Property(description: 'Base Unit', type: 'string', example: 'm', nullable: true)]
         private readonly ?string $baseUnit,
-        #[Property(description: 'Reference', type: 'string', example: null)]
+        #[Property(description: 'Reference', type: 'string', example: null, nullable: true)]
         private readonly ?string $reference,
-        #[Property(description: 'Factor', type: 'float', example: null)]
+        #[Property(description: 'Factor', type: 'float', example: null, nullable: true)]
         private readonly ?float $factor,
-        #[Property(description: 'Conversion Offset', type: 'float', example: null)]
+        #[Property(description: 'Conversion Offset', type: 'float', example: null, nullable: true)]
         private readonly ?float $conversionOffset,
-        #[Property(description: 'Converter', type: 'string', example: null)]
+        #[Property(description: 'Converter', type: 'string', example: null, nullable: true)]
         private readonly ?string $converter,
     ) {
     }

@@ -34,7 +34,7 @@ final class CustomMetadata implements AdditionalAttributesInterface
         private readonly string $language,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private readonly string $type,
-        #[Property(description: 'Data', type: 'mixed', example: 'data')]
+        #[Property(description: 'Data', type: 'mixed', example: 'data', nullable: true)]
         private readonly mixed $data
     ) {
     }

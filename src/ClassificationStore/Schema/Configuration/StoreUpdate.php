@@ -34,7 +34,12 @@ final readonly class StoreUpdate
     public function __construct(
         #[Property(description: 'Name of the store', type: 'string', example: 'My Store')]
         private string $name,
-        #[Property(description: 'Description of the store', type: 'string', example: 'Store description')]
+        #[Property(
+            description: 'Description of the store',
+            type: 'string',
+            example: 'Store description',
+            nullable: true
+        )]
         private ?string $description = null,
     ) {
         if (empty($this->name)) {

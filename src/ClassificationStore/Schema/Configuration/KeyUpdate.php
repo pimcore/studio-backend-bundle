@@ -34,14 +34,15 @@ final readonly class KeyUpdate
     public function __construct(
         #[Property(description: 'Name of the key', type: 'string', example: 'My Key')]
         private string $name,
-        #[Property(description: 'Title of the key', type: 'string', example: 'My Key Title')]
+        #[Property(description: 'Title of the key', type: 'string', example: 'My Key Title', nullable: true)]
         private ?string $title = null,
-        #[Property(description: 'Description of the key', type: 'string', example: 'Key description')]
+        #[Property(description: 'Description of the key', type: 'string', example: 'Key description', nullable: true)]
         private ?string $description = null,
         #[Property(
             description: 'Data type of the key (e.g. input, textarea, select)',
             type: 'string',
-            example: 'input'
+            example: 'input',
+            nullable: true
         )]
         private ?string $type = null,
         #[Property(
@@ -76,7 +77,8 @@ final readonly class KeyUpdate
                 'minValue' => null,
                 'maxValue' => null,
                 'displayfield-1596-inputEl' => 'The width of this component.',
-            ]
+            ],
+            nullable: true
         )]
         private ?array $definition = null,
     ) {

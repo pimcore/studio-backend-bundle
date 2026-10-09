@@ -26,9 +26,9 @@ use OpenApi\Attributes\Schema;
 final readonly class Dimensions
 {
     public function __construct(
-        #[Property(description: 'width', type: 'integer', example: 1920)]
+        #[Property(description: 'width', type: 'integer', example: 1920, nullable: true)]
         private ?int $width = null,
-        #[Property(description: 'height', type: 'integer', example: 1080)]
+        #[Property(description: 'height', type: 'integer', example: 1080, nullable: true)]
         private ?int $height = null,
     ) {
 

@@ -36,7 +36,7 @@ final class Group implements AdditionalAttributesInterface
         private readonly int $id,
         #[Property(description: 'Name', type: 'string', example: 'value')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string', example: 'value')]
+        #[Property(description: 'Description', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $description,
     ) {
     }

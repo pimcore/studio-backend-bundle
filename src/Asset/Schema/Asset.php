@@ -60,7 +60,7 @@ class Asset extends Element implements
         private readonly string $type,
         #[Property(description: 'Filename', type: 'string', example: 'cool.jpg')]
         private readonly string $filename,
-        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]
+        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg', nullable: true)]
         private readonly ?string $mimeType,
         #[Property(description: 'Has metadata', type: 'bool', example: false)]
         private readonly bool $hasMetadata,

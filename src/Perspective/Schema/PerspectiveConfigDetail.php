@@ -49,9 +49,9 @@ final class PerspectiveConfigDetail extends PerspectiveConfig
         private readonly array $widgetsRight = [],
         #[Property(description: 'Widgets Bottom', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsBottom = [],
-        #[Property(description: 'Left Expanded Widget', type: 'string', example: 'widget_id')]
+        #[Property(description: 'Left Expanded Widget', type: 'string', example: 'widget_id', nullable: true)]
         private readonly ?string $expandedLeft = null,
-        #[Property(description: 'Right Expanded Widget', type: 'string', example: 'widget_id')]
+        #[Property(description: 'Right Expanded Widget', type: 'string', example: 'widget_id', nullable: true)]
         private readonly ?string $expandedRight = null,
     ) {
         parent::__construct($id, $name, $icon, $isWriteable);

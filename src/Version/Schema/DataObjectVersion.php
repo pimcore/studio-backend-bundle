@@ -60,13 +60,13 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
-        #[Property(description: 'Class name', type: 'string', example: 'car')]
+        #[Property(description: 'Class name', type: 'string', example: 'car', nullable: true)]
         private readonly ?string $className = null,
-        #[Property(description: 'Published', type: 'bool', example: false)]
+        #[Property(description: 'Published', type: 'bool', example: false, nullable: true)]
         private readonly ?bool $published = null,
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
-        #[Property(description: 'Allow variants', type: 'bool', example: false)]
+        #[Property(description: 'Allow variants', type: 'bool', example: false, nullable: true)]
         private ?bool $allowVariants = null,
         #[Property(description: 'Properties', type: 'array', items: new Items(ref: ElementProperty::class))]
         private array $properties = [],

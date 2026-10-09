@@ -8,6 +8,10 @@ The following steps are necessary during updating to newer versions.
   `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
   new signatures.
 
+- [OpenAPI] Improved: `zircote/swagger-php` 6.x is now supported (`^5.0 || ^6.0`); the previous `>=5.6` conflict was removed. The generated Studio OpenAPI document is unchanged.
+
+> **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
+
 ## Upgrade to 2026.3.1
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback

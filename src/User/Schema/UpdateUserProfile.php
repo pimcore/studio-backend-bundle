@@ -39,15 +39,15 @@ use OpenApi\Attributes\Schema;
 final readonly class UpdateUserProfile
 {
     public function __construct(
-        #[Property(description: 'Firstname of the User', type: 'string', example: '')]
+        #[Property(description: 'Firstname of the User', type: 'string', example: '', nullable: true)]
         private ?string $firstname,
-        #[Property(description: 'Lastname of the User', type: 'string', example: '')]
+        #[Property(description: 'Lastname of the User', type: 'string', example: '', nullable: true)]
         private ?string $lastname,
-        #[Property(description: 'Email of the User', type: 'string', example: '')]
+        #[Property(description: 'Email of the User', type: 'string', example: '', nullable: true)]
         private ?string $email,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private string $language,
-        #[Property(description: 'Date Time Locale for the User', type: 'string', example: '')]
+        #[Property(description: 'Date Time Locale for the User', type: 'string', example: '', nullable: true)]
         private ?string $dateTimeLocale,
         #[Property(description: 'Show Welcome Screen', type: 'boolean', example: true)]
         private bool $welcomeScreen,

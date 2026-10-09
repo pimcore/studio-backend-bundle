@@ -35,7 +35,7 @@ final class WebsiteSetting implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'Language', type: 'string', example: 'en')]
         private readonly string $language,
-        #[Property(description: 'Type', type: 'string', example: 'text')]
+        #[Property(description: 'Type', type: 'string', example: 'text', nullable: true)]
         private readonly ?string $type = null,
         #[Property(
             description: 'Data',
@@ -47,11 +47,11 @@ final class WebsiteSetting implements AdditionalAttributesInterface
             ]
         )]
         private readonly null|string|bool|ElementParameter $data = null,
-        #[Property(description: 'Site ID', type: 'integer', example: 1)]
+        #[Property(description: 'Site ID', type: 'integer', example: 1, nullable: true)]
         private readonly ?int $siteId = null,
-        #[Property(description: 'Creation date', type: 'integer', example: null)]
+        #[Property(description: 'Creation date', type: 'integer', example: null, nullable: true)]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'Modification date', type: 'integer', example: null)]
+        #[Property(description: 'Modification date', type: 'integer', example: null, nullable: true)]
         private readonly ?int $modificationDate = null,
     ) {
     }
