@@ -3,6 +3,21 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Grid] Changed: `twigOperator` templates render in a dedicated Twig environment with the sandbox always enabled
+  and without Pimcore's Twig extensions or the application's Twig configuration. Method calls and property access on
+  objects are denied. Values are converted to plain data first: dates become ISO 8601 strings, consent values,
+  `JsonSerializable` objects and enums become their data, other objects render as empty. `range()` returns at most
+  1000 elements (best effort). See `doc/01_Architecture_Overview/01_Grid.md`.
+
+> **Note:** `SandboxExtensionInitializer` implements the new `TwigOperatorEnvironmentProviderInterface`. A custom
+> `SandboxExtensionInitializerInterface` implementation or decorator should implement it too: without it, templates keep
+> rendering through the shared `twig` service with a deprecation, and fail if the returned sandbox is not registered
+> there. `SandboxExtensionInitializer::initialize()` returns the isolated environment's sandbox, which is not registered
+> on the shared `twig` service; render through `TemplateGeneratorInterface` instead. The initializer's
+> `$blockedClasses`, `$allowedClasses` and `$hardBlockedMethods` arguments no longer apply, since all object access is
+> denied. To add a filter, function or tag, tag a Twig extension with `pimcore_studio_backend.twig_operator_extension`
+> and add its name to `sandbox_security_policy`.
+
 - [Grid] Added: asset and data object grid rows carry an optional `score` (the search engine score of the hit, `null`
   without a scored query). The `Asset` and `DataObject` response schemas implement the new public
   `ScoreAwareInterface` (`getScore()`/`setScore()`); subclasses that already declare these methods must match the
