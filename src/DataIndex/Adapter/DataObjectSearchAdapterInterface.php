@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -28,7 +29,10 @@ use Pimcore\Model\UserInterface;
  */
 interface DataObjectSearchAdapterInterface
 {
-    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
+    public function searchDataObjects(
+        QueryInterface $dataObjectQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): DataObjectSearchResult;
 
     /**
      * @throws NotFoundException
@@ -40,7 +44,10 @@ interface DataObjectSearchAdapterInterface
      *
      * @return array<int>
      */
-    public function fetchDataObjectIds(QueryInterface $dataObjectQuery): array;
+    public function fetchDataObjectIds(
+        QueryInterface $dataObjectQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): array;
 
     /**
      * @throws InvalidSearchException|SearchException

@@ -110,6 +110,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     {
         $user = $this->securityService->getCurrentUser();
         $document = $this->documentSearchService->getDocumentById($id, $user);
+        $this->checkViewPermission($id, $user);
 
         if ($getDetailData) {
             $this->getDocumentDetailData($document);
@@ -125,6 +126,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
         $document = $this->documentSearchService->getDocumentById($id, $user);
+        $this->checkViewPermission($id, $user);
 
         $this->dispatchDocumentEvent($document);
 
@@ -177,6 +179,20 @@ final readonly class DocumentService implements DocumentServiceInterface
     /**
      * {@inheritdoc}
      */
+    /**
+     * The search index can return elements the user may only list, for example parent folders of a workspace.
+     *
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function checkViewPermission(int $id, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission(
+            $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $id),
+            $user,
+            ElementPermissions::VIEW_PERMISSION
+        );
+    }
+
     private function getDocumentDetailData(DocumentDetail $document): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $document->getId());

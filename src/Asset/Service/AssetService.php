@@ -105,6 +105,7 @@ final readonly class AssetService implements AssetServiceInterface
 
         $user = $this->securityService->getCurrentUser();
         $asset = $this->assetSearchService->getAssetById($id, $user);
+        $this->checkViewPermission($id, $user);
         if ($getWorkflowAvailable) {
             $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
                 $id,
@@ -125,6 +126,7 @@ final readonly class AssetService implements AssetServiceInterface
         UserInterface $user
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
         $asset = $this->assetSearchService->getAssetById($id, $user);
+        $this->checkViewPermission($id, $user);
 
         $this->dispatchAssetEvent($asset);
 
@@ -268,6 +270,20 @@ final readonly class AssetService implements AssetServiceInterface
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         }
+    }
+
+    /**
+     * The search index can return elements the user may only list, for example parent folders of a workspace.
+     *
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function checkViewPermission(int $id, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission(
+            $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $id),
+            $user,
+            ElementPermissions::VIEW_PERMISSION
+        );
     }
 
     private function dispatchAssetEvent(mixed $asset): void

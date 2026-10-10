@@ -156,6 +156,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $id,
             $user
         );
+        $this->checkViewPermission($id, $user);
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -172,6 +173,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
+        $this->checkViewPermission($id, $user);
 
         $this->dispatchDetailEvent($dataObject);
 
@@ -317,6 +319,20 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         } catch (Exception $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
+    }
+
+    /**
+     * The search index can return elements the user may only list, for example parent folders of a workspace.
+     *
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function checkViewPermission(int $id, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission(
+            $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $id),
+            $user,
+            ElementPermissions::VIEW_PERMISSION
+        );
     }
 
     /**
