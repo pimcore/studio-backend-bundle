@@ -3,6 +3,10 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.3.2
+- [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view` permission instead of `list`:
+  - Grids (data objects, assets, documents), advanced search and quick search only return elements the user may view. The trees still show the parent folders of a workspace for navigation. Workspaces with `list` but without `view` therefore no longer show up in grids and search. Relation search dialogs use the same search.
+  - `GET /data-objects/{id}`, `GET /documents/{id}`, `GET /assets/{id}` (and the responses of their update endpoints) return `403` for elements the user may list but not view, and `404` for elements the user may not list. The check uses the core permissions, so workflow permission denials for `view` apply as well. `GET /dependencies/{type}/{id}` requires `view` on the element in the same way.
+  - Grid export, folder batch patch and asset folder zip use the id search of the generic data index. They only exclude elements without `view` with a `pimcore/generic-data-index-bundle` version that limits parent paths to the `list` permission.
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as

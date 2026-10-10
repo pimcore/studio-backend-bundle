@@ -73,8 +73,14 @@ final class GridServiceTest extends Unit
 
         $searchResult = new DataObjectSearchResult(
             items: [
-                $this->makeEmpty(StudioElementInterface::class, ['getId' => $missingId]),
-                $this->makeEmpty(StudioElementInterface::class, ['getId' => $existingId]),
+                $this->makeEmpty(StudioElementInterface::class, [
+                    'getId' => $missingId,
+                    'getPermissions' => new Permissions(),
+                ]),
+                $this->makeEmpty(StudioElementInterface::class, [
+                    'getId' => $existingId,
+                    'getPermissions' => new Permissions(),
+                ]),
             ],
             currentPage: 1,
             pageSize: 10,
@@ -105,6 +111,60 @@ final class GridServiceTest extends Unit
         $this->assertCount(1, $result->getItems());
         // The search-reported total is intentionally left untouched.
         $this->assertSame(2, $result->getTotalItems());
+    }
+
+    /**
+     * Rows the index reports without view permission (workspace parents on older index versions) are only
+     * returned if the core permission check allows them.
+     */
+    public function testGridDropsRowsWithoutViewPermission(): void
+    {
+        $viewableId = 100;
+        $listOnlyId = 101;
+        $wronglyDeniedId = 102;
+
+        $searchResult = new DataObjectSearchResult(
+            items: [
+                $this->makeEmpty(StudioElementInterface::class, [
+                    'getId' => $viewableId,
+                    'getPermissions' => new Permissions(view: true),
+                ]),
+                $this->makeEmpty(StudioElementInterface::class, [
+                    'getId' => $listOnlyId,
+                    'getPermissions' => new Permissions(view: false),
+                ]),
+                $this->makeEmpty(StudioElementInterface::class, [
+                    'getId' => $wronglyDeniedId,
+                    'getPermissions' => new Permissions(view: false),
+                ]),
+            ],
+            currentPage: 1,
+            pageSize: 10,
+            totalItems: 3,
+        );
+
+        $user = new User();
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => fn (string $type, int $id): AbstractObject => $this->makeEmpty(
+                AbstractObject::class,
+                [
+                    'isAllowed' => fn (string $permission, User $permissionUser): bool => $id === $wronglyDeniedId
+                        && $permission === 'view'
+                        && $permissionUser === $user,
+                ]
+            ),
+        ]);
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, ['searchDataObjects' => $searchResult]),
+            serviceResolver: $serviceResolver,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
+        );
+
+        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
+
+        // The viewable row (index) and the row the core check allows are returned, the list-only row is not.
+        $this->assertCount(2, $result->getItems());
     }
 
     /**

@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Asset as AssetModel;
@@ -52,6 +53,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class AssetService implements AssetServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
 
     public function __construct(
@@ -104,6 +106,7 @@ final readonly class AssetService implements AssetServiceInterface
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
 
         $user = $this->securityService->getCurrentUser();
+        $this->assertElementViewPermission(ElementTypes::TYPE_ASSET, $id, $user);
         $asset = $this->assetSearchService->getAssetById($id, $user);
         if ($getWorkflowAvailable) {
             $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
@@ -124,6 +127,7 @@ final readonly class AssetService implements AssetServiceInterface
         int $id,
         UserInterface $user
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
+        $this->assertElementViewPermission(ElementTypes::TYPE_ASSET, $id, $user);
         $asset = $this->assetSearchService->getAssetById($id, $user);
 
         $this->dispatchAssetEvent($asset);

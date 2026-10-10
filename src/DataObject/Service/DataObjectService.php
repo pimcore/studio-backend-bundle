@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
@@ -61,6 +62,7 @@ use function sprintf;
 final readonly class DataObjectService implements DataObjectServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
     use ValidateObjectDataTrait;
 
@@ -152,10 +154,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
-        $dataObject = $this->dataObjectSearchService->getDataObjectById(
-            $id,
-            $user
-        );
+        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
+        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -171,6 +171,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
+        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
         $this->dispatchDetailEvent($dataObject);

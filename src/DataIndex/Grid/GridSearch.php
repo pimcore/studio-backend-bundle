@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
@@ -25,24 +26,31 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset\Folder as AssetFolder;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class GridSearch implements GridSearchInterface
 {
+    use ElementProviderTrait;
+
     private SearchIndexFilterInterface $filterService;
 
     public function __construct(
@@ -51,7 +59,8 @@ final readonly class GridSearch implements GridSearchInterface
         private DocumentSearchServiceInterface $documentSearchService,
         private FilterServiceProviderInterface $filterServiceProvider,
         private QueryFactoryInterface $queryFactory,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private ServiceResolverInterface $serviceResolver
     ) {
         $this->filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
     }
@@ -117,9 +126,15 @@ final readonly class GridSearch implements GridSearchInterface
         $query = $this->getSearchQuery($type, $gridParameter, $user);
 
         return match($type) {
-            ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->searchDataObjects($query),
-            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->searchDocuments($query),
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query, PermissionTypes::VIEW),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->searchDataObjects(
+                $query,
+                PermissionTypes::VIEW
+            ),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->searchDocuments(
+                $query,
+                PermissionTypes::VIEW
+            ),
             default => throw new InvalidElementTypeException($type)
         };
     }
@@ -137,8 +152,11 @@ final readonly class GridSearch implements GridSearchInterface
         $query = $this->getSearchQuery($type, $gridParameter, $user);
 
         return match($type) {
-            ElementTypes::TYPE_ASSET => $this->assetSearchService->fetchAssetIds($query),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->fetchDataObjectIds($query),
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->fetchAssetIds($query, PermissionTypes::VIEW),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->fetchDataObjectIds(
+                $query,
+                PermissionTypes::VIEW
+            ),
             default => throw new InvalidElementTypeException($type)
         };
     }
@@ -161,45 +179,34 @@ final readonly class GridSearch implements GridSearchInterface
         FilterParameter $filter,
         string $type,
         int $folderId,
-        ?UserInterface $user
+        UserInterface $user
     ): FilterParameter {
-        $folder = match($type) {
-            ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById($folderId, $user),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->getDataObjectById($folderId, $user),
-            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getDocumentById($folderId, $user),
-            default => throw new InvalidElementTypeException($type)
-        };
+        $supportedTypes = [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DATA_OBJECT, ElementTypes::TYPE_DOCUMENT];
+        if (!in_array($type, $supportedTypes, true)) {
+            throw new InvalidElementTypeException($type);
+        }
+
+        // The folder only scopes the search by path, the search itself only returns elements the user may view.
+        // Like the tree, use the core list check, which also allows the parent folders of the user's workspaces.
+        $folder = $this->getElement($this->serviceResolver, $type, $folderId);
+        /** @var User $user */
+        if (!$folder->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
+            throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::LIST_PERMISSION));
+        }
 
         if (!$this->isFolderOfType($type, $folder)) {
             throw new NotFoundException($type . ' Folder', $folderId);
         }
 
-        $filter->setPath($folder->getFullPath());
+        $filter->setPath($folder->getRealFullPath());
 
         return $filter;
     }
 
-    private function isFolderOfType(string $type, StudioElementInterface $element): bool
+    private function isFolderOfType(string $type, ElementInterface $element): bool
     {
-        if ($type === ElementTypes::TYPE_ASSET && $element instanceof AssetFolder) {
-            return true;
-        }
-
-        if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObjectFolder) {
-            return true;
-        }
-
-        // We handle Object as folders since they can have child items.
-        if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObject) {
-            return true;
-        }
-
-        // Allow all documents as folder since they can all have parent items.
-        if ($type === ElementTypes::TYPE_DOCUMENT) {
-            return true;
-        }
-
-        return false;
+        // Data objects and documents can all have child items, so they are handled as folders.
+        return $type !== ElementTypes::TYPE_ASSET || $element instanceof AssetFolder;
     }
 
     private function getStudioElementType(string $type): string
