@@ -57,7 +57,7 @@ final class GridSearchTest extends Unit
     public function testDataObjectGridSearchesWithViewPermissionAndChecksListOnFolder(): void
     {
         $user = new User();
-        $folder = $this->makeEmpty(DataObjectFolder::class, ['getRealFullPath' => self::FOLDER_PATH]);
+        $folder = $this->createFolder(DataObjectFolder::class, $user);
         $filter = new FilterParameter();
 
         $dataObjectSearchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
@@ -75,7 +75,6 @@ final class GridSearchTest extends Unit
             dataObjectSearchService: $dataObjectSearchService,
             query: $this->makeEmpty(DataObjectQueryInterface::class),
             folder: $folder,
-            securityService: $this->createSecurityService($user, $folder),
         );
 
         $gridSearch->searchElementsForUser(
@@ -90,7 +89,7 @@ final class GridSearchTest extends Unit
     public function testAssetGridSearchesWithViewPermission(): void
     {
         $user = new User();
-        $folder = $this->makeEmpty(AssetFolder::class, ['getRealFullPath' => self::FOLDER_PATH]);
+        $folder = $this->createFolder(AssetFolder::class, $user);
 
         $assetSearchService = $this->makeEmpty(AssetSearchServiceInterface::class, [
             'searchAssets' => Expected::once(
@@ -107,7 +106,6 @@ final class GridSearchTest extends Unit
             assetSearchService: $assetSearchService,
             query: $this->makeEmpty(AssetQueryInterface::class),
             folder: $folder,
-            securityService: $this->createSecurityService($user, $folder),
         )->searchElementsForUser(
             ElementTypes::TYPE_ASSET,
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
@@ -118,7 +116,7 @@ final class GridSearchTest extends Unit
     public function testDocumentGridSearchesWithViewPermission(): void
     {
         $user = new User();
-        $folder = $this->makeEmpty(Page::class, ['getRealFullPath' => self::FOLDER_PATH]);
+        $folder = $this->createFolder(Page::class, $user);
 
         $documentSearchService = $this->makeEmpty(DocumentSearchServiceInterface::class, [
             'searchDocuments' => Expected::once(
@@ -135,7 +133,6 @@ final class GridSearchTest extends Unit
             documentSearchService: $documentSearchService,
             query: $this->makeEmpty(DocumentQueryInterface::class),
             folder: $folder,
-            securityService: $this->createSecurityService($user, $folder),
         )->searchElementsForUser(
             ElementTypes::TYPE_DOCUMENT,
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
@@ -146,7 +143,7 @@ final class GridSearchTest extends Unit
     public function testElementIdSearchUsesViewPermission(): void
     {
         $user = new User();
-        $folder = $this->makeEmpty(DataObjectFolder::class, ['getRealFullPath' => self::FOLDER_PATH]);
+        $folder = $this->createFolder(DataObjectFolder::class, $user);
 
         $dataObjectSearchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
             'fetchDataObjectIds' => Expected::once(
@@ -162,7 +159,6 @@ final class GridSearchTest extends Unit
             dataObjectSearchService: $dataObjectSearchService,
             query: $this->makeEmpty(DataObjectQueryInterface::class),
             folder: $folder,
-            securityService: $this->createSecurityService($user, $folder),
         )->searchElementIdsForUser(
             ElementTypes::TYPE_DATA_OBJECT,
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
@@ -175,7 +171,7 @@ final class GridSearchTest extends Unit
     public function testFolderWithoutListPermissionIsRejected(): void
     {
         $user = new User();
-        $folder = $this->makeEmpty(DataObjectFolder::class);
+        $folder = $this->makeEmpty(DataObjectFolder::class, ['isAllowed' => false]);
 
         $gridSearch = $this->createGridSearch(
             dataObjectSearchService: $this->makeEmpty(DataObjectSearchServiceInterface::class, [
@@ -183,11 +179,6 @@ final class GridSearchTest extends Unit
             ]),
             query: $this->makeEmpty(DataObjectQueryInterface::class),
             folder: $folder,
-            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
-                'hasElementPermission' => static function () {
-                    throw new ForbiddenException();
-                },
-            ]),
         );
 
         $this->expectException(ForbiddenException::class);
@@ -201,7 +192,7 @@ final class GridSearchTest extends Unit
     public function testAssetGridRequiresAnAssetFolder(): void
     {
         $user = new User();
-        $image = $this->makeEmpty(Image::class);
+        $image = $this->createFolder(Image::class, $user);
 
         $gridSearch = $this->createGridSearch(
             assetSearchService: $this->makeEmpty(AssetSearchServiceInterface::class, [
@@ -209,7 +200,6 @@ final class GridSearchTest extends Unit
             ]),
             query: $this->makeEmpty(AssetQueryInterface::class),
             folder: $image,
-            securityService: $this->createSecurityService($user, $image),
         );
 
         $this->expectException(NotFoundException::class);
@@ -220,14 +210,19 @@ final class GridSearchTest extends Unit
         );
     }
 
-    private function createSecurityService(User $user, ElementInterface $folder): SecurityServiceInterface
+    /**
+     * @param class-string<ElementInterface> $class
+     */
+    private function createFolder(string $class, User $user): ElementInterface
     {
-        return $this->makeEmpty(SecurityServiceInterface::class, [
-            'hasElementPermission' => Expected::once(
-                function (ElementInterface $element, User $permissionUser, string $permission) use ($user, $folder) {
-                    $this->assertSame($folder, $element);
-                    $this->assertSame($user, $permissionUser);
+        return $this->makeEmpty($class, [
+            'getRealFullPath' => self::FOLDER_PATH,
+            'isAllowed' => Expected::once(
+                function (string $permission, User $permissionUser) use ($user) {
                     $this->assertSame(ElementPermissions::LIST_PERMISSION, $permission);
+                    $this->assertSame($user, $permissionUser);
+
+                    return true;
                 }
             ),
         ]);
@@ -236,7 +231,6 @@ final class GridSearchTest extends Unit
     private function createGridSearch(
         QueryInterface $query,
         ElementInterface $folder,
-        SecurityServiceInterface $securityService,
         ?AssetSearchServiceInterface $assetSearchService = null,
         ?DataObjectSearchServiceInterface $dataObjectSearchService = null,
         ?DocumentSearchServiceInterface $documentSearchService = null,
@@ -251,7 +245,7 @@ final class GridSearchTest extends Unit
             $documentSearchService ?? $this->makeEmpty(DocumentSearchServiceInterface::class),
             $this->makeEmpty(FilterServiceProviderInterface::class, ['create' => $filterService]),
             $this->makeEmpty(QueryFactoryInterface::class, ['create' => $query]),
-            $securityService,
+            $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(ServiceResolverInterface::class, [
                 'getElementById' => function (string $type, int $id) use ($folder) {
                     $this->assertSame(self::FOLDER_ID, $id);

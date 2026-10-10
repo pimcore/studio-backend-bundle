@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
@@ -38,8 +39,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset\Folder as AssetFolder;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -183,11 +186,12 @@ final readonly class GridSearch implements GridSearchInterface
             throw new InvalidElementTypeException($type);
         }
 
-        // The folder only scopes the search by path. Like in the tree, the list permission is enough for it,
-        // the search itself only returns elements the user may view.
+        // The folder only scopes the search by path, the search itself only returns elements the user may view.
+        // Like the tree, use the core list check, which also allows the parent folders of the user's workspaces.
         $folder = $this->getElement($this->serviceResolver, $type, $folderId);
-        if ($user !== null) {
-            $this->securityService->hasElementPermission($folder, $user, ElementPermissions::LIST_PERMISSION);
+        /** @var User|null $user */
+        if ($user !== null && !$folder->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
+            throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::LIST_PERMISSION));
         }
 
         if (!$this->isFolderOfType($type, $folder)) {
