@@ -86,4 +86,16 @@ final class ValidationErrorHydratorTest extends Unit
         $this->assertNull($errors[0]->getMessageKey());
         $this->assertSame([], $errors[0]->getPath());
     }
+
+    public function testPlainExceptionWithSubItemsKeepsTheirMessages(): void
+    {
+        $plain = new ValidationException('invalid custom container');
+        $plain->setSubItems([new ValidationException('Empty mandatory field [ a ]')]);
+
+        $errors = (new ValidationErrorHydrator())->hydrate($plain);
+
+        $this->assertCount(1, $errors);
+        $this->assertSame($plain->getAggregatedMessage(), $errors[0]->getMessage());
+        $this->assertStringContainsString('Empty mandatory field [ a ]', $errors[0]->getMessage());
+    }
 }

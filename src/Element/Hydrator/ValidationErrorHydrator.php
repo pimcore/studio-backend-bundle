@@ -26,7 +26,7 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
     public function hydrate(ValidationException $exception): array
     {
         $errors = [];
-        // a plain ValidationException becomes a single error that only carries its message
+        // a plain ValidationException becomes a single error without field, path or translation key
         foreach (StructuredValidationException::from($exception)->getViolations() as $violation) {
             $path = [];
             foreach ($violation->getPath() as $segment) {
@@ -44,7 +44,8 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
                 $violation->getFieldName(),
                 $violation->getFieldTitle(),
                 $path,
-                $violation->getMessage(),
+                // sub items of a plain exception (e.g. from a custom container) only exist in the aggregated message
+                $violation->getSubItems() === [] ? $violation->getMessage() : $violation->getAggregatedMessage(),
                 $violation->getTranslationKey(),
                 $violation->getTranslationParameters(),
             );
