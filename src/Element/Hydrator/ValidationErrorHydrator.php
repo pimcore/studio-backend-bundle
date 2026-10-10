@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationError;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationErrorPath;
+use Pimcore\Model\Element\StructuredValidationException;
 use Pimcore\Model\Element\ValidationException;
 
 /**
@@ -25,7 +26,8 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
     public function hydrate(ValidationException $exception): array
     {
         $errors = [];
-        foreach ($exception->getViolations() as $violation) {
+        // a plain ValidationException becomes a single error that only carries its message
+        foreach (StructuredValidationException::from($exception)->getViolations() as $violation) {
             $path = [];
             foreach ($violation->getPath() as $segment) {
                 $path[] = new ValidationErrorPath(

@@ -29,7 +29,7 @@ final class ValidationFailedResponse extends Response
     {
         parent::__construct(
             response: HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
-            description: 'Element validation failed. The optional validationErrors list the single errors.',
+            description: 'Element validation failed. The optional validationErrors list the individual errors.',
             content: new JsonContent(ref: ValidationFailedError::class),
         );
     }

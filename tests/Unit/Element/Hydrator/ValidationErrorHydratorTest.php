@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Element\Hydrator;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydrator;
+use Pimcore\Model\Element\StructuredValidationException;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\Element\ValidationMessageKey;
 use Pimcore\Model\Element\ValidationPathSegment;
@@ -26,7 +27,7 @@ final class ValidationErrorHydratorTest extends Unit
 {
     public function testLeafWithoutViolationsYieldsOneError(): void
     {
-        $leaf = (new ValidationException('Empty mandatory field [ title ]'))
+        $leaf = (new StructuredValidationException('Empty mandatory field [ title ]'))
             ->setTranslation(ValidationMessageKey::MANDATORY)
             ->setField('title', 'Title');
 
@@ -43,7 +44,7 @@ final class ValidationErrorHydratorTest extends Unit
 
     public function testAggregateYieldsOneErrorPerViolationWithPath(): void
     {
-        $first = (new ValidationException('Too long'))
+        $first = (new StructuredValidationException('Too long'))
             ->setTranslation(ValidationMessageKey::MAX_LENGTH, ['max' => 10])
             ->setField('name')
             ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'))
@@ -54,7 +55,7 @@ final class ValidationErrorHydratorTest extends Unit
                 typeTitle: 'Sale information'
             ));
         $second = new ValidationException('Plain error');
-        $aggregate = (new ValidationException('Validation failed'))->addViolations($first, $second);
+        $aggregate = (new StructuredValidationException('Validation failed'))->addViolations($first, $second);
 
         $errors = (new ValidationErrorHydrator())->hydrate($aggregate);
 
@@ -73,5 +74,16 @@ final class ValidationErrorHydratorTest extends Unit
         $this->assertNull($errors[1]->getFieldTitle());
         $this->assertNull($errors[1]->getMessageKey());
         $this->assertSame('Plain error', $errors[1]->getMessage());
+    }
+
+    public function testPlainValidationExceptionYieldsOneErrorWithItsMessage(): void
+    {
+        $errors = (new ValidationErrorHydrator())->hydrate(new ValidationException('Prevented publishing'));
+
+        $this->assertCount(1, $errors);
+        $this->assertSame('Prevented publishing', $errors[0]->getMessage());
+        $this->assertNull($errors[0]->getField());
+        $this->assertNull($errors[0]->getMessageKey());
+        $this->assertSame([], $errors[0]->getPath());
     }
 }

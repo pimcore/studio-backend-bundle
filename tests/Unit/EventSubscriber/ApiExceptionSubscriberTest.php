@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydrator;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
-use Pimcore\Model\Element\ValidationException;
+use Pimcore\Model\Element\StructuredValidationException;
 use Pimcore\Model\Element\ValidationMessageKey;
 use Pimcore\Model\Element\ValidationPathSegment;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -133,7 +133,7 @@ final class ApiExceptionSubscriberTest extends Unit
 
     public function testFieldValidationFailureCarriesTheValidationErrors(): void
     {
-        $leaf = (new ValidationException('Empty mandatory field [ name ]'))
+        $leaf = (new StructuredValidationException('Empty mandatory field [ name ]'))
             ->setTranslation(ValidationMessageKey::MANDATORY)
             ->setField('name', 'Name')
             ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
@@ -174,7 +174,7 @@ final class ApiExceptionSubscriberTest extends Unit
 
     public function testEmptyMessageStillReturnsTheValidationErrors(): void
     {
-        $leaf = (new ValidationException('Leaf'))->setTranslation(ValidationMessageKey::MANDATORY)->setField('name');
+        $leaf = (new StructuredValidationException('Leaf'))->setTranslation(ValidationMessageKey::MANDATORY)->setField('name');
         $exception = new FieldValidationFailedException('', previous: $leaf);
         $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
 

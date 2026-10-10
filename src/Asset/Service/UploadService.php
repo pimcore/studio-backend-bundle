@@ -26,9 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -37,11 +35,11 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementSaveExceptionTrait;
 use Pimcore\Helper\MimeTypeHelper;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use function dirname;
@@ -52,6 +50,8 @@ use function sprintf;
  */
 final readonly class UploadService implements UploadServiceInterface
 {
+    use ElementSaveExceptionTrait;
+
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
@@ -87,9 +87,9 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException
      * @throws EnvironmentException
-     * @throws FieldValidationFailedException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException
      * @throws FilesystemException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -173,9 +173,9 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException
      * @throws EnvironmentException
-     * @throws FieldValidationFailedException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
      */
@@ -210,10 +210,8 @@ final readonly class UploadService implements UploadServiceInterface
             $asset->save();
 
             return $newFileName;
-        } catch (ValidationException $e) {
-            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage());
+            $this->throwElementSaveException($e);
         } finally {
             @unlink($sourcePath);
         }
@@ -261,9 +259,9 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException
      * @throws EnvironmentException
-     * @throws FieldValidationFailedException
+     * @throws \Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException
      */
     private function uploadAssetLocally(
         int $parentId,
@@ -277,10 +275,8 @@ final readonly class UploadService implements UploadServiceInterface
                 $parentId,
                 $assetParams
             );
-        } catch (ValidationException $e) {
-            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage());
+            $this->throwElementSaveException($e);
         } finally {
             @unlink($sourcePath);
         }
