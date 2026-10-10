@@ -171,6 +171,19 @@ final class ApiExceptionSubscriberTest extends Unit
         );
     }
 
+    public function testEmptyMessageStillReturnsTheValidationErrors(): void
+    {
+        $leaf = (new ValidationException('Leaf'))->setTranslation(ValidationMessageKey::MANDATORY)->setField('name');
+        $exception = new FieldValidationFailedException('', previous: $leaf);
+        $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $data = json_decode($event->getResponse()->getContent(), true);
+        $this->assertSame('', $data['message']);
+        $this->assertSame('name', $data['validationErrors'][0]['field']);
+    }
+
     public function testFieldValidationFailureWithoutElementExceptionKeepsTheLegacyShape(): void
     {
         $event = $this->createEvent(

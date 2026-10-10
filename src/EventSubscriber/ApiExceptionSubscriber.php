@@ -103,6 +103,12 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
     private function getResponseData(HttpExceptionInterface $exception): array
     {
+        if ($exception instanceof FieldValidationFailedException
+            && $exception->getPrevious() instanceof ValidationException
+        ) {
+            return $this->handleElementValidationException($exception, $exception->getPrevious());
+        }
+
         if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
             return [
                 'message' => $exception->getMessage(),
@@ -114,12 +120,6 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
                 $exception->getPrevious(),
                 $exception->getMessage()
             );
-        }
-
-        if ($exception instanceof FieldValidationFailedException
-            && $exception->getPrevious() instanceof ValidationException
-        ) {
-            return $this->handleElementValidationException($exception, $exception->getPrevious());
         }
 
         if ($exception instanceof GdiParsingException) {

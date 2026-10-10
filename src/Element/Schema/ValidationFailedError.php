@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'ValidationFailedError',
     description: 'Error response of a failed element validation',
-    required: ['message'],
+    required: ['message', 'errorKey'],
     type: 'object'
 )]
 final readonly class ValidationFailedError
@@ -32,7 +32,11 @@ final readonly class ValidationFailedError
      * @param list<ValidationError> $validationErrors
      */
     public function __construct(
-        #[Property(description: 'Message', type: 'string', example: 'Validation failed: Empty mandatory field')]
+        #[Property(
+            description: 'Message, plain text that must not be rendered as HTML',
+            type: 'string',
+            example: 'Validation failed: Empty mandatory field'
+        )]
         private string $message,
         #[Property(description: 'Error key', type: 'string', example: 'error_element_validation_failed')]
         private string $errorKey,
