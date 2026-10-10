@@ -65,6 +65,14 @@ final class DocumentServiceViewPermissionTest extends Unit
         $this->assertSame($element, $service->getDocumentForUser(self::ELEMENT_ID, new User()));
     }
 
+    public function testGetDocumentReturnsViewableElement(): void
+    {
+        $element = $this->createElement(true);
+        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+
+        $this->assertSame($element, $service->getDocument(self::ELEMENT_ID, false));
+    }
+
     private function createElement(bool $view): DocumentDetail
     {
         $element = (new ReflectionClass(DocumentDetail::class))->newInstanceWithoutConstructor();

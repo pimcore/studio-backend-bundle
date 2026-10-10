@@ -67,6 +67,14 @@ final class DataObjectServiceViewPermissionTest extends Unit
         $this->assertSame($element, $service->getDataObjectForUser(self::ELEMENT_ID, new User()));
     }
 
+    public function testGetDataObjectReturnsViewableElement(): void
+    {
+        $element = $this->createElement(true);
+        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+
+        $this->assertSame($element, $service->getDataObject(self::ELEMENT_ID, false));
+    }
+
     private function createElement(bool $view): DataObjectFolder
     {
         $element = (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();

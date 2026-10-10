@@ -64,6 +64,14 @@ final class AssetServiceViewPermissionTest extends Unit
         $this->assertSame($element, $service->getAssetForUser(self::ELEMENT_ID, new User()));
     }
 
+    public function testGetAssetReturnsViewableElement(): void
+    {
+        $element = $this->createElement(true);
+        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+
+        $this->assertSame($element, $service->getAsset(self::ELEMENT_ID, false));
+    }
+
     private function createElement(bool $view): AssetFolder
     {
         $element = (new ReflectionClass(AssetFolder::class))->newInstanceWithoutConstructor();

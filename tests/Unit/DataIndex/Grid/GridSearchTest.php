@@ -59,7 +59,7 @@ final class GridSearchTest extends Unit
     public function testDataObjectGridSearchesWithViewPermissionAndChecksListOnFolder(): void
     {
         $user = new User();
-        $folder = $this->createFolder(DataObjectFolder::class, $user);
+        $folder = $this->createParentElement(DataObjectFolder::class, $user);
         $filter = new FilterParameter();
 
         $dataObjectSearchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
@@ -91,7 +91,7 @@ final class GridSearchTest extends Unit
     public function testAssetGridSearchesWithViewPermission(): void
     {
         $user = new User();
-        $folder = $this->createFolder(AssetFolder::class, $user);
+        $folder = $this->createParentElement(AssetFolder::class, $user);
 
         $assetSearchService = $this->makeEmpty(AssetSearchServiceInterface::class, [
             'searchAssets' => Expected::once(
@@ -118,7 +118,7 @@ final class GridSearchTest extends Unit
     public function testDocumentGridSearchesWithViewPermission(): void
     {
         $user = new User();
-        $folder = $this->createFolder(Page::class, $user);
+        $folder = $this->createParentElement(Page::class, $user);
 
         $documentSearchService = $this->makeEmpty(DocumentSearchServiceInterface::class, [
             'searchDocuments' => Expected::once(
@@ -145,7 +145,7 @@ final class GridSearchTest extends Unit
     public function testElementIdSearchUsesViewPermission(): void
     {
         $user = new User();
-        $folder = $this->createFolder(DataObjectFolder::class, $user);
+        $folder = $this->createParentElement(DataObjectFolder::class, $user);
 
         $dataObjectSearchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
             'fetchDataObjectIds' => Expected::once(
@@ -173,7 +173,7 @@ final class GridSearchTest extends Unit
     public function testAssetIdSearchUsesViewPermission(): void
     {
         $user = new User();
-        $folder = $this->createFolder(AssetFolder::class, $user);
+        $folder = $this->createParentElement(AssetFolder::class, $user);
 
         $assetSearchService = $this->makeEmpty(AssetSearchServiceInterface::class, [
             'fetchAssetIds' => Expected::once(
@@ -222,7 +222,7 @@ final class GridSearchTest extends Unit
     public function testAssetGridRequiresAnAssetFolder(): void
     {
         $user = new User();
-        $image = $this->createFolder(Image::class, $user);
+        $image = $this->createParentElement(Image::class, $user);
 
         $gridSearch = $this->createGridSearch(
             assetSearchService: $this->makeEmpty(AssetSearchServiceInterface::class, [
@@ -243,7 +243,7 @@ final class GridSearchTest extends Unit
     /**
      * @param class-string<ElementInterface> $class
      */
-    private function createFolder(string $class, User $user): ElementInterface
+    private function createParentElement(string $class, User $user): ElementInterface
     {
         return $this->makeEmpty($class, [
             'getRealFullPath' => self::FOLDER_PATH,
