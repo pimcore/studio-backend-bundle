@@ -15,8 +15,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\EventSubscriber;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydrator;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Pimcore\Model\Element\StructuredValidationException;
+use Pimcore\Model\Element\ValidationMessageKey;
+use Pimcore\Model\Element\ValidationPathSegment;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -126,9 +131,78 @@ final class ApiExceptionSubscriberTest extends Unit
         $this->assertNull($event->getResponse());
     }
 
+    public function testFieldValidationFailureCarriesTheValidationErrors(): void
+    {
+        $leaf = (new StructuredValidationException('Empty mandatory field [ name ]'))
+            ->setTranslation(ValidationMessageKey::MANDATORY)
+            ->setField('name', 'Name')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
+        $exception = new FieldValidationFailedException('Validation failed: Empty mandatory field', previous: $leaf);
+        $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $response = $event->getResponse();
+        $this->assertNotNull($response);
+        $this->assertSame(422, $response->getStatusCode());
+        $raw = $response->getContent();
+        $this->assertStringContainsString('"parameters":{}', $raw);
+        $data = json_decode($raw, true);
+        $this->assertSame('Validation failed: Empty mandatory field', $data['message']);
+        $this->assertSame('error_element_validation_failed', $data['errorKey']);
+        $this->assertSame(
+            [
+                'field' => 'name',
+                'fieldTitle' => 'Name',
+                'path' => [
+                    [
+                        'field' => 'localizedfields',
+                        'title' => null,
+                        'language' => 'en',
+                        'index' => null,
+                        'type' => null,
+                        'typeTitle' => null,
+                    ],
+                ],
+                'message' => 'Empty mandatory field [ name ]',
+                'messageKey' => 'validation.mandatory',
+                'parameters' => [],
+            ],
+            $data['validationErrors'][0]
+        );
+    }
+
+    public function testEmptyMessageStillReturnsTheValidationErrors(): void
+    {
+        $leaf = (new StructuredValidationException('Leaf'))->setTranslation(ValidationMessageKey::MANDATORY)->setField('name');
+        $exception = new FieldValidationFailedException('', previous: $leaf);
+        $event = $this->createEvent('/pimcore-studio/api/data-objects/1', $exception);
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $data = json_decode($event->getResponse()->getContent(), true);
+        $this->assertSame('', $data['message']);
+        $this->assertSame('name', $data['validationErrors'][0]['field']);
+    }
+
+    public function testFieldValidationFailureWithoutElementExceptionKeepsTheLegacyShape(): void
+    {
+        $event = $this->createEvent(
+            '/pimcore-studio/api/data-objects/1',
+            new FieldValidationFailedException('Something failed')
+        );
+
+        $this->createSubscriber()->onKernelException($event);
+
+        $this->assertSame(
+            ['message' => 'Something failed', 'errorKey' => 'error_element_validation_failed'],
+            json_decode($event->getResponse()->getContent(), true)
+        );
+    }
+
     private function createSubscriber(): ApiExceptionSubscriber
     {
-        return new ApiExceptionSubscriber('prod', self::URL_PREFIX);
+        return new ApiExceptionSubscriber('prod', self::URL_PREFIX, new ValidationErrorHydrator());
     }
 
     private function createEvent(string $path, Throwable $exception): ExceptionEvent

@@ -13,10 +13,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationError;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationErrorPath;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\GdiParsingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
+use Pimcore\Model\Element\ValidationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +29,7 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use function array_key_exists;
+use function array_map;
 
 /**
  * @internal
@@ -32,8 +38,11 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 {
     use StudioBackendPathTrait;
 
-    public function __construct(private string $environment, private string $urlPrefix)
-    {
+    public function __construct(
+        private string $environment,
+        private string $urlPrefix,
+        private ValidationErrorHydratorInterface $validationErrorHydrator,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
@@ -94,6 +103,12 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
     private function getResponseData(HttpExceptionInterface $exception): array
     {
+        if ($exception instanceof FieldValidationFailedException
+            && $exception->getPrevious() instanceof ValidationException
+        ) {
+            return $this->handleElementValidationException($exception, $exception->getPrevious());
+        }
+
         if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
             return [
                 'message' => $exception->getMessage(),
@@ -134,6 +149,43 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         return [
             'message' => $message,
             'violations' => $collectedViolations,
+        ];
+    }
+
+    private function handleElementValidationException(
+        FieldValidationFailedException $exception,
+        ValidationException $validationException
+    ): array {
+        return [
+            'message' => $exception->getMessage(),
+            'errorKey' => $exception->getErrorKey(),
+            'validationErrors' => array_map(
+                $this->validationErrorToArray(...),
+                $this->validationErrorHydrator->hydrate($validationException)
+            ),
+        ];
+    }
+
+    private function validationErrorToArray(ValidationError $error): array
+    {
+        return [
+            'field' => $error->getField(),
+            'fieldTitle' => $error->getFieldTitle(),
+            'path' => array_map(
+                static fn (ValidationErrorPath $segment): array => [
+                    'field' => $segment->getField(),
+                    'title' => $segment->getTitle(),
+                    'language' => $segment->getLanguage(),
+                    'index' => $segment->getIndex(),
+                    'type' => $segment->getType(),
+                    'typeTitle' => $segment->getTypeTitle(),
+                ],
+                $error->getPath()
+            ),
+            'message' => $error->getMessage(),
+            'messageKey' => $error->getMessageKey(),
+            // an object, so that empty parameters serialize as {} and not as []
+            'parameters' => (object) $error->getParameters(),
         ];
     }
 

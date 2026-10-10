@@ -92,3 +92,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\ValidationErrorHydrator
