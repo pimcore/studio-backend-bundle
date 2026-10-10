@@ -59,11 +59,7 @@ final class DependencyRepositoryViewPermissionTest extends Unit
     private function createRepository(): DependencyRepository
     {
         $element = $this->makeEmpty(Folder::class, [
-            'isAllowed' => function (string $permission): bool {
-                $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
-
-                return false;
-            },
+            'isAllowed' => static fn (string $permission): bool => $permission === ElementPermissions::LIST_PERMISSION,
         ]);
 
         return new DependencyRepository(

@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetService;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -62,6 +63,14 @@ final class AssetServiceViewPermissionTest extends Unit
         $service->getAssetForUser(self::ELEMENT_ID, $this->user);
     }
 
+    public function testGetAssetReportsElementWithoutListPermissionAsNotFound(): void
+    {
+        $service = $this->createService(false, Expected::never(), null, false);
+
+        $this->expectException(NotFoundException::class);
+        $service->getAsset(self::ELEMENT_ID);
+    }
+
     public function testGetAssetForUserReturnsViewableElement(): void
     {
         $element = $this->createElement();
@@ -83,7 +92,7 @@ final class AssetServiceViewPermissionTest extends Unit
         return (new ReflectionClass(AssetFolder::class))->newInstanceWithoutConstructor();
     }
 
-    private function createService(bool $view, StubMarshaler $dispatch, ?AssetFolder $element = null): AssetService
+    private function createService(bool $view, StubMarshaler $dispatch, ?AssetFolder $element = null, bool $list = true): AssetService
     {
         // Without view permission, the search index must not be queried at all.
         $lookup = $view ? Expected::once(function (int $id, ?User $user) use ($element) {
@@ -94,11 +103,10 @@ final class AssetServiceViewPermissionTest extends Unit
         }) : Expected::never();
         $searchService = $this->makeEmpty(AssetSearchServiceInterface::class, ['getAssetById' => $lookup]);
         $coreElement = $this->makeEmpty(CoreFolder::class, [
-            'isAllowed' => function (string $permission, User $user) use ($view): bool {
-                $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+            'isAllowed' => function (string $permission, User $user) use ($view, $list): bool {
                 $this->assertSame($this->user, $user);
 
-                return $view;
+                return $permission === ElementPermissions::VIEW_PERMISSION ? $view : $list;
             },
         ]);
 

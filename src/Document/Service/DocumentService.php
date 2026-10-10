@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
@@ -96,10 +95,7 @@ final readonly class DocumentService implements DocumentServiceInterface
 
         $documentQuery->setUser($this->securityService->getCurrentUser());
         $this->setTreeSorting($documentQuery, $parameters->getPathIncludeParent());
-        $result = $this->documentSearchService->searchDocuments(
-            $documentQuery,
-            $parameters->hasContentFilter() ? PermissionTypes::VIEW : PermissionTypes::LIST
-        );
+        $result = $this->documentSearchService->searchDocuments($documentQuery);
         $items = $result->getItems();
 
         foreach ($items as $item) {

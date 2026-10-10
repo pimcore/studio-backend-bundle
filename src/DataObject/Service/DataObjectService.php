@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -139,10 +138,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
         $this->setTreeSorting($parent, $query, $parameters->getPathIncludeParent());
         $this->addVariantsQuery($parent, $query, $parameters->getPathIncludeDescendants());
-        $result = $this->dataObjectSearchService->searchDataObjects(
-            $query,
-            $parameters->hasContentFilter() ? PermissionTypes::VIEW : PermissionTypes::LIST
-        );
+        $result = $this->dataObjectSearchService->searchDataObjects($query);
         $items = $result->getItems();
 
         foreach ($items as $item) {

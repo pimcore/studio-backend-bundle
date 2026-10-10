@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -65,6 +66,14 @@ final class DataObjectServiceViewPermissionTest extends Unit
         $service->getDataObjectForUser(self::ELEMENT_ID, $this->user);
     }
 
+    public function testGetDataObjectReportsElementWithoutListPermissionAsNotFound(): void
+    {
+        $service = $this->createService(false, Expected::never(), null, false);
+
+        $this->expectException(NotFoundException::class);
+        $service->getDataObject(self::ELEMENT_ID);
+    }
+
     public function testGetDataObjectForUserReturnsViewableElement(): void
     {
         $element = $this->createElement();
@@ -86,7 +95,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
         return (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
     }
 
-    private function createService(bool $view, StubMarshaler $dispatch, ?DataObjectFolder $element = null): DataObjectService
+    private function createService(bool $view, StubMarshaler $dispatch, ?DataObjectFolder $element = null, bool $list = true): DataObjectService
     {
         // Without view permission, the search index must not be queried at all.
         $lookup = $view ? Expected::once(function (int $id, ?User $user) use ($element) {
@@ -97,11 +106,10 @@ final class DataObjectServiceViewPermissionTest extends Unit
         }) : Expected::never();
         $searchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, ['getDataObjectById' => $lookup]);
         $coreElement = $this->makeEmpty(CoreFolder::class, [
-            'isAllowed' => function (string $permission, User $user) use ($view): bool {
-                $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+            'isAllowed' => function (string $permission, User $user) use ($view, $list): bool {
                 $this->assertSame($this->user, $user);
 
-                return $view;
+                return $permission === ElementPermissions::VIEW_PERMISSION ? $view : $list;
             },
         ]);
 

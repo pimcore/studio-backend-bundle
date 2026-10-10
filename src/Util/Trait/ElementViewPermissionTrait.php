@@ -31,13 +31,24 @@ trait ElementViewPermissionTrait
      * The search index can return elements the user may only list, for example parent folders of a workspace.
      * The core permission check is authoritative and independent of index state and caches.
      *
+     * Elements the user may not even list are reported as not found, so ids cannot be probed.
+     *
      * @throws ForbiddenException|NotFoundException
      */
     private function assertElementViewPermission(string $elementType, int $id, UserInterface $user): void
     {
-        if (!$this->isElementViewAllowed($elementType, $id, $user)) {
-            throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::VIEW_PERMISSION));
+        $element = $this->getElement($this->serviceResolver, $elementType, $id);
+
+        /** @var User $user */
+        if ($element->isAllowed(ElementPermissions::VIEW_PERMISSION, $user)) {
+            return;
         }
+
+        if (!$element->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
+            throw new NotFoundException($elementType, $id);
+        }
+
+        throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::VIEW_PERMISSION));
     }
 
     /**

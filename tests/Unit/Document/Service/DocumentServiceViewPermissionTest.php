@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -63,6 +64,14 @@ final class DocumentServiceViewPermissionTest extends Unit
         $service->getDocumentForUser(self::ELEMENT_ID, $this->user);
     }
 
+    public function testGetDocumentReportsElementWithoutListPermissionAsNotFound(): void
+    {
+        $service = $this->createService(false, Expected::never(), null, false);
+
+        $this->expectException(NotFoundException::class);
+        $service->getDocument(self::ELEMENT_ID);
+    }
+
     public function testGetDocumentForUserReturnsViewableElement(): void
     {
         $element = $this->createElement();
@@ -84,7 +93,7 @@ final class DocumentServiceViewPermissionTest extends Unit
         return (new ReflectionClass(DocumentDetail::class))->newInstanceWithoutConstructor();
     }
 
-    private function createService(bool $view, StubMarshaler $dispatch, ?DocumentDetail $element = null): DocumentService
+    private function createService(bool $view, StubMarshaler $dispatch, ?DocumentDetail $element = null, bool $list = true): DocumentService
     {
         // Without view permission, the search index must not be queried at all.
         $lookup = $view ? Expected::once(function (int $id, ?User $user) use ($element) {
@@ -95,11 +104,10 @@ final class DocumentServiceViewPermissionTest extends Unit
         }) : Expected::never();
         $searchService = $this->makeEmpty(DocumentSearchServiceInterface::class, ['getDocumentById' => $lookup]);
         $coreElement = $this->makeEmpty(CoreFolder::class, [
-            'isAllowed' => function (string $permission, User $user) use ($view): bool {
-                $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+            'isAllowed' => function (string $permission, User $user) use ($view, $list): bool {
                 $this->assertSame($this->user, $user);
 
-                return $view;
+                return $permission === ElementPermissions::VIEW_PERMISSION ? $view : $list;
             },
         ]);
 

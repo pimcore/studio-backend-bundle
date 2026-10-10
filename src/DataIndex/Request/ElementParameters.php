@@ -83,15 +83,6 @@ readonly class ElementParameters extends CollectionParameters implements
         return $this->pathIncludeDescendants;
     }
 
-    /**
-     * Whether the request filters the elements by their content. Such filters must only match elements the user
-     * may view, otherwise the results leak information about list-only elements.
-     */
-    public function hasContentFilter(): bool
-    {
-        return $this->idSearchTerm !== null || $this->pqlQuery !== null;
-    }
-
     public function getUser(): ?UserInterface
     {
         return $this->user;
