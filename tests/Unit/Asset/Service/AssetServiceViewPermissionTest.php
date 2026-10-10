@@ -17,7 +17,6 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetService;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
@@ -29,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceIn
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
-use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -76,7 +74,8 @@ final class AssetServiceViewPermissionTest extends Unit
         return new AssetService(
             $this->makeEmpty(AssetQueryProviderInterface::class),
             $this->makeEmpty(AssetSearchServiceInterface::class, [
-                'getAssetById' => (new ReflectionClass(AssetFolder::class))->newInstanceWithoutConstructor(),
+                // Without view permission, the search index must not be queried at all.
+                'getAssetById' => Expected::never(),
             ]),
             $this->makeEmpty(AssetServiceResolverInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => Expected::never()]),

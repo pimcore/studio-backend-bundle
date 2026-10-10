@@ -104,8 +104,8 @@ final readonly class AssetService implements AssetServiceInterface
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
 
         $user = $this->securityService->getCurrentUser();
-        $asset = $this->assetSearchService->getAssetById($id, $user);
         $this->checkViewPermission($id, $user);
+        $asset = $this->assetSearchService->getAssetById($id, $user);
         if ($getWorkflowAvailable) {
             $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
                 $id,
@@ -125,8 +125,8 @@ final readonly class AssetService implements AssetServiceInterface
         int $id,
         UserInterface $user
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
-        $asset = $this->assetSearchService->getAssetById($id, $user);
         $this->checkViewPermission($id, $user);
+        $asset = $this->assetSearchService->getAssetById($id, $user);
 
         $this->dispatchAssetEvent($asset);
 

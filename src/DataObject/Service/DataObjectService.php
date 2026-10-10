@@ -152,11 +152,11 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
+        $this->checkViewPermission($id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById(
             $id,
             $user
         );
-        $this->checkViewPermission($id, $user);
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -172,8 +172,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
-        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
         $this->checkViewPermission($id, $user);
+        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
         $this->dispatchDetailEvent($dataObject);
 

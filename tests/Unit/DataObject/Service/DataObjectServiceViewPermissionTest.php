@@ -106,14 +106,15 @@ final class DataObjectServiceViewPermissionTest extends Unit
         ElementInterface $element,
         ?DataObjectFolder $dataObject = null
     ): DataObjectService {
-        $dataObject ??= (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
+        // Without view permission, the search index must not be queried at all.
+        $getDataObjectById = $dataObject === null ? Expected::never() : Expected::once($dataObject);
 
         return new DataObjectService(
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $this->makeEmpty(DataServiceInterface::class, ['setObjectDetailData' => Expected::never()]),
             $this->makeEmpty(DataObjectQueryProviderInterface::class),
             $this->makeEmpty(DataObjectSearchServiceInterface::class, [
-                'getDataObjectById' => $dataObject,
+                'getDataObjectById' => $getDataObjectById,
             ]),
             $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $this->makeEmpty(FactoryInterface::class),

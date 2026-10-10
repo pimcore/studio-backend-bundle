@@ -109,8 +109,8 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function getDocument(int $id, bool $getDetailData = true): DocumentDetail
     {
         $user = $this->securityService->getCurrentUser();
-        $document = $this->documentSearchService->getDocumentById($id, $user);
         $this->checkViewPermission($id, $user);
+        $document = $this->documentSearchService->getDocumentById($id, $user);
 
         if ($getDetailData) {
             $this->getDocumentDetailData($document);
@@ -125,8 +125,8 @@ final readonly class DocumentService implements DocumentServiceInterface
      */
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
-        $document = $this->documentSearchService->getDocumentById($id, $user);
         $this->checkViewPermission($id, $user);
+        $document = $this->documentSearchService->getDocumentById($id, $user);
 
         $this->dispatchDocumentEvent($document);
 

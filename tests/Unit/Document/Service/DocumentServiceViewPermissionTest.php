@@ -19,7 +19,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverI
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService;
@@ -30,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Document\Folder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
-use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -81,7 +79,8 @@ final class DocumentServiceViewPermissionTest extends Unit
             $this->makeEmpty(DataServiceInterface::class, ['setDocumentDetailData' => Expected::never()]),
             $this->makeEmpty(DocumentQueryProviderInterface::class),
             $this->makeEmpty(DocumentSearchServiceInterface::class, [
-                'getDocumentById' => (new ReflectionClass(DocumentDetail::class))->newInstanceWithoutConstructor(),
+                // Without view permission, the search index must not be queried at all.
+                'getDocumentById' => Expected::never(),
             ]),
             $this->makeEmpty(DocumentServiceResolverInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => Expected::never()]),
