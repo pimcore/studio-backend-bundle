@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -40,6 +41,7 @@ use Pimcore\Helper\MimeTypeHelper;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use function dirname;
@@ -87,6 +89,7 @@ final readonly class UploadService implements UploadServiceInterface
     /**
      * @throws DatabaseException
      * @throws EnvironmentException
+     * @throws FieldValidationFailedException
      * @throws FilesystemException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -172,6 +175,7 @@ final readonly class UploadService implements UploadServiceInterface
     /**
      * @throws DatabaseException
      * @throws EnvironmentException
+     * @throws FieldValidationFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
      */
@@ -206,6 +210,8 @@ final readonly class UploadService implements UploadServiceInterface
             $asset->save();
 
             return $newFileName;
+        } catch (ValidationException $e) {
+            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         } finally {
@@ -257,6 +263,7 @@ final readonly class UploadService implements UploadServiceInterface
     /**
      * @throws DatabaseException
      * @throws EnvironmentException
+     * @throws FieldValidationFailedException
      */
     private function uploadAssetLocally(
         int $parentId,
@@ -270,6 +277,8 @@ final readonly class UploadService implements UploadServiceInterface
                 $parentId,
                 $assetParams
             );
+        } catch (ValidationException $e) {
+            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         } finally {

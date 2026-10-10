@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\DataParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\ValidationFailedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
@@ -67,6 +68,7 @@ final class UpdateController extends AbstractApiController
         description: 'data_object_update_by_id_success_response',
         content: new OneOfDataObjectsJson()
     )]
+    #[ValidationFailedResponse]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,

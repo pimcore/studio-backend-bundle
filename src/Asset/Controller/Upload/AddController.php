@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UploadAssetParamete
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -28,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParame
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\ValidationFailedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -57,6 +59,7 @@ final class AddController extends AbstractApiController
 
     /**
      * @throws DatabaseException
+     * @throws FieldValidationFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
@@ -80,6 +83,7 @@ final class AddController extends AbstractApiController
         properties: [new FileUpload(), new AssetType()],
         required: ['file']
     )]
+    #[ValidationFailedResponse]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::FORBIDDEN,
