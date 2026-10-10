@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Service;
 
-use Closure;
 use Codeception\Stub\Expected;
 use Codeception\Stub\StubMarshaler;
 use Codeception\Test\Unit;
@@ -22,8 +21,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -31,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Model\DataObject\Folder as CoreFolder;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use ReflectionClass;
@@ -52,7 +51,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
 
     public function testGetDataObjectRejectsElementWithoutViewPermission(): void
     {
-        $service = $this->createService($this->createElement(false), Expected::never());
+        $service = $this->createService(false, Expected::never());
 
         $this->expectException(ForbiddenException::class);
         $service->getDataObject(self::ELEMENT_ID);
@@ -60,7 +59,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
 
     public function testGetDataObjectForUserRejectsElementWithoutViewPermission(): void
     {
-        $service = $this->createService($this->createElement(false), Expected::never());
+        $service = $this->createService(false, Expected::never());
 
         $this->expectException(ForbiddenException::class);
         $service->getDataObjectForUser(self::ELEMENT_ID, $this->user);
@@ -68,44 +67,42 @@ final class DataObjectServiceViewPermissionTest extends Unit
 
     public function testGetDataObjectForUserReturnsViewableElement(): void
     {
-        $element = $this->createElement(true);
-        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+        $element = $this->createElement();
+        $service = $this->createService(true, Expected::once(static fn (object $event) => $event), $element);
 
         $this->assertSame($element, $service->getDataObjectForUser(self::ELEMENT_ID, $this->user));
     }
 
     public function testGetDataObjectReturnsViewableElement(): void
     {
-        $element = $this->createElement(true);
-        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+        $element = $this->createElement();
+        $service = $this->createService(true, Expected::once(static fn (object $event) => $event), $element);
 
         $this->assertSame($element, $service->getDataObject(self::ELEMENT_ID, false));
     }
 
-    private function createElement(bool $view): DataObjectFolder
+    private function createElement(): DataObjectFolder
     {
-        $element = (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
-        // The permissions property is declared private in the parent schema class.
-        Closure::bind(
-            function ($permissions): void {
-                $this->permissions = $permissions;
-            },
-            $element,
-            DataObject::class
-        )(new DataObjectPermissions(view: $view));
-
-        return $element;
+        return (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
     }
 
-    private function createService(DataObjectFolder $element, StubMarshaler $dispatch): DataObjectService
+    private function createService(bool $view, StubMarshaler $dispatch, ?DataObjectFolder $element = null): DataObjectService
     {
-        $searchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
-            'getDataObjectById' => Expected::once(function (int $id, ?User $user) use ($element) {
-                $this->assertSame(self::ELEMENT_ID, $id);
+        // Without view permission, the search index must not be queried at all.
+        $lookup = $view ? Expected::once(function (int $id, ?User $user) use ($element) {
+            $this->assertSame(self::ELEMENT_ID, $id);
+            $this->assertSame($this->user, $user);
+
+            return $element;
+        }) : Expected::never();
+        $searchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, ['getDataObjectById' => $lookup]);
+        $coreElement = $this->makeEmpty(CoreFolder::class, [
+            'isAllowed' => function (string $permission, User $user) use ($view): bool {
+                $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
                 $this->assertSame($this->user, $user);
 
-                return $element;
-            }),
+                return $view;
+            },
         ]);
 
         return new DataObjectService(
@@ -118,7 +115,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
             $this->makeEmpty(FilterServiceProviderInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => $dispatch]),
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
-            $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $coreElement]),
             $this->makeEmpty(ElementSaveServiceInterface::class),
         );
     }

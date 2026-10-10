@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
@@ -95,7 +96,10 @@ final readonly class DocumentService implements DocumentServiceInterface
 
         $documentQuery->setUser($this->securityService->getCurrentUser());
         $this->setTreeSorting($documentQuery, $parameters->getPathIncludeParent());
-        $result = $this->documentSearchService->searchDocuments($documentQuery);
+        $result = $this->documentSearchService->searchDocuments(
+            $documentQuery,
+            $parameters->hasContentFilter() ? PermissionTypes::VIEW : PermissionTypes::LIST
+        );
         $items = $result->getItems();
 
         foreach ($items as $item) {
@@ -111,8 +115,8 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function getDocument(int $id, bool $getDetailData = true): DocumentDetail
     {
         $user = $this->securityService->getCurrentUser();
+        $this->assertElementViewPermission(ElementTypes::TYPE_DOCUMENT, $id, $user);
         $document = $this->documentSearchService->getDocumentById($id, $user);
-        $this->assertElementViewPermission($document);
 
         if ($getDetailData) {
             $this->getDocumentDetailData($document);
@@ -127,8 +131,8 @@ final readonly class DocumentService implements DocumentServiceInterface
      */
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
+        $this->assertElementViewPermission(ElementTypes::TYPE_DOCUMENT, $id, $user);
         $document = $this->documentSearchService->getDocumentById($id, $user);
-        $this->assertElementViewPermission($document);
 
         $this->dispatchDocumentEvent($document);
 

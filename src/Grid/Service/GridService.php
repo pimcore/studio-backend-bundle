@@ -46,6 +46,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
@@ -66,6 +67,7 @@ use function is_array;
 final class GridService implements GridServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
 
     /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
@@ -590,8 +592,17 @@ final class GridService implements GridServiceInterface
 
         $data = [];
         $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+        $user = $this->securityService->getCurrentUser();
         foreach ($items as $item) {
             try {
+                // The index only returns elements the user may view. Rows whose index permissions say otherwise
+                // (workspace parents on older index versions) are checked against the core permissions.
+                $isViewable = $item->getPermissions()->isView()
+                    || $this->isElementViewAllowed($elementType, $item->getId(), $user);
+                if (!$isViewable) {
+                    continue;
+                }
+
                 $data[] = $this->getGridDataForElement(
                     $columns,
                     $item,

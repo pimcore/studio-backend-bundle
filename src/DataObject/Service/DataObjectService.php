@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -138,7 +139,10 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
         $this->setTreeSorting($parent, $query, $parameters->getPathIncludeParent());
         $this->addVariantsQuery($parent, $query, $parameters->getPathIncludeDescendants());
-        $result = $this->dataObjectSearchService->searchDataObjects($query);
+        $result = $this->dataObjectSearchService->searchDataObjects(
+            $query,
+            $parameters->hasContentFilter() ? PermissionTypes::VIEW : PermissionTypes::LIST
+        );
         $items = $result->getItems();
 
         foreach ($items as $item) {
@@ -154,11 +158,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
-        $dataObject = $this->dataObjectSearchService->getDataObjectById(
-            $id,
-            $user
-        );
-        $this->assertElementViewPermission($dataObject);
+        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
+        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -174,8 +175,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
+        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
-        $this->assertElementViewPermission($dataObject);
 
         $this->dispatchDetailEvent($dataObject);
 

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Document\Service;
 
-use Closure;
 use Codeception\Stub\Expected;
 use Codeception\Stub\StubMarshaler;
 use Codeception\Test\Unit;
@@ -21,15 +20,15 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverI
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Model\Document\Folder as CoreFolder;
 use Pimcore\Model\User;
 use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -50,7 +49,7 @@ final class DocumentServiceViewPermissionTest extends Unit
 
     public function testGetDocumentRejectsElementWithoutViewPermission(): void
     {
-        $service = $this->createService($this->createElement(false), Expected::never());
+        $service = $this->createService(false, Expected::never());
 
         $this->expectException(ForbiddenException::class);
         $service->getDocument(self::ELEMENT_ID);
@@ -58,7 +57,7 @@ final class DocumentServiceViewPermissionTest extends Unit
 
     public function testGetDocumentForUserRejectsElementWithoutViewPermission(): void
     {
-        $service = $this->createService($this->createElement(false), Expected::never());
+        $service = $this->createService(false, Expected::never());
 
         $this->expectException(ForbiddenException::class);
         $service->getDocumentForUser(self::ELEMENT_ID, $this->user);
@@ -66,44 +65,42 @@ final class DocumentServiceViewPermissionTest extends Unit
 
     public function testGetDocumentForUserReturnsViewableElement(): void
     {
-        $element = $this->createElement(true);
-        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+        $element = $this->createElement();
+        $service = $this->createService(true, Expected::once(static fn (object $event) => $event), $element);
 
         $this->assertSame($element, $service->getDocumentForUser(self::ELEMENT_ID, $this->user));
     }
 
     public function testGetDocumentReturnsViewableElement(): void
     {
-        $element = $this->createElement(true);
-        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
+        $element = $this->createElement();
+        $service = $this->createService(true, Expected::once(static fn (object $event) => $event), $element);
 
         $this->assertSame($element, $service->getDocument(self::ELEMENT_ID, false));
     }
 
-    private function createElement(bool $view): DocumentDetail
+    private function createElement(): DocumentDetail
     {
-        $element = (new ReflectionClass(DocumentDetail::class))->newInstanceWithoutConstructor();
-        // The permissions property is declared private in the parent schema class.
-        Closure::bind(
-            function ($permissions): void {
-                $this->permissions = $permissions;
-            },
-            $element,
-            Document::class
-        )(new DocumentPermissions(view: $view));
-
-        return $element;
+        return (new ReflectionClass(DocumentDetail::class))->newInstanceWithoutConstructor();
     }
 
-    private function createService(DocumentDetail $element, StubMarshaler $dispatch): DocumentService
+    private function createService(bool $view, StubMarshaler $dispatch, ?DocumentDetail $element = null): DocumentService
     {
-        $searchService = $this->makeEmpty(DocumentSearchServiceInterface::class, [
-            'getDocumentById' => Expected::once(function (int $id, ?User $user) use ($element) {
-                $this->assertSame(self::ELEMENT_ID, $id);
+        // Without view permission, the search index must not be queried at all.
+        $lookup = $view ? Expected::once(function (int $id, ?User $user) use ($element) {
+            $this->assertSame(self::ELEMENT_ID, $id);
+            $this->assertSame($this->user, $user);
+
+            return $element;
+        }) : Expected::never();
+        $searchService = $this->makeEmpty(DocumentSearchServiceInterface::class, ['getDocumentById' => $lookup]);
+        $coreElement = $this->makeEmpty(CoreFolder::class, [
+            'isAllowed' => function (string $permission, User $user) use ($view): bool {
+                $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
                 $this->assertSame($this->user, $user);
 
-                return $element;
-            }),
+                return $view;
+            },
         ]);
 
         return new DocumentService(
@@ -115,7 +112,7 @@ final class DocumentServiceViewPermissionTest extends Unit
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => $dispatch]),
             $this->makeEmpty(FilterServiceProviderInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
-            $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $coreElement]),
         );
     }
 }

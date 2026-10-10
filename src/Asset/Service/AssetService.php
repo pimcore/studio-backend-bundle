@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
@@ -86,7 +87,10 @@ final readonly class AssetService implements AssetServiceInterface
         $assetQuery->orderByPath('asc');
         $assetQuery->setUser($this->securityService->getCurrentUser());
 
-        $result = $this->assetSearchService->searchAssets($assetQuery);
+        $result = $this->assetSearchService->searchAssets(
+            $assetQuery,
+            $parameters->hasContentFilter() ? PermissionTypes::VIEW : PermissionTypes::LIST
+        );
 
         $items = $result->getItems();
 
@@ -106,8 +110,8 @@ final readonly class AssetService implements AssetServiceInterface
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
 
         $user = $this->securityService->getCurrentUser();
+        $this->assertElementViewPermission(ElementTypes::TYPE_ASSET, $id, $user);
         $asset = $this->assetSearchService->getAssetById($id, $user);
-        $this->assertElementViewPermission($asset);
         if ($getWorkflowAvailable) {
             $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
                 $id,
@@ -127,8 +131,8 @@ final readonly class AssetService implements AssetServiceInterface
         int $id,
         UserInterface $user
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
+        $this->assertElementViewPermission(ElementTypes::TYPE_ASSET, $id, $user);
         $asset = $this->assetSearchService->getAssetById($id, $user);
-        $this->assertElementViewPermission($asset);
 
         $this->dispatchAssetEvent($asset);
 

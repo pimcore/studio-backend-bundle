@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -32,7 +35,9 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DocumentSearchPreview;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\SimpleSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -43,6 +48,7 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
 final readonly class SearchService implements SearchServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
 
     public function __construct(
         private ElementServiceInterface $elementService,
@@ -51,6 +57,7 @@ final readonly class SearchService implements SearchServiceInterface
         private SecurityServiceInterface $securityService,
         private ServiceProviderInterface $previewHydratorLocator,
         private SimpleSearchHydratorInterface $simpleSearchHydrator,
+        private ServiceResolverInterface $serviceResolver,
     ) {
     }
 
@@ -63,7 +70,22 @@ final readonly class SearchService implements SearchServiceInterface
         $items = $result->getItems();
 
         $hydratedItems = [];
+        $user = $this->securityService->getCurrentUser();
         foreach ($items as $item) {
+            // The index only returns elements the user may view. Items whose index permissions say otherwise
+            // (workspace parents on older index versions) are checked against the core permissions.
+            try {
+                $isViewable = $item->getPermissions()->isView()
+                    || $this->isElementViewAllowed($this->getElementTypeFromItem($item), $item->getId(), $user);
+            } catch (NotFoundException) {
+                // The index references an element that no longer exists.
+                continue;
+            }
+
+            if (!$isViewable) {
+                continue;
+            }
+
             $hydratedItem = $this->simpleSearchHydrator->hydrate($item);
             $this->dispatchSearchEvent($hydratedItem);
 
@@ -95,6 +117,15 @@ final readonly class SearchService implements SearchServiceInterface
         $this->dispatchPreviewEvent($preview);
 
         return $preview;
+    }
+
+    private function getElementTypeFromItem(ElementSearchResultItemInterface $item): string
+    {
+        return match ($item->getElementType()) {
+            ElementType::ASSET => ElementTypes::TYPE_ASSET,
+            ElementType::DOCUMENT => ElementTypes::TYPE_DOCUMENT,
+            ElementType::DATA_OBJECT => ElementTypes::TYPE_OBJECT,
+        };
     }
 
     private function dispatchSearchEvent(SimpleSearchResult $resultItem): void

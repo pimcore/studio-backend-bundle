@@ -14,25 +14,40 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Response\Element;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 use function sprintf;
 
 /**
+ * Requires the using class to provide `$serviceResolver` and to use the ElementProviderTrait.
+ *
  * @internal
  */
 trait ElementViewPermissionTrait
 {
     /**
      * The search index can return elements the user may only list, for example parent folders of a workspace.
-     * Uses the permissions the index already resolved for the user, so no extra element load is needed.
+     * The core permission check is authoritative and independent of index state and caches.
      *
-     * @throws ForbiddenException
+     * @throws ForbiddenException|NotFoundException
      */
-    private function assertElementViewPermission(Element $element): void
+    private function assertElementViewPermission(string $elementType, int $id, UserInterface $user): void
     {
-        if (!$element->getPermissions()->isView()) {
+        if (!$this->isElementViewAllowed($elementType, $id, $user)) {
             throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::VIEW_PERMISSION));
         }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function isElementViewAllowed(string $elementType, int $id, UserInterface $user): bool
+    {
+        $element = $this->getElement($this->serviceResolver, $elementType, $id);
+
+        /** @var User $user */
+        return $element->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
     }
 }
