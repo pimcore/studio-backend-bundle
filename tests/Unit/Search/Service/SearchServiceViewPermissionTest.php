@@ -19,7 +19,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Element\SearchResult\Elem
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Paging\PaginationInfo;
 use Pimcore\Bundle\GenericDataIndexBundle\Permission\DataObjectPermissions;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\SimpleSearchHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SimpleSearchParameter;
@@ -56,7 +55,13 @@ final class SearchServiceViewPermissionTest extends Unit
 
         $hydrated = [];
         $service = new SearchService(
-            $this->makeEmpty(ElementServiceInterface::class),
+            $this->makeEmpty(ElementServiceInterface::class, [
+                'getElementById' => fn (string $type, int $id): Folder => $this->makeEmpty(Folder::class, [
+                    'isAllowed' => fn (string $permission, User $permissionUser): bool => $id === $wronglyDeniedId
+                        && $permission === 'view'
+                        && $permissionUser === $user,
+                ]),
+            ]),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => static fn (object $event) => $event]),
             $this->makeEmpty(SearchRepositoryInterface::class, [
                 'searchElements' => new ElementSearchResult($items, new PaginationInfo(3, 1, 50, 1)),
@@ -69,13 +74,6 @@ final class SearchServiceViewPermissionTest extends Unit
 
                     return (new ReflectionClass(SimpleSearchResult::class))->newInstanceWithoutConstructor();
                 },
-            ]),
-            $this->makeEmpty(ServiceResolverInterface::class, [
-                'getElementById' => fn (string $type, int $id): Folder => $this->makeEmpty(Folder::class, [
-                    'isAllowed' => fn (string $permission, User $permissionUser): bool => $id === $wronglyDeniedId
-                        && $permission === 'view'
-                        && $permissionUser === $user,
-                ]),
             ]),
         );
 
