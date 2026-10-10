@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
@@ -61,6 +62,7 @@ use function sprintf;
 final readonly class DataObjectService implements DataObjectServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
     use ValidateObjectDataTrait;
 
@@ -152,11 +154,11 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
-        $this->checkViewPermission($id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById(
             $id,
             $user
         );
+        $this->assertElementViewPermission($dataObject);
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -172,8 +174,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
-        $this->checkViewPermission($id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
+        $this->assertElementViewPermission($dataObject);
 
         $this->dispatchDetailEvent($dataObject);
 
@@ -319,20 +321,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         } catch (Exception $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
-    }
-
-    /**
-     * The search index can return elements the user may only list, for example parent folders of a workspace.
-     *
-     * @throws ForbiddenException|NotFoundException
-     */
-    private function checkViewPermission(int $id, UserInterface $user): void
-    {
-        $this->securityService->hasElementPermission(
-            $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $id),
-            $user,
-            ElementPermissions::VIEW_PERMISSION
-        );
     }
 
     /**

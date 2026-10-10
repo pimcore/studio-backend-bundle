@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Asset as AssetModel;
@@ -52,6 +53,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class AssetService implements AssetServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
 
     public function __construct(
@@ -104,8 +106,8 @@ final readonly class AssetService implements AssetServiceInterface
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
 
         $user = $this->securityService->getCurrentUser();
-        $this->checkViewPermission($id, $user);
         $asset = $this->assetSearchService->getAssetById($id, $user);
+        $this->assertElementViewPermission($asset);
         if ($getWorkflowAvailable) {
             $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
                 $id,
@@ -125,8 +127,8 @@ final readonly class AssetService implements AssetServiceInterface
         int $id,
         UserInterface $user
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
-        $this->checkViewPermission($id, $user);
         $asset = $this->assetSearchService->getAssetById($id, $user);
+        $this->assertElementViewPermission($asset);
 
         $this->dispatchAssetEvent($asset);
 
@@ -270,20 +272,6 @@ final readonly class AssetService implements AssetServiceInterface
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         }
-    }
-
-    /**
-     * The search index can return elements the user may only list, for example parent folders of a workspace.
-     *
-     * @throws ForbiddenException|NotFoundException
-     */
-    private function checkViewPermission(int $id, UserInterface $user): void
-    {
-        $this->securityService->hasElementPermission(
-            $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $id),
-            $user,
-            ElementPermissions::VIEW_PERMISSION
-        );
     }
 
     private function dispatchAssetEvent(mixed $asset): void

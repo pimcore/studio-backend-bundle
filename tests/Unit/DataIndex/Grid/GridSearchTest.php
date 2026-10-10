@@ -38,9 +38,11 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder as AssetFolder;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\DataObject\Folder as DataObjectFolder;
+use Pimcore\Model\Document;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
@@ -168,6 +170,34 @@ final class GridSearchTest extends Unit
         $this->assertSame([12], $ids);
     }
 
+    public function testAssetIdSearchUsesViewPermission(): void
+    {
+        $user = new User();
+        $folder = $this->createFolder(AssetFolder::class, $user);
+
+        $assetSearchService = $this->makeEmpty(AssetSearchServiceInterface::class, [
+            'fetchAssetIds' => Expected::once(
+                function (AssetQueryInterface $query, PermissionTypes $permissionType) {
+                    $this->assertSame(PermissionTypes::VIEW, $permissionType);
+
+                    return [12];
+                }
+            ),
+        ]);
+
+        $ids = $this->createGridSearch(
+            assetSearchService: $assetSearchService,
+            query: $this->makeEmpty(AssetQueryInterface::class),
+            folder: $folder,
+        )->searchElementIdsForUser(
+            ElementTypes::TYPE_ASSET,
+            new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
+            $user
+        );
+
+        $this->assertSame([12], $ids);
+    }
+
     public function testFolderWithoutListPermissionIsRejected(): void
     {
         $user = new User();
@@ -248,11 +278,21 @@ final class GridSearchTest extends Unit
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(ServiceResolverInterface::class, [
                 'getElementById' => function (string $type, int $id) use ($folder) {
+                    $this->assertSame($this->getCoreType($folder), $type);
                     $this->assertSame(self::FOLDER_ID, $id);
 
                     return $folder;
                 },
             ]),
         );
+    }
+
+    private function getCoreType(ElementInterface $element): string
+    {
+        return match (true) {
+            $element instanceof Asset => 'asset',
+            $element instanceof Document => 'document',
+            default => 'object',
+        };
     }
 }

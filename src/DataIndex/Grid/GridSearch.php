@@ -179,7 +179,7 @@ final readonly class GridSearch implements GridSearchInterface
         FilterParameter $filter,
         string $type,
         int $folderId,
-        ?UserInterface $user
+        UserInterface $user
     ): FilterParameter {
         $supportedTypes = [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DATA_OBJECT, ElementTypes::TYPE_DOCUMENT];
         if (!in_array($type, $supportedTypes, true)) {
@@ -189,8 +189,8 @@ final readonly class GridSearch implements GridSearchInterface
         // The folder only scopes the search by path, the search itself only returns elements the user may view.
         // Like the tree, use the core list check, which also allows the parent folders of the user's workspaces.
         $folder = $this->getElement($this->serviceResolver, $type, $folderId);
-        /** @var User|null $user */
-        if ($user !== null && !$folder->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
+        /** @var User $user */
+        if (!$folder->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
             throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::LIST_PERMISSION));
         }
 

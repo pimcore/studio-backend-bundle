@@ -13,13 +13,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Service;
 
+use Closure;
 use Codeception\Stub\Expected;
+use Codeception\Stub\StubMarshaler;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -27,9 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
-use Pimcore\Model\DataObject\Folder;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use ReflectionClass;
@@ -40,88 +41,68 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final class DataObjectServiceViewPermissionTest extends Unit
 {
-    private const int OBJECT_ID = 9;
+    private const int ELEMENT_ID = 9;
 
-    public function testGetDataObjectRequiresViewPermission(): void
+    public function testGetDataObjectRejectsElementWithoutViewPermission(): void
     {
-        $user = new User();
-        $folder = $this->makeEmpty(Folder::class);
-
-        $service = $this->createService(
-            $this->makeEmpty(SecurityServiceInterface::class, [
-                'getCurrentUser' => $user,
-                'hasElementPermission' => Expected::once(
-                    function (ElementInterface $element, User $permissionUser, string $permission) use ($folder) {
-                        $this->assertSame($folder, $element);
-                        $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
-
-                        throw new ForbiddenException();
-                    }
-                ),
-            ]),
-            $folder
-        );
+        $service = $this->createService($this->createElement(false), Expected::never());
 
         $this->expectException(ForbiddenException::class);
-        $service->getDataObject(self::OBJECT_ID);
+        $service->getDataObject(self::ELEMENT_ID);
     }
 
-    public function testGetDataObjectForUserRequiresViewPermission(): void
+    public function testGetDataObjectForUserRejectsElementWithoutViewPermission(): void
     {
-        $user = new User();
-
-        $service = $this->createService(
-            $this->makeEmpty(SecurityServiceInterface::class, [
-                'hasElementPermission' => Expected::once(
-                    function (ElementInterface $element, User $permissionUser) use ($user) {
-                        $this->assertSame($user, $permissionUser);
-
-                        throw new ForbiddenException();
-                    }
-                ),
-            ]),
-            $this->makeEmpty(Folder::class)
-        );
+        $service = $this->createService($this->createElement(false), Expected::never());
 
         $this->expectException(ForbiddenException::class);
-        $service->getDataObjectForUser(self::OBJECT_ID, $user);
+        $service->getDataObjectForUser(self::ELEMENT_ID, new User());
     }
 
-    public function testGetDataObjectForUserReturnsViewableObject(): void
+    public function testGetDataObjectForUserReturnsViewableElement(): void
     {
-        $user = new User();
-        $dataObject = (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
+        $element = $this->createElement(true);
+        $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
 
-        $service = $this->createService(
-            $this->makeEmpty(SecurityServiceInterface::class, ['hasElementPermission' => Expected::once()]),
-            $this->makeEmpty(Folder::class),
-            $dataObject
-        );
-
-        $this->assertSame($dataObject, $service->getDataObjectForUser(self::OBJECT_ID, $user));
+        $this->assertSame($element, $service->getDataObjectForUser(self::ELEMENT_ID, new User()));
     }
 
-    private function createService(
-        SecurityServiceInterface $securityService,
-        ElementInterface $element,
-        ?DataObjectFolder $dataObject = null
-    ): DataObjectService {
-        // Without view permission, the search index must not be queried at all.
-        $getDataObjectById = $dataObject === null ? Expected::never() : Expected::once($dataObject);
+    private function createElement(bool $view): DataObjectFolder
+    {
+        $element = (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
+        // The permissions property is declared private in the parent schema class.
+        Closure::bind(
+            function ($permissions): void {
+                $this->permissions = $permissions;
+            },
+            $element,
+            DataObject::class
+        )(new DataObjectPermissions(view: $view));
+
+        return $element;
+    }
+
+    private function createService(DataObjectFolder $element, StubMarshaler $dispatch): DataObjectService
+    {
+        $searchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
+            'getDataObjectById' => Expected::once(function (int $id) use ($element) {
+                $this->assertSame(self::ELEMENT_ID, $id);
+
+                return $element;
+            }),
+        ]);
 
         return new DataObjectService(
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $this->makeEmpty(DataServiceInterface::class, ['setObjectDetailData' => Expected::never()]),
             $this->makeEmpty(DataObjectQueryProviderInterface::class),
-            $this->makeEmpty(DataObjectSearchServiceInterface::class, [
-                'getDataObjectById' => $getDataObjectById,
-            ]),
+            $searchService,
             $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $this->makeEmpty(FactoryInterface::class),
             $this->makeEmpty(FilterServiceProviderInterface::class),
-            $this->makeEmpty(EventDispatcherInterface::class),
-            $securityService,
-            $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $element]),
+            $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => $dispatch]),
+            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+            $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(ElementSaveServiceInterface::class),
         );
     }

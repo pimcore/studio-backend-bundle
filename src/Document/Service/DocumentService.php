@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
@@ -46,6 +47,7 @@ use function sprintf;
 final readonly class DocumentService implements DocumentServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
 
     public function __construct(
@@ -109,8 +111,8 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function getDocument(int $id, bool $getDetailData = true): DocumentDetail
     {
         $user = $this->securityService->getCurrentUser();
-        $this->checkViewPermission($id, $user);
         $document = $this->documentSearchService->getDocumentById($id, $user);
+        $this->assertElementViewPermission($document);
 
         if ($getDetailData) {
             $this->getDocumentDetailData($document);
@@ -125,8 +127,8 @@ final readonly class DocumentService implements DocumentServiceInterface
      */
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
-        $this->checkViewPermission($id, $user);
         $document = $this->documentSearchService->getDocumentById($id, $user);
+        $this->assertElementViewPermission($document);
 
         $this->dispatchDocumentEvent($document);
 
@@ -179,20 +181,6 @@ final readonly class DocumentService implements DocumentServiceInterface
     /**
      * {@inheritdoc}
      */
-    /**
-     * The search index can return elements the user may only list, for example parent folders of a workspace.
-     *
-     * @throws ForbiddenException|NotFoundException
-     */
-    private function checkViewPermission(int $id, UserInterface $user): void
-    {
-        $this->securityService->hasElementPermission(
-            $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $id),
-            $user,
-            ElementPermissions::VIEW_PERMISSION
-        );
-    }
-
     private function getDocumentDetailData(DocumentDetail $document): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $document->getId());
