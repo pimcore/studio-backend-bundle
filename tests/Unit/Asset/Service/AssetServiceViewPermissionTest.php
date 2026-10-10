@@ -40,6 +40,13 @@ final class AssetServiceViewPermissionTest extends Unit
 {
     private const int ELEMENT_ID = 9;
 
+    private User $user;
+
+    protected function _before(): void
+    {
+        $this->user = new User();
+    }
+
     public function testGetAssetRejectsElementWithoutViewPermission(): void
     {
         $service = $this->createService($this->createElement(false), Expected::never());
@@ -53,7 +60,7 @@ final class AssetServiceViewPermissionTest extends Unit
         $service = $this->createService($this->createElement(false), Expected::never());
 
         $this->expectException(ForbiddenException::class);
-        $service->getAssetForUser(self::ELEMENT_ID, new User());
+        $service->getAssetForUser(self::ELEMENT_ID, $this->user);
     }
 
     public function testGetAssetForUserReturnsViewableElement(): void
@@ -61,7 +68,7 @@ final class AssetServiceViewPermissionTest extends Unit
         $element = $this->createElement(true);
         $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
 
-        $this->assertSame($element, $service->getAssetForUser(self::ELEMENT_ID, new User()));
+        $this->assertSame($element, $service->getAssetForUser(self::ELEMENT_ID, $this->user));
     }
 
     public function testGetAssetReturnsViewableElement(): void
@@ -90,8 +97,9 @@ final class AssetServiceViewPermissionTest extends Unit
     private function createService(AssetFolder $element, StubMarshaler $dispatch): AssetService
     {
         $searchService = $this->makeEmpty(AssetSearchServiceInterface::class, [
-            'getAssetById' => Expected::once(function (int $id) use ($element) {
+            'getAssetById' => Expected::once(function (int $id, ?User $user) use ($element) {
                 $this->assertSame(self::ELEMENT_ID, $id);
+                $this->assertSame($this->user, $user);
 
                 return $element;
             }),
@@ -103,7 +111,7 @@ final class AssetServiceViewPermissionTest extends Unit
             $this->makeEmpty(AssetServiceResolverInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => $dispatch]),
             $this->makeEmpty(FilterServiceProviderInterface::class),
-            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
             $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(WorkflowDetailsServiceInterface::class, ['hasElementWorkflowsById' => Expected::never()]),
         );

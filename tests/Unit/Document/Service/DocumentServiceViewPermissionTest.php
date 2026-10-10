@@ -41,6 +41,13 @@ final class DocumentServiceViewPermissionTest extends Unit
 {
     private const int ELEMENT_ID = 9;
 
+    private User $user;
+
+    protected function _before(): void
+    {
+        $this->user = new User();
+    }
+
     public function testGetDocumentRejectsElementWithoutViewPermission(): void
     {
         $service = $this->createService($this->createElement(false), Expected::never());
@@ -54,7 +61,7 @@ final class DocumentServiceViewPermissionTest extends Unit
         $service = $this->createService($this->createElement(false), Expected::never());
 
         $this->expectException(ForbiddenException::class);
-        $service->getDocumentForUser(self::ELEMENT_ID, new User());
+        $service->getDocumentForUser(self::ELEMENT_ID, $this->user);
     }
 
     public function testGetDocumentForUserReturnsViewableElement(): void
@@ -62,7 +69,7 @@ final class DocumentServiceViewPermissionTest extends Unit
         $element = $this->createElement(true);
         $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
 
-        $this->assertSame($element, $service->getDocumentForUser(self::ELEMENT_ID, new User()));
+        $this->assertSame($element, $service->getDocumentForUser(self::ELEMENT_ID, $this->user));
     }
 
     public function testGetDocumentReturnsViewableElement(): void
@@ -91,8 +98,9 @@ final class DocumentServiceViewPermissionTest extends Unit
     private function createService(DocumentDetail $element, StubMarshaler $dispatch): DocumentService
     {
         $searchService = $this->makeEmpty(DocumentSearchServiceInterface::class, [
-            'getDocumentById' => Expected::once(function (int $id) use ($element) {
+            'getDocumentById' => Expected::once(function (int $id, ?User $user) use ($element) {
                 $this->assertSame(self::ELEMENT_ID, $id);
+                $this->assertSame($this->user, $user);
 
                 return $element;
             }),
@@ -106,7 +114,7 @@ final class DocumentServiceViewPermissionTest extends Unit
             $this->makeEmpty(DocumentServiceResolverInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => $dispatch]),
             $this->makeEmpty(FilterServiceProviderInterface::class),
-            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
             $this->makeEmpty(ServiceResolverInterface::class),
         );
     }

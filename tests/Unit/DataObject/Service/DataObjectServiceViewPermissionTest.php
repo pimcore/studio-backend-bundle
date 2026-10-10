@@ -43,6 +43,13 @@ final class DataObjectServiceViewPermissionTest extends Unit
 {
     private const int ELEMENT_ID = 9;
 
+    private User $user;
+
+    protected function _before(): void
+    {
+        $this->user = new User();
+    }
+
     public function testGetDataObjectRejectsElementWithoutViewPermission(): void
     {
         $service = $this->createService($this->createElement(false), Expected::never());
@@ -56,7 +63,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
         $service = $this->createService($this->createElement(false), Expected::never());
 
         $this->expectException(ForbiddenException::class);
-        $service->getDataObjectForUser(self::ELEMENT_ID, new User());
+        $service->getDataObjectForUser(self::ELEMENT_ID, $this->user);
     }
 
     public function testGetDataObjectForUserReturnsViewableElement(): void
@@ -64,7 +71,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
         $element = $this->createElement(true);
         $service = $this->createService($element, Expected::once(static fn (object $event) => $event));
 
-        $this->assertSame($element, $service->getDataObjectForUser(self::ELEMENT_ID, new User()));
+        $this->assertSame($element, $service->getDataObjectForUser(self::ELEMENT_ID, $this->user));
     }
 
     public function testGetDataObjectReturnsViewableElement(): void
@@ -93,8 +100,9 @@ final class DataObjectServiceViewPermissionTest extends Unit
     private function createService(DataObjectFolder $element, StubMarshaler $dispatch): DataObjectService
     {
         $searchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
-            'getDataObjectById' => Expected::once(function (int $id) use ($element) {
+            'getDataObjectById' => Expected::once(function (int $id, ?User $user) use ($element) {
                 $this->assertSame(self::ELEMENT_ID, $id);
+                $this->assertSame($this->user, $user);
 
                 return $element;
             }),
@@ -109,7 +117,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
             $this->makeEmpty(FactoryInterface::class),
             $this->makeEmpty(FilterServiceProviderInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => $dispatch]),
-            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
             $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(ElementSaveServiceInterface::class),
         );
