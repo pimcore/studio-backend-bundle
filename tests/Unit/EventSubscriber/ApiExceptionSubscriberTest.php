@@ -161,6 +161,7 @@ final class ApiExceptionSubscriberTest extends Unit
                         'language' => 'en',
                         'index' => null,
                         'type' => null,
+                        'typeTitle' => null,
                     ],
                 ],
                 'message' => 'Empty mandatory field [ name ]',

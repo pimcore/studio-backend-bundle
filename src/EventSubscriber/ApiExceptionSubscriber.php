@@ -178,6 +178,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
                     'language' => $segment->getLanguage(),
                     'index' => $segment->getIndex(),
                     'type' => $segment->getType(),
+                    'typeTitle' => $segment->getTypeTitle(),
                 ],
                 $error->getPath()
             ),

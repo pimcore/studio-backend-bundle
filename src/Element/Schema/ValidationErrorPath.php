@@ -36,8 +36,20 @@ final readonly class ValidationErrorPath
         private ?string $language = null,
         #[Property(description: 'Row index within a block or field collection', type: 'integer', nullable: true)]
         private ?int $index = null,
-        #[Property(description: 'Type of this level, e.g. objectbrick', type: 'string', nullable: true)]
+        #[Property(
+            description: 'Object brick key or field collection type',
+            type: 'string',
+            example: 'SaleInformation',
+            nullable: true
+        )]
         private ?string $type = null,
+        #[Property(
+            description: 'Raw, untranslated title of the object brick or field collection',
+            type: 'string',
+            example: 'Sale information',
+            nullable: true
+        )]
+        private ?string $typeTitle = null,
     ) {
     }
 
@@ -64,5 +76,10 @@ final readonly class ValidationErrorPath
     public function getType(): ?string
     {
         return $this->type;
+    }
+
+    public function getTypeTitle(): ?string
+    {
+        return $this->typeTitle;
     }
 }

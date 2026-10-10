@@ -50,7 +50,8 @@ final class ValidationErrorHydratorTest extends Unit
             ->addPathSegment(new ValidationPathSegment(
                 field: 'attributes',
                 title: 'Sale information',
-                type: 'SaleInformation'
+                type: 'SaleInformation',
+                typeTitle: 'Sale information'
             ));
         $second = new ValidationException('Plain error');
         $aggregate = (new ValidationException('Validation failed'))->addViolations($first, $second);
@@ -66,6 +67,7 @@ final class ValidationErrorHydratorTest extends Unit
         $this->assertNull($errors[0]->getPath()[0]->getTitle());
         $this->assertSame('Sale information', $errors[0]->getPath()[1]->getTitle());
         $this->assertSame('SaleInformation', $errors[0]->getPath()[1]->getType());
+        $this->assertSame('Sale information', $errors[0]->getPath()[1]->getTypeTitle());
 
         $this->assertNull($errors[1]->getField());
         $this->assertNull($errors[1]->getFieldTitle());

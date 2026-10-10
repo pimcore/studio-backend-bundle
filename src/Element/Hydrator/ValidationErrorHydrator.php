@@ -34,6 +34,7 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
                     $segment->language,
                     $segment->index,
                     $segment->type,
+                    $segment->typeTitle,
                 );
             }
 
