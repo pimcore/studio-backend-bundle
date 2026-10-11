@@ -170,6 +170,44 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * Rows the index grants view for are still checked against the core permissions if the element has
+     * workflow permissions, because a place may deny view.
+     */
+    public function testGridChecksCoreViewPermissionForRowsWithWorkflowPermissions(): void
+    {
+        $checked = 0;
+        $searchResult = new DataObjectSearchResult(
+            items: [$this->createStudioElement(new Permissions(view: true), true)],
+            currentPage: 1,
+            pageSize: 10,
+            totalItems: 1,
+        );
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => function () use (&$checked): AbstractObject {
+                return $this->makeEmpty(AbstractObject::class, [
+                    'isAllowed' => function (string $permission) use (&$checked): bool {
+                        $checked++;
+
+                        return false;
+                    },
+                ]);
+            },
+        ]);
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, ['searchDataObjects' => $searchResult]),
+            serviceResolver: $serviceResolver,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+        );
+
+        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
+
+        $this->assertSame(1, $checked);
+        $this->assertCount(0, $result->getItems());
+        $this->assertSame(0, $result->getTotalItems());
+    }
+
+    /**
      * A row whose element has no workflow with permissions must neither load the core
      * element nor invoke the workflow permission merger; the user permissions pass through.
      */

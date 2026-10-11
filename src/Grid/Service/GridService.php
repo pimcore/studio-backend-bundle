@@ -597,9 +597,12 @@ final class GridService implements GridServiceInterface
         $skipped = 0;
         foreach ($items as $item) {
             try {
-                // The index only returns elements the user may view. Rows whose index permissions say otherwise
-                // (workspace parents on older index versions) are checked against the core permissions.
-                $isViewable = $item->getPermissions()->isView()
+                // The index only knows workspace permissions. Rows it denies (workspace parents on older index
+                // versions) and rows of elements with workflow permissions (places may deny view) are checked
+                // against the core permissions.
+                $indexAllowsView = $item->getPermissions()->isView()
+                    && !($item instanceof WorkflowPermissionsAwareInterface && $item->getHasWorkflowWithPermissions());
+                $isViewable = $indexAllowsView
                     || $this->isElementViewAllowed($elementType, $item->getId(), $user);
                 if (!$isViewable) {
                     $skipped++;

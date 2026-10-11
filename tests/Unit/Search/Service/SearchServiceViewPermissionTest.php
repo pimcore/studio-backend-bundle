@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Search\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Element\SearchResult\ElementSearchResult;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Paging\PaginationInfo;
@@ -82,12 +83,59 @@ final class SearchServiceViewPermissionTest extends Unit
         $this->assertSame([$viewableId, $wronglyDeniedId], $hydrated);
     }
 
-    private function createItem(int $id, bool $view): ElementSearchResultItemInterface
+    /**
+     * Items with workflow permissions are checked against the core permissions even if the index grants view.
+     */
+    public function testQuickSearchChecksCoreViewForItemsWithWorkflowPermissions(): void
+    {
+        $user = new User();
+        $plainId = 20;
+        $deniedByPlaceId = 21;
+        $items = [
+            $this->createItem($plainId, true),
+            $this->createItem($deniedByPlaceId, true, true),
+        ];
+
+        $checked = [];
+        $hydrated = [];
+        $service = new SearchService(
+            $this->makeEmpty(ElementServiceInterface::class, [
+                'getElementById' => function (string $type, int $id) use (&$checked): Folder {
+                    $checked[] = $id;
+
+                    return $this->makeEmpty(Folder::class, ['isAllowed' => false]);
+                },
+            ]),
+            $this->makeEmpty(EventDispatcherInterface::class, ['dispatch' => static fn (object $event) => $event]),
+            $this->makeEmpty(SearchRepositoryInterface::class, [
+                'searchElements' => new ElementSearchResult($items, new PaginationInfo(2, 1, 50, 1)),
+            ]),
+            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
+            $this->makeEmpty(ServiceProviderInterface::class),
+            $this->makeEmpty(SimpleSearchHydratorInterface::class, [
+                'hydrate' => function (ElementSearchResultItemInterface $item) use (&$hydrated): SimpleSearchResult {
+                    $hydrated[] = $item->getId();
+
+                    return (new ReflectionClass(SimpleSearchResult::class))->newInstanceWithoutConstructor();
+                },
+            ]),
+        );
+
+        $result = $service->doSimpleSearch(new SimpleSearchParameter(searchTerm: 'car'));
+
+        // Only the element with workflow permissions is loaded and checked; the plain one trusts the index.
+        $this->assertSame([$deniedByPlaceId], $checked);
+        $this->assertSame([$plainId], $hydrated);
+        $this->assertSame(1, $result->getTotalItems());
+    }
+
+    private function createItem(int $id, bool $view, bool $hasWorkflow = false): ElementSearchResultItemInterface
     {
         $permissions = new DataObjectPermissions();
         $permissions->setView($view);
 
-        return $this->makeEmpty(ElementSearchResultItemInterface::class, [
+        return $this->makeEmpty(DataObjectSearchResultItem::class, [
+            'isHasWorkflowWithPermissions' => $hasWorkflow,
             'getId' => $id,
             'getElementType' => ElementType::DATA_OBJECT,
             'getPermissions' => $permissions,

@@ -72,13 +72,16 @@ final readonly class SearchService implements SearchServiceInterface
         /** @var User $user */
         $user = $this->securityService->getCurrentUser();
         foreach ($items as $item) {
-            // The index only returns elements the user may view. Items whose index permissions say otherwise
-            // (workspace parents on older index versions) are checked against the core permissions.
+            // The index only knows workspace permissions. Items it denies (workspace parents on older index
+            // versions) and items with workflow permissions (places may deny view) are checked against the
+            // core permissions.
             try {
-                $isViewable = $item->getPermissions()->isView() || $this->elementService->getElementById(
-                    $this->getElementTypeFromItem($item),
-                    $item->getId()
-                )->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
+                $indexAllowsView = $item->getPermissions()->isView() && !$this->hasWorkflowWithPermissions($item);
+                $isViewable = $indexAllowsView
+                    || $this->elementService->getElementById(
+                        $this->getElementTypeFromItem($item),
+                        $item->getId()
+                    )->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
             } catch (NotFoundException) {
                 // The index references an element that no longer exists.
                 continue;
@@ -121,6 +124,11 @@ final readonly class SearchService implements SearchServiceInterface
         $this->dispatchPreviewEvent($preview);
 
         return $preview;
+    }
+
+    private function hasWorkflowWithPermissions(ElementSearchResultItemInterface $item): bool
+    {
+        return method_exists($item, 'isHasWorkflowWithPermissions') && $item->isHasWorkflowWithPermissions();
     }
 
     private function getElementTypeFromItem(ElementSearchResultItemInterface $item): string
