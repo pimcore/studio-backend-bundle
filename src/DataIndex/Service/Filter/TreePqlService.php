@@ -90,31 +90,24 @@ final readonly class TreePqlService implements TreePqlServiceInterface
 
         try {
             return match ($elementType) {
-                ElementTypes::TYPE_ASSET => $this->assetSearchService
-                    ->search($this->prepareSearch(
-                        $this->searchProvider->createAssetSearch(),
-                        $parentPath,
-                        $pqlQuery,
-                        $user,
-                    ), PermissionTypes::VIEW)
-                    ->getAggregation($aggregationName),
+                ElementTypes::TYPE_ASSET => $this->assetSearchService->search(
+                    $this->prepareSearch($this->searchProvider->createAssetSearch(), $parentPath, $pqlQuery, $user),
+                    PermissionTypes::VIEW
+                )->getAggregation($aggregationName),
                 ElementTypes::TYPE_DATA_OBJECT,
-                ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService
-                    ->search($this->prepareSearch(
+                ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->search(
+                    $this->prepareSearch(
                         $this->searchProvider->createDataObjectSearch(),
                         $parentPath,
                         $pqlQuery,
-                        $user,
-                    ), PermissionTypes::VIEW)
-                    ->getAggregation($aggregationName),
-                ElementTypes::TYPE_DOCUMENT => $this->documentSearchService
-                    ->search($this->prepareSearch(
-                        $this->searchProvider->createDocumentSearch(),
-                        $parentPath,
-                        $pqlQuery,
-                        $user,
-                    ), PermissionTypes::VIEW)
-                    ->getAggregation($aggregationName),
+                        $user
+                    ),
+                    PermissionTypes::VIEW
+                )->getAggregation($aggregationName),
+                ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->search(
+                    $this->prepareSearch($this->searchProvider->createDocumentSearch(), $parentPath, $pqlQuery, $user),
+                    PermissionTypes::VIEW
+                )->getAggregation($aggregationName),
                 default => null,
             };
         } catch (Exception $e) {

@@ -163,8 +163,10 @@ final class GridServiceTest extends Unit
 
         $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
 
-        // The viewable row (index) and the row the core check allows are returned, the list-only row is not.
+        // The viewable row (index) and the row the core check allows are returned, the list-only row is not,
+        // and the total does not count it either.
         $this->assertCount(2, $result->getItems());
+        $this->assertSame(2, $result->getTotalItems());
     }
 
     /**

@@ -40,6 +40,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
+use function max;
 
 /**
  * @internal
@@ -67,6 +68,7 @@ final readonly class SearchService implements SearchServiceInterface
         $items = $result->getItems();
 
         $hydratedItems = [];
+        $skipped = 0;
         /** @var User $user */
         $user = $this->securityService->getCurrentUser();
         foreach ($items as $item) {
@@ -83,6 +85,8 @@ final readonly class SearchService implements SearchServiceInterface
             }
 
             if (!$isViewable) {
+                $skipped++;
+
                 continue;
             }
 
@@ -92,7 +96,7 @@ final readonly class SearchService implements SearchServiceInterface
             $hydratedItems[] = $hydratedItem;
         }
 
-        return new Collection($result->getPagination()->getTotalItems(), $hydratedItems);
+        return new Collection(max(0, $result->getPagination()->getTotalItems() - $skipped), $hydratedItems);
     }
 
     /**

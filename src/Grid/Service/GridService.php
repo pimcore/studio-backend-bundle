@@ -60,6 +60,7 @@ use TypeError;
 use function array_key_exists;
 use function in_array;
 use function is_array;
+use function max;
 
 /**
  * @internal
@@ -593,6 +594,7 @@ final class GridService implements GridServiceInterface
         $data = [];
         $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
         $user = $this->securityService->getCurrentUser();
+        $skipped = 0;
         foreach ($items as $item) {
             try {
                 // The index only returns elements the user may view. Rows whose index permissions say otherwise
@@ -600,6 +602,8 @@ final class GridService implements GridServiceInterface
                 $isViewable = $item->getPermissions()->isView()
                     || $this->isElementViewAllowed($elementType, $item->getId(), $user);
                 if (!$isViewable) {
+                    $skipped++;
+
                     continue;
                 }
 
@@ -624,7 +628,7 @@ final class GridService implements GridServiceInterface
         }
 
         return new Collection(
-            totalItems: $searchResultItem->getTotalItems(),
+            totalItems: max(0, $searchResultItem->getTotalItems() - $skipped),
             items: $data
         );
     }
