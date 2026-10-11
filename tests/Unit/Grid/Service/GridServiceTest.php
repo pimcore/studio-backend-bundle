@@ -186,6 +186,7 @@ final class GridServiceTest extends Unit
             'getElementById' => function () use (&$checked): AbstractObject {
                 return $this->makeEmpty(AbstractObject::class, [
                     'isAllowed' => function (string $permission) use (&$checked): bool {
+                        $this->assertSame('view', $permission);
                         $checked++;
 
                         return false;
@@ -205,6 +206,39 @@ final class GridServiceTest extends Unit
         $this->assertSame(1, $checked);
         $this->assertCount(0, $result->getItems());
         $this->assertSame(0, $result->getTotalItems());
+    }
+
+    /**
+     * Flagged rows that the core check allows are kept, unflagged rows with index view skip the core check.
+     */
+    public function testGridKeepsAllowedWorkflowRowsAndSkipsCoreCheckForPlainRows(): void
+    {
+        $searchResult = new DataObjectSearchResult(
+            items: [
+                $this->createStudioElement(new Permissions(view: true), true),
+                $this->createStudioElement(new Permissions(view: true), false),
+            ],
+            currentPage: 1,
+            pageSize: 10,
+            totalItems: 2,
+        );
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, ['searchDataObjects' => $searchResult]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => $this->makeEmpty(AbstractObject::class, [
+                    'isAllowed' => Expected::once(true),
+                ]),
+            ]),
+            workflowPermissionMerger: $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
+                'mergeWorkflowPermissions' => static fn (Permissions $permissions): Permissions => $permissions,
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
+        );
+
+        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
+
+        $this->assertCount(2, $result->getItems());
+        $this->assertSame(2, $result->getTotalItems());
     }
 
     /**
