@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
@@ -42,7 +41,6 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function in_array;
-use function sprintf;
 
 /**
  * @internal
@@ -191,7 +189,8 @@ final readonly class GridSearch implements GridSearchInterface
         $folder = $this->getElement($this->serviceResolver, $type, $folderId);
         /** @var User $user */
         if (!$folder->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
-            throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::LIST_PERMISSION));
+            // Like the element detail endpoints, do not tell apart missing and unlistable folders.
+            throw new NotFoundException($type . ' Folder', $folderId);
         }
 
         if (!$this->isFolderOfType($type, $folder)) {

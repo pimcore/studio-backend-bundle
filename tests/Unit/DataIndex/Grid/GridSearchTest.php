@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
@@ -211,7 +210,7 @@ final class GridSearchTest extends Unit
             folder: $folder,
         );
 
-        $this->expectException(ForbiddenException::class);
+        $this->expectException(NotFoundException::class);
         $gridSearch->searchElementsForUser(
             ElementTypes::TYPE_DATA_OBJECT,
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
