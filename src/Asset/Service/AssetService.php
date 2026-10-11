@@ -77,6 +77,8 @@ final readonly class AssetService implements AssetServiceInterface
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $assetQuery = $this->assetQueryProvider->createAssetQuery();
+        // The user has to be set before filtering, filters apply the user's permissions.
+        $assetQuery->setUser($this->securityService->getCurrentUser());
         $assetQuery = $filterService->applyFilters(
             $assetQuery,
             $parameters,
@@ -84,7 +86,6 @@ final readonly class AssetService implements AssetServiceInterface
         );
 
         $assetQuery->orderByPath('asc');
-        $assetQuery->setUser($this->securityService->getCurrentUser());
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
 

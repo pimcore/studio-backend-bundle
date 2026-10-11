@@ -123,12 +123,13 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $query = $this->dataObjectQueryProvider->createDataObjectQuery();
+        // The user has to be set before filtering, filters apply the user's permissions.
+        $query->setUser($this->securityService->getCurrentUser());
         $query = $filterService->applyFilters(
             $query,
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );
-        $query->setUser($this->securityService->getCurrentUser());
 
         $parentId = $parameters->getParentId() ?? 1;
         $parent = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $parentId);

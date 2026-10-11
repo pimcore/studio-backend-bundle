@@ -87,13 +87,14 @@ final readonly class DocumentService implements DocumentServiceInterface
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $documentQuery = $this->documentQueryProvider->createDocumentQuery();
+        // The user has to be set before filtering, filters apply the user's permissions.
+        $documentQuery->setUser($this->securityService->getCurrentUser());
         $documentQuery = $filterService->applyFilters(
             $documentQuery,
             $parameters,
             ElementTypes::TYPE_DOCUMENT
         );
 
-        $documentQuery->setUser($this->securityService->getCurrentUser());
         $this->setTreeSorting($documentQuery, $parameters->getPathIncludeParent());
         $result = $this->documentSearchService->searchDocuments($documentQuery);
         $items = $result->getItems();
