@@ -13,11 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Service\Filter;
 
-use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResult;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResult;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResult;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Paging\PaginationInfo;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
@@ -36,30 +39,46 @@ final class TreePqlServiceTest extends Unit
     /**
      * Folder keys must only come from elements the user may view, otherwise the tree reveals where elements
      * the user may not view match the query.
+     *
+     * @dataProvider elementTypeProvider
      */
-    public function testFolderAggregationRunsForTheUserWithViewPermission(): void
+    public function testFolderAggregationRunsForTheUserWithViewPermission(string $elementType): void
     {
         $user = new User();
-        $captured = null;
+        $captured = [];
+        $search = static function (object $search, PermissionTypes $permissionType) use (&$captured, $elementType): object {
+            $captured[] = [$search->getUser(), $permissionType];
+
+            return match ($elementType) {
+                ElementTypes::TYPE_ASSET => new AssetSearchResult([], new PaginationInfo(0, 1, 1, 1)),
+                ElementTypes::TYPE_DOCUMENT => new DocumentSearchResult([], new PaginationInfo(0, 1, 1, 1)),
+                default => new DataObjectSearchResult([], new PaginationInfo(0, 1, 1, 1)),
+            };
+        };
 
         $service = new TreePqlService(
-            $this->makeEmpty(SearchProviderInterface::class, ['createAssetSearch' => new AssetSearch()]),
-            $this->makeEmpty(AssetSearchServiceInterface::class, [
-                'search' => Expected::once(
-                    function (AssetSearch $search, PermissionTypes $permissionType) use (&$captured): AssetSearchResult {
-                        $captured = [$search->getUser(), $permissionType];
-
-                        return new AssetSearchResult([], new PaginationInfo(0, 1, 1, 1));
-                    }
-                ),
+            $this->makeEmpty(SearchProviderInterface::class, [
+                'createAssetSearch' => new AssetSearch(),
+                'createDataObjectSearch' => new DataObjectSearch(),
+                'createDocumentSearch' => new DocumentSearch(),
             ]),
-            $this->makeEmpty(DataObjectSearchServiceInterface::class),
-            $this->makeEmpty(DocumentSearchServiceInterface::class),
+            $this->makeEmpty(AssetSearchServiceInterface::class, ['search' => $search]),
+            $this->makeEmpty(DataObjectSearchServiceInterface::class, ['search' => $search]),
+            $this->makeEmpty(DocumentSearchServiceInterface::class, ['search' => $search]),
             $this->makeEmpty(LoggerInterface::class),
         );
 
-        $service->getRelevantChildFolderKeys(1, 'filename = "a"', ElementTypes::TYPE_ASSET, $user);
+        $service->getRelevantChildFolderKeys(1, 'key = "a"', $elementType, $user);
 
-        $this->assertSame([$user, PermissionTypes::VIEW], $captured);
+        $this->assertSame([[$user, PermissionTypes::VIEW]], $captured);
+    }
+
+    public static function elementTypeProvider(): array
+    {
+        return [
+            'asset' => [ElementTypes::TYPE_ASSET],
+            'data object' => [ElementTypes::TYPE_OBJECT],
+            'document' => [ElementTypes::TYPE_DOCUMENT],
+        ];
     }
 }

@@ -30,6 +30,6 @@ interface TreePqlServiceInterface
         int $parentId,
         string $pqlQuery,
         string $elementType,
-        ?UserInterface $user = null,
+        ?UserInterface $user,
     ): array;
 }

@@ -48,7 +48,7 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         int $parentId,
         string $pqlQuery,
         string $elementType,
-        ?UserInterface $user = null,
+        ?UserInterface $user,
     ): array {
         $parentPath = $this->resolveParentPath($parentId, $elementType);
         if ($parentPath === null) {
