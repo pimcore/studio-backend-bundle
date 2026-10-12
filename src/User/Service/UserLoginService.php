@@ -116,10 +116,15 @@ final readonly class UserLoginService implements UserLoginServiceInterface
     {
         $parsed = parse_url($url);
 
+        // Reject anything parse_url() and a browser could read differently: credentials in the
+        // authority, backslashes, whitespace and control characters.
         if (
             $parsed === false
             || !isset($parsed['scheme'], $parsed['host'])
-            || !in_array($parsed['scheme'], self::RESET_PASSWORD_URL_ALLOWED_SCHEMES, true)
+            || !in_array(strtolower($parsed['scheme']), self::RESET_PASSWORD_URL_ALLOWED_SCHEMES, true)
+            || isset($parsed['user'])
+            || isset($parsed['pass'])
+            || preg_match('/[\x00-\x20\x7f\\\\]/', $url) === 1
         ) {
             throw new InvalidArgumentException('Invalid reset password URL provided');
         }

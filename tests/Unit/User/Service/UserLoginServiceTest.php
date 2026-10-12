@@ -27,6 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginService;
 use Pimcore\Model\Site;
 use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
+use ReflectionClass;
+use ReflectionNamedType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
@@ -34,18 +38,34 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 final class UserLoginServiceTest extends Unit
 {
-    public function testResetPasswordRejectsUrlWithSpoofedHostHeaderNotMatchingAnyRegisteredDomain(): void
+    public function testResetPasswordAcceptsMixedCaseScheme(): void
     {
         $service = $this->createService(
             mainDomain: 'mysite.com',
             sites: [],
+            userExists: true,
         );
 
-        $resetPassword = new ResetPassword('testuser', 'https://attacker.example/reset');
+        $resetPassword = new ResetPassword('testuser', 'HTTPS://mysite.com/reset-password/');
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Reset password URL domain does not match any trusted domain');
         $service->resetPassword($resetPassword);
+    }
+
+    public function testServiceDoesNotDependOnTheCurrentRequest(): void
+    {
+        $constructor = (new ReflectionClass(UserLoginService::class))->getConstructor();
+        self::assertNotNull($constructor);
+
+        foreach ($constructor->getParameters() as $parameter) {
+            $type = $parameter->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : '';
+
+            self::assertNotContains(
+                $typeName,
+                [Request::class, RequestStack::class],
+                'The reset password URL must be validated against configuration only, never the incoming request.'
+            );
+        }
     }
 
     public function testResetPasswordRejectsUrl(): void
@@ -161,7 +181,49 @@ final class UserLoginServiceTest extends Unit
             sites: [],
         );
 
-        $resetPassword = new ResetPassword('testuser', 'javascript://mysite.com/alert(1)');
+        $resetPassword = new ResetPassword('testuser', 'ftp://mysite.com/reset');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithCredentials(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', 'https://other.example@mysite.com/reset');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithBackslash(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', 'https://other.example\\@mysite.com/reset');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithWhitespaceOrControlCharacters(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', "https://mysite.com/reset\t\n");
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid reset password URL provided');
