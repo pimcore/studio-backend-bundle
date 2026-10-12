@@ -54,13 +54,14 @@ final readonly class AdapterService implements AdapterServiceInterface
     }
 
     /**
-     * An export always contains all rows of the report, so no offset/limit is applied.
+     * An export contains all rows of the report unless a page was explicitly requested,
+     * so no offset/limit is applied by default.
      *
      * @return array{0: ?int, 1: ?int}
      */
     private function resolvePagination(ChartDataParameter $chartDataParameter): array
     {
-        if ($chartDataParameter instanceof ExportParameter) {
+        if ($chartDataParameter instanceof ExportParameter && !$chartDataParameter->isPaginated()) {
             return [null, null];
         }
 

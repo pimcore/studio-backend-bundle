@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\Chart
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterService;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 /**
  * @internal
@@ -124,6 +127,39 @@ final class AdapterServiceTest extends Unit
 
         $this->assertNull($this->capturedGetDataArguments[3]);
         $this->assertNull($this->capturedGetDataArguments[4]);
+    }
+
+    public function testGetDataPaginatesExportWithExplicitPage(): void
+    {
+        $service = $this->createService();
+
+        $service->getData(
+            $this->createReportConfig([]),
+            new ExportParameter('testReport', page: 2, pageSize: 10)
+        );
+
+        $this->assertSame(10, $this->capturedGetDataArguments[3]);
+        $this->assertSame(10, $this->capturedGetDataArguments[4]);
+    }
+
+    /**
+     * The export parameter is stored with the job (normalized via its getters) and restored
+     * with fromArray() in the collection handler, so the pagination intent must survive that.
+     */
+    public function testExportPaginationSurvivesJobSerialization(): void
+    {
+        $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
+        $roundTrip = static fn (ExportParameter $parameter): ExportParameter => ExportParameter::fromArray(
+            json_decode($serializer->serialize($parameter, 'json'), true, 512, JSON_THROW_ON_ERROR)
+        );
+
+        $unpaginated = $roundTrip(new ExportParameter('testReport', fields: ['name']));
+        $paginated = $roundTrip(new ExportParameter('testReport', fields: ['name'], page: 2, pageSize: 10));
+
+        $this->assertFalse($unpaginated->isPaginated());
+        $this->assertTrue($paginated->isPaginated());
+        $this->assertSame(2, $paginated->getPage());
+        $this->assertSame(10, $paginated->getPageSize());
     }
 
     private function createReportConfig(array $dataSourceConfig): Config
