@@ -24,15 +24,13 @@ final class NoteFieldFilterParameter extends QueryParameter
     {
         parent::__construct(
             name: 'fieldFilters',
-            description: 'Filter for specific fields, will be json decoded to an array. e.g.
-            [{"operator":"like","value":"consent-given","field":"type","type":"string"}].
-            The "userName" field also accepts a list of user names, matched exactly, e.g.
-            [{"operator":"in","value":["admin","john"],"field":"userName","type":"string"}]',
+            description: 'JSON array of field filters. "userName" also accepts a list of names, matched exactly.',
             in: 'query',
             required: false,
             schema: new Schema(
                 type: 'string',
-                example: '[{"operator":"like","value":"consent-given","field":"type","type":"string"}]',
+                example: '[{"operator":"like","value":"consent-given","field":"type","type":"string"},' .
+                    '{"operator":"in","value":["admin","john"],"field":"userName","type":"string"}]',
             ),
         );
     }
