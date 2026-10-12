@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder as AssetFolder;
 use Pimcore\Model\Asset\Image;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder as DataObjectFolder;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Page;
@@ -139,6 +140,58 @@ final class GridSearchTest extends Unit
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
             $user
         );
+    }
+
+    /**
+     * Data objects can have children, so an object that is not a folder is accepted as grid folder.
+     */
+    public function testDataObjectGridAcceptsAnObjectAsFolder(): void
+    {
+        $user = new User();
+        $object = $this->createParentElement(Concrete::class, $user);
+        $filter = new FilterParameter();
+
+        $this->createGridSearch(
+            dataObjectSearchService: $this->makeEmpty(DataObjectSearchServiceInterface::class, [
+                'searchDataObjects' => Expected::once(new DataObjectSearchResult([], 1, 10, 0)),
+            ]),
+            query: $this->makeEmpty(DataObjectQueryInterface::class),
+            folder: $object,
+        )->searchElementsForUser(
+            ElementTypes::TYPE_DATA_OBJECT,
+            new GridParameter(self::FOLDER_ID, [], $filter),
+            $user
+        );
+
+        $this->assertSame(self::FOLDER_PATH, $filter->getPath());
+    }
+
+    /**
+     * The full path of a document can be relative to its site, the index stores the real path.
+     */
+    public function testDocumentGridFiltersByTheRealPath(): void
+    {
+        $user = new User();
+        $page = $this->makeEmpty(Page::class, [
+            'getFullPath' => '/site-relative-path',
+            'getRealFullPath' => self::FOLDER_PATH,
+            'isAllowed' => true,
+        ]);
+        $filter = new FilterParameter();
+
+        $this->createGridSearch(
+            documentSearchService: $this->makeEmpty(DocumentSearchServiceInterface::class, [
+                'searchDocuments' => new DocumentSearchResult([], 1, 10, 0),
+            ]),
+            query: $this->makeEmpty(DocumentQueryInterface::class),
+            folder: $page,
+        )->searchElementsForUser(
+            ElementTypes::TYPE_DOCUMENT,
+            new GridParameter(self::FOLDER_ID, [], $filter),
+            $user
+        );
+
+        $this->assertSame(self::FOLDER_PATH, $filter->getPath());
     }
 
     public function testElementIdSearchUsesViewPermission(): void
