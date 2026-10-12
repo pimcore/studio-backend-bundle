@@ -18,6 +18,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryIn
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterService;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 
@@ -91,6 +92,38 @@ final class AdapterServiceTest extends Unit
 
         $this->assertNull($this->capturedGetDataArguments[1]);
         $this->assertNull($this->capturedGetDataArguments[2]);
+    }
+
+    public function testGetDataPaginatesChartData(): void
+    {
+        $service = $this->createService();
+
+        $service->getData(
+            $this->createReportConfig([]),
+            new ChartDataParameter('testReport', page: 3, pageSize: 20)
+        );
+
+        $this->assertSame(40, $this->capturedGetDataArguments[3]);
+        $this->assertSame(20, $this->capturedGetDataArguments[4]);
+    }
+
+    public function testGetDataDoesNotPaginateExport(): void
+    {
+        $service = $this->createService();
+
+        $service->getData(
+            $this->createReportConfig([]),
+            ExportParameter::fromArray([
+                'name' => 'testReport',
+                'fields' => ['name'],
+                'filters' => ['columnFilters' => [], 'drillDownFilters' => []],
+                'page' => 1,
+                'pageSize' => 50,
+            ])
+        );
+
+        $this->assertNull($this->capturedGetDataArguments[3]);
+        $this->assertNull($this->capturedGetDataArguments[4]);
     }
 
     private function createReportConfig(array $dataSourceConfig): Config
