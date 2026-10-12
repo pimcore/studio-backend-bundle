@@ -65,9 +65,11 @@ final class PreviewUrlServiceTest extends Unit
 
         $this->expectException(NotFoundException::class);
 
-        $service->getPreviewUrl(new PreviewParameter(7221));
-
-        $this->assertSame(ElementPermissions::VIEW_PERMISSION, $checkedPermission);
+        try {
+            $service->getPreviewUrl(new PreviewParameter(7221));
+        } finally {
+            $this->assertSame(ElementPermissions::VIEW_PERMISSION, $checkedPermission);
+        }
     }
 
     /**
