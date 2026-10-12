@@ -104,7 +104,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         $currentUser = $this->securityService->getCurrentUser();
         $user = $this->userRepository->getUserById($userId);
 
-        // The Classic admin UI's rule.
+        // Admins reset anyone; everyone else with user management only themselves.
         if (!$currentUser->isAdmin() && $currentUser->getId() !== $user->getId()) {
             throw new ForbiddenException('Only admins may reset the two-factor authentication of other users.');
         }

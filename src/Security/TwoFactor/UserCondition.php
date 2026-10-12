@@ -30,7 +30,7 @@ final readonly class UserCondition implements TwoFactorConditionInterface
             return true;
         }
 
-        // Token login skips the code, as in the Classic admin UI.
+        // A login token (login link, password reset mail) is its own proof of access and skips the code.
         if ($context->getRequest()->attributes->get('_route') === TokenLoginController::ROUTE_NAME) {
             return false;
         }

@@ -4,9 +4,7 @@ Studio users can protect their login with a second factor: a time-based code fro
 (Google Authenticator, Microsoft Authenticator, Aegis or any other TOTP app). Studio configures
 [scheb/2fa](https://github.com/scheb/2fa) itself, so no further bundle is needed.
 
-> **Note:** this is Studio's own two-factor authentication. It is built for installations without the Classic admin
-> UI (`pimcore/admin-ui-classic-bundle`). With the Classic admin UI installed, its configuration would override
-> Studio's (issuer, server name and the rule for who needs a code); that combination is not supported.
+Available from Pimcore Studio 2026.4.0.
 
 ## Who needs a code
 
@@ -22,7 +20,7 @@ Until a required user has set up two-factor authentication, whoever logs in with
 it up. Make sure the password reaches the right person.
 
 The login with a login token (`POST /login/token`, e.g. from a password reset mail or a login link created in the
-user management) does not ask for a code, as in the Classic admin UI.
+user management) does not ask for a code.
 
 ## Configuration
 

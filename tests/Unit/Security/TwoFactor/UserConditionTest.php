@@ -48,7 +48,7 @@ final class UserConditionTest extends Unit
     }
 
     /**
-     * Token login has never asked for a code, in Classic neither.
+     * A login token (login link, password reset mail) skips the code.
      */
     public function testTokenLoginDoesNotAskForACode(): void
     {
