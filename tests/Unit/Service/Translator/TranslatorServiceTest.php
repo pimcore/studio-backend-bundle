@@ -118,6 +118,7 @@ final class TranslatorServiceTest extends Unit
             ->method('joinLanguageColumns')
             ->with($listing, ['fr_BE'], 'messages')
             ->willReturn($listing);
+        $repository->method('qualifyMainTableOrderKeys')->willReturnArgument(0);
 
         $listingFilter = $this->makeEmpty(ListingFilterInterface::class, [
             'applyFilters' => $listing,
@@ -187,18 +188,17 @@ final class TranslatorServiceTest extends Unit
     public function testGetTranslationListQualifiesMainTableOrderKeysWhenLanguagesAreJoined(): void
     {
         $listing = $this->createMock(Listing::class);
-        // Order keys as quoted by the core listing after the sort filter was applied
-        $listing->method('getOrderKey')->willReturn(['`type`', '`key`', '`de`']);
-        // Every joined language table has its own `type` and `key` column, so unqualified keys are ambiguous
-        $listing->expects($this->once())
-            ->method('setOrderKey')
-            ->with(['translations_messages.`type`', 'translations_messages.`key`', '`de`'], false);
 
         $repository = $this->createMock(TranslationRepositoryInterface::class);
         $repository->method('getTranslationList')->willReturn($listing);
         $repository->expects($this->once())
             ->method('joinLanguageColumns')
             ->with($listing, ['de'], 'messages')
+            ->willReturn($listing);
+        // Every joined language table has its own `type` and `key` column, so the sorted listing must be qualified
+        $repository->expects($this->once())
+            ->method('qualifyMainTableOrderKeys')
+            ->with($listing)
             ->willReturn($listing);
 
         $filterParameter = new FilterParameter(

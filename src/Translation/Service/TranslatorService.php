@@ -36,16 +36,13 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Config;
 use Pimcore\Model\Exception\NotFoundException;
-use Pimcore\Model\Translation\Dao as TranslationDao;
 use Pimcore\Model\Translation\Listing;
 use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use function array_key_exists;
-use function array_map;
 use function in_array;
-use function trim;
 
 /**
  * @internal
@@ -55,8 +52,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     private const string API_DOCS_DOMAIN = 'studio_api_docs';
 
     private const string BYPASS_LISTING_CACHE_CONDITION = '1 = 1';
-
-    private const array MAIN_TABLE_ORDER_KEYS = ['key', 'type'];
 
     private TranslatorBagInterface $translatorBag;
 
@@ -266,29 +261,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             return $list;
         }
 
-        return $this->qualifyMainTableOrderKeys($list, $domain);
-    }
-
-    /**
-     * Every joined language column is a self-join of the translations table with its own `key` and `type` columns,
-     * so ordering by these unqualified columns is ambiguous and must reference the main table.
-     */
-    private function qualifyMainTableOrderKeys(Listing $list, string $domain): Listing
-    {
-        $tableName = TranslationDao::TABLE_PREFIX . $domain;
-        $list->setOrderKey(
-            array_map(
-                static fn (string $orderKey): string => in_array(
-                    trim($orderKey, '`'),
-                    self::MAIN_TABLE_ORDER_KEYS,
-                    true
-                ) ? $tableName . '.' . $orderKey : $orderKey,
-                $list->getOrderKey()
-            ),
-            false
-        );
-
-        return $list;
+        return $this->translationRepository->qualifyMainTableOrderKeys($list);
     }
 
     private function getTranslatorBag(): TranslatorBagInterface
