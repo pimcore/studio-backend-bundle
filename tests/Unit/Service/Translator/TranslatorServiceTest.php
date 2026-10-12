@@ -184,6 +184,53 @@ final class TranslatorServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testGetTranslationListQualifiesMainTableOrderKeysWhenLanguagesAreJoined(): void
+    {
+        $listing = $this->createMock(Listing::class);
+        // Order keys as quoted by the core listing after the sort filter was applied
+        $listing->method('getOrderKey')->willReturn(['`type`', '`key`', '`de`']);
+        // Every joined language table has its own `type` and `key` column, so unqualified keys are ambiguous
+        $listing->expects($this->once())
+            ->method('setOrderKey')
+            ->with(['translations_messages.`type`', 'translations_messages.`key`', '`de`'], false);
+
+        $repository = $this->createMock(TranslationRepositoryInterface::class);
+        $repository->method('getTranslationList')->willReturn($listing);
+        $repository->expects($this->once())
+            ->method('joinLanguageColumns')
+            ->with($listing, ['de'], 'messages')
+            ->willReturn($listing);
+
+        $filterParameter = new FilterParameter(
+            sortFilter: new SortFilter('type', 'ASC'),
+            additionalSortFilters: [new SortFilter('key', 'ASC'), new SortFilter('de', 'DESC')]
+        );
+
+        $translatorService = $this->mockTranslatorService(
+            repository: $repository,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->makeEmpty(UserInterface::class),
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getTranslationAllowedLanguages' => ['en', 'de'],
+            ]),
+            listingFilter: $this->makeEmpty(ListingFilterInterface::class, [
+                'applyFilters' => $listing,
+            ]),
+            filterMapper: $this->makeEmpty(FilterMapperServiceInterface::class, [
+                'getFilterParameters' => $filterParameter,
+            ]),
+        );
+
+        $this->assertSame(
+            $listing,
+            $translatorService->getTranslationList('messages', new CollectionFilterParameter($filterParameter))
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testGetTranslationListWithoutFiltersUsesDomainSpecificLanguages(): void
     {
         $user = $this->makeEmpty(UserInterface::class);
