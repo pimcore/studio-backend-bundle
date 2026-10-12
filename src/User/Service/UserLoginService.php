@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function in_array;
 
@@ -47,7 +46,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private UserRepositoryInterface $userRepository,
         private UserResolverInterface $userResolver,
         private SecurityServiceInterface $securityService,
-        private RequestStack $requestStack,
         private SettingsProviderInterface $settingsProvider,
         private SiteRepositoryInterface $siteRepository,
     ) {
@@ -121,11 +119,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         $urlHost = $parsed['host'];
-
-        $request = $this->requestStack->getCurrentRequest();
-        if ($request !== null && $urlHost === $request->getHost()) {
-            return;
-        }
 
         if ($this->isRegisteredDomain($urlHost)) {
             return;
