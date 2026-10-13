@@ -49,8 +49,10 @@ use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function array_is_list;
 use function array_key_exists;
 use function count;
+use function is_array;
 use function sprintf;
 
 /**
@@ -200,13 +202,30 @@ final readonly class PatchService implements PatchServiceInterface
         }
     }
 
-    public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array
-    {
-        $newData = $fieldData[PatchDataKeys::DATA->value];
-        $action = $fieldData[PatchDataKeys::ACTION->value];
+    public function handlePatchDataField(
+        array $fieldData,
+        array $existingValues,
+        ?string $dataKey = null,
+        bool $allowRepeatedEntries = true
+    ): array {
+        // A plain list is not a patch {action, data} and replaces the field as it is.
+        if (array_is_list($fieldData)) {
+            return $fieldData;
+        }
 
-        return match ($action) {
-            PatcherActions::ADD->value => $this->handleAddition($existingValues, $newData, $dataKey),
+        $newData = $fieldData[PatchDataKeys::DATA->value] ?? null;
+        $newData = is_array($newData) ? $newData : [];
+        if (!$allowRepeatedEntries) {
+            $existingValues = $this->keepFirstEntryPerElement($existingValues, $dataKey);
+        }
+
+        return match ($fieldData[PatchDataKeys::ACTION->value] ?? null) {
+            PatcherActions::ADD->value => $this->handleAddition(
+                $existingValues,
+                $newData,
+                $dataKey,
+                $allowRepeatedEntries
+            ),
             PatcherActions::REMOVE->value => $this->handleRemoval($existingValues, $newData, $dataKey),
             default => $newData
         };
@@ -240,15 +259,26 @@ final readonly class PatchService implements PatchServiceInterface
 
     /**
      * Keeps all existing entries, including repeated assignments and their data, and appends the new entries whose
-     * element is not in the existing entries (same semantics as AbstractRelations::appendData()).
+     * element is not in the existing entries, like AbstractRelations::appendData(). Elements are matched by the id
+     * and type sent in the payload.
      */
-    private function handleAddition(array $existingValues, array $newData, ?string $dataKey = null): array
-    {
+    private function handleAddition(
+        array $existingValues,
+        array $newData,
+        ?string $dataKey,
+        bool $allowRepeatedEntries
+    ): array {
         $result = array_values($existingValues);
         $existingKeys = $this->getFieldMapKeys($result, $dataKey);
         foreach ($newData as $newEntry) {
-            if (!isset($existingKeys[$this->getFieldMapKey($newEntry, $dataKey)])) {
-                $result[] = $newEntry;
+            $entryKey = $this->getFieldMapKey($newEntry, $dataKey);
+            if ($entryKey !== null && isset($existingKeys[$entryKey])) {
+                continue;
+            }
+
+            $result[] = $newEntry;
+            if ($entryKey !== null && !$allowRepeatedEntries) {
+                $existingKeys[$entryKey] = true;
             }
         }
 
@@ -256,7 +286,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * Removes every existing entry of the given elements (same semantics as AbstractRelations::removeData()).
+     * Removes every existing entry of the given elements, like AbstractRelations::removeData().
      */
     private function handleRemoval(array $existingValues, array $newData, ?string $dataKey = null): array
     {
@@ -264,8 +294,35 @@ final readonly class PatchService implements PatchServiceInterface
 
         return array_values(array_filter(
             $existingValues,
-            fn (array $existingItem) => !isset($removedKeys[$this->getFieldMapKey($existingItem, $dataKey)])
+            function (array $existingItem) use ($removedKeys, $dataKey): bool {
+                $entryKey = $this->getFieldMapKey($existingItem, $dataKey);
+
+                return $entryKey === null || !isset($removedKeys[$entryKey]);
+            }
         ));
+    }
+
+    /**
+     * Drops repeated entries of an element, e.g. left over from before a field disallowed multiple assignments,
+     * which AbstractRelations::performMultipleAssignmentCheck() would reject on save.
+     */
+    private function keepFirstEntryPerElement(array $entries, ?string $dataKey): array
+    {
+        $result = [];
+        $seenKeys = [];
+        foreach ($entries as $entry) {
+            $entryKey = $this->getFieldMapKey($entry, $dataKey);
+            if ($entryKey !== null && isset($seenKeys[$entryKey])) {
+                continue;
+            }
+
+            $result[] = $entry;
+            if ($entryKey !== null) {
+                $seenKeys[$entryKey] = true;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -275,17 +332,32 @@ final readonly class PatchService implements PatchServiceInterface
     {
         $keys = [];
         foreach ($items as $item) {
-            $keys[$this->getFieldMapKey($item, $dataKey)] = true;
+            $entryKey = $this->getFieldMapKey($item, $dataKey);
+            if ($entryKey !== null) {
+                $keys[$entryKey] = true;
+            }
         }
 
         return $keys;
     }
 
-    private function getFieldMapKey(array $item, ?string $dataKey = null): string
+    /**
+     * Null for entries without an element, e.g. an image gallery item without an image: they never match.
+     * The API type "data-object" is matched as the core type "object" that existing entries carry.
+     */
+    private function getFieldMapKey(array $item, ?string $dataKey = null): ?string
     {
-        $elementData = $dataKey ? $item[$dataKey] : $item;
+        $elementData = $dataKey ? ($item[$dataKey] ?? null) : $item;
+        if (!isset($elementData[FieldKeys::ID_KEY->value], $elementData[FieldKeys::TYPE_KEY->value])) {
+            return null;
+        }
 
-        return $elementData[FieldKeys::ID_KEY->value] . '_' . $elementData[FieldKeys::TYPE_KEY->value];
+        $type = $elementData[FieldKeys::TYPE_KEY->value];
+        if ($type === ElementTypes::TYPE_DATA_OBJECT) {
+            $type = ElementTypes::TYPE_OBJECT;
+        }
+
+        return $elementData[FieldKeys::ID_KEY->value] . '_' . $type;
     }
 
     private function patchAsynchronously(

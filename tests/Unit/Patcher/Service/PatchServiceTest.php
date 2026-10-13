@@ -33,6 +33,7 @@ use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
 use function array_column;
+use function array_map;
 use function str_repeat;
 
 /**
@@ -233,32 +234,223 @@ final class PatchServiceTest extends Unit
         $this->assertSame(['type' => $coauthorType, 'coauthor' => $coauthor], $captured[0]);
     }
 
-    public function testGalleryAddKeepsExistingImageDataAndRepeatedImages(): void
+    public function testGalleryAddKeepsCropHotspotsAndMarkerOfExistingImage(): void
     {
-        $result = $this->createService(static fn () => null)->handlePatchDataField(
-            ['action' => 'add', 'data' => [$this->galleryItem(1, 'new'), $this->galleryItem(3, 'new')]],
-            [$this->galleryItem(1, 'first'), $this->galleryItem(1, 'second'), $this->galleryItem(2, 'kept')],
-            SubTypes::IMAGE->value
+        $existing = $this->galleryItem(1, 10);
+        $result = $this->handleGalleryPatch('add', [$this->galleryItem(1, 90), $this->galleryItem(3, 30)], [$existing]);
+
+        $this->assertSame([$existing, $this->galleryItem(3, 30)], $result);
+    }
+
+    public function testGalleryAddKeepsRepeatedImages(): void
+    {
+        $result = $this->handleGalleryPatch(
+            'add',
+            [$this->galleryItem(3, 30)],
+            [$this->galleryItem(1, 10), $this->galleryItem(1, 11), $this->galleryItem(2, 20)]
         );
 
-        $this->assertSame(['first', 'second', 'kept', 'new'], array_column($result, 'crop'));
-        $this->assertSame([1, 1, 2, 3], array_column(array_column($result, 'image'), 'id'));
+        $this->assertSame([10, 11, 20, 30], $this->extractCropTops($result));
+    }
+
+    public function testGalleryReplaceStillUpdatesCropOfExistingImage(): void
+    {
+        $result = $this->handleGalleryPatch('replace', [$this->galleryItem(1, 90)], [$this->galleryItem(1, 10)]);
+
+        $this->assertSame([$this->galleryItem(1, 90)], $result);
     }
 
     public function testGalleryRemoveDropsEveryOccurrenceOfImage(): void
     {
+        $result = $this->handleGalleryPatch(
+            'remove',
+            [$this->galleryItem(1, 0)],
+            [$this->galleryItem(1, 10), $this->galleryItem(2, 20), $this->galleryItem(1, 11)]
+        );
+
+        $this->assertSame([20], $this->extractCropTops($result));
+    }
+
+    /**
+     * Core Hotspotimage::normalize() omits the image key when the item has no image.
+     */
+    public function testGalleryItemWithoutImageIsKeptOnAddAndRemove(): void
+    {
+        $withoutImage = $this->galleryItem(1, 10);
+        unset($withoutImage['image']);
+        $existing = [$withoutImage, $this->galleryItem(2, 20)];
+
+        $added = $this->handleGalleryPatch('add', [$this->galleryItem(3, 30)], $existing);
+        $removed = $this->handleGalleryPatch('remove', [$this->galleryItem(2, 0)], $existing);
+
+        $this->assertSame([$withoutImage, $this->galleryItem(2, 20), $this->galleryItem(3, 30)], $added);
+        $this->assertSame([$withoutImage], $removed);
+    }
+
+    public function testAddAppendsEntriesWithoutElement(): void
+    {
+        $withoutImage = $this->galleryItem(3, 30);
+        unset($withoutImage['image']);
+
+        $result = $this->handleGalleryPatch('add', [$withoutImage, $withoutImage], [$this->galleryItem(1, 10)]);
+
+        $this->assertSame([$this->galleryItem(1, 10), $withoutImage, $withoutImage], $result);
+    }
+
+    public function testAddAppendsRepeatedNewElementOnlyWhenRepeatedEntriesAreAllowed(): void
+    {
+        $patch = ['action' => 'add', 'data' => [['id' => 3, 'type' => 'object'], ['id' => 3, 'type' => 'object']]];
+        $service = $this->createService(static fn () => null);
+
+        $this->assertCount(2, $service->handlePatchDataField($patch, []));
+        $this->assertCount(1, $service->handlePatchDataField($patch, [], null, false));
+    }
+
+    public function testRepeatedExistingEntriesAreKeptOnceWhenRepeatedEntriesAreNotAllowed(): void
+    {
+        $existing = [['id' => 1, 'type' => 'object'], ['id' => 2, 'type' => 'object'], ['id' => 1, 'type' => 'object']];
+        $service = $this->createService(static fn () => null);
+
+        $added = $service->handlePatchDataField(
+            ['action' => 'add', 'data' => [['id' => 3, 'type' => 'object']]],
+            $existing,
+            null,
+            false
+        );
+        $removed = $service->handlePatchDataField(
+            ['action' => 'remove', 'data' => [['id' => 2, 'type' => 'object']]],
+            $existing,
+            null,
+            false
+        );
+
+        $this->assertSame([[1, 'object'], [2, 'object'], [3, 'object']], $this->extractIdsAndTypes($added));
+        $this->assertSame([[1, 'object']], $this->extractIdsAndTypes($removed));
+    }
+
+    /**
+     * The Studio batch edit form sends data null when "Add"/"Remove" is chosen without selecting anything.
+     */
+    public function testPatchWithoutDataKeepsExistingEntries(): void
+    {
+        $existing = [$this->galleryItem(1, 10)];
+
+        $this->assertSame($existing, $this->handleGalleryPatch('add', null, $existing));
+        $this->assertSame($existing, $this->handleGalleryPatch('remove', null, $existing));
+        $this->assertSame([], $this->handleGalleryPatch('add', null, []));
+    }
+
+    public function testPatchWithoutDataKeyKeepsExistingEntries(): void
+    {
+        $existing = [['id' => 1, 'type' => 'object']];
+
+        $result = $this->createService(static fn () => null)->handlePatchDataField(['action' => 'add'], $existing);
+
+        $this->assertSame($existing, $result);
+    }
+
+    public function testDataObjectTypeMatchesObjectEntries(): void
+    {
+        $existing = [['id' => 1, 'type' => 'object'], ['id' => 2, 'type' => 'object']];
+        $service = $this->createService(static fn () => null);
+
+        $added = $service->handlePatchDataField(
+            ['action' => 'add', 'data' => [['id' => 2, 'type' => 'data-object']]],
+            $existing
+        );
+        $removed = $service->handlePatchDataField(
+            ['action' => 'remove', 'data' => [['id' => 1, 'type' => 'data-object']]],
+            $existing
+        );
+
+        $this->assertSame($existing, $added);
+        $this->assertSame([[2, 'object']], $this->extractIdsAndTypes($removed));
+    }
+
+    public function testPlainListIsReturnedUnchanged(): void
+    {
+        $value = [$this->galleryItem(2, 20)];
+
         $result = $this->createService(static fn () => null)->handlePatchDataField(
-            ['action' => 'remove', 'data' => [$this->galleryItem(1, 'any')]],
-            [$this->galleryItem(1, 'first'), $this->galleryItem(2, 'kept'), $this->galleryItem(1, 'second')],
+            $value,
+            [$this->galleryItem(1, 10)],
             SubTypes::IMAGE->value
         );
 
-        $this->assertSame(['kept'], array_column($result, 'crop'));
+        $this->assertSame($value, $result);
     }
 
-    private function galleryItem(int $imageId, string $crop): array
+    public function testPatchWithoutActionReplacesWithData(): void
     {
-        return ['image' => ['id' => $imageId, 'type' => 'asset'], 'crop' => $crop];
+        $data = [$this->galleryItem(2, 20)];
+
+        $this->assertSame($data, $this->handleGalleryPatch(null, $data, [$this->galleryItem(1, 10)]));
+    }
+
+    public function testReplaceWithoutDataClearsField(): void
+    {
+        $this->assertSame([], $this->handleGalleryPatch('replace', null, [$this->galleryItem(1, 10)]));
+    }
+
+    public function testAddOfAlreadyRelatedElementCreatesNoDuplicate(): void
+    {
+        $existing = [['id' => 1, 'type' => 'object'], ['id' => 2, 'type' => 'object']];
+
+        $result = $this->createService(static fn () => null)->handlePatchDataField(
+            ['action' => 'add', 'data' => [['id' => 2, 'type' => 'object'], ['id' => 3, 'type' => 'asset']]],
+            $existing
+        );
+
+        $this->assertSame([[1, 'object'], [2, 'object'], [3, 'asset']], $this->extractIdsAndTypes($result));
+    }
+
+    public function testRemoveOfSimpleRelationKeepsOtherElements(): void
+    {
+        $existing = [['id' => 1, 'type' => 'object'], ['id' => 2, 'type' => 'object'], ['id' => 1, 'type' => 'asset']];
+
+        $result = $this->createService(static fn () => null)->handlePatchDataField(
+            ['action' => 'remove', 'data' => [['id' => 1, 'type' => 'object']]],
+            $existing
+        );
+
+        $this->assertSame([[2, 'object'], [1, 'asset']], $this->extractIdsAndTypes($result));
+    }
+
+    private function handleGalleryPatch(?string $action, ?array $newData, array $existing): array
+    {
+        $patch = ['data' => $newData];
+        if ($action !== null) {
+            $patch['action'] = $action;
+        }
+
+        return $this->createService(static fn () => null)->handlePatchDataField(
+            $patch,
+            $existing,
+            SubTypes::IMAGE->value
+        );
+    }
+
+    /**
+     * Shape produced by core Hotspotimage::normalize(), the crop top identifies the item in assertions.
+     */
+    private function galleryItem(int $imageId, int $cropTop): array
+    {
+        return [
+            'hotspots' => [['name' => 'spot', 'top' => $cropTop, 'left' => 5, 'width' => 10, 'height' => 10]],
+            'marker' => [['name' => 'pin', 'top' => $cropTop, 'left' => 1]],
+            'crop' => ['cropTop' => $cropTop, 'cropLeft' => 0, 'cropWidth' => 50, 'cropHeight' => 50],
+            'image' => ['type' => 'asset', 'id' => $imageId],
+        ];
+    }
+
+    private function extractCropTops(array $items): array
+    {
+        return array_column(array_column($items, 'crop'), 'cropTop');
+    }
+
+    private function extractIdsAndTypes(array $items): array
+    {
+        return array_map(static fn (array $item) => [$item['id'], $item['type']], $items);
     }
 
     private function createService(callable $onSave): PatchService

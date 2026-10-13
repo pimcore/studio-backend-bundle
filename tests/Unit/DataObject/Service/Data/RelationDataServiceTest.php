@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\Concrete;
 use function array_column;
 
@@ -69,11 +70,18 @@ final class RelationDataServiceTest extends Unit
      */
     public function testAdvancedAddKeepsRepeatedAssignments(): void
     {
-        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(3)], $this->repeatedAssignments());
+        $result = $this->getAdvancedSetterData(
+            'add',
+            [$this->newAdvancedEntry(3)],
+            $this->repeatedAssignments(),
+            true
+        );
 
         $this->assertSame([1, 1, 2, 3], $this->extractElementIds($result));
         $this->assertSame(['position' => 'front'], $result[0]['data']);
         $this->assertSame(['position' => 'back'], $result[1]['data']);
+        $this->assertSame(['position' => 'rear'], $result[2]['data']);
+        $this->assertSame(['position' => 'roof'], $result[3]['data']);
     }
 
     /**
@@ -81,7 +89,12 @@ final class RelationDataServiceTest extends Unit
      */
     public function testAdvancedRemoveRemovesAllAssignmentsOfElement(): void
     {
-        $result = $this->getAdvancedSetterData('remove', [$this->newAdvancedEntry(1)], $this->repeatedAssignments());
+        $result = $this->getAdvancedSetterData(
+            'remove',
+            [$this->newAdvancedEntry(1)],
+            $this->repeatedAssignments(),
+            true
+        );
 
         $this->assertSame([2], $this->extractElementIds($result));
     }
@@ -89,13 +102,9 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testAdvancedAddAppendsRepeatedAssignmentsOfNewElement(): void
+    public function testAdvancedAddAppendsRepeatedAssignmentsWhenFieldAllowsThem(): void
     {
-        $front = $this->newAdvancedEntry(3);
-        $back = $this->newAdvancedEntry(3);
-        $back['data'] = ['position' => 'back'];
-
-        $result = $this->getAdvancedSetterData('add', [$front, $back], $this->frontAndRear());
+        $result = $this->getAdvancedSetterData('add', $this->roofAndBackOfElement3(), $this->frontAndRear(), true);
 
         $this->assertSame([1, 2, 3, 3], $this->extractElementIds($result));
         $this->assertSame(['position' => 'roof'], $result[2]['data']);
@@ -103,15 +112,46 @@ final class RelationDataServiceTest extends Unit
     }
 
     /**
+     * Saving the same element twice would fail AbstractRelations::performMultipleAssignmentCheck().
+     *
+     * @throws Exception
+     */
+    public function testAdvancedAddAppendsElementOnceWhenFieldDisallowsRepeatedAssignments(): void
+    {
+        $result = $this->getAdvancedSetterData('add', $this->roofAndBackOfElement3(), $this->frontAndRear());
+
+        $this->assertSame([1, 2, 3], $this->extractElementIds($result));
+        $this->assertSame(['position' => 'roof'], $result[2]['data']);
+    }
+
+    /**
      * @throws Exception
      */
     public function testAdvancedRemoveKeepsRepeatedAssignmentsOfOtherElement(): void
     {
-        $result = $this->getAdvancedSetterData('remove', [$this->newAdvancedEntry(2)], $this->repeatedAssignments());
+        $result = $this->getAdvancedSetterData(
+            'remove',
+            [$this->newAdvancedEntry(2)],
+            $this->repeatedAssignments(),
+            true
+        );
 
         $this->assertSame([1, 1], $this->extractElementIds($result));
         $this->assertSame(['position' => 'front'], $result[0]['data']);
         $this->assertSame(['position' => 'back'], $result[1]['data']);
+    }
+
+    /**
+     * Repeats left over from before the field disallowed multiple assignments would fail the save.
+     *
+     * @throws Exception
+     */
+    public function testAdvancedAddKeepsFirstOfRepeatedAssignmentsWhenFieldDisallowsThem(): void
+    {
+        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(3)], $this->repeatedAssignments());
+
+        $this->assertSame([1, 2, 3], $this->extractElementIds($result));
+        $this->assertSame(['position' => 'front'], $result[0]['data']);
     }
 
     /**
@@ -164,7 +204,7 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testSimpleAddKeepsExistingEntries(): void
+    public function testSimpleAddKeepsExistingEntriesAndAppendsRepeatedElementOnce(): void
     {
         $result = $this->createService()->getSetterData(
             $this->makeEmpty(Concrete::class),
@@ -173,7 +213,7 @@ final class RelationDataServiceTest extends Unit
                 'normalize' => [$this->relatedElement(1), $this->relatedElement(2)],
             ]),
             true,
-            ['action' => 'add', 'data' => [['id' => 3, 'type' => 'object']]],
+            ['action' => 'add', 'data' => [['id' => 3, 'type' => 'object'], ['id' => 3, 'type' => 'object']]],
             null
         );
 
@@ -183,11 +223,18 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function getAdvancedSetterData(string $action, array $newEntries, ?array $existing): array
-    {
+    private function getAdvancedSetterData(
+        string $action,
+        array $newEntries,
+        ?array $existing,
+        bool $allowMultipleAssignments = false
+    ): array {
         return $this->createService()->getSetterData(
             $this->makeEmpty(Concrete::class),
-            $this->makeEmpty(Data::class, ['getName' => 'relations']),
+            $this->makeEmpty(AdvancedManyToManyRelation::class, [
+                'getName' => 'relations',
+                'getAllowMultipleAssignments' => $allowMultipleAssignments,
+            ]),
             $this->makeEmpty(DataNormalizerInterface::class, ['normalize' => $existing]),
             true,
             ['action' => $action, 'data' => $newEntries],
@@ -215,6 +262,14 @@ final class RelationDataServiceTest extends Unit
             $this->existingAdvancedEntry(1, ['position' => 'front']),
             $this->existingAdvancedEntry(2, ['position' => 'rear']),
         ];
+    }
+
+    private function roofAndBackOfElement3(): array
+    {
+        $back = $this->newAdvancedEntry(3);
+        $back['data'] = ['position' => 'back'];
+
+        return [$this->newAdvancedEntry(3), $back];
     }
 
     private function repeatedAssignments(): array

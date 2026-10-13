@@ -29,6 +29,7 @@ use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ElementInterface;
 use function is_array;
+use function method_exists;
 
 /**
  * @internal
@@ -97,8 +98,18 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         return $this->patchService->handlePatchDataField(
             $fieldData,
             $existingValues,
-            $isAdvanced ? ElementTypes::TYPE_ELEMENT : null
+            $isAdvanced ? ElementTypes::TYPE_ELEMENT : null,
+            $this->allowsMultipleAssignments($fieldDefinition)
         );
+    }
+
+    /**
+     * Same check as AbstractRelations::performMultipleAssignmentCheck(), which rejects repeated relations on save.
+     */
+    private function allowsMultipleAssignments(Data $fieldDefinition): bool
+    {
+        return method_exists($fieldDefinition, 'getAllowMultipleAssignments')
+            && $fieldDefinition->getAllowMultipleAssignments();
     }
 
     private function isPatchAction(?string $action = null): bool
