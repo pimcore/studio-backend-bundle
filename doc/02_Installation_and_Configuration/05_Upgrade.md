@@ -4,7 +4,7 @@ The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.3.2
 - [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
-  permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.1 or later, which limits the
+  permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.2 or later, which limits the
   parent paths of a workspace to the `list` permission, and `pimcore/asset-metadata-class-definitions` 2026.3.2 or
   later, if installed.
   - Grids (data objects, assets, documents), advanced search, quick search and relation search dialogs only return
