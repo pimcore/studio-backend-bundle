@@ -13,8 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mcp\MappedParameter;
 
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Optional;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Required;
+use Symfony\Component\Validator\Constraints\Type;
 
 /**
  * Create/update payload for an MCP server. Scopes are not accepted — the backend
@@ -36,10 +41,31 @@ final readonly class McpServerParameter
         #[Regex(pattern: '/^[a-z0-9-]+$/', message: 'The url slug may only contain a-z, 0-9 and hyphens.')]
         private string $urlSlug,
         private ?string $description = null,
+        #[All(new Type('string'))]
         private array $tools = [],
         private bool $enabled = true,
         private bool $shareGlobal = false,
+        // The capability flags have to be real booleans: grants are stored as given, and
+        // a string such as "false" would otherwise be read as granted.
+        #[All(new Collection(
+            fields: [
+                'name' => new Required([new NotBlank(), new Type('string')]),
+                'canRead' => new Optional(new Type('bool')),
+                'canAccess' => new Optional(new Type('bool')),
+                'canEdit' => new Optional(new Type('bool')),
+            ],
+            allowExtraFields: true,
+        ))]
         private array $sharedUsers = [],
+        #[All(new Collection(
+            fields: [
+                'name' => new Required([new NotBlank(), new Type('string')]),
+                'canRead' => new Optional(new Type('bool')),
+                'canAccess' => new Optional(new Type('bool')),
+                'canEdit' => new Optional(new Type('bool')),
+            ],
+            allowExtraFields: true,
+        ))]
         private array $sharedRoles = [],
     ) {
     }
