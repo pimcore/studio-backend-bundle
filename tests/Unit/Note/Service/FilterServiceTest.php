@@ -197,6 +197,81 @@ final class FilterServiceTest extends Unit
     }
 
     /**
+     * Regression test for #1957: the user filter accepts a list of user names (multi-select)
+     * and matches them exactly via an `IN` subquery instead of a single `LIKE`.
+     *
+     * @throws JsonException
+     */
+    public function testApplyFieldFiltersUserMultiple(): void
+    {
+        $noteListing = $this->getNoteListing();
+        $filters = json_encode([
+            [
+                'field' => 'userName',
+                'type' => 'string',
+                'operator' => 'in',
+                'value' => ['admin', 'john.doe'],
+            ],
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
+        $this->filterService->applyFieldFilters($noteListing, $noteParameters);
+
+        $this->assertSame(
+            '(`user` IN (SELECT `id` FROM `users` WHERE `name` IN (:filter_0))) ',
+            $noteListing->getCondition()
+        );
+        $this->assertSame(
+            [
+                'filter_0' => ['admin', 'john.doe'],
+            ],
+            $noteListing->getConditionVariables()
+        );
+    }
+
+    /**
+     * An empty selection means "no user restriction" and must not add a condition.
+     *
+     * @throws JsonException
+     */
+    public function testApplyFieldFiltersUserEmptyList(): void
+    {
+        $noteListing = $this->getNoteListing();
+        $filters = json_encode([
+            [
+                'field' => 'userName',
+                'type' => 'string',
+                'operator' => 'in',
+                'value' => [],
+            ],
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
+        $this->filterService->applyFieldFilters($noteListing, $noteParameters);
+
+        $this->assertSame('', $noteListing->getCondition());
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function testApplyFieldFiltersUserListWithNonStringValue(): void
+    {
+        $noteListing = $this->getNoteListing();
+        $filters = json_encode([
+            [
+                'field' => 'userName',
+                'type' => 'string',
+                'operator' => 'in',
+                'value' => ['admin', ['nested']],
+            ],
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
+
+        $this->expectException(InvalidFilterException::class);
+
+        $this->filterService->applyFieldFilters($noteListing, $noteParameters);
+    }
+
+    /**
      * Regression test for the "Between" date operator (#1923). The UI decomposes a
      * between-range into two conditions on the same `date` field (gt from + lt to).
      * The bind parameters must be unique per condition, otherwise the second value
