@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -34,13 +32,10 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DocumentSearchPreview;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\SimpleSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
-use function max;
 
 /**
  * @internal
@@ -68,38 +63,14 @@ final readonly class SearchService implements SearchServiceInterface
         $items = $result->getItems();
 
         $hydratedItems = [];
-        $skipped = 0;
-        /** @var User $user */
-        $user = $this->securityService->getCurrentUser();
         foreach ($items as $item) {
-            // The index only knows workspace permissions. Items it denies (workspace parents on older index
-            // versions) and items with workflow permissions (places may deny view) are checked against the
-            // core permissions.
-            try {
-                $indexAllowsView = $item->getPermissions()->isView() && !$this->hasWorkflowWithPermissions($item);
-                $isViewable = $indexAllowsView
-                    || $this->elementService->getElementById(
-                        $this->getElementTypeFromItem($item),
-                        $item->getId()
-                    )->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
-            } catch (NotFoundException) {
-                // The index references an element that no longer exists.
-                continue;
-            }
-
-            if (!$isViewable) {
-                $skipped++;
-
-                continue;
-            }
-
             $hydratedItem = $this->simpleSearchHydrator->hydrate($item);
             $this->dispatchSearchEvent($hydratedItem);
 
             $hydratedItems[] = $hydratedItem;
         }
 
-        return new Collection(max(0, $result->getPagination()->getTotalItems() - $skipped), $hydratedItems);
+        return new Collection($result->getPagination()->getTotalItems(), $hydratedItems);
     }
 
     /**
@@ -124,20 +95,6 @@ final readonly class SearchService implements SearchServiceInterface
         $this->dispatchPreviewEvent($preview);
 
         return $preview;
-    }
-
-    private function hasWorkflowWithPermissions(ElementSearchResultItemInterface $item): bool
-    {
-        return method_exists($item, 'isHasWorkflowWithPermissions') && $item->isHasWorkflowWithPermissions();
-    }
-
-    private function getElementTypeFromItem(ElementSearchResultItemInterface $item): string
-    {
-        return match ($item->getElementType()) {
-            ElementType::ASSET => ElementTypes::TYPE_ASSET,
-            ElementType::DOCUMENT => ElementTypes::TYPE_DOCUMENT,
-            ElementType::DATA_OBJECT => ElementTypes::TYPE_OBJECT,
-        };
     }
 
     private function dispatchSearchEvent(SimpleSearchResult $resultItem): void

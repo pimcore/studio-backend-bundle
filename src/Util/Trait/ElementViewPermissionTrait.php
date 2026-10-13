@@ -50,15 +50,4 @@ trait ElementViewPermissionTrait
 
         throw new ForbiddenException(sprintf('You dont have %s permission', ElementPermissions::VIEW_PERMISSION));
     }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function isElementViewAllowed(string $elementType, int $id, UserInterface $user): bool
-    {
-        $element = $this->getElement($this->serviceResolver, $elementType, $id);
-
-        /** @var User $user */
-        return $element->isAllowed(ElementPermissions::VIEW_PERMISSION, $user);
-    }
 }

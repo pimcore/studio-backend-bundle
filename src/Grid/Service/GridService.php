@@ -46,7 +46,6 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
@@ -60,7 +59,6 @@ use TypeError;
 use function array_key_exists;
 use function in_array;
 use function is_array;
-use function max;
 
 /**
  * @internal
@@ -68,7 +66,6 @@ use function max;
 final class GridService implements GridServiceInterface
 {
     use ElementProviderTrait;
-    use ElementViewPermissionTrait;
 
     /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
@@ -593,23 +590,8 @@ final class GridService implements GridServiceInterface
 
         $data = [];
         $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
-        $user = $this->securityService->getCurrentUser();
-        $skipped = 0;
         foreach ($items as $item) {
             try {
-                // The index only knows workspace permissions. Rows it denies (workspace parents on older index
-                // versions) and rows of elements with workflow permissions (places may deny view) are checked
-                // against the core permissions.
-                $indexAllowsView = $item->getPermissions()->isView()
-                    && !($item instanceof WorkflowPermissionsAwareInterface && $item->getHasWorkflowWithPermissions());
-                $isViewable = $indexAllowsView
-                    || $this->isElementViewAllowed($elementType, $item->getId(), $user);
-                if (!$isViewable) {
-                    $skipped++;
-
-                    continue;
-                }
-
                 $data[] = $this->getGridDataForElement(
                     $columns,
                     $item,
@@ -631,7 +613,7 @@ final class GridService implements GridServiceInterface
         }
 
         return new Collection(
-            totalItems: max(0, $searchResultItem->getTotalItems() - $skipped),
+            totalItems: $searchResultItem->getTotalItems(),
             items: $data
         );
     }

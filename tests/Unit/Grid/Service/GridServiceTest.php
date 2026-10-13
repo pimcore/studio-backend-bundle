@@ -73,14 +73,8 @@ final class GridServiceTest extends Unit
 
         $searchResult = new DataObjectSearchResult(
             items: [
-                $this->makeEmpty(StudioElementInterface::class, [
-                    'getId' => $missingId,
-                    'getPermissions' => new Permissions(),
-                ]),
-                $this->makeEmpty(StudioElementInterface::class, [
-                    'getId' => $existingId,
-                    'getPermissions' => new Permissions(),
-                ]),
+                $this->makeEmpty(StudioElementInterface::class, ['getId' => $missingId]),
+                $this->makeEmpty(StudioElementInterface::class, ['getId' => $existingId]),
             ],
             currentPage: 1,
             pageSize: 10,
@@ -110,134 +104,6 @@ final class GridServiceTest extends Unit
         // Only the existing element is returned; the missing one is skipped, not fatal.
         $this->assertCount(1, $result->getItems());
         // The search-reported total is intentionally left untouched.
-        $this->assertSame(2, $result->getTotalItems());
-    }
-
-    /**
-     * Rows the index reports without view permission (workspace parents on older index versions) are only
-     * returned if the core permission check allows them.
-     */
-    public function testGridDropsRowsWithoutViewPermission(): void
-    {
-        $viewableId = 100;
-        $listOnlyId = 101;
-        $wronglyDeniedId = 102;
-
-        $searchResult = new DataObjectSearchResult(
-            items: [
-                $this->makeEmpty(StudioElementInterface::class, [
-                    'getId' => $viewableId,
-                    'getPermissions' => new Permissions(view: true),
-                ]),
-                $this->makeEmpty(StudioElementInterface::class, [
-                    'getId' => $listOnlyId,
-                    'getPermissions' => new Permissions(view: false),
-                ]),
-                $this->makeEmpty(StudioElementInterface::class, [
-                    'getId' => $wronglyDeniedId,
-                    'getPermissions' => new Permissions(view: false),
-                ]),
-            ],
-            currentPage: 1,
-            pageSize: 10,
-            totalItems: 3,
-        );
-
-        $user = new User();
-        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
-            'getElementById' => fn (string $type, int $id): AbstractObject => $this->makeEmpty(
-                AbstractObject::class,
-                [
-                    'isAllowed' => fn (string $permission, User $permissionUser): bool => $id === $wronglyDeniedId
-                        && $permission === 'view'
-                        && $permissionUser === $user,
-                ]
-            ),
-        ]);
-
-        $service = $this->createService(
-            gridSearch: $this->makeEmpty(GridSearchInterface::class, ['searchDataObjects' => $searchResult]),
-            serviceResolver: $serviceResolver,
-            securityService: $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
-        );
-
-        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
-
-        // The viewable row (index) and the row the core check allows are returned, the list-only row is not,
-        // and the total does not count it either.
-        $this->assertCount(2, $result->getItems());
-        $this->assertSame(2, $result->getTotalItems());
-    }
-
-    /**
-     * Rows the index grants view for are still checked against the core permissions if the element has
-     * workflow permissions, because a place may deny view.
-     */
-    public function testGridChecksCoreViewPermissionForRowsWithWorkflowPermissions(): void
-    {
-        $checked = 0;
-        $searchResult = new DataObjectSearchResult(
-            items: [$this->createStudioElement(new Permissions(view: true), true)],
-            currentPage: 1,
-            pageSize: 10,
-            totalItems: 1,
-        );
-        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
-            'getElementById' => function () use (&$checked): AbstractObject {
-                return $this->makeEmpty(AbstractObject::class, [
-                    'isAllowed' => function (string $permission) use (&$checked): bool {
-                        $this->assertSame('view', $permission);
-                        $checked++;
-
-                        return false;
-                    },
-                ]);
-            },
-        ]);
-
-        $service = $this->createService(
-            gridSearch: $this->makeEmpty(GridSearchInterface::class, ['searchDataObjects' => $searchResult]),
-            serviceResolver: $serviceResolver,
-            securityService: $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
-        );
-
-        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
-
-        $this->assertSame(1, $checked);
-        $this->assertCount(0, $result->getItems());
-        $this->assertSame(0, $result->getTotalItems());
-    }
-
-    /**
-     * Flagged rows that the core check allows are kept, unflagged rows with index view skip the core check.
-     */
-    public function testGridKeepsAllowedWorkflowRowsAndSkipsCoreCheckForPlainRows(): void
-    {
-        $searchResult = new DataObjectSearchResult(
-            items: [
-                $this->createStudioElement(new Permissions(view: true), true),
-                $this->createStudioElement(new Permissions(view: true), false),
-            ],
-            currentPage: 1,
-            pageSize: 10,
-            totalItems: 2,
-        );
-        $service = $this->createService(
-            gridSearch: $this->makeEmpty(GridSearchInterface::class, ['searchDataObjects' => $searchResult]),
-            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getElementById' => $this->makeEmpty(AbstractObject::class, [
-                    'isAllowed' => Expected::once(true),
-                ]),
-            ]),
-            workflowPermissionMerger: $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
-                'mergeWorkflowPermissions' => static fn (Permissions $permissions): Permissions => $permissions,
-            ]),
-            securityService: $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]),
-        );
-
-        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
-
-        $this->assertCount(2, $result->getItems());
         $this->assertSame(2, $result->getTotalItems());
     }
 
