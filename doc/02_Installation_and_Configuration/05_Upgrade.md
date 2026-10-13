@@ -50,6 +50,10 @@ The following steps are necessary during updating to newer versions.
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
   an empty string instead of `"null"`.
+- [Elements] Fixed: asynchronous batch edits, replacing usages and updating references after a copy removed
+  unpublished related elements from the saved relations. Grid exports left them out. All of them now keep unpublished
+  related elements, as the grid and the element editors do. Batch edits, replacing usages and updating references
+  also no longer save localized fallback values into empty languages.
 
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:
