@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
@@ -61,6 +62,7 @@ use function sprintf;
 final readonly class DataObjectService implements DataObjectServiceInterface
 {
     use ElementProviderTrait;
+    use ElementViewPermissionTrait;
     use UserPermissionTrait;
     use ValidateObjectDataTrait;
 
@@ -121,12 +123,13 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $query = $this->dataObjectQueryProvider->createDataObjectQuery();
+        // The user has to be set before filtering, filters apply the user's permissions.
+        $query->setUser($this->securityService->getCurrentUser());
         $query = $filterService->applyFilters(
             $query,
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );
-        $query->setUser($this->securityService->getCurrentUser());
 
         $parentId = $parameters->getParentId() ?? 1;
         $parent = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $parentId);
@@ -152,10 +155,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
-        $dataObject = $this->dataObjectSearchService->getDataObjectById(
-            $id,
-            $user
-        );
+        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
+        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -171,6 +172,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
+        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
         $this->dispatchDetailEvent($dataObject);

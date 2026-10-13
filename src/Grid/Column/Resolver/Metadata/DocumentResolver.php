@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -71,7 +72,7 @@ final class DocumentResolver implements
                 reset($document['document']),
                 false
             );
-        } catch (NotFoundException) {
+        } catch (ForbiddenException|NotFoundException) {
             return $this->getColumnData($column, null, $this->getType());
         }
 
