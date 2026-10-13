@@ -1702,6 +1702,17 @@ custom_reports_config_delete_description: |
 custom_reports_config_delete_summary: Delete a custom reports configuration
 custom_reports_config_delete_success_response: Successfully deleted custom report configuration
 custom_reports_config_delete_name_parameter: Name of the custom report to delete
+custom_reports_config_export_description: |
+  Export the custom report configuration with the given <strong>{name}</strong> as a JSON file. <br>
+  Environment specific values such as creation and modification dates are not part of the export. <br>
+  The file can be imported again via the import endpoint.
+custom_reports_config_export_summary: Export a custom report configuration as JSON
+custom_reports_config_export_success_response: JSON file containing the custom report configuration
+custom_reports_config_import_description: |
+  Import a custom report configuration from a JSON file that was created by the export endpoint. <br>
+  A new report is created with the <strong>name</strong> stored in the file. The name must not be in use yet.
+custom_reports_config_import_summary: Import a custom report configuration from JSON
+custom_reports_config_import_success_response: Successfully imported custom report configuration
 custom_reports_get_tree_success_response: Get all reports for the current user to display in configuration tree.
 custom_reports_get_tree_description: Get all reports for the current user to display in tree.
 custom_reports_get_tree_summary: All reports for the current user to display in tree.

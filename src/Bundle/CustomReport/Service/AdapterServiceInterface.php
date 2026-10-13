@@ -36,6 +36,8 @@ interface AdapterServiceInterface
      */
     public function getAdapter(Config $report): CustomReportAdapterInterface;
 
+    public function hasAdapter(string $type): bool;
+
     /**
      * @throws EnvironmentException|InvalidArgumentException|NotFoundException
      *

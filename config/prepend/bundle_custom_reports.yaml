@@ -45,6 +45,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\ColumnServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\ColumnService
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataValidatorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\TransferDataValidator
+
   Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterService
     arguments:

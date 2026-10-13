@@ -93,6 +93,14 @@ final class AdapterServiceTest extends Unit
         $this->assertNull($this->capturedGetDataArguments[2]);
     }
 
+    public function testHasAdapterReflectsRegisteredFactories(): void
+    {
+        $service = $this->createService();
+
+        $this->assertTrue($service->hasAdapter('sql'));
+        $this->assertFalse($service->hasAdapter('graphql'));
+    }
+
     private function createReportConfig(array $dataSourceConfig): Config
     {
         $config = new Config();
