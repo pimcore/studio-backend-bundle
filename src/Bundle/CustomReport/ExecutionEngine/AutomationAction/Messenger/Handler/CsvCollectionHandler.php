@@ -96,7 +96,7 @@ final class CsvCollectionHandler extends AbstractHandler
             $stepData['fields'] = $exportFields;
             $exportParameter = ExportParameter::fromArray($stepData);
 
-            $reportData = $this->customReportAdapterService->getData(
+            $reportData = $this->customReportAdapterService->getAllData(
                 $reportConfig,
                 $exportParameter
             );

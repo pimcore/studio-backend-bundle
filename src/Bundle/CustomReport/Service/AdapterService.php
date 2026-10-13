@@ -38,14 +38,36 @@ final readonly class AdapterService implements AdapterServiceInterface
 
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
+        return $this->fetchData(
+            $report,
+            $chartDataParameter,
+            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
+            $chartDataParameter->getPageSize()
+        );
+    }
+
+    public function getAllData(Config $report, ChartDataParameter $chartDataParameter): array
+    {
+        return $this->fetchData($report, $chartDataParameter, null, null);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function fetchData(
+        Config $report,
+        ChartDataParameter $chartDataParameter,
+        ?int $offset,
+        ?int $limit
+    ): array {
         [$sortBy, $sortOrder] = $this->resolveSort($report, $chartDataParameter);
 
         return $this->getAdapter($report)->getData(
             $chartDataParameter->getFilters()->getColumnFilters(),
             $sortBy,
             $sortOrder,
-            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
-            $chartDataParameter->getPageSize(),
+            $offset,
+            $limit,
             $chartDataParameter->getFields(),
             $chartDataParameter->getFilters()->getDrillDownFilters()
         );

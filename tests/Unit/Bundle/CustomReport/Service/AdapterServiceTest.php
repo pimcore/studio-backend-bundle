@@ -93,6 +93,35 @@ final class AdapterServiceTest extends Unit
         $this->assertNull($this->capturedGetDataArguments[2]);
     }
 
+    public function testGetAllDataIgnoresPaginationAndKeepsResolvedSortAndFields(): void
+    {
+        $service = $this->createService();
+
+        $service->getAllData(
+            $this->createReportConfig(['orderby' => 'creationDate', 'orderbydir' => 'DESC']),
+            new ChartDataParameter('testReport', fields: ['id', 'name'], page: 3, pageSize: 50)
+        );
+
+        $this->assertSame('creationDate', $this->capturedGetDataArguments[1]);
+        $this->assertSame('DESC', $this->capturedGetDataArguments[2]);
+        $this->assertNull($this->capturedGetDataArguments[3]);
+        $this->assertNull($this->capturedGetDataArguments[4]);
+        $this->assertSame(['id', 'name'], $this->capturedGetDataArguments[5]);
+    }
+
+    public function testGetDataAppliesPagination(): void
+    {
+        $service = $this->createService();
+
+        $service->getData(
+            $this->createReportConfig(['orderby' => '']),
+            new ChartDataParameter('testReport', page: 3, pageSize: 50)
+        );
+
+        $this->assertSame(100, $this->capturedGetDataArguments[3]);
+        $this->assertSame(50, $this->capturedGetDataArguments[4]);
+    }
+
     private function createReportConfig(array $dataSourceConfig): Config
     {
         $config = new Config();
