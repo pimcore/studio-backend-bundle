@@ -108,12 +108,13 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     private function getRelationExistingData(array $existingValues, bool $isAdvanced): array
     {
-        $existingData =[];
+        $existingData = [];
         if ($isAdvanced) {
-            foreach ($existingValues as $index => $existingRelation) {
-                $existingValues[$index][ElementTypes::TYPE_ELEMENT] = $this->getExistingElementData(
+            foreach ($existingValues as $existingRelation) {
+                $existingRelation[ElementTypes::TYPE_ELEMENT] = $this->getExistingElementData(
                     $existingRelation[ElementTypes::TYPE_ELEMENT]
                 );
+                $existingData[] = $existingRelation;
             }
 
             return $existingData;
