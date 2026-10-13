@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Repository;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\ElementSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Element\SearchResult\ElementSearchResult;
@@ -56,7 +57,8 @@ final readonly class SearchRepository implements SearchRepositoryInterface
         }
 
         try {
-            return $this->elementSearchService->search($search);
+            // Search results are opened in an editor, so only return elements the user may view.
+            return $this->elementSearchService->search($search, PermissionTypes::VIEW);
         } catch (ElementSearchException $exception) {
             throw new SearchException('elements', $exception);
         }

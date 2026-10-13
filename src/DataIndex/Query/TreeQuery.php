@@ -52,6 +52,8 @@ final readonly class TreeQuery implements TreeQueryInterface
     ): QueryInterface {
         $type = $widget->getElementType();
         $query = $this->queryFactory->create($type);
+        // The user has to be set before filtering, filters apply the user's permissions.
+        $query->setUser($user);
         $query = $filterService->applyFilters($query, $this->getQueryParameters($widget, $parentId), $type);
 
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
