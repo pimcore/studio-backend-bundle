@@ -28,6 +28,11 @@ final class Version20260625090000 extends AbstractMigration
         return 'Add elementType column to the saved search configuration table';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         if (!$schema->hasTable(SavedSearchConfiguration::TABLE_NAME)) {
