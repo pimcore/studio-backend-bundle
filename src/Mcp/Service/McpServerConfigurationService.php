@@ -127,7 +127,6 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
             id: $id,
             displayName: $parameter->getName(),
             description: $parameter->getDescription() ?? '',
-            urlSlug: $id,
             toolIds: $parameter->getTools(),
             // Only an operator's explicit declaration is stored. Scopes derived from the
             // tools are computed on read (McpScopes::forServer), so they follow the tool

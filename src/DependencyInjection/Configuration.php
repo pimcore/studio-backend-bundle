@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
@@ -27,11 +28,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function array_filter;
+use function array_keys;
 use function in_array;
 use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
+use function preg_match;
 use function sprintf;
 
 /**
@@ -820,17 +824,25 @@ class Configuration implements ConfigurationInterface
     }
 
     /**
-     * MCP server definitions: named tool groups exposed at /pimcore-mcp/{url_slug}.
+     * MCP server definitions: named tool groups exposed at /pimcore-mcp/studio/{id}.
      * Shipped defaults live here; runtime-managed servers use the write target
-     * configured under config_location.studio_mcp_servers.
+     * configured under config_location.studio_mcp_servers. The id is the URL slug,
+     * so it has to be one the route accepts.
      */
     private function addMcpServersConfigurationNode(ArrayNodeDefinition $node): void
     {
         $node->children()
             ->arrayNode(self::MCP_SERVERS_NODE)
-                ->info('MCP server definitions, keyed by server id.')
+                ->info('MCP server definitions, keyed by server id, which is also the URL slug.')
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
+                ->validate()
+                    ->ifTrue(static fn (array $servers): bool => array_filter(
+                        array_keys($servers),
+                        static fn (int|string $id): bool => preg_match(McpPath::STUDIO_SLUG_PATTERN, (string) $id) !== 1
+                    ) !== [])
+                    ->thenInvalid('MCP server ids are their URL slug and may only contain a-z, 0-9 and hyphens: %s')
+                ->end()
                 ->arrayPrototype()
                     ->children()
                         ->scalarNode('name')
@@ -839,10 +851,6 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('description')
                             ->defaultValue('')
-                        ->end()
-                        ->scalarNode('url_slug')
-                            ->info('URL segment under /pimcore-mcp/; defaults to the id.')
-                            ->defaultNull()
                         ->end()
                         ->arrayNode('tools')
                             ->info('Ids of the assigned MCP tools.')

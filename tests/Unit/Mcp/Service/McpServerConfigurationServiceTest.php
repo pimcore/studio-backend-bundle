@@ -445,7 +445,6 @@ final class McpServerConfigurationServiceTest extends Unit
             id: $id,
             displayName: 'Server ' . $id,
             description: '',
-            urlSlug: $id,
             toolIds: ['get_car_info'],
             scopes: ['mcp:read'],
             enabled: true,

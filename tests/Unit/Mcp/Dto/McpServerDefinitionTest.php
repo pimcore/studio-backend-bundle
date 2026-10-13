@@ -25,7 +25,6 @@ final class McpServerDefinitionTest extends Unit
         $server = McpServerDefinition::fromArray('objects-read', [
             'name' => 'Data Objects (read)',
             'description' => 'Read-only data object tools',
-            'url_slug' => 'data-objects-read',
             'tools' => ['get_data_object', 'search_data_objects'],
             'scopes' => ['mcp:read'],
             'enabled' => false,
@@ -35,7 +34,7 @@ final class McpServerDefinitionTest extends Unit
         $this->assertSame('objects-read', $server->id);
         $this->assertSame('Data Objects (read)', $server->displayName);
         $this->assertSame('Read-only data object tools', $server->description);
-        $this->assertSame('data-objects-read', $server->urlSlug);
+        $this->assertSame('objects-read', $server->urlSlug);
         $this->assertSame(['get_data_object', 'search_data_objects'], $server->toolIds);
         $this->assertSame(['mcp:read'], $server->scopes);
         $this->assertFalse($server->enabled);
@@ -50,18 +49,23 @@ final class McpServerDefinitionTest extends Unit
         $this->assertSame('assets', $server->id);
         $this->assertSame('assets', $server->displayName, 'name defaults to the id');
         $this->assertSame('', $server->description);
-        $this->assertSame('assets', $server->urlSlug, 'url_slug defaults to the id');
+        $this->assertSame('assets', $server->urlSlug, 'the url slug is the id');
         $this->assertSame([], $server->toolIds);
         $this->assertSame([], $server->scopes);
         $this->assertTrue($server->enabled, 'enabled defaults to true');
         $this->assertEquals(new McpServerAccess(), $server->access);
     }
 
-    public function testBlankUrlSlugFallsBackToId(): void
+    /**
+     * A slug that could differ from the id let two servers claim one URL and one OAuth
+     * audience, and an update rebuilt from the id moved the endpoint. Data stored with a
+     * slug of its own is served under its id.
+     */
+    public function testAStoredUrlSlugIsIgnoredInFavourOfTheId(): void
     {
-        $server = McpServerDefinition::fromArray('tags', ['url_slug' => '']);
+        $server = McpServerDefinition::fromArray('catalogue', ['url_slug' => 'product-read']);
 
-        $this->assertSame('tags', $server->urlSlug);
+        $this->assertSame('catalogue', $server->urlSlug);
     }
 
     public function testNonStringToolsAndScopesAreDropped(): void
@@ -81,7 +85,6 @@ final class McpServerDefinitionTest extends Unit
             id: 'workflows',
             displayName: 'Workflows',
             description: 'Workflow tools',
-            urlSlug: 'workflows',
             toolIds: ['apply_transition'],
             scopes: ['mcp:read', 'mcp:write'],
             enabled: true,
@@ -100,7 +103,7 @@ final class McpServerDefinitionTest extends Unit
 
         $this->assertArrayNotHasKey('id', $array);
         $this->assertSame(
-            ['name', 'description', 'url_slug', 'tools', 'scopes', 'enabled', 'access'],
+            ['name', 'description', 'tools', 'scopes', 'enabled', 'access'],
             array_keys($array)
         );
     }

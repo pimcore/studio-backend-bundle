@@ -159,7 +159,7 @@ final class McpServerAccessResolverTest extends Unit
 
     private function server(McpServerAccess $access): McpServerDefinition
     {
-        return new McpServerDefinition('s', 'S', '', 's', ['ping'], ['mcp:read'], true, $access);
+        return new McpServerDefinition('s', 'S', '', ['ping'], ['mcp:read'], true, $access);
     }
 
     /**

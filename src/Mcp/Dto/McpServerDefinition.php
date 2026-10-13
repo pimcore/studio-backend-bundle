@@ -18,15 +18,21 @@ use function is_string;
 
 /**
  * One configured MCP server: a named group of tools exposed at
- * `/pimcore-mcp/{urlSlug}`. Persisted through the location-aware config
+ * `/pimcore-mcp/studio/{urlSlug}`. Persisted through the location-aware config
  * repository; {@see fromArray()}/{@see toArray()} are the (un)serialization
  * boundary, so both the shipped symfony-config seed and the settings-store JSON
  * map onto the same shape.
+ *
+ * The URL slug is the id, not a setting of its own: the id is the storage key, so it
+ * is unique, and a slug that could differ from it would let two servers claim one URL
+ * and one OAuth audience, or move a server's endpoint whenever it is rebuilt from its id.
  *
  * @internal
  */
 final readonly class McpServerDefinition
 {
+    public string $urlSlug;
+
     /**
      * @param list<string> $toolIds identifiers of the assigned MCP tools
      * @param list<string> $scopes  OAuth scopes advertised for this server (e.g. mcp:read/mcp:write)
@@ -35,12 +41,12 @@ final readonly class McpServerDefinition
         public string $id,
         public string $displayName,
         public string $description,
-        public string $urlSlug,
         public array $toolIds,
         public array $scopes,
         public bool $enabled,
         public McpServerAccess $access,
     ) {
+        $this->urlSlug = $id;
     }
 
     /**
@@ -52,9 +58,6 @@ final readonly class McpServerDefinition
             id: $id,
             displayName: isset($data['name']) && is_string($data['name']) ? $data['name'] : $id,
             description: isset($data['description']) && is_string($data['description']) ? $data['description'] : '',
-            urlSlug: isset($data['url_slug']) && is_string($data['url_slug']) && $data['url_slug'] !== ''
-                ? $data['url_slug']
-                : $id,
             toolIds: self::stringList($data['tools'] ?? []),
             scopes: self::stringList($data['scopes'] ?? []),
             enabled: (bool) ($data['enabled'] ?? true),
@@ -70,7 +73,6 @@ final readonly class McpServerDefinition
         return [
             'name' => $this->displayName,
             'description' => $this->description,
-            'url_slug' => $this->urlSlug,
             'tools' => $this->toolIds,
             'scopes' => $this->scopes,
             'enabled' => $this->enabled,

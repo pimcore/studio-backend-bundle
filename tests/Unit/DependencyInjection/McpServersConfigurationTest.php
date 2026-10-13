@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use ReflectionMethod;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 
 /**
@@ -109,5 +110,27 @@ final class McpServersConfigurationTest extends Unit
             [new McpServerAccessEntry('alice', canAccess: true, canEdit: true)],
             $access->sharedUsers
         );
+    }
+
+    /**
+     * The id is the server's URL slug, so there is no separate `url_slug` to diverge from it:
+     * two servers could otherwise claim one URL and one OAuth audience.
+     */
+    public function testAUrlSlugOfItsOwnIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['catalogue' => ['url_slug' => 'product-read']]);
+    }
+
+    /**
+     * An id the `/pimcore-mcp/studio/{slug}` route does not accept could never be served or
+     * managed through the Studio API, so it fails at container build instead of silently.
+     */
+    public function testAnIdTheRouteCannotServeIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['Product_Read' => []]);
     }
 }

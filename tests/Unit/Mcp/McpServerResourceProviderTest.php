@@ -198,7 +198,6 @@ final class McpServerResourceProviderTest extends Unit
     private function server(string $slug, array $tools, bool $enabled = true, array $scopes = []): McpServerDefinition
     {
         return McpServerDefinition::fromArray($slug, [
-            'url_slug' => $slug,
             'tools' => $tools,
             'scopes' => $scopes,
             'enabled' => $enabled,

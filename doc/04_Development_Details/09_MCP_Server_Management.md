@@ -76,8 +76,9 @@ All endpoints live under the Studio API prefix (`/pimcore-studio/api`) and are d
 
 A server's advertised `scopes` are **derived** from its tools' required scopes and cannot be set through the API.
 A server defined in the `studio_mcp_servers` configuration may declare `scopes` explicitly, which then replaces the
-derived list; an edit through the API keeps such a declaration. The `urlSlug` is fixed on create and locked on
-update.
+derived list; an edit through the API keeps such a declaration. The `urlSlug` is the server's id: it is fixed on
+create and locked on update. In the `studio_mcp_servers` configuration the key of each server is its slug, so it
+may only contain `a-z`, `0-9` and hyphens.
 
 ## Access and sharing
 

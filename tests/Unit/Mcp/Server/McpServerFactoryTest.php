@@ -84,7 +84,6 @@ final class McpServerFactoryTest extends Unit
             id: 'demo',
             displayName: 'Demo',
             description: 'Demo server',
-            urlSlug: 'demo',
             toolIds: $toolIds,
             scopes: ['mcp:read'],
             enabled: true,
