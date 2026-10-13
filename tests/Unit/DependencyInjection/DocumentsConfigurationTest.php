@@ -65,6 +65,13 @@ final class DocumentsConfigurationTest extends Unit
         $this->process(['default_controllers' => ['link' => self::EMAIL_CONTROLLER]]);
     }
 
+    public function testRejectsNonStringController(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['default_controllers' => ['email' => 123]]);
+    }
+
     public function testRejectsEmptyController(): void
     {
         $this->expectException(InvalidConfigurationException::class);

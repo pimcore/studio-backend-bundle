@@ -1086,7 +1086,7 @@ class Configuration implements ConfigurationInterface
                         )
                         ->example(['email' => 'App\\Controller\\MailController::defaultAction'])
                         ->useAttributeAsKey('type')
-                        ->scalarPrototype()
+                        ->stringPrototype()
                             ->cannotBeEmpty()
                         ->end()
                         ->validate()
