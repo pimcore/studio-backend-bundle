@@ -19,6 +19,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
@@ -115,6 +116,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(CsvExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
+
+        $definition = $container->getDefinition(CreateServiceInterface::class);
+        $definition->setArgument('$defaultControllers', $config['documents']['default_controllers']);
 
         $definition = $container->getDefinition(XlsxExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
