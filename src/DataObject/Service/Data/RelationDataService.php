@@ -91,7 +91,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         $currentValues = $adapter->normalize(
             $this->getValidFieldValue($element, $fieldDefinition->getName(), $contextData),
             $fieldDefinition
-        );
+        ) ?? [];
         $existingValues = $this->getRelationExistingData($currentValues, $isAdvanced);
 
         return $this->patchService->handlePatchDataField(

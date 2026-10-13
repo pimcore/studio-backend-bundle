@@ -205,14 +205,9 @@ final readonly class PatchService implements PatchServiceInterface
         $newData = $fieldData[PatchDataKeys::DATA->value];
         $action = $fieldData[PatchDataKeys::ACTION->value];
 
-        $existingMap = [];
-        foreach ($existingValues as $existingItem) {
-            $existingMap[$this->getFieldMapKey($existingItem, $dataKey)] = $existingItem;
-        }
-
         return match ($action) {
-            PatcherActions::ADD->value => $this->handleAddition($existingMap, $newData, $dataKey),
-            PatcherActions::REMOVE->value => $this->handleRemoval($existingMap, $newData, $dataKey),
+            PatcherActions::ADD->value => $this->handleAddition($existingValues, $newData, $dataKey),
+            PatcherActions::REMOVE->value => $this->handleRemoval($existingValues, $newData, $dataKey),
             default => $newData
         };
     }
@@ -243,25 +238,47 @@ final readonly class PatchService implements PatchServiceInterface
         }
     }
 
-    private function handleAddition(array $existingMap, array $newData, ?string $dataKey = null): array
+    /**
+     * Keeps all existing entries, including repeated assignments and their data, and appends the new entries whose
+     * element is not in the existing entries (same semantics as AbstractRelations::appendData()).
+     */
+    private function handleAddition(array $existingValues, array $newData, ?string $dataKey = null): array
     {
+        $result = array_values($existingValues);
+        $existingKeys = $this->getFieldMapKeys($result, $dataKey);
         foreach ($newData as $newEntry) {
-            $existingMap[$this->getFieldMapKey($newEntry, $dataKey)] = $newEntry;
-        }
-
-        return array_values($existingMap);
-    }
-
-    private function handleRemoval(array $existingMap, array $newData, ?string $dataKey = null): array
-    {
-        foreach ($newData as $newEntry) {
-            $entryKey = $this->getFieldMapKey($newEntry, $dataKey);
-            if (isset($existingMap[$entryKey])) {
-                unset($existingMap[$entryKey]);
+            if (!isset($existingKeys[$this->getFieldMapKey($newEntry, $dataKey)])) {
+                $result[] = $newEntry;
             }
         }
 
-        return array_values($existingMap);
+        return $result;
+    }
+
+    /**
+     * Removes every existing entry of the given elements (same semantics as AbstractRelations::removeData()).
+     */
+    private function handleRemoval(array $existingValues, array $newData, ?string $dataKey = null): array
+    {
+        $removedKeys = $this->getFieldMapKeys($newData, $dataKey);
+
+        return array_values(array_filter(
+            $existingValues,
+            fn (array $existingItem) => !isset($removedKeys[$this->getFieldMapKey($existingItem, $dataKey)])
+        ));
+    }
+
+    /**
+     * @return array<string, true>
+     */
+    private function getFieldMapKeys(array $items, ?string $dataKey = null): array
+    {
+        $keys = [];
+        foreach ($items as $item) {
+            $keys[$this->getFieldMapKey($item, $dataKey)] = true;
+        }
+
+        return $keys;
     }
 
     private function getFieldMapKey(array $item, ?string $dataKey = null): string

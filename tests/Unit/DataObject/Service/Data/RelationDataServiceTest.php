@@ -44,12 +44,84 @@ final class RelationDataServiceTest extends Unit
      */
     public function testAdvancedAddKeepsExistingEntriesWithMetadata(): void
     {
-        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(3)]);
+        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(3)], $this->frontAndRear());
 
         $this->assertSame([1, 2, 3], $this->extractElementIds($result));
         $this->assertSame(['position' => 'front'], $result[0]['data']);
         $this->assertSame(['position' => 'rear'], $result[1]['data']);
         $this->assertSame(['position' => 'roof'], $result[2]['data']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedAddKeepsDataOfAlreadyRelatedElement(): void
+    {
+        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(2)], $this->frontAndRear());
+
+        $this->assertSame([1, 2], $this->extractElementIds($result));
+        $this->assertSame(['position' => 'front'], $result[0]['data']);
+        $this->assertSame(['position' => 'rear'], $result[1]['data']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedAddKeepsRepeatedAssignments(): void
+    {
+        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(3)], $this->repeatedAssignments());
+
+        $this->assertSame([1, 1, 2, 3], $this->extractElementIds($result));
+        $this->assertSame(['position' => 'front'], $result[0]['data']);
+        $this->assertSame(['position' => 'back'], $result[1]['data']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedRemoveRemovesAllAssignmentsOfElement(): void
+    {
+        $result = $this->getAdvancedSetterData('remove', [$this->newAdvancedEntry(1)], $this->repeatedAssignments());
+
+        $this->assertSame([2], $this->extractElementIds($result));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedAddAppendsRepeatedAssignmentsOfNewElement(): void
+    {
+        $front = $this->newAdvancedEntry(3);
+        $back = $this->newAdvancedEntry(3);
+        $back['data'] = ['position' => 'back'];
+
+        $result = $this->getAdvancedSetterData('add', [$front, $back], $this->frontAndRear());
+
+        $this->assertSame([1, 2, 3, 3], $this->extractElementIds($result));
+        $this->assertSame(['position' => 'roof'], $result[2]['data']);
+        $this->assertSame(['position' => 'back'], $result[3]['data']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedRemoveKeepsRepeatedAssignmentsOfOtherElement(): void
+    {
+        $result = $this->getAdvancedSetterData('remove', [$this->newAdvancedEntry(2)], $this->repeatedAssignments());
+
+        $this->assertSame([1, 1], $this->extractElementIds($result));
+        $this->assertSame(['position' => 'front'], $result[0]['data']);
+        $this->assertSame(['position' => 'back'], $result[1]['data']);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAdvancedAddToFieldWithoutValue(): void
+    {
+        $result = $this->getAdvancedSetterData('add', [$this->newAdvancedEntry(3)], null);
+
+        $this->assertSame([3], $this->extractElementIds($result));
     }
 
     /**
@@ -59,7 +131,7 @@ final class RelationDataServiceTest extends Unit
      */
     public function testAdvancedRemoveKeepsOtherEntriesWithMetadata(): void
     {
-        $result = $this->getAdvancedSetterData('remove', [$this->newAdvancedEntry(1)]);
+        $result = $this->getAdvancedSetterData('remove', [$this->newAdvancedEntry(1)], $this->frontAndRear());
 
         $this->assertSame([2], $this->extractElementIds($result));
         $this->assertSame(['position' => 'rear'], $result[0]['data']);
@@ -74,7 +146,7 @@ final class RelationDataServiceTest extends Unit
         $entry = $this->newAdvancedEntry(1);
         $entry['element']['type'] = 'asset';
 
-        $result = $this->getAdvancedSetterData('remove', [$entry]);
+        $result = $this->getAdvancedSetterData('remove', [$entry], $this->frontAndRear());
 
         $this->assertSame([1, 2], $this->extractElementIds($result));
     }
@@ -84,7 +156,7 @@ final class RelationDataServiceTest extends Unit
      */
     public function testAdvancedReplaceReturnsOnlyNewEntries(): void
     {
-        $result = $this->getAdvancedSetterData('replace', [$this->newAdvancedEntry(3)]);
+        $result = $this->getAdvancedSetterData('replace', [$this->newAdvancedEntry(3)], $this->frontAndRear());
 
         $this->assertSame([3], $this->extractElementIds($result));
     }
@@ -111,13 +183,8 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function getAdvancedSetterData(string $action, array $newEntries): array
+    private function getAdvancedSetterData(string $action, array $newEntries, ?array $existing): array
     {
-        $existing = [
-            $this->existingAdvancedEntry(1, ['position' => 'front']),
-            $this->existingAdvancedEntry(2, ['position' => 'rear']),
-        ];
-
         return $this->createService()->getSetterData(
             $this->makeEmpty(Concrete::class),
             $this->makeEmpty(Data::class, ['getName' => 'relations']),
@@ -139,6 +206,23 @@ final class RelationDataServiceTest extends Unit
             'fieldName' => 'relations',
             'columns' => ['position'],
             'data' => $data,
+        ];
+    }
+
+    private function frontAndRear(): array
+    {
+        return [
+            $this->existingAdvancedEntry(1, ['position' => 'front']),
+            $this->existingAdvancedEntry(2, ['position' => 'rear']),
+        ];
+    }
+
+    private function repeatedAssignments(): array
+    {
+        return [
+            $this->existingAdvancedEntry(1, ['position' => 'front']),
+            $this->existingAdvancedEntry(1, ['position' => 'back']),
+            $this->existingAdvancedEntry(2, ['position' => 'rear']),
         ];
     }
 

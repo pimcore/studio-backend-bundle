@@ -25,12 +25,14 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
+use function array_column;
 use function str_repeat;
 
 /**
@@ -229,6 +231,34 @@ final class PatchServiceTest extends Unit
         ], $this->user);
 
         $this->assertSame(['type' => $coauthorType, 'coauthor' => $coauthor], $captured[0]);
+    }
+
+    public function testGalleryAddKeepsExistingImageDataAndRepeatedImages(): void
+    {
+        $result = $this->createService(static fn () => null)->handlePatchDataField(
+            ['action' => 'add', 'data' => [$this->galleryItem(1, 'new'), $this->galleryItem(3, 'new')]],
+            [$this->galleryItem(1, 'first'), $this->galleryItem(1, 'second'), $this->galleryItem(2, 'kept')],
+            SubTypes::IMAGE->value
+        );
+
+        $this->assertSame(['first', 'second', 'kept', 'new'], array_column($result, 'crop'));
+        $this->assertSame([1, 1, 2, 3], array_column(array_column($result, 'image'), 'id'));
+    }
+
+    public function testGalleryRemoveDropsEveryOccurrenceOfImage(): void
+    {
+        $result = $this->createService(static fn () => null)->handlePatchDataField(
+            ['action' => 'remove', 'data' => [$this->galleryItem(1, 'any')]],
+            [$this->galleryItem(1, 'first'), $this->galleryItem(2, 'kept'), $this->galleryItem(1, 'second')],
+            SubTypes::IMAGE->value
+        );
+
+        $this->assertSame(['kept'], array_column($result, 'crop'));
+    }
+
+    private function galleryItem(int $imageId, string $crop): array
+    {
+        return ['image' => ['id' => $imageId, 'type' => 'asset'], 'crop' => $crop];
     }
 
     private function createService(callable $onSave): PatchService
