@@ -189,8 +189,8 @@ final readonly class GridSearch implements GridSearchInterface
         $folder = $this->getElement($this->serviceResolver, $type, $folderId);
         /** @var User $user */
         if (!$folder->isAllowed(ElementPermissions::LIST_PERMISSION, $user)) {
-            // Like the element detail endpoints, do not tell apart missing and unlistable folders.
-            throw new NotFoundException($type . ' Folder', $folderId);
+            // Same response as for a missing folder, so ids cannot be probed.
+            throw new NotFoundException($type, $folderId);
         }
 
         if (!$this->isFolderOfType($type, $folder)) {

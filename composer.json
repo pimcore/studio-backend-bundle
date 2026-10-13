@@ -61,6 +61,7 @@
     }
   },
   "conflict": {
+    "pimcore/asset-metadata-class-definitions": "<2026.3.2",
     "zircote/swagger-php": ">=5.6"
   },
   "autoload-dev": {

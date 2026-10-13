@@ -42,7 +42,7 @@ final class DependencyRepositoryViewPermissionTest extends Unit
 
         $this->expectException(ForbiddenException::class);
         $repository->listRequiresDependencies(
-            new ElementParameters(ElementTypes::TYPE_OBJECT, 10),
+            new ElementParameters(ElementTypes::TYPE_OBJECT, 12),
             new DependencyParameters(1, 10, 'requires'),
             new User()
         );
@@ -54,7 +54,7 @@ final class DependencyRepositoryViewPermissionTest extends Unit
 
         $this->expectException(ForbiddenException::class);
         $repository->listRequiredByDependencies(
-            new ElementParameters(ElementTypes::TYPE_OBJECT, 10),
+            new ElementParameters(ElementTypes::TYPE_OBJECT, 12),
             new DependencyParameters(1, 10, 'required_by'),
             new User()
         );
@@ -79,7 +79,7 @@ final class DependencyRepositoryViewPermissionTest extends Unit
 
         $this->expectException(NotFoundException::class);
         $repository->listRequiredByDependencies(
-            new ElementParameters(ElementTypes::TYPE_OBJECT, 10),
+            new ElementParameters(ElementTypes::TYPE_OBJECT, 12),
             new DependencyParameters(1, 10, 'required_by'),
             new User()
         );

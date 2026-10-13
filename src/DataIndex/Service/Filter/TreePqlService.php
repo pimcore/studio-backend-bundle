@@ -50,6 +50,11 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         string $elementType,
         ?UserInterface $user,
     ): array {
+        // Without a user, the aggregation would not apply any permissions.
+        if (!$user instanceof User) {
+            return [];
+        }
+
         $parentPath = $this->resolveParentPath($parentId, $elementType);
         if ($parentPath === null) {
             return [];
@@ -84,7 +89,7 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         string $parentPath,
         string $pqlQuery,
         string $elementType,
-        ?UserInterface $user,
+        User $user,
     ): ?SearchResultAggregation {
         $aggregationName = ChildFolderAggregation::AGGREGATION_NAME;
 
@@ -136,11 +141,9 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         SearchInterface $search,
         string $parentPath,
         string $pqlQuery,
-        ?UserInterface $user,
+        User $user,
     ): SearchInterface {
-        if ($user instanceof User) {
-            $search->setUser($user);
-        }
+        $search->setUser($user);
 
         $search->addModifier(new PathFilter($parentPath));
         $search->addModifier(new ExcludeFoldersFilter());

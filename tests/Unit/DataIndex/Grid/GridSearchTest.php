@@ -250,25 +250,31 @@ final class GridSearchTest extends Unit
         $this->assertSame([12], $ids);
     }
 
-    public function testFolderWithoutListPermissionIsRejected(): void
+    /**
+     * A folder the user may not list gets the same response as a missing folder, so ids cannot be probed.
+     */
+    public function testFolderWithoutListPermissionIsReportedLikeAMissingFolder(): void
     {
         $user = new User();
-        $folder = $this->makeEmpty(DataObjectFolder::class, ['isAllowed' => false]);
+        $gridParameter = new GridParameter(self::FOLDER_ID, [], new FilterParameter());
+        $query = $this->makeEmpty(DataObjectQueryInterface::class);
+        $searchService = $this->makeEmpty(DataObjectSearchServiceInterface::class, [
+            'searchDataObjects' => Expected::never(),
+        ]);
 
-        $gridSearch = $this->createGridSearch(
-            dataObjectSearchService: $this->makeEmpty(DataObjectSearchServiceInterface::class, [
-                'searchDataObjects' => Expected::never(),
-            ]),
-            query: $this->makeEmpty(DataObjectQueryInterface::class),
-            folder: $folder,
-        );
+        $unlistable = $this->captureNotFound(fn () => $this->createGridSearch(
+            dataObjectSearchService: $searchService,
+            query: $query,
+            folder: $this->makeEmpty(DataObjectFolder::class, ['isAllowed' => false]),
+        )->searchElementsForUser(ElementTypes::TYPE_DATA_OBJECT, $gridParameter, $user));
 
-        $this->expectException(NotFoundException::class);
-        $gridSearch->searchElementsForUser(
-            ElementTypes::TYPE_DATA_OBJECT,
-            new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
-            $user
-        );
+        $missing = $this->captureNotFound(fn () => $this->createGridSearch(
+            dataObjectSearchService: $searchService,
+            query: $query,
+            folder: null,
+        )->searchElementsForUser(ElementTypes::TYPE_DATA_OBJECT, $gridParameter, $user));
+
+        $this->assertSame($missing->getMessage(), $unlistable->getMessage());
     }
 
     public function testAssetGridRequiresAnAssetFolder(): void
@@ -310,9 +316,20 @@ final class GridSearchTest extends Unit
         ]);
     }
 
+    private function captureNotFound(callable $search): NotFoundException
+    {
+        try {
+            $search();
+        } catch (NotFoundException $exception) {
+            return $exception;
+        }
+
+        $this->fail('Expected a NotFoundException.');
+    }
+
     private function createGridSearch(
         QueryInterface $query,
-        ElementInterface $folder,
+        ?ElementInterface $folder,
         ?AssetSearchServiceInterface $assetSearchService = null,
         ?DataObjectSearchServiceInterface $dataObjectSearchService = null,
         ?DocumentSearchServiceInterface $documentSearchService = null,
@@ -330,7 +347,7 @@ final class GridSearchTest extends Unit
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(ServiceResolverInterface::class, [
                 'getElementById' => function (string $type, int $id) use ($folder) {
-                    $this->assertSame($this->getCoreType($folder), $type);
+                    $this->assertSame($folder ? $this->getCoreType($folder) : 'object', $type);
                     $this->assertSame(self::FOLDER_ID, $id);
 
                     return $folder;

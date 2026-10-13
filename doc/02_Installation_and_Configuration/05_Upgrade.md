@@ -5,19 +5,22 @@ The following steps are necessary during updating to newer versions.
 ## Upgrade to 2026.3.2
 - [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
   permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.1 or later, which limits the
-  parent paths of a workspace to the `list` permission.
+  parent paths of a workspace to the `list` permission, and `pimcore/asset-metadata-class-definitions` 2026.3.2 or
+  later, if installed.
   - Grids (data objects, assets, documents), advanced search, quick search and relation search dialogs only return
     elements the workspaces of the user allow to view. This also applies to grid export, folder batch patch and asset
     folder zip. Workspaces with `list` but without `view` therefore no longer show up there. The trees still show the
-    parent folders of a workspace. The folders a tree PQL filter reveals only depend on elements the user may view.
+    parent folders of a workspace. The folders a tree PQL filter reveals only depend on elements the workspaces of the
+    user allow to view.
   - `GET /data-objects/{id}`, `GET /documents/{id}` and `GET /assets/{id}` return `403` for elements the user may
     list but not view, and `404` for elements the user may not list. This check uses the core permissions, including
     workflow place permissions. Grids and search use the workspace permissions of the search index only.
-    `GET /dependencies/{type}/{id}` requires `view` on the element in the same way.
+    `GET /dependencies/{elementType}/{id}` requires `view` on the element in the same way.
   - Update endpoints (`PUT`) return the updated element, so for users with save or publish permission but without
     `view` the response is `403` or `404`. The update itself is applied as before.
-  - Grids and advanced search return `404` for a folder the user may not list. In the grid, metadata columns that
-    relate to an element without `view` stay empty. The export still contains the path of that element.
+  - Grids and advanced search return `404` for a folder the user may not list. In the grid, the asset metadata
+    columns of type asset, document and object stay empty for a related element without `view`. The export still
+    contains the path of that element.
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as

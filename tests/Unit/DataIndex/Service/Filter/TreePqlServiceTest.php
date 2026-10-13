@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Service\Filter;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
@@ -71,6 +72,22 @@ final class TreePqlServiceTest extends Unit
         $service->getRelevantChildFolderKeys(1, 'key = "a"', $elementType, $user);
 
         $this->assertSame([[$user, PermissionTypes::VIEW]], $captured);
+    }
+
+    /**
+     * Without a user the aggregation would not apply any permissions, so no folder keys are returned.
+     */
+    public function testNoFolderKeysWithoutUser(): void
+    {
+        $service = new TreePqlService(
+            $this->makeEmpty(SearchProviderInterface::class),
+            $this->makeEmpty(AssetSearchServiceInterface::class, ['search' => Expected::never()]),
+            $this->makeEmpty(DataObjectSearchServiceInterface::class, ['search' => Expected::never()]),
+            $this->makeEmpty(DocumentSearchServiceInterface::class, ['search' => Expected::never()]),
+            $this->makeEmpty(LoggerInterface::class),
+        );
+
+        $this->assertSame([], $service->getRelevantChildFolderKeys(1, 'key = "a"', ElementTypes::TYPE_OBJECT, null));
     }
 
     public static function elementTypeProvider(): array

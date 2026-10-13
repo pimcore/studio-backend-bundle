@@ -28,8 +28,8 @@ use function sprintf;
 trait ElementViewPermissionTrait
 {
     /**
-     * The search index can return elements the user may only list, for example parent folders of a workspace.
-     * The core permission check is authoritative and independent of index state and caches.
+     * Checks view with the core permissions, which also cover workflow place permissions and do not depend on the
+     * search index or its caches.
      *
      * Elements the user may not even list are reported as not found, so ids cannot be probed.
      *
