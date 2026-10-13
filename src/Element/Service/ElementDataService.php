@@ -63,7 +63,16 @@ final readonly class ElementDataService implements ElementDataServiceInterface
      * is all the core permission check (workspaces, workflow, permission event) works with. Elements whose model
      * cannot be built from the summary are loaded instead.
      *
-     * @param array{id: int, parentId: int|null, type: string, subtype: string, className: string|null, fullpath: string, filename: string, published: bool} $summary
+     * @param array{
+     *     id: int,
+     *     parentId: int|null,
+     *     type: string,
+     *     subtype: string,
+     *     className: string|null,
+     *     fullpath: string,
+     *     filename: string,
+     *     published: bool
+     * } $summary
      */
     public function getRelatedElementDataFromSummary(array $summary): RelatedElementData
     {

@@ -31,7 +31,10 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface, LightweightDetailDataInterface
+final readonly class ManyToManyObjectRelationAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    LightweightDetailDataInterface
 {
     public function __construct(
         private RelationDataServiceInterface $relationDataService,
@@ -66,8 +69,11 @@ final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterf
     /**
      * @return RelatedElementData[]|null
      */
-    public function getLightweightDetailData(Concrete $object, Data $fieldDefinition, string $key): ?array
-    {
+    public function getLightweightDetailData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key
+    ): ?array {
         return $this->relationDataService->getLightweightRelationData($object, $fieldDefinition, $key);
     }
 
