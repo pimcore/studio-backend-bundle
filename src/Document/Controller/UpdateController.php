@@ -74,6 +74,7 @@ final class UpdateController extends AbstractApiController
     #[ValidationFailedResponse]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
