@@ -24,10 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\LightweightRelationLoadingInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\OptimizedAdminLoadingInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ElementInterface;
+use function array_map;
 use function is_array;
 
 /**
@@ -57,6 +60,30 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         }
 
         return $data;
+    }
+
+    public function getLightweightRelationData(Concrete $element, Data $fieldDefinition, string $key): ?array
+    {
+        if (
+            !$fieldDefinition instanceof OptimizedAdminLoadingInterface ||
+            !$fieldDefinition->isOptimizedAdminLoading() ||
+            !$fieldDefinition instanceof LightweightRelationLoadingInterface
+        ) {
+            return null;
+        }
+
+        // the value is already in memory (e.g. a version, a draft or unsaved changes): keep using it
+        if ($element->isLazyKeyLoaded($key)) {
+            return null;
+        }
+
+        $summaries = $fieldDefinition->loadRelationSummaries($element);
+        // without own relations the value may be inherited, which only the regular getter resolves
+        if ($summaries === [] && $element->getClass()->getAllowInherit()) {
+            return null;
+        }
+
+        return array_map($this->elementDataService->getRelatedElementDataFromSummary(...), $summaries);
     }
 
     public function getAdvancedRelationElementData(ElementMetadata|ObjectMetadata $relation): array

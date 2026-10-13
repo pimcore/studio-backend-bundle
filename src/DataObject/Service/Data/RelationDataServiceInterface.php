@@ -34,6 +34,14 @@ interface RelationDataServiceInterface
      */
     public function getRelationElementsData(array $relations): array;
 
+    /**
+     * Returns the related elements of a relation field that opted in to optimized admin loading without loading
+     * them, or null when the regular loading has to be used (see the implementation for the conditions).
+     *
+     * @return RelatedElementData[]|null
+     */
+    public function getLightweightRelationData(Concrete $element, Data $fieldDefinition, string $key): ?array;
+
     public function getAdvancedRelationElementData(ElementMetadata|ObjectMetadata $relation): array;
 
     public function getSetterData(

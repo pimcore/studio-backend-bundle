@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
@@ -32,7 +33,7 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ManyToManyRelationAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class ManyToManyRelationAdapter implements SetterDataInterface, DataNormalizerInterface, LightweightDetailDataInterface
 {
     use ElementProviderTrait;
 
@@ -64,6 +65,14 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
         }
 
         return $this->getRelationElements($relationData);
+    }
+
+    /**
+     * @return RelatedElementData[]|null
+     */
+    public function getLightweightDetailData(Concrete $object, Data $fieldDefinition, string $key): ?array
+    {
+        return $this->relationDataService->getLightweightRelationData($object, $fieldDefinition, $key);
     }
 
     /**
