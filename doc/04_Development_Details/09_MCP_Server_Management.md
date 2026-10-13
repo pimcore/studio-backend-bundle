@@ -57,6 +57,9 @@ pimcore_studio_backend:
 ```
 
 When the target is read-only, the API reports `writeable: false` on every server and the UI renders read-only.
+`writeable` is also `false` for a single server stored somewhere other than the write target, for example one
+shipped in your YAML configuration while the write target is the settings store: an edit would land in the
+settings store and stay hidden behind the shipped definition, so the API refuses to update or delete it.
 For details on storage locations, see
 [Configuration Storage Locations](https://pimcore.com/docs/platform/Pimcore/Deployment/Configuration_Environments/#configuration-storage-locations--fallbacks).
 

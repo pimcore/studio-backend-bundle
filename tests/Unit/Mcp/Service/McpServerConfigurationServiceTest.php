@@ -396,7 +396,7 @@ final class McpServerConfigurationServiceTest extends Unit
                 return isset($this->servers[$id]);
             }
 
-            public function isWriteable(): bool
+            public function isWriteable(?string $id = null): bool
             {
                 return true;
             }

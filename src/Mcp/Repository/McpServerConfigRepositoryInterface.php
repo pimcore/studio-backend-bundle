@@ -37,9 +37,12 @@ interface McpServerConfigRepositoryInterface
 
     /**
      * Whether the configured storage target accepts writes (false e.g. for a
-     * symfony-config target outside debug mode).
+     * symfony-config target outside debug mode). With an id, whether that server
+     * can be written where it was loaded from: one loaded from a location other
+     * than the write target, such as a shipped symfony-config server next to a
+     * settings-store target, is read-only.
      */
-    public function isWriteable(): bool;
+    public function isWriteable(?string $id = null): bool;
 
     /**
      * @throws NotFoundException when no server with that id exists
@@ -47,13 +50,13 @@ interface McpServerConfigRepositoryInterface
     public function get(string $id): McpServerDefinition;
 
     /**
-     * @throws NotWriteableException when the configured storage target is read-only
+     * @throws NotWriteableException when the server cannot be written where it is stored
      */
     public function save(McpServerDefinition $server): void;
 
     /**
      * @throws NotFoundException     when no server with that id exists
-     * @throws NotWriteableException when the configured storage target is read-only
+     * @throws NotWriteableException when the server cannot be deleted where it is stored
      */
     public function delete(string $id): void;
 }

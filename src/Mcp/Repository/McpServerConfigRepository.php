@@ -63,10 +63,12 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
         return $this->getRepository()->loadConfigByKey($id)[0] !== null;
     }
 
-    public function isWriteable(): bool
+    public function isWriteable(?string $id = null): bool
     {
         try {
-            return $this->getRepository()->isWriteable();
+            $repository = $this->getRepository();
+
+            return $repository->isWriteable($id, $id === null ? null : $repository->loadConfigByKey($id)[1]);
         } catch (Exception) {
             return false;
         }
@@ -84,7 +86,9 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
 
     public function save(McpServerDefinition $server): void
     {
-        $this->assertWriteable();
+        // A new server has no data source yet, so this checks the write target alone.
+        [, $dataSource] = $this->getRepository()->loadConfigByKey($server->id);
+        $this->assertWriteable($server->id, $dataSource);
 
         try {
             $this->getRepository()->saveConfig(
@@ -105,13 +109,15 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
 
     public function delete(string $id): void
     {
-        if (!$this->has($id)) {
+        [$data, $dataSource] = $this->getRepository()->loadConfigByKey($id);
+        if ($data === null) {
             throw new NotFoundException('MCP server', $id);
         }
 
+        $this->assertWriteable($id, $dataSource);
+
         try {
-            $repository = $this->getRepository();
-            $repository->deleteData($id, $repository->getWriteTarget());
+            $this->getRepository()->deleteData($id, $dataSource);
         } catch (Exception $exception) {
             throw new NotWriteableException(
                 'mcp_server',
@@ -153,15 +159,20 @@ final class McpServerConfigRepository implements McpServerConfigRepositoryInterf
     }
 
     /**
+     * Whether the server can be written where it was loaded from, the check
+     * PimcoreLocationAwareConfigDao::isWriteable() makes: a server loaded from a location
+     * other than the write target is read-only, since a write would land in the write
+     * target and stay shadowed by the loaded entry.
+     *
      * @throws NotWriteableException
      */
-    private function assertWriteable(): void
+    private function assertWriteable(string $id, ?string $dataSource): void
     {
         try {
-            if (!$this->getRepository()->isWriteable()) {
+            if (!$this->getRepository()->isWriteable($id, $dataSource)) {
                 throw new NotWriteableException(
                     'mcp_server',
-                    'The MCP server configuration storage is not writeable.'
+                    sprintf('The MCP server "%s" is not writeable.', $id)
                 );
             }
         } catch (NotWriteableException $exception) {

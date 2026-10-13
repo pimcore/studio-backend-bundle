@@ -30,9 +30,10 @@ final class McpServerConfigRepositoryTest extends Unit
      * In-memory {@see LocationAwareConfigRepository} standing in for the real
      * settings-store/YAML backend, so the repository orchestration is unit-testable.
      *
-     * `$seed` is the location a configured read target reads; `$otherLocation` stands for the
-     * second one (e.g. symfony-config next to the settings store). Mirroring the real class, a
-     * read target restricts loading to `$seed`, while without one both locations are read.
+     * `$seed` is the location a configured read target reads, the settings store, which is also
+     * the write target; `$otherLocation` stands for the second one, symfony-config. Mirroring the
+     * real class, a read target restricts loading to `$seed`, while without one both locations
+     * are read, and a key loaded from a location other than the write target is not writeable.
      *
      * @param array<string, array<string, mixed>> $seed
      * @param list<string> $readTargets
@@ -64,11 +65,15 @@ final class McpServerConfigRepositoryTest extends Unit
 
             public function loadConfigByKey(string $key): array
             {
-                if ($this->readTargets !== []) {
-                    return [$this->data[$key] ?? null, 'settings-store'];
+                if (isset($this->data[$key])) {
+                    return [$this->data[$key], 'settings-store'];
                 }
 
-                return [$this->data[$key] ?? $this->otherLocation[$key] ?? null, 'settings-store'];
+                if ($this->readTargets === [] && isset($this->otherLocation[$key])) {
+                    return [$this->otherLocation[$key], 'symfony-config'];
+                }
+
+                return [null, null];
             }
 
             public function fetchAllKeys(): array
@@ -97,7 +102,10 @@ final class McpServerConfigRepositoryTest extends Unit
 
             public function deleteData(string $key, ?string $dataSource): void
             {
-                unset($this->data[$key]);
+                // Like the real class, removes from the location it is told to, not by key alone.
+                if ($dataSource === 'settings-store') {
+                    unset($this->data[$key]);
+                }
             }
 
             public function getWriteTarget(): string
@@ -107,7 +115,7 @@ final class McpServerConfigRepositoryTest extends Unit
 
             public function isWriteable(?string $key = null, ?string $dataSource = null): bool
             {
-                return $this->writeable;
+                return $this->writeable && ($dataSource === null || $dataSource === $this->getWriteTarget());
             }
         };
     }
@@ -266,5 +274,58 @@ final class McpServerConfigRepositoryTest extends Unit
         $this->expectException(NotFoundException::class);
 
         $this->repository($this->inMemoryStore())->delete('missing');
+    }
+
+    public function testIsWriteableWithoutAnIdReportsTheStorage(): void
+    {
+        $this->assertTrue($this->repository($this->inMemoryStore())->isWriteable());
+        $this->assertFalse($this->repository($this->inMemoryStore(writeable: false))->isWriteable());
+    }
+
+    public function testAServerInTheWriteTargetIsWriteable(): void
+    {
+        $repository = $this->repository($this->inMemoryStore(['runtime' => ['name' => 'Runtime']]));
+
+        $this->assertTrue($repository->isWriteable('runtime'));
+    }
+
+    /**
+     * A server shipped in symfony-config, while the write target is the settings store, cannot
+     * be changed through the API: an update would be written to the settings store and stay
+     * shadowed by the shipped entry. Same rule as PimcoreLocationAwareConfigDao::isWriteable().
+     */
+    public function testAServerFromAnotherLocationIsNotWriteable(): void
+    {
+        $repository = $this->repository($this->inMemoryStore(otherLocation: ['shipped' => ['name' => 'Shipped']]));
+
+        $this->assertFalse($repository->isWriteable('shipped'));
+    }
+
+    public function testSavingAServerFromAnotherLocationIsRefused(): void
+    {
+        $repository = $this->repository($this->inMemoryStore(otherLocation: ['shipped' => ['name' => 'Shipped']]));
+
+        try {
+            $repository->save(McpServerDefinition::fromArray('shipped', ['name' => 'Changed']));
+            $this->fail('Expected NotWriteableException.');
+        } catch (NotWriteableException) {
+            $this->assertSame('Shipped', $repository->get('shipped')->displayName, 'no shadow entry is written');
+        }
+    }
+
+    /**
+     * Deleting used to target the write target, so it reported success and left the shipped
+     * server in place.
+     */
+    public function testDeletingAServerFromAnotherLocationIsRefused(): void
+    {
+        $repository = $this->repository($this->inMemoryStore(otherLocation: ['shipped' => ['name' => 'Shipped']]));
+
+        try {
+            $repository->delete('shipped');
+            $this->fail('Expected NotWriteableException.');
+        } catch (NotWriteableException) {
+            $this->assertTrue($repository->has('shipped'));
+        }
     }
 }

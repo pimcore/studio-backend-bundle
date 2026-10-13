@@ -154,7 +154,7 @@ final readonly class McpServerConfigurationService implements McpServerConfigura
             $definition,
             $this->buildUrl($definition->urlSlug),
             McpScopes::forServer($definition, $this->toolRegistry),
-            $this->repository->isWriteable(),
+            $this->repository->isWriteable($definition->id),
             new McpServerUserPermissions($resolved['view'], $resolved['access'], $resolved['edit']),
         );
 
