@@ -21,10 +21,10 @@ is built from `oauth.issuer`, never from the request host, and the `401` challen
 points at the server's own metadata document.
 
 The resources are read from the server configuration when the authorization or resource server first needs them,
-so a server created or changed through the Studio API is covered without a cache clear. They are then kept for the
-life of the PHP process: under PHP-FPM that is one request, while a long-running worker (for example FrankenPHP
-worker mode or RoadRunner) only sees servers created after it started once it is restarted. Disabled servers are not
-advertised.
+so a server created or changed through the Studio API is covered without a cache clear. They are kept for one
+request: a long-running worker (for example FrankenPHP worker mode or RoadRunner) drops them through Symfony's
+services resetter between requests. Should a server's own resource still be missing, OAuth is refused at that server
+rather than accepted under the broader `/pimcore-mcp` audience. Disabled servers are not advertised.
 
 For installations that expect many AI clients, in particular hosted connectors, prefer Client ID Metadata Documents
 over Dynamic Client Registration; see

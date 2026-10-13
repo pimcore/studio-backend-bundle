@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Registry\McpToolRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ProtectedResourceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use function preg_match;
 
@@ -31,8 +32,9 @@ use function preg_match;
  * Read from the server configuration when the registry is first consulted, not at
  * container build: servers created or changed through the Studio API are then covered
  * too, not only those shipped in the `studio_mcp_servers` configuration. The registry
- * memoises what it read for the life of the process. Under PHP-FPM that is one request;
- * a long-running worker keeps the servers it saw first until it is restarted.
+ * memoises what it read for one request; a long-running worker resets it between requests
+ * (kernel.reset), and a server whose resource is missing anyway has OAuth refused rather
+ * than falling back to the base ({@see RequestResourceResolver}).
  *
  * The URI is built from the configured `oauth.issuer`, never from a request, for the
  * reason {@see ProtectedResourceProvider} gives. Without an issuer, or with OAuth off,

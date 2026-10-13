@@ -74,6 +74,25 @@ final class RequestResourceResolverTest extends Unit
         $this->assertSame(self::AGENT_GROUP, $resource->canonicalUri);
     }
 
+    /**
+     * Every server managed through Studio is its own resource, so a server path that only the
+     * broad `/pimcore-mcp` base covers is one whose resource is missing, e.g. a server created
+     * after a long-running worker read the registry. Falling back to the base would accept a
+     * token bound to the base at that server, so it resolves to nothing and OAuth is refused.
+     */
+    public function testAStudioServerWithoutItsOwnResourceResolvesToNothing(): void
+    {
+        $this->assertNull($this->resolve('/pimcore-mcp/studio/new-server', self::ISSUER . '/pimcore-mcp', self::STUDIO_SERVER));
+    }
+
+    public function testOutsideTheStudioServersTheBaseStillCovers(): void
+    {
+        $resource = $this->resolve('/pimcore-mcp/agent/content', self::ISSUER . '/pimcore-mcp');
+
+        $this->assertNotNull($resource);
+        $this->assertSame(self::ISSUER . '/pimcore-mcp', $resource->canonicalUri);
+    }
+
     public function testIssuerIsPreferredOverTheRequestHost(): void
     {
         // Behind a proxy the request host is not the issuer; comparing the two
@@ -118,14 +137,14 @@ final class RequestResourceResolverTest extends Unit
 
     /**
      * Decoded exactly once, like the router, which routes "%2570roduct-read" as the
-     * literal "%70roduct-read" and so never to the product-read server.
+     * literal "%70roduct-read" and so never to the product-read server. That is a studio
+     * server path no server registered, so it resolves to nothing rather than to the base.
      */
     public function testADoublyEncodedPathIsNotDecodedTwice(): void
     {
-        $resource = $this->resolve('/pimcore-mcp/studio/%2570roduct-read', self::ISSUER . '/pimcore-mcp', self::STUDIO_SERVER);
-
-        $this->assertNotNull($resource);
-        $this->assertSame(self::ISSUER . '/pimcore-mcp', $resource->canonicalUri);
+        $this->assertNull(
+            $this->resolve('/pimcore-mcp/studio/%2570roduct-read', self::ISSUER . '/pimcore-mcp', self::STUDIO_SERVER)
+        );
     }
 
     /**

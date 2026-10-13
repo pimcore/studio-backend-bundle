@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
@@ -68,6 +69,19 @@ final readonly class RequestResourceResolver implements RequestResourceResolverI
                 $match = $resource;
                 $matchLength = $length;
             }
+        }
+
+        // Every server managed through Studio registers its own resource. A server path that
+        // only something broader covers, the /pimcore-mcp base, is one whose resource is
+        // missing, e.g. a server created after a long-running worker read the registry.
+        // Falling back would accept a token bound to the base at that one server, so OAuth
+        // is refused there instead.
+        $studioLength = self::coveredPathLength(
+            CanonicalUri::canonicalize(rtrim($this->issuer, '/') . McpPath::STUDIO),
+            $target
+        );
+        if ($studioLength !== -1 && $matchLength <= $studioLength) {
+            return null;
         }
 
         return $match;
