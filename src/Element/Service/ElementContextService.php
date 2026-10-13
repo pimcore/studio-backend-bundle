@@ -29,22 +29,31 @@ final readonly class ElementContextService implements ElementContextServiceInter
     ) {
     }
 
-    public function runInStudioContext(callable $callback): void
+    public function runInStudioContext(callable $callback): mixed
     {
-        $hideUnpublishedObjects = $this->dataObjectResolver->doHideUnpublished();
-        $hideUnpublishedDocuments = $this->documentResolver->doHideUnpublished();
         $fallbackValues = $this->localizedFieldResolver->getGetFallbackValues();
-
-        $this->dataObjectResolver->setHideUnpublished(false);
-        $this->documentResolver->setHideUnpublished(false);
         $this->localizedFieldResolver->setGetFallbackValues(false);
 
         try {
-            $callback();
+            return $this->runWithUnpublishedElements($callback);
+        } finally {
+            $this->localizedFieldResolver->setGetFallbackValues($fallbackValues);
+        }
+    }
+
+    public function runWithUnpublishedElements(callable $callback): mixed
+    {
+        $hideUnpublishedObjects = $this->dataObjectResolver->doHideUnpublished();
+        $hideUnpublishedDocuments = $this->documentResolver->doHideUnpublished();
+
+        $this->dataObjectResolver->setHideUnpublished(false);
+        $this->documentResolver->setHideUnpublished(false);
+
+        try {
+            return $callback();
         } finally {
             $this->dataObjectResolver->setHideUnpublished($hideUnpublishedObjects);
             $this->documentResolver->setHideUnpublished($hideUnpublishedDocuments);
-            $this->localizedFieldResolver->setGetFallbackValues($fallbackValues);
         }
     }
 }

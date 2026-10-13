@@ -37,6 +37,12 @@ final class ElementContextServiceTest extends Unit
         'fallbackValues' => false,
     ];
 
+    private const array UNPUBLISHED_VISIBLE_CONTEXT = [
+        'hideUnpublishedObjects' => false,
+        'hideUnpublishedDocuments' => false,
+        'fallbackValues' => true,
+    ];
+
     /** @var array<string, bool> */
     private array $context = self::CLI_CONTEXT;
 
@@ -76,6 +82,42 @@ final class ElementContextServiceTest extends Unit
         });
 
         $this->assertSame(self::STUDIO_CONTEXT, $this->context);
+    }
+
+    public function testRunInStudioContextReturnsResultOfCallback(): void
+    {
+        $this->assertSame('result', $this->createService()->runInStudioContext(static fn () => 'result'));
+    }
+
+    public function testRunWithUnpublishedElementsKeepsFallbackValuesAndRestoresCliContext(): void
+    {
+        $contextInCallback = null;
+
+        $result = $this->createService()->runWithUnpublishedElements(function () use (&$contextInCallback): string {
+            $contextInCallback = $this->context;
+
+            return 'result';
+        });
+
+        $this->assertSame('result', $result);
+        $this->assertSame(self::UNPUBLISHED_VISIBLE_CONTEXT, $contextInCallback);
+        $this->assertSame(self::CLI_CONTEXT, $this->context);
+    }
+
+    public function testRunWithUnpublishedElementsRestoresContextWhenCallbackThrows(): void
+    {
+        $service = $this->createService();
+
+        try {
+            $service->runWithUnpublishedElements(static function (): void {
+                throw new RuntimeException('export failed');
+            });
+            $this->fail('The exception of the callback must not be swallowed');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('export failed', $exception->getMessage());
+        }
+
+        $this->assertSame(self::CLI_CONTEXT, $this->context);
     }
 
     private function createService(): ElementContextService

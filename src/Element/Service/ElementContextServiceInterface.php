@@ -26,9 +26,28 @@ interface ElementContextServiceInterface
      * field definition enrichment run (e.g. dynamic options providers). Without it, getters of classes that
      * implement PreGetValueHookInterface still return the hook's value instead of the stored one.
      *
+     * @template T
+     *
      * @param-immediately-invoked-callable $callback
      *
-     * @param callable(): void $callback
+     * @param callable(): T $callback
+     *
+     * @return T
      */
-    public function runInStudioContext(callable $callback): void;
+    public function runInStudioContext(callable $callback): mixed;
+
+    /**
+     * Runs $callback with unpublished objects and documents visible, as in Studio API requests, and restores the
+     * previous values afterwards, also when $callback throws. Localized fallback values stay as they are, e.g. for
+     * exports, which use the configured fallback languages.
+     *
+     * @template T
+     *
+     * @param-immediately-invoked-callable $callback
+     *
+     * @param callable(): T $callback
+     *
+     * @return T
+     */
+    public function runWithUnpublishedElements(callable $callback): mixed;
 }
