@@ -36,13 +36,21 @@ trait HandlerProgressTrait
 
     private const string TOTAL_STEPS = 'totalSteps';
 
+    /**
+     * @param bool $persist Whether the processed elements counter is written to the database on every call.
+     *                      Handlers that process many elements inside one message must pass false: the job run
+     *                      context can hold all data collected so far, so persisting it per element rewrites it
+     *                      over and over. The counter is then kept in memory and written with the next regular
+     *                      job run update of the handler or the execution engine.
+     */
     private function updateProgress(
         PublishServiceInterface $publishService,
         UserTopicServiceInterface $userTopicService,
         JobRun $jobRun,
         string $jobStepName,
         int $stepElements = 1,
-        int $frequency = self::FREQUENCY
+        int $frequency = self::FREQUENCY,
+        bool $persist = true
     ): void {
         $currentStep = $this->getCurrentStep($jobRun);
         $totalSteps = $this->getTotalSteps($jobRun);
@@ -54,7 +62,8 @@ trait HandlerProgressTrait
             $jobRun,
             [
                 self::PROCESSED_ELEMENTS => $processedElements,
-            ]
+            ],
+            $persist
         );
         $updateFrequency = max(1, (int)($totalEvents / $frequency));
 
