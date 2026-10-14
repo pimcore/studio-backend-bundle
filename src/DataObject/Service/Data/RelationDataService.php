@@ -32,6 +32,7 @@ use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ElementInterface;
 use function array_map;
 use function is_array;
+use function method_exists;
 
 /**
  * @internal
@@ -118,14 +119,24 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         $currentValues = $adapter->normalize(
             $this->getValidFieldValue($element, $fieldDefinition->getName(), $contextData),
             $fieldDefinition
-        );
+        ) ?? [];
         $existingValues = $this->getRelationExistingData($currentValues, $isAdvanced);
 
         return $this->patchService->handlePatchDataField(
             $fieldData,
             $existingValues,
-            $isAdvanced ? ElementTypes::TYPE_ELEMENT : null
+            $isAdvanced ? ElementTypes::TYPE_ELEMENT : null,
+            $this->allowsMultipleAssignments($fieldDefinition)
         );
+    }
+
+    /**
+     * Same check as AbstractRelations::performMultipleAssignmentCheck(), which rejects repeated relations on save.
+     */
+    private function allowsMultipleAssignments(Data $fieldDefinition): bool
+    {
+        return method_exists($fieldDefinition, 'getAllowMultipleAssignments')
+            && $fieldDefinition->getAllowMultipleAssignments();
     }
 
     private function isPatchAction(?string $action = null): bool
@@ -135,12 +146,13 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     private function getRelationExistingData(array $existingValues, bool $isAdvanced): array
     {
-        $existingData =[];
+        $existingData = [];
         if ($isAdvanced) {
-            foreach ($existingValues as $index => $existingRelation) {
-                $existingValues[$index][ElementTypes::TYPE_ELEMENT] = $this->getExistingElementData(
+            foreach ($existingValues as $existingRelation) {
+                $existingRelation[ElementTypes::TYPE_ELEMENT] = $this->getExistingElementData(
                     $existingRelation[ElementTypes::TYPE_ELEMENT]
                 );
+                $existingData[] = $existingRelation;
             }
 
             return $existingData;
