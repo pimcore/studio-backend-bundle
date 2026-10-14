@@ -2,6 +2,12 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.3.3
+- [Grid] Fixed: block fields were silently dropped from the data object grid column configuration because no grid
+  column definition existed for them. Block fields with `visibleGridView` enabled are now offered as grid columns and
+  render through the existing block cell. Like field collections they are not sortable, filterable or exportable.
+  A field type without a grid column definition is now logged at `warning` level instead of `info`.
+
 ## Upgrade to 2026.3.2
 - [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
   permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.2 or later, which limits the
