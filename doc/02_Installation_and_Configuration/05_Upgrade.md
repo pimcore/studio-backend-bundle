@@ -2,6 +2,11 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.3.3
+- [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
+  and email documents per document type (for documents created without a predefined document type). Types without an
+  entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
+
 ## Upgrade to 2026.3.2
 - [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
   permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.2 or later, which limits the
