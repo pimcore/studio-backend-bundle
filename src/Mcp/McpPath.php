@@ -26,9 +26,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp;
 final class McpPath
 {
     /**
-     * The MCP base, no trailing slash. This is the OAuth protected-resource URI when
-     * joined to the issuer: every `/pimcore-mcp/...` request is validated against this
-     * one audience rather than against the sub-path that was called.
+     * The MCP base, no trailing slash. Joined to the issuer it is the bundle's base OAuth
+     * protected resource, which covers every `/pimcore-mcp/...` endpoint that registers
+     * nothing more specific. A request is validated against the most specific registered
+     * resource covering it (RequestResourceResolverInterface), so a managed MCP server
+     * under {@see self::STUDIO} is held to its own audience, not to this one.
      */
     public const string BASE = '/pimcore-mcp';
 
@@ -41,4 +43,17 @@ final class McpPath
      * Anchored form of {@see self::PREFIX}, for the Symfony firewall map.
      */
     public const string FIREWALL_PATTERN = '^' . self::PREFIX;
+
+    /**
+     * Where the MCP servers managed through Studio are served, one per slug:
+     * `/pimcore-mcp/studio/{slug}`. Each is its own protected resource.
+     */
+    public const string STUDIO = self::BASE . '/studio';
+
+    /**
+     * The slugs the `pimcore_studio_mcp_server` route accepts. Kept in step with the
+     * `requirements` in config/pimcore/routing.yaml, which cannot reference a constant: a
+     * server whose slug does not match is unreachable, so it is not advertised either.
+     */
+    public const string STUDIO_SLUG_PATTERN = '/^[a-z0-9-]+$/';
 }
