@@ -245,8 +245,9 @@ narrowed to them before consent is shown, and they are how a scope comes to exis
 catalogue is the union of what every resource supports.
 
 Providers are read lazily and only once. Symfony's tagged iterator does not instantiate anything until the
-registry is first read, and the registry memoises what it resolved, so a request touching neither OAuth nor
-your endpoints pays nothing. You therefore describe every resource you own unconditionally: there is no
+registry is first read, and the registry memoises what it resolved for the rest of the request (it is reset
+between requests, so a provider may read configuration that changes at runtime), so a request touching neither
+OAuth nor your endpoints pays nothing. You therefore describe every resource you own unconditionally: there is no
 "current request" to filter by, which is the point. A metadata document is fetched on a `.well-known` path
 that matches none of your routes, and a requested `resource` is validated on an OAuth route, so filtering
 would have left both unresolvable anyway.

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Permission\Definition;
 use Pimcore\Model\User\Role;
@@ -93,6 +94,63 @@ final class UpdateServiceTest extends Unit
         $this->assertSame([0], array_keys($user->getPermissions()));
     }
 
+    public function testKnownClassesAreStored(): void
+    {
+        $user = $this->createUser([]);
+        $user->setClasses(['CAR']);
+        $service = $this->createClassService('CAR', 'NEWS');
+
+        $service->updateClasses(['CAR', 'NEWS'], $user);
+
+        $this->assertSame(['CAR', 'NEWS'], $user->getClasses());
+    }
+
+    public function testUnknownClassIsReportedAsNotFound(): void
+    {
+        $user = $this->createUser([]);
+        $user->setClasses(['CAR']);
+        $service = $this->createClassService('CAR', 'NEWS');
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('Class with ID: made_up not found');
+        $service->updateClasses(['CAR', 'made_up'], $user);
+    }
+
+    public function testDeletedClassOfTheUserIsDroppedInsteadOfRejected(): void
+    {
+        // The class "DELETED" was removed after it got assigned to the user, so its ID is still stored on the
+        // user and sent back on the next save.
+        $user = $this->createUser([]);
+        $user->setClasses(['CAR', 'DELETED']);
+        $service = $this->createClassService('CAR', 'NEWS');
+
+        $service->updateClasses(['CAR', 'DELETED'], $user);
+
+        $this->assertSame(['CAR'], $user->getClasses());
+    }
+
+    public function testDeletedClassOfARoleIsDroppedInsteadOfRejected(): void
+    {
+        $role = new Role();
+        $role->setClasses(['CAR', 'DELETED']);
+        $service = $this->createClassService('CAR', 'NEWS');
+
+        $service->updateClasses(['DELETED', 'CAR'], $role);
+
+        $this->assertSame(['CAR'], $role->getClasses());
+    }
+
+    public function testDeletedClassOfAnotherUserIsStillReportedAsNotFound(): void
+    {
+        $user = $this->createUser([]);
+        $user->setClasses(['CAR']);
+        $service = $this->createClassService('CAR', 'NEWS');
+
+        $this->expectException(NotFoundException::class);
+        $this->expectExceptionMessage('Class with ID: DELETED not found');
+        $service->updateClasses(['CAR', 'DELETED'], $user);
+    }
+
     private function createUser(array $permissions): User
     {
         $user = new User();
@@ -115,6 +173,24 @@ final class UpdateServiceTest extends Unit
             ]),
             $this->makeEmpty(RoleRepositoryInterface::class),
             $this->makeEmpty(ClassDefinitionRepositoryInterface::class),
+            $this->makeEmpty(ServiceResolverInterface::class),
+            $this->makeEmpty(UserPerspectiveServiceInterface::class),
+        );
+    }
+
+    private function createClassService(string ...$classIds): UpdateService
+    {
+        $classDefinitions = array_map(
+            static fn (string $id) => (new ClassDefinition())->setId($id),
+            $classIds
+        );
+
+        return new UpdateService(
+            $this->makeEmpty(PermissionRepositoryInterface::class),
+            $this->makeEmpty(RoleRepositoryInterface::class),
+            $this->makeEmpty(ClassDefinitionRepositoryInterface::class, [
+                'getClassDefinitions' => $classDefinitions,
+            ]),
             $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
         );
