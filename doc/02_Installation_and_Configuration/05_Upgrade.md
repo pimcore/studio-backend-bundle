@@ -2,6 +2,11 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.3.3
+- [OpenAPI] Fixed: `zircote/swagger-php` 5.0.0 and 5.0.1 broke requests, because Symfony instantiates the `#[OA\...]`
+  attributes of controllers. The minimum version is now `^5.0.2`. Run `composer update zircote/swagger-php` if you
+  have one of these versions installed.
+
 ## Upgrade to 2026.3.2
 - [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
   permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.2 or later, which limits the
