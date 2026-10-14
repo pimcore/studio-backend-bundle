@@ -25,6 +25,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInter
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
@@ -46,7 +47,7 @@ final class CsvCollectionHandlerTest extends Unit
 
     private const USER_ID = 3;
 
-    public function testExportCollectsTheCompleteReportInsteadOfOnePage(): void
+    public function testExportWithoutExplicitPaginationCollectsTheCompleteReport(): void
     {
         $jobRun = $this->createJobRun();
         $reportConfig = new Config();
@@ -55,12 +56,15 @@ final class CsvCollectionHandlerTest extends Unit
         $adapterService = $this->createMock(AdapterServiceInterface::class);
         $adapterService
             ->expects($this->once())
-            ->method('getAllData')
-            ->with($reportConfig, $this->isInstanceOf(ExportParameter::class))
+            ->method('getData')
+            ->with(
+                $reportConfig,
+                $this->callback(
+                    static fn (ChartDataParameter $parameter): bool => $parameter instanceof ExportParameter
+                        && !$parameter->isPaginated()
+                )
+            )
             ->willReturn(['data' => [['id' => 1, 'name' => 'first'], ['id' => 2, 'name' => 'second']], 'total' => 2]);
-        $adapterService
-            ->expects($this->never())
-            ->method('getData');
 
         $configService = $this->makeEmpty(CustomReportConfigServiceInterface::class, [
             'getAllowedReportForUser' => $reportConfig,

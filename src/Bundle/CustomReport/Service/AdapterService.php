@@ -19,6 +19,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryIn
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -38,29 +39,8 @@ final readonly class AdapterService implements AdapterServiceInterface
 
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
-        return $this->fetchData(
-            $report,
-            $chartDataParameter,
-            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
-            $chartDataParameter->getPageSize()
-        );
-    }
-
-    public function getAllData(Config $report, ChartDataParameter $chartDataParameter): array
-    {
-        return $this->fetchData($report, $chartDataParameter, null, null);
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function fetchData(
-        Config $report,
-        ChartDataParameter $chartDataParameter,
-        ?int $offset,
-        ?int $limit
-    ): array {
         [$sortBy, $sortOrder] = $this->resolveSort($report, $chartDataParameter);
+        [$offset, $limit] = $this->resolvePagination($chartDataParameter);
 
         return $this->getAdapter($report)->getData(
             $chartDataParameter->getFilters()->getColumnFilters(),
@@ -71,6 +51,24 @@ final readonly class AdapterService implements AdapterServiceInterface
             $chartDataParameter->getFields(),
             $chartDataParameter->getFilters()->getDrillDownFilters()
         );
+    }
+
+    /**
+     * An export contains all rows of the report unless a page was explicitly requested,
+     * so no offset/limit is applied by default.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private function resolvePagination(ChartDataParameter $chartDataParameter): array
+    {
+        if ($chartDataParameter instanceof ExportParameter && !$chartDataParameter->isPaginated()) {
+            return [null, null];
+        }
+
+        return [
+            ($chartDataParameter->getPage() - 1) * $chartDataParameter->getPageSize(),
+            $chartDataParameter->getPageSize(),
+        ];
     }
 
     /**

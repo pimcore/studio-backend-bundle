@@ -2,6 +2,15 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2026.3.3
+- [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
+  and email documents per document type (for documents created without a predefined document type). Types without an
+  entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
+- [Grid] Fixed: block fields were silently dropped from the data object grid column configuration because no grid
+  column definition existed for them. Block fields with `visibleGridView` enabled are now offered as grid columns and
+  render through the existing block cell. Like field collections they are not sortable, filterable or exportable.
+  A field type without a grid column definition is now logged at `warning` level instead of `info`.
+
 ## Upgrade to 2026.3.2
 - [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
   permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.2 or later, which limits the
@@ -25,6 +34,10 @@ The following steps are necessary during updating to newer versions.
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
   an empty string instead of `"null"`.
+- [Elements] Fixed: asynchronous batch edits, replacing usages and updating references after a copy removed
+  unpublished related elements from the saved relations. Grid exports left them out. All of them now keep unpublished
+  related elements, as the grid and the element editors do. Batch edits, replacing usages and updating references
+  also no longer save localized fallback values into empty languages.
 
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:

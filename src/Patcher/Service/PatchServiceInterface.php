@@ -55,5 +55,16 @@ interface PatchServiceInterface
         UserInterface $user
     ): void;
 
-    public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array;
+    /**
+     * Merges an add/remove patch ({action, data}) into the existing entries; any other or no action returns the patch
+     * data and a plain list is returned unchanged. Entries are matched by element id and type, and "add"
+     * never appends an element that is already in the existing entries. With $allowRepeatedEntries false, an element
+     * is also kept only once among the existing entries and appended only once from the patch data.
+     */
+    public function handlePatchDataField(
+        array $fieldData,
+        array $existingValues,
+        ?string $dataKey = null,
+        bool $allowRepeatedEntries = true
+    ): array;
 }

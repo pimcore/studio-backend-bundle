@@ -22,11 +22,15 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function array_diff;
+use function array_keys;
+use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -50,6 +54,10 @@ class Configuration implements ConfigurationInterface
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
+
+    private const string DOCUMENT_DEFAULT_CONTROLLERS_TYPE_ERROR =
+        'pimcore_studio_backend.documents.default_controllers only accepts the document types that are rendered '
+        . 'by a controller (%s); got %%s.';
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
@@ -108,6 +116,7 @@ class Configuration implements ConfigurationInterface
         $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
+        $this->addDocumentsNode($rootNode);
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
@@ -1059,6 +1068,38 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('studio_from_default_email')
                     ->defaultValue('studio-admin@pimcore.com')
                     ->cannotBeEmpty()
+                ->end()
+            ->end();
+    }
+
+    private function addDocumentsNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('documents')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('default_controllers')
+                        ->info(
+                            'Controller for new page, snippet and email documents created without a predefined '
+                            . 'document type, keyed by document type. A type without an entry uses '
+                            . 'pimcore.documents.default_controller.'
+                        )
+                        ->example(['email' => 'App\\Controller\\MailController::defaultAction'])
+                        ->useAttributeAsKey('type')
+                        ->stringPrototype()
+                            ->cannotBeEmpty()
+                        ->end()
+                        ->validate()
+                            ->ifTrue(static fn (array $controllers): bool => array_diff(
+                                array_keys($controllers),
+                                DocumentTypes::pageSnippetValues()
+                            ) !== [])
+                            ->thenInvalid(sprintf(
+                                self::DOCUMENT_DEFAULT_CONTROLLERS_TYPE_ERROR,
+                                implode(', ', DocumentTypes::pageSnippetValues())
+                            ))
+                        ->end()
+                    ->end()
                 ->end()
             ->end();
     }

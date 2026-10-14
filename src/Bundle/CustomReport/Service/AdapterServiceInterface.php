@@ -32,14 +32,6 @@ interface AdapterServiceInterface
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array;
 
     /**
-     * Returns the complete result set of the report, ignoring the pagination of the given parameter
-     * (used for exports).
-     *
-     * @throws NotFoundException
-     */
-    public function getAllData(Config $report, ChartDataParameter $chartDataParameter): array;
-
-    /**
      * @throws NotFoundException
      */
     public function getAdapter(Config $report): CustomReportAdapterInterface;
