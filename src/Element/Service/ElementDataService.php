@@ -65,7 +65,7 @@ final readonly class ElementDataService implements ElementDataServiceInterface
      *
      * @param array{
      *     id: int,
-     *     parentId: int|null,
+     *     parentId: int,
      *     type: string,
      *     subtype: string,
      *     className: string|null,

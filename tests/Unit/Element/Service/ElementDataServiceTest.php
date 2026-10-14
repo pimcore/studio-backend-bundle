@@ -213,7 +213,7 @@ final class ElementDataServiceTest extends Unit
     /**
      * @param array<string, mixed> $overrides
      *
-     * @return array{id: int, parentId: int|null, type: string, subtype: string, className: string|null, fullpath: string, filename: string, published: bool}
+     * @return array{id: int, parentId: int, type: string, subtype: string, className: string|null, fullpath: string, filename: string, published: bool}
      */
     private function makeSummary(array $overrides = []): array
     {
