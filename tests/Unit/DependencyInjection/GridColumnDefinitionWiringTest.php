@@ -25,6 +25,7 @@ use function array_keys;
 use function basename;
 use function dirname;
 use function glob;
+use function sprintf;
 
 /**
  * Regression test for pimcore/platform-version#475: a column definition class that is not
