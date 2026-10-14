@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'Two-factor login step',
     description: 'Answer to a correct password when a two-factor code is needed; no user data',
-    required: ['twoFactorRequired', 'twoFactorStep'],
+    required: ['twoFactorRequired', 'twoFactorStep', 'digits'],
     type: 'object'
 )]
 final readonly class TwoFactorLoginStep
@@ -32,6 +32,8 @@ final readonly class TwoFactorLoginStep
         private bool $twoFactorRequired,
         #[Property(description: 'What to do next', type: 'string', enum: ['verify', 'setup'], example: 'verify')]
         private string $twoFactorStep,
+        #[Property(description: 'Number of digits in a code', type: 'integer', example: 6)]
+        private int $digits,
     ) {
     }
 
@@ -43,5 +45,10 @@ final readonly class TwoFactorLoginStep
     public function getTwoFactorStep(): string
     {
         return $this->twoFactorStep;
+    }
+
+    public function getDigits(): int
+    {
+        return $this->digits;
     }
 }

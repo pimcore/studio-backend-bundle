@@ -28,12 +28,18 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
  */
 final readonly class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
+    public function __construct(
+        private int $digits,
+    ) {
+    }
+
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): Response
     {
         if ($token instanceof TwoFactorTokenInterface) {
             return new JsonResponse([
                 'twoFactorRequired' => true,
                 'twoFactorStep' => TwoFactorStep::fromToken($token)->value,
+                'digits' => $this->digits,
             ]);
         }
 

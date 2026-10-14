@@ -78,8 +78,22 @@ final class TwoFactorServiceTest extends Unit
         $this->assertStringContainsString('issuer=Acme%20PIM', $setup->getOtpauthUri());
         $this->assertStringContainsString('john%40pim.acme.test', $setup->getOtpauthUri());
         $this->assertStringContainsString('secret=' . $setup->getSecret(), $setup->getOtpauthUri());
+        $this->assertSame(6, $setup->getDigits());
         $this->assertFalse($user->getTwoFactorAuthentication('enabled'));
         $this->assertSame('', $user->getTwoFactorAuthentication('secret'));
+    }
+
+    /**
+     * The UI sizes its code input from this; it must match the codes the app will show.
+     */
+    public function testSetupNamesTheConfiguredDigitsAlsoInTheUri(): void
+    {
+        $user = $this->user();
+
+        $setup = $this->service($this->repository($user, saves: 0), digits: 8)->createSetup($user);
+
+        $this->assertSame(8, $setup->getDigits());
+        $this->assertStringContainsString('digits=8', $setup->getOtpauthUri());
     }
 
     public function testSetupResponseCanBeExtended(): void
@@ -427,10 +441,13 @@ final class TwoFactorServiceTest extends Unit
         );
     }
 
-    private function service(UserRepositoryInterface $repository, ?User $currentUser = null): TwoFactorService
-    {
+    private function service(
+        UserRepositoryInterface $repository,
+        ?User $currentUser = null,
+        int $digits = 6
+    ): TwoFactorService {
         $authenticator = new GoogleAuthenticator(
-            new GoogleTotpFactory('pim.acme.test', 'Acme PIM', 6, $this->clock),
+            new GoogleTotpFactory('pim.acme.test', 'Acme PIM', $digits, $this->clock),
             new EventDispatcher(),
             0
         );
@@ -443,7 +460,8 @@ final class TwoFactorServiceTest extends Unit
             $this->tokenStorage,
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $currentUser ?? static fn () => throw new UserNotFoundException(),
-            ])
+            ]),
+            $digits
         );
     }
 

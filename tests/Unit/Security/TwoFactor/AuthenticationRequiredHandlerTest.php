@@ -32,7 +32,7 @@ final class AuthenticationRequiredHandlerTest extends Unit
     {
         $token = $this->makeEmpty(TwoFactorTokenInterface::class, ['getUserIdentifier' => 'john']);
 
-        $response = (new AuthenticationRequiredHandler())->onAuthenticationRequired(
+        $response = (new AuthenticationRequiredHandler(6))->onAuthenticationRequired(
             Request::create('/pimcore-studio/api/user/current-user-information'),
             $token
         );
@@ -44,6 +44,7 @@ final class AuthenticationRequiredHandlerTest extends Unit
                 'message' => 'Two-factor authentication is required.',
                 'twoFactorRequired' => true,
                 'twoFactorStep' => 'verify',
+                'digits' => 6,
             ],
             json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)
         );
@@ -58,7 +59,7 @@ final class AuthenticationRequiredHandlerTest extends Unit
             'getCurrentTwoFactorProvider' => SetupProvider::ALIAS,
         ]);
 
-        $response = (new AuthenticationRequiredHandler())->onAuthenticationRequired(
+        $response = (new AuthenticationRequiredHandler(6))->onAuthenticationRequired(
             Request::create('/pimcore-studio/api/user/current-user-information'),
             $token
         );
@@ -69,8 +70,27 @@ final class AuthenticationRequiredHandlerTest extends Unit
                 'message' => 'Two-factor authentication is required.',
                 'twoFactorRequired' => true,
                 'twoFactorStep' => 'setup',
+                'digits' => 6,
             ],
             json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)
+        );
+    }
+
+    /**
+     * The UI sizes its code input from the configured number of digits, also after an SSO redirect.
+     */
+    public function testPendingCodeNamesTheConfiguredDigits(): void
+    {
+        $token = $this->makeEmpty(TwoFactorTokenInterface::class);
+
+        $response = (new AuthenticationRequiredHandler(8))->onAuthenticationRequired(
+            Request::create('/pimcore-studio/api/user/current-user-information'),
+            $token
+        );
+
+        $this->assertSame(
+            8,
+            json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)['digits']
         );
     }
 
@@ -81,7 +101,7 @@ final class AuthenticationRequiredHandlerTest extends Unit
     {
         $token = new UsernamePasswordToken(new InMemoryUser('john', null), 'pimcore_studio');
 
-        $response = (new AuthenticationRequiredHandler())->onAuthenticationRequired(
+        $response = (new AuthenticationRequiredHandler(6))->onAuthenticationRequired(
             Request::create('/pimcore-studio/api/user/current-user-information'),
             $token
         );

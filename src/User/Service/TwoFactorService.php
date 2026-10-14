@@ -47,6 +47,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private TokenStorageInterface $tokenStorage,
         private SecurityServiceInterface $securityService,
+        private int $digits,
     ) {
     }
 
@@ -59,7 +60,8 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
 
         $setup = new TwoFactorSetup(
             $secret,
-            $this->googleAuthenticator->getQRContent(new PendingSecret($user->getName(), $secret))
+            $this->googleAuthenticator->getQRContent(new PendingSecret($user->getName(), $secret)),
+            $this->digits
         );
         $this->eventDispatcher->dispatch(new TwoFactorSetupEvent($setup), TwoFactorSetupEvent::EVENT_NAME);
 

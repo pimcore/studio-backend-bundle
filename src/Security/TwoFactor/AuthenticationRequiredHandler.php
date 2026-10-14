@@ -27,6 +27,11 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
  */
 final readonly class AuthenticationRequiredHandler implements AuthenticationRequiredHandlerInterface
 {
+    public function __construct(
+        private int $digits,
+    ) {
+    }
+
     public function onAuthenticationRequired(Request $request, TokenInterface $token): Response
     {
         $data = ['message' => 'Two-factor authentication is required.'];
@@ -36,6 +41,7 @@ final readonly class AuthenticationRequiredHandler implements AuthenticationRequ
         if ($token instanceof TwoFactorTokenInterface) {
             $data['twoFactorRequired'] = true;
             $data['twoFactorStep'] = TwoFactorStep::fromToken($token)->value;
+            $data['digits'] = $this->digits;
         }
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);

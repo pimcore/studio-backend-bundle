@@ -777,7 +777,7 @@ login_description: |
 login_success_response: |
   Login successful, with an empty body.
   When the user needs a two-factor code, the password was correct but the login is not finished:
-  the body says so and names the next step: `verify` (send the code to `/login/2fa`), or `setup` when the user
+  the body says so, names the next step and the number of digits in a code: `verify` (send the code to `/login/2fa`), or `setup` when the user
   must use two-factor authentication but has not set it up (create a secret with `/user/two-factor/setup`,
   then send the first code from it to `/login/2fa`).
   Until then, other endpoints answer 401. To go back, log out.
@@ -1367,7 +1367,7 @@ user_two_factor_setup_description: |
   The secret is not active yet: it waits in the session until a first code confirms it, so during a
   renewal the current secret keeps working. Show `otpauthUri` as a QR code and `secret` for manual entry.
   It is also the only endpoint open during a login in the `setup` step; the first code then goes to `/login/2fa`.
-user_two_factor_setup_success_response: The new secret and its otpauth URI.
+user_two_factor_setup_success_response: The new secret, its otpauth URI and the number of digits in a code.
 user_two_factor_setup_summary: Set up or renew two-factor authentication
 user_update_active_perspective_summary: Update the active perspective for the current user.
 user_update_active_perspective_success_response: Updated active perspective for the current user.

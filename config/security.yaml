@@ -56,9 +56,13 @@ services:
   # Referenced by service id from the scheb_two_factor config and the firewall's two_factor block.
   Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\UserCondition: ~
 
-  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\AuthenticationRequiredHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\AuthenticationRequiredHandler:
+    arguments:
+      $digits: '%scheb_two_factor.google.digits%'
 
-  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler:
+    arguments:
+      $digits: '%scheb_two_factor.google.digits%'
 
   Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeFailureHandler: ~
 

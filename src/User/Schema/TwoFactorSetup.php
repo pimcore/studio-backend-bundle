@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'Two-factor setup',
     description: 'New secret for the authenticator app, not active until a first code confirms it',
-    required: ['secret', 'otpauthUri'],
+    required: ['secret', 'otpauthUri', 'digits'],
     type: 'object'
 )]
 final class TwoFactorSetup implements AdditionalAttributesInterface
@@ -40,6 +40,8 @@ final class TwoFactorSetup implements AdditionalAttributesInterface
             example: 'otpauth://totp/john%40pim.example.com?issuer=Pimcore&secret=JBSWY3DPEHPK3PXP'
         )]
         private readonly string $otpauthUri,
+        #[Property(description: 'Number of digits in a code', type: 'integer', example: 6)]
+        private readonly int $digits,
     ) {
     }
 
@@ -51,5 +53,10 @@ final class TwoFactorSetup implements AdditionalAttributesInterface
     public function getOtpauthUri(): string
     {
         return $this->otpauthUri;
+    }
+
+    public function getDigits(): int
+    {
+        return $this->digits;
     }
 }

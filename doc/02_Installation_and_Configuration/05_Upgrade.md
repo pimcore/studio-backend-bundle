@@ -37,12 +37,12 @@ The following steps are necessary during updating to newer versions.
     `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.
 
 > **Note:** `POST /login` changes for users with two-factor authentication required or enabled: it answers `200` with
-> `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup"}` instead of an empty body, and the user is not logged
+> `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup", "digits": 6}` instead of an empty body, and the user is not logged
 > in until the code is sent to `POST /login/2fa`. Clients that treat any `200` from `POST /login` as logged in break
 > for these users only; users without two-factor authentication get the same empty `200` as before. Users who have
 > `required` set but no authenticator app yet can no longer use Studio with the password alone: they set it up during
 > the login. The login token (`POST /login/token`) still skips the code. While a code is pending, other endpoints
-> answer `401` with the same `twoFactorRequired` and `twoFactorStep`, e.g. for a client returning from an OpenID
+> answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
 
 ## Upgrade to 2026.3.2

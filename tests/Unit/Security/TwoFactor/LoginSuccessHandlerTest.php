@@ -31,11 +31,11 @@ final class LoginSuccessHandlerTest extends Unit
     {
         $token = $this->makeEmpty(TwoFactorTokenInterface::class, ['getUserIdentifier' => 'john']);
 
-        $response = (new LoginSuccessHandler())->onAuthenticationSuccess(Request::create('/login'), $token);
+        $response = (new LoginSuccessHandler(6))->onAuthenticationSuccess(Request::create('/login'), $token);
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame(
-            ['twoFactorRequired' => true, 'twoFactorStep' => 'verify'],
+            ['twoFactorRequired' => true, 'twoFactorStep' => 'verify', 'digits' => 6],
             json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)
         );
     }
@@ -49,11 +49,26 @@ final class LoginSuccessHandlerTest extends Unit
             'getCurrentTwoFactorProvider' => SetupProvider::ALIAS,
         ]);
 
-        $response = (new LoginSuccessHandler())->onAuthenticationSuccess(Request::create('/login'), $token);
+        $response = (new LoginSuccessHandler(6))->onAuthenticationSuccess(Request::create('/login'), $token);
 
         $this->assertSame(
-            ['twoFactorRequired' => true, 'twoFactorStep' => 'setup'],
+            ['twoFactorRequired' => true, 'twoFactorStep' => 'setup', 'digits' => 6],
             json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)
+        );
+    }
+
+    /**
+     * The UI sizes its code input from the configured number of digits.
+     */
+    public function testStepNamesTheConfiguredDigits(): void
+    {
+        $token = $this->makeEmpty(TwoFactorTokenInterface::class);
+
+        $response = (new LoginSuccessHandler(8))->onAuthenticationSuccess(Request::create('/login'), $token);
+
+        $this->assertSame(
+            8,
+            json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR)['digits']
         );
     }
 
@@ -64,7 +79,7 @@ final class LoginSuccessHandlerTest extends Unit
     {
         $token = new UsernamePasswordToken(new InMemoryUser('john', null), 'pimcore_studio');
 
-        $response = (new LoginSuccessHandler())->onAuthenticationSuccess(Request::create('/login'), $token);
+        $response = (new LoginSuccessHandler(6))->onAuthenticationSuccess(Request::create('/login'), $token);
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $this->assertSame('', $response->getContent());

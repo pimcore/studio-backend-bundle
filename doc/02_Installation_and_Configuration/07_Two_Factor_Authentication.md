@@ -47,20 +47,24 @@ The limiter is `studio_two_factor_code`; adjust it under `framework.rate_limiter
 
 1. `POST /login` with user name and password. Without two-factor authentication the answer is an empty `200` and the
    user is logged in, as before. Otherwise the answer is `200` with
-   `{"twoFactorRequired": true, "twoFactorStep": "verify"}` or `"setup"`, and no user data. The login is not finished:
-   until it is, every endpoint that needs a login answers `401`, except the setup endpoint in step `setup`.
+   `{"twoFactorRequired": true, "twoFactorStep": "verify", "digits": 6}` (or step `"setup"`), and no user data. The
+   login is not finished: until it is, every endpoint that needs a login answers `401`, except the setup endpoint in
+   step `setup`. `digits` is the number of digits in a code (`scheb_two_factor.google.digits`, default 6).
 2. Step `verify`: `POST /login/2fa` with `{"code": "123456"}`. A wrong code answers `401` and can be retried.
-3. Step `setup`: `POST /user/two-factor/setup` returns `{secret, otpauthUri}`; show `otpauthUri` as a QR code and
+3. Step `setup`: `POST /user/two-factor/setup` returns `{secret, otpauthUri, digits}`; show `otpauthUri` as a QR code and
    `secret` for manual entry. Then send the first code from the app to `POST /login/2fa`; it enables two-factor
    authentication and finishes the login.
 4. To go back, `POST /logout`.
 
 Until the code is in, the `401` from other endpoints carries the step as well:
-`{"message": "Two-factor authentication is required.", "twoFactorRequired": true, "twoFactorStep": "verify"}` (or
-`"setup"`). A client uses it when it did not send the login itself, e.g. after the redirect back from an OpenID
+`{"message": "Two-factor authentication is required.", "twoFactorRequired": true, "twoFactorStep": "verify", "digits": 6}`
+(or step `"setup"`). A client uses it when it did not send the login itself, e.g. after the redirect back from an OpenID
 Connect (SSO) login. An SSO login asks for the code too when its authenticator creates a token type that scheb covers;
 the default `security_tokens` cover Symfony's `PostAuthenticationToken`, which authenticators create unless they use
 their own token class.
+
+The texts of the code and setup steps are among the public translations, so `POST /translations` returns them
+before the login is finished.
 
 The setup endpoint is opened for this step by Studio itself; the `access_control` rules from the
 [installation](./README.md) stay as they are. This relies on the documented rule (`ROLE_PIMCORE_USER` for the Studio
