@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attribute\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attribute\Response\InvalidCredentialsResponse;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\TwoFactorLoginStep;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -38,7 +40,8 @@ final class LoginController extends AbstractApiController
     )]
     #[CredentialsRequestBody]
     #[SuccessResponse(
-        description: 'login_success_response'
+        description: 'login_success_response',
+        content: new JsonContent(ref: TwoFactorLoginStep::class)
     )]
     #[InvalidCredentialsResponse]
     #[DefaultResponses]

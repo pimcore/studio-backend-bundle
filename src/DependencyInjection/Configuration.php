@@ -51,6 +51,8 @@ class Configuration implements ConfigurationInterface
 
     public const string ADMIN_SETTINGS_NODE = 'admin_settings';
 
+    public const string TWO_FACTOR_AUTHENTICATION_NODE = 'two_factor_authentication';
+
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     public const string MCP_SERVERS_NODE = 'studio_mcp_servers';
@@ -120,6 +122,7 @@ class Configuration implements ConfigurationInterface
         $this->addMcpServersConfigurationNode($rootNode);
         $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
+        $this->addTwoFactorAuthenticationNode($rootNode);
         $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
@@ -1267,6 +1270,27 @@ class Configuration implements ConfigurationInterface
                     ->booleanNode('enabled')
                         ->info('Enable or disable general rate limiting for all Studio API endpoints.')
                         ->defaultTrue()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    private function addTwoFactorAuthenticationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::TWO_FACTOR_AUTHENTICATION_NODE)
+                ->addDefaultsIfNotSet()
+                ->info('Google Authenticator settings, shown in the user\'s authenticator app.')
+                ->children()
+                    ->scalarNode('issuer')
+                        ->info('Issuer name in the authenticator app.')
+                        ->cannotBeEmpty()
+                        ->defaultValue('Pimcore')
+                    ->end()
+                    ->scalarNode('server_name')
+                        ->info('Server name in the authenticator app. Defaults to the router\'s request context host.')
+                        ->defaultNull()
                     ->end()
                 ->end()
             ->end()
