@@ -13,11 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSummaryDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -43,7 +46,8 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     public function __construct(
         private ElementDataServiceInterface $elementDataService,
-        private PatchServiceInterface $patchService
+        private PatchServiceInterface $patchService,
+        private ConcreteObjectResolverInterface $concreteObjectResolver
     ) {
     }
 
@@ -65,26 +69,112 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     public function getLightweightRelationData(Concrete $element, Data $fieldDefinition, string $key): ?array
     {
+        if (!$this->supportsLightweightLoading($fieldDefinition)) {
+            return null;
+        }
+
+        // like the getter, an empty own value is inherited while inherited values are in use
+        $origin = $this->findSummaryOrigin(
+            $element,
+            $fieldDefinition,
+            $key,
+            $this->concreteObjectResolver->doGetInheritedValues($element)
+        );
+        if ($origin === null) {
+            return null;
+        }
+
+        return $this->toRelatedElementData($origin['summaries']);
+    }
+
+    public function getLightweightInheritanceData(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): ?InheritanceData {
         if (
-            !$fieldDefinition instanceof OptimizedAdminLoadingInterface ||
-            !$fieldDefinition->isOptimizedAdminLoading() ||
-            !$fieldDefinition instanceof LightweightRelationLoadingInterface
+            !$this->supportsLightweightLoading($fieldDefinition) ||
+            !$fieldDefinition->supportsInheritance() ||
+            $contextData?->getContextObject() !== null ||
+            $contextData?->getLanguage() !== null
         ) {
             return null;
         }
 
-        // the value is already in memory (e.g. a version, a draft or unsaved changes): keep using it
-        if ($element->isLazyKeyLoaded($key)) {
+        $origin = $this->findSummaryOrigin($element, $fieldDefinition, $key, true);
+        if ($origin === null) {
             return null;
         }
 
-        $summaries = $fieldDefinition->loadRelationSummaries($element);
-        // without own relations the value may be inherited, which only the regular getter resolves
-        if ($summaries === [] && $element->getClass()->getAllowInherit()) {
+        $inherited = $origin['object']->getId() !== $element->getId();
+        $inheritedValue = null;
+        if ($contextData?->shouldResolveInheritedValue()) {
+            $parent = $element->getNextParentForInheritance();
+            $parentOrigin = $parent === null ? null : $this->findSummaryOrigin($parent, $fieldDefinition, $key, true);
+            if ($parentOrigin === null && $parent !== null) {
+                return null;
+            }
+
+            if ($parentOrigin !== null && $parentOrigin['summaries'] !== []) {
+                $inheritedValue = $this->toRelatedElementData($parentOrigin['summaries']);
+            }
+        }
+
+        return new InheritanceData($origin['object']->getId(), $inherited, true, $inheritedValue);
+    }
+
+    /**
+     * @phpstan-assert-if-true LightweightRelationLoadingInterface $fieldDefinition
+     */
+    private function supportsLightweightLoading(Data $fieldDefinition): bool
+    {
+        return $this->elementDataService instanceof ElementSummaryDataServiceInterface
+            && $fieldDefinition instanceof OptimizedAdminLoadingInterface
+            && $fieldDefinition->isOptimizedAdminLoading()
+            && $fieldDefinition instanceof LightweightRelationLoadingInterface;
+    }
+
+    /**
+     * Walks up from the object to the nearest ancestor with relations, like the inheritance resolution does
+     * with the field values; without any, the terminal ancestor is returned with an empty list. Returns null
+     * when the value of a visited object is already in memory (a version, a draft or unsaved changes), which
+     * only the regular loading can describe.
+     *
+     * @return array{object: Concrete, summaries: list<array<string, mixed>>}|null
+     */
+    private function findSummaryOrigin(
+        Concrete $object,
+        Data&LightweightRelationLoadingInterface $fieldDefinition,
+        string $key,
+        bool $walkParents
+    ): ?array {
+        if ($object->isLazyKeyLoaded($key)) {
             return null;
         }
 
-        return array_map($this->elementDataService->getRelatedElementDataFromSummary(...), $summaries);
+        $summaries = $fieldDefinition->loadRelationSummaries($object);
+        if ($summaries !== [] || !$walkParents) {
+            return ['object' => $object, 'summaries' => $summaries];
+        }
+
+        $parent = $object->getNextParentForInheritance();
+        if ($parent === null) {
+            return ['object' => $object, 'summaries' => $summaries];
+        }
+
+        return $this->findSummaryOrigin($parent, $fieldDefinition, $key, true);
+    }
+
+    /**
+     * @return RelatedElementData[]
+     */
+    private function toRelatedElementData(array $summaries): array
+    {
+        /** @var ElementSummaryDataServiceInterface $service */
+        $service = $this->elementDataService;
+
+        return array_map($service->getRelatedElementDataFromSummary(...), $summaries);
     }
 
     public function getAdvancedRelationElementData(ElementMetadata|ObjectMetadata $relation): array

@@ -37,6 +37,9 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use function array_map;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSummaryDataServiceInterface;
 
 /**
  * @internal
@@ -310,13 +313,143 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testRegularLoadingIsUsedWhenAnEmptyValueMayBeInherited(): void
+    public function testEmptyValueIsInheritedFromTheNearestAncestorWithRelations(): void
+    {
+        $service = $this->lightweightCreateService($built, inheritedValues: true);
+        $grandparent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 1);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5, parent: $grandparent);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [1 => [$this->makeSummary(7)], 5 => [], 10 => []]);
+
+        $data = $service->getLightweightRelationData($object, $field, 'objects');
+
+        $this->assertSame([7], array_map(static fn (RelatedElementData $d) => $d->getId(), $data));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testEmptyValueStaysEmptyWhileInheritedValuesAreNotInUse(): void
+    {
+        $service = $this->lightweightCreateService($built, inheritedValues: false);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [5 => [$this->makeSummary(7)], 10 => []]);
+
+        $this->assertSame([], $service->getLightweightRelationData($object, $field, 'objects'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRegularLoadingIsUsedWhenAnAncestorValueIsAlreadyInMemory(): void
+    {
+        $service = $this->lightweightCreateService($built, inheritedValues: true);
+        $parent = $this->makeObject(lazyKeyLoaded: true, allowInherit: true, id: 5);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [5 => [$this->makeSummary(7)], 10 => []]);
+
+        $this->assertNull($service->getLightweightRelationData($object, $field, 'objects'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testOwnRelationsAreNotInherited(): void
     {
         $service = $this->lightweightCreateService($built);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [5 => [$this->makeSummary(7)], 10 => [$this->makeSummary(1)]]);
+
+        $data = $service->getLightweightInheritanceData($object, $field, 'objects', new FieldContextData(resolveInheritedValue: true));
+
+        $this->assertSame(10, $data->getObjectId());
+        $this->assertFalse($data->isInherited());
+        $this->assertTrue($data->isInheritable());
+        $this->assertSame([7], array_map(static fn (RelatedElementData $d) => $d->getId(), $data->getInheritedValue()));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInheritedRelationsNameTheirOrigin(): void
+    {
+        $service = $this->lightweightCreateService($built);
+        $grandparent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 1);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5, parent: $grandparent);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [1 => [$this->makeSummary(7)], 5 => [], 10 => []]);
+
+        $data = $service->getLightweightInheritanceData($object, $field, 'objects', new FieldContextData(resolveInheritedValue: true));
+
+        $this->assertSame(1, $data->getObjectId());
+        $this->assertTrue($data->isInherited());
+        $this->assertSame([7], array_map(static fn (RelatedElementData $d) => $d->getId(), $data->getInheritedValue()));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testWithoutAnyRelationsTheTerminalAncestorIsTheOrigin(): void
+    {
+        $service = $this->lightweightCreateService($built);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [5 => [], 10 => []]);
+
+        $data = $service->getLightweightInheritanceData($object, $field, 'objects', new FieldContextData(resolveInheritedValue: true));
+
+        $this->assertSame(5, $data->getObjectId());
+        $this->assertTrue($data->isInherited());
+        $this->assertNull($data->getInheritedValue());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInheritedValueIsNotResolvedUnlessRequested(): void
+    {
+        $service = $this->lightweightCreateService($built);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [5 => [$this->makeSummary(7)], 10 => []]);
+
+        $data = $service->getLightweightInheritanceData($object, $field, 'objects');
+
+        $this->assertSame(5, $data->getObjectId());
+        $this->assertNull($data->getInheritedValue());
+        $this->assertSame([], $built);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRegularInheritanceResolutionIsUsedInsideContainers(): void
+    {
+        $service = $this->lightweightCreateService($built);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true);
+        $field = $this->makeField(optimized: true, summaries: [$this->makeSummary(1)]);
+
+        $this->assertNull($service->getLightweightInheritanceData($object, $field, 'objects', new FieldContextData(language: 'en')));
+        $this->assertNull($service->getLightweightInheritanceData($object, $field, 'objects', new FieldContextData(contextObject: $object)));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRegularLoadingIsUsedWhenTheElementDataServiceCannotDescribeSummaries(): void
+    {
+        $elementDataService = $this->makeEmpty(ElementDataServiceInterface::class);
+        $service = new RelationDataService(
+            $elementDataService,
+            $this->makeEmpty(PatchServiceInterface::class),
+            $this->makeEmpty(ConcreteObjectResolverInterface::class)
+        );
 
         $this->assertNull($service->getLightweightRelationData(
-            $this->makeObject(lazyKeyLoaded: false, allowInherit: true),
-            $this->makeField(optimized: true, summaries: []),
+            $this->makeObject(lazyKeyLoaded: false, allowInherit: false),
+            $this->makeField(optimized: true, summaries: [$this->makeSummary(1)]),
             'objects'
         ));
     }
@@ -342,18 +475,25 @@ final class RelationDataServiceTest extends Unit
      *
      * @throws Exception
      */
-    private function lightweightCreateService(?array &$built = null): RelationDataService
+    private function lightweightCreateService(?array &$built = null, bool $inheritedValues = false): RelationDataService
     {
         $built = [];
-        $elementDataService = $this->makeEmpty(ElementDataServiceInterface::class, [
+        $elementDataService = $this->makeEmpty(ElementSummaryDataServiceInterface::class, [
             'getRelatedElementDataFromSummary' => function (array $summary) use (&$built): RelatedElementData {
                 $built[] = $summary;
 
                 return new RelatedElementData($summary['id'], 'object', 'Product', $summary['fullpath']);
             },
         ]);
+        $concreteObjectResolver = $this->makeEmpty(ConcreteObjectResolverInterface::class, [
+            'doGetInheritedValues' => $inheritedValues,
+        ]);
 
-        return new RelationDataService($elementDataService, $this->makeEmpty(PatchServiceInterface::class));
+        return new RelationDataService(
+            $elementDataService,
+            $this->makeEmpty(PatchServiceInterface::class),
+            $concreteObjectResolver
+        );
     }
 
     /**
@@ -365,21 +505,42 @@ final class RelationDataServiceTest extends Unit
     {
         return $this->makeEmpty(ManyToManyObjectRelation::class, [
             'isOptimizedAdminLoading' => $optimized,
+            'supportsInheritance' => true,
             'loadRelationSummaries' => $summaries,
+        ]);
+    }
+
+    /**
+     * @param array<int, array<int, array<string, mixed>>> $summaries summaries keyed by the id of the object they belong to
+     *
+     * @throws Exception
+     */
+    private function makeFieldPerObject(bool $optimized, array $summaries): ManyToManyObjectRelation
+    {
+        return $this->makeEmpty(ManyToManyObjectRelation::class, [
+            'isOptimizedAdminLoading' => $optimized,
+            'supportsInheritance' => true,
+            'loadRelationSummaries' => static fn (Concrete $object): array => $summaries[$object->getId()] ?? [],
         ]);
     }
 
     /**
      * @throws Exception
      */
-    private function makeObject(bool $lazyKeyLoaded, bool $allowInherit): Concrete
-    {
+    private function makeObject(
+        bool $lazyKeyLoaded,
+        bool $allowInherit,
+        int $id = 10,
+        ?Concrete $parent = null
+    ): Concrete {
         $class = new ClassDefinition();
         $class->setAllowInherit($allowInherit);
 
         return $this->makeEmpty(Concrete::class, [
+            'getId' => $id,
             'isLazyKeyLoaded' => $lazyKeyLoaded,
             'getClass' => $class,
+            'getNextParentForInheritance' => $parent,
         ]);
     }
 
@@ -498,6 +659,6 @@ final class RelationDataServiceTest extends Unit
             coauthorService: $this->makeEmpty(CoauthorServiceInterface::class),
         );
 
-        return new RelationDataService($this->makeEmpty(ElementDataServiceInterface::class), $patchService);
+        return new RelationDataService($this->makeEmpty(ElementDataServiceInterface::class), $patchService, $this->makeEmpty(ConcreteObjectResolverInterface::class));
     }
 }

@@ -20,12 +20,18 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Event\ElementEvents;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
+use Pimcore\Resolver\ResolverInterface;
+use Pimcore\Workflow\Manager;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function class_exists;
 use function is_subclass_of;
 use function strlen;
 use function substr;
@@ -34,13 +40,18 @@ use function ucfirst;
 /**
  * @internal
  */
-final readonly class ElementDataService implements ElementDataServiceInterface
+final readonly class ElementDataService implements ElementSummaryDataServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private ResolverInterface $assetClassResolver,
+        private ResolverInterface $documentClassResolver,
+        private FactoryInterface $modelFactory,
+        private Manager $workflowManager,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -57,27 +68,18 @@ final readonly class ElementDataService implements ElementDataServiceInterface
     }
 
     /**
-     * Builds the related element data from a relation summary without loading the related element.
+     * The view permission is checked on an unsaved model of the element's class that only carries the identity,
+     * path and parent from the summary, which is all the core workspace check needs. Whenever something could
+     * look at more than that - a workflow that applies to the element (its places may deny the permission and
+     * are read from the element's data) or a listener on the permission event - the element is loaded and
+     * checked as usual.
      *
-     * The view permission is checked on a model that only carries the summary data (identity, path, parent), which
-     * is all the core permission check (workspaces, workflow, permission event) works with. Elements whose model
-     * cannot be built from the summary are loaded instead.
-     *
-     * @param array{
-     *     id: int,
-     *     parentId: int,
-     *     type: string,
-     *     subtype: string,
-     *     className: string|null,
-     *     fullpath: string,
-     *     filename: string,
-     *     published: bool
-     * } $summary
+     * {@inheritdoc}
      */
     public function getRelatedElementDataFromSummary(array $summary): RelatedElementData
     {
         $element = $this->createElementFromSummary($summary);
-        if ($element === null) {
+        if ($element === null || $this->needsLoadedElementForPermission($element)) {
             $element = $this->serviceResolver->getElementById($summary['type'], $summary['id']);
             if ($element === null) {
                 return $this->createRelatedElementDataFromSummary($summary, false);
@@ -110,6 +112,29 @@ final readonly class ElementDataService implements ElementDataServiceInterface
         return $user instanceof User ? $user : null;
     }
 
+    private function needsLoadedElementForPermission(ElementInterface $element): bool
+    {
+        if ($this->eventDispatcher->hasListeners(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED)) {
+            return true;
+        }
+
+        foreach ($this->workflowManager->getAllWorkflows() as $workflowName) {
+            $config = $this->workflowManager->getWorkflowConfig($workflowName)->getWorkflowConfigArray();
+            if (!empty($config['supports'])) {
+                foreach ((array) $config['supports'] as $supportedClass) {
+                    if ($element instanceof $supportedClass) {
+                        return true;
+                    }
+                }
+            } elseif (isset($config['support_strategy'])) {
+                // whether such a workflow applies may depend on data the model does not carry
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function createRelatedElementDataFromSummary(array $summary, bool $hasViewAccess): RelatedElementData
     {
         $isConcrete = $summary['type'] === ElementTypes::TYPE_OBJECT && $summary['className'] !== null;
@@ -127,13 +152,13 @@ final readonly class ElementDataService implements ElementDataServiceInterface
 
     private function createElementFromSummary(array $summary): ?ElementInterface
     {
-        $element = match ($summary['type']) {
-            ElementTypes::TYPE_OBJECT => $this->createObjectFromSummary($summary),
-            ElementTypes::TYPE_ASSET => new Asset(),
-            ElementTypes::TYPE_DOCUMENT => new Document(),
-            default => null,
-        };
-        if ($element === null) {
+        $className = $this->resolveElementClass($summary);
+        if ($className === null) {
+            return null;
+        }
+
+        $element = $this->modelFactory->build($className);
+        if (!$element instanceof ElementInterface) {
             return null;
         }
 
@@ -156,15 +181,28 @@ final readonly class ElementDataService implements ElementDataServiceInterface
         return $element;
     }
 
-    private function createObjectFromSummary(array $summary): Concrete|Folder|null
+    /**
+     * The same classes the core instantiates when loading the element, so model overrides apply.
+     */
+    private function resolveElementClass(array $summary): ?string
     {
-        if ($summary['className'] === null) {
-            return new Folder();
+        return match ($summary['type']) {
+            ElementTypes::TYPE_OBJECT => $this->resolveObjectClass($summary['className']),
+            ElementTypes::TYPE_ASSET => $this->assetClassResolver->resolve($summary['subtype']),
+            ElementTypes::TYPE_DOCUMENT => $this->documentClassResolver->resolve($summary['subtype']),
+            default => null,
+        };
+    }
+
+    private function resolveObjectClass(?string $className): ?string
+    {
+        if ($className === null) {
+            return Folder::class;
         }
 
-        $class = 'Pimcore\\Model\\DataObject\\' . ucfirst($summary['className']);
+        $class = 'Pimcore\\Model\\DataObject\\' . ucfirst($className);
 
-        return is_subclass_of($class, Concrete::class) ? new $class() : null;
+        return class_exists($class) && is_subclass_of($class, Concrete::class) ? $class : null;
     }
 
     private function getSubType(ElementInterface $element): string

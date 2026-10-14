@@ -16,7 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightInheritanceDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -34,7 +36,8 @@ use function is_array;
 final readonly class ManyToManyObjectRelationAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
-    LightweightDetailDataInterface
+    LightweightDetailDataInterface,
+    LightweightInheritanceDataInterface
 {
     public function __construct(
         private RelationDataServiceInterface $relationDataService,
@@ -75,6 +78,15 @@ final readonly class ManyToManyObjectRelationAdapter implements
         string $key
     ): ?array {
         return $this->relationDataService->getLightweightRelationData($object, $fieldDefinition, $key);
+    }
+
+    public function getLightweightFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): ?InheritanceData {
+        return $this->relationDataService->getLightweightInheritanceData($object, $fieldDefinition, $key, $contextData);
     }
 
     /**

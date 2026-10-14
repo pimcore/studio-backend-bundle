@@ -19,21 +19,4 @@ use Pimcore\Model\Element\ElementInterface;
 interface ElementDataServiceInterface
 {
     public function getRelatedElementData(ElementInterface $element): RelatedElementData;
-
-    /**
-     * Builds the related element data from a relation summary (see LightweightRelationLoadingInterface) without
-     * loading the related element.
-     *
-     * @param array{
-     *     id: int,
-     *     parentId: int,
-     *     type: string,
-     *     subtype: string,
-     *     className: string|null,
-     *     fullpath: string,
-     *     filename: string,
-     *     published: bool
-     * } $summary
-     */
-    public function getRelatedElementDataFromSummary(array $summary): RelatedElementData;
 }

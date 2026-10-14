@@ -20,6 +20,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataService
+    arguments:
+      $assetClassResolver: '@pimcore.class.resolver.asset'
+      $documentClassResolver: '@pimcore.class.resolver.document'
+      $modelFactory: '@pimcore.model.factory'
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteService

@@ -20,9 +20,17 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Event\ElementEvents;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Pimcore\Resolver\ResolverInterface;
+use Pimcore\Workflow\Manager;
+use Pimcore\Workflow\WorkflowConfig;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_merge;
 
 /**
@@ -66,12 +74,7 @@ final class ElementDataServiceTest extends Unit
      */
     public function testHasViewAccessFalseWhenNoUserIsAuthenticated(): void
     {
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => static function (): UserInterface {
-                throw new UserNotFoundException();
-            },
-        ]);
-        $service = new ElementDataService($securityService, $this->makeEmpty(ServiceResolverInterface::class));
+        $service = $this->createService(securityService: $this->securityServiceWithoutUser());
 
         $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
@@ -87,7 +90,7 @@ final class ElementDataServiceTest extends Unit
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => $this->makeEmpty(UserInterface::class),
         ]);
-        $service = new ElementDataService($securityService, $this->makeEmpty(ServiceResolverInterface::class));
+        $service = $this->createService(securityService: $securityService);
 
         $data = $service->getRelatedElementData($this->makeAsset(isAllowed: true, calls: $calls));
 
@@ -98,41 +101,68 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testRelatedElementDataFromObjectSummary(): void
+    public function testSummaryIsCheckedOnAModelOfTheElementClassWithoutLoadingTheElement(): void
     {
-        $data = $this->createServiceWithoutUser()->getRelatedElementDataFromSummary(
-            $this->makeSummary(['className' => 'Product', 'subtype' => 'object', 'published' => false])
+        $folder = $this->makeFolder(isAllowed: true, calls: $calls);
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverThatMustNotLoad(),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $folder, $built)
         );
 
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([Folder::class], $built);
+        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
+        $this->assertTrue($data->getHasViewAccess());
         $this->assertSame(83, $data->getId());
         $this->assertSame('object', $data->getType());
-        $this->assertSame('Product', $data->getSubtype());
-        $this->assertSame('/path/to/element', $data->getFullPath());
-        $this->assertFalse($data->getIsPublished());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testRelatedElementDataFromFolderSummaryHasNoPublishedState(): void
-    {
-        $data = $this->createServiceWithoutUser()->getRelatedElementDataFromSummary(
-            $this->makeSummary(['className' => null, 'subtype' => 'folder'])
-        );
-
         $this->assertSame('folder', $data->getSubtype());
+        $this->assertSame('/path/to/element', $data->getFullPath());
         $this->assertNull($data->getIsPublished());
     }
 
     /**
      * @throws Exception
      */
-    public function testRelatedElementDataFromAssetSummaryHasNoPublishedState(): void
+    public function testDeniedViewOnTheModelIsReported(): void
     {
-        $data = $this->createServiceWithoutUser()->getRelatedElementDataFromSummary(
+        $folder = $this->makeFolder(isAllowed: false, calls: $calls);
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverThatMustNotLoad(),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $folder, $built)
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertFalse($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAssetSummaryUsesTheClassOfItsType(): void
+    {
+        $image = $this->makeAsset(isAllowed: true, calls: $calls);
+        $assetClassResolver = $this->makeEmpty(ResolverInterface::class, [
+            'resolve' => function (string $type) use (&$resolved): ?string {
+                $resolved[] = $type;
+
+                return Asset\Image::class;
+            },
+        ]);
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverThatMustNotLoad(),
+            assetClassResolver: $assetClassResolver,
+            modelFactory: $this->modelFactoryBuilding(Asset\Image::class, $image, $built)
+        );
+
+        $data = $service->getRelatedElementDataFromSummary(
             $this->makeSummary(['type' => 'asset', 'className' => null, 'subtype' => 'image', 'published' => true])
         );
 
+        $this->assertSame(['image'], $resolved);
+        $this->assertSame([Asset\Image::class], $built);
+        $this->assertTrue($data->getHasViewAccess());
         $this->assertSame('asset', $data->getType());
         $this->assertSame('image', $data->getSubtype());
         $this->assertNull($data->getIsPublished());
@@ -141,9 +171,11 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testRelatedElementDataFromDocumentSummaryKeepsPublishedState(): void
+    public function testDocumentSummaryKeepsThePublishedState(): void
     {
-        $data = $this->createServiceWithoutUser()->getRelatedElementDataFromSummary(
+        $service = $this->createService(securityService: $this->securityServiceWithoutUser());
+
+        $data = $service->getRelatedElementDataFromSummary(
             $this->makeSummary(['type' => 'document', 'className' => null, 'subtype' => 'page', 'published' => false])
         );
 
@@ -155,24 +187,90 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testElementIsLoadedWhenAWorkflowAppliesToIt(): void
+    {
+        $loaded = $this->makeAsset(isAllowed: true, calls: $calls);
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($loaded, $loads),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            workflows: ['publishing' => ['supports' => [Folder::class]]]
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([['object', 83]], $loads);
+        $this->assertSame([], $modelCalls);
+        $this->assertSame('/path/to/asset.jpg', $data->getFullPath());
+        $this->assertTrue($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsNotLoadedWhenNoWorkflowAppliesToIt(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverThatMustNotLoad(),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
+            workflows: ['publishing' => ['supports' => [Asset\Image::class]]]
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
+        $this->assertTrue($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsLoadedWhenAWorkflowUsesASupportStrategy(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            workflows: ['publishing' => ['support_strategy' => ['type' => 'expression', 'arguments' => []]]]
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([['object', 83]], $loads);
+        $this->assertSame([], $modelCalls);
+        $this->assertFalse($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsLoadedWhenAListenerDecidesAboutPermissions(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            hasPermissionListeners: true
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([['object', 83]], $loads);
+        $this->assertSame([], $modelCalls);
+        $this->assertFalse($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testSummaryOfUnknownClassIsResolvedThroughTheElement(): void
     {
-        $asset = $this->makeAsset(isAllowed: true, calls: $calls);
-        $resolver = $this->makeEmpty(ServiceResolverInterface::class, [
-            'getElementById' => function (string $type, int $id) use ($asset) {
-                $this->assertSame('object', $type);
-                $this->assertSame(83, $id);
-
-                return $asset;
-            },
-        ]);
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]);
-        $service = new ElementDataService($securityService, $resolver);
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: true, calls: $calls), $loads)
+        );
 
         $data = $service->getRelatedElementDataFromSummary(
             $this->makeSummary(['className' => 'ClassThatDoesNotExistAnymore'])
         );
 
+        $this->assertSame([['object', 83]], $loads);
         $this->assertTrue($data->getHasViewAccess());
         $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
         $this->assertSame('/path/to/asset.jpg', $data->getFullPath());
@@ -183,9 +281,7 @@ final class ElementDataServiceTest extends Unit
      */
     public function testSummaryOfVanishedElementHasNoViewAccess(): void
     {
-        $resolver = $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => null]);
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]);
-        $service = new ElementDataService($securityService, $resolver);
+        $service = $this->createService(serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => null]));
 
         $data = $service->getRelatedElementDataFromSummary(
             $this->makeSummary(['className' => 'ClassThatDoesNotExistAnymore'])
@@ -197,48 +293,101 @@ final class ElementDataServiceTest extends Unit
     }
 
     /**
+     * @param array<string, array<string, mixed>> $workflows workflow name => workflow config array
+     *
      * @throws Exception
      */
-    private function createServiceWithoutUser(): ElementDataService
+    private function createService(
+        ?SecurityServiceInterface $securityService = null,
+        ?ServiceResolverInterface $serviceResolver = null,
+        ?ResolverInterface $assetClassResolver = null,
+        ?FactoryInterface $modelFactory = null,
+        array $workflows = [],
+        bool $hasPermissionListeners = false,
+    ): ElementDataService {
+        $securityService ??= $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]);
+        $workflowManager = $this->makeEmpty(Manager::class, [
+            'getAllWorkflows' => array_keys($workflows),
+            'getWorkflowConfig' => static fn (string $name): WorkflowConfig => new WorkflowConfig($name, $workflows[$name]),
+        ]);
+        $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class, [
+            'hasListeners' => function (?string $eventName) use ($hasPermissionListeners): bool {
+                $this->assertSame(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED, $eventName);
+
+                return $hasPermissionListeners;
+            },
+        ]);
+
+        return new ElementDataService(
+            $securityService,
+            $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
+            $assetClassResolver ?? $this->makeEmpty(ResolverInterface::class, ['resolve' => null]),
+            $this->makeEmpty(ResolverInterface::class, ['resolve' => null]),
+            $modelFactory ?? $this->makeEmpty(FactoryInterface::class),
+            $workflowManager,
+            $eventDispatcher
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function securityServiceWithoutUser(): SecurityServiceInterface
     {
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+        return $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => static function (): UserInterface {
                 throw new UserNotFoundException();
             },
         ]);
-
-        return new ElementDataService($securityService, $this->makeEmpty(ServiceResolverInterface::class));
-    }
-
-    /**
-     * @param array<string, mixed> $overrides
-     *
-     * @return array{id: int, parentId: int, type: string, subtype: string, className: string|null, fullpath: string, filename: string, published: bool}
-     */
-    private function makeSummary(array $overrides = []): array
-    {
-        return array_merge([
-            'id' => 83,
-            'parentId' => 1,
-            'type' => 'object',
-            'subtype' => 'object',
-            'className' => 'Product',
-            'fullpath' => '/path/to/element',
-            'filename' => 'element',
-            'published' => true,
-        ], $overrides);
     }
 
     /**
      * @throws Exception
      */
-    private function createService(): ElementDataService
+    private function serviceResolverThatMustNotLoad(): ServiceResolverInterface
     {
-        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => new User(),
+        return $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => function (): ?ElementInterface {
+                $this->fail('the element must not be loaded');
+            },
         ]);
+    }
 
-        return new ElementDataService($securityService, $this->makeEmpty(ServiceResolverInterface::class));
+    /**
+     * @param array<int, array{string, int}>|null $loads
+     *
+     * @throws Exception
+     */
+    private function serviceResolverLoading(ElementInterface $element, ?array &$loads = null): ServiceResolverInterface
+    {
+        $loads = [];
+
+        return $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => function (string $type, int $id) use (&$loads, $element): ElementInterface {
+                $loads[] = [$type, $id];
+
+                return $element;
+            },
+        ]);
+    }
+
+    /**
+     * @param string[]|null $built
+     *
+     * @throws Exception
+     */
+    private function modelFactoryBuilding(string $expectedClass, ElementInterface $model, ?array &$built = null): FactoryInterface
+    {
+        $built = [];
+
+        return $this->makeEmpty(FactoryInterface::class, [
+            'build' => function (string $name) use (&$built, $expectedClass, $model) {
+                $built[] = $name;
+                $this->assertSame($expectedClass, $name);
+
+                return $model;
+            },
+        ]);
     }
 
     /**
@@ -260,5 +409,42 @@ final class ElementDataServiceTest extends Unit
                 return $isAllowed;
             },
         ]);
+    }
+
+    /**
+     * @param array<int, array{string, bool}>|null $calls
+     *
+     * @throws Exception
+     */
+    private function makeFolder(bool $isAllowed, ?array &$calls = null): Folder
+    {
+        $calls = [];
+
+        return $this->makeEmpty(Folder::class, [
+            'isAllowed' => function (string $type, ?User $user = null) use (&$calls, $isAllowed): bool {
+                $calls[] = [$type, $user instanceof User];
+
+                return $isAllowed;
+            },
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     *
+     * @return array{id: int, parentId: int, type: string, subtype: string, className: string|null, fullpath: string, filename: string, published: bool}
+     */
+    private function makeSummary(array $overrides = []): array
+    {
+        return array_merge([
+            'id' => 83,
+            'parentId' => 1,
+            'type' => 'object',
+            'subtype' => 'object',
+            'className' => 'Product',
+            'fullpath' => '/path/to/element',
+            'filename' => 'element',
+            'published' => true,
+        ], $overrides);
     }
 }
