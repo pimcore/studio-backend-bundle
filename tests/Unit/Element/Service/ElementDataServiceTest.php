@@ -28,8 +28,6 @@ use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
-use Pimcore\Workflow\Manager;
-use Pimcore\Workflow\WorkflowConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_merge;
 
@@ -193,7 +191,7 @@ final class ElementDataServiceTest extends Unit
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($loaded, $loads),
             modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
-            workflows: ['publishing' => ['supports' => [Folder::class]]]
+            workflows: ['publishing' => ['enabled' => true, 'supports' => [Folder::class], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
@@ -212,7 +210,7 @@ final class ElementDataServiceTest extends Unit
         $service = $this->createService(
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
             modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
-            workflows: ['publishing' => ['supports' => [Asset\Image::class]]]
+            workflows: ['publishing' => ['enabled' => true, 'supports' => [Asset\Image::class], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
@@ -224,12 +222,85 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testElementIsLoadedWhenAWorkflowUsesASupportStrategy(): void
+    public function testElementIsLoadedWhenAnExpressionStrategyTargetsItsClass(): void
     {
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
             modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
-            workflows: ['publishing' => ['support_strategy' => ['type' => 'expression', 'arguments' => []]]]
+            workflows: ['publishing' => ['enabled' => true, 'supports' => [], 'support_strategy' => ['type' => 'expression', 'arguments' => ['\\Pimcore\\Model\\DataObject\\Folder', 'subject.getPath() matches "#^/new#"']], 'places' => []]]
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([['object', 83]], $loads);
+        $this->assertSame([], $modelCalls);
+        $this->assertFalse($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testDisabledWorkflowsDoNotApply(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverThatMustNotLoad(),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
+            workflows: ['publishing' => ['enabled' => false, 'supports' => [Folder::class], 'places' => []]]
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
+        $this->assertTrue($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsLoadedWhenItsModelClassIsOverridden(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
+            modelFactory: $this->modelFactoryBuilding(
+                Folder::class,
+                $this->makeFolder(isAllowed: true, calls: $modelCalls),
+                classMap: [Folder::class => 'App\\Model\\DataObject\\Folder']
+            )
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([['object', 83]], $loads);
+        $this->assertSame([], $modelCalls);
+        $this->assertFalse($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsNotLoadedWhenAnExpressionStrategyTargetsAnotherClass(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverThatMustNotLoad(),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
+            workflows: ['assets' => ['enabled' => true, 'supports' => [], 'support_strategy' => ['type' => 'expression', 'arguments' => ['\\Pimcore\\Model\\Asset', 'is_fully_authenticated()']], 'places' => []]]
+        );
+
+        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+
+        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
+        $this->assertTrue($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsLoadedWhenAWorkflowUsesACustomSupportStrategy(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            workflows: ['custom' => ['enabled' => true, 'supports' => [], 'support_strategy' => ['service' => 'app.workflow_support'], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
@@ -293,7 +364,7 @@ final class ElementDataServiceTest extends Unit
     }
 
     /**
-     * @param array<string, array<string, mixed>> $workflows workflow name => workflow config array
+     * @param array<string, array<string, mixed>> $workflows the workflow configuration, keyed by workflow name
      *
      * @throws Exception
      */
@@ -306,10 +377,6 @@ final class ElementDataServiceTest extends Unit
         bool $hasPermissionListeners = false,
     ): ElementDataService {
         $securityService ??= $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => new User()]);
-        $workflowManager = $this->makeEmpty(Manager::class, [
-            'getAllWorkflows' => array_keys($workflows),
-            'getWorkflowConfig' => static fn (string $name): WorkflowConfig => new WorkflowConfig($name, $workflows[$name]),
-        ]);
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class, [
             'hasListeners' => function (?string $eventName) use ($hasPermissionListeners): bool {
                 $this->assertSame(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED, $eventName);
@@ -323,9 +390,9 @@ final class ElementDataServiceTest extends Unit
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $assetClassResolver ?? $this->makeEmpty(ResolverInterface::class, ['resolve' => null]),
             $this->makeEmpty(ResolverInterface::class, ['resolve' => null]),
-            $modelFactory ?? $this->makeEmpty(FactoryInterface::class),
-            $workflowManager,
-            $eventDispatcher
+            $modelFactory ?? $this->makeEmpty(FactoryInterface::class, ['getClassMap' => []]),
+            $eventDispatcher,
+            $workflows
         );
     }
 
@@ -376,11 +443,16 @@ final class ElementDataServiceTest extends Unit
      *
      * @throws Exception
      */
-    private function modelFactoryBuilding(string $expectedClass, ElementInterface $model, ?array &$built = null): FactoryInterface
-    {
+    private function modelFactoryBuilding(
+        string $expectedClass,
+        ElementInterface $model,
+        ?array &$built = null,
+        array $classMap = []
+    ): FactoryInterface {
         $built = [];
 
         return $this->makeEmpty(FactoryInterface::class, [
+            'getClassMap' => $classMap,
             'build' => function (string $name) use (&$built, $expectedClass, $model) {
                 $built[] = $name;
                 $this->assertSame($expectedClass, $name);

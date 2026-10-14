@@ -29,9 +29,9 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Resolver\ResolverInterface;
-use Pimcore\Workflow\Manager;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function class_exists;
+use function is_string;
 use function is_subclass_of;
 use function strlen;
 use function substr;
@@ -50,8 +50,9 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
         private ResolverInterface $assetClassResolver,
         private ResolverInterface $documentClassResolver,
         private FactoryInterface $modelFactory,
-        private Manager $workflowManager,
         private EventDispatcherInterface $eventDispatcher,
+        /** @var array<string, array<string, mixed>> the workflow configuration, keyed by workflow name */
+        private array $workflowConfigs,
     ) {
     }
 
@@ -71,15 +72,16 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
      * The view permission is checked on an unsaved model of the element's class that only carries the identity,
      * path and parent from the summary, which is all the core workspace check needs. Whenever something could
      * look at more than that - a workflow that applies to the element (its places may deny the permission and
-     * are read from the element's data) or a listener on the permission event - the element is loaded and
-     * checked as usual.
+     * are read from the element's data), a listener on the permission event or a model override of the class -
+     * the element is loaded and checked as usual.
      *
      * {@inheritdoc}
      */
     public function getRelatedElementDataFromSummary(array $summary): RelatedElementData
     {
-        $element = $this->createElementFromSummary($summary);
-        if ($element === null || $this->needsLoadedElementForPermission($element)) {
+        $className = $this->resolveElementClass($summary);
+        $element = $className === null ? null : $this->createElementFromSummary($summary, $className);
+        if ($element === null || $this->needsLoadedElementForPermission($element, $className)) {
             $element = $this->serviceResolver->getElementById($summary['type'], $summary['id']);
             if ($element === null) {
                 return $this->createRelatedElementDataFromSummary($summary, false);
@@ -112,22 +114,53 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
         return $user instanceof User ? $user : null;
     }
 
-    private function needsLoadedElementForPermission(ElementInterface $element): bool
+    private function needsLoadedElementForPermission(ElementInterface $element, string $className): bool
     {
         if ($this->eventDispatcher->hasListeners(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED)) {
             return true;
         }
 
-        foreach ($this->workflowManager->getAllWorkflows() as $workflowName) {
-            $config = $this->workflowManager->getWorkflowConfig($workflowName)->getWorkflowConfigArray();
+        // an override of the model may decide about permissions with data the model does not carry
+        if (isset($this->modelFactory->getClassMap()[$className])) {
+            return true;
+        }
+
+        foreach ($this->workflowConfigs as $config) {
+            if (($config['enabled'] ?? true) === false) {
+                continue;
+            }
+
             if (!empty($config['supports'])) {
                 foreach ((array) $config['supports'] as $supportedClass) {
                     if ($element instanceof $supportedClass) {
                         return true;
                     }
                 }
-            } elseif (isset($config['support_strategy'])) {
-                // whether such a workflow applies may depend on data the model does not carry
+            } elseif (isset($config['support_strategy']) && $this->supportStrategyMayApply($config['support_strategy'], $element)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * An expression strategy only applies to instances of the classes in its first argument; whether its
+     * expression holds may depend on data the model does not carry. Any other strategy cannot be judged.
+     */
+    private function supportStrategyMayApply(array $strategy, ElementInterface $element): bool
+    {
+        if (($strategy['type'] ?? null) !== 'expression') {
+            return true;
+        }
+
+        $classes = (array) ($strategy['arguments'][0] ?? []);
+        if ($classes === []) {
+            return true;
+        }
+
+        foreach ($classes as $class) {
+            if (is_string($class) && $element instanceof $class) {
                 return true;
             }
         }
@@ -150,13 +183,8 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
         );
     }
 
-    private function createElementFromSummary(array $summary): ?ElementInterface
+    private function createElementFromSummary(array $summary, string $className): ?ElementInterface
     {
-        $className = $this->resolveElementClass($summary);
-        if ($className === null) {
-            return null;
-        }
-
         $element = $this->modelFactory->build($className);
         if (!$element instanceof ElementInterface) {
             return null;
