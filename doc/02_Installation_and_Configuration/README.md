@@ -165,6 +165,22 @@ You need to configure the full URL including protocol, port and path to Mercure 
 For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
 If these settings are not set, URLs will be generated based on Pimcore host and default paths.
 
+## Default Controllers for New Documents
+
+A new page, snippet or email document that is created without a predefined document type gets the controller
+configured in `pimcore.documents.default_controller`. A project that renders emails with a different controller than
+pages can configure a controller per document type; every type without an entry keeps the core default:
+
+```yaml
+pimcore_studio_backend:
+    documents:
+        default_controllers:
+            email: App\Controller\MailController::defaultAction
+```
+
+Only `page`, `snippet` and `email` are accepted as keys. A predefined document type selected while creating the
+document still takes precedence, as does the base document when a translation is added.
+
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  
 If you want to change the prefix, you can do so by changing the configuration like the following:

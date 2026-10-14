@@ -27,6 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginService;
 use Pimcore\Model\Site;
 use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
+use ReflectionClass;
+use ReflectionNamedType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -36,24 +38,39 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 final class UserLoginServiceTest extends Unit
 {
-    public function testResetPasswordAcceptsUrlMatchingRequestHost(): void
+    public function testResetPasswordAcceptsMixedCaseScheme(): void
     {
         $service = $this->createService(
-            requestHost: 'mysite.com',
-            mainDomain: '',
+            mainDomain: 'mysite.com',
             sites: [],
             userExists: true,
         );
 
-        $resetPassword = new ResetPassword('testuser', 'https://mysite.com/reset-password/');
+        $resetPassword = new ResetPassword('testuser', 'HTTPS://mysite.com/reset-password/');
 
         $service->resetPassword($resetPassword);
+    }
+
+    public function testServiceDoesNotDependOnTheCurrentRequest(): void
+    {
+        $constructor = (new ReflectionClass(UserLoginService::class))->getConstructor();
+        self::assertNotNull($constructor);
+
+        foreach ($constructor->getParameters() as $parameter) {
+            $type = $parameter->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : '';
+
+            self::assertNotContains(
+                $typeName,
+                [Request::class, RequestStack::class],
+                'The reset password URL must be validated against configuration only, never the incoming request.'
+            );
+        }
     }
 
     public function testResetPasswordRejectsUrl(): void
     {
         $service = $this->createService(
-            requestHost: 'mysite.com',
             mainDomain: 'mysite.com',
             sites: [],
         );
@@ -68,7 +85,6 @@ final class UserLoginServiceTest extends Unit
     public function testResetPasswordAcceptsMainDomain(): void
     {
         $service = $this->createService(
-            requestHost: 'api.internal',
             mainDomain: 'mysite.com',
             sites: [],
             userExists: true,
@@ -86,7 +102,6 @@ final class UserLoginServiceTest extends Unit
         $site->setDomains([]);
 
         $service = $this->createService(
-            requestHost: 'admin.example.com',
             mainDomain: 'admin.example.com',
             sites: [$site],
             userExists: true,
@@ -104,7 +119,6 @@ final class UserLoginServiceTest extends Unit
         $site->setDomains(['www.shop.example.com', 'store.example.com']);
 
         $service = $this->createService(
-            requestHost: 'admin.example.com',
             mainDomain: 'admin.example.com',
             sites: [$site],
             userExists: true,
@@ -122,7 +136,6 @@ final class UserLoginServiceTest extends Unit
         $site->setDomains(['www.shop.example.com']);
 
         $service = $this->createService(
-            requestHost: 'mysite.com',
             mainDomain: 'mysite.com',
             sites: [$site],
         );
@@ -136,7 +149,6 @@ final class UserLoginServiceTest extends Unit
     public function testResetPasswordRejectsMalformedUrl(): void
     {
         $service = $this->createService(
-            requestHost: 'mysite.com',
             mainDomain: 'mysite.com',
             sites: [],
         );
@@ -151,7 +163,6 @@ final class UserLoginServiceTest extends Unit
     public function testResetPasswordRejectsUrlWithoutHost(): void
     {
         $service = $this->createService(
-            requestHost: 'mysite.com',
             mainDomain: 'mysite.com',
             sites: [],
         );
@@ -163,10 +174,65 @@ final class UserLoginServiceTest extends Unit
         $service->resetPassword($resetPassword);
     }
 
-    public function testResetPasswordRejectsWhenNoRequestAndNoDomainConfig(): void
+    public function testResetPasswordRejectsNonHttpScheme(): void
     {
         $service = $this->createService(
-            requestHost: null,
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', 'ftp://mysite.com/reset');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithCredentials(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', 'https://other.example@mysite.com/reset');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithBackslash(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', 'https://other.example\\@mysite.com/reset');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsUrlWithWhitespaceOrControlCharacters(): void
+    {
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+        );
+
+        $resetPassword = new ResetPassword('testuser', "https://mysite.com/reset\t\n");
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid reset password URL provided');
+        $service->resetPassword($resetPassword);
+    }
+
+    public function testResetPasswordRejectsWhenNoDomainConfig(): void
+    {
+        $service = $this->createService(
             mainDomain: '',
             sites: [],
         );
@@ -177,11 +243,10 @@ final class UserLoginServiceTest extends Unit
         $service->resetPassword($resetPassword);
     }
 
-    public function testResetPasswordWithLocalhostDev(): void
+    public function testResetPasswordAcceptsConfiguredLocalhostDev(): void
     {
         $service = $this->createService(
-            requestHost: 'localhost',
-            mainDomain: '',
+            mainDomain: 'localhost',
             sites: [],
             userExists: true,
         );
@@ -192,16 +257,10 @@ final class UserLoginServiceTest extends Unit
     }
 
     private function createService(
-        ?string $requestHost,
         string $mainDomain,
         array $sites,
         bool $userExists = false,
     ): UserLoginService {
-        $requestStack = new RequestStack();
-        if ($requestHost !== null) {
-            $requestStack->push(Request::create('https://' . $requestHost . '/api/user/reset-password'));
-        }
-
         $user = null;
         if ($userExists) {
             $user = new User();
@@ -223,7 +282,6 @@ final class UserLoginServiceTest extends Unit
                 'getByName' => $user,
             ]),
             $this->makeEmpty(SecurityServiceInterface::class),
-            $requestStack,
             $this->makeEmpty(SettingsProviderInterface::class, [
                 'getSettings' => ['main_domain' => $mainDomain],
             ]),

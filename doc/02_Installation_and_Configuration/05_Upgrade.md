@@ -3,6 +3,9 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.3.3
+- [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
+  and email documents per document type (for documents created without a predefined document type). Types without an
+  entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
 - [Grid] Fixed: block fields were silently dropped from the data object grid column configuration because no grid
   column definition existed for them. Block fields with `visibleGridView` enabled are now offered as grid columns and
   render through the existing block cell. Like field collections they are not sortable, filterable or exportable.
