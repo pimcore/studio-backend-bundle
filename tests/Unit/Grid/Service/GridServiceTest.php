@@ -23,6 +23,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
@@ -37,11 +38,13 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterfac
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ProvidedGridElement;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
@@ -578,6 +581,276 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * A caller holding the element (built from another state than the database) passes it in:
+     * the columns are resolved from that element and nothing is loaded by id.
+     */
+    public function testGetGridDataForElementResolvesProvidedCoreElementWithoutLoadingById(): void
+    {
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::never(),
+            ]),
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
+        );
+
+        $data = $service->getGridDataForElement(
+            $this->createCoreKeyColumnCollection(),
+            null,
+            ElementTypes::TYPE_OBJECT,
+            7,
+            false,
+            null,
+            $this->makeEmpty(AbstractObject::class, ['getKey' => 'provided-key']),
+        );
+
+        self::assertSame(7, $data['id']);
+        self::assertSame('provided-key', $data['columns'][0]->getValue());
+    }
+
+    /**
+     * The view permission is checked on the provided element, also for element types whose
+     * columns are resolved from the index entry.
+     *
+     * @dataProvider elementTypeProvider
+     */
+    public function testGetGridDataForElementChecksViewPermissionOnProvidedCoreElement(string $elementType): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+        $provided = $this->makeEmpty(AbstractObject::class);
+
+        $service = $this->createService(
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => Expected::once(
+                    static function (ElementInterface $element, $checkedUser, string $permission) use ($provided, $user): void {
+                        self::assertSame($provided, $element);
+                        self::assertSame($user, $checkedUser);
+                        self::assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+
+                        throw new ForbiddenException();
+                    }
+                ),
+            ]),
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
+        );
+
+        $this->expectException(ForbiddenException::class);
+
+        $service->getGridDataForElement(
+            $this->createCoreKeyColumnCollection(),
+            null,
+            $elementType,
+            7,
+            false,
+            $user,
+            $provided,
+        );
+    }
+
+    public static function elementTypeProvider(): array
+    {
+        return [
+            'data object' => [ElementTypes::TYPE_OBJECT],
+            'asset' => [ElementTypes::TYPE_ASSET],
+        ];
+    }
+
+    /**
+     * The workflow place permissions are merged from the provided element, not from the
+     * element stored under the same id.
+     */
+    public function testWorkflowMergeUsesProvidedCoreElement(): void
+    {
+        $provided = $this->makeEmpty(AbstractObject::class);
+        $mergedPermissions = new Permissions(delete: false);
+
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::never(),
+            ]),
+            workflowPermissionMerger: $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
+                'mergeWorkflowPermissions' => Expected::once(
+                    static function (Permissions $permissions, ElementInterface $element) use ($provided, $mergedPermissions): Permissions {
+                        self::assertSame($provided, $element);
+
+                        return $mergedPermissions;
+                    }
+                ),
+            ]),
+            columnResolverLoader: $this->createColumnResolverLoader(),
+        );
+
+        $data = $service->getGridDataForElement(
+            $this->createTestColumnCollection(),
+            $this->createStudioElement(new Permissions(), true),
+            ElementTypes::TYPE_ASSET,
+            1,
+            false,
+            null,
+            $provided,
+        );
+
+        self::assertSame($mergedPermissions, $data['permissions']);
+    }
+
+    /**
+     * Language view permissions apply to a provided element as to a loaded one.
+     *
+     * @see https://pimcore.atlassian.net/browse/PEES-1063
+     */
+    public function testGetGridDataForElementRedactsDeniedLocaleOfProvidedCoreElement(): void
+    {
+        $resolver = $this->createCoreKeyColumnResolver();
+
+        $service = $this->createService(
+            dataObjectServiceResolver: $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'getLanguagePermissions' => ['en' => 1],
+            ]),
+            columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                'loadColumnResolvers' => ['test.key' => $resolver],
+            ]),
+        );
+
+        $data = $service->getGridDataForElement(
+            new ColumnCollection([new Column(key: 'key', locale: 'de', type: 'test.key', group: null, config: [])]),
+            null,
+            ElementTypes::TYPE_OBJECT,
+            7,
+            false,
+            $this->buildUser(isAdmin: false),
+            $this->makeEmpty(Concrete::class, ['getKey' => 'LEAKED']),
+        );
+
+        self::assertNull($data['columns'][0]->getValue());
+        self::assertFalse($resolver->wasCalled, 'the resolver must not be invoked for a denied locale');
+    }
+
+    /**
+     * A provided page keeps its order and the caller's total, takes the row id and lock state
+     * from each entry and the values from each element, checks each against the current user
+     * and dispatches the column data event per cell.
+     */
+    public function testGetGridForProvidedElementsResolvesPageInOrder(): void
+    {
+        $user = $this->buildUser(isAdmin: false);
+
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::never(),
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => Expected::once($user),
+                'hasElementPermission' => Expected::exactly(2),
+            ]),
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
+            eventDispatcher: $this->makeEmpty(EventDispatcherInterface::class, [
+                'dispatch' => Expected::exactly(2, static fn (object $event): object => $event),
+            ]),
+        );
+
+        $result = $service->getGridForProvidedElements(
+            $this->createCoreKeyGridParameter(),
+            [
+                $this->createProvidedElement(12, 'second-in-index', true),
+                $this->createProvidedElement(3, 'first-in-index', false),
+            ],
+            240,
+            ElementTypes::TYPE_OBJECT,
+        );
+
+        self::assertSame(240, $result->getTotalItems());
+        $items = $result->getItems();
+        self::assertCount(2, $items);
+        self::assertSame(12, $items[0]['id']);
+        self::assertSame('second-in-index', $items[0]['columns'][0]->getValue());
+        self::assertTrue($items[0]['isLocked']);
+        self::assertSame(3, $items[1]['id']);
+        self::assertSame('first-in-index', $items[1]['columns'][0]->getValue());
+        self::assertFalse($items[1]['isLocked']);
+    }
+
+    /**
+     * An element the current user may not view is left out of the page, as the search index
+     * leaves it out of Studio's own grid; the other rows and the caller's total stay.
+     */
+    public function testGetGridForProvidedElementsLeavesOutElementsTheUserMayNotView(): void
+    {
+        $hidden = $this->createProvidedElement(5, 'hidden', false);
+
+        $service = $this->createService(
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->buildUser(isAdmin: false),
+                'hasElementPermission' => static function (ElementInterface $element) use ($hidden): void {
+                    if ($element === $hidden->getElement()) {
+                        throw new ForbiddenException();
+                    }
+                },
+            ]),
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
+        );
+
+        $result = $service->getGridForProvidedElements(
+            $this->createCoreKeyGridParameter(),
+            [$hidden, $this->createProvidedElement(6, 'visible', false)],
+            2,
+            ElementTypes::TYPE_OBJECT,
+        );
+
+        self::assertSame(2, $result->getTotalItems());
+        self::assertCount(1, $result->getItems());
+        self::assertSame(6, $result->getItems()[0]['id']);
+    }
+
+    /**
+     * Fallback languages follow the grid parameter while the page resolves and are restored
+     * afterwards, as in Studio's data object grid.
+     */
+    public function testGetGridForProvidedElementsAppliesAndRestoresFallbackLanguages(): void
+    {
+        $calls = [];
+
+        $service = $this->createService(
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->buildUser(isAdmin: true),
+            ]),
+            localizedFieldResolver: $this->makeEmpty(LocalizedFieldResolverInterface::class, [
+                'getGetFallbackValues' => false,
+                'setGetFallbackValues' => static function (bool $value) use (&$calls): void {
+                    $calls[] = $value;
+                },
+            ]),
+            columnResolverLoader: $this->createCoreKeyColumnResolverLoader(),
+        );
+
+        $service->getGridForProvidedElements(
+            new GridParameter(folderId: 1, columns: [], filters: null, applyFallbackLanguages: true),
+            [$this->createProvidedElement(1, 'key', false)],
+            1,
+            ElementTypes::TYPE_OBJECT,
+        );
+
+        self::assertSame([true, false], $calls);
+    }
+
+    public function testGetGridForProvidedElementsReturnsEmptyPageWithCallersTotal(): void
+    {
+        $service = $this->createService(
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->buildUser(isAdmin: true),
+            ]),
+        );
+
+        $result = $service->getGridForProvidedElements(
+            $this->createCoreKeyGridParameter(),
+            [],
+            40,
+            ElementTypes::TYPE_OBJECT,
+        );
+
+        self::assertSame(40, $result->getTotalItems());
+        self::assertSame([], $result->getItems());
+    }
+
+    /**
      * The Studio UI can send `config: false` (or omit it) for a column. That must not fatal with a
      * TypeError in the Column constructor.
      *
@@ -730,6 +1003,69 @@ final class GridServiceTest extends Unit
         ]);
     }
 
+    /**
+     * A core-element resolver for data objects and assets that reads the element's key, so a
+     * test can tell which element a value came from.
+     */
+    private function createCoreKeyColumnResolver(): ColumnResolverInterface
+    {
+        return new class implements ColumnResolverInterface, CoreElementColumnResolverInterface {
+            public bool $wasCalled = false;
+
+            public function getType(): string
+            {
+                return 'test.key';
+            }
+
+            public function supportedElementTypes(): array
+            {
+                return [ElementTypes::TYPE_OBJECT, ElementTypes::TYPE_ASSET];
+            }
+
+            public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+            {
+                $this->wasCalled = true;
+
+                return new ColumnData($column->getKey(), $column->getLocale(), $element->getKey(), 'input');
+            }
+        };
+    }
+
+    private function createCoreKeyColumnResolverLoader(): ColumnResolverLoaderInterface
+    {
+        return $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+            'loadColumnResolvers' => ['test.key' => $this->createCoreKeyColumnResolver()],
+        ]);
+    }
+
+    private function createCoreKeyColumnCollection(): ColumnCollection
+    {
+        return new ColumnCollection([
+            new Column(key: 'key', locale: null, type: 'test.key', group: null, config: []),
+        ]);
+    }
+
+    private function createCoreKeyGridParameter(): GridParameter
+    {
+        return new GridParameter(
+            folderId: 1,
+            columns: [['key' => 'key', 'locale' => null, 'type' => 'test.key']],
+            filters: null
+        );
+    }
+
+    private function createProvidedElement(int $id, string $key, bool $isLocked): ProvidedGridElement
+    {
+        return new ProvidedGridElement(
+            $this->makeEmpty(StudioElementInterface::class, [
+                'getId' => $id,
+                'getIsLocked' => $isLocked,
+                'getPermissions' => new Permissions(),
+            ]),
+            $this->makeEmpty(AbstractObject::class, ['getKey' => $key]),
+        );
+    }
+
     private function createService(
         ?GridSearchInterface $gridSearch = null,
         ?ServiceResolverInterface $serviceResolver = null,
@@ -741,13 +1077,14 @@ final class GridServiceTest extends Unit
         ?LocalizedFieldResolverInterface $localizedFieldResolver = null,
         ?ToolResolverInterface $toolResolver = null,
         ?LocaleServiceInterface $localeService = null,
+        ?EventDispatcherInterface $eventDispatcher = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
             $columnResolverLoader ?? $this->makeEmpty(ColumnResolverLoaderInterface::class),
             $this->makeEmpty(ColumnCollectorLoaderInterface::class),
             $gridSearch ?? $this->makeEmpty(GridSearchInterface::class),
-            $this->makeEmpty(EventDispatcherInterface::class, [
+            $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class, [
                 'dispatch' => static fn (object $event): object => $event,
             ]),
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),
