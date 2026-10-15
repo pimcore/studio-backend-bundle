@@ -82,6 +82,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         $data = [];
+        $jobStepName = $this->getJobStep($message)->getName();
         foreach ($dataObjects as $object) {
             try {
                 $data[$object['id']] = $this->gridService->getGridValuesForElement(
@@ -105,8 +106,9 @@ final class ExportDataCollectionHandler extends AbstractHandler
                 $this->publishService,
                 $this->userTopicService,
                 $jobRun,
-                $this->getJobStep($message)->getName(),
-                $totalObjects
+                $jobStepName,
+                $totalObjects,
+                persist: false
             );
         }
 
