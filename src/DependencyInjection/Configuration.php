@@ -58,6 +58,9 @@ class Configuration implements ConfigurationInterface
         'pimcore_studio_backend.documents.default_controllers only accepts the document types that are rendered '
         . 'by a controller (%s); got %%s.';
 
+    private const string DOCUMENT_DEFAULT_CONTROLLERS_VALUE_ERROR =
+        'Each pimcore_studio_backend.documents.default_controllers value must be a controller string.';
+
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
     /**
@@ -779,8 +782,12 @@ class Configuration implements ConfigurationInterface
                         )
                         ->example(['email' => 'App\\Controller\\MailController::defaultAction'])
                         ->useAttributeAsKey('type')
-                        ->stringPrototype()
+                        ->scalarPrototype()
                             ->cannotBeEmpty()
+                            ->validate()
+                                ->ifTrue(static fn ($controller): bool => !is_string($controller))
+                                ->thenInvalid(self::DOCUMENT_DEFAULT_CONTROLLERS_VALUE_ERROR)
+                            ->end()
                         ->end()
                         ->validate()
                             ->ifTrue(static fn (array $controllers): bool => array_diff(
