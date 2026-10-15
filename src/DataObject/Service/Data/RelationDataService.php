@@ -114,9 +114,9 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         $inherited = $origin['object']->getId() !== $element->getId();
         $inheritedValue = null;
         if ($contextData?->shouldResolveInheritedValue()) {
-            $parent = $element->getNextParentForInheritance();
-            $parentOrigin = $parent === null ? null : $this->findSummaryOrigin($parent, $fieldDefinition, $key, true);
-            if ($parentOrigin === null && $parent !== null) {
+            // an inherited value is the origin already found; an own value hides the nearest ancestor's value
+            $parentOrigin = $inherited ? $origin : $this->findParentSummaryOrigin($element, $fieldDefinition, $key);
+            if ($parentOrigin === null && $element->getNextParentForInheritance() !== null) {
                 return null;
             }
 
@@ -188,6 +188,19 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         }
 
         return $this->findSummaryOrigin($parent, $fieldDefinition, $key, true);
+    }
+
+    /**
+     * @return array{object: Concrete, summaries: list<array<string, mixed>>}|null
+     */
+    private function findParentSummaryOrigin(
+        Concrete $object,
+        Data&LightweightRelationLoadingInterface $fieldDefinition,
+        string $key
+    ): ?array {
+        $parent = $object->getNextParentForInheritance();
+
+        return $parent === null ? null : $this->findSummaryOrigin($parent, $fieldDefinition, $key, true);
     }
 
     /**

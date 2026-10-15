@@ -395,6 +395,23 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testAncestorRelationsAreReadOnceForAnInheritedValue(): void
+    {
+        $service = $this->lightweightCreateService($built);
+        $grandparent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 1);
+        $parent = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 5, parent: $grandparent);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: true, id: 10, parent: $parent);
+        $field = $this->makeFieldPerObject(optimized: true, summaries: [1 => [$this->makeSummary(7)], 5 => [], 10 => []], reads: $reads);
+
+        $data = $service->getLightweightInheritanceData($object, $field, 'objects', new FieldContextData(resolveInheritedValue: true));
+
+        $this->assertSame([7], array_map(static fn (RelatedElementData $d) => $d->getId(), $data->getInheritedValue()));
+        $this->assertSame([10 => 1, 5 => 1, 1 => 1], $reads);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testWithoutAnyRelationsTheTerminalAncestorIsTheOrigin(): void
     {
         $service = $this->lightweightCreateService($built);
@@ -556,15 +573,22 @@ final class RelationDataServiceTest extends Unit
 
     /**
      * @param array<int, array<int, array<string, mixed>>> $summaries summaries keyed by the id of the object they belong to
+     * @param array<int, int>|null $reads how often the relation rows of each object were read
      *
      * @throws Exception
      */
-    private function makeFieldPerObject(bool $optimized, array $summaries): ManyToManyObjectRelation
+    private function makeFieldPerObject(bool $optimized, array $summaries, ?array &$reads = null): ManyToManyObjectRelation
     {
+        $reads = [];
+
         return $this->makeEmpty(ManyToManyObjectRelation::class, [
             'isOptimizedAdminLoading' => $optimized,
             'supportsInheritance' => true,
-            'loadRelationSummaries' => static fn (Concrete $object): array => $summaries[$object->getId()] ?? [],
+            'loadRelationSummaries' => static function (Concrete $object) use ($summaries, &$reads): array {
+                $reads[$object->getId()] = ($reads[$object->getId()] ?? 0) + 1;
+
+                return $summaries[$object->getId()] ?? [];
+            },
         ]);
     }
 
