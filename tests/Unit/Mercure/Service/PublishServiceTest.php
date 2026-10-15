@@ -22,6 +22,7 @@ use Stringable;
 use Symfony\Component\Mercure\Exception\RuntimeException;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use TypeError;
 
 final class PublishServiceTest extends Unit
 {
@@ -112,6 +113,32 @@ final class PublishServiceTest extends Unit
             $this->fail('The serialization failure must reach the caller.');
         } catch (LogicException $exception) {
             $this->assertSame('cannot serialize', $exception->getMessage());
+        }
+
+        $this->assertSame([], $errors);
+    }
+
+    /**
+     * Only exceptions are treated as a delivery failure. A PHP error (e.g. a TypeError from a misbehaving token
+     * provider) is a programming error and must not be swallowed.
+     */
+    public function testPhpErrorsStillPropagate(): void
+    {
+        $errors = [];
+        $service = new PublishService(
+            $this->createLogger($errors),
+            $this->makeEmpty(SerializerInterface::class, ['serialize' => '{}']),
+            $this->makeEmpty(TokenProviderInterface::class, [
+                'getJwt' => static fn () => throw new TypeError('broken token provider'),
+            ]),
+            $this->makeEmpty(UrlServiceInterface::class, ['getServerSideUrl' => self::UNREACHABLE_HUB_URL]),
+        );
+
+        try {
+            $service->publish('topic', ['state' => 'finished']);
+            $this->fail('The PHP error must reach the caller.');
+        } catch (TypeError $error) {
+            $this->assertSame('broken token provider', $error->getMessage());
         }
 
         $this->assertSame([], $errors);
