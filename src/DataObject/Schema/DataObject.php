@@ -62,7 +62,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
         #[Property(description: 'Full path', type: 'string', example: '/path/to/dataObject')]
         private readonly string $fullPath,
         #[Property(ref: DataObjectPermissions::class)]
-        private readonly DataObjectPermissions $permissions,
+        private DataObjectPermissions $permissions,
         #[Property(description: 'Custom index', type: 'integer', example: 0)]
         private readonly int $index,
         #[Property(description: 'Sort mode of children', type: 'string', example: 'index')]
@@ -140,6 +140,11 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getPermissions(): DataObjectPermissions
     {
         return $this->permissions;
+    }
+
+    public function setPermissions(DataObjectPermissions $permissions): void
+    {
+        $this->permissions = $permissions;
     }
 
     public function getIndex(): int
