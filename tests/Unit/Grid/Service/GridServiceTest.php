@@ -47,11 +47,13 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Localization\LocaleServiceInterface;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
@@ -801,6 +803,62 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * For assets and documents too, the values come from the provided element, not from the
+     * entry, and the view permission is checked on it.
+     *
+     * @dataProvider nonObjectElementProvider
+     */
+    public function testGetGridForProvidedElementsResolvesNonObjectValuesFromProvidedElement(
+        string $elementType,
+        string $elementClass
+    ): void {
+        $provided = $this->makeEmpty($elementClass, ['getKey' => 'from-element']);
+
+        $service = $this->createService(
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => Expected::never(),
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->buildUser(isAdmin: false),
+                'hasElementPermission' => Expected::once(
+                    static function (ElementInterface $element) use ($provided): void {
+                        self::assertSame($provided, $element);
+                    }
+                ),
+            ]),
+            columnResolverLoader: $this->makeEmpty(ColumnResolverLoaderInterface::class, [
+                'loadColumnResolvers' => ['test.key' => $this->createCoreAndStudioKeyColumnResolver()],
+            ]),
+        );
+
+        $result = $service->getGridForProvidedElements(
+            $this->createCoreKeyGridParameter(),
+            [
+                new ProvidedGridElement(
+                    $this->makeEmpty(StudioElementInterface::class, [
+                        'getId' => 9,
+                        'getPermissions' => new Permissions(),
+                    ]),
+                    $provided,
+                ),
+            ],
+            1,
+            $elementType,
+        );
+
+        self::assertSame(9, $result->getItems()[0]['id']);
+        self::assertSame('from-element', $result->getItems()[0]['columns'][0]->getValue());
+    }
+
+    public static function nonObjectElementProvider(): array
+    {
+        return [
+            'asset' => [ElementTypes::TYPE_ASSET, Asset::class],
+            'document' => [ElementTypes::TYPE_DOCUMENT, Document::class],
+        ];
+    }
+
+    /**
      * Fallback languages follow the grid parameter while the page resolves and are restored
      * afterwards, as in Studio's data object grid.
      */
@@ -1027,6 +1085,38 @@ final class GridServiceTest extends Unit
                 $this->wasCalled = true;
 
                 return new ColumnData($column->getKey(), $column->getLocale(), $element->getKey(), 'input');
+            }
+        };
+    }
+
+    /**
+     * A resolver like Studio's system resolvers: it can read the core element and the index
+     * entry, and tells which one a value came from.
+     */
+    private function createCoreAndStudioKeyColumnResolver(): ColumnResolverInterface
+    {
+        return new class implements
+            ColumnResolverInterface,
+            CoreElementColumnResolverInterface,
+            StudioElementColumnResolverInterface {
+            public function getType(): string
+            {
+                return 'test.key';
+            }
+
+            public function supportedElementTypes(): array
+            {
+                return [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DOCUMENT];
+            }
+
+            public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+            {
+                return new ColumnData($column->getKey(), $column->getLocale(), $element->getKey(), 'input');
+            }
+
+            public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
+            {
+                return new ColumnData($column->getKey(), $column->getLocale(), 'from-entry', 'input');
             }
         };
     }

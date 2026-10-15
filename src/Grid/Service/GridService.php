@@ -271,15 +271,14 @@ final class GridService implements GridServiceInterface
     ): array {
         $data = [];
 
-        $databaseElement = null;
-        if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
-            $databaseElement = $coreElement ?? $this->getElement($this->serviceResolver, $elementType, $elementId);
+        $databaseElement = $coreElement;
+        if ($databaseElement === null && ($isExport || $elementType === ElementTypes::TYPE_OBJECT)) {
+            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
         }
 
-        $viewedElement = $databaseElement ?? $coreElement;
-        if ($user !== null && $viewedElement !== null) {
+        if ($user !== null && $databaseElement !== null) {
             $this->securityService->hasElementPermission(
-                $viewedElement,
+                $databaseElement,
                 $user,
                 ElementPermissions::VIEW_PERMISSION
             );
@@ -292,7 +291,7 @@ final class GridService implements GridServiceInterface
             );
         }
 
-        $permissions = $this->resolvePermissions($element, $viewedElement, $elementType, $elementId);
+        $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId);
 
         foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver

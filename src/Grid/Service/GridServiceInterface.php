@@ -63,7 +63,8 @@ interface GridServiceInterface
 
     /**
      * A caller that already holds the core element (one built from another state than the
-     * database, say) passes it as $coreElement; it is then used instead of loading it by id.
+     * database, say) passes it as $coreElement; for every element type it is then used instead
+     * of loading it by id, and columns whose resolver reads core elements take their values from it.
      *
      * @throws InvalidArgumentException|NotFoundException|ForbiddenException
      */
@@ -79,8 +80,10 @@ interface GridServiceInterface
 
     /**
      * Grid rows for one page of elements the caller provides instead of the search index.
-     * The current user's view, language and workflow permissions apply as in the grid;
-     * an element the user may not view is left out of the page.
+     * Each entry supplies the row's id, lock state and permissions, each element the values.
+     * The caller passes only elements the current user may view, and $totalItems counts only
+     * those. The view, language and workflow permissions still apply as in the grid; an
+     * element the user may not view is left out of the page, without changing $totalItems.
      *
      * @param ProvidedGridElement[] $elements
      *
