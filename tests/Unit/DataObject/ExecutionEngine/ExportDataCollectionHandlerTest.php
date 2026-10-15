@@ -23,6 +23,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInter
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\ExportDataCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
@@ -77,12 +78,17 @@ final class ExportDataCollectionHandlerTest extends Unit
         $columnConfigurationService = $this->createMock(ColumnConfigurationServiceInterface::class);
         $columnConfigurationService->method('getAvailableDataObjectColumnConfiguration')->willReturn([]);
 
+        $elementContextService = $this->createMock(ElementContextServiceInterface::class);
+        $elementContextService->method('runWithUnpublishedElements')
+            ->willReturnCallback(static fn (callable $callback): mixed => $callback());
+
         $handler = new ExportDataCollectionHandler(
             $columnConfigurationService,
             $this->createMock(PublishServiceInterface::class),
             $userTopicService,
             $userResolver,
-            $gridService
+            $gridService,
+            $elementContextService
         );
         $handler->setJobRunRepository($repository);
         $handler->setJobRunExtractor($this->createJobRunExtractor($jobRun));
