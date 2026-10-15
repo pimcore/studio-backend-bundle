@@ -83,7 +83,7 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
     {
         $className = $this->resolveElementClass($summary);
         $element = $className === null ? null : $this->createElementFromSummary($summary, $className);
-        if ($element === null || $this->needsLoadedElementForPermission($element, $className)) {
+        if ($element === null || $this->needsLoadedElementForPermission($element)) {
             $element = $this->serviceResolver->getElementById($summary['type'], $summary['id']);
             if ($element === null) {
                 return $this->createRelatedElementDataFromSummary($summary, false);
@@ -116,9 +116,9 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
         return $user instanceof User ? $user : null;
     }
 
-    private function needsLoadedElementForPermission(ElementInterface $element, string $className): bool
+    private function needsLoadedElementForPermission(ElementInterface $element): bool
     {
-        if (!$this->isPermissionDecidedByCore($className)) {
+        if (!$this->isPermissionDecidedByCore($element)) {
             return true;
         }
 
@@ -133,20 +133,16 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
 
     /**
      * A listener on the permission event or a class of the project in the model's hierarchy (a model override,
-     * a custom type class or a custom parent class) may decide with data the model does not carry; only the
-     * core implementation is known to need nothing but identity, path and parent.
+     * a custom type class or a custom parent class, whatever the factory built) may decide with data the model
+     * does not carry; only the core implementation is known to need nothing but identity, path and parent.
      */
-    private function isPermissionDecidedByCore(string $className): bool
+    private function isPermissionDecidedByCore(ElementInterface $element): bool
     {
         if ($this->eventDispatcher->hasListeners(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED)) {
             return false;
         }
 
-        if (isset($this->modelFactory->getClassMap()[$className])) {
-            return false;
-        }
-
-        $declaringClass = (new ReflectionMethod($className, 'isAllowed'))->getDeclaringClass()->getName();
+        $declaringClass = (new ReflectionMethod($element, 'isAllowed'))->getDeclaringClass()->getName();
 
         return $declaringClass === AbstractElement::class;
     }

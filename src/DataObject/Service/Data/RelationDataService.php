@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LightweightRelationLoadingInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\OptimizedAdminLoadingInterface;
@@ -139,13 +140,18 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     }
 
     /**
-     * The relation rows only describe what the generated getter would return; a getter of the project (a model
-     * override or a custom parent class) may return something else, so its value is read as usual.
+     * The relation rows only describe what the generated getter returns through the generic get(); a getter or
+     * a get() of the project (a model override or a custom parent class) may return something else, so the
+     * value is then read as usual.
      */
     private function usesGeneratedGetter(Concrete $element, string $key): bool
     {
         $getter = 'get' . ucfirst($key);
         if (!method_exists($element, $getter)) {
+            return false;
+        }
+
+        if ((new ReflectionMethod($element, 'get'))->getDeclaringClass()->getName() !== AbstractObject::class) {
             return false;
         }
 

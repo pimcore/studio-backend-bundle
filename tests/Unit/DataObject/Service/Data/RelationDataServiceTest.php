@@ -462,6 +462,26 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testRegularLoadingIsUsedWhenTheGenericGetterIsOverridden(): void
+    {
+        $customClass = get_class(new class() extends LightweightRelationTestObject {
+            public function get(string $fieldName, ?string $language = null): mixed
+            {
+                return [];
+            }
+        });
+        $service = $this->lightweightCreateService($built);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: false, objectClass: $customClass);
+        $field = $this->makeField(optimized: true, summaries: [$this->makeSummary(1)]);
+
+        $this->assertNull($service->getLightweightRelationData($object, $field, 'objects'));
+        $this->assertNull($service->getLightweightInheritanceData($object, $field, 'objects'));
+        $this->assertSame([], $built);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testRegularLoadingIsUsedWhenTheElementDataServiceCannotDescribeSummaries(): void
     {
         $elementDataService = $this->makeEmpty(ElementDataServiceInterface::class);

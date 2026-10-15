@@ -102,17 +102,16 @@ final class ElementDataServiceTest extends Unit
      */
     public function testSummaryIsCheckedOnAModelOfTheElementClassWithoutLoadingTheElement(): void
     {
-        $folder = $this->makeFolder(isAllowed: true, calls: $calls);
         $service = $this->createService(
+            securityService: $this->securityServiceWithoutUser(),
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $folder, $built)
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder(), $built)
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([Folder::class], $built);
-        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
-        $this->assertTrue($data->getHasViewAccess());
+        $this->assertFalse($data->getHasViewAccess());
         $this->assertSame(83, $data->getId());
         $this->assertSame('object', $data->getType());
         $this->assertSame('folder', $data->getSubtype());
@@ -123,17 +122,24 @@ final class ElementDataServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDeniedViewOnTheModelIsReported(): void
+    public function testModelCarriesTheIdentityPathAndParentOfTheSummary(): void
     {
-        $folder = $this->makeFolder(isAllowed: false, calls: $calls);
+        $folder = new Folder();
         $service = $this->createService(
+            securityService: $this->securityServiceWithoutUser(),
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $folder, $built)
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $folder)
         );
 
-        $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
+        $service->getRelatedElementDataFromSummary(
+            $this->makeSummary(['className' => null, 'subtype' => 'folder', 'parentId' => 7, 'published' => false])
+        );
 
-        $this->assertFalse($data->getHasViewAccess());
+        $this->assertSame(83, $folder->getId());
+        $this->assertSame(7, $folder->getParentId());
+        $this->assertSame('/path/to/', $folder->getPath());
+        $this->assertSame('element', $folder->getKey());
+        $this->assertSame('folder', $folder->getType());
     }
 
     /**
@@ -141,7 +147,7 @@ final class ElementDataServiceTest extends Unit
      */
     public function testAssetSummaryUsesTheClassOfItsType(): void
     {
-        $image = $this->makeAsset(isAllowed: true, calls: $calls);
+        $image = new Asset\Image();
         $assetClassResolver = $this->makeEmpty(ResolverInterface::class, [
             'resolve' => function (string $type) use (&$resolved): ?string {
                 $resolved[] = $type;
@@ -150,18 +156,20 @@ final class ElementDataServiceTest extends Unit
             },
         ]);
         $service = $this->createService(
+            securityService: $this->securityServiceWithoutUser(),
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
             assetClassResolver: $assetClassResolver,
             modelFactory: $this->modelFactoryBuilding(Asset\Image::class, $image, $built)
         );
 
         $data = $service->getRelatedElementDataFromSummary(
-            $this->makeSummary(['type' => 'asset', 'className' => null, 'subtype' => 'image', 'published' => true])
+            $this->makeSummary(['type' => 'asset', 'className' => null, 'subtype' => 'image', 'filename' => 'element.jpg', 'fullpath' => '/path/to/element.jpg'])
         );
 
         $this->assertSame(['image'], $resolved);
         $this->assertSame([Asset\Image::class], $built);
-        $this->assertTrue($data->getHasViewAccess());
+        $this->assertSame('element.jpg', $image->getFilename());
+        $this->assertSame('/path/to/', $image->getPath());
         $this->assertSame('asset', $data->getType());
         $this->assertSame('image', $data->getSubtype());
         $this->assertNull($data->getIsPublished());
@@ -191,14 +199,13 @@ final class ElementDataServiceTest extends Unit
         $loaded = $this->makeAsset(isAllowed: true, calls: $calls);
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($loaded, $loads),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             workflows: ['publishing' => ['enabled' => true, 'supports' => [Folder::class], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([['object', 83]], $loads);
-        $this->assertSame([], $modelCalls);
         $this->assertSame('/path/to/asset.jpg', $data->getFullPath());
         $this->assertTrue($data->getHasViewAccess());
     }
@@ -209,15 +216,15 @@ final class ElementDataServiceTest extends Unit
     public function testElementIsNotLoadedWhenNoWorkflowAppliesToIt(): void
     {
         $service = $this->createService(
+            securityService: $this->securityServiceWithoutUser(),
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             workflows: ['publishing' => ['enabled' => true, 'supports' => [Asset\Image::class], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
-        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
-        $this->assertTrue($data->getHasViewAccess());
+        $this->assertFalse($data->getHasViewAccess());
     }
 
     /**
@@ -227,14 +234,13 @@ final class ElementDataServiceTest extends Unit
     {
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             workflows: ['publishing' => ['enabled' => true, 'supports' => [], 'support_strategy' => ['type' => 'expression', 'arguments' => ['\\Pimcore\\Model\\DataObject\\Folder', 'subject.getPath() matches "#^/new#"']], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([['object', 83]], $loads);
-        $this->assertSame([], $modelCalls);
         $this->assertFalse($data->getHasViewAccess());
     }
 
@@ -244,35 +250,36 @@ final class ElementDataServiceTest extends Unit
     public function testDisabledWorkflowsDoNotApply(): void
     {
         $service = $this->createService(
+            securityService: $this->securityServiceWithoutUser(),
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             workflows: ['publishing' => ['enabled' => false, 'supports' => [Folder::class], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
-        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
-        $this->assertTrue($data->getHasViewAccess());
+        $this->assertFalse($data->getHasViewAccess());
     }
 
     /**
      * @throws Exception
      */
-    public function testElementIsLoadedWhenItsModelClassIsOverridden(): void
+    public function testElementIsLoadedWhenTheFactorySubstitutesAClassOfTheProject(): void
     {
+        $substitute = new class() extends Folder {
+            public function isAllowed(string $type, ?User $user = null): bool
+            {
+                return $this->getProperty('restricted') !== true;
+            }
+        };
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
-            modelFactory: $this->modelFactoryBuilding(
-                Folder::class,
-                $this->makeFolder(isAllowed: true, calls: $modelCalls),
-                classMap: [Folder::class => 'App\\Model\\DataObject\\Folder']
-            )
+            modelFactory: $this->modelFactoryBuilding(Folder::class, $substitute)
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([['object', 83]], $loads);
-        $this->assertSame([], $modelCalls);
         $this->assertFalse($data->getHasViewAccess());
     }
 
@@ -282,15 +289,15 @@ final class ElementDataServiceTest extends Unit
     public function testElementIsNotLoadedWhenAnExpressionStrategyTargetsAnotherClass(): void
     {
         $service = $this->createService(
+            securityService: $this->securityServiceWithoutUser(),
             serviceResolver: $this->serviceResolverThatMustNotLoad(),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $calls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             workflows: ['assets' => ['enabled' => true, 'supports' => [], 'support_strategy' => ['type' => 'expression', 'arguments' => ['\\Pimcore\\Model\\Asset', 'is_fully_authenticated()']], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
-        $this->assertSame([[ElementPermissions::VIEW_PERMISSION, true]], $calls);
-        $this->assertTrue($data->getHasViewAccess());
+        $this->assertFalse($data->getHasViewAccess());
     }
 
     /**
@@ -300,14 +307,13 @@ final class ElementDataServiceTest extends Unit
     {
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             workflows: ['custom' => ['enabled' => true, 'supports' => [], 'support_strategy' => ['service' => 'app.workflow_support'], 'places' => []]]
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([['object', 83]], $loads);
-        $this->assertSame([], $modelCalls);
         $this->assertFalse($data->getHasViewAccess());
     }
 
@@ -326,7 +332,7 @@ final class ElementDataServiceTest extends Unit
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
             assetClassResolver: $assetClassResolver,
-            modelFactory: $this->modelFactoryBuilding($customClass, $this->makeAsset(isAllowed: true, calls: $modelCalls))
+            modelFactory: $this->modelFactoryBuilding($customClass, new $customClass())
         );
 
         $data = $service->getRelatedElementDataFromSummary(
@@ -334,7 +340,6 @@ final class ElementDataServiceTest extends Unit
         );
 
         $this->assertSame([['asset', 83]], $loads);
-        $this->assertSame([], $modelCalls);
         $this->assertFalse($data->getHasViewAccess());
     }
 
@@ -345,14 +350,13 @@ final class ElementDataServiceTest extends Unit
     {
         $service = $this->createService(
             serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
-            modelFactory: $this->modelFactoryBuilding(Folder::class, $this->makeFolder(isAllowed: true, calls: $modelCalls)),
+            modelFactory: $this->modelFactoryBuilding(Folder::class, new Folder()),
             hasPermissionListeners: true
         );
 
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([['object', 83]], $loads);
-        $this->assertSame([], $modelCalls);
         $this->assertFalse($data->getHasViewAccess());
     }
 
@@ -418,7 +422,7 @@ final class ElementDataServiceTest extends Unit
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $assetClassResolver ?? $this->makeEmpty(ResolverInterface::class, ['resolve' => null]),
             $this->makeEmpty(ResolverInterface::class, ['resolve' => null]),
-            $modelFactory ?? $this->makeEmpty(FactoryInterface::class, ['getClassMap' => []]),
+            $modelFactory ?? $this->makeEmpty(FactoryInterface::class),
             $eventDispatcher,
             $workflows
         );
@@ -474,13 +478,11 @@ final class ElementDataServiceTest extends Unit
     private function modelFactoryBuilding(
         string $expectedClass,
         ElementInterface $model,
-        ?array &$built = null,
-        array $classMap = []
+        ?array &$built = null
     ): FactoryInterface {
         $built = [];
 
         return $this->makeEmpty(FactoryInterface::class, [
-            'getClassMap' => $classMap,
             'build' => function (string $name) use (&$built, $expectedClass, $model) {
                 $built[] = $name;
                 $this->assertSame($expectedClass, $name);
@@ -503,24 +505,6 @@ final class ElementDataServiceTest extends Unit
             'getId' => 83,
             'getType' => 'image',
             'getRealFullPath' => '/path/to/asset.jpg',
-            'isAllowed' => function (string $type, ?User $user = null) use (&$calls, $isAllowed): bool {
-                $calls[] = [$type, $user instanceof User];
-
-                return $isAllowed;
-            },
-        ]);
-    }
-
-    /**
-     * @param array<int, array{string, bool}>|null $calls
-     *
-     * @throws Exception
-     */
-    private function makeFolder(bool $isAllowed, ?array &$calls = null): Folder
-    {
-        $calls = [];
-
-        return $this->makeEmpty(Folder::class, [
             'isAllowed' => function (string $type, ?User $user = null) use (&$calls, $isAllowed): bool {
                 $calls[] = [$type, $user instanceof User];
 
