@@ -2,6 +2,11 @@
 
 The following steps are necessary during updating to newer versions.
 
+## Upgrade to 2025.4.16
+- [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
+  and email documents per document type (for documents created without a predefined document type). Types without an
+  entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
+
 ## Upgrade to 2025.4.15
 - [Translations] Fixed: website translations for locales that are not admin UI languages (e.g. `fr_BE`, `nl_BE`) could not be maintained. `POST /translations/list` only returned values for the available admin UI languages, so these columns stayed empty, and sorting by such a locale failed. The list now returns the languages the user is allowed to view for the requested domain (admin UI languages for the `admin` and `studio` domains), as in the classic admin UI.
 
