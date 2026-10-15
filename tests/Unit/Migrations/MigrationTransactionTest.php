@@ -45,6 +45,7 @@ final class MigrationTransactionTest extends Unit
     private const array DATA_ONLY_MIGRATIONS = [
         'Version20260115100546',
         'Version20260505124233',
+        'Version20260826120000',
     ];
 
     /**
