@@ -19,6 +19,7 @@ use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
 use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 use function is_string;
 use function sprintf;
 
@@ -35,6 +36,10 @@ final class PublishService implements PublishServiceInterface
     }
 
     /**
+     * Failing to reach the hub is logged and never thrown: publishing runs inside Doctrine lifecycle listeners,
+     * where an exception rolls back the surrounding transaction and closes the EntityManager. Clients fall back
+     * to polling when an update does not arrive.
+     *
      * @param string|array<string> $topics
      */
     public function publish(
@@ -63,7 +68,17 @@ final class PublishService implements PublishServiceInterface
             )
         );
 
-        $this->getServerHub()->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
+        try {
+            $this->getServerHub()->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
+        } catch (Throwable $exception) {
+            $this->logger->error(
+                sprintf('Failed to publish Mercure update: %s', $exception->getMessage()),
+                [
+                    'topics' => $topics,
+                    'exception' => $exception,
+                ]
+            );
+        }
     }
 
     public function getJsonData(mixed $data): string
