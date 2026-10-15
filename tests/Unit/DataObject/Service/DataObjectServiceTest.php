@@ -46,6 +46,8 @@ final class DataObjectServiceTest extends Unit
 {
     private const int OBJECT_ID = 5;
 
+    private const int CURRENT_USER_ID = 7;
+
     /**
      * The editor derives its "Save & Publish" action from the permissions of the detail response.
      * A publish that the current workflow place denies must therefore not be reported as allowed,
@@ -117,7 +119,7 @@ final class DataObjectServiceTest extends Unit
     }
 
     /**
-     * The by-user detail lookup (used outside the current request user) applies the same restriction.
+     * The by-user detail lookup applies the same restriction when it is made for the current request user.
      */
     public function testDetailForUserPermissionsAreRestrictedByTheWorkflowPlace(): void
     {
@@ -126,10 +128,43 @@ final class DataObjectServiceTest extends Unit
             $this->createManagerDenying(['publish' => false])
         );
 
-        $result = $service->getDataObjectForUser(self::OBJECT_ID, $this->createMock(UserInterface::class));
+        $result = $service->getDataObjectForUser(self::OBJECT_ID, $this->createUser(self::CURRENT_USER_ID));
 
         $this->assertFalse($result->getPermissions()->isPublish());
         $this->assertTrue($result->getPermissions()->isSave());
+    }
+
+    /**
+     * The workflow place conditions are evaluated for the current request user. For another user the
+     * workspace permissions stay as they are instead of mixing the two user contexts.
+     */
+    public function testDetailForAnotherUserKeepsTheWorkspacePermissions(): void
+    {
+        $service = $this->createService(
+            $this->createSearchService($this->createDetail(hasWorkflowWithPermissions: true)),
+            $this->createManagerNeverEvaluated(),
+        );
+
+        $result = $service->getDataObjectForUser(self::OBJECT_ID, $this->createUser(self::CURRENT_USER_ID + 1));
+
+        $this->assertTrue($result->getPermissions()->isPublish());
+        $this->assertTrue($result->getPermissions()->isSave());
+    }
+
+    /**
+     * Without a logged-in user there is no user context to evaluate the workflow for.
+     */
+    public function testDetailForUserWithoutLoggedInUserKeepsTheWorkspacePermissions(): void
+    {
+        $service = $this->createService(
+            $this->createSearchService($this->createDetail(hasWorkflowWithPermissions: true)),
+            $this->createManagerNeverEvaluated(),
+            loggedIn: false
+        );
+
+        $result = $service->getDataObjectForUser(self::OBJECT_ID, $this->createUser(self::CURRENT_USER_ID));
+
+        $this->assertTrue($result->getPermissions()->isPublish());
     }
 
     /**
@@ -149,6 +184,7 @@ final class DataObjectServiceTest extends Unit
         DataObjectSearchServiceInterface $searchService,
         Manager $manager,
         ?ServiceResolverInterface $serviceResolver = null,
+        bool $loggedIn = true,
     ): DataObjectService {
         if ($serviceResolver === null) {
             $serviceResolver = $this->createMock(ServiceResolverInterface::class);
@@ -156,7 +192,8 @@ final class DataObjectServiceTest extends Unit
         }
 
         $securityService = $this->createMock(SecurityServiceInterface::class);
-        $securityService->method('getCurrentUser')->willReturn($this->createMock(UserInterface::class));
+        $securityService->method('isLoggedIn')->willReturn($loggedIn);
+        $securityService->method('getCurrentUser')->willReturn($this->createUser(self::CURRENT_USER_ID));
 
         return new DataObjectService(
             $this->createMock(ClassDefinitionResolverInterface::class),
@@ -255,6 +292,22 @@ final class DataObjectServiceTest extends Unit
             versions: true,
             properties: true,
         );
+    }
+
+    private function createUser(int $id): UserInterface
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn($id);
+
+        return $user;
+    }
+
+    private function createManagerNeverEvaluated(): Manager
+    {
+        $manager = $this->createMock(Manager::class);
+        $manager->expects($this->never())->method('getAllWorkflows');
+
+        return $manager;
     }
 
     /**

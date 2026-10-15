@@ -178,7 +178,11 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     {
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
-        $this->applyWorkflowPermissions($dataObject);
+        // the workflow place conditions are evaluated for the current request user only: for any other user
+        // the permissions stay the workspace permissions instead of mixing two user contexts
+        if ($this->isCurrentUser($user)) {
+            $this->applyWorkflowPermissions($dataObject);
+        }
 
         $this->dispatchDetailEvent($dataObject);
 
@@ -366,6 +370,12 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         if ($permissions instanceof DataObjectPermissions) {
             $dataObject->setPermissions($permissions);
         }
+    }
+
+    private function isCurrentUser(UserInterface $user): bool
+    {
+        return $this->securityService->isLoggedIn()
+            && $this->securityService->getCurrentUser()->getId() === $user->getId();
     }
 
     private function dispatchTreeEvent(mixed $dataObject): void
