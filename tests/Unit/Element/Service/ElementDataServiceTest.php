@@ -30,6 +30,7 @@ use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_merge;
+use function get_class;
 
 /**
  * @internal
@@ -306,6 +307,33 @@ final class ElementDataServiceTest extends Unit
         $data = $service->getRelatedElementDataFromSummary($this->makeSummary(['className' => null, 'subtype' => 'folder']));
 
         $this->assertSame([['object', 83]], $loads);
+        $this->assertSame([], $modelCalls);
+        $this->assertFalse($data->getHasViewAccess());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testElementIsLoadedWhenAClassOfTheProjectDecidesAboutPermissions(): void
+    {
+        $customClass = get_class(new class() extends Asset\Image {
+            public function isAllowed(string $type, ?User $user = null): bool
+            {
+                return $this->getCustomSetting('restricted') !== true;
+            }
+        });
+        $assetClassResolver = $this->makeEmpty(ResolverInterface::class, ['resolve' => $customClass]);
+        $service = $this->createService(
+            serviceResolver: $this->serviceResolverLoading($this->makeAsset(isAllowed: false, calls: $calls), $loads),
+            assetClassResolver: $assetClassResolver,
+            modelFactory: $this->modelFactoryBuilding($customClass, $this->makeAsset(isAllowed: true, calls: $modelCalls))
+        );
+
+        $data = $service->getRelatedElementDataFromSummary(
+            $this->makeSummary(['type' => 'asset', 'className' => null, 'subtype' => 'image'])
+        );
+
+        $this->assertSame([['asset', 83]], $loads);
         $this->assertSame([], $modelCalls);
         $this->assertFalse($data->getHasViewAccess());
     }

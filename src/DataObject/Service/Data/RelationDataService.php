@@ -33,9 +33,11 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ElementInterface;
+use ReflectionMethod;
 use function array_map;
 use function is_array;
 use function method_exists;
+use function ucfirst;
 
 /**
  * @internal
@@ -69,7 +71,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     public function getLightweightRelationData(Concrete $element, Data $fieldDefinition, string $key): ?array
     {
-        if (!$this->supportsLightweightLoading($fieldDefinition)) {
+        if (!$this->supportsLightweightLoading($fieldDefinition) || !$this->usesGeneratedGetter($element, $key)) {
             return null;
         }
 
@@ -95,6 +97,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
     ): ?InheritanceData {
         if (
             !$this->supportsLightweightLoading($fieldDefinition) ||
+            !$this->usesGeneratedGetter($element, $key) ||
             !$fieldDefinition->supportsInheritance() ||
             $contextData?->getContextObject() !== null ||
             $contextData?->getLanguage() !== null
@@ -133,6 +136,21 @@ final readonly class RelationDataService implements RelationDataServiceInterface
             && $fieldDefinition instanceof OptimizedAdminLoadingInterface
             && $fieldDefinition->isOptimizedAdminLoading()
             && $fieldDefinition instanceof LightweightRelationLoadingInterface;
+    }
+
+    /**
+     * The relation rows only describe what the generated getter would return; a getter of the project (a model
+     * override or a custom parent class) may return something else, so its value is read as usual.
+     */
+    private function usesGeneratedGetter(Concrete $element, string $key): bool
+    {
+        $getter = 'get' . ucfirst($key);
+        if (!method_exists($element, $getter)) {
+            return false;
+        }
+
+        return (new ReflectionMethod($element, $getter))->getDeclaringClass()->getName()
+            === 'Pimcore\\Model\\DataObject\\' . ucfirst($element->getClassName());
     }
 
     /**

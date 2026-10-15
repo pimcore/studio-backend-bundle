@@ -16,7 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Service\Data;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
@@ -25,21 +27,23 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSummaryDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
-use Pimcore\Model\DataObject\Concrete;
-use function array_column;
-use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
-use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\LightweightRelationTestObject;
+use function array_column;
 use function array_map;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSummaryDataServiceInterface;
+use function get_class;
+
+require_once __DIR__ . '/../../../../Support/Fixture/LightweightRelationTestObject.php';
 
 /**
  * @internal
@@ -438,6 +442,26 @@ final class RelationDataServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testRegularLoadingIsUsedWhenTheGetterIsNotTheGeneratedOne(): void
+    {
+        $customClass = get_class(new class() extends LightweightRelationTestObject {
+            public function getObjects(): ?array
+            {
+                return [];
+            }
+        });
+        $service = $this->lightweightCreateService($built);
+        $object = $this->makeObject(lazyKeyLoaded: false, allowInherit: false, objectClass: $customClass);
+        $field = $this->makeField(optimized: true, summaries: [$this->makeSummary(1)]);
+
+        $this->assertNull($service->getLightweightRelationData($object, $field, 'objects'));
+        $this->assertNull($service->getLightweightInheritanceData($object, $field, 'objects'));
+        $this->assertSame([], $built);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testRegularLoadingIsUsedWhenTheElementDataServiceCannotDescribeSummaries(): void
     {
         $elementDataService = $this->makeEmpty(ElementDataServiceInterface::class);
@@ -531,17 +555,21 @@ final class RelationDataServiceTest extends Unit
         bool $lazyKeyLoaded,
         bool $allowInherit,
         int $id = 10,
-        ?Concrete $parent = null
-    ): Concrete {
+        ?Concrete $parent = null,
+        ?string $objectClass = null
+    ): LightweightRelationTestObject {
         $class = new ClassDefinition();
         $class->setAllowInherit($allowInherit);
 
-        return $this->makeEmpty(Concrete::class, [
-            'getId' => $id,
-            'isLazyKeyLoaded' => $lazyKeyLoaded,
-            'getClass' => $class,
-            'getNextParentForInheritance' => $parent,
-        ]);
+        $objectClass ??= LightweightRelationTestObject::class;
+        /** @var LightweightRelationTestObject $object */
+        $object = new $objectClass();
+        $object->setId($id);
+        $object->setClass($class);
+        $object->setLazyKeyLoaded($lazyKeyLoaded);
+        $object->setNextParentForInheritance($parent);
+
+        return $object;
     }
 
     /**

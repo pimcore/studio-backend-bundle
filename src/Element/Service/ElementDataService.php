@@ -25,10 +25,12 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Document;
+use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use Pimcore\Resolver\ResolverInterface;
+use ReflectionMethod;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function class_exists;
 use function is_string;
@@ -72,8 +74,8 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
      * The view permission is checked on an unsaved model of the element's class that only carries the identity,
      * path and parent from the summary, which is all the core workspace check needs. Whenever something could
      * look at more than that - a workflow that applies to the element (its places may deny the permission and
-     * are read from the element's data), a listener on the permission event or a model override of the class -
-     * the element is loaded and checked as usual.
+     * are read from the element's data), a listener on the permission event or a class of the project in the
+     * model's hierarchy - the element is loaded and checked as usual.
      *
      * {@inheritdoc}
      */
@@ -116,32 +118,57 @@ final readonly class ElementDataService implements ElementSummaryDataServiceInte
 
     private function needsLoadedElementForPermission(ElementInterface $element, string $className): bool
     {
-        if ($this->eventDispatcher->hasListeners(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED)) {
-            return true;
-        }
-
-        // an override of the model may decide about permissions with data the model does not carry
-        if (isset($this->modelFactory->getClassMap()[$className])) {
+        if (!$this->isPermissionDecidedByCore($className)) {
             return true;
         }
 
         foreach ($this->workflowConfigs as $config) {
-            if (($config['enabled'] ?? true) === false) {
-                continue;
-            }
-
-            if (!empty($config['supports'])) {
-                foreach ((array) $config['supports'] as $supportedClass) {
-                    if ($element instanceof $supportedClass) {
-                        return true;
-                    }
-                }
-            } elseif (isset($config['support_strategy']) && $this->supportStrategyMayApply($config['support_strategy'], $element)) {
+            if ($this->workflowMayApply($config, $element)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * A listener on the permission event or a class of the project in the model's hierarchy (a model override,
+     * a custom type class or a custom parent class) may decide with data the model does not carry; only the
+     * core implementation is known to need nothing but identity, path and parent.
+     */
+    private function isPermissionDecidedByCore(string $className): bool
+    {
+        if ($this->eventDispatcher->hasListeners(ElementEvents::ELEMENT_PERMISSION_IS_ALLOWED)) {
+            return false;
+        }
+
+        if (isset($this->modelFactory->getClassMap()[$className])) {
+            return false;
+        }
+
+        $declaringClass = (new ReflectionMethod($className, 'isAllowed'))->getDeclaringClass()->getName();
+
+        return $declaringClass === AbstractElement::class;
+    }
+
+    private function workflowMayApply(array $config, ElementInterface $element): bool
+    {
+        if (($config['enabled'] ?? true) === false) {
+            return false;
+        }
+
+        if (!empty($config['supports'])) {
+            foreach ((array) $config['supports'] as $supportedClass) {
+                if ($element instanceof $supportedClass) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return isset($config['support_strategy'])
+            && $this->supportStrategyMayApply($config['support_strategy'], $element);
     }
 
     /**
