@@ -155,35 +155,35 @@ final class StringFilterTest extends Unit
             'filterMultiSelect' => Expected::never(),
         ]);
 
-        $values = [];
-        for ($i = 0; $i <= StringFilter::MAX_VALUES; $i++) {
-            $values[] = 'value-' . $i;
-        }
-
         $stringFilter = new StringFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('at most ' . StringFilter::MAX_VALUES . ' values');
-        $stringFilter->apply($this->getParameterMock($values), $queryMock);
+        $this->expectExceptionMessage('The filter accepts at most 1000 values');
+        $stringFilter->apply($this->getParameterMock($this->getValues(1001)), $queryMock);
     }
 
     public function testListOfValuesAtTheLimitIsAccepted(): void
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMultiSelect' => Expected::once(function ($key, $values) {
-                $this->assertCount(StringFilter::MAX_VALUES, $values);
+                $this->assertCount(1000, $values);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
             }),
         ]);
 
+        $stringFilter = new StringFilter();
+        $stringFilter->apply($this->getParameterMock($this->getValues(1000)), $queryMock);
+    }
+
+    private function getValues(int $count): array
+    {
         $values = [];
-        for ($i = 0; $i < StringFilter::MAX_VALUES; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $values[] = 'value-' . $i;
         }
 
-        $stringFilter = new StringFilter();
-        $stringFilter->apply($this->getParameterMock($values), $queryMock);
+        return $values;
     }
 
     private function getParameterMock(array $filterValue, string $key = 'sku'): ColumnFiltersParameterInterface

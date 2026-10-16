@@ -30,7 +30,7 @@ final class StringFilter implements FilterInterface
     use IsAssetFilterTrait;
     use MapsSystemColumnFieldTrait;
 
-    public const int MAX_VALUES = 1000;
+    private const int MAX_VALUES = 1000;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
