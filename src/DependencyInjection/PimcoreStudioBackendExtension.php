@@ -543,6 +543,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $configLocation = $containerConfig['config_location'][$node];
         $configDir = $configLocation['write_target']['options']['directory'];
 
+        // Track the directory, not only the files loaded from it: a configuration saved at
+        // runtime is a new file there, and the container has to rebuild for it. Without this
+        // it only did when Pimcore could touch config/services.yaml, which it skips whenever
+        // PHP-FPM cannot write that file. Core imports its own config directories the same
+        // way (Kernel::registerContainerConfiguration()); this also covers the directory not
+        // existing until the first configuration is saved.
+        $container->fileExists($configDir, '/\.ya?ml$/');
+
         $configLoader = new YamlFileLoader(
             $container,
             new FileLocator($configDir)
