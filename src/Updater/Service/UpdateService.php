@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
@@ -73,7 +74,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
 
-        if ($element instanceof Concrete && $this->requiresSavePermission($task)) {
+        if ($element instanceof AbstractObject && $this->requiresSavePermission($task)) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         }
 

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
@@ -28,9 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
+use function sprintf;
 use function str_repeat;
 
 /**
@@ -224,6 +228,65 @@ final class UpdateServiceTest extends Unit
         }
     }
 
+    /**
+     * GHSA-wp52-4qcp-x4jx: a data object folder has no `save` permission check at all, allowing any
+     * user with the `objects` permission to rename/move/lock/set properties on folders outside their
+     * workspace write permissions.
+     */
+    public function testUpdateOfDataObjectFolderRequiresSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            }
+        );
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['properties' => []]);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * Legitimate writes to a folder must still succeed once the user actually holds `save`.
+     */
+    public function testUpdateOfDataObjectFolderSucceedsWithSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['properties' => []]);
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
     private function createService(callable $onSave): UpdateService
     {
         return new UpdateService(
@@ -237,6 +300,32 @@ final class UpdateServiceTest extends Unit
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
                 'getElementById' => $this->element,
+            ]),
+            indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
+            elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
+                'save' => $onSave,
+            ]),
+            coauthorService: new CoauthorService($this->coauthorContext),
+        );
+    }
+
+    private function createServiceForElement(
+        ElementInterface $element,
+        callable $onSave,
+        callable $hasElementPermission
+    ): UpdateService {
+        return new UpdateService(
+            adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
+                'loadAdapters' => [],
+            ]),
+            objectDataService: $this->makeEmpty(DataObjectDataService::class),
+            documentDataService: $this->makeEmpty(DocumentDataService::class),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $this->makeEmpty(UserInterface::class),
+                'hasElementPermission' => $hasElementPermission,
+            ]),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getElementById' => $element,
             ]),
             indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
