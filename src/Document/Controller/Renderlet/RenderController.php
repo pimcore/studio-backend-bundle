@@ -88,7 +88,7 @@ final class RenderController extends AbstractApiController
         content: [new MediaType('text/html')],
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value, 'renderlet.html.twig')]
     )]
-    #[IdParameter(description: 'Parent document id of the renderlet', namePrefix: 'parentDocument', required: false)]
+    #[IdParameter(description: 'Parent document id of the renderlet', namePrefix: 'parentDocument')]
     #[TextFieldParameter(
         name: 'template',
         description: 'Renderlet template',
