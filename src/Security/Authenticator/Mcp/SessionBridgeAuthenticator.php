@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
@@ -57,6 +59,8 @@ class SessionBridgeAuthenticator extends AbstractAuthenticator
         if (!$this->authenticationResolver->isValidUser($pimcoreUser)) {
             throw new AuthenticationException('Pimcore user is not active.');
         }
+
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::Session);
 
         $userBadge = new UserBadge(
             $pimcoreUser->getUsername(),

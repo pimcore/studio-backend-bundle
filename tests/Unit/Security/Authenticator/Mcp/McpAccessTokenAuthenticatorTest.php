@@ -15,6 +15,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\Authenticator\Mcp;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\McpAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\Dto\ValidatedAccessToken;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInterface;
@@ -47,6 +49,19 @@ final class McpAccessTokenAuthenticatorTest extends Unit
         // Binds the token's reference on the request so downstream code (HasChatSession
         // trait) can trust it and ignore any forged X-Chat-Session-Id header.
         $this->assertSame('chat-1', $request->attributes->get('_mcp_token_reference'));
+    }
+
+    public function testAuthenticateExposesAuthTypeWithoutScopes(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $auth = $this->makeAuthenticator(new ValidatedAccessToken($user, 'chat-1'));
+
+        $request = $this->requestWith('Bearer pmcp_valid');
+        $auth->authenticate($request);
+
+        $this->assertSame(McpAuthType::McpToken, $request->attributes->get(McpRequestAttributes::AUTH_TYPE));
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 
     public function testAuthenticateThrowsForInvalidToken(): void

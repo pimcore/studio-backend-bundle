@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
@@ -119,6 +121,8 @@ class PatAuthenticator extends AbstractAuthenticator
         // the only identifier McpLoginRateLimiter hands a bucket to. A token that resolves
         // to a username carries that username instead and is therefore exempt.
         $username = $this->resolveUsername($token);
+
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::Pat);
 
         return new SelfValidatingPassport(
             new UserBadge(

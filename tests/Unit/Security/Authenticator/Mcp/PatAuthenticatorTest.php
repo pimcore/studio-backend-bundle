@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\Authenticator\M
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,6 +68,17 @@ final class PatAuthenticatorTest extends Unit
             'unknown-token',
             $passport->getBadge(UserBadge::class)->getUserIdentifier()
         );
+    }
+
+    public function testAuthenticateExposesAuthTypeWithoutScopes(): void
+    {
+        $auth = $this->makeAuthenticator([self::VALID_USERNAME => [self::VALID_TOKEN]]);
+
+        $request = $this->requestWith('Bearer ' . self::VALID_TOKEN);
+        $auth->authenticate($request);
+
+        $this->assertSame(McpAuthType::Pat, $request->attributes->get(McpRequestAttributes::AUTH_TYPE));
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 
     public function testUnknownTokensAllShareOneThrottleIdentifier(): void

@@ -94,6 +94,29 @@ The fail-safe default (no `readOnlyHint`, or `false`) is treated as a write. A s
 union of its tools' required scopes, unless the server declares its own. They are what the server's OAuth protected
 resource advertises as `scopes_supported`; a granted scope is not yet checked against the tool being called.
 
+## Knowing how the caller authenticated
+
+The authenticators of the MCP firewall set request attributes that a tool (or a request listener running after
+the firewall) can read from the current request. The names are constants of `McpRequestAttributes`:
+
+| Attribute | Value |
+|-----------|-------|
+| `McpRequestAttributes::AUTH_TYPE` | A `McpAuthType` case: `OAuth`, `McpToken` (`pmcp_` token), `Pat` or `Session`. |
+| `McpRequestAttributes::OAUTH_SCOPES` | `list<string>` of the scopes the validated access token carries. Set only for `McpAuthType::OAuth`. |
+
+```php
+$request = $requestStack->getCurrentRequest();
+
+if ($request?->attributes->get(McpRequestAttributes::AUTH_TYPE) !== McpAuthType::OAuth) {
+    // Not an OAuth caller.
+}
+
+$scopes = $request?->attributes->get(McpRequestAttributes::OAUTH_SCOPES, []);
+```
+
+The attributes are informational: Studio does not read them to allow or deny a call. A tool that needs to
+restrict access by authentication type or by scope enforces that itself.
+
 ## Results and errors
 
 Return a `CallToolResult` built from `TextContent` (or other `Mcp\Schema\Content\*` types). For a tool-level

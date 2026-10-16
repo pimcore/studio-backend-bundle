@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Security\Authenticator\Mcp;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ResolvedAccess;
@@ -59,6 +61,36 @@ final class OAuthAccessTokenAuthenticatorTest extends Unit
         $passport = $this->makeAuthenticator(true, $resolved)->authenticate($this->requestWith(self::JWT));
 
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
+    }
+
+    public function testAuthenticateExposesAuthTypeAndValidatedScopes(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $resolved = new ResolvedAccess($user, ['mcp:read', 'diagnostics:read'], [self::RESOURCE], 'studio-mcp');
+        $request = $this->requestWith(self::JWT);
+
+        $this->makeAuthenticator(true, $resolved)->authenticate($request);
+
+        $this->assertSame(McpAuthType::OAuth, $request->attributes->get(McpRequestAttributes::AUTH_TYPE));
+        $this->assertSame(
+            ['mcp:read', 'diagnostics:read'],
+            $request->attributes->get(McpRequestAttributes::OAUTH_SCOPES)
+        );
+    }
+
+    public function testFailedAuthenticationSetsNoAttributes(): void
+    {
+        $request = $this->requestWith(self::JWT);
+
+        try {
+            $this->makeAuthenticator(true, null)->authenticate($request);
+        } catch (AuthenticationException) {
+            // Expected: only the attributes matter.
+        }
+
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::AUTH_TYPE));
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 
     public function testAuthenticateThrowsForInvalidToken(): void

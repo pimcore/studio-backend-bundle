@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenServiceInterface;
 use Pimcore\Model\User;
@@ -76,6 +78,7 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
         }
 
         $request->attributes->set(self::REQUEST_ATTR_REFERENCE, $validated->reference);
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::McpToken);
 
         return new SelfValidatingPassport(
             new UserBadge($user->getUsername(), static fn () => new SecurityUser($user)),
