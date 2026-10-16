@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
@@ -70,14 +71,33 @@ final class PatAuthenticatorTest extends Unit
         );
     }
 
-    public function testAuthenticateExposesAuthTypeWithoutScopes(): void
+    public function testSuccessExposesAuthTypeWithoutScopes(): void
     {
         $auth = $this->makeAuthenticator([self::VALID_USERNAME => [self::VALID_TOKEN]]);
 
         $request = $this->requestWith('Bearer ' . self::VALID_TOKEN);
         $auth->authenticate($request);
+        $auth->onAuthenticationSuccess($request, $this->makeEmpty(TokenInterface::class), 'pimcore_studio_mcp');
 
         $this->assertSame(McpAuthType::Pat, $request->attributes->get(McpRequestAttributes::AUTH_TYPE));
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
+    }
+
+    public function testRejectedTokenLeavesNoAuthMetadata(): void
+    {
+        $auth = $this->makeAuthenticator([]);
+
+        $request = $this->requestWith('Bearer unknown-token');
+        $passport = $auth->authenticate($request);
+
+        try {
+            $passport->getBadge(UserBadge::class)->getUser();
+            $this->fail('An unknown token must not resolve to a user.');
+        } catch (UserNotFoundException) {
+            $auth->onAuthenticationFailure($request, new AuthenticationException('nope'));
+        }
+
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::AUTH_TYPE));
         $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 

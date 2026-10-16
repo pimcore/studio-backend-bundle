@@ -67,8 +67,15 @@ final class McpAccessTokenAuthenticatorTest extends Unit
     public function testAuthenticateThrowsForInvalidToken(): void
     {
         $auth = $this->makeAuthenticator(null);
-        $this->expectException(AuthenticationException::class);
-        $auth->authenticate($this->requestWith('Bearer pmcp_invalid'));
+        $request = $this->requestWith('Bearer pmcp_invalid');
+
+        try {
+            $auth->authenticate($request);
+            $this->fail('An invalid token must be rejected.');
+        } catch (AuthenticationException) {
+            $this->assertFalse($request->attributes->has(McpRequestAttributes::AUTH_TYPE));
+            $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
+        }
     }
 
     public function testFailureReturnsNullToFallThrough(): void

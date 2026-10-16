@@ -122,8 +122,6 @@ class PatAuthenticator extends AbstractAuthenticator
         // to a username carries that username instead and is therefore exempt.
         $username = $this->resolveUsername($token);
 
-        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::Pat);
-
         return new SelfValidatingPassport(
             new UserBadge(
                 $username ?? McpLoginRateLimiterInterface::UNKNOWN_CREDENTIAL_IDENTIFIER,
@@ -162,6 +160,10 @@ class PatAuthenticator extends AbstractAuthenticator
         TokenInterface $token,
         string $firewallName
     ): ?Response {
+        // Only here, once the user badge resolved: the badge is built before the lookup, so
+        // marking the request in authenticate() would tag rejected tokens as authenticated.
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::Pat);
+
         return null;
     }
 
