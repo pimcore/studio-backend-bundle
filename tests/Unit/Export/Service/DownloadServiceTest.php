@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadService;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Psr\Log\LoggerInterface;
@@ -449,6 +450,106 @@ final class DownloadServiceTest extends Unit
 
         $this->assertSame(
             'attachment; filename="my-folder.zip"',
+            $response->headers->get('Content-Disposition'),
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testExportDownloadNameOverridesZipMetadataAndControllerFallback(): void
+    {
+        $stream = fopen('php://memory', 'rb+');
+        fwrite($stream, 'data');
+        rewind($stream);
+
+        $storage = $this->makeEmpty(FilesystemOperator::class, [
+            'readStream' => $stream,
+            'fileSize' => 4,
+        ]);
+
+        $job = new Job(
+            name: 'test-job',
+            steps: [new JobStep('step', 'SomeMessage', '', [])],
+            environmentData: [
+                DownloadServiceInterface::EXPORT_DOWNLOAD_FILENAME => 'Product_2026-09-01_14-32-10.csv',
+                ZipServiceInterface::ZIP_DOWNLOAD_FILENAME => 'my-folder.zip',
+            ],
+        );
+
+        $jobRun = $this->makeEmpty(JobRun::class, [
+            'getJob' => $job,
+        ]);
+
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'getTempStorage' => $storage,
+                'tempFileExists' => true,
+            ]),
+            jobRunRepository: $this->makeEmpty(JobRunRepositoryInterface::class, [
+                'getJobRunById' => $jobRun,
+            ]),
+        );
+
+        $response = $service->downloadResourceByJobRunId(
+            jobRunId: 1,
+            tempFileName: 'download-csv-{id}.csv',
+            tempFolderName: 'download-csv-{id}',
+            mimeType: 'text/csv',
+            downloadName: 'export.csv',
+        );
+
+        $this->assertSame(
+            'attachment; filename="Product_2026-09-01_14-32-10.csv"',
+            $response->headers->get('Content-Disposition'),
+            'The export file name from the job environment data must override both the ZIP metadata and the controller-provided fallback'
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testControllerFallbackUsedWhenNoExportDownloadName(): void
+    {
+        $stream = fopen('php://memory', 'rb+');
+        fwrite($stream, 'data');
+        rewind($stream);
+
+        $storage = $this->makeEmpty(FilesystemOperator::class, [
+            'readStream' => $stream,
+            'fileSize' => 4,
+        ]);
+
+        $job = new Job(
+            name: 'test-job',
+            steps: [new JobStep('step', 'SomeMessage', '', [])],
+            environmentData: [],
+        );
+
+        $jobRun = $this->makeEmpty(JobRun::class, [
+            'getJob' => $job,
+        ]);
+
+        $service = $this->createService(
+            storageService: $this->makeEmpty(StorageServiceInterface::class, [
+                'getTempStorage' => $storage,
+                'tempFileExists' => true,
+            ]),
+            jobRunRepository: $this->makeEmpty(JobRunRepositoryInterface::class, [
+                'getJobRunById' => $jobRun,
+            ]),
+        );
+
+        $response = $service->downloadResourceByJobRunId(
+            jobRunId: 1,
+            tempFileName: 'download-csv-{id}.csv',
+            tempFolderName: 'download-csv-{id}',
+            mimeType: 'text/csv',
+            downloadName: 'export.csv',
+        );
+
+        $this->assertSame(
+            'attachment; filename="export.csv"',
             $response->headers->get('Content-Disposition'),
         );
     }
