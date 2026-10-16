@@ -39,6 +39,7 @@ use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
+use function strlen;
 
 /**
  * @internal
@@ -141,13 +142,12 @@ final readonly class CloneService implements CloneServiceInterface
     ): Asset {
         $originalParent = $this->assetService->getAssetElement($user, $originalParentId);
         $parent = $this->assetService->getAssetElement($user, $parentId);
-        $parentPath = preg_replace(
-            '@^' . $originalParent->getRealFullPath() . '@',
-            $parent . '/',
-            $source->getRealPath()
-        );
+        $relativePath = substr($source->getRealPath(), strlen($originalParent->getRealFullPath()));
 
-        return $this->assetService->getAssetElementByPath($user, $parentPath);
+        return $this->assetService->getAssetElementByPath(
+            $user,
+            rtrim($parent->getRealFullPath(), '/') . rtrim($relativePath, '/')
+        );
     }
 
     private function cloneChildrenWithExecutionEngine(
