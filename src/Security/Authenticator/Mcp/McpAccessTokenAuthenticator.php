@@ -78,7 +78,6 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
         }
 
         $request->attributes->set(self::REQUEST_ATTR_REFERENCE, $validated->reference);
-        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::McpToken);
 
         return new SelfValidatingPassport(
             new UserBadge($user->getUsername(), static fn () => new SecurityUser($user)),
@@ -90,6 +89,9 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
         TokenInterface $token,
         string $firewallName,
     ): ?Response {
+        // Only here: the passport can still be rejected after authenticate() (user checker).
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::McpToken);
+
         return null;
     }
 

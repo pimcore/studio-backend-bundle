@@ -114,7 +114,8 @@ if ($request?->attributes->get(McpRequestAttributes::AUTH_TYPE) !== McpAuthType:
 $scopes = $request?->attributes->get(McpRequestAttributes::OAUTH_SCOPES, []);
 ```
 
-The attributes are informational: Studio does not read them to allow or deny a call. A tool that needs to
+The attributes are set only once authentication has succeeded, so a request that falls through the firewall
+unauthenticated carries neither of them. They are informational: Studio does not read them to allow or deny a call. A tool that needs to
 restrict access by authentication type or by scope enforces that itself.
 
 ## Results and errors

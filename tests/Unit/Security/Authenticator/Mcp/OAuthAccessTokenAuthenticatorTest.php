@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInt
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Model\User;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
@@ -63,20 +64,41 @@ final class OAuthAccessTokenAuthenticatorTest extends Unit
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
     }
 
-    public function testAuthenticateExposesAuthTypeAndValidatedScopes(): void
+    public function testSuccessExposesAuthTypeAndValidatedScopes(): void
     {
         $user = new User();
         $user->setUsername('agent-user');
         $resolved = new ResolvedAccess($user, ['mcp:read', 'diagnostics:read'], [self::RESOURCE], 'studio-mcp');
         $request = $this->requestWith(self::JWT);
+        $auth = $this->makeAuthenticator(true, $resolved);
 
-        $this->makeAuthenticator(true, $resolved)->authenticate($request);
+        $auth->authenticate($request);
+        $auth->onAuthenticationSuccess($request, $this->makeEmpty(TokenInterface::class), 'pimcore_studio_mcp');
 
         $this->assertSame(McpAuthType::OAuth, $request->attributes->get(McpRequestAttributes::AUTH_TYPE));
         $this->assertSame(
             ['mcp:read', 'diagnostics:read'],
             $request->attributes->get(McpRequestAttributes::OAUTH_SCOPES)
         );
+    }
+
+    /**
+     * A passport authenticate() returned can still be rejected later, e.g. by the firewall's
+     * user checker. The request then falls through unauthenticated and must not claim OAuth.
+     */
+    public function testPassportRejectedAfterAuthenticateLeavesNoAttributes(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $resolved = new ResolvedAccess($user, ['mcp:read', 'diagnostics:read'], [self::RESOURCE], 'studio-mcp');
+        $request = $this->requestWith(self::JWT);
+        $auth = $this->makeAuthenticator(true, $resolved);
+
+        $auth->authenticate($request);
+        $auth->onAuthenticationFailure($request, new AuthenticationException('User is not active.'));
+
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::AUTH_TYPE));
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 
     public function testFailedAuthenticationSetsNoAttributes(): void

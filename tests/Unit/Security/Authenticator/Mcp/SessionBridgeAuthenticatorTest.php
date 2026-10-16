@@ -21,12 +21,13 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\SessionBridgeAuthenticator;
 use Pimcore\Model\User;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 final class SessionBridgeAuthenticatorTest extends Unit
 {
-    public function testAuthenticateExposesAuthTypeWithoutScopes(): void
+    public function testSuccessExposesAuthTypeWithoutScopes(): void
     {
         $user = new User();
         $user->setUsername('agent-user');
@@ -34,9 +35,28 @@ final class SessionBridgeAuthenticatorTest extends Unit
 
         $request = new Request();
         $passport = $auth->authenticate($request);
+        $auth->onAuthenticationSuccess($request, $this->makeEmpty(TokenInterface::class), 'pimcore_studio_mcp');
 
         $this->assertInstanceOf(SelfValidatingPassport::class, $passport);
         $this->assertSame(McpAuthType::Session, $request->attributes->get(McpRequestAttributes::AUTH_TYPE));
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
+    }
+
+    /**
+     * A passport authenticate() returned can still be rejected later, e.g. by the firewall's
+     * user checker; the request must then not claim to be authenticated by a session.
+     */
+    public function testPassportRejectedAfterAuthenticateLeavesNoAuthType(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $auth = $this->makeAuthenticator($user, true);
+
+        $request = new Request();
+        $auth->authenticate($request);
+        $auth->onAuthenticationFailure($request, new AuthenticationException('User is not active.'));
+
+        $this->assertFalse($request->attributes->has(McpRequestAttributes::AUTH_TYPE));
         $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 
