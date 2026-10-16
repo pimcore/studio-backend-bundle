@@ -35,13 +35,19 @@ final readonly class XlsxExportService extends AbstractExportService
         FilesystemOperator $storage,
         array $headers,
         array $exportData,
-        string $delimiter
+        string $delimiter,
+        ?string $sheetName = null,
     ): void {
         $csvReader = new Csv();
         $csvReader->setDelimiter($delimiter);
         $csvReader->setSheetIndex(0);
 
         $spreadsheet = $csvReader->loadSpreadsheetFromString($this->processData($delimiter, $headers, $exportData));
+
+        if ($sheetName !== null && $sheetName !== '') {
+            $spreadsheet->getActiveSheet()->setTitle($sheetName);
+        }
+
         $writer = new Xlsx($spreadsheet);
         $stream = fopen('php://temp', 'rb+');
         $writer->save($stream);
