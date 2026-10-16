@@ -113,6 +113,19 @@ final class McpServersConfigurationTest extends Unit
     }
 
     /**
+     * A server created through Studio is written to `<slug>.yaml` and read back through this
+     * tree. Symfony normalises dashes in array keys to underscores unless told otherwise, which
+     * turned `test-server` into `test_server`: an id the route cannot serve, so the container
+     * failed to build and the whole application went down.
+     */
+    public function testAHyphenatedIdIsKeptAsWritten(): void
+    {
+        $processed = $this->process(['test-server' => ['name' => 'test-server']]);
+
+        $this->assertSame(['test-server'], array_keys($processed[Configuration::MCP_SERVERS_NODE]));
+    }
+
+    /**
      * The id is the server's URL slug, so there is no separate `url_slug` to diverge from it:
      * two servers could otherwise claim one URL and one OAuth audience.
      */

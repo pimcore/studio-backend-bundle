@@ -844,6 +844,9 @@ class Configuration implements ConfigurationInterface
                 ->info('MCP server definitions, keyed by server id, which is also the URL slug.')
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
+                // The id is the URL slug, and slugs use hyphens. Without this Symfony rewrites
+                // `test-server` to `test_server` on load: an id the route cannot serve.
+                ->normalizeKeys(false)
                 ->validate()
                     ->ifTrue(static fn (array $servers): bool => array_filter(
                         array_keys($servers),
