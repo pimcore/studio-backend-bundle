@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
@@ -29,11 +30,14 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
 use function array_column;
 use function array_map;
+use function sprintf;
 use function str_repeat;
 
 /**
@@ -453,6 +457,92 @@ final class PatchServiceTest extends Unit
         return array_map(static fn (array $item) => [$item['id'], $item['type']], $items);
     }
 
+    /**
+     * GHSA-wp52-4qcp-x4jx: a data object folder patch without `editableData` (e.g. a bare
+     * `{"key": "renamed"}`) skipped the `save` permission check entirely, allowing any user with
+     * the `objects` permission to rename/move/lock/set properties on folders and objects outside
+     * their workspace write permissions.
+     */
+    public function testPatchOfDataObjectFolderRequiresSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            }
+        );
+
+        try {
+            $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['key' => 'renamed'], $this->user);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * Legitimate patches of a folder/object must still succeed once the user actually holds `save`.
+     */
+    public function testPatchOfDataObjectFolderSucceedsWithSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['key' => 'renamed'], $this->user);
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
+    /**
+     * A pure publish/unpublish task is gated by PublishAdapter itself, so it must not additionally
+     * require the workspace `save` permission.
+     */
+    public function testPatchWithPublishTaskDoesNotRequireSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['task' => 'publish'], $this->user);
+
+        $this->assertSame([], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
     private function createService(callable $onSave): PatchService
     {
         return new PatchService(
@@ -467,6 +557,29 @@ final class PatchServiceTest extends Unit
                 'save' => $onSave,
             ]),
             securityService: $this->makeEmpty(SecurityServiceInterface::class),
+            coauthorService: new CoauthorService($this->coauthorContext),
+        );
+    }
+
+    private function createServiceForElement(
+        ElementInterface $element,
+        callable $onSave,
+        callable $hasElementPermission
+    ): PatchService {
+        return new PatchService(
+            adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
+                'loadAdapters' => [],
+            ]),
+            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class),
+            elementService: $this->makeEmpty(ElementServiceInterface::class),
+            jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class),
+            indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
+            elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
+                'save' => $onSave,
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => $hasElementPermission,
+            ]),
             coauthorService: new CoauthorService($this->coauthorContext),
         );
     }
