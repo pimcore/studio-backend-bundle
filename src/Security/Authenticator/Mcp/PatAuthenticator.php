@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Security\RateLimiter\McpLoginRateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
@@ -158,6 +160,10 @@ class PatAuthenticator extends AbstractAuthenticator
         TokenInterface $token,
         string $firewallName
     ): ?Response {
+        // Only here, once the user badge resolved: the badge is built before the lookup, so
+        // marking the request in authenticate() would tag rejected tokens as authenticated.
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::Pat);
+
         return null;
     }
 
