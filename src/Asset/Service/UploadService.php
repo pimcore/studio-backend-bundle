@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementSaveExceptionTrait;
 use Pimcore\Helper\MimeTypeHelper;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -50,6 +51,8 @@ use function sprintf;
  */
 final readonly class UploadService implements UploadServiceInterface
 {
+    use ElementSaveExceptionTrait;
+
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
@@ -207,7 +210,7 @@ final readonly class UploadService implements UploadServiceInterface
 
             return $newFileName;
         } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage());
+            $this->throwElementSaveException($e);
         } finally {
             @unlink($sourcePath);
         }
@@ -271,7 +274,7 @@ final readonly class UploadService implements UploadServiceInterface
                 $assetParams
             );
         } catch (Exception $e) {
-            throw new DatabaseException($e->getMessage());
+            $this->throwElementSaveException($e);
         } finally {
             @unlink($sourcePath);
         }
