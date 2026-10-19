@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
@@ -35,6 +36,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
         private ExportServiceInterface $csvExportService,
+        private ExportDataStorageServiceInterface $exportDataStorageService,
         private UserTopicServiceInterface $userTopicService
     ) {
 
@@ -67,6 +69,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
                 $event
             ),
             JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
+            JobRunStates::CANCELLED->value => $this->exportDataStorageService->cleanUp($event->getJobRunId()),
             default => null,
         };
     }
@@ -76,6 +79,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
      */
     private function cleanupOnFail(int $jobRunId): void
     {
+        $this->exportDataStorageService->cleanUp($jobRunId);
         $this->csvExportService->cleanupFileSystem(
             $jobRunId,
             ExportFile::CSV_FOLDER_NAME->value,

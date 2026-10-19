@@ -24,6 +24,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\ExportDataCollectionHandler;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
@@ -42,26 +43,37 @@ final class ExportDataCollectionHandlerTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDoesNotLoadOrWriteTheJobRunPerExportedObject(): void
+    public function testStoresTheCollectedRowsOutsideOfTheJobRun(): void
     {
         $jobRun = $this->createJobRun();
-        // Rows collected by earlier steps are part of the job run context and must not be rewritten per object
-        $jobRun->setContext([StepConfig::GRID_EXPORT_DATA->value => [1 => ['title' => 'previous']]]);
 
+        // The job run is loaded and written again by every step, so it must not be written for the rows at all
         $repository = $this->createMock(JobRunRepositoryInterface::class);
-        $repository->expects($this->atMost(2))->method('update');
+        $repository->expects($this->never())->method('update');
 
-        $this->createHandler($repository, $jobRun)(new ExportDataCollectionMessage(1, 0));
+        $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
+        $exportDataStorageService->expects($this->once())
+            ->method('store')
+            ->with(
+                1,
+                3,
+                $this->callback(
+                    static fn (array $rows): bool => array_keys($rows) === range(100, 99 + self::BATCH_SIZE)
+                        && $rows[100] === ['title' => 'value']
+                )
+            );
 
-        $this->assertCount(
-            self::BATCH_SIZE + 1,
-            $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value]
+        $this->createHandler($repository, $jobRun, $exportDataStorageService)(
+            new ExportDataCollectionMessage(1, 3)
         );
+
+        $this->assertArrayNotHasKey(StepConfig::GRID_EXPORT_DATA->value, $jobRun->getContext() ?? []);
     }
 
     private function createHandler(
         JobRunRepositoryInterface $repository,
-        JobRun $jobRun
+        JobRun $jobRun,
+        ExportDataStorageServiceInterface $exportDataStorageService
     ): ExportDataCollectionHandler {
         $user = new User();
         $userResolver = $this->createMock(UserResolverInterface::class);
@@ -79,6 +91,7 @@ final class ExportDataCollectionHandlerTest extends Unit
 
         $handler = new ExportDataCollectionHandler(
             $columnConfigurationService,
+            $exportDataStorageService,
             $this->createMock(PublishServiceInterface::class),
             $userTopicService,
             $userResolver,

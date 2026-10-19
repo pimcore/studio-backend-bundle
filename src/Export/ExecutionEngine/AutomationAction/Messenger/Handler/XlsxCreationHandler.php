@@ -15,12 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAc
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\XlsxCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\ExportCreationHandlerSetupTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
@@ -37,6 +39,7 @@ final class XlsxCreationHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly ExportServiceInterface $xlsxExportService,
@@ -70,13 +73,25 @@ final class XlsxCreationHandler extends AbstractHandler
         $classId = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_CLASS_ID->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
 
-        if (!isset($jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value])) {
+        $exportData = null;
+
+        try {
+            $exportData = $this->exportDataStorageService->load($jobRun->getId());
+        } catch (EnvironmentException $e) {
             $this->abort($this->getAbortData(
                 Config::XLSX_CREATION_FAILED_MESSAGE->value,
-                ['message' => 'Xlsx export data not found in job run context']
+                ['message' => $e->getMessage()]
             ));
         }
-        $exportData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
+
+        // Jobs that started before the collected rows were moved out of the job run still carry them in its context
+        $exportData ??= $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value] ?? null;
+        if ($exportData === null) {
+            $this->abort($this->getAbortData(
+                Config::XLSX_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'Xlsx export data not found']
+            ));
+        }
 
         try {
             $this->xlsxExportService->createExportFile(
@@ -96,6 +111,8 @@ final class XlsxCreationHandler extends AbstractHandler
                 ['message' => $e->getMessage()]
             ));
         }
+
+        $this->exportDataStorageService->cleanUp($jobRun->getId());
 
         $this->updateProgress(
             $this->publishService,
