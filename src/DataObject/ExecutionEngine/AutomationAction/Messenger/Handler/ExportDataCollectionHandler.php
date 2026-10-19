@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -43,7 +44,8 @@ final class ExportDataCollectionHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly UserResolverInterface $userResolver,
-        private readonly GridServiceInterface $gridService
+        private readonly GridServiceInterface $gridService,
+        private readonly ElementContextServiceInterface $elementContextService,
     ) {
         parent::__construct();
     }
@@ -82,15 +84,19 @@ final class ExportDataCollectionHandler extends AbstractHandler
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         $data = [];
+        $jobStepName = $this->getJobStep($message)->getName();
         foreach ($dataObjects as $object) {
             try {
-                $data[$object['id']] = $this->gridService->getGridValuesForElement(
-                    $columnCollection,
-                    ElementTypes::TYPE_OBJECT,
-                    $object['id'],
-                    $user
+                // The worker boots with the CLI element context, which hides unpublished elements: the
+                // relation columns would leave them out. Fallback values are left as the context sets them.
+                $data[$object['id']] = $this->elementContextService->runWithUnpublishedElements(
+                    fn () => $this->gridService->getGridValuesForElement(
+                        $columnCollection,
+                        ElementTypes::TYPE_OBJECT,
+                        $object['id'],
+                        $user
+                    )
                 );
-
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
@@ -105,8 +111,9 @@ final class ExportDataCollectionHandler extends AbstractHandler
                 $this->publishService,
                 $this->userTopicService,
                 $jobRun,
-                $this->getJobStep($message)->getName(),
-                $totalObjects
+                $jobStepName,
+                $totalObjects,
+                persist: false
             );
         }
 

@@ -45,11 +45,42 @@ The following steps are necessary during updating to newer versions.
 > answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
 
+## Upgrade to 2026.3.3
+- [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
+  and email documents per document type (for documents created without a predefined document type). Types without an
+  entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
+- [Grid] Fixed: block fields were silently dropped from the data object grid column configuration because no grid
+  column definition existed for them. Block fields with `visibleGridView` enabled are now offered as grid columns and
+  render through the existing block cell. Like field collections they are not sortable, filterable or exportable.
+  A field type without a grid column definition is now logged at `warning` level instead of `info`.
+
 ## Upgrade to 2026.3.2
+- [Permissions] Fixed: grids, advanced search, quick search and the element detail endpoints now require the `view`
+  permission instead of `list`. Requires `pimcore/generic-data-index-bundle` 2026.3.2 or later, which limits the
+  parent paths of a workspace to the `list` permission, and `pimcore/asset-metadata-class-definitions` 2026.3.2 or
+  later, if installed.
+  - Grids (data objects, assets, documents), advanced search, quick search and relation search dialogs only return
+    elements the workspaces of the user allow to view. This also applies to grid export, folder batch patch and asset
+    folder zip. Workspaces with `list` but without `view` therefore no longer show up there. The trees still show the
+    parent folders of a workspace. The folders a tree PQL filter reveals only depend on elements the workspaces of the
+    user allow to view.
+  - `GET /data-objects/{id}`, `GET /documents/{id}` and `GET /assets/{id}` return `403` for elements the user may
+    list but not view, and `404` for elements the user may not list. This check uses the core permissions, including
+    workflow place permissions. Grids and search use the workspace permissions of the search index only.
+    `GET /dependencies/{elementType}/{id}` requires `view` on the element in the same way.
+  - Update endpoints (`PUT`) return the updated element, so for users with save or publish permission but without
+    `view` the response is `403` or `404`. The update itself is applied as before.
+  - Grids and advanced search return `404` for a folder the user may not list. In the grid, the asset metadata
+    columns of type asset, document and object stay empty for a related element without `view`. The export still
+    contains the path of that element.
 - [Grid] Fixed: exporting an advanced column with a transformer filled empty localized source fields with the system
   default language, ignoring the configured fallback languages. The export now uses only the configured fallback
   languages, with or without a transformer. The interactive grid is unchanged. A missing source value now exports as
   an empty string instead of `"null"`.
+- [Elements] Fixed: asynchronous batch edits, replacing usages and updating references after a copy removed
+  unpublished related elements from the saved relations. Grid exports left them out. All of them now keep unpublished
+  related elements, as the grid and the element editors do. Batch edits, replacing usages and updating references
+  also no longer save localized fallback values into empty languages.
 
 ## Upgrade to 2026.3.0
 - [Data Objects] Improved: every `inheritanceData.metaData` entry of the data object detail response (and the `inheritance` of a grid column) now carries two additional properties next to `objectId` and `inherited`:

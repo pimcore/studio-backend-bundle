@@ -28,16 +28,20 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Config;
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
+use function array_map;
 use function array_unique;
 use function array_values;
 use function in_array;
 use function sprintf;
+use function trim;
 
 /**
  * @internal
  */
 final readonly class TranslationRepository implements TranslationRepositoryInterface
 {
+    private const array MAIN_TABLE_ORDER_KEYS = ['key', 'type'];
+
     private array $validLanguages;
 
     public function __construct(
@@ -160,6 +164,24 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
                     $alreadyJoined[] = $join;
                 }
             }
+        );
+
+        return $listing;
+    }
+
+    public function qualifyMainTableOrderKeys(Listing $listing): Listing
+    {
+        $tableName = $listing->getDao()->getDatabaseTableName();
+        $listing->setOrderKey(
+            array_map(
+                static fn (string $orderKey): string => in_array(
+                    trim($orderKey, '`'),
+                    self::MAIN_TABLE_ORDER_KEYS,
+                    true
+                ) ? $tableName . '.' . $orderKey : $orderKey,
+                $listing->getOrderKey()
+            ),
+            false
         );
 
         return $listing;

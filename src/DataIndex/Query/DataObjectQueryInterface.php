@@ -59,4 +59,14 @@ interface DataObjectQueryInterface extends QueryInterface
     ): self;
 
     public function excludeVariants(): self;
+
+    /**
+     * @param bool $matchMissingForEmptyValue an empty string value also matches objects where the field is missing
+     */
+    public function filterMultiSelect(
+        string $fieldName,
+        array $values,
+        bool $enablePqlFieldNameResolution = true,
+        bool $matchMissingForEmptyValue = false
+    ): self;
 }

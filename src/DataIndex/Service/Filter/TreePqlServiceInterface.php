@@ -13,17 +13,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Filter;
 
+use Pimcore\Model\UserInterface;
+
 /**
  * @internal
  */
 interface TreePqlServiceInterface
 {
     /**
+     * Only elements the workspaces of the user allow to view contribute folder keys, so the tree does not reveal
+     * where elements the user may not view match the query. Without a user, no folder keys are returned.
+     *
      * @return string[] Folder key names
      */
     public function getRelevantChildFolderKeys(
         int $parentId,
         string $pqlQuery,
         string $elementType,
+        ?UserInterface $user,
     ): array;
 }
