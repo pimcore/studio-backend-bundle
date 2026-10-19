@@ -27,6 +27,7 @@ use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Google\GoogleAuthenticatorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use function is_array;
 
@@ -40,6 +41,11 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
 
     private const string TYPE_GOOGLE = 'google';
 
+    private const string ENROLLMENT_LOCK_PREFIX = 'pimcore_studio_two_factor_enrollment_';
+
+    // Held for a lookup and one save; short, so a request that dies with it blocks confirms only briefly.
+    private const float ENROLLMENT_LOCK_TTL = 30.0;
+
     public function __construct(
         private GoogleAuthenticatorInterface $googleAuthenticator,
         private UserRepositoryInterface $userRepository,
@@ -47,6 +53,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private TokenStorageInterface $tokenStorage,
         private SecurityServiceInterface $securityService,
+        private LockFactory $lockFactory,
         private int $digits,
     ) {
     }
@@ -83,10 +90,28 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
             throw new UnprocessableContentException('Invalid code.');
         }
 
-        $user->setTwoFactorAuthentication('enabled', true);
-        $user->setTwoFactorAuthentication('type', self::TYPE_GOOGLE);
-        $user->setTwoFactorAuthentication('secret', $secret);
-        $this->userRepository->updateUser($user);
+        // Two logins in the setup step may confirm at once; both loaded the user before either saved.
+        // The application's lock store, so the lock reaches as far as the users table does.
+        $lock = $this->lockFactory->createLock(self::ENROLLMENT_LOCK_PREFIX . $user->getId(), self::ENROLLMENT_LOCK_TTL);
+        $lock->acquire(true);
+
+        try {
+            $stored = $this->userRepository->getStoredTwoFactorAuthentication($user->getId());
+            if ($this->isSetupStep() && ($stored['enabled'] ?? false)) {
+                // This login lost; its secret can never be confirmed, so retries must not count as codes.
+                $session->remove(self::SESSION_KEY);
+
+                throw new ForbiddenException('Two-factor authentication is not completed.');
+            }
+
+            $user->setTwoFactorAuthentication('enabled', true);
+            $user->setTwoFactorAuthentication('type', self::TYPE_GOOGLE);
+            $user->setTwoFactorAuthentication('secret', $secret);
+            $this->userRepository->updateUser($user);
+        } finally {
+            $lock->release();
+        }
+
         $session->remove(self::SESSION_KEY);
     }
 
@@ -137,7 +162,7 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         }
 
         if ($allowSetupStep
-            && $token->getCurrentTwoFactorProvider() === SetupProvider::ALIAS
+            && $this->isSetupStep()
             && $user->getTwoFactorAuthentication('required')
             && !$user->getTwoFactorAuthentication('enabled')
         ) {
@@ -145,5 +170,13 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
         }
 
         throw new ForbiddenException('Two-factor authentication is not completed.');
+    }
+
+    private function isSetupStep(): bool
+    {
+        $token = $this->tokenStorage->getToken();
+
+        return $token instanceof TwoFactorTokenInterface
+            && $token->getCurrentTwoFactorProvider() === SetupProvider::ALIAS;
     }
 }

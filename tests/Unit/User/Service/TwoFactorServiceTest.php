@@ -38,6 +38,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\Store\InMemoryStore;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use function sprintf;
@@ -53,6 +55,8 @@ final class TwoFactorServiceTest extends Unit
     // One frozen clock for the codes the tests make and the codes the service checks.
     private MockClock $clock;
 
+    private InMemoryStore $lockStore;
+
     protected function _before(): void
     {
         $request = Request::create('/');
@@ -62,6 +66,7 @@ final class TwoFactorServiceTest extends Unit
         $this->eventDispatcher = new EventDispatcher();
         $this->tokenStorage = new TokenStorage();
         $this->clock = new MockClock('2026-10-08 12:00:10');
+        $this->lockStore = new InMemoryStore();
     }
 
     /**
@@ -309,6 +314,83 @@ final class TwoFactorServiceTest extends Unit
         $service->confirmSetup($user, '123456');
     }
 
+    /**
+     * Two logins in the setup step can confirm at the same moment. Both loaded the user before
+     * either saved, so the second must see the stored state and lose instead of replacing the
+     * first one's secret.
+     */
+    public function testSetupStepLosesIfAnotherLoginSetUpTwoFactorMeanwhile(): void
+    {
+        $user = $this->user(required: true);
+        $stored = ['required' => true, 'enabled' => true, 'secret' => 'WINNERSECRETWINNER', 'type' => 'google'];
+        $service = $this->service($this->repository($user, saves: 0, stored: $stored));
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+        $secret = $service->createSetup($user)->getSecret();
+
+        try {
+            $service->confirmSetup($user, $this->code($secret));
+            $this->fail('A second first-time setup replaced the stored secret.');
+        } catch (ForbiddenException) {
+        }
+
+        $this->assertFalse($user->getTwoFactorAuthentication('enabled'));
+        $this->assertSame([], $this->requestStack->getSession()->all(), 'The losing login kept its pending secret.');
+        $this->assertTrue(
+            (new LockFactory($this->lockStore))->createLock('pimcore_studio_two_factor_enrollment_7')->acquire(),
+            'The lock was not released after the refusal.'
+        );
+    }
+
+    /**
+     * Through the login's setup step the losing login gets a refused code, not an error.
+     */
+    public function testSetupProviderRefusesTheLosingLogin(): void
+    {
+        $user = $this->user(required: true);
+        $stored = ['required' => true, 'enabled' => true, 'secret' => 'WINNERSECRETWINNER', 'type' => 'google'];
+        $service = $this->service($this->repository($user, saves: 0, stored: $stored));
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+        $secret = $service->createSetup($user)->getSecret();
+
+        $this->assertFalse((new SetupProvider($service))->validateAuthenticationCode(new SecurityUser($user), $this->code($secret)));
+    }
+
+    public function testSetupStepSavesUnderAPerUserLock(): void
+    {
+        $user = $this->user(required: true);
+        $heldDuringSave = null;
+        $otherWorker = new LockFactory($this->lockStore);
+        $repository = $this->makeEmpty(UserRepositoryInterface::class, [
+            'getStoredTwoFactorAuthentication' => static fn () => $user->getTwoFactorAuthentication(),
+            'updateUser' => Expected::once(static function () use (&$heldDuringSave, $otherWorker): void {
+                $lock = $otherWorker->createLock('pimcore_studio_two_factor_enrollment_7');
+                $heldDuringSave = !$lock->acquire();
+            }),
+        ]);
+        $service = $this->service($repository);
+        $this->tokenStorage->setToken($this->pendingLogin(SetupProvider::ALIAS));
+        $secret = $service->createSetup($user)->getSecret();
+
+        $service->confirmSetup($user, $this->code($secret));
+
+        $this->assertTrue($heldDuringSave, 'Another worker could take the lock while the secret was saved.');
+        $this->assertTrue($otherWorker->createLock('pimcore_studio_two_factor_enrollment_7')->acquire(), 'The lock was not released.');
+    }
+
+    /**
+     * A logged-in user renewing replaces their own secret; the stored state does not refuse that.
+     */
+    public function testRenewalOfALoggedInUserIsNotRefusedByTheStoredState(): void
+    {
+        $user = $this->user(enabled: true, secret: 'OLDSECRETOLDSECRET', required: true);
+        $service = $this->service($this->repository($user, saves: 1));
+        $secret = $service->createSetup($user)->getSecret();
+
+        $service->confirmSetup($user, $this->code($secret));
+
+        $this->assertSame($secret, $user->getTwoFactorAuthentication('secret'));
+    }
+
     public function testSetupStoresThePendingSecretForThisUser(): void
     {
         $user = $this->user(id: 42, required: true);
@@ -461,17 +543,20 @@ final class TwoFactorServiceTest extends Unit
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $currentUser ?? static fn () => throw new UserNotFoundException(),
             ]),
+            new LockFactory($this->lockStore),
             $digits
         );
     }
 
     /**
      * @param array<int, User> $byId
+     * @param array<string, mixed>|null $stored what the database holds, if not the user's own state
      */
-    private function repository(User $user, int $saves, array $byId = []): UserRepositoryInterface
+    private function repository(User $user, int $saves, array $byId = [], ?array $stored = null): UserRepositoryInterface
     {
         return $this->makeEmpty(UserRepositoryInterface::class, [
             'getUserById' => static fn (int $id) => $byId[$id] ?? throw new NotFoundException('User', $id),
+            'getStoredTwoFactorAuthentication' => static fn () => $stored ?? $user->getTwoFactorAuthentication(),
             'updateUser' => Expected::exactly($saves, static function (User $saved) use ($user): void {
                 if ($saved !== $user) {
                     throw new LogicException('Saved another user.');
