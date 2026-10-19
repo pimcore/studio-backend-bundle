@@ -34,6 +34,8 @@ final readonly class CalculatedValueSnapshotService implements CalculatedValueSn
 
     public function getStoredValue(Concrete $object, CalculatedValue $context): mixed
     {
-        return $object->__getCalculatedValueSnapshot()[DataObjectService::getCalculatedValueSnapshotKey($context)] ?? null;
+        $key = DataObjectService::getCalculatedValueSnapshotKey($context);
+
+        return $object->__getCalculatedValueSnapshot()[$key] ?? null;
     }
 }

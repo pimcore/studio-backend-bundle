@@ -180,6 +180,10 @@ final class CalculatedValueAdapterTest extends Unit
                 'stringable',
             ],
             'array' => [['net' => 10, 'gross' => 12], '{"net":10,"gross":12}'],
+            // the core stores any array of scalars; parts JSON cannot represent are substituted, never fail the detail
+            'array with INF' => [['total' => INF], '{"total":0}'],
+            'array with NAN' => [['total' => NAN], '{"total":0}'],
+            'array with invalid UTF-8' => [['name' => "\xB1\x31"], '{"name":"\ufffd1"}'],
         ];
     }
 

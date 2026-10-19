@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use const JSON_THROW_ON_ERROR;
+use const JSON_INVALID_UTF8_SUBSTITUTE;
+use const JSON_PARTIAL_OUTPUT_ON_ERROR;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
@@ -107,8 +108,12 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
             return (string) $value;
         }
 
-        // the edit view casts expression results to string as well; a structured value is shown as JSON
-        return json_encode($value, JSON_THROW_ON_ERROR);
+        // the edit view casts expression results to string as well; a structured value is shown as JSON. The core
+        // stores any array of scalars, so parts JSON cannot represent (INF/NAN, invalid UTF-8) are substituted
+        // instead of failing the whole version detail - the value is historical and cannot be recomputed
+        $json = json_encode($value, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
+
+        return $json === false ? null : $json;
     }
 
     /**
