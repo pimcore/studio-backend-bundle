@@ -66,6 +66,9 @@ final readonly class TreeQuery implements TreeQueryInterface
             return $query;
         }
 
+        if ($query instanceof AssetQueryInterface) {
+            $query->orderFoldersFirst();
+        }
         $query->orderByPath('asc');
 
         return $query;
