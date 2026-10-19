@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SimpleSearchParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\FullTextSearchFields;
 use Pimcore\Model\User;
 
 /**
@@ -52,7 +53,7 @@ final readonly class SearchRepository implements SearchRepositoryInterface
         $search->addModifier(new OrderByFullPath(SortDirection::ASC));
 
         if ($parameter->getSearchTerm() !== null) {
-            $search->addModifier(new FullTextSearch($parameter->getSearchTerm()));
+            $search->addModifier(new FullTextSearch($parameter->getSearchTerm(), fields: FullTextSearchFields::FIELDS));
         }
 
         try {

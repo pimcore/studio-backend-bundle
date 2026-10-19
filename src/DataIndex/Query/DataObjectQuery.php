@@ -44,6 +44,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderB
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\FullTextSearchFields;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
@@ -219,7 +220,7 @@ final class DataObjectQuery implements DataObjectQueryInterface
 
     public function filterFullText(string $value): QueryInterface
     {
-        $this->search->addModifier(new FullTextSearch($value));
+        $this->search->addModifier(new FullTextSearch($value, fields: FullTextSearchFields::FIELDS));
 
         return $this;
     }
