@@ -31,6 +31,7 @@ use Stringable;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_scalar;
 use function json_encode;
+use function mb_scrub;
 
 /**
  * @internal
@@ -104,13 +105,14 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
             return null;
         }
 
+        // the core stores whatever scalars a calculator returned, so anything the JSON response cannot carry
+        // (invalid UTF-8, INF/NAN) is substituted instead of failing the whole version detail - the value is
+        // historical and cannot be recomputed
         if (is_scalar($value) || $value instanceof Stringable) {
-            return (string) $value;
+            return mb_scrub((string) $value, 'UTF-8');
         }
 
-        // the edit view casts expression results to string as well; a structured value is shown as JSON. The core
-        // stores any array of scalars, so parts JSON cannot represent (INF/NAN, invalid UTF-8) are substituted
-        // instead of failing the whole version detail - the value is historical and cannot be recomputed
+        // the edit view casts expression results to string as well; a structured value is shown as JSON
         $json = json_encode($value, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE);
 
         return $json === false ? null : $json;

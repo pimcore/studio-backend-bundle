@@ -26,6 +26,7 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Stringable;
 use function array_key_exists;
 use function implode;
+use function json_encode;
 
 /**
  * @internal
@@ -162,6 +163,7 @@ final class CalculatedValueAdapterTest extends Unit
         );
 
         $this->assertSame($expected, $result);
+        $this->assertNotFalse(json_encode($result), 'the detail value must be serializable for the API response');
     }
 
     public function storedValueProvider(): array
@@ -184,6 +186,16 @@ final class CalculatedValueAdapterTest extends Unit
             'array with INF' => [['total' => INF], '{"total":0}'],
             'array with NAN' => [['total' => NAN], '{"total":0}'],
             'array with invalid UTF-8' => [['name' => "\xB1\x31"], '{"name":"\ufffd1"}'],
+            'string with invalid UTF-8' => ["\xB1\x31", '?1'],
+            'stringable with invalid UTF-8' => [
+                new class() implements Stringable {
+                    public function __toString(): string
+                    {
+                        return "\xB1\x31";
+                    }
+                },
+                '?1',
+            ],
         ];
     }
 
