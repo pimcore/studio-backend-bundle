@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use const JSON_THROW_ON_ERROR;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
@@ -24,7 +25,10 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\UserInterface;
+use Stringable;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_scalar;
+use function json_encode;
 
 /**
  * @internal
@@ -70,11 +74,34 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
         $calculatedValue = new CalculatedValue($fieldDefinition->getName());
         $this->applyContextualData($calculatedValue, $fieldDefinition, $contextData);
 
+        if ($contextData?->isHistoricalVersion()) {
+            // a version detail shows the value the version stores (Pimcore 2026.4+ with
+            // pimcore.objects.versions.calculated_value_snapshot enabled); the core computes the value live
+            // when the version holds none, same as it does for the edit view
+            return $this->toDetailValue(
+                $this->dataObjectServiceResolver->getCalculatedFieldValue($object, $calculatedValue)
+            );
+        }
+
         return $this->dataObjectServiceResolver->getCalculatedFieldValueForEditMode(
             $object,
             [],
             $calculatedValue,
         );
+    }
+
+    private function toDetailValue(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_scalar($value) || $value instanceof Stringable) {
+            return (string) $value;
+        }
+
+        // the edit view casts expression results to string as well; a structured value is shown as JSON
+        return json_encode($value, JSON_THROW_ON_ERROR);
     }
 
     private function applyContextualData(

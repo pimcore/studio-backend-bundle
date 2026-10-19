@@ -24,10 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -98,15 +100,83 @@ final class LocalizedFieldsAdapterTest extends Unit
         $this->assertSame(['en' => ['title' => 'Existing']], $result->getItems());
     }
 
+    public function testDetailDataOfTheEditViewIsNotBuiltAsHistoricalVersion(): void
+    {
+        $contextData = $this->resolveDetailContext(null);
+
+        $this->assertSame('en', $contextData->getLanguage());
+        $this->assertFalse($contextData->isHistoricalVersion());
+    }
+
+    public function testDetailDataOfAVersionForwardsTheHistoricalVersionContextToObjectLevelLocalizedFields(): void
+    {
+        $contextData = $this->resolveDetailContext(new FieldContextData(historicalVersion: true));
+
+        $this->assertSame('en', $contextData->getLanguage());
+        $this->assertTrue($contextData->isHistoricalVersion());
+    }
+
+    public function testDetailDataOfAVersionDoesNotForwardTheHistoricalVersionContextIntoContainers(): void
+    {
+        // only the localized fields of the object itself are part of what a version stores; the ones of an
+        // object brick (or field collection item) are computed live, so they must not be hydrated as historical
+        $contextData = $this->resolveDetailContext(
+            new FieldContextData(contextObject: $this->makeEmpty(AbstractData::class), historicalVersion: true)
+        );
+
+        $this->assertSame('en', $contextData->getLanguage());
+        $this->assertFalse($contextData->isHistoricalVersion());
+    }
+
+    private function resolveDetailContext(?FieldContextData $contextData): FieldContextData
+    {
+        $captured = [];
+        $dataService = $this->makeEmpty(DataServiceInterface::class, [
+            'getDetailValue' => function (
+                Concrete $object,
+                mixed $value,
+                Data $fieldDefinition,
+                ?FieldContextData $contextData = null
+            ) use (&$captured): mixed {
+                $captured[] = $contextData;
+
+                return $value;
+            },
+        ]);
+        $adapter = $this->createAdapter(allowedLanguages: ['en'], allLanguages: ['en'], dataService: $dataService);
+
+        $localizedFieldsDefinition = $this->makeEmpty(Localizedfields::class, [
+            'getFieldDefinition' => $this->makeEmpty(Input::class, ['getName' => 'title']),
+            'getFieldDefinitions' => [],
+            'normalize' => ['en' => ['title' => 'value']],
+        ]);
+        $class = new ClassDefinition();
+        $class->setFieldDefinitions(['localizedfields' => $localizedFieldsDefinition]);
+        $object = $this->makeEmpty(Concrete::class, ['getClass' => $class]);
+        $localizedField = new Localizedfield(['en' => ['title' => 'value']]);
+        $localizedField->setObject($object);
+
+        $result = $adapter->getDetailData($object, $localizedField, $localizedFieldsDefinition, $contextData);
+
+        $this->assertSame(['title' => ['en' => 'value']], $result);
+        $this->assertCount(1, $captured);
+        $this->assertInstanceOf(FieldContextData::class, $captured[0]);
+
+        return $captured[0];
+    }
+
     /**
      * @param string[] $allowedLanguages
      * @param string[] $allLanguages
      */
-    private function createAdapter(array $allowedLanguages, array $allLanguages): LocalizedFieldsAdapter
-    {
+    private function createAdapter(
+        array $allowedLanguages,
+        array $allLanguages,
+        ?DataServiceInterface $dataService = null
+    ): LocalizedFieldsAdapter {
         return new LocalizedFieldsAdapter(
             $this->makeEmpty(DataAdapterServiceInterface::class),
-            $this->makeEmpty(DataServiceInterface::class),
+            $dataService ?? $this->makeEmpty(DataServiceInterface::class),
             $this->makeEmpty(InheritanceServiceInterface::class, [
                 'processFieldDefinition' => new InheritanceData(1, inheritable: true),
             ]),
