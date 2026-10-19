@@ -28,6 +28,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueSnapshotServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueSnapshotService
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceService
 

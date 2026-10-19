@@ -3,6 +3,15 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Data Objects] Changed: the version detail (`GET /pimcore-studio/api/versions/{id}`) of a data object shows the
+  values of calculated fields the version stores when `pimcore.objects.versions.calculated_value_snapshot` is enabled
+  in Pimcore 2026.4+; the edit view keeps showing freshly computed values. `FieldContextData` (`@internal`) got the
+  constructor argument `historicalVersion` and `isHistoricalVersion()`; `DataService::setObjectDetailData()` passes
+  it for a `DataObjectVersion`, and the localized fields adapter forwards it for the localized fields of the object
+  itself. A custom `DetailDataInterface` adapter that computes values can use it the same way. A version that stores
+  no value for a field (created before the option, auto-save, field of an object brick or field collection) is shown
+  the way the edit view shows it, as before. The new `@internal` `CalculatedValueSnapshotServiceInterface` reads the
+  stored values; the bundle now requires `pimcore/pimcore` `^2026.4`.
 - [Grid] Changed: `twigOperator` templates render in a dedicated Twig environment with the sandbox always enabled
   and without Pimcore's Twig extensions or the application's Twig configuration. Method calls and property access on
   objects are denied. Values are converted to plain data first: dates become ISO 8601 strings, consent values,
