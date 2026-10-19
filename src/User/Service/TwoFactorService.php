@@ -92,7 +92,10 @@ final readonly class TwoFactorService implements TwoFactorServiceInterface
 
         // Two logins in the setup step may confirm at once; both loaded the user before either saved.
         // The application's lock store, so the lock reaches as far as the users table does.
-        $lock = $this->lockFactory->createLock(self::ENROLLMENT_LOCK_PREFIX . $user->getId(), self::ENROLLMENT_LOCK_TTL);
+        $lock = $this->lockFactory->createLock(
+            self::ENROLLMENT_LOCK_PREFIX . $user->getId(),
+            self::ENROLLMENT_LOCK_TTL
+        );
         $lock->acquire(true);
 
         try {
