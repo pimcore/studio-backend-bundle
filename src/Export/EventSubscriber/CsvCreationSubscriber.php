@@ -27,12 +27,20 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use function in_array;
 
 /**
  * @internal
  */
 final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
+    private const array FINAL_STATES = [
+        JobRunStates::FINISHED->value,
+        JobRunStates::FINISHED_WITH_ERRORS->value,
+        JobRunStates::FAILED->value,
+        JobRunStates::CANCELLED->value,
+    ];
+
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
         private ExportServiceInterface $csvExportService,
@@ -63,13 +71,17 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
             return;
         }
 
+        // The rows stay until the job run is over: a retried creation step still needs them
+        if (in_array($event->getNewState(), self::FINAL_STATES, true)) {
+            $this->exportDataStorageService->cleanUp($event->getJobRunId());
+        }
+
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
                 $this->userTopicService->getUserTopic($event->getJobRunOwnerId()),
                 $event
             ),
             JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
-            JobRunStates::CANCELLED->value => $this->exportDataStorageService->cleanUp($event->getJobRunId()),
             default => null,
         };
     }
@@ -79,7 +91,6 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
      */
     private function cleanupOnFail(int $jobRunId): void
     {
-        $this->exportDataStorageService->cleanUp($jobRunId);
         $this->csvExportService->cleanupFileSystem(
             $jobRunId,
             ExportFile::CSV_FOLDER_NAME->value,

@@ -29,9 +29,9 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface
 final class CsvCreationSubscriberTest extends Unit
 {
     /**
-     * @dataProvider cleanedUpStatesProvider
+     * @dataProvider finalStatesProvider
      */
-    public function testRemovesTheCollectedRowsIfTheJobRunDoesNotFinish(string $state): void
+    public function testRemovesTheCollectedRowsOnceTheJobRunIsOver(string $state): void
     {
         $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
         $exportDataStorageService->expects($this->once())->method('cleanUp')->with(5);
@@ -44,7 +44,7 @@ final class CsvCreationSubscriberTest extends Unit
     /**
      * @dataProvider ignoredEventsProvider
      */
-    public function testLeavesTheCollectedRowsAloneOtherwise(string $jobName, string $state): void
+    public function testLeavesTheCollectedRowsAloneWhileTheJobRunIsActive(string $jobName, string $state): void
     {
         $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
         $exportDataStorageService->expects($this->never())->method('cleanUp');
@@ -54,9 +54,11 @@ final class CsvCreationSubscriberTest extends Unit
         );
     }
 
-    public function cleanedUpStatesProvider(): array
+    public function finalStatesProvider(): array
     {
         return [
+            'finished' => [JobRunStates::FINISHED->value],
+            'finished with errors' => [JobRunStates::FINISHED_WITH_ERRORS->value],
             'failed' => [JobRunStates::FAILED->value],
             'cancelled' => [JobRunStates::CANCELLED->value],
         ];
@@ -67,6 +69,7 @@ final class CsvCreationSubscriberTest extends Unit
         return [
             'other job failed' => [Jobs::CREATE_XLSX->value, JobRunStates::FAILED->value],
             'still running' => [Jobs::CREATE_CSV->value, JobRunStates::RUNNING->value],
+            'not started' => [Jobs::CREATE_CSV->value, JobRunStates::NOT_STARTED->value],
         ];
     }
 

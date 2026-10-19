@@ -84,8 +84,12 @@ final class XlsxCreationHandler extends AbstractHandler
             ));
         }
 
-        // Jobs that started before the collected rows were moved out of the job run still carry them in its context
-        $exportData ??= $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value] ?? null;
+        // A job run that was already collecting when the rows moved out of the job run still carries the rows of its
+        // first batches in the context, they come before the stored ones
+        $contextData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value] ?? null;
+        if ($contextData !== null) {
+            $exportData = array_merge($contextData, $exportData ?? []);
+        }
         if ($exportData === null) {
             $this->abort($this->getAbortData(
                 Config::XLSX_CREATION_FAILED_MESSAGE->value,
@@ -111,8 +115,6 @@ final class XlsxCreationHandler extends AbstractHandler
                 ['message' => $e->getMessage()]
             ));
         }
-
-        $this->exportDataStorageService->cleanUp($jobRun->getId());
 
         $this->updateProgress(
             $this->publishService,

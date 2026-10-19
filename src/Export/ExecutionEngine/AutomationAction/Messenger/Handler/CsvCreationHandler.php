@@ -83,8 +83,12 @@ final class CsvCreationHandler extends AbstractHandler
             ));
         }
 
-        // Jobs that started before the collected rows were moved out of the job run still carry them in its context
-        $csvData ??= $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value] ?? null;
+        // A job run that was already collecting when the rows moved out of the job run still carries the rows of its
+        // first batches in the context, they come before the stored ones
+        $contextData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value] ?? null;
+        if ($contextData !== null) {
+            $csvData = array_merge($contextData, $csvData ?? []);
+        }
         if ($csvData === null) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
@@ -111,8 +115,6 @@ final class CsvCreationHandler extends AbstractHandler
                 ['message' => $e->getMessage()]
             ));
         }
-
-        $this->exportDataStorageService->cleanUp($jobRun->getId());
 
         $this->updateProgress(
             $this->publishService,

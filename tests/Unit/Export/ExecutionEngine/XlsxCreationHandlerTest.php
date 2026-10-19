@@ -44,11 +44,12 @@ final class XlsxCreationHandlerTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCreatesTheFileFromTheStoredRowsAndRemovesThem(): void
+    public function testCreatesTheFileFromTheStoredRowsAndLeavesThemToTheJobRunState(): void
     {
         $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
         $exportDataStorageService->method('load')->with(1)->willReturn(self::ROWS);
-        $exportDataStorageService->expects($this->once())->method('cleanUp')->with(1);
+        // A retried step needs the rows again if it fails after the file was created
+        $exportDataStorageService->expects($this->never())->method('cleanUp');
 
         $exportedRows = null;
         $exportService = $this->createMock(ExportServiceInterface::class);
@@ -86,6 +87,32 @@ final class XlsxCreationHandlerTest extends Unit
         )(new XlsxCreationMessage(1, 1));
 
         $this->assertSame(self::ROWS, $exportedRows);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testPutsTheRowsOfTheContextBeforeTheStoredRows(): void
+    {
+        $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
+        $exportDataStorageService->method('load')->willReturn([['stored-1'], ['stored-2']]);
+
+        $exportedRows = null;
+        $exportService = $this->createMock(ExportServiceInterface::class);
+        $exportService->expects($this->once())->method('createExportFile')->willReturnCallback(
+            static function (int $id, GridExportData $data) use (&$exportedRows): void {
+                $exportedRows = $data->getExportData();
+            }
+        );
+
+        // The first batches were collected before the rows moved out of the job run
+        $this->createHandler(
+            $exportDataStorageService,
+            $exportService,
+            [StepConfig::GRID_EXPORT_DATA->value => [['context-1'], ['context-2']]]
+        )(new XlsxCreationMessage(1, 1));
+
+        $this->assertSame([['context-1'], ['context-2'], ['stored-1'], ['stored-2']], $exportedRows);
     }
 
     public function testAbortsWithoutCreatingAFileIfThereAreNoRows(): void

@@ -27,7 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 interface ExportDataStorageServiceInterface
 {
     /**
-     * Stores the rows of one batch. Storing the same batch again replaces it, so a retried step does not duplicate rows.
+     * Stores the rows of one batch. Storing the same batch again replaces it, so a retried step does not
+     * duplicate rows.
      *
      * @throws EnvironmentException
      */
@@ -41,7 +42,8 @@ interface ExportDataStorageServiceInterface
     public function load(int $jobRunId): ?array;
 
     /**
-     * Removes all stored batches. Never throws, a leftover must not fail an export that already succeeded.
+     * Removes all stored batches. Never throws, a leftover must not fail an export that already succeeded or
+     * hide the reason why it failed.
      */
     public function cleanUp(int $jobRunId): void;
 }
