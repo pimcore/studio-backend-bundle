@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueSnapshotServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\CalculatedValue as CalculatedValueDefinition;
@@ -46,6 +47,7 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
 
     public function __construct(
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private CalculatedValueSnapshotServiceInterface $calculatedValueSnapshotService,
     ) {
     }
 
@@ -71,17 +73,22 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
             return null;
         }
 
+        if ($contextData?->isHistoricalVersion()) {
+            // a version detail shows the value the version stores (pimcore.objects.versions.calculated_value_snapshot);
+            // a version that stores none for the field (created before the option, auto-save, field of a
+            // container) is shown the way the edit view shows it, as before
+            $storedValueContext = new CalculatedValue($fieldDefinition->getName());
+            $this->applyContextualData($storedValueContext, $fieldDefinition, $contextData, forStoredValue: true);
+
+            if ($this->calculatedValueSnapshotService->hasStoredValue($object, $storedValueContext)) {
+                return $this->toDetailValue(
+                    $this->calculatedValueSnapshotService->getStoredValue($object, $storedValueContext)
+                );
+            }
+        }
+
         $calculatedValue = new CalculatedValue($fieldDefinition->getName());
         $this->applyContextualData($calculatedValue, $fieldDefinition, $contextData);
-
-        if ($contextData?->isHistoricalVersion()) {
-            // a version detail shows the value the version stores (Pimcore 2026.4+ with
-            // pimcore.objects.versions.calculated_value_snapshot enabled); the core computes the value live
-            // when the version holds none, same as it does for the edit view
-            return $this->toDetailValue(
-                $this->dataObjectServiceResolver->getCalculatedFieldValue($object, $calculatedValue)
-            );
-        }
 
         return $this->dataObjectServiceResolver->getCalculatedFieldValueForEditMode(
             $object,
@@ -104,10 +111,15 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
         return json_encode($value, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @param bool $forStoredValue identify the field the way the generated getters of the class do, which is
+     *                             how a version stores the value: object-level fields carry no owner name
+     */
     private function applyContextualData(
         CalculatedValue $calculatedValue,
         CalculatedValueDefinition $fieldDefinition,
         ?FieldContextData $contextData,
+        bool $forStoredValue = false,
     ): void {
         $contextObject = $contextData?->getContextObject();
 
@@ -143,7 +155,7 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface, Deta
 
         $calculatedValue->setContextualData(
             self::OWNER_TYPE_OBJECT,
-            $fieldDefinition->getName(),
+            $forStoredValue ? null : $fieldDefinition->getName(),
             null,
             null,
             null,

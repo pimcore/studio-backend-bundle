@@ -17,11 +17,15 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueSnapshotServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\CalculatedValue as CalculatedValueDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Stringable;
+use function array_key_exists;
+use function implode;
 
 /**
  * @internal
@@ -32,24 +36,24 @@ final class CalculatedValueAdapterTest extends Unit
     private array $editModeCalls = [];
 
     /** @var array<int, CalculatedValue> */
-    private array $storedValueCalls = [];
+    private array $storedValueLookups = [];
 
     public function testEditViewComputesTheValueFreshly(): void
     {
-        $adapter = $this->createAdapter(editModeValue: 'live', storedValue: 'stored');
+        $adapter = $this->createAdapter(editModeValue: 'live', storedValues: ['object~~~~total' => 'stored']);
 
         $result = $adapter->getDetailData($this->makeEmpty(Concrete::class), null, $this->definition('total'));
 
         $this->assertSame('live', $result);
         $this->assertCount(1, $this->editModeCalls);
-        $this->assertCount(0, $this->storedValueCalls, 'the edit view must never read what a version stores');
+        $this->assertCount(0, $this->storedValueLookups, 'the edit view must never read what a version stores');
         $this->assertSame('object', $this->editModeCalls[0]->getOwnerType());
         $this->assertSame('total', $this->editModeCalls[0]->getFieldname());
     }
 
     public function testHistoricalVersionShowsTheValueTheVersionStores(): void
     {
-        $adapter = $this->createAdapter(editModeValue: 'live', storedValue: 'stored');
+        $adapter = $this->createAdapter(editModeValue: 'live', storedValues: ['object~~~~total' => 'stored']);
 
         $result = $adapter->getDetailData(
             $this->makeEmpty(Concrete::class),
@@ -59,15 +63,55 @@ final class CalculatedValueAdapterTest extends Unit
         );
 
         $this->assertSame('stored', $result);
-        $this->assertCount(0, $this->editModeCalls, 'a version detail must not recompute the value for the edit view');
-        $this->assertCount(1, $this->storedValueCalls);
-        $this->assertSame('object', $this->storedValueCalls[0]->getOwnerType());
-        $this->assertSame('total', $this->storedValueCalls[0]->getFieldname());
+        $this->assertCount(0, $this->editModeCalls, 'a stored value must not be recomputed for the edit view');
+        $this->assertCount(1, $this->storedValueLookups);
+        // a version stores object-level values under the context of the generated getters: no owner name
+        $this->assertSame('object', $this->storedValueLookups[0]->getOwnerType());
+        $this->assertNull($this->storedValueLookups[0]->getOwnerName());
+        $this->assertNull($this->storedValueLookups[0]->getIndex());
+        $this->assertNull($this->storedValueLookups[0]->getPosition());
+        $this->assertSame('total', $this->storedValueLookups[0]->getFieldname());
+    }
+
+    public function testHistoricalVersionWithoutStoredValueIsShownLikeTheEditView(): void
+    {
+        // versions created before the option, auto-save versions, fields of containers
+        $adapter = $this->createAdapter(editModeValue: '10 EUR', storedValues: []);
+
+        $result = $adapter->getDetailData(
+            $this->makeEmpty(Concrete::class),
+            null,
+            $this->definition('total'),
+            new FieldContextData(historicalVersion: true)
+        );
+
+        $this->assertSame('10 EUR', $result);
+        $this->assertCount(1, $this->storedValueLookups);
+        $this->assertCount(1, $this->editModeCalls, 'without a stored value the edit mode formatting must be kept');
+        $this->assertSame('total', $this->editModeCalls[0]->getOwnerName(), 'the edit view inputs must not change');
+    }
+
+    public function testHistoricalVersionStoringNullShowsNothingInsteadOfRecomputing(): void
+    {
+        $adapter = $this->createAdapter(editModeValue: 'live', storedValues: ['object~~~~total' => null]);
+
+        $result = $adapter->getDetailData(
+            $this->makeEmpty(Concrete::class),
+            null,
+            $this->definition('total'),
+            new FieldContextData(historicalVersion: true)
+        );
+
+        $this->assertNull($result);
+        $this->assertCount(0, $this->editModeCalls);
     }
 
     public function testHistoricalVersionKeepsTheLocalizedFieldContext(): void
     {
-        $adapter = $this->createAdapter(editModeValue: 'live', storedValue: 'gespeichert');
+        $adapter = $this->createAdapter(
+            editModeValue: 'live',
+            storedValues: ['localizedfield~localizedfields~~de~total' => 'gespeichert']
+        );
 
         $result = $adapter->getDetailData(
             $this->makeEmpty(Concrete::class),
@@ -77,11 +121,30 @@ final class CalculatedValueAdapterTest extends Unit
         );
 
         $this->assertSame('gespeichert', $result);
-        $this->assertCount(1, $this->storedValueCalls);
+        $this->assertCount(1, $this->storedValueLookups);
         // the stored values of localized calculated fields are keyed by owner type and language
-        $this->assertSame('localizedfield', $this->storedValueCalls[0]->getOwnerType());
-        $this->assertSame('localizedfields', $this->storedValueCalls[0]->getOwnerName());
-        $this->assertSame('de', $this->storedValueCalls[0]->getPosition());
+        $this->assertSame('localizedfield', $this->storedValueLookups[0]->getOwnerType());
+        $this->assertSame('localizedfields', $this->storedValueLookups[0]->getOwnerName());
+        $this->assertSame('de', $this->storedValueLookups[0]->getPosition());
+    }
+
+    public function testHistoricalVersionInsideAnObjectBrickIsShownLikeTheEditView(): void
+    {
+        $adapter = $this->createAdapter(editModeValue: 'live', storedValues: ['object~~~~total' => 'stored']);
+        $brick = $this->makeEmpty(AbstractData::class, ['getFieldname' => 'bricks', 'getType' => 'pricing']);
+
+        $result = $adapter->getDetailData(
+            $this->makeEmpty(Concrete::class),
+            null,
+            $this->definition('total'),
+            new FieldContextData(contextObject: $brick, historicalVersion: true)
+        );
+
+        // a version only stores object-level and localized fields of the object itself
+        $this->assertSame('live', $result);
+        $this->assertCount(1, $this->storedValueLookups);
+        $this->assertSame('objectbrick', $this->storedValueLookups[0]->getOwnerType());
+        $this->assertCount(1, $this->editModeCalls);
     }
 
     /**
@@ -89,7 +152,7 @@ final class CalculatedValueAdapterTest extends Unit
      */
     public function testStoredValuesAreShownTheWayTheEditViewShowsThem(mixed $storedValue, ?string $expected): void
     {
-        $adapter = $this->createAdapter(editModeValue: 'live', storedValue: $storedValue);
+        $adapter = $this->createAdapter(editModeValue: 'live', storedValues: ['object~~~~total' => $storedValue]);
 
         $result = $adapter->getDetailData(
             $this->makeEmpty(Concrete::class),
@@ -104,7 +167,6 @@ final class CalculatedValueAdapterTest extends Unit
     public function storedValueProvider(): array
     {
         return [
-            'nothing stored' => [null, null],
             'string' => ['42 EUR', '42 EUR'],
             'float' => [12.5, '12.5'],
             'bool' => [true, '1'],
@@ -123,7 +185,7 @@ final class CalculatedValueAdapterTest extends Unit
 
     public function testOtherFieldDefinitionsAreIgnored(): void
     {
-        $adapter = $this->createAdapter(editModeValue: 'live', storedValue: 'stored');
+        $adapter = $this->createAdapter(editModeValue: 'live', storedValues: ['object~~~~total' => 'stored']);
 
         $result = $adapter->getDetailData(
             $this->makeEmpty(Concrete::class),
@@ -134,13 +196,25 @@ final class CalculatedValueAdapterTest extends Unit
 
         $this->assertNull($result);
         $this->assertCount(0, $this->editModeCalls);
-        $this->assertCount(0, $this->storedValueCalls);
+        $this->assertCount(0, $this->storedValueLookups);
     }
 
-    private function createAdapter(?string $editModeValue, mixed $storedValue): CalculatedValueAdapter
+    /**
+     * @param array<string, mixed> $storedValues keyed like the core keys a version's stored values:
+     *                                           ownerType~ownerName~index~position~fieldname
+     */
+    private function createAdapter(?string $editModeValue, array $storedValues): CalculatedValueAdapter
     {
         $this->editModeCalls = [];
-        $this->storedValueCalls = [];
+        $this->storedValueLookups = [];
+
+        $key = static fn (CalculatedValue $context): string => implode('~', [
+            $context->getOwnerType(),
+            (string) $context->getOwnerName(),
+            (string) $context->getIndex(),
+            (string) $context->getPosition(),
+            $context->getFieldname(),
+        ]);
 
         return new CalculatedValueAdapter(
             $this->makeEmpty(DataObjectServiceResolverInterface::class, [
@@ -153,11 +227,15 @@ final class CalculatedValueAdapterTest extends Unit
 
                     return $editModeValue;
                 },
-                'getCalculatedFieldValue' => function (mixed $object, ?CalculatedValue $data) use ($storedValue): mixed {
-                    $this->storedValueCalls[] = $data;
+            ]),
+            $this->makeEmpty(CalculatedValueSnapshotServiceInterface::class, [
+                'hasStoredValue' => function (Concrete $object, CalculatedValue $context) use ($storedValues, $key): bool {
+                    $this->storedValueLookups[] = $context;
 
-                    return $storedValue;
+                    return array_key_exists($key($context), $storedValues);
                 },
+                'getStoredValue' => static fn (Concrete $object, CalculatedValue $context): mixed
+                    => $storedValues[$key($context)] ?? null,
             ])
         );
     }
