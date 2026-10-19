@@ -71,6 +71,9 @@ final class ObjectBrickCollector implements
      */
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
+        // the collector is a shared service, do not return the columns of a previous call
+        $this->configurations = [];
+
         $objectBrickList = new ObjectBrickListing();
         $objectBrickList = $objectBrickList->load();
 
