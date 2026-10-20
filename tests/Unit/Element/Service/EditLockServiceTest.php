@@ -26,7 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Document;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,9 +49,15 @@ final class EditLockServiceTest extends Unit
      */
     private array $calls = [];
 
+    /**
+     * @var string[]
+     */
+    private array $checks = [];
+
     protected function _before(): void
     {
         $this->calls = [];
+        $this->checks = [];
     }
 
     /**
@@ -64,6 +73,7 @@ final class EditLockServiceTest extends Unit
             $service->lockElement(self::ELEMENT_ID, ElementTypes::TYPE_DATA_OBJECT);
         } finally {
             $this->assertSame([], $this->calls);
+            $this->assertSame($this->expectedChecks('object'), $this->checks);
         }
     }
 
@@ -80,6 +90,7 @@ final class EditLockServiceTest extends Unit
             $service->lockElement(self::ELEMENT_ID, ElementTypes::TYPE_DATA_OBJECT);
         } finally {
             $this->assertSame([], $this->calls);
+            $this->assertSame($this->expectedChecks('object', loaded: false), $this->checks);
         }
     }
 
@@ -93,6 +104,7 @@ final class EditLockServiceTest extends Unit
         $service->lockElement(self::ELEMENT_ID, ElementTypes::TYPE_DATA_OBJECT);
 
         $this->assertSame(['lock:' . self::ELEMENT_ID . ':object'], $this->calls);
+        $this->assertSame($this->expectedChecks('object'), $this->checks);
     }
 
     /**
@@ -108,6 +120,7 @@ final class EditLockServiceTest extends Unit
             $service->unlockElement(self::ELEMENT_ID, ElementTypes::TYPE_ASSET);
         } finally {
             $this->assertSame([], $this->calls);
+            $this->assertSame($this->expectedChecks('asset'), $this->checks);
         }
     }
 
@@ -124,6 +137,7 @@ final class EditLockServiceTest extends Unit
             $service->unlockElement(self::ELEMENT_ID, ElementTypes::TYPE_ASSET);
         } finally {
             $this->assertSame([], $this->calls);
+            $this->assertSame($this->expectedChecks('asset', loaded: false), $this->checks);
         }
     }
 
@@ -137,6 +151,7 @@ final class EditLockServiceTest extends Unit
         $service->unlockElement(self::ELEMENT_ID, ElementTypes::TYPE_ASSET);
 
         $this->assertSame(['unlock:' . self::ELEMENT_ID . ':asset'], $this->calls);
+        $this->assertSame($this->expectedChecks('asset'), $this->checks);
     }
 
     /**
@@ -152,6 +167,7 @@ final class EditLockServiceTest extends Unit
             $service->getEditLock(self::ELEMENT_ID, ElementTypes::TYPE_DOCUMENT);
         } finally {
             $this->assertSame([], $this->calls);
+            $this->assertSame($this->expectedChecks('document'), $this->checks);
         }
     }
 
@@ -168,6 +184,7 @@ final class EditLockServiceTest extends Unit
             $service->getEditLock(self::ELEMENT_ID, ElementTypes::TYPE_DOCUMENT);
         } finally {
             $this->assertSame([], $this->calls);
+            $this->assertSame($this->expectedChecks('document', loaded: false), $this->checks);
         }
     }
 
@@ -182,6 +199,7 @@ final class EditLockServiceTest extends Unit
 
         $this->assertFalse($editLock->getIsLocked());
         $this->assertSame(['isLocked:' . self::ELEMENT_ID . ':document'], $this->calls);
+        $this->assertSame($this->expectedChecks('document'), $this->checks);
     }
 
     /**
@@ -189,17 +207,24 @@ final class EditLockServiceTest extends Unit
      */
     private function createService(bool $forbidden = false, bool $elementFound = true): EditLockService
     {
-        $element = $elementFound ? $this->makeEmpty(Document::class, ['getId' => self::ELEMENT_ID]) : null;
-
         $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
-            'getElementById' => $element,
+            'getElementById' => function (string $type, int $id) use ($elementFound): ?ElementInterface {
+                $this->checks[] = 'load:' . $type . ':' . $id;
+
+                return $elementFound ? $this->createElement($type) : null;
+            },
         ]);
 
         $user = $this->makeEmpty(UserInterface::class);
 
         $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
             'getCurrentUser' => $user,
-            'hasElementPermission' => function () use ($forbidden): void {
+            'hasElementPermission' => function (
+                ElementInterface $element,
+                UserInterface $user,
+                string $permission
+            ) use ($forbidden): void {
+                $this->checks[] = 'permission:' . $this->elementTypeOf($element) . ':' . $permission;
                 if ($forbidden) {
                     throw new ForbiddenException('You dont have view permission');
                 }
@@ -248,5 +273,44 @@ final class EditLockServiceTest extends Unit
             $requestStack,
             $securityService
         );
+    }
+
+    /**
+     * @return string[]
+     */
+    private function expectedChecks(string $type, bool $loaded = true): array
+    {
+        $checks = ['load:' . $type . ':' . self::ELEMENT_ID];
+        if ($loaded) {
+            $checks[] = 'permission:' . $type . ':view';
+        }
+
+        return $checks;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createElement(string $type): ElementInterface
+    {
+        return $this->makeEmpty($this->elementClass($type), ['getId' => self::ELEMENT_ID]);
+    }
+
+    private function elementTypeOf(ElementInterface $element): string
+    {
+        return match (true) {
+            $element instanceof Folder => 'object',
+            $element instanceof Asset => 'asset',
+            default => 'document',
+        };
+    }
+
+    private function elementClass(string $type): string
+    {
+        return match ($type) {
+            'object' => Folder::class,
+            'asset' => Asset::class,
+            default => Document::class,
+        };
     }
 }
