@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Telemetry\SessionLoginMarker;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
 use Pimcore\Telemetry\TelemetryInterface;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
@@ -99,6 +100,7 @@ final class LoginTelemetrySubscriberTest extends Unit
     {
         yield 'credentials login' => ['pimcore_studio_api_login'];
         yield 'token login' => ['pimcore_studio_api_token_login'];
+        yield 'two-factor code' => ['pimcore_studio_api_login_2fa'];
     }
 
     /**
@@ -166,6 +168,19 @@ final class LoginTelemetrySubscriberTest extends Unit
         $this->assertSame([], $event->getRequest()->getSession()->all());
     }
 
+    /**
+     * The password alone is not a login yet when a code is needed: it counts once the code is in.
+     */
+    public function testAPasswordWaitingForTheCodeIsNotCountedAndLeavesNoMarker(): void
+    {
+        $event = $this->event('pimcore_studio_api_login', admin: true, pendingCode: true);
+
+        $this->subscriber()->onLoginSuccess($event);
+
+        $this->assertSame([], $this->captured);
+        $this->assertSame([], $event->getRequest()->getSession()->all());
+    }
+
     public function testAStudioLoginWithoutASessionStillCountsAndDoesNotFail(): void
     {
         $this->subscriber()->onLoginSuccess($this->event('pimcore_studio_api_login', admin: true, withSession: false));
@@ -188,8 +203,12 @@ final class LoginTelemetrySubscriberTest extends Unit
     /**
      * @param bool|null $admin true/false for a Pimcore user, null for a non-Pimcore user object
      */
-    private function event(?string $route, ?bool $admin, bool $withSession = true): LoginSuccessEvent
-    {
+    private function event(
+        ?string $route,
+        ?bool $admin,
+        bool $withSession = true,
+        bool $pendingCode = false
+    ): LoginSuccessEvent {
         $request = new Request();
         if ($route !== null) {
             $request->attributes->set('_route', $route);
@@ -208,7 +227,7 @@ final class LoginTelemetrySubscriberTest extends Unit
             $user = new SecurityUser($pimcoreUser);
         }
 
-        $token = $this->createStub(TokenInterface::class);
+        $token = $this->createStub($pendingCode ? TwoFactorTokenInterface::class : TokenInterface::class);
         $token->method('getUser')->willReturn($user);
 
         return new LoginSuccessEvent(

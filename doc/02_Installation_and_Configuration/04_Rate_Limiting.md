@@ -15,12 +15,15 @@ Additionally, specific public endpoints have their own stricter limits that appl
 | `studio_api_general` | All Studio API endpoints | Sliding window | 500 requests | 1 minute |
 | `studio_mcp_general` | All MCP endpoints (`/pimcore-mcp/`) | Sliding window | 3000 requests | 1 minute |
 | `studio_mcp_login` | Failed MCP authentication attempts | Fixed window | 5 requests | 5 minutes |
+| `studio_two_factor_code` | Two-factor codes at `POST /login/2fa`, per user | Fixed window | 5 requests | 5 minutes |
 | `reset_password` | `POST /user/reset-password` | Fixed window | 5 requests | 5 minutes |
 | `setting_admin_thumbnail` | `GET /setting/admin/thumbnail` | Fixed window | 60 requests | 1 minute |
 
 The per-endpoint limits are layered on top of the general limit. For example, the `reset_password` endpoint is subject to both its own 5/5min limit and the general 500/min limit.
 
 MCP endpoints are the exception: they use `studio_mcp_general` **instead of** `studio_api_general`, not on top of it.
+
+`studio_two_factor_code` is not a request limiter either: it counts code attempts per user and is reset by a correct code. See [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
 
 `studio_mcp_login` is not a request limiter - it counts failed authentication attempts on the MCP firewall. See [MCP Server](../04_Development_Details/08_MCP_Server.md#throttling-guessed-credentials).
 

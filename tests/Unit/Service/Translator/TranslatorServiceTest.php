@@ -74,6 +74,34 @@ final class TranslatorServiceTest extends Unit
     }
 
     /**
+     * The code and setup steps are shown before the login is finished.
+     */
+    public function testTwoFactorStepKeysArePublic(): void
+    {
+        $translatorService = $this->mockTranslatorService(false);
+
+        $keys = $translatorService->getAllTranslationsByLocale('en', true)->getKeys();
+
+        foreach ([
+            'two-factor-form.description',
+            'two-factor-form.code.placeholder',
+            'two-factor-form.code.required',
+            'two-factor-form.code.invalid-format',
+            'two-factor-form.verify',
+            'two-factor-form.error',
+            'two-factor-form.too-many-attempts',
+            'two-factor-form.back',
+            'two-factor-setup-form.description',
+            'two-factor-setup-form.manual-entry',
+            'two-factor-setup-form.confirm',
+            'two-factor-setup-form.load-error',
+            'two-factor-setup-form.expired',
+        ] as $key) {
+            $this->assertArrayHasKey($key, $keys);
+        }
+    }
+
+    /**
      * @throws Exception
      */
     public function testGetTranslationsForKeys(): void

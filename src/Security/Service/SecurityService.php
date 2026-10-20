@@ -17,6 +17,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionSe
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionCheckerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
@@ -24,6 +25,8 @@ use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Pimcore\Security\User\User as SecurityUser;
 use Pimcore\Workflow\Manager;
+use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use function in_array;
 use function sprintf;
@@ -38,6 +41,8 @@ final readonly class SecurityService implements SecurityServiceInterface
         private AuthenticationResolverInterface $authenticationResolver,
         private TokenStorageInterface $tokenStorage,
         private Manager $workflowManager,
+        private PendingSessionCheckerInterface $pendingSessionChecker,
+        private RequestStack $requestStack,
     ) {
     }
 
@@ -48,11 +53,20 @@ final readonly class SecurityService implements SecurityServiceInterface
     {
         // 1. Try TokenStorage (populated by all firewall authenticators, including PAT)
         $token = $this->tokenStorage->getToken();
+        // A login still waiting for its two-factor code already carries the user.
+        if ($token instanceof TwoFactorTokenInterface) {
+            throw new UserNotFoundException();
+        }
+
         if ($token?->getUser() instanceof SecurityUser) {
             return $token->getUser()->getUser();
         }
 
-        // 2. Fall back to session reading (legacy compatibility)
+        // 2. Fall back to session reading (legacy compatibility); core accepts a pending code there
+        if ($this->isSessionCodePending()) {
+            throw new UserNotFoundException();
+        }
+
         $pimcoreUser = $this->authenticationResolver->authenticateSession();
         if ($pimcoreUser instanceof User) {
             return $pimcoreUser;
@@ -135,5 +149,12 @@ final readonly class SecurityService implements SecurityServiceInterface
             $user,
             $permission
         );
+    }
+
+    private function isSessionCodePending(): bool
+    {
+        $request = $this->requestStack->getMainRequest();
+
+        return $request !== null && $this->pendingSessionChecker->isCodePending($request);
     }
 }
