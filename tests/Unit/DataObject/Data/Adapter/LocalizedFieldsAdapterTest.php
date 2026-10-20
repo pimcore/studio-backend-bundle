@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
@@ -165,6 +166,58 @@ final class LocalizedFieldsAdapterTest extends Unit
         return $captured[0];
     }
 
+    public function testSetterDataForwardsTheContainerContextAndLanguageToChildAdapters(): void
+    {
+        // localized fields inside a container (e.g. an object brick) must keep that container in the context of
+        // their children, so a nested block reads its stored items from the container and not from the object
+        $captured = [];
+        $childAdapter = $this->makeEmpty(SetterDataInterface::class, [
+            'getDataForSetter' => static function (
+                Concrete $element,
+                Data $fieldDefinition,
+                string $key,
+                array $data,
+                UserInterface $user,
+                ?FieldContextData $contextData = null
+            ) use (&$captured): mixed {
+                $captured[] = $contextData;
+
+                return $data[$key] ?? null;
+            },
+        ]);
+        $adapter = $this->createAdapter(
+            allowedLanguages: ['en', 'de'],
+            allLanguages: ['en', 'de'],
+            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => $childAdapter,
+            ])
+        );
+
+        $fieldDefinition = $this->makeEmpty(Localizedfields::class, [
+            'getFieldDefinition' => $this->makeEmpty(Input::class, ['getName' => 'myBlock']),
+        ]);
+        $class = new ClassDefinition();
+        $class->setFieldDefinitions(['localizedfields' => $fieldDefinition]);
+        $localizedField = new Localizedfield();
+        $brick = $this->makeEmpty(AbstractData::class, ['get' => $localizedField]);
+
+        $result = $adapter->getDataForSetter(
+            $this->makeEmpty(Concrete::class, ['getClass' => $class]),
+            $fieldDefinition,
+            'localizedfields',
+            ['localizedfields' => ['myBlock' => ['de' => 'value']]],
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
+            new FieldContextData(contextObject: $brick)
+        );
+
+        $this->assertCount(1, $captured);
+        $this->assertInstanceOf(FieldContextData::class, $captured[0]);
+        $this->assertSame($brick, $captured[0]->getContextObject());
+        $this->assertSame('de', $captured[0]->getLanguage());
+        $this->assertSame($localizedField, $result);
+        $this->assertSame(['de' => ['myBlock' => 'value']], $result->getItems());
+    }
+
     /**
      * @param string[] $allowedLanguages
      * @param string[] $allLanguages
@@ -172,10 +225,11 @@ final class LocalizedFieldsAdapterTest extends Unit
     private function createAdapter(
         array $allowedLanguages,
         array $allLanguages,
-        ?DataServiceInterface $dataService = null
+        ?DataServiceInterface $dataService = null,
+        ?DataAdapterServiceInterface $dataAdapterService = null
     ): LocalizedFieldsAdapter {
         return new LocalizedFieldsAdapter(
-            $this->makeEmpty(DataAdapterServiceInterface::class),
+            $dataAdapterService ?? $this->makeEmpty(DataAdapterServiceInterface::class),
             $dataService ?? $this->makeEmpty(DataServiceInterface::class),
             $this->makeEmpty(InheritanceServiceInterface::class, [
                 'processFieldDefinition' => new InheritanceData(1, inheritable: true),
