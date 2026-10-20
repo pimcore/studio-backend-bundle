@@ -24,11 +24,11 @@ use OpenApi\Attributes\Schema;
 final readonly class PageSearchPreview
 {
     public function __construct(
-        #[Property(description: 'Title', type: 'string', example: 'Page')]
+        #[Property(description: 'Title', type: 'string', example: 'Page', nullable: true)]
         private ?string $title,
-        #[Property(description: 'Description', type: 'string', example: 'This is some page')]
+        #[Property(description: 'Description', type: 'string', example: 'This is some page', nullable: true)]
         private ?string $description,
-        #[Property(description: 'Navigation name', type: 'string', example: 'Awesome Page')]
+        #[Property(description: 'Navigation name', type: 'string', example: 'Awesome Page', nullable: true)]
         private ?string $name,
         #[Property(description: 'Has Preview image', type: 'bool', example: false)]
         private bool $hasPreviewImage = false,

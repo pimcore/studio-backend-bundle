@@ -84,7 +84,8 @@ final readonly class LocalizedFieldsAdapter implements
             return null;
         }
 
-        $languageData = $this->getAllowedLanguages($element, $user, $data[$key]);
+        // localized fields without any value are sent as null (see resolveLocalizedData()), nothing to set then
+        $languageData = $this->getAllowedLanguages($element, $user, $data[$key] ?? []);
         $localizedField = $this->getLocalizedField($contextData, $element);
 
         foreach ($languageData as $name => $localizedData) {
@@ -151,7 +152,13 @@ final readonly class LocalizedFieldsAdapter implements
                 $value->getObject(),
                 $val,
                 $fd,
-                new FieldContextData(language: $lang),
+                new FieldContextData(
+                    language: $lang,
+                    // only the localized fields of the object itself are part of a version's stored data,
+                    // the ones of a container (object brick, field collection) are computed live
+                    historicalVersion: $contextData?->getContextObject() === null
+                        && ($contextData?->isHistoricalVersion() ?? false),
+                ),
             ),
         );
     }

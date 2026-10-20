@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ResourceRegistryInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResourceMetadata;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
+use Symfony\Contracts\Service\ResetInterface;
 use function array_values;
 
 /**
@@ -30,16 +31,18 @@ use function array_values;
  * iterator is lazy, so a request that never reads the registry never instantiates a
  * provider, let alone asks it for anything.
  *
- * The resolved set is memoised for the life of the instance, which is safe because there
- * is no longer any way to add a resource after construction: providers are services and
- * configuration is fixed at container build, so nothing a request does can change the
- * answer. That was not true while resources were registered from a `kernel.request`
- * listener, and memoising then would have made the answer depend on whether anything
- * happened to ask before the listener ran.
+ * The resolved set is memoised until {@see reset()}. Within a request nothing can add a
+ * resource: providers are services and configuration is fixed at container build. That was
+ * not true while resources were registered from a `kernel.request` listener, and memoising
+ * then would have made the answer depend on whether anything happened to ask before the
+ * listener ran. Across requests the answer can change, since a provider may read stored
+ * configuration, such as the MCP servers managed through Studio. Implementing ResetInterface
+ * gets the service tagged `kernel.reset`, so a long-running worker drops the set between
+ * requests instead of keeping the servers it saw first.
  *
  * @internal
  */
-final class ConfigProtectedResourceRegistry implements ResourceRegistryInterface
+final class ConfigProtectedResourceRegistry implements ResourceRegistryInterface, ResetInterface
 {
     /**
      * @var array<string, ProtectedResource>|null keyed by canonical URI, null until resolved
@@ -73,6 +76,11 @@ final class ConfigProtectedResourceRegistry implements ResourceRegistryInterface
     public function all(): array
     {
         return array_values($this->resolve());
+    }
+
+    public function reset(): void
+    {
+        $this->resolved = null;
     }
 
     public function metadataFor(string $canonicalUri): ?ProtectedResourceMetadata

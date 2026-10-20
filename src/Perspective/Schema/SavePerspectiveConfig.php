@@ -47,9 +47,9 @@ final readonly class SavePerspectiveConfig extends AddPerspectiveConfig
         private array $widgetsRight = [],
         #[Property(description: 'Widgets Bottom', type: 'object', example: ['widget_id' => 'widget_type'])]
         private array $widgetsBottom = [],
-        #[Property(description: 'Left Expanded Widget', type: 'string', example: 'widget_id')]
+        #[Property(description: 'Left Expanded Widget', type: 'string', example: 'widget_id', nullable: true)]
         private ?string $expandedLeft = null,
-        #[Property(description: 'Right Expanded Widget', type: 'string', example: 'widget_id')]
+        #[Property(description: 'Right Expanded Widget', type: 'string', example: 'widget_id', nullable: true)]
         private ?string $expandedRight = null
     ) {
         parent::__construct($name);

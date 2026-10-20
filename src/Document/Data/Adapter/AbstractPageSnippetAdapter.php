@@ -121,7 +121,7 @@ abstract readonly class AbstractPageSnippetAdapter implements SetterDataInterfac
         $this->setAppendEditables($document, $data);
         $editableData = $data[DocumentFieldKeys::EDITABLE_DATA->value];
         foreach ($editableData as $name => $value) {
-            $document->setRawEditable($name, $value['type'], $value['data'] ?? null);
+            $document->setRawEditable((string) $name, $value['type'], $value['data'] ?? null);
         }
     }
 

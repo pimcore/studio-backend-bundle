@@ -42,7 +42,7 @@ final readonly class WebsiteSettingsUpdate
             ]
         )]
         private null|string|bool|ElementParameter $data = null,
-        #[Property(description: 'Site ID', type: 'integer', example: 1)]
+        #[Property(description: 'Site ID', type: 'integer', example: 1, nullable: true)]
         private ?int $siteId = null,
     ) {
     }

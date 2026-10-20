@@ -46,7 +46,7 @@ interface AssetServiceInterface
     public function getAssets(ElementParameters $parameters): Collection;
 
     /**
-     * @throws SearchException|NotFoundException|UserNotFoundException
+     * @throws SearchException|ForbiddenException|NotFoundException|UserNotFoundException
      */
     public function getAsset(
         int $id,
@@ -54,7 +54,7 @@ interface AssetServiceInterface
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|ForbiddenException|NotFoundException
      */
     public function getAssetForUser(
         int $id,

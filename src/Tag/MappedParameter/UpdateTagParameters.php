@@ -27,9 +27,9 @@ use OpenApi\Attributes\Schema;
 final readonly class UpdateTagParameters
 {
     public function __construct(
-        #[Property(description: 'Parent id', type: 'int', example: 0)]
+        #[Property(description: 'Parent id', type: 'int', example: 0, nullable: true)]
         private ?int $parentId,
-        #[Property(description: 'Tag name', type: 'string', example: 'tag 1')]
+        #[Property(description: 'Tag name', type: 'string', example: 'tag 1', nullable: true)]
         private ?string $name,
     ) {
     }

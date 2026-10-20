@@ -28,6 +28,11 @@ final class Version20260624084904 extends AbstractMigration
         return 'Add menuShortcutGroup column to the saved search configuration table';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         if (!$schema->hasTable(SavedSearchConfiguration::TABLE_NAME)) {

@@ -42,13 +42,13 @@ final readonly class CustomReportColumnConfiguration extends CustomReportColumnC
         string $action,
         #[Property(description: 'Id', type: 'string', example: '401-3')]
         string $id,
-        #[Property(description: 'Width of the column', type: 'integer', example: 200)]
+        #[Property(description: 'Width of the column', type: 'integer', example: 200, nullable: true)]
         ?int $width = null,
-        #[Property(description: 'Display type of the column', type: 'string', example: 'text')]
+        #[Property(description: 'Display type of the column', type: 'string', example: 'text', nullable: true)]
         ?string $displayType = null,
-        #[Property(description: 'Type of the filter', type: 'string', example: 'numeric')]
+        #[Property(description: 'Type of the filter', type: 'string', example: 'numeric', nullable: true)]
         ?string $filterType = null,
-        #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter')]
+        #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter', nullable: true)]
         ?string $filterDrilldown = null,
         #[Property(description: 'Disable order by', type: 'bool', example: false)]
         private bool $disableOrderBy = false,

@@ -36,7 +36,7 @@ final readonly class RelatedElementData
         private string $subtype,
         #[Property(description: 'Full path of the element', type: 'string', example: '/path/to/element')]
         private string $fullPath,
-        #[Property(description: 'Is the element published', type: 'boolean', example: true)]
+        #[Property(description: 'Is the element published', type: 'boolean', example: true, nullable: true)]
         private ?bool $isPublished = null,
         #[Property(
             description: 'Whether the current user is allowed to view the element',

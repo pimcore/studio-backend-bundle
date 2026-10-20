@@ -13,7 +13,7 @@ parameters:
             -
                 identifier: missingType.iterableValue
             -
-                message: '#Call to method (arrayNode|append|integerNode|scalarNode|booleanNode|enumNode|variableNode)\(\) on an unknown class#'
+                message: '#Call to method (arrayNode|append|integerNode|scalarNode|booleanNode|enumNode|variableNode|arrayPrototype|beforeNormalization)\(\) on an unknown class#'
                 path: src/DependencyInjection/Configuration.php
 
 includes:

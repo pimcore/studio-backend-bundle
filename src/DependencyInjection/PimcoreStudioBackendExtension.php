@@ -19,6 +19,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
@@ -30,7 +31,9 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpServerResourceProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\ProtectedResourceProvider;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Repository\McpServerConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
@@ -44,6 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\AuthorizeController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Controller\ClientRegistrationController;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthCorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\EventSubscriber\OAuthEndpointGuardSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolver;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\AuthorizationServerFactory;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\PendingAuthorizationStore;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Server\Repository\AccessTokenRepository;
@@ -138,6 +142,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(CsvExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
+
+        $definition = $container->getDefinition(CreateServiceInterface::class);
+        $definition->setArgument('$defaultControllers', $config['documents']['default_controllers']);
 
         $definition = $container->getDefinition(XlsxExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
@@ -255,6 +262,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
+        $container->getDefinition(RequestResourceResolver::class)
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
         $container->getDefinition(McpAuthenticationEntryPoint::class)
             ->setArgument('$oauthEnabled', $config['oauth']['enabled']);
 
@@ -273,6 +283,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         // service lives in the MCP module and reads OAuth configuration, which is the correct
         // direction: MCP is a consumer of the authorization server, not part of it.
         $container->getDefinition(ProtectedResourceProvider::class)
+            ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
+            ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
+
+        // Same for the MCP servers managed through Studio, one resource each.
+        $container->getDefinition(McpServerResourceProvider::class)
             ->setArgument(self::ARG_ENABLED, $config['oauth']['enabled'])
             ->setArgument(self::ARG_ISSUER, $config['oauth']['issuer']);
 
@@ -335,6 +350,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$storageConfig' => $config['config_location'][Configuration::ADMIN_SETTINGS_NODE],
         ]);
 
+        $container->getDefinition(McpServerConfigRepositoryInterface::class)
+            ->setArgument('$serverConfigurations', $config[Configuration::MCP_SERVERS_NODE])
+            ->setArgument('$storageConfig', $config['config_location'][Configuration::MCP_SERVERS_NODE]);
+
         $this->populateTwigSandboxExtension($config, $container);
 
         // MCP authentication token map
@@ -372,6 +391,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                         ],
                         // Cache for fetched Client ID Metadata Documents (CIMD).
                         'pimcore_studio_backend.oauth.client_metadata' => [
+                            'adapter' => 'cache.adapter.filesystem',
+                        ],
+                        // MCP session store (per-server, keyed by slug); dedicated so
+                        // it never collides with another bundle's MCP sessions.
+                        'pimcore_studio_backend.mcp.session' => [
                             'adapter' => 'cache.adapter.filesystem',
                         ],
                     ],
@@ -471,6 +495,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
+        $this->prependCustomConfig($container, $containerConfig, Configuration::MCP_SERVERS_NODE);
     }
 
     /**
@@ -518,6 +543,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $configLocation = $containerConfig['config_location'][$node];
         $configDir = $configLocation['write_target']['options']['directory'];
 
+        // Track the directory, not only the files loaded from it: a configuration saved at
+        // runtime is a new file there, and the container has to rebuild for it. Without this
+        // it only did when Pimcore could touch config/services.yaml, which it skips whenever
+        // PHP-FPM cannot write that file. Core imports its own config directories the same
+        // way (Kernel::registerContainerConfiguration()); this also covers the directory not
+        // existing until the first configuration is saved.
+        $container->fileExists($configDir, '/\.ya?ml$/');
+
         $configLoader = new YamlFileLoader(
             $container,
             new FileLocator($configDir)
@@ -546,8 +579,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $config['twig']['sandbox_security_policy']['functions']
         );
 
-        // Reuse core's own object/function protection lists instead of re-declaring them here,
-        // so this sandbox cannot silently drift from the one Pimcore core configures.
+        // Core's sandbox lists. The default initializer denies all object access and only applies
+        // $blockedFunctions; the class and method lists are passed for custom initializers and BC.
         $definition->setArgument(
             '$blockedClasses',
             '%pimcore.templating.twig.sandbox_security_policy.blocked_classes%'

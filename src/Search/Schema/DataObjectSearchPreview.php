@@ -33,7 +33,7 @@ final class DataObjectSearchPreview extends SimpleSearchPreview
         ?string $userModificationName,
         ?int $creationDate,
         ?int $modificationDate,
-        #[Property(description: 'Class name and Id', type: 'string', example: 'Car [CAR]')]
+        #[Property(description: 'Class name and Id', type: 'string', example: 'Car [CAR]', nullable: true)]
         private readonly ?string $class,
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private readonly array $objectData = [],

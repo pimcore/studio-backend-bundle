@@ -28,13 +28,13 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface
 final readonly class HardlinkSettingsData implements SettingsDataInterface
 {
     public function __construct(
-        #[Property(description: 'Source ID', type: 'integer', example: 83)]
+        #[Property(description: 'Source ID', type: 'integer', example: 83, nullable: true)]
         private ?int $sourceId,
         #[Property(description: 'Properties from source', type: 'bool', example: true)]
         private bool $propertiesFromSource,
         #[Property(description: 'Children from source', type: 'bool', example: false)]
         private bool $childrenFromSource,
-        #[Property(description: 'Source path', type: 'string', example: '/path/to/source')]
+        #[Property(description: 'Source path', type: 'string', example: '/path/to/source', nullable: true)]
         private ?string $sourcePath = null,
     ) {
     }

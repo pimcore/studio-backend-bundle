@@ -36,11 +36,11 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 final readonly class UpdateUser
 {
     public function __construct(
-        #[Property(description: 'Email of the User', type: 'string', example: '')]
+        #[Property(description: 'Email of the User', type: 'string', example: '', nullable: true)]
         private ?string $email,
-        #[Property(description: 'Firstname of the User', type: 'string', example: '')]
+        #[Property(description: 'Firstname of the User', type: 'string', example: '', nullable: true)]
         private ?string $firstname,
-        #[Property(description: 'Lastname of the User', type: 'string', example: '')]
+        #[Property(description: 'Lastname of the User', type: 'string', example: '', nullable: true)]
         private ?string $lastname,
         #[Property(description: 'If User is admin', type: 'boolean', example: false)]
         private bool $admin,

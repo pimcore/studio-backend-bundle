@@ -35,7 +35,7 @@ class AssetVersion implements AdditionalAttributesInterface
         private readonly string $fileName,
         #[Property(description: 'creation date', type: 'integer', example: 1707312457)]
         private readonly int $creationDate,
-        #[Property(description: 'modification date', type: 'integer', example: 1707312457)]
+        #[Property(description: 'modification date', type: 'integer', example: 1707312457, nullable: true)]
         private readonly ?int $modificationDate,
         #[Property(description: 'file size', type: 'integer', example: 41862)]
         private readonly int $fileSize,

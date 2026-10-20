@@ -32,7 +32,7 @@ final class BlocklistEntry implements AdditionalAttributesInterface
         private readonly string $email,
         #[Property(description: 'creation date', type: 'integer', example: 1707312457)]
         private readonly int $creationDate,
-        #[Property(description: 'modification date', type: 'integer', example: 1707312457)]
+        #[Property(description: 'modification date', type: 'integer', example: 1707312457, nullable: true)]
         private readonly ?int $modificationDate,
     ) {
 

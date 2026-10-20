@@ -37,13 +37,15 @@ final readonly class Branding
         #[Property(
             ref: RelatedElementData::class,
             description: 'Custom image for login screen',
-            type: 'object'
+            type: 'object',
+            nullable: true
         )]
         private ?RelatedElementData $loginScreenCustomBackgroundImage = null,
         #[Property(
             ref: RelatedElementData::class,
             description: 'Custom logo',
-            type: 'object'
+            type: 'object',
+            nullable: true
         )]
         private ?RelatedElementData $customLogo = null,
     ) {

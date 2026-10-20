@@ -37,15 +37,20 @@ final class SiteDetail implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 0)]
         private readonly int $id,
-        #[Property(description: 'Creation Date', type: 'integer', example: 1712345678)]
+        #[Property(description: 'Creation Date', type: 'integer', example: 1712345678, nullable: true)]
         private readonly ?int $creationDate,
-        #[Property(description: 'Modification Date', type: 'integer', example: 1712345678)]
+        #[Property(description: 'Modification Date', type: 'integer', example: 1712345678, nullable: true)]
         private readonly ?int $modificationDate,
         #[Property(description: 'Main domain', type: 'string', example: 'main_site')]
         private readonly string $mainDomain = '',
         #[Property(description: 'Domains', type: 'array', items: new Items(type: 'string'), example: ['other_domain'])]
         private readonly array $domains = [],
-        #[Property(ref: RelatedElementData::class, description: 'Data of error document', type: 'object')]
+        #[Property(
+            ref: RelatedElementData::class,
+            description: 'Data of error document',
+            type: 'object',
+            nullable: true
+        )]
         private readonly ?RelatedElementData $errorDocument = null,
         #[Property(
             description: 'Localized error documents mapped by locale',

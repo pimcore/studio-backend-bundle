@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
@@ -25,7 +26,7 @@ interface PreviewUrlServiceInterface
     /**
      * @param array<string, mixed> $additionalParams
      *
-     * @throws InvalidArgumentException|NotFoundException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     public function getPreviewUrl(PreviewParameter $parameter, array $additionalParams = []): string;
 }

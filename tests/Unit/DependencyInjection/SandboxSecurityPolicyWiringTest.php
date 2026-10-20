@@ -23,15 +23,10 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use function dirname;
 
 /**
- * Regression test for GHSA-9g62-2rj4-v227: TemplateGeneratorTest only exercises
- * SandboxExtensionInitializer by constructing it directly and passing the four
- * object/function protection lists by hand, so it cannot see whether
- * PimcoreStudioBackendExtension::populateTwigSandboxExtension() still binds them to
- * core's own `pimcore.templating.twig.sandbox_security_policy.*` parameters - removing
- * one of those setArgument() calls would leave every other test green while the
- * deployed sandbox silently lost that protection. This loads the service definition
- * from the bundle's real config/twig.yaml and calls the real (private) wiring method,
- * so it fails if a binding is dropped or pointed at the wrong parameter.
+ * Regression test for GHSA-9g62-2rj4-v227: PimcoreStudioBackendExtension::populateTwigSandboxExtension() binds
+ * core's `pimcore.templating.twig.sandbox_security_policy.*` parameters to the initializer. The default
+ * initializer applies only the blocked functions; the other lists stay wired for custom initializers and BC.
+ * This loads the real config/twig.yaml service definition and calls the real (private) wiring method.
  *
  * @internal
  */
@@ -103,7 +98,6 @@ final class SandboxSecurityPolicyWiringTest extends Unit
 
         $extension = new PimcoreStudioBackendExtension();
         $method = new ReflectionMethod($extension, 'populateTwigSandboxExtension');
-        $method->setAccessible(true);
         $method->invoke($extension, [
             'twig' => [
                 'sandbox_security_policy' => [

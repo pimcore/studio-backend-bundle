@@ -78,7 +78,12 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setShowVariants($classData->getShowVariants());
         $dataObject->setHasPreview($classData->getHasPreview());
         $dataObject->setShowAppLoggerTab($classData->getShowAppLoggerTab());
-        $dataObject->setObjectData($this->getDetailObjectData($element, $fieldDefinitions));
+        $dataObject->setObjectData($this->getDetailObjectData(
+            $element,
+            $fieldDefinitions,
+            // a version detail shows what the version stores, the edit view shows live values
+            $dataObject instanceof DataObjectVersion ? new FieldContextData(historicalVersion: true) : null
+        ));
 
         if ($dataObject instanceof DataObjectDetail) {
             $dataObject->setDraftData($this->getDraftData($element, $version));
@@ -269,14 +274,18 @@ final readonly class DataService implements DataServiceInterface
     /**
      * @throws NotFoundException
      */
-    private function getDetailObjectData(Concrete $dataObject, array $fieldDefinitions): array
-    {
+    private function getDetailObjectData(
+        Concrete $dataObject,
+        array $fieldDefinitions,
+        ?FieldContextData $contextData = null
+    ): array {
         $data = [];
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
             $data[$key] = $this->getDetailValue(
                 $dataObject,
                 $this->getValidFieldValue($dataObject, $key),
-                $fieldDefinition
+                $fieldDefinition,
+                $contextData
             );
         }
 

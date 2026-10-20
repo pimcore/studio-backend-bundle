@@ -37,7 +37,7 @@ final class SelectOptionTreeFolder implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Group', type: 'string', example: 'system')]
+        #[Property(description: 'Group', type: 'string', example: 'system', nullable: true)]
         private readonly ?string $group = null,
         #[Property(
             description: 'Child nodes',

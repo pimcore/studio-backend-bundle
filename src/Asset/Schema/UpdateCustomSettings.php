@@ -26,7 +26,7 @@ final readonly class UpdateCustomSettings
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'my_custom_setting_key')]
         private string $key,
-        #[Property(description: 'Value', type: 'mixed', example: 'data')]
+        #[Property(description: 'Value', type: 'mixed', example: 'data', nullable: true)]
         private mixed $value
     ) {
     }

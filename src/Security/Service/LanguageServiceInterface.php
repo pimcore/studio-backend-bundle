@@ -54,5 +54,8 @@ interface LanguageServiceInterface
      */
     public function validateAdminPermission(UserInterface $user, string $domain): void;
 
+    /**
+     * @throws ForbiddenException
+     */
     public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array;
 }

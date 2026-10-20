@@ -30,13 +30,18 @@ final readonly class VideoThumbnailSettings
     public function __construct(
         #[Property(description: 'Thumbnail name', type: 'string', example: 'content')]
         private string $name,
-        #[Property(description: 'Thumbnail description', type: 'string', example: 'thumbnail for content videos')]
+        #[Property(
+            description: 'Thumbnail description',
+            type: 'string',
+            example: 'thumbnail for content videos',
+            nullable: true
+        )]
         private ?string $description,
-        #[Property(description: 'Thumbnail group', type: 'string', example: '')]
+        #[Property(description: 'Thumbnail group', type: 'string', example: '', nullable: true)]
         private ?string $group,
-        #[Property(description: 'Video bitrate in kbps', type: 'integer', example: 450)]
+        #[Property(description: 'Video bitrate in kbps', type: 'integer', example: 450, nullable: true)]
         private ?int $videoBitrate,
-        #[Property(description: 'Audio bitrate in kbps', type: 'integer', example: 128)]
+        #[Property(description: 'Audio bitrate in kbps', type: 'integer', example: 128, nullable: true)]
         private ?int $audioBitrate,
         #[Property(description: 'Modification date timestamp', type: 'integer', example: 1769430880, nullable: true)]
         private ?int $modificationDate,

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RewriteRefMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\ElementReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -46,6 +47,7 @@ final class RewriteRefHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
+        private readonly ElementContextServiceInterface $elementContextService,
     ) {
         parent::__construct();
     }
@@ -98,11 +100,15 @@ final class RewriteRefHandler extends AbstractHandler
             );
 
             try {
-                $this->elementReferenceService->rewriteElementReferences(
-                    $user,
-                    $element,
-                    $rewriteConfiguration,
-                    $rewriteParameters,
+                // The worker boots with the CLI element context, which hides unpublished elements: the
+                // relation getters would drop them and the element would be saved without them.
+                $this->elementContextService->runInStudioContext(
+                    fn () => $this->elementReferenceService->rewriteElementReferences(
+                        $user,
+                        $element,
+                        $rewriteConfiguration,
+                        $rewriteParameters,
+                    )
                 );
             } catch (Exception $exception) {
                 $this->abort($this->getAbortData(

@@ -35,11 +35,26 @@ final class CollectionDetail implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'ID of the store this collection belongs to', type: 'integer', example: 1)]
         private readonly int $storeId,
-        #[Property(description: 'Description of the collection', type: 'string', example: 'Collection description')]
+        #[Property(
+            description: 'Description of the collection',
+            type: 'string',
+            example: 'Collection description',
+            nullable: true
+        )]
         private readonly ?string $description = null,
-        #[Property(description: 'Creation date as Unix timestamp', type: 'integer', example: 1734567890)]
+        #[Property(
+            description: 'Creation date as Unix timestamp',
+            type: 'integer',
+            example: 1734567890,
+            nullable: true
+        )]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'Modification date as Unix timestamp', type: 'integer', example: 1734567890)]
+        #[Property(
+            description: 'Modification date as Unix timestamp',
+            type: 'integer',
+            example: 1734567890,
+            nullable: true
+        )]
         private readonly ?int $modificationDate = null,
     ) {
     }
