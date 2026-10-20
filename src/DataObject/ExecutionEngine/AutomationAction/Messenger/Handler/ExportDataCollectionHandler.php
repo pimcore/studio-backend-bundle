@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvExportHandlerSetupTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
@@ -41,6 +42,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly UserResolverInterface $userResolver,
@@ -84,6 +86,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         $data = [];
+        $jobStepName = $this->getJobStep($message)->getName();
         foreach ($dataObjects as $object) {
             try {
                 // The worker boots with the CLI element context, which hides unpublished elements: the
@@ -110,21 +113,17 @@ final class ExportDataCollectionHandler extends AbstractHandler
                 $this->publishService,
                 $this->userTopicService,
                 $jobRun,
-                $this->getJobStep($message)->getName(),
-                $totalObjects
+                $jobStepName,
+                $totalObjects,
+                persist: false
             );
         }
 
         try {
+            // The collected rows are not part of the job run: it is loaded and written again by every step, so
+            // keeping the rows in its context makes each step more expensive than the one before.
             if (!empty($data)) {
-                $context = $jobRun->getContext();
-                if (isset($context[StepConfig::GRID_EXPORT_DATA->value])) {
-                    $data = array_merge(
-                        $context[StepConfig::GRID_EXPORT_DATA->value],
-                        $data
-                    );
-                }
-                $this->updateJobRunContext($jobRun, StepConfig::GRID_EXPORT_DATA->value, $data);
+                $this->exportDataStorageService->store($jobRun->getId(), $message->getCurrentJobStep(), $data);
             }
         } catch (Exception $e) {
             $this->abort($this->getAbortData(

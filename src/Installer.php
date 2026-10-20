@@ -304,6 +304,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
         $table->addColumn('description', 'text', ['notnull' => false]);
         $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
+        $table->addColumn('elementType', 'string', ['notnull' => false, 'length' => 50]);
         $table->addColumn('shareGlobal', 'boolean', ['notnull' => true]);
         $table->addColumn('createMenuShortcut', 'boolean', ['notnull' => true]);
         $table->addColumn('menuShortcutGroup', 'string', ['notnull' => false, 'length' => 255]);
