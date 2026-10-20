@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp;
 /**
  * Names of the request attributes the MCP firewall authenticators set once a request is
  * authenticated, so that tools and listeners can tell how the caller proved its identity.
+ *
+ * @internal
  */
 interface McpRequestAttributes
 {

@@ -84,6 +84,23 @@ final class McpAccessTokenAuthenticatorTest extends Unit
         $this->assertFalse($request->attributes->has(McpRequestAttributes::OAUTH_SCOPES));
     }
 
+    /**
+     * The token reference must not outlive a passport rejected after authenticate(), or
+     * downstream code would trust a chat session id on an unauthenticated request.
+     */
+    public function testPassportRejectedAfterAuthenticateLeavesNoTokenReference(): void
+    {
+        $user = new User();
+        $user->setUsername('agent-user');
+        $auth = $this->makeAuthenticator(new ValidatedAccessToken($user, 'chat-1'));
+
+        $request = $this->requestWith('Bearer pmcp_valid');
+        $auth->authenticate($request);
+        $auth->onAuthenticationFailure($request, new AuthenticationException('User is not active.'));
+
+        $this->assertFalse($request->attributes->has(McpAccessTokenAuthenticator::REQUEST_ATTR_REFERENCE));
+    }
+
     public function testAuthenticateThrowsForInvalidToken(): void
     {
         $auth = $this->makeAuthenticator(null);

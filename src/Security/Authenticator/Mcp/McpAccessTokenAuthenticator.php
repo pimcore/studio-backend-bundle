@@ -99,6 +99,10 @@ final class McpAccessTokenAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception,
     ): ?Response {
+        // authenticate() may already have bound the reference before the passport was
+        // rejected (user checker); an unauthenticated request must not carry it.
+        $request->attributes->remove(self::REQUEST_ATTR_REFERENCE);
+
         // Return null so the next authenticator (PatAuthenticator) can try.
         return null;
     }

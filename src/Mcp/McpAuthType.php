@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mcp;
 
 /**
  * How an MCP request was authenticated.
+ *
+ * @internal
  */
 enum McpAuthType: string
 {
