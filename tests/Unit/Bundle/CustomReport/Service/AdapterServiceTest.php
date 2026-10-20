@@ -172,6 +172,10 @@ final class AdapterServiceTest extends Unit
 
     private function createService(): AdapterService
     {
+        if (!class_exists(Config::class)) {
+            $this->markTestSkipped('The custom reports bundle is not installed.');
+        }
+
         $this->capturedGetDataArguments = [];
 
         $adapter = $this->makeEmpty(CustomReportAdapterInterface::class, [
