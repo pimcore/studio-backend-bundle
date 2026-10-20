@@ -55,6 +55,9 @@ The following steps are necessary during updating to newer versions.
 > Connect (SSO) login.
 
 ## Upgrade to 2026.3.3
+- [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of
+  fields with `optimizedAdminLoading` without instantiating the related elements. Requires `pimcore/pimcore` 2026.3.3
+  or later, which provides `LightweightRelationLoadingInterface`.
 - [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
   and email documents per document type (for documents created without a predefined document type). Types without an
   entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.
