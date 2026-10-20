@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpAuthType;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\McpRequestAttributes;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
@@ -48,6 +50,13 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     private const string BEARER_PREFIX = 'Bearer ';
 
     private const string JWT_PATTERN = '/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u';
+
+    /**
+     * Holds the validated scopes between authenticate() and onAuthenticationSuccess(). The
+     * passport can still be rejected in between (user checker), so the public attributes
+     * are only set once authentication actually succeeded.
+     */
+    private const string PENDING_SCOPES_ATTRIBUTE = '_mcp_oauth_pending_scopes';
 
     public function __construct(
         private readonly bool $enabled,
@@ -114,6 +123,8 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
             throw new AuthenticationException('Invalid or expired OAuth access token.');
         }
 
+        $request->attributes->set(self::PENDING_SCOPES_ATTRIBUTE, $resolved->scopes);
+
         return new SelfValidatingPassport(
             new UserBadge($user->getUsername(), static fn () => new SecurityUser($user)),
         );
@@ -124,6 +135,12 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         TokenInterface $token,
         string $firewallName,
     ): ?Response {
+        $scopes = $request->attributes->get(self::PENDING_SCOPES_ATTRIBUTE, []);
+        $request->attributes->remove(self::PENDING_SCOPES_ATTRIBUTE);
+
+        $request->attributes->set(McpRequestAttributes::AUTH_TYPE, McpAuthType::OAuth);
+        $request->attributes->set(McpRequestAttributes::OAUTH_SCOPES, $scopes);
+
         return null;
     }
 
@@ -131,6 +148,8 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         Request $request,
         AuthenticationException $exception,
     ): ?Response {
+        $request->attributes->remove(self::PENDING_SCOPES_ATTRIBUTE);
+
         // Return null so the next authenticator in the chain can try.
         return null;
     }
