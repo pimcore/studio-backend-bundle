@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
@@ -273,14 +274,25 @@ final readonly class DataService implements DataServiceInterface
     {
         $data = [];
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            $data[$key] = $this->getDetailValue(
-                $dataObject,
-                $this->getValidFieldValue($dataObject, $key),
-                $fieldDefinition
-            );
+            $data[$key] = $this->getLightweightDetailValue($dataObject, $fieldDefinition, $key)
+                ?? $this->getDetailValue(
+                    $dataObject,
+                    $this->getValidFieldValue($dataObject, $key),
+                    $fieldDefinition
+                );
         }
 
         return $data;
+    }
+
+    private function getLightweightDetailValue(Concrete $dataObject, Data $fieldDefinition, string $key): mixed
+    {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if (!$adapter instanceof LightweightDetailDataInterface) {
+            return null;
+        }
+
+        return $adapter->getLightweightDetailData($dataObject, $fieldDefinition, $key);
     }
 
     private function getObjectClassData(ClassDefinition $class): ClassData
