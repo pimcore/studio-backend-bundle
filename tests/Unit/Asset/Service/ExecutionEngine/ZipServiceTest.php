@@ -213,10 +213,19 @@ final class ZipServiceTest extends Unit
         file_put_contents($tempFile, 'test content');
         $this->tempFiles[] = $tempFile;
 
+        // Like core, the flag is only valid once the file was read: checking it earlier must not skip the asset
+        $fileWasRead = false;
+
         return $this->makeEmpty(Asset::class, [
-            'getLocalFile' => $tempFile,
+            'getLocalFile' => static function () use (&$fileWasRead, $tempFile): string {
+                $fileWasRead = true;
+
+                return $tempFile;
+            },
             'getRealFullPath' => $realFullPath,
-            'isStreamPlaceholder' => $isStreamPlaceholder,
+            'isStreamPlaceholder' => static function () use (&$fileWasRead, $isStreamPlaceholder): bool {
+                return $fileWasRead && $isStreamPlaceholder;
+            },
         ]);
     }
 

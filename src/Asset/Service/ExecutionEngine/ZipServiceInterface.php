@@ -55,7 +55,7 @@ interface ZipServiceInterface
     public const ZIP_DOWNLOAD_FILENAME = 'zip_download_filename';
 
     /**
-     * Returns false when the asset was skipped because its binary is missing from storage.
+     * Returns false when the asset was not added, e.g. because its binary is missing from storage.
      */
     public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): bool;
 
