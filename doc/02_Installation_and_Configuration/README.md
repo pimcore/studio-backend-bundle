@@ -140,14 +140,15 @@ services) and client-side (for getting updates in Pimcore Studio UI) can be conf
 
 Additionally, you can configure the cookie parameters like:
 - lifetime for the JWT token in seconds (default is 3600 seconds)
-- SameSite attribute (default is `strict`, possible values are `lax`, `strict` or `none`)
+- SameSite attribute (default is `Strict`; set `jwt_cookie_strictness` to `false` to use `None`)
+- domain of the cookie (`jwt_cookie_host`, e.g. `.example.com`)
 
 ```yaml
 pimcore_studio_backend:
     mercure_settings:
         jwt_key: '<your-256-bit-secret-min-32-chars>'
 
-        # The url to the mercure hub for the server (required, there is no default).
+        # The url to the mercure hub for the server (must be set, there is no default).
         # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
         hub_url_server: 'http://mercure/.well-known/mercure'
 
@@ -158,13 +159,15 @@ pimcore_studio_backend:
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
         hub_url_client: 'https://your-app-domain.com/hub'
         cookie_lifetime: 3600
-        cookie_same_site: 'strict'
+        jwt_cookie_strictness: true
+        jwt_cookie_host: '.your-app-domain.com'
 ```
 
 You need to configure the full URL including protocol, port and path to Mercure here.
 For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
-If `hub_url_client` is not set, it is generated from the host of the current request and the default path `/hub`.
-`hub_url_server` is required: it has no default, and Pimcore Studio throws an exception when it is empty.
+If `hub_url_client` is not set, it is generated from the scheme and host of the current request and the default path `/hub`.
+`hub_url_server` must be set: it has no default and is not checked when the container is built. When it is empty,
+no Mercure updates are published and an error is written to the log.
 
 ## Default Controllers for New Documents
 

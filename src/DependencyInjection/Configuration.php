@@ -324,8 +324,9 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('hub_url_server')
                         ->info(
                             'The url to the mercure hub for the server. ' .
-                            'This setting is required and has no default, because the server url ' .
+                            'This setting must be set and has no default, because the server url ' .
                             'cannot be derived from the browser request. ' .
+                            'It is not checked at boot; when it is empty, no updates are published. ' .
                             'This can also be the docker container name ' .
                             '(e.g., http://mercure/.well-known/mercure).'
                         )
