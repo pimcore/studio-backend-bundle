@@ -133,7 +133,7 @@ Also make sure that the keys configured in pimcore match the keys in the (docker
 
 Configure a JWT key for Mercure. This key signs and verifies the JWT tokens used for authentication.
 
-#### Optional Mercure configuration
+#### Mercure configuration
 
 URLs for accessing Mercure server-side (for updating state information within application
 services) and client-side (for getting updates in Pimcore Studio UI) can be configured via a symfony configuration.
@@ -146,24 +146,25 @@ Additionally, you can configure the cookie parameters like:
 pimcore_studio_backend:
     mercure_settings:
         jwt_key: '<your-256-bit-secret-min-32-chars>'
+
+        # The url to the mercure hub for the server (required, there is no default).
+        # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
+        hub_url_server: 'http://mercure/.well-known/mercure'
+
         # Optional configuration
 
         # The url to the mercure hub for the (frontend) client.
         # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub".
         # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
         hub_url_client: 'https://your-app-domain.com/hub'
-
-        # The url to the mercure hub for the server. 
-        # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
-        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub/.well-known/mercure".
-        hub_url_server: 'http://mercure/.well-known/mercure'
         cookie_lifetime: 3600
         cookie_same_site: 'strict'
 ```
 
 You need to configure the full URL including protocol, port and path to Mercure here.
 For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
-If these settings are not set, URLs will be generated based on Pimcore host and default paths.
+If `hub_url_client` is not set, it is generated from the host of the current request and the default path `/hub`.
+`hub_url_server` is required: it has no default, and Pimcore Studio throws an exception when it is empty.
 
 ## Default Controllers for New Documents
 

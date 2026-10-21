@@ -87,6 +87,8 @@ Add Mercure to your docker compose file and make sure to add the configuration f
 ### config.yaml
 
 Configure Pimcore application with JWT key as well as the client side and server side URLs for Mercure.
+`hub_url_server` is required and has no default. `hub_url_client` is optional; if it is not set, the host of the
+current request plus `/hub` is used.
 
 ```yaml
 pimcore_studio_backend:

@@ -323,11 +323,11 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('hub_url_server')
                         ->info(
-                            'The url to the mercure hub for the server.' .
-                            'This can also be the docker container name '.
-                            '(e.g., http://mercure/.well-known/mercure). ' .
-                            'If it is not set, default will be set to ' .
-                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub/.well-known/mercure".'
+                            'The url to the mercure hub for the server. ' .
+                            'This setting is required and has no default, because the server url ' .
+                            'cannot be derived from the browser request. ' .
+                            'This can also be the docker container name ' .
+                            '(e.g., http://mercure/.well-known/mercure).'
                         )
                         ->defaultNull()
                     ->end()
