@@ -56,6 +56,39 @@ final class PatchServiceTest extends Unit
         $this->coauthorContext = new CoauthorContext();
     }
 
+    public function testPatchRejectsAnEmptyList(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [], $this->user);
+    }
+
+    public function testPatchRejectsAnEntryWithoutId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [[]], $this->user);
+    }
+
+    public function testPatchRejectsANonIntegerId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [['id' => '83']], $this->user);
+    }
+
+    public function testPatchRejectsAnInvalidEntryInAList(): void
+    {
+        // a batch must not start a job when one of its entries cannot be processed
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(
+            ElementTypes::TYPE_DOCUMENT,
+            [['id' => 1], ['key' => 'no-id']],
+            $this->user
+        );
+    }
+
     public function testPatchActivatesCoauthorContextDuringSaveAndRestoresAfter(): void
     {
         $captured = [];

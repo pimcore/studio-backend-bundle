@@ -84,6 +84,8 @@ final readonly class PatchService implements PatchServiceInterface
         array $patchData,
         UserInterface $user,
     ): ?int {
+        $this->assertPatchData($patchData);
+
         if (count($patchData) > 1) {
             return $this->patchAsynchronously($elementType, $patchData, $user);
         }
@@ -362,6 +364,28 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         return $elementData[FieldKeys::ID_KEY->value] . '_' . $type;
+    }
+
+    /**
+     * Rejects what neither path could process: no entries at all, or entries without an
+     * integer id. Both would otherwise fail later with a server error instead of telling
+     * the client what is wrong.
+     *
+     * @throws InvalidArgumentException
+     */
+    private function assertPatchData(array $patchData): void
+    {
+        if ($patchData === []) {
+            throw new InvalidArgumentException('No elements to patch');
+        }
+
+        foreach ($patchData as $position => $elementPatchData) {
+            if (!is_array($elementPatchData) || !is_int($elementPatchData['id'] ?? null)) {
+                throw new InvalidArgumentException(
+                    sprintf('Element at position %s has no integer id', $position)
+                );
+            }
+        }
     }
 
     private function patchAsynchronously(

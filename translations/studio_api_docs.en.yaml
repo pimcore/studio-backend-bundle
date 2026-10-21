@@ -334,6 +334,17 @@ cache_clear_temporary_files_description: |
     Clear all temporary files including thumbnails, asset cache, and system temp files.
 cache_clear_temporary_files_summary: Clear temporary files
 cache_clear_temporary_files_success_response: Temporary files cleared successfully
+document_batch_delete_description: |
+  Batch delete documents based on the given <strong>{ids}</strong>. <br> The <strong>{ids}</strong> must be a list of IDs of existing documents. <br>
+  Deletion is done asynchronously and the jobRun ID is returned in the response
+document_batch_delete_created_response: Successfully created <strong>jobRun</strong> for batch delete
+document_batch_delete_summary: Batch delete documents by IDs
+document_patch_by_id_created_response: Successfully created jobRun for patching
+  multiple documents
+document_patch_by_id_description: |
+  Patching documents based on the given ID and data. <br> Patching can be used for moving, sorting, renaming, locking and publishing. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
+document_patch_by_id_success_response: Successfully patched document
+document_patch_by_id_summary: Patch documents by ID
 tag_cache_description: Cache management endpoints
 class_all_layout_collection_description: |
     Get all available layouts for classes.
