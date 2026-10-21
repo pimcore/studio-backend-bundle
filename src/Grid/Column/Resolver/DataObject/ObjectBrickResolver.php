@@ -37,7 +37,9 @@ use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInt
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function count;
@@ -162,7 +164,12 @@ final class ObjectBrickResolver implements
 
             $brick = $brickContainer->get($objectBrickKey->getBrickName());
 
-            if ($column->getLocale()) {
+            // Callers may pass a default locale for every column; only localized attributes live in localizedfields
+            $locale = $this->isLocalizedAttribute($brickClass, $objectBrickKey->getAttribute())
+                ? $column->getLocale()
+                : null;
+
+            if ($locale) {
                 $brick = $brick?->get('localizedfields');
             }
 
@@ -177,7 +184,7 @@ final class ObjectBrickResolver implements
                     'containerKey' => $objectBrickKey->getBrickName(),
                     'fieldname' => $objectBrickKey->getAttribute(),
                 ],
-                'language' => $column->getLocale(),
+                'language' => $locale,
             ]
             );
 
@@ -205,6 +212,14 @@ final class ObjectBrickResolver implements
         return [
             ElementTypes::TYPE_OBJECT,
         ];
+    }
+
+    private function isLocalizedAttribute(Definition $brickClass, string $attribute): bool
+    {
+        $localizedFields = $brickClass->getFieldDefinition('localizedfields');
+
+        return $localizedFields instanceof Localizedfields
+            && $localizedFields->getFieldDefinition($attribute) !== null;
     }
 
     /**
