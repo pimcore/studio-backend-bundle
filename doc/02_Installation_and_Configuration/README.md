@@ -138,10 +138,12 @@ Configure a JWT key for Mercure. This key signs and verifies the JWT tokens used
 URLs for accessing Mercure server-side (for updating state information within application
 services) and client-side (for getting updates in Pimcore Studio UI) can be configured via a symfony configuration.
 
-Additionally, you can configure the cookie parameters like:
+Optionally, you can configure the cookie parameters:
 - lifetime for the JWT token in seconds (default is 3600 seconds)
-- SameSite attribute (default is `Strict`; set `jwt_cookie_strictness` to `false` to use `None`)
-- domain of the cookie (`jwt_cookie_host`, e.g. `.example.com`)
+- SameSite attribute (default is `Strict`; set `jwt_cookie_strictness` to `false` to use `None`). Browsers only
+  accept `SameSite=None` cookies with the `Secure` flag, which is set only when `hub_url_client` is an `https` URL.
+- domain of the cookie (`jwt_cookie_host`, e.g. `.example.com`; by default the host of `hub_url_client` is used, a leading
+  dot also makes the cookie available to sibling subdomains)
 
 ```yaml
 pimcore_studio_backend:

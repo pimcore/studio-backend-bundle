@@ -118,9 +118,10 @@ or
 Unauthorized
 ```
 
-> Also execute ``curl https://your-app-domain.com/hub`` (or `hub_url_server` you configured in
-> configuration) from the command line of the server to ensure that the URL is also accessible by the
-> server itself.
+> Also execute `curl` against the `hub_url_server` you configured (e.g. ``curl http://mercure/.well-known/mercure``)
+> from the command line of the server, inside the PHP container if you use Docker, to ensure that the URL is
+> accessible by the server itself. The public `/hub` URL is not a substitute: it can answer while `hub_url_server`
+> is unreachable from PHP.
 
 
 ## Additional Aspects
