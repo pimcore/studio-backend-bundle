@@ -26,6 +26,8 @@ class ReverseRelationOwnerTestObject extends Concrete
 
     private int $saveCount = 0;
 
+    private ?Concrete $nextParentForInheritance = null;
+
     public function getPublisher(): mixed
     {
         return $this->publisher;
@@ -48,5 +50,15 @@ class ReverseRelationOwnerTestObject extends Concrete
     public function getSaveCount(): int
     {
         return $this->saveCount;
+    }
+
+    public function setNextParentForInheritance(?Concrete $parent): void
+    {
+        $this->nextParentForInheritance = $parent;
+    }
+
+    public function getNextParentForInheritance(): ?Concrete
+    {
+        return $this->nextParentForInheritance;
     }
 }

@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -158,6 +159,96 @@ final class ReverseObjectRelationAdapterTest extends Unit
         }
     }
 
+    /**
+     * Regression: an owner that holds the element more than once (repeated assignments) must lose
+     * every occurrence in one write.
+     *
+     * @throws Exception
+     */
+    public function testRepeatedOwnerAssignmentsAreAllRemovedAndSavedOnce(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID, self::OWNER_ID]);
+        $other = $this->makeEmpty(Concrete::class, ['getId' => 99]);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), [$element, $element, $other]);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertSame([$other], $owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRemovingRepeatedLastEntriesFromMandatoryManyToManyRaisesValidationError(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID, self::OWNER_ID]);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element, $element]);
+
+        $this->expectException(ValidationException::class);
+
+        try {
+            $this->callAdapter($element, $owner, remainingRelations: []);
+        } finally {
+            $this->assertSame([$element, $element], $owner->getPublisher());
+            $this->assertSame(0, $owner->getSaveCount());
+        }
+    }
+
+    /**
+     * Core skips the mandatory check for unpublished objects, so the removal must go through.
+     *
+     * @throws Exception
+     */
+    public function testUnpublishedOwnerIsNotSubjectToMandatoryCheck(): void
+    {
+        $element = $this->makeElement();
+        $owner = $this->makeOwner($this->makeManyToOne(mandatory: true), $element, published: false);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertNull($owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * Core accepts an empty inheritable field when the parent provides a value, so must the removal.
+     *
+     * @throws Exception
+     */
+    public function testInheritedParentValueSatisfiesMandatoryCheck(): void
+    {
+        $element = $this->makeElement();
+        $owner = $this->makeOwner($this->makeManyToOne(mandatory: true), $element);
+        $owner->getClass()->setAllowInherit(true);
+        $parent = new ReverseRelationOwnerTestObject();
+        $parent->setId(self::OWNER_ID + 5);
+        $parent->setPublisher($this->makeEmpty(Concrete::class, ['getId' => 77]));
+        $owner->setNextParentForInheritance($parent);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertNull($owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testInheritanceWithoutParentValueStillRejectsMandatoryRemoval(): void
+    {
+        $element = $this->makeElement();
+        $owner = $this->makeOwner($this->makeManyToOne(mandatory: true), $element);
+        $owner->getClass()->setAllowInherit(true);
+        $parent = new ReverseRelationOwnerTestObject();
+        $parent->setId(self::OWNER_ID + 5);
+        $owner->setNextParentForInheritance($parent);
+
+        $this->expectException(ValidationException::class);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+    }
+
     private function makeManyToOne(bool $mandatory): ManyToOneRelation
     {
         return (new ManyToOneRelation())->setName(self::OWNER_FIELD)->setMandatory($mandatory);
@@ -190,10 +281,12 @@ final class ReverseObjectRelationAdapterTest extends Unit
     private function makeOwner(
         Data $ownerField,
         mixed $currentValue,
-        int $id = self::OWNER_ID
+        int $id = self::OWNER_ID,
+        bool $published = true
     ): ReverseRelationOwnerTestObject {
         $owner = new ReverseRelationOwnerTestObject();
         $owner->setId($id);
+        $owner->setPublished($published);
         $owner->setClass($this->makeOwnerClass($ownerField));
         $owner->setPublisher($currentValue);
 
@@ -217,6 +310,10 @@ final class ReverseObjectRelationAdapterTest extends Unit
             $this->makeEmpty(ClassDefinitionResolverInterface::class, ['getByName' => $owners[0]->getClass()]),
             $this->makeEmpty(ConcreteObjectResolverInterface::class, [
                 'getById' => static fn (int $id): ?Concrete => $ownersById[$id] ?? null,
+            ]),
+            $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'useInheritedValues' => static fn (bool $inherit, callable $fn, array $args = []): mixed
+                    => $fn(...$args),
             ]),
             $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(RelationDataServiceInterface::class, ['getSetterData' => $remainingRelations]),

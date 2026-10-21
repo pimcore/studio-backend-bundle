@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -30,7 +31,12 @@ use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_filter;
+use function array_unique;
+use function array_values;
+use function count;
 use function is_array;
+use function method_exists;
 use function sprintf;
 
 /**
@@ -42,6 +48,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private ConcreteObjectResolverInterface $concreteObjectResolver,
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private LoggerInterface $pimcoreLogger,
         private RelationDataServiceInterface $relationDataService,
         private SecurityServiceInterface $securityService
@@ -110,7 +117,9 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         // Resolve and validate every removal before the first owner is written, so that a rejected
         // removal leaves no owner changed.
         $removals = [];
-        foreach (array_diff($dataToProcess['originals'], $dataToProcess['changed']) as $id) {
+        // An owner with repeated assignments is listed once per assignment; it is processed once and loses
+        // every occurrence of the element.
+        foreach (array_unique(array_diff($dataToProcess['originals'], $dataToProcess['changed'])) as $id) {
             $remoteObject = $this->concreteObjectResolver->getById($id);
             if ($remoteObject === null) {
                 continue;
@@ -177,21 +186,22 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
                 return null;
             }
 
-            $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, null);
+            $this->assertRemovalAllowed($remoteObject, $element, $getter, $ownerFieldName, null);
 
             return ['value' => null];
         }
 
-        foreach ($currentData as $index => $relation) {
-            if ($relation->getId() === $element->getId()) {
-                unset($currentData[$index]);
-                $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, $currentData);
-
-                return ['value' => $currentData];
-            }
+        $remainingData = array_values(array_filter(
+            $currentData,
+            static fn (mixed $relation): bool => $relation->getId() !== $element->getId()
+        ));
+        if (count($remainingData) === count($currentData)) {
+            return null;
         }
 
-        return null;
+        $this->assertRemovalAllowed($remoteObject, $element, $getter, $ownerFieldName, $remainingData);
+
+        return ['value' => $remainingData];
     }
 
     /**
@@ -206,11 +216,22 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     private function assertRemovalAllowed(
         Concrete $remoteObject,
         Concrete $element,
+        string $getter,
         string $ownerFieldName,
         ?array $remainingData
     ): void {
+        if ($remoteObject->getOmitMandatoryCheck()) {
+            // Core skips the mandatory check for this owner (e.g. it is unpublished), so does the removal.
+            return;
+        }
+
         $ownerFieldDefinition = $remoteObject->getClass()->getFieldDefinition($ownerFieldName);
-        if ($ownerFieldDefinition === null || !$ownerFieldDefinition->getMandatory() || !empty($remainingData)) {
+        if (
+            $ownerFieldDefinition === null
+            || !$ownerFieldDefinition->getMandatory()
+            || !$ownerFieldDefinition->isEmpty($remainingData)
+            || $this->hasInheritedValue($remoteObject, $ownerFieldDefinition, $getter)
+        ) {
             return;
         }
 
@@ -223,6 +244,28 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
                 $remoteObject->getId()
             )
         );
+    }
+
+    /**
+     * Mirrors core validation, which accepts an empty inheritable field when the parent provides a value.
+     */
+    private function hasInheritedValue(Concrete $remoteObject, Data $ownerFieldDefinition, string $getter): bool
+    {
+        if (!$remoteObject->getClass()->getAllowInherit() || !$ownerFieldDefinition->supportsInheritance()) {
+            return false;
+        }
+
+        $parent = $remoteObject->getNextParentForInheritance();
+        if ($parent === null || !method_exists($parent, $getter)) {
+            return false;
+        }
+
+        $inheritedValue = $this->dataObjectServiceResolver->useInheritedValues(
+            true,
+            static fn (): mixed => $parent->$getter()
+        );
+
+        return !$ownerFieldDefinition->isEmpty($inheritedValue);
     }
 
     private function handleAddCurrentData(
