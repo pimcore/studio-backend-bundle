@@ -30,6 +30,8 @@ use Pimcore\Model\DataObject\ReverseRelationOwnerTestObject;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
+use function array_map;
+use function is_array;
 
 require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObject.php';
 
@@ -135,6 +137,27 @@ final class ReverseObjectRelationAdapterTest extends Unit
         $this->callAdapter($element, $owner, remainingRelations: []);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function testRejectedRemovalLeavesEarlierOwnersUntouched(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID, self::OWNER_ID + 1]);
+        $other = $this->makeEmpty(Concrete::class, ['getId' => 99]);
+        $allowedOwner = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element, $other]);
+        $rejectedOwner = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element], id: self::OWNER_ID + 1);
+
+        $this->expectException(ValidationException::class);
+
+        try {
+            $this->callAdapter($element, [$allowedOwner, $rejectedOwner], remainingRelations: []);
+        } finally {
+            $this->assertSame([$element, $other], $allowedOwner->getPublisher());
+            $this->assertSame(0, $allowedOwner->getSaveCount());
+            $this->assertSame(0, $rejectedOwner->getSaveCount());
+        }
+    }
+
     private function makeManyToOne(bool $mandatory): ManyToOneRelation
     {
         return (new ManyToOneRelation())->setName(self::OWNER_FIELD)->setMandatory($mandatory);
@@ -153,18 +176,24 @@ final class ReverseObjectRelationAdapterTest extends Unit
     /**
      * @throws Exception
      */
-    private function makeElement(): Concrete
+    /**
+     * @param int[] $ownerIds
+     */
+    private function makeElement(array $ownerIds = [self::OWNER_ID]): Concrete
     {
         return $this->makeEmpty(Concrete::class, [
             'getId' => self::ELEMENT_ID,
-            'getRelationData' => [['dest_id' => self::OWNER_ID, 'id' => self::OWNER_ID]],
+            'getRelationData' => array_map(static fn (int $id): array => ['dest_id' => $id, 'id' => $id], $ownerIds),
         ]);
     }
 
-    private function makeOwner(Data $ownerField, mixed $currentValue): ReverseRelationOwnerTestObject
-    {
+    private function makeOwner(
+        Data $ownerField,
+        mixed $currentValue,
+        int $id = self::OWNER_ID
+    ): ReverseRelationOwnerTestObject {
         $owner = new ReverseRelationOwnerTestObject();
-        $owner->setId(self::OWNER_ID);
+        $owner->setId($id);
         $owner->setClass($this->makeOwnerClass($ownerField));
         $owner->setPublisher($currentValue);
 
@@ -176,11 +205,19 @@ final class ReverseObjectRelationAdapterTest extends Unit
      *
      * @throws Exception
      */
-    private function callAdapter(Concrete $element, Concrete $owner, array $remainingRelations): void
+    private function callAdapter(Concrete $element, Concrete|array $owners, array $remainingRelations): void
     {
+        $owners = is_array($owners) ? $owners : [$owners];
+        $ownersById = [];
+        foreach ($owners as $owner) {
+            $ownersById[$owner->getId()] = $owner;
+        }
+
         $adapter = new ReverseObjectRelationAdapter(
-            $this->makeEmpty(ClassDefinitionResolverInterface::class, ['getByName' => $owner->getClass()]),
-            $this->makeEmpty(ConcreteObjectResolverInterface::class, ['getById' => $owner]),
+            $this->makeEmpty(ClassDefinitionResolverInterface::class, ['getByName' => $owners[0]->getClass()]),
+            $this->makeEmpty(ConcreteObjectResolverInterface::class, [
+                'getById' => static fn (int $id): ?Concrete => $ownersById[$id] ?? null,
+            ]),
             $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(RelationDataServiceInterface::class, ['getSetterData' => $remainingRelations]),
             $this->makeEmpty(SecurityServiceInterface::class, [

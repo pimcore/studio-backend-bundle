@@ -107,13 +107,22 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
         $dataToProcess = $this->getRemoteOwnerRelations($relations, $newRelations);
+        // Resolve and validate every removal before the first owner is written, so that a rejected
+        // removal leaves no owner changed.
+        $removals = [];
         foreach (array_diff($dataToProcess['originals'], $dataToProcess['changed']) as $id) {
             $remoteObject = $this->concreteObjectResolver->getById($id);
             if ($remoteObject === null) {
                 continue;
             }
 
-            $this->handleDeleteCurrentData($remoteObject, $element, $getter, $setter, $ownerFieldName);
+            $removals[] = [$remoteObject, $this->resolveRemoval($remoteObject, $element, $getter, $ownerFieldName)];
+        }
+
+        foreach ($removals as [$remoteObject, $removal]) {
+            if ($removal !== null) {
+                $remoteObject->$setter($removal['value']);
+            }
             $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName);
         }
 
@@ -145,36 +154,44 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     }
 
     /**
+     * Returns the owner's relation value after removing the element, or null when the owner does not
+     * hold the element and nothing has to change.
+     *
+     * @return array{value: mixed}|null
+     *
      * @throws ValidationException
      */
-    private function handleDeleteCurrentData(
+    private function resolveRemoval(
         Concrete $remoteObject,
         Concrete $element,
         string $getter,
-        string $setter,
         string $ownerFieldName
-    ): void {
+    ): ?array {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
         if ($currentData === null) {
-            return;
+            return null;
         }
 
-        if (!is_array($currentData) && $currentData->getId() === $element->getId()) {
-            $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, null);
-            $remoteObject->$setter(null);
+        if (!is_array($currentData)) {
+            if ($currentData->getId() !== $element->getId()) {
+                return null;
+            }
 
-            return;
+            $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, null);
+
+            return ['value' => null];
         }
 
         foreach ($currentData as $index => $relation) {
             if ($relation->getId() === $element->getId()) {
                 unset($currentData[$index]);
                 $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, $currentData);
-                $remoteObject->$setter($currentData);
 
-                break;
+                return ['value' => $currentData];
             }
         }
+
+        return null;
     }
 
     /**

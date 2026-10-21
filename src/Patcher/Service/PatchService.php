@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -48,6 +49,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use function array_is_list;
 use function array_key_exists;
@@ -142,7 +144,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|ForbiddenException|InvalidArgumentException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException|InvalidArgumentException
      */
     public function patchElement(
         ElementInterface $element,
@@ -197,6 +199,8 @@ final readonly class PatchService implements PatchServiceInterface
             );
         } catch (ForbiddenException $exception) {
             throw $exception;
+        } catch (ValidationException $exception) {
+            throw new FieldValidationFailedException($exception->getMessage(), previous: $exception);
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }
