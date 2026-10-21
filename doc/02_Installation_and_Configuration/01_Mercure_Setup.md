@@ -7,8 +7,12 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-It is recommended to use an up-to-date instance of Mercure, e.g. via their docker container. For details see
+Use Mercure hub **0.24**, e.g. via their docker container (`dunglas/mercure:v0.24`). For details see
 [Mercure docs](https://mercure.rocks/docs/hub/install).
+
+> Always pin the image to `v0.24` instead of using `latest` or an untagged image. Mercure 1.0 and later contain breaking
+> changes (token format, subscription parameters, hub configuration, development UI), so an unpinned image will pull a
+> hub that this setup is not written for.
 
 ### Mercure configuration
 Following Mercure configuration aspects need to be considered
@@ -60,7 +64,7 @@ Add Mercure to your docker compose file and make sure to add the configuration f
       - ~/.certs:/etc/nginx/certs
 
   mercure:
-    image: dunglas/mercure:latest
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
         # Disable HTTPS
@@ -129,7 +133,7 @@ When running Mercure as external service with external URL, make sure to configu
 Sample based on docker compose, important part is the `cors_origins` directive.
 ```yaml
   mercure:
-    image: dunglas/mercure
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
@@ -171,7 +175,7 @@ With the configuration below, the development ui is available at `http://localho
 
 ```yaml
   mercure:
-    image: dunglas/mercure
+    image: dunglas/mercure:v0.24
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
