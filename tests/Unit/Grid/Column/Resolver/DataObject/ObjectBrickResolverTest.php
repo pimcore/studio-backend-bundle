@@ -183,6 +183,31 @@ final class ObjectBrickResolverTest extends Unit
         $this->assertSame('dataobject.objectbrick', $result->getFieldType());
     }
 
+    /**
+     * The whole brick may be gone from the system while a column still lists it: empty cell as well.
+     */
+    public function testResolveForExportReturnsNullForMissingBrickDefinition(): void
+    {
+        $column = new Column(
+            key: 'bricks.RemovedBrick.name',
+            locale: 'en',
+            type: 'dataobject.objectbrick',
+            group: ['objectbrick'],
+            config: [],
+        );
+
+        $result = $this->createResolver(
+            missingBrick: true,
+        )->resolveForExport(
+            $column,
+            $this->createElementWithEmptyBrick(),
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertNull($result->getValue());
+        $this->assertSame('dataobject.objectbrick', $result->getFieldType());
+    }
+
     public function testResolveForExportUsesLocaleForLocalizedAttribute(): void
     {
         $column = new Column(
@@ -240,9 +265,8 @@ final class ObjectBrickResolverTest extends Unit
         ?Localizedfields $localizedFields = null,
         ?DataServiceInterface $dataService = null,
         ?string $missingAttribute = null,
+        bool $missingBrick = false,
     ): ObjectBrickResolver {
-        $fieldDefinition = new Input();
-        $fieldDefinition->setName('name');
 
         return new ObjectBrickResolver(
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
@@ -253,11 +277,20 @@ final class ObjectBrickResolverTest extends Unit
             $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $this->makeEmpty(ObjectBrickServiceInterface::class),
             $this->makeEmpty(DefinitionResolverInterface::class, [
-                'getByKey' => $this->makeEmpty(Definition::class, [
-                    'getFieldDefinition' => static fn (string $key) => match (true) {
-                        $key === 'localizedfields' => $localizedFields,
-                        $key === $missingAttribute => null,
-                        default => $fieldDefinition,
+                'getByKey' => $missingBrick ? null : $this->makeEmpty(Definition::class, [
+                    'getFieldDefinition' => static function (string $key) use ($localizedFields, $missingAttribute) {
+                        if ($key === 'localizedfields') {
+                            return $localizedFields;
+                        }
+
+                        if ($key === $missingAttribute) {
+                            return null;
+                        }
+
+                        $fieldDefinition = new Input();
+                        $fieldDefinition->setName($key);
+
+                        return $fieldDefinition;
                     },
                 ]),
             ]),
