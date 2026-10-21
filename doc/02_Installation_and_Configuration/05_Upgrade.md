@@ -3,6 +3,15 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Data Objects] Changed: the version detail (`GET /pimcore-studio/api/versions/{id}`) of a data object shows the
+  values of calculated fields the version stores when `pimcore.objects.versions.calculated_value_snapshot` is enabled
+  in Pimcore 2026.4+; the edit view keeps showing freshly computed values. `FieldContextData` (`@internal`) got the
+  constructor argument `historicalVersion` and `isHistoricalVersion()`; `DataService::setObjectDetailData()` passes
+  it for a `DataObjectVersion`, and the localized fields adapter forwards it for the localized fields of the object
+  itself. A custom `DetailDataInterface` adapter that computes values can use it the same way. A version that stores
+  no value for a field (created before the option, auto-save, field of an object brick or field collection) is shown
+  the way the edit view shows it, as before. The new `@internal` `CalculatedValueSnapshotServiceInterface` reads the
+  stored values; the bundle now requires `pimcore/pimcore` `^2026.4`.
 - [Grid] Changed: `twigOperator` templates render in a dedicated Twig environment with the sandbox always enabled
   and without Pimcore's Twig extensions or the application's Twig configuration. Method calls and property access on
   objects are denied. Values are converted to plain data first: dates become ISO 8601 strings, consent values,
@@ -27,7 +36,28 @@ The following steps are necessary during updating to newer versions.
 
 > **Note:** since swagger-php 5.6 an explicit `type:` or `ref:` on a `#[Property]` attribute no longer inherits the nullability of the PHP parameter it annotates. A property such as `#[Property(type: 'string')] private ?string $title` is emitted as `"type": "string"` instead of `"type": ["string", "null"]` once an installation resolves swagger-php >= 5.6. All Studio schemas now declare `nullable: true` explicitly. Bundles that register their own `open_api_scan_paths` must do the same for every PHP-nullable (or `mixed`) parameter whose attribute sets `type:` or `ref:`, otherwise their schemas silently lose `null` in the generated document and in clients generated from it. Properties without an explicit `type:` are not affected. The static `OpenApi\Generator::scan()` was removed in swagger-php 6.0; `OpenApiService` now uses `(new Generator())->generate()`.
 
+- [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
+  [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
+  - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
+    `server_name` (default: the router's request context host, i.e. `framework.router.default_uri`, or `localhost`
+    without it).
+  - New rate limiter `studio_two_factor_code` (5 wrong codes per user in 5 minutes).
+  - New endpoints: `POST /login/2fa`, `POST /user/two-factor/setup`, `POST /user/two-factor/confirm`,
+    `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.
+
+> **Note:** `POST /login` changes for users with two-factor authentication required or enabled: it answers `200` with
+> `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup", "digits": 6}` instead of an empty body, and the user is not logged
+> in until the code is sent to `POST /login/2fa`. Clients that treat any `200` from `POST /login` as logged in break
+> for these users only; users without two-factor authentication get the same empty `200` as before. Users who have
+> `required` set but no authenticator app yet can no longer use Studio with the password alone: they set it up during
+> the login. The login token (`POST /login/token`) still skips the code. While a code is pending, other endpoints
+> answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
+> Connect (SSO) login.
+
 ## Upgrade to 2026.3.3
+- [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of
+  fields with `optimizedAdminLoading` without instantiating the related elements. Requires `pimcore/pimcore` 2026.3.3
+  or later, which provides `LightweightRelationLoadingInterface`.
 - [Documents] Added: `pimcore_studio_backend.documents.default_controllers` sets the controller of new page, snippet
   and email documents per document type (for documents created without a predefined document type). Types without an
   entry keep using `pimcore.documents.default_controller`, so existing installations are unaffected.

@@ -68,6 +68,11 @@ authenticate with standards-based bearer tokens instead of static credentials. I
 live at the web root (outside the firewalls above), so it needs its own `access_control` rules. See the
 [OAuth 2.1 Authorization Server](./06_OAuth_Server.md) page for setup and configuration.
 
+**Optional: Two-factor authentication**
+
+Users can protect their login with codes from an authenticator app; no extra firewall or `access_control` rule is
+needed. See [Two-Factor Authentication](./07_Two_Factor_Authentication.md) for the configuration.
+
 4) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
 
 ```php
