@@ -155,7 +155,12 @@ final class ObjectBrickResolver implements
             $objectBrickKey = $this->mapObjectBrickKey($column->getKey());
 
             $brickClass = $this->definitionResolver->getByKey($objectBrickKey->getBrickName());
-            $fieldDefinition = $brickClass->getFieldDefinition($objectBrickKey->getAttribute());
+            $fieldDefinition = $brickClass?->getFieldDefinition($objectBrickKey->getAttribute());
+
+            // A stale column (brick or attribute removed from the definition) gives an empty cell
+            if (!$fieldDefinition) {
+                return $this->getColumnData($column, null, $column->getType());
+            }
 
             $brickContainer = $element->get($objectBrickKey->getField());
             if (!$brickContainer) {

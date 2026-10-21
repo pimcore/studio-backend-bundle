@@ -57,7 +57,7 @@ final class ObjectBrickResolverTest extends Unit
             config: [],
         );
 
-        $result = $this->createResolver()->resolveForExport(
+        $result = $this->createResolver(localizedFields: $this->createLocalizedFields())->resolveForExport(
             $column,
             $this->createElementWithEmptyBrick(),
             $this->makeEmpty(UserInterface::class)
@@ -123,6 +123,66 @@ final class ObjectBrickResolverTest extends Unit
         $this->assertSame('reworked', $result->getValue());
     }
 
+    /**
+     * A brick with localizedfields still holds plain attributes next to them; only attributes defined
+     * in localizedfields take the locale.
+     */
+    public function testResolveForExportIgnoresLocaleForPlainAttributeOfBrickWithLocalizedFields(): void
+    {
+        $column = new Column(
+            key: 'bricks.MyBrick.plain',
+            locale: 'en',
+            type: 'dataobject.objectbrick',
+            group: ['objectbrick'],
+            config: [],
+        );
+        $brick = $this->makeEmpty(AbstractData::class, [
+            'get' => static fn (string $name) => throw new BadMethodCallException($name),
+        ]);
+
+        $result = $this->createResolver(
+            localizedFields: $this->createLocalizedFields(),
+            dataService: $this->makeEmpty(DataServiceInterface::class, [
+                'getExportFieldValue' => Expected::once(
+                    function ($element, $fieldDefinition, $field, FieldContextData $context) use ($brick) {
+                        $this->assertSame($brick, $context->getContextObject());
+                        $this->assertNull($context->getLegacyParameters()['language']);
+
+                        return 'plain value';
+                    }
+                ),
+            ])
+        )->resolveForExport($column, $this->createElement($brick), $this->makeEmpty(UserInterface::class));
+
+        $this->assertSame('plain value', $result->getValue());
+    }
+
+    /**
+     * An export or webhook column may still list an attribute that was removed from the brick. That must
+     * give an empty cell, not an error that kills the whole export.
+     */
+    public function testResolveForExportReturnsNullForMissingAttributeDefinition(): void
+    {
+        $column = new Column(
+            key: 'bricks.MyBrick.removed',
+            locale: 'en',
+            type: 'dataobject.objectbrick',
+            group: ['objectbrick'],
+            config: [],
+        );
+
+        $result = $this->createResolver(
+            missingAttribute: 'removed',
+        )->resolveForExport(
+            $column,
+            $this->createElementWithEmptyBrick(),
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        $this->assertNull($result->getValue());
+        $this->assertSame('dataobject.objectbrick', $result->getFieldType());
+    }
+
     public function testResolveForExportUsesLocaleForLocalizedAttribute(): void
     {
         $column = new Column(
@@ -179,6 +239,7 @@ final class ObjectBrickResolverTest extends Unit
     private function createResolver(
         ?Localizedfields $localizedFields = null,
         ?DataServiceInterface $dataService = null,
+        ?string $missingAttribute = null,
     ): ObjectBrickResolver {
         $fieldDefinition = new Input();
         $fieldDefinition->setName('name');
@@ -193,9 +254,11 @@ final class ObjectBrickResolverTest extends Unit
             $this->makeEmpty(ObjectBrickServiceInterface::class),
             $this->makeEmpty(DefinitionResolverInterface::class, [
                 'getByKey' => $this->makeEmpty(Definition::class, [
-                    'getFieldDefinition' => static fn (string $key) => $key === 'localizedfields'
-                        ? $localizedFields
-                        : $fieldDefinition,
+                    'getFieldDefinition' => static fn (string $key) => match (true) {
+                        $key === 'localizedfields' => $localizedFields,
+                        $key === $missingAttribute => null,
+                        default => $fieldDefinition,
+                    },
                 ]),
             ]),
             $this->makeEmpty(ToolResolverInterface::class),
