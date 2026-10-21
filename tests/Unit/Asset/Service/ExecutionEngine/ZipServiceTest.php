@@ -111,6 +111,32 @@ final class ZipServiceTest extends Unit
         $this->assertContains('folder/file.txt', $entries);
     }
 
+    public function testAddFileReturnsTrueForAssetWithBinary(): void
+    {
+        $service = $this->createService();
+        $archive = $this->createZipArchive();
+
+        $added = $service->addFile($archive, $this->createAssetMock('/folder/file.txt'));
+
+        $this->assertTrue($added);
+    }
+
+    public function testAddFileSkipsAssetWhoseBinaryIsMissingFromStorage(): void
+    {
+        $service = $this->createService();
+        $archive = $this->createZipArchive();
+
+        $missing = $this->createAssetMock('/folder/missing.txt', true);
+        $present = $this->createAssetMock('/folder/present.txt');
+
+        $this->assertFalse($service->addFile($archive, $missing));
+        $this->assertTrue($service->addFile($archive, $present));
+
+        $entries = $this->getZipEntries($archive);
+
+        $this->assertSame(['folder/present.txt'], $entries);
+    }
+
     public function testResolveCommonBasePathSingleFolder(): void
     {
         $result = $this->invokeResolveCommonBasePath(['/photos/vacation']);
@@ -181,7 +207,7 @@ final class ZipServiceTest extends Unit
         return $archive;
     }
 
-    private function createAssetMock(string $realFullPath): Asset
+    private function createAssetMock(string $realFullPath, bool $isStreamPlaceholder = false): Asset
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'asset_test_');
         file_put_contents($tempFile, 'test content');
@@ -190,6 +216,7 @@ final class ZipServiceTest extends Unit
         return $this->makeEmpty(Asset::class, [
             'getLocalFile' => $tempFile,
             'getRealFullPath' => $realFullPath,
+            'isStreamPlaceholder' => $isStreamPlaceholder,
         ]);
     }
 
