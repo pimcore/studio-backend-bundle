@@ -76,7 +76,7 @@ final readonly class ZipService implements ZipServiceInterface
             return false;
         }
 
-        return $archive->addFile(
+        $added = $archive->addFile(
             $localFile,
             ltrim(
                 preg_replace(
@@ -87,6 +87,14 @@ final readonly class ZipService implements ZipServiceInterface
                 '/'
             )
         );
+
+        if (!$added) {
+            throw new EnvironmentException(
+                sprintf('Failed to add asset %d to the zip archive.', $asset->getId())
+            );
+        }
+
+        return true;
     }
 
     public function extractArchiveFiles(

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Model\Asset;
 use ReflectionMethod;
 use ZipArchive;
@@ -135,6 +136,23 @@ final class ZipServiceTest extends Unit
         $entries = $this->getZipEntries($archive);
 
         $this->assertSame(['folder/present.txt'], $entries);
+    }
+
+    public function testAddFileThrowsWhenArchiveInsertionFails(): void
+    {
+        $service = $this->createService();
+        $archive = $this->createZipArchive();
+
+        $asset = $this->makeEmpty(Asset::class, [
+            'getLocalFile' => '/nonexistent/pme/file.txt',
+            'getRealFullPath' => '/folder/file.txt',
+            'getId' => 1,
+            'isStreamPlaceholder' => false,
+        ]);
+
+        $this->expectException(EnvironmentException::class);
+
+        $service->addFile($archive, $asset);
     }
 
     public function testResolveCommonBasePathSingleFolder(): void
