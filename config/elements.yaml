@@ -100,3 +100,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepository

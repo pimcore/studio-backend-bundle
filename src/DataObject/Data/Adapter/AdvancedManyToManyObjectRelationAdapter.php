@@ -27,6 +27,8 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_filter;
+use function array_values;
 use function is_array;
 
 /**
@@ -76,16 +78,12 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
             return null;
         }
 
-        $normalizedData = [];
-        foreach ($value as $relation) {
-            if (!$relation instanceof ObjectMetadata) {
-                continue;
-            }
-
-            $normalizedData[] = $this->relationDataService->getAdvancedRelationElementData($relation);
-        }
-
-        return $normalizedData;
+        return $this->relationDataService->getAdvancedRelationElementsData(
+            array_values(array_filter(
+                $value,
+                static fn (mixed $relation) => $relation instanceof ObjectMetadata
+            ))
+        );
     }
 
     private function buildObjectRelationsMetadata(array $relationData, Data $fieldDefinition): array
