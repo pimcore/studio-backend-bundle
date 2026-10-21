@@ -69,5 +69,6 @@ final class SyncIndexHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
+        // The step takes no configuration: it always synchronizes all indices.
     }
 }
