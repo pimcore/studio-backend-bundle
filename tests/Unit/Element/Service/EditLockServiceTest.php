@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\EditLock;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\EditLockService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -200,6 +201,57 @@ final class EditLockServiceTest extends Unit
         $this->assertFalse($editLock->getIsLocked());
         $this->assertSame(['isLocked:' . self::ELEMENT_ID . ':document'], $this->calls);
         $this->assertSame($this->expectedChecks('document'), $this->checks);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testLockElementWithInvalidTypeFailsBeforeLookup(): void
+    {
+        $service = $this->createService(forbidden: true, elementFound: false);
+
+        $this->expectException(InvalidElementTypeException::class);
+
+        try {
+            $service->lockElement(self::ELEMENT_ID, 'invalid');
+        } finally {
+            $this->assertSame([], $this->calls);
+            $this->assertSame([], $this->checks);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUnlockElementWithInvalidTypeFailsBeforeLookup(): void
+    {
+        $service = $this->createService(forbidden: true, elementFound: false);
+
+        $this->expectException(InvalidElementTypeException::class);
+
+        try {
+            $service->unlockElement(self::ELEMENT_ID, 'invalid');
+        } finally {
+            $this->assertSame([], $this->calls);
+            $this->assertSame([], $this->checks);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetEditLockWithInvalidTypeFailsBeforeLookup(): void
+    {
+        $service = $this->createService(forbidden: true, elementFound: false);
+
+        $this->expectException(InvalidElementTypeException::class);
+
+        try {
+            $service->getEditLock(self::ELEMENT_ID, 'invalid');
+        } finally {
+            $this->assertSame([], $this->calls);
+            $this->assertSame([], $this->checks);
+        }
     }
 
     /**
