@@ -20,8 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
 use ReflectionMethod;
 use ZipArchive;
@@ -141,7 +141,7 @@ final class ZipServiceTest extends Unit
     public function testAddFileThrowsWhenArchiveInsertionFails(): void
     {
         $service = $this->createService();
-        $archive = $this->createZipArchive();
+        $archive = $this->makeEmpty(ZipArchive::class, ['addFile' => false]);
 
         $asset = $this->makeEmpty(Asset::class, [
             'getLocalFile' => '/nonexistent/pme/file.txt',
