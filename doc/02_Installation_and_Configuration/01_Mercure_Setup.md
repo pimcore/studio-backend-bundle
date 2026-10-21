@@ -123,6 +123,31 @@ Unauthorized
 
 ## Additional Aspects
 
+### Multiple application nodes
+When Pimcore runs on several application nodes (load balancer, cluster), run **one** Mercure hub for all of them. Do not
+start one independent hub per node behind a load balancer.
+
+Mercure stores subscriptions and the update history in the hub itself. The free transports (`bolt`, `local`) are
+single-node, and a load balancer alone does not synchronize hubs. With one hub per node, an update published by node 1
+never reaches a browser that is connected to the hub of node 2. See the
+[Mercure cluster docs](https://mercure.rocks/docs/hub/cluster).
+
+Recommended setup:
+- Run Mercure as a separate service (not co-located with a single application node) and mount a persistent `/data` volume.
+- Use the same `jwt_key` on all application nodes, and the same value for `MERCURE_PUBLISHER_JWT_KEY` and
+  `MERCURE_SUBSCRIBER_JWT_KEY` on the hub.
+- Point `hub_url_server` of every node to that hub, and route `hub_url_client` (public URL) to it.
+
+One hub is usually enough, as Mercure is lightweight. It only carries live notifications: if it is unreachable,
+publishing errors are logged and Studio falls back to polling for job progress.
+
+If the hub itself needs to be highly available, use Mercure's clustered offerings (Mercure Enterprise with a shared
+transport such as Redis/Valkey, or Mercure Cloud; both are licensed by Mercure, not by Pimcore), or restart the single
+hub quickly with a process supervisor or your orchestrator.
+
+> The legacy Direct Edit path (`FileEditControllerTrait`, deprecated) asks the hub which clients are subscribed
+> (subscriptions API). This also requires a single, shared hub.
+
 
 ### Running Mercure with external URL
 
