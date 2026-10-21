@@ -40,10 +40,12 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -52,6 +54,7 @@ use Pimcore\Model\UserInterface;
 use function array_is_list;
 use function array_key_exists;
 use function count;
+use function in_array;
 use function is_array;
 use function sprintf;
 
@@ -150,10 +153,10 @@ final readonly class PatchService implements PatchServiceInterface
         array $elementPatchData,
         UserInterface $user,
     ): void {
-        // Writing object field data requires the workspace `save` permission. Publish/unpublish
-        // (PublishAdapter) and the other adapters enforce their own permissions inside the try
-        // below; their ForbiddenException is re-thrown so it is not masked as a 500.
-        if ($element instanceof Concrete && isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY])) {
+        // Writing a data object or data object folder (key, parentId, locked, properties,
+        // editableData, or an untasked write) requires the workspace `save` permission. A pure
+        // publish/unpublish task is gated separately by PublishAdapter.
+        if ($element instanceof AbstractObject && $this->requiresSavePermission($elementPatchData)) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         } elseif ($element instanceof Asset) {
             // Assets have no workspace `save` permission; `publish` is their edit/write permission.
@@ -200,6 +203,19 @@ final readonly class PatchService implements PatchServiceInterface
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }
+    }
+
+    /**
+     * Persisting object/folder data (save, autoSave, version or an untasked write) requires the
+     * workspace `save` permission. Publishing/unpublishing is gated separately by PublishAdapter.
+     */
+    private function requiresSavePermission(array $elementPatchData): bool
+    {
+        return !in_array(
+            $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null,
+            [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
+            true
+        );
     }
 
     public function handlePatchDataField(
