@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -112,7 +113,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
                 continue;
             }
 
-            $this->handleDeleteCurrentData($remoteObject, $element, $getter, $setter);
+            $this->handleDeleteCurrentData($remoteObject, $element, $getter, $setter, $ownerFieldName);
             $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName);
         }
 
@@ -143,11 +144,15 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         ];
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function handleDeleteCurrentData(
         Concrete $remoteObject,
         Concrete $element,
         string $getter,
-        string $setter
+        string $setter,
+        string $ownerFieldName
     ): void {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
         if ($currentData === null) {
@@ -155,6 +160,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         }
 
         if (!is_array($currentData) && $currentData->getId() === $element->getId()) {
+            $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, null);
             $remoteObject->$setter(null);
 
             return;
@@ -163,11 +169,43 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         foreach ($currentData as $index => $relation) {
             if ($relation->getId() === $element->getId()) {
                 unset($currentData[$index]);
+                $this->assertRemovalAllowed($remoteObject, $element, $ownerFieldName, $currentData);
                 $remoteObject->$setter($currentData);
 
                 break;
             }
         }
+    }
+
+    /**
+     * The owner is saved with its forward relation cleared; if that field is mandatory the save
+     * would fail validation, so refuse the removal up front with a message that names the cause.
+     *
+     * @param array<int, mixed>|null $remainingData the owner's relation data after the removal,
+     *                                              null for a cleared single relation
+     *
+     * @throws ValidationException
+     */
+    private function assertRemovalAllowed(
+        Concrete $remoteObject,
+        Concrete $element,
+        string $ownerFieldName,
+        ?array $remainingData
+    ): void {
+        $ownerFieldDefinition = $remoteObject->getClass()->getFieldDefinition($ownerFieldName);
+        if ($ownerFieldDefinition === null || !$ownerFieldDefinition->getMandatory() || !empty($remainingData)) {
+            return;
+        }
+
+        throw new ValidationException(
+            sprintf(
+                'Cannot remove the relation to object [ %d ] from the reverse side:'
+                . ' field [ %s ] of the owner object [ %d ] is mandatory',
+                $element->getId(),
+                $ownerFieldName,
+                $remoteObject->getId()
+            )
+        );
     }
 
     private function handleAddCurrentData(
@@ -188,6 +226,9 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName);
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function saveRemoteObject(
         Concrete $remoteObject,
         Concrete $element,
@@ -212,6 +253,8 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
                     $fieldName
                 )
             );
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             $this->pimcoreLogger->error('Failed to save remote object', ['exception' => $e]);
         }
