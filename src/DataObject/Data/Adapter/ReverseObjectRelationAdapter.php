@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -23,13 +24,24 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServi
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\ElementMetadata;
+use Pimcore\Model\DataObject\Data\ObjectMetadata;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_filter;
+use function array_key_exists;
+use function array_unique;
+use function array_values;
+use function count;
 use function is_array;
+use function method_exists;
 use function sprintf;
 
 /**
@@ -41,6 +53,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private ConcreteObjectResolverInterface $concreteObjectResolver,
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private LoggerInterface $pimcoreLogger,
         private RelationDataServiceInterface $relationDataService,
         private SecurityServiceInterface $securityService
@@ -106,13 +119,41 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
         $dataToProcess = $this->getRemoteOwnerRelations($relations, $newRelations);
-        foreach (array_diff($dataToProcess['originals'], $dataToProcess['changed']) as $id) {
+        // Resolve every removal, then validate all of them against the planned values, and only then
+        // write, so that a rejected removal leaves no owner changed. An owner with repeated assignments
+        // is listed once per assignment; it is processed once and loses every occurrence of the element.
+        $removals = [];
+        $plannedValues = [];
+        foreach (array_unique(array_diff($dataToProcess['originals'], $dataToProcess['changed'])) as $id) {
             $remoteObject = $this->concreteObjectResolver->getById($id);
             if ($remoteObject === null) {
                 continue;
             }
 
-            $this->handleDeleteCurrentData($remoteObject, $element, $getter, $setter);
+            $removal = $this->resolveRemoval($remoteObject, $element, $getter);
+            $removals[] = [$remoteObject, $removal];
+            if ($removal !== null) {
+                $plannedValues[$remoteObject->getId()] = $removal['value'];
+            }
+        }
+
+        foreach ($removals as [$remoteObject, $removal]) {
+            if ($removal !== null) {
+                $this->assertRemovalAllowed(
+                    $remoteObject,
+                    $element,
+                    $getter,
+                    $ownerFieldName,
+                    $removal['value'],
+                    $plannedValues
+                );
+            }
+        }
+
+        foreach ($removals as [$remoteObject, $removal]) {
+            if ($removal !== null) {
+                $remoteObject->$setter($removal['value']);
+            }
             $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName);
         }
 
@@ -143,31 +184,126 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         ];
     }
 
-    private function handleDeleteCurrentData(
+    /**
+     * Returns the owner's relation value after removing the element, or null when the owner does not
+     * hold the element and nothing has to change. Entries are matched by element type and id, so an
+     * asset or document sharing the numeric id stays, and retained entries keep their metadata wrapper.
+     *
+     * @return array{value: mixed}|null
+     */
+    private function resolveRemoval(Concrete $remoteObject, Concrete $element, string $getter): ?array
+    {
+        $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
+        if ($currentData === null) {
+            return null;
+        }
+
+        if (!is_array($currentData)) {
+            return $this->isRelationToElement($currentData, $element) ? ['value' => null] : null;
+        }
+
+        $remainingData = array_values(array_filter(
+            $currentData,
+            fn (mixed $relation): bool => !$this->isRelationToElement($relation, $element)
+        ));
+        if (count($remainingData) === count($currentData)) {
+            return null;
+        }
+
+        return ['value' => $remainingData];
+    }
+
+    private function isRelationToElement(mixed $relation, Concrete $element): bool
+    {
+        return match (true) {
+            $relation instanceof ObjectMetadata => $relation->getObjectId() === $element->getId(),
+            $relation instanceof ElementMetadata => $relation->getElementType() === ElementTypes::TYPE_OBJECT
+                && $relation->getElementId() === $element->getId(),
+            default => $relation instanceof AbstractObject && $relation->getId() === $element->getId(),
+        };
+    }
+
+    /**
+     * The owner is saved with its forward relation cleared; if that field is mandatory the save
+     * would fail validation, so refuse the removal up front with a message that names the cause.
+     *
+     * @param array<int, mixed>|null $remainingData the owner's relation data after the removal,
+     *                                              null for a cleared single relation
+     * @param array<int, mixed> $plannedValues the post-removal values of every owner in this edit, by id
+     *
+     * @throws ValidationException
+     */
+    private function assertRemovalAllowed(
         Concrete $remoteObject,
         Concrete $element,
         string $getter,
-        string $setter
+        string $ownerFieldName,
+        ?array $remainingData,
+        array $plannedValues
     ): void {
-        $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
-        if ($currentData === null) {
+        if ($remoteObject->getOmitMandatoryCheck()) {
+            // Core skips the mandatory check for this owner (e.g. it is unpublished), so does the removal.
             return;
         }
 
-        if (!is_array($currentData) && $currentData->getId() === $element->getId()) {
-            $remoteObject->$setter(null);
-
+        $ownerFieldDefinition = $remoteObject->getClass()->getFieldDefinition($ownerFieldName);
+        if (
+            $ownerFieldDefinition === null
+            || !$ownerFieldDefinition->getMandatory()
+            || !$ownerFieldDefinition->isEmpty($remainingData)
+            || $this->hasInheritedValue($remoteObject, $ownerFieldDefinition, $getter, $plannedValues)
+        ) {
             return;
         }
 
-        foreach ($currentData as $index => $relation) {
-            if ($relation->getId() === $element->getId()) {
-                unset($currentData[$index]);
-                $remoteObject->$setter($currentData);
+        throw new ValidationException(
+            sprintf(
+                'Cannot remove the relation to object [ %d ] from the reverse side:'
+                . ' field [ %s ] of the owner object [ %d ] is mandatory',
+                $element->getId(),
+                $ownerFieldName,
+                $remoteObject->getId()
+            )
+        );
+    }
 
-                break;
+    /**
+     * Mirrors core validation, which accepts an empty inheritable field when an ancestor provides a
+     * value. Ancestors that lose their value in the same edit count with their planned value.
+     *
+     * @param array<int, mixed> $plannedValues
+     */
+    private function hasInheritedValue(
+        Concrete $remoteObject,
+        Data $ownerFieldDefinition,
+        string $getter,
+        array $plannedValues
+    ): bool {
+        if (!$remoteObject->getClass()->getAllowInherit() || !$ownerFieldDefinition->supportsInheritance()) {
+            return false;
+        }
+
+        $parent = $remoteObject->getNextParentForInheritance();
+        while ($parent !== null) {
+            if (array_key_exists($parent->getId(), $plannedValues)) {
+                $value = $plannedValues[$parent->getId()];
+            } elseif (method_exists($parent, $getter)) {
+                $value = $this->dataObjectServiceResolver->useInheritedValues(
+                    false,
+                    static fn (): mixed => $parent->$getter()
+                );
+            } else {
+                return false;
             }
+
+            if (!$ownerFieldDefinition->isEmpty($value)) {
+                return true;
+            }
+
+            $parent = $parent->getNextParentForInheritance();
         }
+
+        return false;
     }
 
     private function handleAddCurrentData(
@@ -188,6 +324,9 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName);
     }
 
+    /**
+     * @throws ValidationException
+     */
     private function saveRemoteObject(
         Concrete $remoteObject,
         Concrete $element,
@@ -212,6 +351,8 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
                     $fieldName
                 )
             );
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             $this->pimcoreLogger->error('Failed to save remote object', ['exception' => $e]);
         }
