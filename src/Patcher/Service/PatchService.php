@@ -55,6 +55,7 @@ use function array_is_list;
 use function array_key_exists;
 use function count;
 use function is_array;
+use function is_int;
 use function sprintf;
 
 /**
