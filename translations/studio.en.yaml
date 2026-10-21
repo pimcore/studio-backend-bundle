@@ -20,6 +20,11 @@ studio_ee_job_ownership_management_reassign_owner: Reassign owner of configurati
 studio_ee_job_ownership_management_delete: Delete configurations
 studio_ee_job_step_ownership_management_reassign_owner: Reassigning owner of configurations
 studio_ee_job_step_ownership_management_delete: Deleting configurations
+studio_ee_index_sync_failed: 'Synchronizing the search index failed: %message%'
+studio_ee_index_sync_already_running: A search index synchronization is already being started. Try again in a moment.
+studio_ee_index_sync_permission_missing: 'User with ID %userId% is not allowed to synchronize the search index'
+studio_ee_job_index_sync: Synchronize search index
+studio_ee_job_step_index_sync: Queueing all elements for indexing
 studio_ee_recycle_bin_delete_failed: 'Failed to delete Item with ID %id% from the Recycle Bin: %message%'
 studio_ee_recycle_bin_restore_failed: 'Item from Recycle Bin with ID %id% could not be restored: %message%'
 studio_ee_csv_data_collection_failed: 'Data for CSV export could not be extracted for %id%: %message%'
