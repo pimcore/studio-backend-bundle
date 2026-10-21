@@ -68,10 +68,16 @@ final readonly class ZipService implements ZipServiceInterface
     ) {
     }
 
-    public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): void
+    public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): bool
     {
-        $archive->addFile(
-            $asset->getLocalFile(),
+        $localFile = $asset->getLocalFile();
+        // Only valid after the stream was read: core substitutes an empty stream when the binary is unreadable
+        if ($asset->isStreamPlaceholder()) {
+            return false;
+        }
+
+        $added = $archive->addFile(
+            $localFile,
             ltrim(
                 preg_replace(
                     '@^' . preg_quote($basePath, '@') . '@i',
@@ -81,6 +87,14 @@ final readonly class ZipService implements ZipServiceInterface
                 '/'
             )
         );
+
+        if (!$added) {
+            throw new EnvironmentException(
+                sprintf('Failed to add asset %d to the zip archive.', $asset->getId())
+            );
+        }
+
+        return true;
     }
 
     public function extractArchiveFiles(
