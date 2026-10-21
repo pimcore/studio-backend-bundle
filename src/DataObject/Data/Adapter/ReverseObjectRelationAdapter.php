@@ -24,14 +24,19 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServi
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\ElementMetadata;
+use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_filter;
+use function array_key_exists;
 use function array_unique;
 use function array_values;
 use function count;
@@ -114,18 +119,35 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
         $dataToProcess = $this->getRemoteOwnerRelations($relations, $newRelations);
-        // Resolve and validate every removal before the first owner is written, so that a rejected
-        // removal leaves no owner changed.
+        // Resolve every removal, then validate all of them against the planned values, and only then
+        // write, so that a rejected removal leaves no owner changed. An owner with repeated assignments
+        // is listed once per assignment; it is processed once and loses every occurrence of the element.
         $removals = [];
-        // An owner with repeated assignments is listed once per assignment; it is processed once and loses
-        // every occurrence of the element.
+        $plannedValues = [];
         foreach (array_unique(array_diff($dataToProcess['originals'], $dataToProcess['changed'])) as $id) {
             $remoteObject = $this->concreteObjectResolver->getById($id);
             if ($remoteObject === null) {
                 continue;
             }
 
-            $removals[] = [$remoteObject, $this->resolveRemoval($remoteObject, $element, $getter, $ownerFieldName)];
+            $removal = $this->resolveRemoval($remoteObject, $element, $getter);
+            $removals[] = [$remoteObject, $removal];
+            if ($removal !== null) {
+                $plannedValues[$remoteObject->getId()] = $removal['value'];
+            }
+        }
+
+        foreach ($removals as [$remoteObject, $removal]) {
+            if ($removal !== null) {
+                $this->assertRemovalAllowed(
+                    $remoteObject,
+                    $element,
+                    $getter,
+                    $ownerFieldName,
+                    $removal['value'],
+                    $plannedValues
+                );
+            }
         }
 
         foreach ($removals as [$remoteObject, $removal]) {
@@ -164,44 +186,41 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
 
     /**
      * Returns the owner's relation value after removing the element, or null when the owner does not
-     * hold the element and nothing has to change.
+     * hold the element and nothing has to change. Entries are matched by element type and id, so an
+     * asset or document sharing the numeric id stays, and retained entries keep their metadata wrapper.
      *
      * @return array{value: mixed}|null
-     *
-     * @throws ValidationException
      */
-    private function resolveRemoval(
-        Concrete $remoteObject,
-        Concrete $element,
-        string $getter,
-        string $ownerFieldName
-    ): ?array {
+    private function resolveRemoval(Concrete $remoteObject, Concrete $element, string $getter): ?array
+    {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
         if ($currentData === null) {
             return null;
         }
 
         if (!is_array($currentData)) {
-            if ($currentData->getId() !== $element->getId()) {
-                return null;
-            }
-
-            $this->assertRemovalAllowed($remoteObject, $element, $getter, $ownerFieldName, null);
-
-            return ['value' => null];
+            return $this->isRelationToElement($currentData, $element) ? ['value' => null] : null;
         }
 
         $remainingData = array_values(array_filter(
             $currentData,
-            static fn (mixed $relation): bool => $relation->getId() !== $element->getId()
+            fn (mixed $relation): bool => !$this->isRelationToElement($relation, $element)
         ));
         if (count($remainingData) === count($currentData)) {
             return null;
         }
 
-        $this->assertRemovalAllowed($remoteObject, $element, $getter, $ownerFieldName, $remainingData);
-
         return ['value' => $remainingData];
+    }
+
+    private function isRelationToElement(mixed $relation, Concrete $element): bool
+    {
+        return match (true) {
+            $relation instanceof ObjectMetadata => $relation->getObjectId() === $element->getId(),
+            $relation instanceof ElementMetadata => $relation->getElementType() === ElementTypes::TYPE_OBJECT
+                && $relation->getElementId() === $element->getId(),
+            default => $relation instanceof AbstractObject && $relation->getId() === $element->getId(),
+        };
     }
 
     /**
@@ -210,6 +229,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
      *
      * @param array<int, mixed>|null $remainingData the owner's relation data after the removal,
      *                                              null for a cleared single relation
+     * @param array<int, mixed> $plannedValues the post-removal values of every owner in this edit, by id
      *
      * @throws ValidationException
      */
@@ -218,7 +238,8 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $element,
         string $getter,
         string $ownerFieldName,
-        ?array $remainingData
+        ?array $remainingData,
+        array $plannedValues
     ): void {
         if ($remoteObject->getOmitMandatoryCheck()) {
             // Core skips the mandatory check for this owner (e.g. it is unpublished), so does the removal.
@@ -230,7 +251,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
             $ownerFieldDefinition === null
             || !$ownerFieldDefinition->getMandatory()
             || !$ownerFieldDefinition->isEmpty($remainingData)
-            || $this->hasInheritedValue($remoteObject, $ownerFieldDefinition, $getter)
+            || $this->hasInheritedValue($remoteObject, $ownerFieldDefinition, $getter, $plannedValues)
         ) {
             return;
         }
@@ -247,25 +268,42 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     }
 
     /**
-     * Mirrors core validation, which accepts an empty inheritable field when the parent provides a value.
+     * Mirrors core validation, which accepts an empty inheritable field when an ancestor provides a
+     * value. Ancestors that lose their value in the same edit count with their planned value.
+     *
+     * @param array<int, mixed> $plannedValues
      */
-    private function hasInheritedValue(Concrete $remoteObject, Data $ownerFieldDefinition, string $getter): bool
-    {
+    private function hasInheritedValue(
+        Concrete $remoteObject,
+        Data $ownerFieldDefinition,
+        string $getter,
+        array $plannedValues
+    ): bool {
         if (!$remoteObject->getClass()->getAllowInherit() || !$ownerFieldDefinition->supportsInheritance()) {
             return false;
         }
 
         $parent = $remoteObject->getNextParentForInheritance();
-        if ($parent === null || !method_exists($parent, $getter)) {
-            return false;
+        while ($parent !== null) {
+            if (array_key_exists($parent->getId(), $plannedValues)) {
+                $value = $plannedValues[$parent->getId()];
+            } elseif (method_exists($parent, $getter)) {
+                $value = $this->dataObjectServiceResolver->useInheritedValues(
+                    false,
+                    static fn (): mixed => $parent->$getter()
+                );
+            } else {
+                return false;
+            }
+
+            if (!$ownerFieldDefinition->isEmpty($value)) {
+                return true;
+            }
+
+            $parent = $parent->getNextParentForInheritance();
         }
 
-        $inheritedValue = $this->dataObjectServiceResolver->useInheritedValues(
-            true,
-            static fn (): mixed => $parent->$getter()
-        );
-
-        return !$ownerFieldDefinition->isEmpty($inheritedValue);
+        return false;
     }
 
     private function handleAddCurrentData(

@@ -21,12 +21,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\DataObject\ReverseRelationOwnerTestObject;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
@@ -247,6 +249,85 @@ final class ReverseObjectRelationAdapterTest extends Unit
         $this->expectException(ValidationException::class);
 
         $this->callAdapter($element, $owner, remainingRelations: []);
+    }
+
+    /**
+     * Relations hold mixed element types; an asset or document sharing the numeric id must stay.
+     *
+     * @throws Exception
+     */
+    public function testMixedTypeEntriesWithSameIdOnlyLoseTheDataObject(): void
+    {
+        $element = $this->makeElement();
+        $asset = $this->makeEmpty(Asset::class, ['getId' => self::ELEMENT_ID]);
+        $other = $this->makeEmpty(Concrete::class, ['getId' => 99]);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element, $asset, $other]);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertSame([$asset, $other], $owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAssetWithSameIdSatisfiesMandatoryCheckAfterRemoval(): void
+    {
+        $element = $this->makeElement();
+        $asset = $this->makeEmpty(Asset::class, ['getId' => self::ELEMENT_ID]);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element, $asset]);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertSame([$asset], $owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * Advanced relations wrap their targets in metadata objects; retained entries keep their wrapper.
+     *
+     * @throws Exception
+     */
+    public function testMetadataWrappedEntriesKeepTheirMetadata(): void
+    {
+        $element = $this->makeElement();
+        $removed = new ObjectMetadata(self::OWNER_FIELD, ['note'], $element);
+        $kept = new ObjectMetadata(self::OWNER_FIELD, ['note'], $this->makeEmpty(Concrete::class, ['getId' => 99]));
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: true), [$removed, $kept]);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertSame([$kept], $owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * A parent that loses its own value in the same edit cannot satisfy the child's inherited
+     * mandatory field; nothing may be written when the child is rejected, even with the parent first.
+     *
+     * @throws Exception
+     */
+    public function testPlannedParentRemovalDoesNotSatisfyChildInheritance(): void
+    {
+        $parentId = self::OWNER_ID + 5;
+        $element = $this->makeElement(ownerIds: [$parentId, self::OWNER_ID]);
+        $parent = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element], id: $parentId, published: false);
+        $parent->getClass()->setAllowInherit(true);
+        $child = $this->makeOwner($this->makeManyToMany(mandatory: true), [$element]);
+        $child->getClass()->setAllowInherit(true);
+        $child->setNextParentForInheritance($parent);
+
+        $this->expectException(ValidationException::class);
+
+        try {
+            $this->callAdapter($element, [$parent, $child], remainingRelations: []);
+        } finally {
+            $this->assertSame([$element], $parent->getPublisher());
+            $this->assertSame(0, $parent->getSaveCount());
+            $this->assertSame([$element], $child->getPublisher());
+            $this->assertSame(0, $child->getSaveCount());
+        }
     }
 
     private function makeManyToOne(bool $mandatory): ManyToOneRelation
