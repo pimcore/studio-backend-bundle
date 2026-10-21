@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
@@ -55,6 +56,18 @@ interface RelationDataServiceInterface
     ): ?InheritanceData;
 
     public function getAdvancedRelationElementData(ElementMetadata|ObjectMetadata $relation): array;
+
+    /**
+     * Builds the rows of an advanced relation from the target ids, with one query per element type
+     * instead of loading every target. Rows whose target no longer exists are skipped.
+     *
+     * @param array<int, ElementMetadata|ObjectMetadata> $relations
+     *
+     * @return array<int, array{element: RelatedElementData, fieldName: ?string, columns: array, data: array}>
+     *
+     * @throws DatabaseException
+     */
+    public function getAdvancedRelationElementsData(array $relations): array;
 
     public function getSetterData(
         Concrete $element,

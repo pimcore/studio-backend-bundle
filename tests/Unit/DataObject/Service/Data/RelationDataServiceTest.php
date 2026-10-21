@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Service\Data;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
@@ -21,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface;
@@ -38,6 +40,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\ElementMetadata;
+use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\DataObject\LightweightRelationTestObject;
 use function array_column;
 use function array_map;
@@ -505,7 +509,8 @@ final class RelationDataServiceTest extends Unit
         $service = new RelationDataService(
             $elementDataService,
             $this->makeEmpty(PatchServiceInterface::class),
-            $this->makeEmpty(ConcreteObjectResolverInterface::class)
+            $this->makeEmpty(ConcreteObjectResolverInterface::class),
+            $this->makeEmpty(RelatedElementRepositoryInterface::class)
         );
 
         $this->assertNull($service->getLightweightRelationData(
@@ -553,7 +558,8 @@ final class RelationDataServiceTest extends Unit
         return new RelationDataService(
             $elementDataService,
             $this->makeEmpty(PatchServiceInterface::class),
-            $concreteObjectResolver
+            $concreteObjectResolver,
+            $this->makeEmpty(RelatedElementRepositoryInterface::class)
         );
     }
 
@@ -731,6 +737,136 @@ final class RelationDataServiceTest extends Unit
             coauthorService: $this->makeEmpty(CoauthorServiceInterface::class),
         );
 
-        return new RelationDataService($this->makeEmpty(ElementDataServiceInterface::class), $patchService, $this->makeEmpty(ConcreteObjectResolverInterface::class));
+        return new RelationDataService(
+            $this->makeEmpty(ElementDataServiceInterface::class),
+            $patchService,
+            $this->makeEmpty(ConcreteObjectResolverInterface::class),
+            $this->makeEmpty(RelatedElementRepositoryInterface::class)
+        );
+    }
+
+    public function testAdvancedRelationRowsComeFromSummariesWithoutLoadingElements(): void
+    {
+        $repository = $this->makeEmpty(RelatedElementRepositoryInterface::class, [
+            'getRelatedElementSummaries' => Expected::once(function (string $type, array $ids): array {
+                $this->assertSame('object', $type);
+                $this->assertSame([10, 11, 12], $ids);
+
+                return [
+                    11 => $this->makeAdvancedSummary(11, 'object', '/products/b', false),
+                    10 => $this->makeAdvancedSummary(10, 'object', '/products/a', true),
+                ];
+            }),
+        ]);
+
+        // The relation targets are only known by id here: getObject()/getElement() would load the
+        // object, which a unit test without a booted kernel cannot do.
+        $relations = [
+            $this->objectMetadata(10, ['theme' => 'A']),
+            $this->objectMetadata(11, ['theme' => 'B']),
+            $this->objectMetadata(12, ['theme' => 'deleted target']),
+        ];
+
+        $result = $this->createAdvancedService($repository)->getAdvancedRelationElementsData($relations);
+
+        $this->assertCount(2, $result);
+        $this->assertSame('/products/a', $result[0]['element']->getFullPath());
+        $this->assertTrue($result[0]['element']->getHasViewAccess());
+        $this->assertSame(['theme' => 'A'], $result[0]['data']);
+        $this->assertSame('items', $result[0]['fieldName']);
+        $this->assertSame(['theme'], $result[0]['columns']);
+        $this->assertSame('/products/b', $result[1]['element']->getFullPath());
+        $this->assertFalse($result[1]['element']->getHasViewAccess(), 'view access from the summary service');
+    }
+
+    public function testAdvancedRelationsOfMixedElementTypesUseOneQueryPerType(): void
+    {
+        $calls = [];
+        $repository = $this->makeEmpty(RelatedElementRepositoryInterface::class, [
+            'getRelatedElementSummaries' => Expected::exactly(2, function (string $type, array $ids) use (&$calls): array {
+                $calls[$type] = $ids;
+
+                return match ($type) {
+                    'asset' => [5 => $this->makeAdvancedSummary(5, 'asset', '/images/a.jpg', true)],
+                    'object' => [7 => $this->makeAdvancedSummary(7, 'object', '/products/c', true)],
+                };
+            }),
+        ]);
+
+        $relations = [
+            $this->elementMetadata('asset', 5),
+            $this->elementMetadata('object', 7),
+            $this->elementMetadata('asset', 5),
+        ];
+
+        $result = $this->createAdvancedService($repository)->getAdvancedRelationElementsData($relations);
+
+        $this->assertSame(['asset' => [5], 'object' => [7]], $calls);
+        $this->assertSame(
+            ['/images/a.jpg', '/products/c', '/images/a.jpg'],
+            array_map(static fn (array $row) => $row['element']->getFullPath(), $result)
+        );
+    }
+
+    public function testNoQueryForEmptyAdvancedRelations(): void
+    {
+        $repository = $this->makeEmpty(RelatedElementRepositoryInterface::class, [
+            'getRelatedElementSummaries' => Expected::never(),
+        ]);
+
+        $this->assertSame([], $this->createAdvancedService($repository)->getAdvancedRelationElementsData([]));
+    }
+
+    private function createAdvancedService(RelatedElementRepositoryInterface $repository): RelationDataService
+    {
+        // The summary service decides view access; here the summary's "published" flag stands in for it.
+        $elementDataService = $this->makeEmpty(ElementSummaryDataServiceInterface::class, [
+            'getRelatedElementDataFromSummary' => static fn (array $summary) => new RelatedElementData(
+                $summary['id'],
+                $summary['type'],
+                $summary['className'] ?? $summary['subtype'],
+                $summary['fullpath'],
+                $summary['published'],
+                $summary['published']
+            ),
+        ]);
+
+        return new RelationDataService(
+            $elementDataService,
+            $this->makeEmpty(PatchServiceInterface::class),
+            $this->makeEmpty(ConcreteObjectResolverInterface::class),
+            $repository
+        );
+    }
+
+    private function makeAdvancedSummary(int $id, string $type, string $fullPath, bool $published): array
+    {
+        return [
+            'id' => $id,
+            'parentId' => 1,
+            'type' => $type,
+            'subtype' => $type === 'object' ? 'object' : 'image',
+            'className' => $type === 'object' ? 'Product' : null,
+            'fullpath' => $fullPath,
+            'filename' => basename($fullPath),
+            'published' => $published,
+        ];
+    }
+
+    private function objectMetadata(int $objectId, array $data): ObjectMetadata
+    {
+        $metadata = new ObjectMetadata('items', ['theme']);
+        $metadata->setObjectId($objectId);
+        $metadata->setData($data);
+
+        return $metadata;
+    }
+
+    private function elementMetadata(string $type, int $id): ElementMetadata
+    {
+        $metadata = new ElementMetadata('assets', []);
+        $metadata->setElementTypeAndId($type, $id);
+
+        return $metadata;
     }
 }
