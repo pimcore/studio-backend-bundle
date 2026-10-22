@@ -44,7 +44,6 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
 use function count;
-use function implode;
 
 /**
  * @internal
@@ -330,11 +329,9 @@ final class ObjectBrickResolver implements
      */
     private function useCacheOf(Concrete $element): void
     {
-        $revision = implode('|', [
-            (int) $this->doGetFallbackValues(),
-            (int) $element->getModificationDate(),
-            $element->getVersionCount(),
-        ]);
+        $revision = (int) $this->doGetFallbackValues()
+            . '|' . (int) $element->getModificationDate()
+            . '|' . $element->getVersionCount();
 
         if ($element === $this->cachedElement && $revision === $this->cachedRevision) {
             return;
