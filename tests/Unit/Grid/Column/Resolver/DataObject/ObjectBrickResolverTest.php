@@ -27,8 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\ObjectBrickResolver;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\ObjectBrick\Service\ObjectBrickServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\DataObject\Objectbrick;
@@ -235,6 +237,112 @@ final class ObjectBrickResolverTest extends Unit
         )->resolveForExport($column, $this->createElement($brick), $this->makeEmpty(UserInterface::class));
 
         $this->assertSame('localized value', $result->getValue());
+    }
+
+    /**
+     * Every brick column of a grid row reads the same normalized container and the same inheritance data,
+     * and both are expensive to build for a container with many bricks, attributes and locales. They must
+     * be built once per element, not once per column, and never shared between elements
+     * (pimcore/platform-version#650).
+     */
+    public function testResolveForCoreElementNormalizesBrickContainerOncePerElement(): void
+    {
+        $firstContainer = $this->makeEmpty(Objectbrick::class);
+        $secondContainer = $this->makeEmpty(Objectbrick::class);
+        $first = $this->createCoreElement($firstContainer);
+        $second = $this->createCoreElement($secondContainer);
+
+        $resolver = $this->createCoreResolver(
+            dataService: $this->makeEmpty(DataServiceInterface::class, [
+                'getNormalizedValue' => Expected::exactly(2, static fn ($container) => $container === $firstContainer
+                    ? ['MyBrick' => ['name' => 'first name', 'plain' => 'first plain']]
+                    : ['MyBrick' => ['name' => 'second name']]),
+            ]),
+            inheritanceService: $this->makeEmpty(InheritanceServiceInterface::class, [
+                'processFieldDefinition' => Expected::exactly(2, []),
+            ]),
+        );
+
+        $firstName = $resolver->resolveForCoreElement($this->createCoreColumn('bricks.MyBrick.name'), $first);
+        $firstPlain = $resolver->resolveForCoreElement($this->createCoreColumn('bricks.MyBrick.plain'), $first);
+        $secondName = $resolver->resolveForCoreElement($this->createCoreColumn('bricks.MyBrick.name'), $second);
+
+        $this->assertSame('first name', $firstName->getValue());
+        $this->assertSame('first plain', $firstPlain->getValue());
+        $this->assertSame('second name', $secondName->getValue());
+        $this->assertNull($firstPlain->getInheritance());
+    }
+
+    /**
+     * A brick or attribute that is not filled in on the object is absent from the normalized container:
+     * empty cell, without going through an "undefined array key" error.
+     */
+    public function testResolveForCoreElementReturnsNullForAttributeMissingInContainer(): void
+    {
+        $resolver = $this->createCoreResolver(
+            dataService: $this->makeEmpty(DataServiceInterface::class, [
+                'getNormalizedValue' => Expected::once(['OtherBrick' => ['name' => 'other']]),
+            ]),
+            inheritanceService: $this->makeEmpty(InheritanceServiceInterface::class, [
+                'processFieldDefinition' => Expected::once([]),
+            ]),
+        );
+
+        $result = $resolver->resolveForCoreElement(
+            $this->createCoreColumn('bricks.MyBrick.name'),
+            $this->createCoreElement($this->makeEmpty(Objectbrick::class))
+        );
+
+        $this->assertNull($result->getValue());
+        $this->assertNull($result->getInheritance());
+        $this->assertSame('input', $result->getFieldType());
+    }
+
+    private function createCoreColumn(string $key): Column
+    {
+        return new Column(
+            key: $key,
+            locale: null,
+            type: 'dataobject.objectbrick',
+            group: ['objectbrick'],
+            config: [],
+        );
+    }
+
+    /**
+     * The brick container is read through the dynamic field getter (getBricks()), which Concrete routes
+     * through __call.
+     */
+    private function createCoreElement(Objectbrick $container): Concrete
+    {
+        return $this->makeEmpty(Concrete::class, [
+            'getClassId' => 'product',
+            '__call' => static fn (string $method) => $method === 'getBricks' ? $container : null,
+        ]);
+    }
+
+    private function createCoreResolver(
+        DataServiceInterface $dataService,
+        InheritanceServiceInterface $inheritanceService,
+    ): ObjectBrickResolver {
+        $bricksField = new Objectbricks();
+        $bricksField->setName('bricks');
+        $classDefinition = new ClassDefinition();
+        $classDefinition->setAllowInherit(true);
+        $classDefinition->addFieldDefinition('bricks', $bricksField);
+
+        return new ObjectBrickResolver(
+            $this->makeEmpty(ClassDefinitionResolverInterface::class, ['getById' => $classDefinition]),
+            $dataService,
+            $inheritanceService,
+            $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'useInheritedValues' => static fn (bool $inherited, callable $callback) => $callback(),
+            ]),
+            $this->makeEmpty(ObjectBrickServiceInterface::class, ['findObjectBrickField' => new Input()]),
+            $this->makeEmpty(DefinitionResolverInterface::class),
+            $this->makeEmpty(ToolResolverInterface::class),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+        );
     }
 
     private function createElement(AbstractData $brick): Concrete

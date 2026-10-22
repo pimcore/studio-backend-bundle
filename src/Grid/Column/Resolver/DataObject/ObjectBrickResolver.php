@@ -42,7 +42,10 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use WeakMap;
+use function array_key_exists;
 use function count;
+use function implode;
 
 /**
  * @internal
@@ -55,6 +58,18 @@ final class ObjectBrickResolver implements
     use ColumnDataTrait;
     use LocalizedValueTrait;
 
+    /**
+     * Every brick column of a grid row normalizes the same brick container (all bricks, all attributes,
+     * all locales) and processes its inheritance, and both results are identical for every column of
+     * that row. Memoized per element so a row with n brick columns pays once instead of n times.
+     *
+     * @var WeakMap<Concrete, array<string, mixed>>
+     */
+    private WeakMap $normalizedContainers;
+
+    /** @var WeakMap<Concrete, array<string, mixed>> */
+    private WeakMap $inheritanceDataCollections;
+
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
@@ -65,6 +80,8 @@ final class ObjectBrickResolver implements
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
+        $this->normalizedContainers = new WeakMap();
+        $this->inheritanceDataCollections = new WeakMap();
     }
 
     /** @see LocalizedValueTrait::doGetFallbackValues() */
@@ -94,10 +111,7 @@ final class ObjectBrickResolver implements
         $classDefinition = $this->classDefinitionResolver->getById($element->getClassId());
         $fieldDefinition = $this->getFieldDefinition($objectBrickKey->getField(), $classDefinition);
 
-        $value = $this->dataService->getNormalizedValue(
-            $this->getLocalizedValueFromKey($objectBrickKey->getField(), null, $element),
-            $fieldDefinition
-        );
+        $value = $this->getNormalizedContainer($element, $objectBrickKey->getField(), $fieldDefinition);
 
         $objectBrickFieldType = $this->objectBrickService->findObjectBrickField(
             $objectBrickKey->getBrickName(),
@@ -127,11 +141,11 @@ final class ObjectBrickResolver implements
             $attribute = $objectBrickKey->getAttribute();
 
             if ($column->getLocale()) {
-                $returnValue = $value[$brickName]['localizedfields'][$attribute][$column->getLocale()];
+                $returnValue = $value[$brickName]['localizedfields'][$attribute][$column->getLocale()] ?? null;
             }
 
             if (!$column->getLocale()) {
-                $returnValue = $value[$brickName][$attribute];
+                $returnValue = $value[$brickName][$attribute] ?? null;
             }
         } catch (Exception) {
             $value = null;
@@ -251,12 +265,7 @@ final class ObjectBrickResolver implements
         ObjectBrickKey $key,
         Column $column
     ): InheritanceData {
-        $inheritanceDataCollection = $this->dataObjectServiceResolver->useInheritedValues(
-            false,
-            function () use ($element, $fieldDefinition, $key) {
-                return $this->inheritanceService->processFieldDefinition($element, $fieldDefinition, $key->getField());
-            }
-        );
+        $inheritanceDataCollection = $this->getInheritanceDataCollection($element, $key->getField(), $fieldDefinition);
 
         try {
             $inheritanceData = null;
@@ -265,11 +274,11 @@ final class ObjectBrickResolver implements
             $locale = $column->getLocale();
 
             if ($locale) {
-                $inheritanceData = $inheritanceDataCollection[$brickName]['localizedfields'][$attribute][$locale];
+                $inheritanceData = $inheritanceDataCollection[$brickName]['localizedfields'][$attribute][$locale] ?? null;
             }
 
             if (!$locale) {
-                $inheritanceData = $inheritanceDataCollection[$brickName][$attribute];
+                $inheritanceData = $inheritanceDataCollection[$brickName][$attribute] ?? null;
             }
 
             if (!$inheritanceData instanceof InheritanceData) {
@@ -281,6 +290,54 @@ final class ObjectBrickResolver implements
         }
 
         return $inheritanceData;
+    }
+
+    private function getNormalizedContainer(Concrete $element, string $field, Data $fieldDefinition): mixed
+    {
+        $cacheKey = $this->getCacheKey($element, $field);
+        $containers = $this->normalizedContainers[$element] ?? [];
+
+        if (!array_key_exists($cacheKey, $containers)) {
+            $containers[$cacheKey] = $this->dataService->getNormalizedValue(
+                $this->getLocalizedValueFromKey($field, null, $element),
+                $fieldDefinition
+            );
+            $this->normalizedContainers[$element] = $containers;
+        }
+
+        return $containers[$cacheKey];
+    }
+
+    private function getInheritanceDataCollection(Concrete $element, string $field, Data $fieldDefinition): mixed
+    {
+        $cacheKey = $this->getCacheKey($element, $field);
+        $collections = $this->inheritanceDataCollections[$element] ?? [];
+
+        if (!array_key_exists($cacheKey, $collections)) {
+            $collections[$cacheKey] = $this->dataObjectServiceResolver->useInheritedValues(
+                false,
+                function () use ($element, $fieldDefinition, $field) {
+                    return $this->inheritanceService->processFieldDefinition($element, $fieldDefinition, $field);
+                }
+            );
+            $this->inheritanceDataCollections[$element] = $collections;
+        }
+
+        return $collections[$cacheKey];
+    }
+
+    /**
+     * Modification date and version count drop the entry when the element is saved in between; the
+     * fallback-language flag changes what the localized getters return.
+     */
+    private function getCacheKey(Concrete $element, string $field): string
+    {
+        return implode('|', [
+            $field,
+            (int) $this->doGetFallbackValues(),
+            (int) $element->getModificationDate(),
+            $element->getVersionCount(),
+        ]);
     }
 
     /**
