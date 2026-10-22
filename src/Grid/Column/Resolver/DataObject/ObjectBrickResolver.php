@@ -42,7 +42,6 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use WeakMap;
 use function array_key_exists;
 use function count;
 use function implode;
@@ -61,14 +60,18 @@ final class ObjectBrickResolver implements
     /**
      * Every brick column of a grid row normalizes the same brick container (all bricks, all attributes,
      * all locales) and processes its inheritance, and both results are identical for every column of
-     * that row. Memoized per element so a row with n brick columns pays once instead of n times.
-     *
-     * @var WeakMap<Concrete, array<string, mixed>>
+     * that row. A grid resolves one row at a time, so the results are kept for the element currently
+     * being resolved and dropped as soon as another element or another revision of it comes along.
      */
-    private WeakMap $normalizedContainers;
+    private ?Concrete $cachedElement = null;
 
-    /** @var WeakMap<Concrete, array<string, mixed>> */
-    private WeakMap $inheritanceDataCollections;
+    private string $cachedRevision = '';
+
+    /** @var array<string, mixed> normalized brick container per brick field */
+    private array $normalizedContainers = [];
+
+    /** @var array<string, mixed> inheritance data collection per brick field */
+    private array $inheritanceDataCollections = [];
 
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -80,8 +83,6 @@ final class ObjectBrickResolver implements
         private readonly ToolResolverInterface $toolResolver,
         private readonly LocalizedFieldResolverInterface $localizedFieldResolver,
     ) {
-        $this->normalizedContainers = new WeakMap();
-        $this->inheritanceDataCollections = new WeakMap();
     }
 
     /** @see LocalizedValueTrait::doGetFallbackValues() */
@@ -274,7 +275,8 @@ final class ObjectBrickResolver implements
             $locale = $column->getLocale();
 
             if ($locale) {
-                $inheritanceData = $inheritanceDataCollection[$brickName]['localizedfields'][$attribute][$locale] ?? null;
+                $inheritanceData =
+                    $inheritanceDataCollection[$brickName]['localizedfields'][$attribute][$locale] ?? null;
             }
 
             if (!$locale) {
@@ -294,50 +296,54 @@ final class ObjectBrickResolver implements
 
     private function getNormalizedContainer(Concrete $element, string $field, Data $fieldDefinition): mixed
     {
-        $cacheKey = $this->getCacheKey($element, $field);
-        $containers = $this->normalizedContainers[$element] ?? [];
+        $this->useCacheOf($element);
 
-        if (!array_key_exists($cacheKey, $containers)) {
-            $containers[$cacheKey] = $this->dataService->getNormalizedValue(
+        if (!array_key_exists($field, $this->normalizedContainers)) {
+            $this->normalizedContainers[$field] = $this->dataService->getNormalizedValue(
                 $this->getLocalizedValueFromKey($field, null, $element),
                 $fieldDefinition
             );
-            $this->normalizedContainers[$element] = $containers;
         }
 
-        return $containers[$cacheKey];
+        return $this->normalizedContainers[$field];
     }
 
     private function getInheritanceDataCollection(Concrete $element, string $field, Data $fieldDefinition): mixed
     {
-        $cacheKey = $this->getCacheKey($element, $field);
-        $collections = $this->inheritanceDataCollections[$element] ?? [];
+        $this->useCacheOf($element);
 
-        if (!array_key_exists($cacheKey, $collections)) {
-            $collections[$cacheKey] = $this->dataObjectServiceResolver->useInheritedValues(
+        if (!array_key_exists($field, $this->inheritanceDataCollections)) {
+            $this->inheritanceDataCollections[$field] = $this->dataObjectServiceResolver->useInheritedValues(
                 false,
                 function () use ($element, $fieldDefinition, $field) {
                     return $this->inheritanceService->processFieldDefinition($element, $fieldDefinition, $field);
                 }
             );
-            $this->inheritanceDataCollections[$element] = $collections;
         }
 
-        return $collections[$cacheKey];
+        return $this->inheritanceDataCollections[$field];
     }
 
     /**
-     * Modification date and version count drop the entry when the element is saved in between; the
-     * fallback-language flag changes what the localized getters return.
+     * Keeps the cache only for the given element: modification date and version count change when the
+     * element is saved in between, the fallback-language flag changes what the localized getters return.
      */
-    private function getCacheKey(Concrete $element, string $field): string
+    private function useCacheOf(Concrete $element): void
     {
-        return implode('|', [
-            $field,
+        $revision = implode('|', [
             (int) $this->doGetFallbackValues(),
             (int) $element->getModificationDate(),
             $element->getVersionCount(),
         ]);
+
+        if ($element === $this->cachedElement && $revision === $this->cachedRevision) {
+            return;
+        }
+
+        $this->cachedElement = $element;
+        $this->cachedRevision = $revision;
+        $this->normalizedContainers = [];
+        $this->inheritanceDataCollections = [];
     }
 
     /**
