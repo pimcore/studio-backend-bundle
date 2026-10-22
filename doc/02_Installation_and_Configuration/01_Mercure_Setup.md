@@ -87,6 +87,8 @@ Add Mercure to your docker compose file and make sure to add the configuration f
 ### config.yaml
 
 Configure Pimcore application with JWT key as well as the client side and server side URLs for Mercure.
+`hub_url_server` must be set and has no default; it is not checked at boot, but without it no updates are published.
+`hub_url_client` is optional; if it is not set, the scheme and host of the current request plus `/hub` is used.
 
 ```yaml
 pimcore_studio_backend:
@@ -103,7 +105,7 @@ If you would like to retrieve the URLs from within the application, you can use 
 These methods are available in the `Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface` class interface.
 
 ## Check if Mercure is running
-To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `client_side_url`
+To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `hub_url_client`
 you configured in configuration). This request should return the text
 
 ```
@@ -116,9 +118,10 @@ or
 Unauthorized
 ```
 
-> Also execute ``curl https://your-app-domain.com/hub`` (or `server_side_url` you configured in
-> configuration) from the command line of the server to ensure that the URL is also accessible by the
-> server itself.
+> Also execute `curl` against the `hub_url_server` you configured (e.g. ``curl http://mercure/.well-known/mercure``)
+> from the command line of the server, inside the PHP container if you use Docker, to ensure that the URL is
+> accessible by the server itself. The public `/hub` URL is not a substitute: it can answer while `hub_url_server`
+> is unreachable from PHP.
 
 
 ## Additional Aspects
