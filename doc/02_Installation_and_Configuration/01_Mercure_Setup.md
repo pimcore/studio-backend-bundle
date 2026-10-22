@@ -123,6 +123,41 @@ Unauthorized
 
 ## Additional Aspects
 
+### Multiple application nodes
+When Pimcore runs on several application nodes (load balancer, cluster), run **one** Mercure hub (one logical hub that all nodes
+share; for a highly available hub see below) for all of them. Do not start one independent hub per node behind a load
+balancer.
+
+Mercure stores subscriptions and the update history in the hub itself. The free transports (`bolt`, `local`) are
+single-node, and a load balancer alone does not synchronize hubs. With one hub per node, an update published by node 1
+never reaches a browser that is connected to the hub of node 2. See the
+[Mercure cluster docs](https://mercure.rocks/docs/hub/cluster).
+
+Recommended setup:
+- Run Mercure as a separate service (not co-located with a single application node) and mount a persistent `/data` volume.
+- Use the same `jwt_key` on all application nodes, and set both `MERCURE_PUBLISHER_JWT_KEY` and
+  `MERCURE_SUBSCRIBER_JWT_KEY` on the hub to that same `jwt_key` value.
+- Point `hub_url_server` of every node to that hub, and route `hub_url_client` (public URL) to it.
+
+One hub is usually enough, as Mercure is lightweight. It only carries live updates. If it is unreachable, publishing
+errors are logged. If it hangs or is overloaded, publishing requests can block until the HTTP timeout (up to 60 seconds)
+before failing. Only job progress falls back to polling; other live updates (e.g. the live notification toast and badge,
+or Direct Edit events) are not delivered while the hub is down. Notifications themselves are stored before they are
+published, so they still show up after the next reload.
+
+If the hub itself needs to be highly available, Mercure offers clustered editions (Mercure Enterprise with a shared
+transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, while
+this page is written for hub 0.24 (see the warning at the top), and their compatibility with this bundle's setup has not
+been verified. Alternatively, restart the single hub quickly with a process supervisor or your orchestrator.
+
+> The legacy Direct Edit path (`FileEditControllerTrait` of `pimcore/direct-edit`, deprecated since 2026.3, removal
+> planned for 2027.1) asks the hub which clients are subscribed (subscriptions API). This requires that all clients
+> are connected to the one hub the application asks, with the `subscriptions` directive enabled. If you run that hub as
+> a cluster, only the Redis/Valkey transport supports subscriptions cluster-wide.
+>
+> Direct Edit also has its own, deprecated hub settings (`mercure_settings.server_side_url`, `parameters.mercure.hub.*`)
+> that can override the hub URL and key. Remove them or set them to the same values as the hub configured above.
+
 
 ### Running Mercure with external URL
 
