@@ -52,7 +52,7 @@ final class CreateController extends AbstractApiController
      * @throws NotWriteableException
      */
     #[Route(self::ROUTE, name: 'class_custom_layout_create', methods: ['POST'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_custom_layout_create',

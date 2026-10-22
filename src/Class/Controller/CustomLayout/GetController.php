@@ -30,6 +30,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class GetController extends AbstractApiController
 {
     public function __construct(
@@ -47,7 +50,7 @@ final class GetController extends AbstractApiController
         name: 'pimcore_studio_api_class_custom_layout_get',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Get(
         path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
         operationId: 'class_custom_layout_get',
