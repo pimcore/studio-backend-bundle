@@ -24,9 +24,9 @@ use OpenApi\Attributes\Schema;
 final class AssetSearchPreview extends SimpleSearchPreview
 {
     public function __construct(
-        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg', nullable: true)]
+        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]
         private readonly ?string $mimeType,
-        #[Property(description: 'Thumbnail path', type: 'string', example: 'path/to/thumbnail', nullable: true)]
+        #[Property(description: 'Thumbnail path', type: 'string', example: 'path/to/thumbnail')]
         private readonly ?string $thumbnail,
         int $id,
         string $elementType,

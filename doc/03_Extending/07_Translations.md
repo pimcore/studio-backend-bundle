@@ -32,7 +32,7 @@ state and returns different sets:
 | User State | Translations Returned |
 |-----------|----------------------|
 | **Authenticated** | Full `studio` catalogue for the requested locale |
-| **Not authenticated** | Only keys listed in `PublicTranslations::PUBLIC_KEYS` (login and forgot-password form strings, plus the error dialog labels shown when a login fails) |
+| **Not authenticated** | Only keys listed in `PublicTranslations::PUBLIC_KEYS` (login form strings) |
 
 This keeps the full catalogue private until the user has logged in.
 

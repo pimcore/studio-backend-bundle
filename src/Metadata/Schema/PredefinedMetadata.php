@@ -32,19 +32,19 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
         private readonly string $id,
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string', example: 'A predefined metadata', nullable: true)]
+        #[Property(description: 'Description', type: 'string', example: 'A predefined metadata')]
         private readonly ?string $description,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private readonly string $type,
-        #[Property(description: 'Target sub type', type: 'string', example: 'input', nullable: true)]
+        #[Property(description: 'Target sub type', type: 'string', example: 'input')]
         private readonly ?string $targetSubType,
-        #[Property(description: 'Data', type: 'mixed', example: 'data', nullable: true)]
+        #[Property(description: 'Data', type: 'mixed', example: 'data')]
         private readonly mixed $data,
-        #[Property(description: 'Config', type: 'string', example: 'config', nullable: true)]
+        #[Property(description: 'Config', type: 'string', example: 'config')]
         private readonly ?string $config,
-        #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
+        #[Property(description: 'Language', type: 'string', example: 'en')]
         private readonly ?string $language,
-        #[Property(description: 'Group', type: 'string', example: 'group', nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: 'group')]
         private readonly ?string $group,
         #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
         private readonly int $creationDate,

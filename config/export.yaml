@@ -35,9 +35,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadService
 
-  Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageService
-
   Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportService
 

@@ -44,7 +44,7 @@ class ClassDefinitionList implements AdditionalAttributesInterface
         private readonly string $title,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Group', type: 'string', example: 'system', nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: 'system')]
         private readonly ?string $group = null
     ) {
     }

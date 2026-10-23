@@ -45,14 +45,9 @@ final readonly class SendEmailParameters
             example: EmailContentType::TEXT->value
         )]
         private string $contentType,
-        #[Property(description: 'email content', type: 'string', example: 'My email message', nullable: true)]
+        #[Property(description: 'email content', type: 'string', example: 'My email message')]
         private ?string $content = null,
-        #[Property(
-            description: 'path to the email document',
-            type: 'string',
-            example: '/path/to/document',
-            nullable: true
-        )]
+        #[Property(description: 'path to the email document', type: 'string', example: '/path/to/document')]
         private ?string $documentPath = null,
         #[Property(
             description: 'email document parameters',
@@ -60,7 +55,7 @@ final readonly class SendEmailParameters
             items: new Items(ref: EmailDocumentParameters::class)
         )]
         private array $documentParameters = [],
-        #[Property(description: 'id of the asset attachment', type: 'int', example: 83, nullable: true)]
+        #[Property(description: 'id of the asset attachment', type: 'int', example: 83)]
         private ?int $attachmentId = null,
 
     ) {

@@ -16,12 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
-use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvExportHandlerSetupTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
@@ -42,12 +40,10 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
-        private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly UserResolverInterface $userResolver,
-        private readonly GridServiceInterface $gridService,
-        private readonly ElementContextServiceInterface $elementContextService,
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct();
     }
@@ -86,19 +82,15 @@ final class ExportDataCollectionHandler extends AbstractHandler
         $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         $data = [];
-        $jobStepName = $this->getJobStep($message)->getName();
         foreach ($dataObjects as $object) {
             try {
-                // The worker boots with the CLI element context, which hides unpublished elements: the
-                // relation columns would leave them out. Fallback values are left as the context sets them.
-                $data[$object['id']] = $this->elementContextService->runWithUnpublishedElements(
-                    fn () => $this->gridService->getGridValuesForElement(
-                        $columnCollection,
-                        ElementTypes::TYPE_OBJECT,
-                        $object['id'],
-                        $user
-                    )
+                $data[$object['id']] = $this->gridService->getGridValuesForElement(
+                    $columnCollection,
+                    ElementTypes::TYPE_OBJECT,
+                    $object['id'],
+                    $user
                 );
+
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
@@ -113,17 +105,21 @@ final class ExportDataCollectionHandler extends AbstractHandler
                 $this->publishService,
                 $this->userTopicService,
                 $jobRun,
-                $jobStepName,
-                $totalObjects,
-                persist: false
+                $this->getJobStep($message)->getName(),
+                $totalObjects
             );
         }
 
         try {
-            // The collected rows are not part of the job run: it is loaded and written again by every step, so
-            // keeping the rows in its context makes each step more expensive than the one before.
             if (!empty($data)) {
-                $this->exportDataStorageService->store($jobRun->getId(), $message->getCurrentJobStep(), $data);
+                $context = $jobRun->getContext();
+                if (isset($context[StepConfig::GRID_EXPORT_DATA->value])) {
+                    $data = array_merge(
+                        $context[StepConfig::GRID_EXPORT_DATA->value],
+                        $data
+                    );
+                }
+                $this->updateJobRunContext($jobRun, StepConfig::GRID_EXPORT_DATA->value, $data);
             }
         } catch (Exception $e) {
             $this->abort($this->getAbortData(

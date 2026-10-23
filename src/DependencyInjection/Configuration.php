@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
-use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepository;
@@ -23,22 +22,16 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use function array_diff;
-use function array_filter;
-use function array_keys;
-use function implode;
 use function in_array;
 use function is_array;
 use function is_int;
 use function is_null;
 use function is_string;
-use function preg_match;
 use function sprintf;
 
 /**
@@ -54,17 +47,9 @@ class Configuration implements ConfigurationInterface
 
     public const string ADMIN_SETTINGS_NODE = 'admin_settings';
 
-    public const string TWO_FACTOR_AUTHENTICATION_NODE = 'two_factor_authentication';
-
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
-    public const string MCP_SERVERS_NODE = 'studio_mcp_servers';
-
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
-
-    private const string DOCUMENT_DEFAULT_CONTROLLERS_TYPE_ERROR =
-        'pimcore_studio_backend.documents.default_controllers only accepts the document types that are rendered '
-        . 'by a controller (%s); got %%s.';
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
@@ -123,14 +108,11 @@ class Configuration implements ConfigurationInterface
         $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
         $this->addDefaultFromEmail($rootNode);
-        $this->addDocumentsNode($rootNode);
         $this->addGdprDataExtractorNode($rootNode);
         $this->addAdminSettingsNode($rootNode);
         $this->addMcpNode($rootNode);
-        $this->addMcpServersConfigurationNode($rootNode);
         $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
-        $this->addTwoFactorAuthenticationNode($rootNode);
         $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
@@ -143,8 +125,6 @@ class Configuration implements ConfigurationInterface
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
                 self::ADMIN_SETTINGS_NODE =>
                     PIMCORE_CONFIGURATION_DIRECTORY . '/' . SettingRepository::SCOPE,
-                self::MCP_SERVERS_NODE =>
-                    PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::MCP_SERVERS_NODE,
             ],
             ['read_target']
         );
@@ -334,12 +314,11 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('hub_url_server')
                         ->info(
-                            'The url to the mercure hub for the server. ' .
-                            'This setting must be set and has no default, because the server url ' .
-                            'cannot be derived from the browser request. ' .
-                            'It is not checked at boot; when it is empty, no updates are published. ' .
-                            'This can also be the docker container name ' .
-                            '(e.g., http://mercure/.well-known/mercure).'
+                            'The url to the mercure hub for the server.' .
+                            'This can also be the docker container name '.
+                            '(e.g., http://mercure/.well-known/mercure). ' .
+                            'If it is not set, default will be set to ' .
+                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub/.well-known/mercure".'
                         )
                         ->defaultNull()
                     ->end()
@@ -835,105 +814,6 @@ class Configuration implements ConfigurationInterface
         ->end();
     }
 
-    /**
-     * MCP server definitions: named tool groups exposed at /pimcore-mcp/studio/{id}.
-     * Shipped defaults live here; runtime-managed servers use the write target
-     * configured under config_location.studio_mcp_servers. The id is the URL slug,
-     * so it has to be one the route accepts.
-     */
-    private function addMcpServersConfigurationNode(ArrayNodeDefinition $node): void
-    {
-        $node->children()
-            ->arrayNode(self::MCP_SERVERS_NODE)
-                ->info('MCP server definitions, keyed by server id, which is also the URL slug.')
-                ->defaultValue([])
-                ->useAttributeAsKey('id')
-                // The id is the URL slug, and slugs use hyphens. Without this Symfony rewrites
-                // `test-server` to `test_server` on load: an id the route cannot serve.
-                ->normalizeKeys(false)
-                ->validate()
-                    ->ifTrue(static fn (array $servers): bool => array_filter(
-                        array_keys($servers),
-                        static fn (int|string $id): bool => preg_match(McpPath::STUDIO_SLUG_PATTERN, (string) $id) !== 1
-                    ) !== [])
-                    ->thenInvalid('MCP server ids are their URL slug and may only contain a-z, 0-9 and hyphens: %s')
-                ->end()
-                ->arrayPrototype()
-                    ->children()
-                        ->scalarNode('name')
-                            ->info('Human-facing display name; defaults to the id.')
-                            ->defaultNull()
-                        ->end()
-                        ->scalarNode('description')
-                            ->defaultValue('')
-                        ->end()
-                        ->arrayNode('tools')
-                            ->info('Ids of the assigned MCP tools.')
-                            ->scalarPrototype()->end()
-                            ->defaultValue([])
-                        ->end()
-                        ->arrayNode('scopes')
-                            ->info('OAuth scopes advertised for this server (e.g. mcp:read, mcp:write).')
-                            ->scalarPrototype()->end()
-                            ->defaultValue([])
-                        ->end()
-                        ->booleanNode('enabled')
-                            ->defaultTrue()
-                        ->end()
-                        ->arrayNode('access')
-                            ->addDefaultsIfNotSet()
-                            ->info('Who may access the server: owner (username) + public flag + user/role grants.')
-                            ->children()
-                                ->scalarNode('owner')
-                                    ->info(
-                                        'Creator username. Implicitly holds Config Read and Config Edit; '
-                                        . 'MCP Server Access must be granted explicitly. Names, not ids.'
-                                    )
-                                    ->defaultNull()
-                                ->end()
-                                ->booleanNode('share_global')
-                                    ->info('Public: any authenticated user may view and use the server (not edit).')
-                                    ->defaultFalse()
-                                ->end()
-                                ->append($this->mcpAccessGrantListNode('shared_users', 'Users granted access.'))
-                                ->append($this->mcpAccessGrantListNode('shared_roles', 'Roles granted access.'))
-                            ->end()
-                        ->end()
-                    ->end()
-                ->end()
-            ->end()
-        ->end();
-    }
-
-    /**
-     * A list of access grants keyed by unique name — the file-config equivalent
-     * of the settings-store {name, can_read, can_access, can_edit} grid. A bare string is
-     * accepted as a read-only grant (name only), matching {@see McpServerAccessEntry::fromMixed()}.
-     */
-    private function mcpAccessGrantListNode(string $name, string $info): ArrayNodeDefinition
-    {
-        $node = (new TreeBuilder($name))->getRootNode();
-        $node
-            ->info($info)
-            ->arrayPrototype()
-                ->beforeNormalization()
-                    ->ifString()
-                    ->then(static fn (string $value): array => ['name' => $value])
-                ->end()
-                ->children()
-                    ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
-                    // Defaults to true, matching McpServerAccessEntry::fromMixed(): a grant
-                    // that names someone without saying more lets them see the server.
-                    ->booleanNode('can_read')->defaultTrue()->end()
-                    ->booleanNode('can_access')->defaultFalse()->end()
-                    ->booleanNode('can_edit')->defaultFalse()->end()
-                ->end()
-            ->end()
-            ->defaultValue([]);
-
-        return $node;
-    }
-
     private function addOAuthNode(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -1183,38 +1063,6 @@ class Configuration implements ConfigurationInterface
             ->end();
     }
 
-    private function addDocumentsNode(ArrayNodeDefinition $node): void
-    {
-        $node->children()
-            ->arrayNode('documents')
-                ->addDefaultsIfNotSet()
-                ->children()
-                    ->arrayNode('default_controllers')
-                        ->info(
-                            'Controller for new page, snippet and email documents created without a predefined '
-                            . 'document type, keyed by document type. A type without an entry uses '
-                            . 'pimcore.documents.default_controller.'
-                        )
-                        ->example(['email' => 'App\\Controller\\MailController::defaultAction'])
-                        ->useAttributeAsKey('type')
-                        ->stringPrototype()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->validate()
-                            ->ifTrue(static fn (array $controllers): bool => array_diff(
-                                array_keys($controllers),
-                                DocumentTypes::pageSnippetValues()
-                            ) !== [])
-                            ->thenInvalid(sprintf(
-                                self::DOCUMENT_DEFAULT_CONTROLLERS_TYPE_ERROR,
-                                implode(', ', DocumentTypes::pageSnippetValues())
-                            ))
-                        ->end()
-                    ->end()
-                ->end()
-            ->end();
-    }
-
     private function addGdprDataExtractorNode(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -1314,27 +1162,6 @@ class Configuration implements ConfigurationInterface
                     ->booleanNode('enabled')
                         ->info('Enable or disable general rate limiting for all Studio API endpoints.')
                         ->defaultTrue()
-                    ->end()
-                ->end()
-            ->end()
-        ->end();
-    }
-
-    private function addTwoFactorAuthenticationNode(ArrayNodeDefinition $node): void
-    {
-        $node->children()
-            ->arrayNode(self::TWO_FACTOR_AUTHENTICATION_NODE)
-                ->addDefaultsIfNotSet()
-                ->info('Google Authenticator settings, shown in the user\'s authenticator app.')
-                ->children()
-                    ->scalarNode('issuer')
-                        ->info('Issuer name in the authenticator app.')
-                        ->cannotBeEmpty()
-                        ->defaultValue('Pimcore')
-                    ->end()
-                    ->scalarNode('server_name')
-                        ->info('Server name in the authenticator app. Defaults to the router\'s request context host.')
-                        ->defaultNull()
                     ->end()
                 ->end()
             ->end()

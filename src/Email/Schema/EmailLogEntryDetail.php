@@ -32,11 +32,11 @@ final class EmailLogEntryDetail extends EmailLogEntry
         ?string $from = null,
         ?string $to = null,
         ?string $subject = null,
-        #[Property(description: 'bcc', type: 'string', example: 'email@pimcore.com', nullable: true)]
+        #[Property(description: 'bcc', type: 'string', example: 'email@pimcore.com')]
         private readonly ?string $bcc = null,
-        #[Property(description: 'cc', type: 'string', example: 'email@pimcore.com', nullable: true)]
+        #[Property(description: 'cc', type: 'string', example: 'email@pimcore.com')]
         private readonly ?string $cc = null,
-        #[Property(description: 'error', type: 'string', example: 'Some error occurred', nullable: true)]
+        #[Property(description: 'error', type: 'string', example: 'Some error occurred')]
         private readonly ?string $error = null,
     ) {
         parent::__construct($id, $sentDate, $hasHtmlLog, $hasTextLog, $hasError, $from, $to, $subject);

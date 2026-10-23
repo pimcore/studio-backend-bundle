@@ -92,23 +92,17 @@ final readonly class CustomReportUpdate
             ]
         )]
         private array $dataSourceConfig = [],
-        #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)', nullable: true)]
+        #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)')]
         private ?string $pieColumn = null,
-        #[Property(
-            description: 'Label of data column for pie chart',
-            type: 'string',
-            example: 'attributesAvailable',
-            nullable: true
-        )]
+        #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
         private ?string $pieLabelColumn = null,
-        #[Property(description: 'X axis column names', type: 'string', example: 'attributesAvailable', nullable: true)]
+        #[Property(description: 'X axis column names', type: 'string', example: 'attributesAvailable')]
         private ?string $xAxis = null,
         #[Property(
             description: 'Y axis column information',
             type: 'array',
             items: new Items(type: 'string'),
-            example: '["attributesAvailable", "count(*)"]',
-            nullable: true
+            example: '["attributesAvailable", "count(*)"]'
         )]
         private ?array $yAxis = null,
     ) {

@@ -41,11 +41,10 @@ final readonly class SendNotificationParameters
                 ElementTypes::TYPE_DOCUMENT,
                 ElementTypes::TYPE_OBJECT,
             ],
-            example: null,
-            nullable: true
+            example: null
         )]
         private ?string $attachmentType = null,
-        #[Property(description: 'ID of the attachment', type: 'int', example: 83, nullable: true)]
+        #[Property(description: 'ID of the attachment', type: 'int', example: 83)]
         private ?int $attachmentId = null,
 
     ) {

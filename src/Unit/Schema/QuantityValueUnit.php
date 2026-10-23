@@ -38,23 +38,23 @@ class QuantityValueUnit implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'ID', type: 'string', example: 'mm', nullable: true)]
+        #[Property(description: 'ID', type: 'string', example: 'mm')]
         private readonly ?string $id,
-        #[Property(description: 'Abbreviation', type: 'string', example: 'mm', nullable: true)]
+        #[Property(description: 'Abbreviation', type: 'string', example: 'mm')]
         private readonly ?string $abbreviation,
-        #[Property(description: 'Group', type: 'string', example: null, nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: null)]
         private readonly ?string $group,
-        #[Property(description: 'Long Name', type: 'string', example: 'Millimeter', nullable: true)]
+        #[Property(description: 'Long Name', type: 'string', example: 'Millimeter')]
         private readonly ?string $longName,
-        #[Property(description: 'Base Unit', type: 'string', example: 'm', nullable: true)]
+        #[Property(description: 'Base Unit', type: 'string', example: 'm')]
         private readonly ?string $baseUnit,
-        #[Property(description: 'Reference', type: 'string', example: null, nullable: true)]
+        #[Property(description: 'Reference', type: 'string', example: null)]
         private readonly ?string $reference,
-        #[Property(description: 'Factor', type: 'float', example: null, nullable: true)]
+        #[Property(description: 'Factor', type: 'float', example: null)]
         private readonly ?float $factor,
-        #[Property(description: 'Conversion Offset', type: 'float', example: null, nullable: true)]
+        #[Property(description: 'Conversion Offset', type: 'float', example: null)]
         private readonly ?float $conversionOffset,
-        #[Property(description: 'Converter', type: 'string', example: null, nullable: true)]
+        #[Property(description: 'Converter', type: 'string', example: null)]
         private readonly ?string $converter,
     ) {
     }

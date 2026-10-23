@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
@@ -33,10 +32,7 @@ interface DocumentSearchAdapterInterface
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchDocuments(
-        DocumentQueryInterface $documentQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): DocumentSearchResult;
+    public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult;
 
     /**
      * @throws SearchException|NotFoundException

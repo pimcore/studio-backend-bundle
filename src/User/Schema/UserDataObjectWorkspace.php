@@ -28,11 +28,11 @@ final readonly class UserDataObjectWorkspace extends UserWorkspace
         private bool $save,
         #[Property(description: 'Unpublish', type: 'bool', example: true)]
         private bool $unpublish,
-        #[Property(description: 'Localized Edit', type: 'string', example: 'default', nullable: true)]
+        #[Property(description: 'Localized Edit', type: 'string', example: 'default')]
         private ?array $localizedEdit,
-        #[Property(description: 'Localized View', type: 'string', example: 'default', nullable: true)]
+        #[Property(description: 'Localized View', type: 'string', example: 'default')]
         private ?array $localizedView,
-        #[Property(description: 'Layouts', type: 'string', example: 'CAR', nullable: true)]
+        #[Property(description: 'Layouts', type: 'string', example: 'CAR')]
         private ?array $layouts,
         private int $cid,
         private string $cpath,

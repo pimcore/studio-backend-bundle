@@ -30,19 +30,19 @@ final readonly class UpdatePredefinedMetadata
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
         private string $name,
-        #[Property(description: 'Description', type: 'string', example: 'A predefined metadata', nullable: true)]
+        #[Property(description: 'Description', type: 'string', example: 'A predefined metadata')]
         private ?string $description,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private string $type,
-        #[Property(description: 'Target sub type', type: 'string', example: 'image', nullable: true)]
+        #[Property(description: 'Target sub type', type: 'string', example: 'image')]
         private ?string $targetSubType,
-        #[Property(description: 'Data', type: 'mixed', example: 'data', nullable: true)]
+        #[Property(description: 'Data', type: 'mixed', example: 'data')]
         private mixed $data,
-        #[Property(description: 'Config', type: 'string', example: 'config', nullable: true)]
+        #[Property(description: 'Config', type: 'string', example: 'config')]
         private ?string $config,
-        #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
+        #[Property(description: 'Language', type: 'string', example: 'en')]
         private ?string $language,
-        #[Property(description: 'Group', type: 'string', example: 'group', nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: 'group')]
         private ?string $group,
     ) {
     }

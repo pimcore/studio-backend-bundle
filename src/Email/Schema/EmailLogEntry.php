@@ -38,11 +38,11 @@ class EmailLogEntry implements AdditionalAttributesInterface
         private readonly bool $hasTextLog,
         #[Property(description: 'Error occurred', type: 'bool', example: true)]
         private readonly bool $hasError,
-        #[Property(description: 'from', type: 'string', example: 'from@pimcore.com', nullable: true)]
+        #[Property(description: 'from', type: 'string', example: 'from@pimcore.com')]
         private readonly ?string $from = null,
-        #[Property(description: 'to', type: 'string', example: 'to@pimcore.com', nullable: true)]
+        #[Property(description: 'to', type: 'string', example: 'to@pimcore.com')]
         private readonly ?string $to = null,
-        #[Property(description: 'subject', type: 'string', example: 'E-Mail subject', nullable: true)]
+        #[Property(description: 'subject', type: 'string', example: 'E-Mail subject')]
         private readonly ?string $subject = null,
     ) {
 

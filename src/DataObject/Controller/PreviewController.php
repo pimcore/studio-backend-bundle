@@ -17,7 +17,6 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -43,7 +42,7 @@ final class PreviewController extends AbstractApiController
     }
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
+     * @throws InvalidArgumentException|NotFoundException
      */
     #[Route('/data-objects/preview/{id}', name: 'pimcore_studio_api_data_objects_preview', methods: ['GET'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
@@ -63,7 +62,6 @@ final class PreviewController extends AbstractApiController
     )]
     #[RedirectResponseAttribute(description: 'data_object_preview_by_id_success_response')]
     #[DefaultResponses([
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::REDIRECT,

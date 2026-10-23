@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
-use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -38,7 +37,6 @@ final class CsvCollectionHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
-        private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly CustomReportConfigServiceInterface $customReportConfigService,
@@ -108,7 +106,11 @@ final class CsvCollectionHandler extends AbstractHandler
                 $exportParameter->getIncludeHeaders()
             );
 
-            $this->exportDataStorageService->store($jobRun->getId(), $message->getCurrentJobStep(), $csvData);
+            $this->updateContextArrayValues(
+                $this->getJobRun($message),
+                StepConfig::GRID_EXPORT_DATA->value,
+                $csvData
+            );
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,

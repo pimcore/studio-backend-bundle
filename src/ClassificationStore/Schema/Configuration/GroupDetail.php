@@ -35,26 +35,11 @@ final class GroupDetail implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'ID of the store this group belongs to', type: 'integer', example: 1)]
         private readonly int $storeId,
-        #[Property(
-            description: 'Description of the group',
-            type: 'string',
-            example: 'Group description',
-            nullable: true
-        )]
+        #[Property(description: 'Description of the group', type: 'string', example: 'Group description')]
         private readonly ?string $description = null,
-        #[Property(
-            description: 'Creation date as Unix timestamp',
-            type: 'integer',
-            example: 1734567890,
-            nullable: true
-        )]
+        #[Property(description: 'Creation date as Unix timestamp', type: 'integer', example: 1734567890)]
         private readonly ?int $creationDate = null,
-        #[Property(
-            description: 'Modification date as Unix timestamp',
-            type: 'integer',
-            example: 1734567890,
-            nullable: true
-        )]
+        #[Property(description: 'Modification date as Unix timestamp', type: 'integer', example: 1734567890)]
         private readonly ?int $modificationDate = null,
     ) {
     }

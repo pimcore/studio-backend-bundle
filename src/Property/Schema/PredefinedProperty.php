@@ -32,20 +32,15 @@ final class PredefinedProperty implements AdditionalAttributesInterface
         private readonly string $id,
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
         private readonly string $name,
-        #[Property(
-            description: 'description',
-            type: 'string',
-            example: 'Detailed description of the property',
-            nullable: true
-        )]
+        #[Property(description: 'description', type: 'string', example: 'Detailed description of the property')]
         private readonly ?string $description,
         #[Property(description: 'key', type: 'string', example: 'Key for referencing')]
         private readonly string $key,
         #[Property(description: 'type', type: 'string', example: 'text')]
         private readonly string $type,
-        #[Property(description: 'data', type: 'string', example: 'test', nullable: true)]
+        #[Property(description: 'data', type: 'string', example: 'test')]
         private readonly ?string $data,
-        #[Property(description: 'config', type: 'string', example: 'comma,separated,values', nullable: true)]
+        #[Property(description: 'config', type: 'string', example: 'comma,separated,values')]
         private readonly ?string $config,
         #[Property(description: 'ctype', type: 'string', example: 'document')]
         private readonly string $ctype,

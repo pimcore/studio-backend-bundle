@@ -17,9 +17,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\EditLockResolverInterface
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\EditLockEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\EditLock;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateElementTypeTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -36,10 +33,8 @@ final readonly class EditLockService implements EditLockServiceInterface
     public function __construct(
         private EditLockResolverInterface $editLockResolver,
         private EditLockHydratorInterface $editLockHydrator,
-        private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private RequestStack $requestStack,
-        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -47,7 +42,6 @@ final readonly class EditLockService implements EditLockServiceInterface
     {
         $sessionId = $this->getCurrentSession($this->requestStack)->getId();
         $this->validateStudioTypes($elementType);
-        $this->checkElementAccess($id, $elementType);
         $elementType = $this->getCoreElementType($elementType);
         $isLocked = $this->editLockResolver->isLocked($id, $elementType, $sessionId);
 
@@ -69,7 +63,6 @@ final readonly class EditLockService implements EditLockServiceInterface
     {
         $sessionId = $this->getCurrentSession($this->requestStack)->getId();
         $this->validateStudioTypes($elementType);
-        $this->checkElementAccess($id, $elementType);
         $elementType = $this->getCoreElementType($elementType);
         $this->editLockResolver->lock($id, $elementType, $sessionId);
     }
@@ -77,20 +70,7 @@ final readonly class EditLockService implements EditLockServiceInterface
     public function unlockElement(int $id, string $elementType): void
     {
         $this->validateStudioTypes($elementType);
-        $this->checkElementAccess($id, $elementType);
         $elementType = $this->getCoreElementType($elementType);
         $this->editLockResolver->unlock($id, $elementType);
-    }
-
-    /**
-     * @throws NotFoundException|ForbiddenException
-     */
-    private function checkElementAccess(int $id, string $elementType): void
-    {
-        $this->elementService->getAllowedElementById(
-            $elementType,
-            $id,
-            $this->securityService->getCurrentUser()
-        );
     }
 }

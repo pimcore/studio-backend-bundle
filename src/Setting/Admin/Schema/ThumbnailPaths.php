@@ -28,22 +28,19 @@ final readonly class ThumbnailPaths
         #[Property(
             description: 'Path to custom logo thumbnail',
             type: 'string',
-            example: '/Sample%20Content/Background%20Images/321/image_small.png',
-            nullable: true
+            example: '/Sample%20Content/Background%20Images/321/image_small.png'
         )]
         private ?string $customLogoSmall = null,
         #[Property(
             description: 'Path to custom logo thumbnail',
             type: 'string',
-            example: '/Sample%20Content/Background%20Images/321/image-thumb.png',
-            nullable: true
+            example: '/Sample%20Content/Background%20Images/321/image-thumb.png'
         )]
         private ?string $customLogo = null,
         #[Property(
             description: 'Path to custom background image',
             type: 'string',
-            example: '/Sample%20Content/Background%20Images/317/background.png',
-            nullable: true
+            example: '/Sample%20Content/Background%20Images/317/background.png'
         )]
         private ?string $loginScreenCustomBackgroundImage = null,
     ) {

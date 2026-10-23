@@ -17,7 +17,6 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\ProtectedResourceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Dto\ProtectedResource;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Registry\ConfigProtectedResourceRegistry;
-use Symfony\Contracts\Service\ResetInterface;
 
 final class ConfigProtectedResourceRegistryTest extends Unit
 {
@@ -235,29 +234,5 @@ final class ConfigProtectedResourceRegistryTest extends Unit
             'https://example.com/pimcore-mcp',
             $registry->metadataFor('https://example.com/pimcore-mcp')?->toArray()['resource'] ?? null
         );
-    }
-
-    /**
-     * Providers read stored configuration, such as the MCP servers managed through Studio, which
-     * changes at runtime. A long-running worker keeps this instance across requests, so the
-     * memoised set has to be dropped between them, or a server created after the first read
-     * would be served without its own resource. ResetInterface makes autoconfiguration tag the
-     * service `kernel.reset`, which is what the services resetter clears between requests.
-     */
-    public function testResetMakesTheNextReadConsultTheProvidersAgain(): void
-    {
-        $calls = null;
-        $registry = new ConfigProtectedResourceRegistry(
-            [],
-            [$this->provider([new ProtectedResource('https://example.com/a', [], [])], $calls)],
-        );
-
-        $this->assertInstanceOf(ResetInterface::class, $registry);
-
-        $registry->all();
-        $registry->reset();
-        $registry->all();
-
-        $this->assertSame(2, $calls);
     }
 }

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -45,15 +44,6 @@ final class SelectFilter implements FilterInterface
 
         if (!is_array($fiterValue)) {
             throw new InvalidArgumentException('Value for select filter must ba an array');
-        }
-
-        // In the data-object grid an empty value stands for "no value": also match objects without a value.
-        if ($query instanceof DataObjectQueryInterface) {
-            return $query->filterMultiSelect(
-                $column->getKey(),
-                $column->getFilterValue(),
-                matchMissingForEmptyValue: true
-            );
         }
 
         return $query->filterMultiSelect($column->getKey(), $column->getFilterValue());

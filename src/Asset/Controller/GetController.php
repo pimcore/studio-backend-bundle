@@ -62,7 +62,6 @@ final class GetController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]

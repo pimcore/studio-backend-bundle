@@ -45,10 +45,6 @@ final class Installer extends SettingsStoreAwareInstaller
         UserPermissions::WIDGET_EDITOR->value,
     ];
 
-    private const array MCP_PERMISSIONS = [
-        UserPermissions::MCP_SERVERS->value,
-    ];
-
     public function __construct(
         private readonly Connection $db,
         BundleInterface $bundle,
@@ -308,7 +304,6 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
         $table->addColumn('description', 'text', ['notnull' => false]);
         $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 50]);
-        $table->addColumn('elementType', 'string', ['notnull' => false, 'length' => 50]);
         $table->addColumn('shareGlobal', 'boolean', ['notnull' => true]);
         $table->addColumn('createMenuShortcut', 'boolean', ['notnull' => true]);
         $table->addColumn('menuShortcutGroup', 'string', ['notnull' => false, 'length' => 255]);
@@ -620,7 +615,7 @@ final class Installer extends SettingsStoreAwareInstaller
     private function addUserPermission(Schema $schema): void
     {
         if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
-            foreach ([...self::PERSPECTIVE_PERMISSIONS, ...self::MCP_PERMISSIONS] as $permission) {
+            foreach (self::PERSPECTIVE_PERMISSIONS as $permission) {
                 $queryBuilder = $this->db->createQueryBuilder();
                 $queryBuilder
                     ->insert(UserPermissions::DEFINITIONS_TABLE->value)
@@ -644,7 +639,7 @@ final class Installer extends SettingsStoreAwareInstaller
     private function removeUserPermission(Schema $schema): void
     {
         if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
-            foreach ([...self::PERSPECTIVE_PERMISSIONS, ...self::MCP_PERMISSIONS] as $permission) {
+            foreach (self::PERSPECTIVE_PERMISSIONS as $permission) {
                 $queryBuilder = $this->db->createQueryBuilder();
                 $queryBuilder
                     ->delete(UserPermissions::DEFINITIONS_TABLE->value)

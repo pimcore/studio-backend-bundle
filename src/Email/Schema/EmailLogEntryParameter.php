@@ -30,9 +30,9 @@ final class EmailLogEntryParameter implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'name', type: 'string', example: 'myParameter')]
         private readonly string $name,
-        #[Property(description: 'value', type: 'string', example: 'Some value', nullable: true)]
+        #[Property(description: 'value', type: 'string', example: 'Some value')]
         private readonly ?string $value = null,
-        #[Property(description: 'data for object parameters', type: ObjectParameter::class, nullable: true)]
+        #[Property(description: 'data for object parameters', type: ObjectParameter::class)]
         private readonly ?ObjectParameter $objectData = null,
     ) {
 

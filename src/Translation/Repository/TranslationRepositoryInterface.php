@@ -53,12 +53,6 @@ interface TranslationRepositoryInterface
     public function addSearchCondition(Listing $listing, string $searchTerm): Listing;
 
     /**
-     * Qualifies the `key` and `type` order keys with the main translations table, which is required as soon as
-     * language columns are joined (every joined column brings its own `key` and `type`).
-     */
-    public function qualifyMainTableOrderKeys(Listing $listing): Listing;
-
-    /**
      * @return array<int, string>
      */
     public function getTranslationKeysWithTextFilter(

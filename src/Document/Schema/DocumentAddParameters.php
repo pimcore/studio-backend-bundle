@@ -36,34 +36,19 @@ final readonly class DocumentAddParameters
         private string $key,
         #[Property(description: 'Type', type: 'string', example: DocumentTypes::PAGE->value)]
         private string $type,
-        #[Property(description: 'Title', type: 'string', example: 'Some page title', nullable: true)]
+        #[Property(description: 'Title', type: 'string', example: 'Some page title')]
         private ?string $title = null,
-        #[Property(description: 'Navigation name', type: 'string', example: 'Some navigation name', nullable: true)]
+        #[Property(description: 'Navigation name', type: 'string', example: 'Some navigation name')]
         private ?string $navigationName = null,
-        #[Property(
-            description: 'Document type ID',
-            type: 'string',
-            example: DocumentTypes::PAGE->value,
-            nullable: true
-        )]
+        #[Property(description: 'Document type ID', type: 'string', example: DocumentTypes::PAGE->value)]
         private ?string $docTypeId = null,
-        #[Property(description: 'Document template', type: 'string', example: 'default', nullable: true)]
+        #[Property(description: 'Document template', type: 'string', example: 'default')]
         private ?string $template = null,
-        #[Property(
-            description: 'Id of the base document for new translation',
-            type: 'integer',
-            example: 33,
-            nullable: true
-        )]
+        #[Property(description: 'Id of the base document for new translation', type: 'integer', example: 33)]
         private ?int $translationsSourceId = null,
-        #[Property(
-            description: 'Document language when adding a translation',
-            type: 'string',
-            example: 'en',
-            nullable: true
-        )]
+        #[Property(description: 'Document language when adding a translation', type: 'string', example: 'en')]
         private ?string $language = null,
-        #[Property(description: 'Id of the base document for content', type: 'integer', example: 33, nullable: true)]
+        #[Property(description: 'Id of the base document for content', type: 'integer', example: 33)]
         private ?int $inheritanceSourceId = null,
     ) {
         $this->validate();

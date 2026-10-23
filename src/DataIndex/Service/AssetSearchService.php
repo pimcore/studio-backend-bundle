@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
@@ -54,11 +53,9 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(
-        AssetQueryInterface $assetQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): AssetSearchResult {
-        return $this->assetSearchAdapter->searchAssets($assetQuery, $permissionType);
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult
+    {
+        return $this->assetSearchAdapter->searchAssets($assetQuery);
     }
 
     /**
@@ -76,11 +73,9 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
      *
      * @return array<int>
      */
-    public function fetchAssetIds(
-        AssetQueryInterface $assetQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): array {
-        return $this->assetSearchAdapter->fetchAssetIds($assetQuery, $permissionType);
+    public function fetchAssetIds(AssetQueryInterface $assetQuery): array
+    {
+        return $this->assetSearchAdapter->fetchAssetIds($assetQuery);
     }
 
     /**

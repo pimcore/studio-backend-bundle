@@ -70,11 +70,11 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly string $title,
         #[Property(description: 'Description', type: 'string', example: 'This class represents an accessory part')]
         private readonly string $description,
-        #[Property(description: 'Creation date timestamp', type: 'integer', example: 1700000000, nullable: true)]
+        #[Property(description: 'Creation date timestamp', type: 'integer', example: 1700000000)]
         private readonly ?int $creationDate,
-        #[Property(description: 'Modification date timestamp', type: 'integer', example: 1700000000, nullable: true)]
+        #[Property(description: 'Modification date timestamp', type: 'integer', example: 1700000000)]
         private readonly ?int $modificationDate,
-        #[Property(description: 'User id of owner', type: 'integer', example: 1, nullable: true)]
+        #[Property(description: 'User id of owner', type: 'integer', example: 1)]
         private readonly ?int $userOwner,
         #[Property(
             description: 'Namespace of parent class',
@@ -140,7 +140,7 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly array $blockedVarsForExport,
         #[Property(description: 'Whether the class definition can be written to', type: 'boolean', example: true)]
         private readonly bool $isWriteable,
-        #[Property(description: 'Group', type: 'string', example: 'system', nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: 'system')]
         private readonly ?string $group = null,
     ) {
     }

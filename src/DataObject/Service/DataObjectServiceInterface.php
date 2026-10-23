@@ -57,12 +57,12 @@ interface DataObjectServiceInterface
     public function getDataObjects(DataObjectParameters $parameters): Collection;
 
     /**
-     * @throws SearchException|ForbiddenException|NotFoundException|UserNotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder;
 
     /**
-     * @throws SearchException|ForbiddenException|NotFoundException
+     * @throws SearchException|NotFoundException
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder;
 

@@ -46,11 +46,11 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly int $id,
         #[Property(description: 'Username', type: 'string', example: 'admin')]
         private readonly string $username,
-        #[Property(description: 'Email', type: 'string', example: '', nullable: true)]
+        #[Property(description: 'Email', type: 'string', example: '')]
         private readonly ?string $email,
-        #[Property(description: 'Firstname', type: 'string', example: '', nullable: true)]
+        #[Property(description: 'Firstname', type: 'string', example: '')]
         private readonly ?string $firstname,
-        #[Property(description: 'Lastname', type: 'string', example: '', nullable: true)]
+        #[Property(description: 'Lastname', type: 'string', example: '')]
         private readonly ?string $lastname,
         #[Property(
             description: 'Permissions',
@@ -74,7 +74,7 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly array $docTypes,
         #[Property(description: 'User Language', type: 'string', example: 'en')]
         private readonly string $language,
-        #[Property(description: 'Locale for dateTime', type: 'string', example: '', nullable: true)]
+        #[Property(description: 'Locale for dateTime', type: 'string', example: '')]
         private readonly ?string $dateTimeLocale,
         #[Property(description: 'Theme of the User', type: 'string', example: 'default')]
         private readonly string $theme,
@@ -117,9 +117,8 @@ final class UserInformation implements AdditionalAttributesInterface
         #[Property(
             description: 'Active studio perspective ID',
             type: 'string',
-            example: Perspectives::DEFAULT_ID->value,
-            nullable: true
-        )]
+            example: Perspectives::DEFAULT_ID->value)
+        ]
         private readonly ?string $activePerspective = null,
         #[Property(
             description: 'Allowed studio perspectives',

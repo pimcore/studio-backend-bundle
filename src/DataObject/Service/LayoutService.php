@@ -103,9 +103,8 @@ final readonly class LayoutService implements LayoutServiceInterface
     public function getClassLayout(string $classId): Layout
     {
         $class = $this->classDefinitionRepository->getClassDefinitionById($classId);
-        // Return the stored definition: enrichment would render Text layout templates and resolve
-        // dynamic options, which the class editor would then persist in place of the source.
         $layout = $class->getLayoutDefinitions();
+        $this->dataObjectServiceResolver->enrichLayoutDefinition($layout);
         if (!$layout instanceof Panel) {
             throw new NotFoundException(type: 'class layout for class definition', id: $classId);
         }

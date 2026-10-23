@@ -18,19 +18,16 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Localizedfield;
-use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -101,136 +98,15 @@ final class LocalizedFieldsAdapterTest extends Unit
         $this->assertSame(['en' => ['title' => 'Existing']], $result->getItems());
     }
 
-    public function testDetailDataOfTheEditViewIsNotBuiltAsHistoricalVersion(): void
-    {
-        $contextData = $this->resolveDetailContext(null);
-
-        $this->assertSame('en', $contextData->getLanguage());
-        $this->assertFalse($contextData->isHistoricalVersion());
-    }
-
-    public function testDetailDataOfAVersionForwardsTheHistoricalVersionContextToObjectLevelLocalizedFields(): void
-    {
-        $contextData = $this->resolveDetailContext(new FieldContextData(historicalVersion: true));
-
-        $this->assertSame('en', $contextData->getLanguage());
-        $this->assertTrue($contextData->isHistoricalVersion());
-    }
-
-    public function testDetailDataOfAVersionDoesNotForwardTheHistoricalVersionContextIntoContainers(): void
-    {
-        // only the localized fields of the object itself are part of what a version stores; the ones of an
-        // object brick (or field collection item) are computed live, so they must not be hydrated as historical
-        $contextData = $this->resolveDetailContext(
-            new FieldContextData(contextObject: $this->makeEmpty(AbstractData::class), historicalVersion: true)
-        );
-
-        $this->assertSame('en', $contextData->getLanguage());
-        $this->assertFalse($contextData->isHistoricalVersion());
-    }
-
-    private function resolveDetailContext(?FieldContextData $contextData): FieldContextData
-    {
-        $captured = [];
-        $dataService = $this->makeEmpty(DataServiceInterface::class, [
-            'getDetailValue' => function (
-                Concrete $object,
-                mixed $value,
-                Data $fieldDefinition,
-                ?FieldContextData $contextData = null
-            ) use (&$captured): mixed {
-                $captured[] = $contextData;
-
-                return $value;
-            },
-        ]);
-        $adapter = $this->createAdapter(allowedLanguages: ['en'], allLanguages: ['en'], dataService: $dataService);
-
-        $localizedFieldsDefinition = $this->makeEmpty(Localizedfields::class, [
-            'getFieldDefinition' => $this->makeEmpty(Input::class, ['getName' => 'title']),
-            'getFieldDefinitions' => [],
-            'normalize' => ['en' => ['title' => 'value']],
-        ]);
-        $class = new ClassDefinition();
-        $class->setFieldDefinitions(['localizedfields' => $localizedFieldsDefinition]);
-        $object = $this->makeEmpty(Concrete::class, ['getClass' => $class]);
-        $localizedField = new Localizedfield(['en' => ['title' => 'value']]);
-        $localizedField->setObject($object);
-
-        $result = $adapter->getDetailData($object, $localizedField, $localizedFieldsDefinition, $contextData);
-
-        $this->assertSame(['title' => ['en' => 'value']], $result);
-        $this->assertCount(1, $captured);
-        $this->assertInstanceOf(FieldContextData::class, $captured[0]);
-
-        return $captured[0];
-    }
-
-    public function testSetterDataForwardsTheContainerContextAndLanguageToChildAdapters(): void
-    {
-        // localized fields inside a container (e.g. an object brick) must keep that container in the context of
-        // their children, so a nested block reads its stored items from the container and not from the object
-        $captured = [];
-        $childAdapter = $this->makeEmpty(SetterDataInterface::class, [
-            'getDataForSetter' => static function (
-                Concrete $element,
-                Data $fieldDefinition,
-                string $key,
-                array $data,
-                UserInterface $user,
-                ?FieldContextData $contextData = null
-            ) use (&$captured): mixed {
-                $captured[] = $contextData;
-
-                return $data[$key] ?? null;
-            },
-        ]);
-        $adapter = $this->createAdapter(
-            allowedLanguages: ['en', 'de'],
-            allLanguages: ['en', 'de'],
-            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class, [
-                'tryDataAdapter' => $childAdapter,
-            ])
-        );
-
-        $fieldDefinition = $this->makeEmpty(Localizedfields::class, [
-            'getFieldDefinition' => $this->makeEmpty(Input::class, ['getName' => 'myBlock']),
-        ]);
-        $class = new ClassDefinition();
-        $class->setFieldDefinitions(['localizedfields' => $fieldDefinition]);
-        $localizedField = new Localizedfield();
-        $brick = $this->makeEmpty(AbstractData::class, ['get' => $localizedField]);
-
-        $result = $adapter->getDataForSetter(
-            $this->makeEmpty(Concrete::class, ['getClass' => $class]),
-            $fieldDefinition,
-            'localizedfields',
-            ['localizedfields' => ['myBlock' => ['de' => 'value']]],
-            $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
-            new FieldContextData(contextObject: $brick)
-        );
-
-        $this->assertCount(1, $captured);
-        $this->assertInstanceOf(FieldContextData::class, $captured[0]);
-        $this->assertSame($brick, $captured[0]->getContextObject());
-        $this->assertSame('de', $captured[0]->getLanguage());
-        $this->assertSame($localizedField, $result);
-        $this->assertSame(['de' => ['myBlock' => 'value']], $result->getItems());
-    }
-
     /**
      * @param string[] $allowedLanguages
      * @param string[] $allLanguages
      */
-    private function createAdapter(
-        array $allowedLanguages,
-        array $allLanguages,
-        ?DataServiceInterface $dataService = null,
-        ?DataAdapterServiceInterface $dataAdapterService = null
-    ): LocalizedFieldsAdapter {
+    private function createAdapter(array $allowedLanguages, array $allLanguages): LocalizedFieldsAdapter
+    {
         return new LocalizedFieldsAdapter(
-            $dataAdapterService ?? $this->makeEmpty(DataAdapterServiceInterface::class),
-            $dataService ?? $this->makeEmpty(DataServiceInterface::class),
+            $this->makeEmpty(DataAdapterServiceInterface::class),
+            $this->makeEmpty(DataServiceInterface::class),
             $this->makeEmpty(InheritanceServiceInterface::class, [
                 'processFieldDefinition' => new InheritanceData(1, inheritable: true),
             ]),

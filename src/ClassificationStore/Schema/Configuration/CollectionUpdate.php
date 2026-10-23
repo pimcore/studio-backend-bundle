@@ -34,12 +34,7 @@ final readonly class CollectionUpdate
     public function __construct(
         #[Property(description: 'Name of the collection', type: 'string', example: 'My Collection')]
         private string $name,
-        #[Property(
-            description: 'Description of the collection',
-            type: 'string',
-            example: 'Collection description',
-            nullable: true
-        )]
+        #[Property(description: 'Description of the collection', type: 'string', example: 'Collection description')]
         private ?string $description = null,
     ) {
         if (empty($this->name)) {

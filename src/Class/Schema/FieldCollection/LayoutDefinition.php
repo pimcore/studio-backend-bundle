@@ -45,15 +45,15 @@ final class LayoutDefinition implements AdditionalAttributesInterface
         private readonly string $key,
         #[Property(description: 'Data Type', type: 'string', example: 'layout')]
         private readonly string $datatype,
-        #[Property(description: 'Group', type: 'string', example: 'Group Name', nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: 'Group Name')]
         private readonly ?string $group = null,
-        #[Property(description: 'Name', type: 'string', example: 'Layout', nullable: true)]
+        #[Property(description: 'Name', type: 'string', example: 'Layout')]
         private readonly ?string $name = null,
-        #[Property(description: 'Type', type: 'string', example: 'object', nullable: true)]
+        #[Property(description: 'Type', type: 'string', example: 'object')]
         private readonly ?string $type = null,
-        #[Property(description: 'Region', type: 'string', example: 'main', nullable: true)]
+        #[Property(description: 'Region', type: 'string', example: 'main')]
         private readonly ?string $region = null,
-        #[Property(description: 'Title', type: 'string', example: 'My Field Collection', nullable: true)]
+        #[Property(description: 'Title', type: 'string', example: 'My Field Collection')]
         private readonly ?string $title = null,
         #[Property(description: 'Width', type: 'integer', example: 0)]
         private readonly int $width = 0,

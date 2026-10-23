@@ -7,12 +7,8 @@ description: Configure Mercure for real-time updates in Pimcore Studio.
 
 ## Start and configure Mercure server
 
-Use Mercure hub **0.24**, e.g. via their docker container (`dunglas/mercure:v0.24`). For details see
+It is recommended to use an up-to-date instance of Mercure, e.g. via their docker container. For details see
 [Mercure docs](https://mercure.rocks/docs/hub/install).
-
-> Always pin the image to `v0.24` instead of using `latest` or an untagged image. Mercure 1.0 and later contain breaking
-> changes (token format, subscription parameters, hub configuration, development UI), so an unpinned image will pull a
-> hub that this setup is not written for.
 
 ### Mercure configuration
 Following Mercure configuration aspects need to be considered
@@ -64,7 +60,7 @@ Add Mercure to your docker compose file and make sure to add the configuration f
       - ~/.certs:/etc/nginx/certs
 
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure:latest
     restart: unless-stopped
     environment:
         # Disable HTTPS
@@ -87,8 +83,6 @@ Add Mercure to your docker compose file and make sure to add the configuration f
 ### config.yaml
 
 Configure Pimcore application with JWT key as well as the client side and server side URLs for Mercure.
-`hub_url_server` must be set and has no default; it is not checked at boot, but without it no updates are published.
-`hub_url_client` is optional; if it is not set, the scheme and host of the current request plus `/hub` is used.
 
 ```yaml
 pimcore_studio_backend:
@@ -105,7 +99,7 @@ If you would like to retrieve the URLs from within the application, you can use 
 These methods are available in the `Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface` class interface.
 
 ## Check if Mercure is running
-To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `hub_url_client`
+To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `client_side_url`
 you configured in configuration). This request should return the text
 
 ```
@@ -118,48 +112,12 @@ or
 Unauthorized
 ```
 
-> Also execute `curl` against the `hub_url_server` you configured (e.g. ``curl http://mercure/.well-known/mercure``)
-> from the command line of the server, inside the PHP container if you use Docker, to ensure that the URL is
-> accessible by the server itself. The public `/hub` URL is not a substitute: it can answer while `hub_url_server`
-> is unreachable from PHP.
+> Also execute ``curl https://your-app-domain.com/hub`` (or `server_side_url` you configured in
+> configuration) from the command line of the server to ensure that the URL is also accessible by the
+> server itself.
 
 
 ## Additional Aspects
-
-### Multiple application nodes
-When Pimcore runs on several application nodes (load balancer, cluster), run **one** Mercure hub (one logical hub that all nodes
-share; for a highly available hub see below) for all of them. Do not start one independent hub per node behind a load
-balancer.
-
-Mercure stores subscriptions and the update history in the hub itself. The free transports (`bolt`, `local`) are
-single-node, and a load balancer alone does not synchronize hubs. With one hub per node, an update published by node 1
-never reaches a browser that is connected to the hub of node 2. See the
-[Mercure cluster docs](https://mercure.rocks/docs/hub/cluster).
-
-Recommended setup:
-- Run Mercure as a separate service (not co-located with a single application node) and mount a persistent `/data` volume.
-- Use the same `jwt_key` on all application nodes, and set both `MERCURE_PUBLISHER_JWT_KEY` and
-  `MERCURE_SUBSCRIBER_JWT_KEY` on the hub to that same `jwt_key` value.
-- Point `hub_url_server` of every node to that hub, and route `hub_url_client` (public URL) to it.
-
-One hub is usually enough, as Mercure is lightweight. It only carries live updates. If it is unreachable, publishing
-errors are logged. If it hangs or is overloaded, publishing requests can block until the HTTP timeout (up to 60 seconds)
-before failing. Only job progress falls back to polling; other live updates (e.g. the live notification toast and badge,
-or Direct Edit events) are not delivered while the hub is down. Notifications themselves are stored before they are
-published, so they still show up after the next reload.
-
-If the hub itself needs to be highly available, Mercure offers clustered editions (Mercure Enterprise with a shared
-transport, or Mercure Cloud; both are licensed by Mercure, not by Pimcore). Note that these are Mercure 1.x hubs, while
-this page is written for hub 0.24 (see the warning at the top), and their compatibility with this bundle's setup has not
-been verified. Alternatively, restart the single hub quickly with a process supervisor or your orchestrator.
-
-> The legacy Direct Edit path (`FileEditControllerTrait` of `pimcore/direct-edit`, deprecated since 2026.3, removal
-> planned for 2027.1) asks the hub which clients are subscribed (subscriptions API). This requires that all clients
-> are connected to the one hub the application asks, with the `subscriptions` directive enabled. If you run that hub as
-> a cluster, only the Redis/Valkey transport supports subscriptions cluster-wide.
->
-> Direct Edit also has its own, deprecated hub settings (`mercure_settings.server_side_url`, `parameters.mercure.hub.*`)
-> that can override the hub URL and key. Remove them or set them to the same values as the hub configured above.
 
 
 ### Running Mercure with external URL
@@ -171,7 +129,7 @@ When running Mercure as external service with external URL, make sure to configu
 Sample based on docker compose, important part is the `cors_origins` directive.
 ```yaml
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure
     restart: unless-stopped
     environment:
       # All other necessary configs ... 
@@ -213,7 +171,7 @@ With the configuration below, the development ui is available at `http://localho
 
 ```yaml
   mercure:
-    image: dunglas/mercure:v0.24
+    image: dunglas/mercure
     restart: unless-stopped
     environment:
       # All other necessary configs ... 

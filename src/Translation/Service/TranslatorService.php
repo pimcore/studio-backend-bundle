@@ -252,16 +252,10 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $list = $this->translationRepository->addSearchCondition($list, $searchFilter->getFilterValue());
         }
 
-        $list = $this->listingFilter->applyFilters(
+        return $this->listingFilter->applyFilters(
             $this->filterMapper->getFilterParameters($parameter),
             $list
         );
-
-        if ($joins === []) {
-            return $list;
-        }
-
-        return $this->translationRepository->qualifyMainTableOrderKeys($list);
     }
 
     private function getTranslatorBag(): TranslatorBagInterface

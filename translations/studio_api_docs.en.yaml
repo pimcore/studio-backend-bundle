@@ -334,17 +334,6 @@ cache_clear_temporary_files_description: |
     Clear all temporary files including thumbnails, asset cache, and system temp files.
 cache_clear_temporary_files_summary: Clear temporary files
 cache_clear_temporary_files_success_response: Temporary files cleared successfully
-document_batch_delete_description: |
-  Batch delete documents based on the given <strong>{ids}</strong>. <br> The <strong>{ids}</strong> must be a list of IDs of existing documents. <br>
-  Deletion is done asynchronously and the jobRun ID is returned in the response
-document_batch_delete_created_response: Successfully created <strong>jobRun</strong> for batch delete
-document_batch_delete_summary: Batch delete documents by IDs
-document_patch_by_id_created_response: Successfully created jobRun for patching
-  multiple documents
-document_patch_by_id_description: |
-  Patching documents based on the given ID and data. <br> Patching can be used for moving, sorting, renaming, locking and publishing. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
-document_patch_by_id_success_response: Successfully patched document
-document_patch_by_id_summary: Patch documents by ID
 tag_cache_description: Cache management endpoints
 class_all_layout_collection_description: |
     Get all available layouts for classes.
@@ -775,23 +764,8 @@ export_xlsx_folder_description: |
   Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
 export_xlsx_folder_summary: Creating XLSX file for elements based on folder
-login_2fa_description: |
-  Finishes a login that needs a two-factor code. Send the current code from the authenticator app;
-  in the `setup` step, the first code from the new secret, which also enables two-factor authentication.
-  A wrong code answers 401 and the code can be tried again; after too many wrong codes the endpoint
-  answers 429, even for the right code, until the waiting time is over.
-login_2fa_success_response: Code accepted, login successful.
-login_2fa_summary: Finish the login with a two-factor code.
-login_description: |
-  Logs in a user with the provided credentials. For users with two-factor authentication, the password is only the
-  first step; see the success response.
-login_success_response: |
-  Login successful, with an empty body.
-  When the user needs a two-factor code, the password was correct but the login is not finished:
-  the body says so, names the next step and the number of digits in a code: `verify` (send the code to `/login/2fa`), or `setup` when the user
-  must use two-factor authentication but has not set it up (create a secret with `/user/two-factor/setup`,
-  then send the first code from it to `/login/2fa`).
-  Until then, other endpoints answer 401. To go back, log out.
+login_description: Logs in a user with the provided credentials and returns the user information.
+login_success_response: Login successful.
 login_summary: Session-based login with user credentials.
 login_token_description: |
   Logs in a user based on the provided token and returns the user information.
@@ -800,30 +774,6 @@ login_token_summary: Session-based login with user token.
 logout_description: Logout and invalidate current session for active user.
 logout_success_response: Logout successful.
 logout_summary: Logout and invalidate current session for active user.
-mcp_create_server_description: |
-    Create a new MCP server configuration. The <strong>urlSlug</strong> is used as the identifier and
-    determines the server's serving URL; it must be unique and contain only lowercase letters, digits and hyphens.
-mcp_create_server_success_response: The created MCP server configuration
-mcp_create_server_summary: Create an MCP server
-mcp_delete_server_description: Delete an MCP server configuration by its url slug.
-mcp_delete_server_success_response: MCP server configuration deleted successfully
-mcp_delete_server_summary: Delete an MCP server
-mcp_get_server_description: Get a single MCP server configuration by its url slug.
-mcp_get_server_success_response: The requested MCP server configuration
-mcp_get_server_summary: Get an MCP server
-mcp_get_servers_description: |
-    Get all MCP server configurations the current user is allowed to see.
-mcp_get_servers_success_response: List of MCP server configurations
-mcp_get_servers_summary: Get all MCP servers
-mcp_get_tools_description: |
-    Get the catalogue of MCP tools available for assignment to a server, contributed by the backend
-    bundle and any other bundle that registers tools.
-mcp_get_tools_success_response: List of available MCP tools
-mcp_get_tools_summary: Get the MCP tool catalogue
-mcp_update_server_description: |
-    Update an existing MCP server configuration identified by its url slug. The url slug itself cannot be changed.
-mcp_update_server_success_response: The updated MCP server configuration
-mcp_update_server_summary: Update an MCP server
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
@@ -1187,7 +1137,6 @@ tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags f
 tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
-tag_mcp_description: MCP server management operations to get/create/update/delete servers and list available tools
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
@@ -1381,30 +1330,6 @@ user_token_link_get_description: |
   The <strong>{id}</strong> must be an ID of existing user.
 user_token_link_get_success_response: Token login link for the user
 user_token_link_get_summary: Generate login link and token for a user by ID
-user_two_factor_confirm_description: |
-  Confirms the pending secret from the setup with a first code from the authenticator app.
-  Only then is two-factor authentication enabled with this secret; a previous secret is replaced.
-  A wrong code answers 422 and the setup stays pending; without a pending setup the answer is 409.
-user_two_factor_confirm_success_response: Two-factor authentication is enabled with the new secret.
-user_two_factor_confirm_summary: Confirm two-factor authentication setup
-user_two_factor_disable_description: |
-  Disables two-factor authentication for the current user and removes the secret.
-  Refused with 403 while two-factor authentication is required for the user.
-user_two_factor_disable_success_response: Two-factor authentication is disabled.
-user_two_factor_disable_summary: Disable two-factor authentication
-user_two_factor_reset_by_id_description: |
-  Resets the two-factor authentication of a user: disables it and removes the secret.
-  Whether it is required for the user stays as it is; a required user sets it up again at the next login.
-  Admins may reset any user, other users with user management only themselves.
-user_two_factor_reset_by_id_success_response: Two-factor authentication of the user is reset.
-user_two_factor_reset_by_id_summary: Reset two-factor authentication of a user
-user_two_factor_setup_description: |
-  Creates a new secret for the current user's authenticator app, for a first setup or a renewal.
-  The secret is not active yet: it waits in the session until a first code confirms it, so during a
-  renewal the current secret keeps working. Show `otpauthUri` as a QR code and `secret` for manual entry.
-  It is also the only endpoint open during a login in the `setup` step; the first code then goes to `/login/2fa`.
-user_two_factor_setup_success_response: The new secret, its otpauth URI and the number of digits in a code.
-user_two_factor_setup_summary: Set up or renew two-factor authentication
 user_update_active_perspective_summary: Update the active perspective for the current user.
 user_update_active_perspective_success_response: Updated active perspective for the current user.
 user_update_by_id_success_response: Updated data.

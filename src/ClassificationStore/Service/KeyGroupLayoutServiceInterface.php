@@ -40,4 +40,9 @@ interface KeyGroupLayoutServiceInterface
         int $keyId,
         int $groupId
     ): KeyLayout;
+
+    /**
+     * Returns the stored title of the key configuration, null if none is stored.
+     */
+    public function getKeyTitle(int $keyId): ?string;
 }

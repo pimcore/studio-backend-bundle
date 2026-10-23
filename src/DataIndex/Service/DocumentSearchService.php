@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
@@ -42,11 +41,9 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     /**
      * {@inheritdoc}
      */
-    public function searchDocuments(
-        DocumentQueryInterface $documentQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): DocumentSearchResult {
-        return $this->documentSearchAdapter->searchDocuments($documentQuery, $permissionType);
+    public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult
+    {
+        return $this->documentSearchAdapter->searchDocuments($documentQuery);
     }
 
     /**

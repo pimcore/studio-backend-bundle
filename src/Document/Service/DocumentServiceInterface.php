@@ -47,12 +47,12 @@ interface DocumentServiceInterface
     public function getDocuments(ElementParameters $parameters): Collection;
 
     /**
-     * @throws SearchException|ForbiddenException|NotFoundException|UserNotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
     public function getDocument(int $id, bool $getDetailData = true): DocumentDetail;
 
     /**
-     * @throws SearchException|ForbiddenException|NotFoundException
+     * @throws SearchException|NotFoundException
      */
     public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail;
 

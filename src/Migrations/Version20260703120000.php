@@ -34,11 +34,6 @@ final class Version20260703120000 extends AbstractMigration
         return 'Set grid and saved search configuration owner to NULL on user delete instead of cascading';
     }
 
-    public function isTransactional(): bool
-    {
-        return false;
-    }
-
     public function up(Schema $schema): void
     {
         $this->switchOwnerOnDelete($schema, GridConfiguration::TABLE_NAME, 'SET NULL');

@@ -76,11 +76,10 @@ final class NotesCollectionRequestBody extends RequestBody
                     ),
                     new Property(
                         property: 'fieldFilters',
-                        description: 'JSON array of field filters. ' .
-                            '"userName" also accepts a list of names, matched exactly.',
+                        description: 'Filter for specific fields, will be json decoded to an array. e.g.
+                        [{"operator":"like","value":"John","field":"name","type":"string"}]',
                         type: 'object',
-                        example: '[{"operator":"like","value":"consent-given","field":"type","type":"string"},' .
-                            '{"operator":"in","value":["admin","john"],"field":"userName","type":"string"}]'
+                        example: '[{"operator":"like","value":"consent-given","field":"type","type":"string"}]'
                     ),
                 ],
                 type: 'object',

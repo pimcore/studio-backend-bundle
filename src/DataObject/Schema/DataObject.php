@@ -69,14 +69,14 @@ class DataObject extends Element implements
         #[Property(description: 'Full path', type: 'string', example: '/path/to/dataObject')]
         private readonly string $fullPath,
         #[Property(ref: DataObjectPermissions::class)]
-        private DataObjectPermissions $permissions,
+        private readonly DataObjectPermissions $permissions,
         #[Property(description: 'Custom index', type: 'integer', example: 0)]
         private readonly int $index,
         #[Property(description: 'Sort mode of children', type: 'string', example: 'index')]
         private readonly string $childrenSortBy,
         #[Property(description: 'Sort order of children', type: 'string', example: 'asc')]
         private readonly string $childrenSortOrder,
-        #[Property(description: 'Allow variants', type: 'bool', example: false, nullable: true)]
+        #[Property(description: 'Allow variants', type: 'bool', example: false)]
         private ?bool $allowVariants,
         int $id,
         int $parentId,
@@ -147,11 +147,6 @@ class DataObject extends Element implements
     public function getPermissions(): DataObjectPermissions
     {
         return $this->permissions;
-    }
-
-    public function setPermissions(DataObjectPermissions $permissions): void
-    {
-        $this->permissions = $permissions;
     }
 
     public function getIndex(): int

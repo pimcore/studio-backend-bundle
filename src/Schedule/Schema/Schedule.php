@@ -44,11 +44,10 @@ final class Schedule implements AdditionalAttributesInterface
                 ScheduleActions::Unpublish->value,
                 ScheduleActions::Delete->value,
             ],
-            example: 'publish-version',
-            nullable: true
+            example: 'publish-version'
         )]
         private readonly ?string $action,
-        #[Property(description: 'Version ID', type: 'integer', example: 987, nullable: true)]
+        #[Property(description: 'Version ID', type: 'integer', example: 987)]
         private readonly ?int $version,
         #[Property(description: 'Active', type: 'boolean', example: true)]
         private readonly bool $active,

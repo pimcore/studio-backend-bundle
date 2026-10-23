@@ -33,17 +33,12 @@ use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
-use function is_array;
-use function is_string;
-use function str_contains;
 
 /**
  * @internal
  */
 class AbstractHandler extends AbstractAutomationActionHandler
 {
-    private const string ENVIRONMENT_VARIABLE_MARKER = 'job_env(';
-
     protected function shouldBeExecuted(JobRun $jobRun): bool
     {
         return $jobRun->getState() === JobRunStates::RUNNING;
@@ -170,31 +165,6 @@ class AbstractHandler extends AbstractAutomationActionHandler
         $config = $this->getCurrentJobStepConfig($message);
 
         return array_key_exists($key, $config) ? $config[$key] : $default;
-    }
-
-    /**
-     * Only loads the environment variables for values that reference one. The parent implementation loads them,
-     * and with them the whole job run row including its context, once per string value. Steps that carry hundreds
-     * of elements therefore cost more with every step, as the context grows with the collected data.
-     */
-    protected function recursivelyReplaceConfigValuesWithEnvVariables(
-        GenericExecutionEngineMessageInterface $message,
-        mixed $configValue
-    ): mixed {
-        if (is_string($configValue)) {
-            return str_contains($configValue, self::ENVIRONMENT_VARIABLE_MARKER)
-                ? $this->replaceConfigValueWithEnvVariable($configValue, $this->getEnvironmentVariables($message))
-                : $configValue;
-        }
-
-        if (is_array($configValue)) {
-            return array_map(
-                fn (mixed $value): mixed => $this->recursivelyReplaceConfigValuesWithEnvVariables($message, $value),
-                $configValue
-            );
-        }
-
-        return $configValue;
     }
 
     protected function updateContextArrayValues(JobRun $jobRun, string $key, array $value): void

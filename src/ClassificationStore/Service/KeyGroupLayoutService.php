@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
@@ -35,6 +36,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         private ServiceResolverInterface $serviceResolver,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private ConcreteObjectResolver $concreteObjectResolver,
+        private KeyConfigResolverInterface $keyConfigResolver,
     ) {
     }
 
@@ -96,7 +98,16 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             id: $key->getKeyId(),
             name: $key->getName(),
             description: $key->getDescription(),
-            definition: $definition
+            definition: $definition,
+            title: $this->getKeyTitle($key->getKeyId())
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyTitle(int $keyId): ?string
+    {
+        return $this->keyConfigResolver->getById($keyId)?->getTitle();
     }
 }

@@ -48,7 +48,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'My Configuration')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string', example: 'My Configuration Description', nullable: true)]
+        #[Property(description: 'Description', type: 'string', example: 'My Configuration Description')]
         private readonly ?string $description,
         #[Property(description: 'shareGlobal', type: 'boolean', example: false)]
         private readonly bool $shareGlobal,
@@ -71,13 +71,13 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly array $filter,
         #[Property(description: 'Page Size', type: 'integer', example: 42)]
         private readonly int $pageSize = 25,
-        #[Property(description: 'Modification Date', type: 'integer', example: 1634025600, nullable: true)]
+        #[Property(description: 'Modification Date', type: 'integer', example: 1634025600)]
         private readonly ?int $modificationDate = null,
-        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600, nullable: true)]
+        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'ID of the owner', type: 'integer', example: 42, nullable: true)]
+        #[Property(description: 'ID of the owner', type: 'integer', example: 42)]
         private readonly ?int $ownerId = null,
-        #[Property(description: 'ID of the configuration', type: 'integer', example: 42, nullable: true)]
+        #[Property(description: 'ID of the configuration', type: 'integer', example: 42)]
         private readonly ?int $id = null,
     ) {
     }

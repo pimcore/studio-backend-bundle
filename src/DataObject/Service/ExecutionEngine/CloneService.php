@@ -36,7 +36,6 @@ use Pimcore\Model\DataObject\Service as DataObjectService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
-use function strlen;
 
 /**
  * @internal
@@ -132,12 +131,13 @@ final readonly class CloneService implements CloneServiceInterface
     ): DataObject {
         $originalParent = $this->dataObjectService->getDataObjectElement($user, $originalParentId);
         $parent = $this->dataObjectService->getDataObjectElement($user, $parentId);
-        $relativePath = substr($source->getRealPath(), strlen($originalParent->getRealFullPath()));
-
-        return $this->dataObjectService->getDataObjectElementByPath(
-            $user,
-            rtrim($parent->getRealFullPath(), '/') . rtrim($relativePath, '/')
+        $parentPath = preg_replace(
+            '@^' . $originalParent->getRealFullPath() . '@',
+            $parent . '/',
+            $source->getRealPath()
         );
+
+        return $this->dataObjectService->getDataObjectElementByPath($user, $parentPath);
     }
 
     private function cloneChildrenWithExecutionEngine(

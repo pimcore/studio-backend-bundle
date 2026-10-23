@@ -36,7 +36,7 @@ final class FieldCollectionTreeNode implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Group name', type: 'string', example: 'News', nullable: true)]
+        #[Property(description: 'Group name', type: 'string', example: 'News')]
         private readonly ?string $group = null,
     ) {
     }

@@ -31,7 +31,6 @@ studio_ee_job_upload_assets: Ladda upp assets
 studio_ee_job_clone_data_objects: Klona dataobjekt
 studio_ee_job_delete_data_objects: Ta bort dataobjekt
 studio_ee_job_batch_delete_data_objects: Ta bort dataobjekt i batch
-studio_ee_job_batch_delete_documents: Ta bort dokument i batch
 studio_ee_job_clone_documents: Klona dokument
 studio_ee_job_delete_documents: Ta bort dokument
 studio_ee_job_rewrite_element_references: Skriv om elementreferenser

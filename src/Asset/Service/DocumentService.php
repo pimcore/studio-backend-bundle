@@ -115,7 +115,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * @throws EnvironmentException
+     * @throws EnvironmentException|ElementStreamResourceNotFoundException
      */
     private function validateAssetDocument(Document $asset): void
     {
@@ -126,6 +126,17 @@ final readonly class DocumentService implements DocumentServiceInterface
                     'Document adapter does not support the file type for document %s with ID %s.',
                     $fileName,
                     $asset->getId()
+                )
+            );
+        }
+
+        if (!$asset->getPageCount()) {
+            throw new ElementStreamResourceNotFoundException(
+                id: $asset->getId(),
+                type: sprintf(
+                    '%s with mimetype(%s) and',
+                    $asset->getType(),
+                    $asset->getMimeType()
                 )
             );
         }

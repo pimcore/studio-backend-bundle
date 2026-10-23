@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
-use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\Hub;
 use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
@@ -36,11 +35,6 @@ final class PublishService implements PublishServiceInterface
     }
 
     /**
-     * Failing to reach the hub is logged and never thrown: publishing runs inside Doctrine lifecycle listeners,
-     * where an exception rolls back the surrounding transaction and closes the EntityManager. Clients fall back
-     * to polling when an update does not arrive. Only exceptions are handled, a PHP error is a programming error and
-     * still reaches the caller.
-     *
      * @param string|array<string> $topics
      */
     public function publish(
@@ -69,17 +63,7 @@ final class PublishService implements PublishServiceInterface
             )
         );
 
-        try {
-            $this->getServerHub()->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
-        } catch (Exception $exception) {
-            $this->logger->error(
-                sprintf('Failed to publish Mercure update: %s', $exception->getMessage()),
-                [
-                    'topics' => $topics,
-                    'exception' => $exception,
-                ]
-            );
-        }
+        $this->getServerHub()->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
     }
 
     public function getJsonData(mixed $data): string

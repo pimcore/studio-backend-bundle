@@ -29,9 +29,9 @@ final readonly class DataObjectPermissions extends Permissions
         private bool $save = true,
         #[Property(description: 'Unpublish', type: 'bool', example: true)]
         private bool $unpublish = true,
-        #[Property(description: 'Localized Edit', type: 'string', example: 'default', nullable: true)]
+        #[Property(description: 'Localized Edit', type: 'string', example: 'default')]
         private ?string $localizedEdit = null,
-        #[Property(description: 'Localized View', type: 'string', example: 'default', nullable: true)]
+        #[Property(description: 'Localized View', type: 'string', example: 'default')]
         private ?string $localizedView = null,
         private bool $list = true,
         private bool $view = true,

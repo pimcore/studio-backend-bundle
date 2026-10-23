@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightInheritanceDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceOrigin;
@@ -84,13 +83,6 @@ final readonly class InheritanceService implements InheritanceServiceInterface
 
         if ($adapter === null || $fieldDefinition->supportsInheritance() === false) {
             return new InheritanceData($object->getId(), inheritable: false);
-        }
-
-        if ($adapter instanceof LightweightInheritanceDataInterface) {
-            $inheritanceData = $adapter->getLightweightFieldInheritance($object, $fieldDefinition, $key, $contextData);
-            if ($inheritanceData !== null) {
-                return $inheritanceData;
-            }
         }
 
         if ($adapter instanceof DataInheritanceInterface) {

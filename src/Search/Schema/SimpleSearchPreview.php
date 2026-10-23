@@ -48,27 +48,17 @@ class SimpleSearchPreview implements AdditionalAttributesInterface
         private readonly string $elementType,
         #[Property(description: 'Type', type: 'string', example: 'image')]
         private readonly string $type,
-        #[Property(description: 'Id of owner', type: 'integer', example: 1, nullable: true)]
+        #[Property(description: 'Id of owner', type: 'integer', example: 1)]
         private readonly ?int $userOwner,
-        #[Property(description: 'Name of owner', type: 'string', example: 'admin', nullable: true)]
+        #[Property(description: 'Name of owner', type: 'string', example: 'admin')]
         private readonly ?string $userOwnerName,
-        #[Property(
-            description: 'Id of the user that modified the element',
-            type: 'integer',
-            example: 1,
-            nullable: true
-        )]
+        #[Property(description: 'Id of the user that modified the element', type: 'integer', example: 1)]
         private readonly ?int $userModification,
-        #[Property(
-            description: 'Name of the user that modified the element',
-            type: 'integer',
-            example: 'admin',
-            nullable: true
-        )]
+        #[Property(description: 'Name of the user that modified the element', type: 'integer', example: 'admin')]
         private readonly ?string $userModificationName,
-        #[Property(description: 'Creation date', type: 'integer', example: 221846400, nullable: true)]
+        #[Property(description: 'Creation date', type: 'integer', example: 221846400)]
         private readonly ?int $creationDate,
-        #[Property(description: 'Modification date', type: 'integer', example: 327417600, nullable: true)]
+        #[Property(description: 'Modification date', type: 'integer', example: 327417600)]
         private readonly ?int $modificationDate,
     ) {
 

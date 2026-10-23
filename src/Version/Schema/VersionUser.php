@@ -26,9 +26,9 @@ use OpenApi\Attributes\Schema;
 final readonly class VersionUser
 {
     public function __construct(
-        #[Property(description: 'ID', type: 'integer', example: 2, nullable: true)]
+        #[Property(description: 'ID', type: 'integer', example: 2)]
         private ?int $id = null,
-        #[Property(description: 'name', type: 'string', example: 'John Doe', nullable: true)]
+        #[Property(description: 'name', type: 'string', example: 'John Doe')]
         private ?string $name = null,
     ) {
 

@@ -108,8 +108,11 @@ final readonly class ImageGalleryAdapter implements
             $this->getValidFieldValue($object, $fieldDefinition->getName(), $contextData)
         );
 
-        // Without a value yet (e.g. a new object brick), merge into an empty gallery.
-        $existingValues = is_array($existingValues) ? $this->normalizeHotspotAndMarkerData($existingValues) : [];
+        if (!is_array($existingValues)) {
+            return $newData;
+        }
+
+        $existingValues = $this->normalizeHotspotAndMarkerData($existingValues);
 
         return $this->patchService->handlePatchDataField($newData, $existingValues, SubTypes::IMAGE->value);
     }

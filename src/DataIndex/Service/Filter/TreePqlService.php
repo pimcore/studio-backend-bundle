@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Filter;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Aggregation\Tree\ChildFolderAggregation;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
@@ -26,8 +25,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObjec
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Document\DocumentSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\User;
-use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -48,19 +45,13 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         int $parentId,
         string $pqlQuery,
         string $elementType,
-        ?UserInterface $user,
     ): array {
-        // Without a user, the aggregation would not apply any permissions.
-        if (!$user instanceof User) {
-            return [];
-        }
-
         $parentPath = $this->resolveParentPath($parentId, $elementType);
         if ($parentPath === null) {
             return [];
         }
 
-        $aggregation = $this->executeAggregationSearch($parentPath, $pqlQuery, $elementType, $user);
+        $aggregation = $this->executeAggregationSearch($parentPath, $pqlQuery, $elementType);
         if ($aggregation === null) {
             return [];
         }
@@ -89,30 +80,33 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         string $parentPath,
         string $pqlQuery,
         string $elementType,
-        User $user,
     ): ?SearchResultAggregation {
         $aggregationName = ChildFolderAggregation::AGGREGATION_NAME;
 
         try {
             return match ($elementType) {
-                ElementTypes::TYPE_ASSET => $this->assetSearchService->search(
-                    $this->prepareSearch($this->searchProvider->createAssetSearch(), $parentPath, $pqlQuery, $user),
-                    PermissionTypes::VIEW
-                )->getAggregation($aggregationName),
+                ElementTypes::TYPE_ASSET => $this->assetSearchService
+                    ->search($this->prepareSearch(
+                        $this->searchProvider->createAssetSearch(),
+                        $parentPath,
+                        $pqlQuery,
+                    ))
+                    ->getAggregation($aggregationName),
                 ElementTypes::TYPE_DATA_OBJECT,
-                ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->search(
-                    $this->prepareSearch(
+                ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService
+                    ->search($this->prepareSearch(
                         $this->searchProvider->createDataObjectSearch(),
                         $parentPath,
                         $pqlQuery,
-                        $user
-                    ),
-                    PermissionTypes::VIEW
-                )->getAggregation($aggregationName),
-                ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->search(
-                    $this->prepareSearch($this->searchProvider->createDocumentSearch(), $parentPath, $pqlQuery, $user),
-                    PermissionTypes::VIEW
-                )->getAggregation($aggregationName),
+                    ))
+                    ->getAggregation($aggregationName),
+                ElementTypes::TYPE_DOCUMENT => $this->documentSearchService
+                    ->search($this->prepareSearch(
+                        $this->searchProvider->createDocumentSearch(),
+                        $parentPath,
+                        $pqlQuery,
+                    ))
+                    ->getAggregation($aggregationName),
                 default => null,
             };
         } catch (Exception $e) {
@@ -141,10 +135,7 @@ final readonly class TreePqlService implements TreePqlServiceInterface
         SearchInterface $search,
         string $parentPath,
         string $pqlQuery,
-        User $user,
     ): SearchInterface {
-        $search->setUser($user);
-
         $search->addModifier(new PathFilter($parentPath));
         $search->addModifier(new ExcludeFoldersFilter());
         $search->addModifier(new PqlFilter($pqlQuery));

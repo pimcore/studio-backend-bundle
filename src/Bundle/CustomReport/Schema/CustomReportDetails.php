@@ -110,27 +110,20 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         #[Property(
             description: 'Configuration for data source. Content of array depends on selected adapter/data source',
             type: 'object',
-            example: [],
-            nullable: true
+            example: []
         )]
         private readonly ?stdClass $dataSourceConfig = null,
-        #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)', nullable: true)]
+        #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)')]
         private readonly ?string $pieColumn = null,
-        #[Property(
-            description: 'Label of data column for pie chart',
-            type: 'string',
-            example: 'attributesAvailable',
-            nullable: true
-        )]
+        #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
         private readonly ?string $pieLabelColumn = null,
-        #[Property(description: 'X axis column names', type: 'string', example: 'attributesAvailable', nullable: true)]
+        #[Property(description: 'X axis column names', type: 'string', example: 'attributesAvailable')]
         private readonly ?string $xAxis = null,
         #[Property(
             description: 'Y axis column information',
             type: 'array',
             items: new Items(type: 'string'),
-            example: '["attributesAvailable", "count(*)"]',
-            nullable: true
+            example: '["attributesAvailable", "count(*)"]'
         )]
         private readonly ?array $yAxis = null,
     ) {

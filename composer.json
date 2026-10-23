@@ -20,12 +20,11 @@
     "php": "~8.4.0 || ~8.5.0",
     "league/csv": "^9.27",
     "league/oauth2-server": "^9.2",
-    "mcp/sdk": "^0.7",
     "nesbot/carbon": "^3.10.0",
     "pimcore/static-resolver-bundle": "^2026.2.0",
-    "pimcore/generic-data-index-bundle": "^2026.4",
-    "pimcore/pimcore": "^2026.4",
-    "zircote/swagger-php": "^5.0.2 || ^6.0",
+    "pimcore/generic-data-index-bundle": "^2026.3.0",
+    "pimcore/pimcore": "^2026.3",
+    "zircote/swagger-php": "^5.0",
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",
     "symfony/mercure-bundle": "^0.3.9",
@@ -62,7 +61,7 @@
     }
   },
   "conflict": {
-    "pimcore/asset-metadata-class-definitions": "<2026.3.2"
+    "zircote/swagger-php": ">=5.6"
   },
   "autoload-dev": {
     "psr-4": {
@@ -71,7 +70,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-2026.x": "2026.4.x-dev"
+      "dev-2026.x": "2026.1.x-dev"
     },
     "pimcore": {
       "bundles": [

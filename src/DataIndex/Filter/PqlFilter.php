@@ -93,7 +93,6 @@ final readonly class PqlFilter implements FilterInterface
             $parentId,
             $pqlQuery,
             $elementType,
-            $query->getSearch()->getUser(),
         );
 
         return $query->filterByTreePql($pqlQuery, $relevantFolderKeys);

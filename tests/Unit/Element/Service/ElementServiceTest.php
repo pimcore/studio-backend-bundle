@@ -23,9 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\DataObject;
-use Pimcore\Model\Document\Folder as DocumentFolder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -101,50 +98,6 @@ final class ElementServiceTest extends Unit
         $this->expectException(NotFoundException::class);
 
         $service->getNavigableElementByPath(ElementTypes::TYPE_DATA_OBJECT, '/does-not-exist');
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testDocumentChildrenCountIncludingUnpublished(): void
-    {
-        $folder = $this->createMock(DocumentFolder::class);
-        $folder->expects($this->once())->method('hasChildren')->with(true)->willReturn(true);
-
-        $this->assertTrue($this->createService()->hasElementChildren($folder));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testDataObjectChildrenCountIncludingUnpublished(): void
-    {
-        $folder = $this->createMock(DataObject\Folder::class);
-        $folder->expects($this->once())
-            ->method('hasChildren')
-            ->with($this->anything(), true)
-            ->willReturn(true);
-
-        $this->assertTrue($this->createService()->hasElementChildren($folder));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testAssetFolderChildren(): void
-    {
-        $folder = $this->createMock(Asset\Folder::class);
-        $folder->method('hasChildren')->willReturn(false);
-
-        $this->assertFalse($this->createService()->hasElementChildren($folder));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testOtherElementsHaveNoChildren(): void
-    {
-        $this->assertFalse($this->createService()->hasElementChildren($this->makeEmpty(ElementInterface::class)));
     }
 
     /**

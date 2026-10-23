@@ -34,12 +34,7 @@ final readonly class GroupUpdate
     public function __construct(
         #[Property(description: 'Name of the group', type: 'string', example: 'My Group')]
         private string $name,
-        #[Property(
-            description: 'Description of the group',
-            type: 'string',
-            example: 'Group description',
-            nullable: true
-        )]
+        #[Property(description: 'Description of the group', type: 'string', example: 'Group description')]
         private ?string $description = null,
     ) {
         if (empty($this->name)) {

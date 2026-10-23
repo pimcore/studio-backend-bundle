@@ -39,7 +39,6 @@ studio_ee_job_upload_assets: Assets uploaden
 studio_ee_job_clone_data_objects: Gegevensobjecten klonen
 studio_ee_job_delete_data_objects: Gegevensobjecten verwijderen
 studio_ee_job_batch_delete_data_objects: Gegevensobjecten batchgewijs verwijderen
-studio_ee_job_batch_delete_documents: Documenten batchgewijs verwijderen
 studio_ee_job_clone_documents: Documenten klonen
 studio_ee_job_delete_documents: Documenten verwijderen
 studio_ee_job_rewrite_element_references: Elementverwijzingen herschrijven

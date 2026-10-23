@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DocumentSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearchInterface;
@@ -56,12 +55,10 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     /**
      * {@inheritdoc}
      */
-    public function searchDocuments(
-        DocumentQueryInterface $documentQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): DocumentSearchResult {
+    public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult
+    {
         try {
-            $searchResult = $this->searchService->search($documentQuery->getSearch(), $permissionType);
+            $searchResult = $this->searchService->search($documentQuery->getSearch());
         } catch (DocumentSearchException) {
             throw new SearchException('documents');
         } catch (ParsingException $e) {

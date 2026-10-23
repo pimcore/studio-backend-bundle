@@ -124,26 +124,13 @@ final readonly class UpdateService implements UpdateServiceInterface
             return $class->getId();
         }, $this->classDefinitionRepository->getClassDefinitions());
 
-        // Deleting a class definition does not remove its ID from the users/roles it was assigned to.
-        // Those stale IDs are read from the database and sent back on the next save, so rejecting them
-        // would make the user/role unsavable. They are dropped instead - IDs the client made up are still
-        // reported as not found.
-        $deletedClasses = array_diff($user->getClasses(), $classes);
-
-        $classesToStore = [];
         foreach ($classesToSet as $class) {
-            if (in_array($class, $classes, true)) {
-                $classesToStore[] = $class;
-
-                continue;
-            }
-
-            if (!in_array($class, $deletedClasses, true)) {
+            if (!in_array($class, $classes, true)) {
                 throw new NotFoundException('Class', $class);
             }
         }
 
-        $user->setClasses($classesToStore);
+        $user->setClasses($classesToSet);
 
         return $user;
     }

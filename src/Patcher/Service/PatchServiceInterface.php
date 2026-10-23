@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -47,7 +46,7 @@ interface PatchServiceInterface
     ): int;
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException
+     * @throws ElementSavingFailedException
      */
     public function patchElement(
         ElementInterface $element,
@@ -56,16 +55,5 @@ interface PatchServiceInterface
         UserInterface $user
     ): void;
 
-    /**
-     * Merges an add/remove patch ({action, data}) into the existing entries; any other or no action returns the patch
-     * data and a plain list is returned unchanged. Entries are matched by element id and type, and "add"
-     * never appends an element that is already in the existing entries. With $allowRepeatedEntries false, an element
-     * is also kept only once among the existing entries and appended only once from the patch data.
-     */
-    public function handlePatchDataField(
-        array $fieldData,
-        array $existingValues,
-        ?string $dataKey = null,
-        bool $allowRepeatedEntries = true
-    ): array;
+    public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array;
 }

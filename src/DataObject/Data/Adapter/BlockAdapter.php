@@ -115,7 +115,7 @@ final readonly class BlockAdapter implements
         ?FieldContextData $contextData = null
     ): FieldContextData {
         $object = $contextData?->getContextObject() ?? $element;
-        $data = $object->get($fieldDefinition->getName(), $contextData?->getLanguage())[$index] ?? [];
+        $data = $object->get($fieldDefinition->getName())[$index] ?? [];
 
         return new FieldContextData(
             new BlockData(

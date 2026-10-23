@@ -106,7 +106,7 @@ final readonly class LocalizedFieldsAdapter implements
                     $name,
                     [$name => $fieldData],
                     $user,
-                    new FieldContextData($contextData?->getContextObject(), $language),
+                    new FieldContextData(language: $language),
                     $isPatch
                 );
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
@@ -152,13 +152,7 @@ final readonly class LocalizedFieldsAdapter implements
                 $value->getObject(),
                 $val,
                 $fd,
-                new FieldContextData(
-                    language: $lang,
-                    // only the localized fields of the object itself are part of a version's stored data,
-                    // the ones of a container (object brick, field collection) are computed live
-                    historicalVersion: $contextData?->getContextObject() === null
-                        && ($contextData?->isHistoricalVersion() ?? false),
-                ),
+                new FieldContextData(language: $lang),
             ),
         );
     }

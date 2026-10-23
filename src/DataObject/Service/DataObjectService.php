@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectDe
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -39,14 +38,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
@@ -64,7 +61,6 @@ use function sprintf;
 final readonly class DataObjectService implements DataObjectServiceInterface
 {
     use ElementProviderTrait;
-    use ElementViewPermissionTrait;
     use UserPermissionTrait;
     use ValidateObjectDataTrait;
 
@@ -86,8 +82,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private ElementSaveServiceInterface $elementSaveService,
-        private WorkflowPermissionMergerInterface $workflowPermissionMerger
+        private ElementSaveServiceInterface $elementSaveService
     ) {
     }
 
@@ -126,13 +121,12 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $query = $this->dataObjectQueryProvider->createDataObjectQuery();
-        // The user has to be set before filtering, filters apply the user's permissions.
-        $query->setUser($this->securityService->getCurrentUser());
         $query = $filterService->applyFilters(
             $query,
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );
+        $query->setUser($this->securityService->getCurrentUser());
 
         $parentId = $parameters->getParentId() ?? 1;
         $parent = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $parentId);
@@ -158,10 +152,10 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObject(int $id, bool $getDetailData = true): DataObjectDetail|DataObjectFolder
     {
         $user = $this->securityService->getCurrentUser();
-        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
-        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
-
-        $this->applyWorkflowPermissions($dataObject);
+        $dataObject = $this->dataObjectSearchService->getDataObjectById(
+            $id,
+            $user
+        );
 
         if ($getDetailData) {
             $this->getObjectDetailData($dataObject);
@@ -177,14 +171,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjectForUser(int $id, UserInterface $user): DataObjectDetail|DataObjectFolder
     {
-        $this->assertElementViewPermission(ElementTypes::TYPE_OBJECT, $id, $user);
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
-
-        // the workflow place conditions are evaluated for the current request user only: for any other user
-        // the permissions stay the workspace permissions instead of mixing two user contexts
-        if ($this->isCurrentUser($user)) {
-            $this->applyWorkflowPermissions($dataObject);
-        }
 
         $this->dispatchDetailEvent($dataObject);
 
@@ -350,34 +337,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $element,
             $version
         );
-    }
-
-    /**
-     * The permissions of the search index only know the user's workspace permissions. Restrict them by the
-     * current workflow place so that the response matches what the save/publish endpoints enforce.
-     * The stored element is evaluated, not a version/draft of it, as the workflow state lives on the element.
-     */
-    private function applyWorkflowPermissions(DataObjectFolder|DataObjectDetail $dataObject): void
-    {
-        if (!$dataObject->getHasWorkflowWithPermissions()) {
-            return;
-        }
-
-        $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
-        $permissions = $this->workflowPermissionMerger->mergeWorkflowPermissions(
-            $dataObject->getPermissions(),
-            $element
-        );
-
-        if ($permissions instanceof DataObjectPermissions) {
-            $dataObject->setPermissions($permissions);
-        }
-    }
-
-    private function isCurrentUser(UserInterface $user): bool
-    {
-        return $this->securityService->isLoggedIn()
-            && $this->securityService->getCurrentUser()->getId() === $user->getId();
     }
 
     private function dispatchTreeEvent(mixed $dataObject): void

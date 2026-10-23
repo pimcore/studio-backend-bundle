@@ -129,10 +129,6 @@ final readonly class ElementIndexService implements ElementIndexServiceInterface
         $updatedDocument->saveIndex($newIndex);
 
         $list = new Listing();
-        // Batch patches run in the worker, where the CLI bootstrap hides unpublished
-        // documents. Skipping them here would leave their index untouched and
-        // produce duplicate positions among the siblings.
-        $list->setUnpublished(true);
         $list->setCondition('parentId = ? AND id != ?', [$parentId, $updatedDocument->getId()]);
         $list->setOrderKey('index');
         $list->setOrder('asc');

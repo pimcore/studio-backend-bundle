@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
 use ReflectionMethod;
@@ -112,49 +111,6 @@ final class ZipServiceTest extends Unit
         $this->assertContains('folder/file.txt', $entries);
     }
 
-    public function testAddFileReturnsTrueForAssetWithBinary(): void
-    {
-        $service = $this->createService();
-        $archive = $this->createZipArchive();
-
-        $added = $service->addFile($archive, $this->createAssetMock('/folder/file.txt'));
-
-        $this->assertTrue($added);
-    }
-
-    public function testAddFileSkipsAssetWhoseBinaryIsMissingFromStorage(): void
-    {
-        $service = $this->createService();
-        $archive = $this->createZipArchive();
-
-        $missing = $this->createAssetMock('/folder/missing.txt', true);
-        $present = $this->createAssetMock('/folder/present.txt');
-
-        $this->assertFalse($service->addFile($archive, $missing));
-        $this->assertTrue($service->addFile($archive, $present));
-
-        $entries = $this->getZipEntries($archive);
-
-        $this->assertSame(['folder/present.txt'], $entries);
-    }
-
-    public function testAddFileThrowsWhenArchiveInsertionFails(): void
-    {
-        $service = $this->createService();
-        $archive = $this->makeEmpty(ZipArchive::class, ['addFile' => false]);
-
-        $asset = $this->makeEmpty(Asset::class, [
-            'getLocalFile' => '/nonexistent/pme/file.txt',
-            'getRealFullPath' => '/folder/file.txt',
-            'getId' => 1,
-            'isStreamPlaceholder' => false,
-        ]);
-
-        $this->expectException(EnvironmentException::class);
-
-        $service->addFile($archive, $asset);
-    }
-
     public function testResolveCommonBasePathSingleFolder(): void
     {
         $result = $this->invokeResolveCommonBasePath(['/photos/vacation']);
@@ -225,25 +181,15 @@ final class ZipServiceTest extends Unit
         return $archive;
     }
 
-    private function createAssetMock(string $realFullPath, bool $isStreamPlaceholder = false): Asset
+    private function createAssetMock(string $realFullPath): Asset
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'asset_test_');
         file_put_contents($tempFile, 'test content');
         $this->tempFiles[] = $tempFile;
 
-        // Like core, the flag is only valid once the file was read: checking it earlier must not skip the asset
-        $fileWasRead = false;
-
         return $this->makeEmpty(Asset::class, [
-            'getLocalFile' => static function () use (&$fileWasRead, $tempFile): string {
-                $fileWasRead = true;
-
-                return $tempFile;
-            },
+            'getLocalFile' => $tempFile,
             'getRealFullPath' => $realFullPath,
-            'isStreamPlaceholder' => static function () use (&$fileWasRead, $isStreamPlaceholder): bool {
-                return $fileWasRead && $isStreamPlaceholder;
-            },
         ]);
     }
 

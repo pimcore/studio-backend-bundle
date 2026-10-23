@@ -28,9 +28,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataService
 
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueSnapshotServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\CalculatedValueSnapshotService
-
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceService
 
@@ -53,8 +50,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlService
-    arguments:
-      $defaultPreviewGenerator: '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator'
+    arguments: [ '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterService

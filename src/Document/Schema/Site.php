@@ -42,9 +42,9 @@ final class Site implements AdditionalAttributesInterface
         private readonly array $domains,
         #[Property(description: 'Domain', type: 'string', example: 'main_site')]
         private readonly string $domain,
-        #[Property(description: 'ID of the root', type: 'integer', example: 1, nullable: true)]
+        #[Property(description: 'ID of the root', type: 'integer', example: 1)]
         private readonly ?int $rootId = null,
-        #[Property(description: 'Root path', type: 'string', example: '/', nullable: true)]
+        #[Property(description: 'Root path', type: 'string', example: '/')]
         private readonly ?string $rootPath = null,
     ) {
     }

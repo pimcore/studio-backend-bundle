@@ -61,9 +61,9 @@ final class Note implements AdditionalAttributesInterface
             example: 'Can be pretty much anything',
         )]
         private readonly array $data,
-        #[Property(description: 'User ID', type: 'integer', example: 1, nullable: true)]
+        #[Property(description: 'User ID', type: 'integer', example: 1)]
         private readonly ?int $userId,
-        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal', nullable: true)]
+        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
         private readonly ?string $userName
     ) {
     }

@@ -31,9 +31,9 @@ final readonly class RedirectAddParameters
     public function __construct(
         #[Property(description: 'Type of redirect', type: 'string', example: CoreRedirect::TYPE_ENTIRE_URI)]
         public string $type = CoreRedirect::TYPE_ENTIRE_URI,
-        #[Property(description: 'Source URL', type: 'string', example: '/old-path', nullable: true)]
+        #[Property(description: 'Source URL', type: 'string', example: '/old-path')]
         public ?string $source = null,
-        #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
+        #[Property(description: 'Target URL', type: 'string', example: '/new-path')]
         public ?string $target = null,
     ) {
     }

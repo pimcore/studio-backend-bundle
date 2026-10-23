@@ -18,7 +18,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Model\Exception\NotFoundException as ModelNotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
@@ -59,20 +58,6 @@ final readonly class UserRepository implements UserRepositoryInterface
         }
 
         return $user;
-    }
-
-    public function getStoredTwoFactorAuthentication(int $userId): array
-    {
-        // Not getUserById(): that answers from the request's runtime cache.
-        $user = new User();
-
-        try {
-            $user->getDao()->getById($userId);
-        } catch (ModelNotFoundException) {
-            throw new NotFoundException('User', $userId);
-        }
-
-        return $user->getTwoFactorAuthentication();
     }
 
     /**

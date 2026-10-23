@@ -17,7 +17,6 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
@@ -27,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DetailValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
@@ -38,7 +36,6 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EqualComparisonInterface;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModel;
 use function array_key_exists;
@@ -81,12 +78,7 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setShowVariants($classData->getShowVariants());
         $dataObject->setHasPreview($classData->getHasPreview());
         $dataObject->setShowAppLoggerTab($classData->getShowAppLoggerTab());
-        $dataObject->setObjectData($this->getDetailObjectData(
-            $element,
-            $fieldDefinitions,
-            // a version detail shows what the version stores, the edit view shows live values
-            $dataObject instanceof DataObjectVersion ? new FieldContextData(historicalVersion: true) : null
-        ));
+        $dataObject->setObjectData($this->getDetailObjectData($element, $fieldDefinitions));
 
         if ($dataObject instanceof DataObjectDetail) {
             $dataObject->setDraftData($this->getDraftData($element, $version));
@@ -187,8 +179,6 @@ final readonly class DataService implements DataServiceInterface
                 $element->setValue($key, $value);
             }
 
-        } catch (ValidationException $e) {
-            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($element->getId(), $e->getMessage());
         }
@@ -279,33 +269,18 @@ final readonly class DataService implements DataServiceInterface
     /**
      * @throws NotFoundException
      */
-    private function getDetailObjectData(
-        Concrete $dataObject,
-        array $fieldDefinitions,
-        ?FieldContextData $contextData = null
-    ): array {
+    private function getDetailObjectData(Concrete $dataObject, array $fieldDefinitions): array
+    {
         $data = [];
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            $data[$key] = $this->getLightweightDetailValue($dataObject, $fieldDefinition, $key)
-                ?? $this->getDetailValue(
-                    $dataObject,
-                    $this->getValidFieldValue($dataObject, $key),
-                    $fieldDefinition,
-                    $contextData
-                );
+            $data[$key] = $this->getDetailValue(
+                $dataObject,
+                $this->getValidFieldValue($dataObject, $key),
+                $fieldDefinition
+            );
         }
 
         return $data;
-    }
-
-    private function getLightweightDetailValue(Concrete $dataObject, Data $fieldDefinition, string $key): mixed
-    {
-        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
-        if (!$adapter instanceof LightweightDetailDataInterface) {
-            return null;
-        }
-
-        return $adapter->getLightweightDetailData($dataObject, $fieldDefinition, $key);
     }
 
     private function getObjectClassData(ClassDefinition $class): ClassData

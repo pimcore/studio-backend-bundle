@@ -30,11 +30,11 @@ final class ColumnData implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
         private readonly string $key,
-        #[Property(description: 'Locale', type: 'string', example: 'en', nullable: true)]
+        #[Property(description: 'Locale', type: 'string', example: 'en')]
         private readonly ?string $locale,
-        #[Property(description: 'Value', type: 'mixed', example: 73, nullable: true)]
+        #[Property(description: 'Value', type: 'mixed', example: 73)]
         private readonly mixed $value,
-        #[Property(description: 'Field Type of the column', type: 'string', example: 'input', nullable: true)]
+        #[Property(description: 'Field Type of the column', type: 'string', example: 'input')]
         private readonly mixed $fieldType,
         #[Property(
             description: 'inheritance',

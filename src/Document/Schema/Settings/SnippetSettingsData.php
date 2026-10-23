@@ -32,38 +32,23 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface
 readonly class SnippetSettingsData implements SettingsDataInterface
 {
     public function __construct(
-        #[Property(
-            description: 'Controller',
-            type: 'string',
-            example: 'App\\Controller\\PageController',
-            nullable: true
-        )]
+        #[Property(description: 'Controller', type: 'string', example: 'App\\Controller\\PageController')]
         private ?string $controller,
-        #[Property(description: 'Template', type: 'string', example: '@app/template.html.twig', nullable: true)]
+        #[Property(description: 'Template', type: 'string', example: '@app/template.html.twig')]
         private ?string $template,
-        #[Property(description: 'Main document ID', type: 'integer', example: 1, nullable: true)]
+        #[Property(description: 'Main document ID', type: 'integer', example: 1)]
         private ?int $contentMainDocumentId,
-        #[Property(
-            description: 'Main document path',
-            type: 'string',
-            example: '/path/to/main/document',
-            nullable: true
-        )]
+        #[Property(description: 'Main document path', type: 'string', example: '/path/to/main/document')]
         private ?string $contentMainDocumentPath = null,
         #[Property(description: 'Supports main content', type: 'bool', example: false)]
         private bool $supportsContentMain = false,
         #[Property(description: 'Is static generator enabled', type: 'bool', example: false)]
         private bool $staticGeneratorEnabled = false,
-        #[Property(description: 'Lifetime of static generator', type: 'integer', example: 123456, nullable: true)]
+        #[Property(description: 'Lifetime of static generator', type: 'integer', example: 123456)]
         private ?int $staticGeneratorLifetime = null,
-        #[Property(
-            description: 'Timestamp of last generated data',
-            type: 'integer',
-            example: 1700000000,
-            nullable: true
-        )]
+        #[Property(description: 'Timestamp of last generated data', type: 'integer', example: 1700000000)]
         private ?int $staticLastGenerated = null,
-        #[Property(description: 'Document Url', type: 'string', example: 'https://example.com/', nullable: true)]
+        #[Property(description: 'Document Url', type: 'string', example: 'https://example.com/')]
         private ?string $url = null,
     ) {
     }

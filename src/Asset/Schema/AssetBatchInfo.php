@@ -29,7 +29,7 @@ final readonly class AssetBatchInfo
         private string $fileName,
         #[Property(description: 'True if asset exists', type: 'boolean', example: true)]
         private bool $exists,
-        #[Property(description: 'Id of existing asset', type: 'integer', example: 83, nullable: true)]
+        #[Property(description: 'Id of existing asset', type: 'integer', example: 83)]
         private ?int $assetId = null,
         /**
          * The name is then reported as not existing, since no ID can be handed out.

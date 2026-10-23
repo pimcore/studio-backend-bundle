@@ -54,12 +54,7 @@ interface ZipServiceInterface
 
     public const ZIP_DOWNLOAD_FILENAME = 'zip_download_filename';
 
-    /**
-     * Returns false when the asset was skipped because its binary is missing from storage.
-     *
-     * @throws EnvironmentException when the file could not be added to the archive
-     */
-    public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): bool;
+    public function addFile(ZipArchive $archive, Asset $asset, string $basePath = '/'): void;
 
     public function extractArchiveFiles(
         ZipArchive $archive,

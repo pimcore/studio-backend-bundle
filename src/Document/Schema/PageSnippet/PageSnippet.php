@@ -52,14 +52,9 @@ final class PageSnippet extends Document
         ?int $modificationDate,
         bool $isSite = false,
         bool $navigationExclude = false,
-        #[Property(description: 'Title of the Page Snippet', type: 'string', example: 'Title', nullable: true)]
+        #[Property(description: 'Title of the Page Snippet', type: 'string', example: 'Title')]
         private readonly ?string $title = null,
-        #[Property(
-            description: 'Description of the Page Snippet',
-            type: 'string',
-            example: 'Description',
-            nullable: true
-        )]
+        #[Property(description: 'Description of the Page Snippet', type: 'string', example: 'Description')]
         private readonly ?string $description = null,
         #[Property(description: 'Static generator enabled', type: 'boolean', example: false)]
         private readonly bool $staticGeneratorEnabled = false,

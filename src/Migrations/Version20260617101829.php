@@ -29,11 +29,6 @@ final class Version20260617101829 extends AbstractMigration
         return 'Create saved search configuration and share tables';
     }
 
-    public function isTransactional(): bool
-    {
-        return false;
-    }
-
     public function up(Schema $schema): void
     {
         $this->createSavedSearchConfigurationTable($schema);

@@ -45,13 +45,13 @@ readonly class CustomReportColumnConfigurationUpdate
         private string $action,
         #[Property(description: 'Id', type: 'string', example: '401-3')]
         private string $id,
-        #[Property(description: 'Width of the column', type: 'integer', example: 200, nullable: true)]
+        #[Property(description: 'Width of the column', type: 'integer', example: 200)]
         private ?int $width = null,
-        #[Property(description: 'Display type of the column', type: 'string', example: 'text', nullable: true)]
+        #[Property(description: 'Display type of the column', type: 'string', example: 'text')]
         private ?string $displayType = null,
-        #[Property(description: 'Type of the filter', type: 'string', example: 'numeric', nullable: true)]
+        #[Property(description: 'Type of the filter', type: 'string', example: 'numeric')]
         private ?string $filterType = null,
-        #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter', nullable: true)]
+        #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter')]
         private ?string $filterDrilldown = null,
     ) {
 

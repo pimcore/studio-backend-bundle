@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\UserPermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\QueryLanguage\ParsingException;
@@ -60,12 +59,10 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(
-        AssetQueryInterface $assetQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): AssetSearchResult {
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult
+    {
         try {
-            $searchResult = $this->searchService->search($assetQuery->getSearch(), $permissionType);
+            $searchResult = $this->searchService->search($assetQuery->getSearch());
         } catch (AssetSearchException) {
             throw new SearchException('assets');
         } catch (ParsingException $e) {
@@ -125,16 +122,13 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
      *
      * @return array<int>
      */
-    public function fetchAssetIds(
-        QueryInterface $assetQuery,
-        PermissionTypes $permissionType = PermissionTypes::LIST
-    ): array {
+    public function fetchAssetIds(QueryInterface $assetQuery): array
+    {
         try {
             $search = $this->searchHelper->addSearchRestrictions(
                 search: $assetQuery->getSearch(),
                 userPermission: UserPermissionTypes::ASSETS->value,
-                workspaceType: AssetWorkspace::WORKSPACE_TYPE,
-                permissionType: $permissionType
+                workspaceType: AssetWorkspace::WORKSPACE_TYPE
             );
 
             return $this->searchResultIdListService->getAllIds($search);

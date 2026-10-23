@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -49,13 +48,9 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
-use function array_is_list;
 use function array_key_exists;
 use function count;
-use function is_array;
-use function is_int;
 use function sprintf;
 
 /**
@@ -85,8 +80,6 @@ final readonly class PatchService implements PatchServiceInterface
         array $patchData,
         UserInterface $user,
     ): ?int {
-        $this->assertPatchData($patchData);
-
         if (count($patchData) > 1) {
             return $this->patchAsynchronously($elementType, $patchData, $user);
         }
@@ -147,7 +140,7 @@ final readonly class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|FieldValidationFailedException|ForbiddenException|InvalidArgumentException
+     * @throws ElementSavingFailedException|ForbiddenException|InvalidArgumentException
      */
     public function patchElement(
         ElementInterface $element,
@@ -202,38 +195,24 @@ final readonly class PatchService implements PatchServiceInterface
             );
         } catch (ForbiddenException $exception) {
             throw $exception;
-        } catch (ValidationException $exception) {
-            throw new FieldValidationFailedException($exception->getMessage(), previous: $exception);
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }
     }
 
-    public function handlePatchDataField(
-        array $fieldData,
-        array $existingValues,
-        ?string $dataKey = null,
-        bool $allowRepeatedEntries = true
-    ): array {
-        // A plain list is not a patch {action, data} and replaces the field as it is.
-        if (array_is_list($fieldData)) {
-            return $fieldData;
+    public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array
+    {
+        $newData = $fieldData[PatchDataKeys::DATA->value];
+        $action = $fieldData[PatchDataKeys::ACTION->value];
+
+        $existingMap = [];
+        foreach ($existingValues as $existingItem) {
+            $existingMap[$this->getFieldMapKey($existingItem, $dataKey)] = $existingItem;
         }
 
-        $newData = $fieldData[PatchDataKeys::DATA->value] ?? null;
-        $newData = is_array($newData) ? $newData : [];
-        if (!$allowRepeatedEntries) {
-            $existingValues = $this->keepFirstEntryPerElement($existingValues, $dataKey);
-        }
-
-        return match ($fieldData[PatchDataKeys::ACTION->value] ?? null) {
-            PatcherActions::ADD->value => $this->handleAddition(
-                $existingValues,
-                $newData,
-                $dataKey,
-                $allowRepeatedEntries
-            ),
-            PatcherActions::REMOVE->value => $this->handleRemoval($existingValues, $newData, $dataKey),
+        return match ($action) {
+            PatcherActions::ADD->value => $this->handleAddition($existingMap, $newData, $dataKey),
+            PatcherActions::REMOVE->value => $this->handleRemoval($existingMap, $newData, $dataKey),
             default => $newData
         };
     }
@@ -264,129 +243,32 @@ final readonly class PatchService implements PatchServiceInterface
         }
     }
 
-    /**
-     * Keeps all existing entries, including repeated assignments and their data, and appends the new entries whose
-     * element is not in the existing entries, like AbstractRelations::appendData(). Elements are matched by the id
-     * and type sent in the payload.
-     */
-    private function handleAddition(
-        array $existingValues,
-        array $newData,
-        ?string $dataKey,
-        bool $allowRepeatedEntries
-    ): array {
-        $result = array_values($existingValues);
-        $existingKeys = $this->getFieldMapKeys($result, $dataKey);
+    private function handleAddition(array $existingMap, array $newData, ?string $dataKey = null): array
+    {
+        foreach ($newData as $newEntry) {
+            $existingMap[$this->getFieldMapKey($newEntry, $dataKey)] = $newEntry;
+        }
+
+        return array_values($existingMap);
+    }
+
+    private function handleRemoval(array $existingMap, array $newData, ?string $dataKey = null): array
+    {
         foreach ($newData as $newEntry) {
             $entryKey = $this->getFieldMapKey($newEntry, $dataKey);
-            if ($entryKey !== null && isset($existingKeys[$entryKey])) {
-                continue;
-            }
-
-            $result[] = $newEntry;
-            if ($entryKey !== null && !$allowRepeatedEntries) {
-                $existingKeys[$entryKey] = true;
+            if (isset($existingMap[$entryKey])) {
+                unset($existingMap[$entryKey]);
             }
         }
 
-        return $result;
+        return array_values($existingMap);
     }
 
-    /**
-     * Removes every existing entry of the given elements, like AbstractRelations::removeData().
-     */
-    private function handleRemoval(array $existingValues, array $newData, ?string $dataKey = null): array
+    private function getFieldMapKey(array $item, ?string $dataKey = null): string
     {
-        $removedKeys = $this->getFieldMapKeys($newData, $dataKey);
+        $elementData = $dataKey ? $item[$dataKey] : $item;
 
-        return array_values(array_filter(
-            $existingValues,
-            function (array $existingItem) use ($removedKeys, $dataKey): bool {
-                $entryKey = $this->getFieldMapKey($existingItem, $dataKey);
-
-                return $entryKey === null || !isset($removedKeys[$entryKey]);
-            }
-        ));
-    }
-
-    /**
-     * Drops repeated entries of an element, e.g. left over from before a field disallowed multiple assignments,
-     * which AbstractRelations::performMultipleAssignmentCheck() would reject on save.
-     */
-    private function keepFirstEntryPerElement(array $entries, ?string $dataKey): array
-    {
-        $result = [];
-        $seenKeys = [];
-        foreach ($entries as $entry) {
-            $entryKey = $this->getFieldMapKey($entry, $dataKey);
-            if ($entryKey !== null && isset($seenKeys[$entryKey])) {
-                continue;
-            }
-
-            $result[] = $entry;
-            if ($entryKey !== null) {
-                $seenKeys[$entryKey] = true;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return array<string, true>
-     */
-    private function getFieldMapKeys(array $items, ?string $dataKey = null): array
-    {
-        $keys = [];
-        foreach ($items as $item) {
-            $entryKey = $this->getFieldMapKey($item, $dataKey);
-            if ($entryKey !== null) {
-                $keys[$entryKey] = true;
-            }
-        }
-
-        return $keys;
-    }
-
-    /**
-     * Null for entries without an element, e.g. an image gallery item without an image: they never match.
-     * The API type "data-object" is matched as the core type "object" that existing entries carry.
-     */
-    private function getFieldMapKey(array $item, ?string $dataKey = null): ?string
-    {
-        $elementData = $dataKey ? ($item[$dataKey] ?? null) : $item;
-        if (!isset($elementData[FieldKeys::ID_KEY->value], $elementData[FieldKeys::TYPE_KEY->value])) {
-            return null;
-        }
-
-        $type = $elementData[FieldKeys::TYPE_KEY->value];
-        if ($type === ElementTypes::TYPE_DATA_OBJECT) {
-            $type = ElementTypes::TYPE_OBJECT;
-        }
-
-        return $elementData[FieldKeys::ID_KEY->value] . '_' . $type;
-    }
-
-    /**
-     * Rejects what neither path could process: no entries at all, or entries without an
-     * integer id. Both would otherwise fail later with a server error instead of telling
-     * the client what is wrong.
-     *
-     * @throws InvalidArgumentException
-     */
-    private function assertPatchData(array $patchData): void
-    {
-        if ($patchData === []) {
-            throw new InvalidArgumentException('No elements to patch');
-        }
-
-        foreach ($patchData as $position => $elementPatchData) {
-            if (!is_array($elementPatchData) || !is_int($elementPatchData['id'] ?? null)) {
-                throw new InvalidArgumentException(
-                    sprintf('Element at position %s has no integer id', $position)
-                );
-            }
-        }
+        return $elementData[FieldKeys::ID_KEY->value] . '_' . $elementData[FieldKeys::TYPE_KEY->value];
     }
 
     private function patchAsynchronously(

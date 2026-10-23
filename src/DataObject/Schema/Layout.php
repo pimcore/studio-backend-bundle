@@ -55,13 +55,13 @@ class Layout implements AdditionalAttributesInterface
         private readonly string $datatype,
         #[Property(description: 'Field Type', type: 'string', example: 'panel')]
         private readonly string $fieldtype,
-        #[Property(description: 'Type', type: 'string', example: null, nullable: true)]
+        #[Property(description: 'Type', type: 'string', example: null)]
         private readonly ?string $type = null,
-        #[Property(description: 'Layout', type: 'string', example: null, nullable: true)]
+        #[Property(description: 'Layout', type: 'string', example: null)]
         private readonly ?string $layout = null,
-        #[Property(description: 'Region', type: 'string', example: 'center', nullable: true)]
+        #[Property(description: 'Region', type: 'string', example: 'center')]
         private readonly ?string $region = null,
-        #[Property(description: 'Title', type: 'string', example: 'MyLayout', nullable: true)]
+        #[Property(description: 'Title', type: 'string', example: 'MyLayout')]
         private readonly ?string $title = null,
         #[Property(description: 'Width', type: 'integer', example: 0)]
         private readonly int $width = 0,
@@ -71,13 +71,13 @@ class Layout implements AdditionalAttributesInterface
         private readonly bool $collapsible = false,
         #[Property(description: 'Collapsed', type: 'bool', example: false)]
         private readonly bool $collapsed = false,
-        #[Property(description: 'Body Style', type: 'string', example: '(float: left;)', nullable: true)]
+        #[Property(description: 'Body Style', type: 'string', example: '(float: left;)')]
         private readonly ?string $bodyStyle = null,
         #[Property(description: 'Locked', type: 'bool', example: false)]
         private readonly bool $locked = false,
         #[Property(description: 'Children', type: 'array', items: new Items(type: 'object'), example: '[{id: 1}]')]
         private readonly array $children = [],
-        #[Property(description: 'Icon', type: ElementIcon::class, nullable: true)]
+        #[Property(description: 'Icon', type: ElementIcon::class)]
         private readonly ?ElementIcon $icon = null,
         #[Property(description: 'Label Align', type: 'string', example: 'left')]
         private readonly string $labelAlign = 'left',

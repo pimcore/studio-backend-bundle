@@ -67,9 +67,6 @@ final class FieldDefinitionCollector implements
 
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
-        // the collector is a shared service, do not return the columns of a previous call
-        $this->groupedDefinitions = [];
-
         $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
             $this->getFolderId(),
@@ -167,7 +164,7 @@ final class FieldDefinitionCollector implements
                     'dataobject.adapter'
                 );
             } catch (InvalidArgumentException $exception) {
-                $this->logger->warning($exception->getMessage());
+                $this->logger->info($exception->getMessage());
 
                 continue;
             }

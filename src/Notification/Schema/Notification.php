@@ -31,20 +31,15 @@ final class Notification extends NotificationListItem
         bool $hasAttachment,
         int $creationDate,
         ?string $sender = null,
-        #[Property(description: 'message', type: 'string', example: 'Notification message', nullable: true)]
+        #[Property(description: 'message', type: 'string', example: 'Notification message')]
         private readonly ?string $message = null,
-        #[Property(description: 'payload', type: 'string', example: '{"key": "value"}', nullable: true)]
+        #[Property(description: 'payload', type: 'string', example: '{"key": "value"}')]
         private readonly ?string $payload = null,
-        #[Property(description: 'linked attachment type', type: 'string', example: 'object', nullable: true)]
+        #[Property(description: 'linked attachment type', type: 'string', example: 'object')]
         private readonly ?string $attachmentType = null,
-        #[Property(description: 'linked attachment ID', type: 'integer', example: 3669, nullable: true)]
+        #[Property(description: 'linked attachment ID', type: 'integer', example: 3669)]
         private readonly ?int $attachmentId = null,
-        #[Property(
-            description: 'linked attachment fullPath',
-            type: 'string',
-            example: '/path/to/attachment.jpg',
-            nullable: true
-        )]
+        #[Property(description: 'linked attachment fullPath', type: 'string', example: '/path/to/attachment.jpg')]
         private readonly ?string $attachmentFullPath = null,
     ) {
         parent::__construct($id, $type, $title, $read, $hasAttachment, $creationDate, $sender);

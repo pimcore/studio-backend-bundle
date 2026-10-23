@@ -36,8 +36,7 @@ final readonly class FieldContextData
         private array $legacyParameters = [],
         private bool $resolveInheritedValue = false,
         private ?string $containerFieldName = null,
-        private ?string $containerBrickType = null,
-        private bool $historicalVersion = false,
+        private ?string $containerBrickType = null
     ) {
     }
 
@@ -68,15 +67,6 @@ final readonly class FieldContextData
     public function shouldResolveInheritedValue(): bool
     {
         return $this->resolveInheritedValue;
-    }
-
-    /**
-     * Whether the detail data is built for a historical version (version detail) instead of the edit view.
-     * Adapters that compute a value at hydration time then show what the version stores, if anything.
-     */
-    public function isHistoricalVersion(): bool
-    {
-        return $this->historicalVersion;
     }
 
     /**
@@ -179,8 +169,7 @@ final readonly class FieldContextData
             $this->classificationStoreKeyId,
             resolveInheritedValue: $this->resolveInheritedValue,
             containerFieldName: $containerFieldName,
-            containerBrickType: $containerBrickType,
-            historicalVersion: $this->historicalVersion,
+            containerBrickType: $containerBrickType
         );
     }
 

@@ -28,8 +28,6 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_filter;
-use function array_values;
 use function is_array;
 
 /**
@@ -83,12 +81,16 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
             return null;
         }
 
-        return $this->relationDataService->getAdvancedRelationElementsData(
-            array_values(array_filter(
-                $value,
-                static fn (mixed $relation) => $relation instanceof ElementMetadata
-            ))
-        );
+        $normalizedData = [];
+        foreach ($value as $relation) {
+            if (!$relation instanceof ElementMetadata) {
+                continue;
+            }
+
+            $normalizedData[] = $this->relationDataService->getAdvancedRelationElementData($relation);
+        }
+
+        return $normalizedData;
     }
 
     /**

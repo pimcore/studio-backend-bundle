@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
@@ -44,7 +43,6 @@ final class PatchHandler extends AbstractHandler
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
-        private readonly ElementContextServiceInterface $elementContextService,
     ) {
         parent::__construct();
     }
@@ -92,15 +90,11 @@ final class PatchHandler extends AbstractHandler
         }
 
         try {
-            // The worker boots with the CLI element context, which hides unpublished elements: the
-            // relation getters would drop them and "Add"/"Remove" would save the shortened list.
-            $this->elementContextService->runInStudioContext(
-                fn () => $this->patchService->patchElement(
-                    $element,
-                    $elementType,
-                    $jobEnvironmentData[$patchDataKey],
-                    $validatedParameters->getUser()
-                )
+            $this->patchService->patchElement(
+                $element,
+                $elementType,
+                $jobEnvironmentData[$patchDataKey],
+                $validatedParameters->getUser()
             );
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(

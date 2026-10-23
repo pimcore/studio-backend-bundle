@@ -30,11 +30,6 @@ final class Version20260601120000 extends AbstractMigration
             'in grid configuration and grid configuration favorite tables';
     }
 
-    public function isTransactional(): bool
-    {
-        return false;
-    }
-
     public function up(Schema $schema): void
     {
         $this->increaseClassIdLength($schema, GridConfiguration::TABLE_NAME);

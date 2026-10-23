@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\GroupEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\GroupLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydratorInterface;
@@ -37,7 +37,7 @@ use function count;
 final readonly class GroupService implements GroupServiceInterface
 {
     public function __construct(
-        private ConcreteObjectResolver $concreteObjectResolver,
+        private ConcreteObjectResolverInterface $concreteObjectResolver,
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private EventDispatcherInterface $eventDispatcher,
         private GroupHydratorInterface $groupHydrator,
@@ -131,6 +131,7 @@ final readonly class GroupService implements GroupServiceInterface
                 name: $key->getName(),
                 description: $key->getDescription(),
                 definition: $definition,
+                title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId()),
             );
         }
 

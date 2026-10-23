@@ -31,7 +31,6 @@ studio_ee_job_upload_assets: Last opp assets
 studio_ee_job_clone_data_objects: Klon dataobjekter
 studio_ee_job_delete_data_objects: Slett dataobjekter
 studio_ee_job_batch_delete_data_objects: Slett dataobjekter i batch
-studio_ee_job_batch_delete_documents: Slett dokumenter i batch
 studio_ee_job_clone_documents: Klon dokumenter
 studio_ee_job_delete_documents: Slett dokumenter
 studio_ee_job_rewrite_element_references: Skriv om elementreferanser

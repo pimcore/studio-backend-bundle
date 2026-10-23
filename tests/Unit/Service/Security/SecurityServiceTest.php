@@ -21,11 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionCheckerInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\User as PimcoreUser;
 use Pimcore\Workflow\Manager;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 final class SecurityServiceTest extends Unit
@@ -144,9 +142,7 @@ final class SecurityServiceTest extends Unit
             $this->mockElementPermissionService($hasPermission),
             $this->mockAuthenticationResolver($withUser),
             $this->mockTokenStorage(),
-            $this->mockWorkflowManager($isDeniedInWorkflow),
-            $this->makeEmpty(PendingSessionCheckerInterface::class, ['isCodePending' => false]),
-            new RequestStack()
+            $this->mockWorkflowManager($isDeniedInWorkflow)
         );
     }
 

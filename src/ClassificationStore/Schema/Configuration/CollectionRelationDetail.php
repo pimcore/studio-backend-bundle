@@ -37,14 +37,9 @@ final class CollectionRelationDetail implements AdditionalAttributesInterface
         private readonly int $groupId,
         #[Property(description: 'Sort order of the relation', type: 'integer', example: 0)]
         private readonly int $sorter,
-        #[Property(description: 'Name of the group', type: 'string', example: 'My Group', nullable: true)]
+        #[Property(description: 'Name of the group', type: 'string', example: 'My Group')]
         private readonly ?string $groupName = null,
-        #[Property(
-            description: 'Description of the group',
-            type: 'string',
-            example: 'Group description',
-            nullable: true
-        )]
+        #[Property(description: 'Description of the group', type: 'string', example: 'Group description')]
         private readonly ?string $groupDescription = null,
     ) {
     }

@@ -64,7 +64,6 @@ final class GetController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function getDataObjectById(int $id): JsonResponse

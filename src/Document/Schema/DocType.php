@@ -39,27 +39,21 @@ final class DocType implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'Type', type: 'string', example: DocumentTypes::PAGE->value)]
         private readonly string $type,
-        #[Property(description: 'Group', type: 'string', example: 'Default', nullable: true)]
+        #[Property(description: 'Group', type: 'string', example: 'Default')]
         private readonly ?string $group = null,
         #[Property(
             description: 'Controller',
             type: 'string',
-            example: 'App\\Controller\\DefaultController::indexAction',
-            nullable: true
+            example: 'App\\Controller\\DefaultController::indexAction'
         )]
         private readonly ?string $controller = null,
-        #[Property(
-            description: 'Template',
-            type: 'string',
-            example: '@App/Resources/views/default.html.twig',
-            nullable: true
-        )]
+        #[Property(description: 'Template', type: 'string', example: '@App/Resources/views/default.html.twig')]
         private readonly ?string $template = null,
         #[Property(description: 'Priority', type: 'integer', example: 0)]
         private readonly int $priority = 0,
-        #[Property(description: 'Creation date', type: 'integer', example: null, nullable: true)]
+        #[Property(description: 'Creation date', type: 'integer', example: null)]
         private readonly ?int $creationDate = null,
-        #[Property(description: 'Modification date', type: 'integer', example: null, nullable: true)]
+        #[Property(description: 'Modification date', type: 'integer', example: null)]
         private readonly ?int $modificationDate = null,
         #[Property(description: 'Static generator enabled', type: 'boolean', example: false)]
         private readonly bool $staticGeneratorEnabled = false,

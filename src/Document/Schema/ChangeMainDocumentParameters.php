@@ -28,12 +28,7 @@ use OpenApi\Attributes\Schema;
 final readonly class ChangeMainDocumentParameters
 {
     public function __construct(
-        #[Property(
-            description: 'Main document path',
-            type: 'string',
-            example: '/path/to/main/document',
-            nullable: true
-        )]
+        #[Property(description: 'Main document path', type: 'string', example: '/path/to/main/document')]
         private ?string $mainDocumentPath,
     ) {
     }
