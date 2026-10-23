@@ -120,14 +120,16 @@ abstract class AbstractResolver implements ResolverInterface
         string $containerType,
         string $fieldname,
         ?string $subContainerType = null,
-        ?string $subContainerKey = null
+        ?string $subContainerKey = null,
+        array $optionsProviderContext = []
     ): FieldDefinitionWrapper {
         return new FieldDefinitionWrapper(
             $fieldDefinition,
             $containerType,
             $fieldname,
             $subContainerType,
-            $subContainerKey
+            $subContainerKey,
+            $optionsProviderContext
         );
     }
 }
