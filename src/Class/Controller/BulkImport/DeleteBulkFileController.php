@@ -52,7 +52,7 @@ final class DeleteBulkFileController extends AbstractApiController
         name: 'pimcore_studio_api_class_bulk_import_delete_file',
         methods: ['DELETE'],
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Delete(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_bulk_import_delete_file',
