@@ -23,6 +23,13 @@ interface ColumnFiltersParameterInterface
      */
     public function getColumnFilterByType(string $type): iterable;
 
+    /**
+     * Filters that carry an operator (e.g. empty) instead of a value, independent of the column type.
+     *
+     * @return ColumnFilter[]
+     */
+    public function getOperatorColumnFilters(): iterable;
+
     public function getFirstColumnFilterByType(string $type): ?ColumnFilter;
 
     public function getColumnFilters(): array;
