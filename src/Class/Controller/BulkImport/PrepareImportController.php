@@ -58,7 +58,7 @@ final class PrepareImportController extends AbstractApiController
         methods: ['POST'],
         priority: 10,
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_bulk_import_prepare',

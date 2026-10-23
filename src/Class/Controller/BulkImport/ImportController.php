@@ -50,7 +50,7 @@ final class ImportController extends AbstractApiController
         name: 'pimcore_studio_api_class_bulk_import',
         methods: ['POST'],
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_bulk_import',
