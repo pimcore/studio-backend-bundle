@@ -18,6 +18,10 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapperInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Util\Config\ConfigKeyMapper
 
+    # Decorates the core user checker to deny Studio API authentication for accounts that
+    # require two-factor authentication, which this firewall does not yet challenge for.
+    Pimcore\Bundle\StudioBackendBundle\Security\User\TwoFactorEnforcingUserChecker: ~
+
 
 
 
