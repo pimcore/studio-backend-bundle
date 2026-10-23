@@ -27,11 +27,13 @@ use Pimcore\Model\Asset\Text;
  */
 final class EncoderTest extends Unit
 {
+    private const MAX_FILE_SIZE = 3000000;
+
     private TextEncoderInterface $encoder;
 
     public function _before(): void
     {
-        $this->encoder = new TextEncoder();
+        $this->encoder = new TextEncoder(self::MAX_FILE_SIZE);
     }
 
     public function testWrongElementType(): void
@@ -48,11 +50,31 @@ final class EncoderTest extends Unit
      */
     public function testFileSizeExceeded(): void
     {
-        $element = $this->makeEmpty(Text::class, ['getFileSize' => 2000001]);
+        $element = $this->makeEmpty(Text::class, ['getFileSize' => self::MAX_FILE_SIZE + 1]);
 
         $this->expectException(MaxFileSizeExceededException::class);
 
         $this->encoder->encodeUTF8($element);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testFileSizeAboveDefaultButWithinConfiguredLimit(): void
+    {
+        $element = $this->makeEmpty(Text::class, ['getFileSize' => 2500000, 'getData' => 'abc']);
+
+        $this->assertSame('abc', $this->encoder->encodeUTF8($element));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testFileSizeAtConfiguredLimit(): void
+    {
+        $element = $this->makeEmpty(Text::class, ['getFileSize' => self::MAX_FILE_SIZE, 'getData' => 'abc']);
+
+        $this->assertSame('abc', $this->encoder->encodeUTF8($element));
     }
 
     /**

@@ -192,6 +192,19 @@ pimcore_studio_backend:
 Only `page`, `snippet` and `email` are accepted as keys. A predefined document type selected while creating the
 document still takes precedence, as does the base document when a translation is added.
 
+## Maximum Size of Text Assets
+
+Studio loads a text asset completely into the editor and preview. To protect the browser, a text asset larger than
+2 MB is not loaded (`GET /assets/{id}/text` answers HTTP 413 and Studio shows "Preview not available"). The limit
+can be changed per project:
+
+```yaml
+pimcore_studio_backend:
+    asset_text_settings:
+        # Maximum size of a text asset in bytes that Studio loads. Default value is 2000000 (2 MB).
+        max_file_size: 5000000
+```
+
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  
 If you want to change the prefix, you can do so by changing the configuration like the following:

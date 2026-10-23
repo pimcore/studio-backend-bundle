@@ -3,6 +3,9 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
+  is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
+  `TextEncoder` got the optional constructor argument `$maxFileSize`.
 - [Data Objects] Changed: the version detail (`GET /pimcore-studio/api/versions/{id}`) of a data object shows the
   values of calculated fields the version stores when `pimcore.objects.versions.calculated_value_snapshot` is enabled
   in Pimcore 2026.4+; the edit view keeps showing freshly computed values. `FieldContextData` (`@internal`) got the

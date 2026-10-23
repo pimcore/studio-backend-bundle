@@ -109,6 +109,7 @@ class Configuration implements ConfigurationInterface
         $this->addRecycleBinThreshold($rootNode);
         $this->addMercureConfiguration($rootNode);
         $this->addAssetDownloadLimits($rootNode);
+        $this->addAssetTextSettings($rootNode);
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
@@ -386,6 +387,21 @@ class Configuration implements ConfigurationInterface
                     ->integerNode(DownloadLimits::MAX_ZIP_FILE_AMOUNT->value)
                         ->info('The maximum amount of assets that can be downloaded at once.')
                         ->defaultValue(1000)
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addAssetTextSettings(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('asset_text_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('max_file_size')
+                        ->info('The maximum size in bytes of a text asset that Studio loads for preview and editing.')
+                        ->defaultValue(2000000)
+                        ->min(0)
                     ->end()
                 ->end()
             ->end();
