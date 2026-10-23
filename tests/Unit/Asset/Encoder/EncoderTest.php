@@ -87,4 +87,20 @@ final class EncoderTest extends Unit
 
         $this->assertTrue(mb_check_encoding($encodedData, 'UTF-8'));
     }
+
+    /**
+     * @throws Exception
+     */
+    public function testDefaultLimitIsTwoMegabytes(): void
+    {
+        $encoder = new TextEncoder();
+
+        $this->assertSame('abc', $encoder->encodeUTF8(
+            $this->makeEmpty(Text::class, ['getFileSize' => 2000000, 'getData' => 'abc'])
+        ));
+
+        $this->expectException(MaxFileSizeExceededException::class);
+
+        $encoder->encodeUTF8($this->makeEmpty(Text::class, ['getFileSize' => 2000001]));
+    }
 }

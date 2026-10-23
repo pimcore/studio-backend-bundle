@@ -22,8 +22,10 @@ use function sprintf;
 
 final class TextEncoder implements TextEncoderInterface
 {
+    public const int DEFAULT_MAX_FILE_SIZE = 2000000;
+
     public function __construct(
-        private readonly int $maxFileSize = 2000000,
+        private readonly int $maxFileSize = self::DEFAULT_MAX_FILE_SIZE,
     ) {
     }
 

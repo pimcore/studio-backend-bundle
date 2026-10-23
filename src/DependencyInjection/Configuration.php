@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
@@ -400,8 +401,8 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->integerNode('max_file_size')
                         ->info('The maximum size in bytes of a text asset that Studio loads for preview and editing.')
-                        ->defaultValue(2000000)
-                        ->min(0)
+                        ->defaultValue(TextEncoder::DEFAULT_MAX_FILE_SIZE)
+                        ->min(1)
                     ->end()
                 ->end()
             ->end();
