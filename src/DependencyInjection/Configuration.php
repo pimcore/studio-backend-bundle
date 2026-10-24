@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
@@ -109,6 +110,7 @@ class Configuration implements ConfigurationInterface
         $this->addRecycleBinThreshold($rootNode);
         $this->addMercureConfiguration($rootNode);
         $this->addAssetDownloadLimits($rootNode);
+        $this->addAssetTextSettings($rootNode);
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
@@ -386,6 +388,21 @@ class Configuration implements ConfigurationInterface
                     ->integerNode(DownloadLimits::MAX_ZIP_FILE_AMOUNT->value)
                         ->info('The maximum amount of assets that can be downloaded at once.')
                         ->defaultValue(1000)
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addAssetTextSettings(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('asset_text_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('max_file_size')
+                        ->info('The maximum size in bytes of a text asset that Studio loads for preview and editing.')
+                        ->defaultValue(TextEncoderInterface::DEFAULT_MAX_FILE_SIZE)
+                        ->min(1)
                     ->end()
                 ->end()
             ->end();
