@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -25,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\AdvancedColumnPrevie
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ProvidedGridElement;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -59,7 +62,11 @@ interface GridServiceInterface
     ): bool;
 
     /**
-     * @throws InvalidArgumentException|NotFoundException
+     * A caller that already holds the core element (one built from another state than the
+     * database, say) passes it as $coreElement; for every element type it is then used instead
+     * of loading it by id, and columns whose resolver reads core elements take their values from it.
+     *
+     * @throws InvalidArgumentException|NotFoundException|ForbiddenException
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
@@ -68,7 +75,26 @@ interface GridServiceInterface
         int $elementId,
         bool $isExport = false,
         ?UserInterface $user = null,
+        ?ElementInterface $coreElement = null,
     ): array;
+
+    /**
+     * Grid rows for one page of elements the caller provides instead of the search index.
+     * Each entry supplies the row's id, lock state and permissions, each element the values.
+     * The caller passes only elements the current user may view, and $totalItems counts only
+     * those. The view, language and workflow permissions still apply as in the grid; an
+     * element the user may not view is left out of the page, without changing $totalItems.
+     *
+     * @param ProvidedGridElement[] $elements
+     *
+     * @throws InvalidArgumentException|UserNotFoundException
+     */
+    public function getGridForProvidedElements(
+        GridParameter $gridParameter,
+        array $elements,
+        int $totalItems,
+        string $elementType,
+    ): Collection;
 
     /**
      * @throws InvalidArgumentException

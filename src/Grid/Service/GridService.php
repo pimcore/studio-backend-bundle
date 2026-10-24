@@ -22,6 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -266,19 +267,21 @@ final class GridService implements GridServiceInterface
         int $elementId,
         bool $isExport = false,
         ?UserInterface $user = null,
+        ?ElementInterface $coreElement = null,
     ): array {
         $data = [];
 
-        $databaseElement = null;
-        if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
+        $databaseElement = $coreElement;
+        if ($databaseElement === null && ($isExport || $elementType === ElementTypes::TYPE_OBJECT)) {
             $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
-            if ($user !== null) {
-                $this->securityService->hasElementPermission(
-                    $databaseElement,
-                    $user,
-                    ElementPermissions::VIEW_PERMISSION
-                );
-            }
+        }
+
+        if ($user !== null && $databaseElement !== null) {
+            $this->securityService->hasElementPermission(
+                $databaseElement,
+                $user,
+                ElementPermissions::VIEW_PERMISSION
+            );
         }
 
         if ($isExport && $databaseElement->getType() === ElementTypes::TYPE_FOLDER) {
@@ -316,6 +319,47 @@ final class GridService implements GridServiceInterface
         }
 
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getGridForProvidedElements(
+        GridParameter $gridParameter,
+        array $elements,
+        int $totalItems,
+        string $elementType,
+    ): Collection {
+        $user = $this->securityService->getCurrentUser();
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+
+        $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
+        $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
+
+        try {
+            $data = [];
+            foreach ($elements as $providedElement) {
+                $entry = $providedElement->getEntry();
+
+                try {
+                    $data[] = $this->getGridDataForElement(
+                        $columns,
+                        $entry,
+                        $elementType,
+                        $entry->getId(),
+                        false,
+                        $user,
+                        $providedElement->getElement()
+                    );
+                } catch (ForbiddenException) {
+                    // Not viewable: the search index would not have listed it either.
+                }
+            }
+
+            return new Collection(totalItems: $totalItems, items: $data);
+        } finally {
+            $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
+        }
     }
 
     private function resolveColumnDataRespectingLocalePermission(
