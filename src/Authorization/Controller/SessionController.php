@@ -28,7 +28,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 /**
  * Lets the Studio UI ask whether a session exists without provoking a 401 on the login page.
- * Publicly reachable (see PimcoreStudioBackendExtension::prependSessionAccessControl) and
+ * Publicly reachable (see SessionAccessPass) and
  * answers 200 either way.
  *
  * @internal
