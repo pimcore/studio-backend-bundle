@@ -22,7 +22,9 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     schema: 'SessionStatus',
     title: 'Session Status',
-    description: 'Whether the request carries an authenticated Studio session. A login that waits for its two-factor code is not authenticated yet and carries the same fields as the login answer',
+    description: 'Whether the request carries an authenticated Studio session. ' .
+        'A login that waits for its two-factor code is not authenticated yet ' .
+        'and carries the same fields as the login answer',
     required: ['authenticated'],
     type: 'object'
 )]
