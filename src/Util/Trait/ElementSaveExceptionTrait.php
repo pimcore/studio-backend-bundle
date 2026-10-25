@@ -35,6 +35,6 @@ trait ElementSaveExceptionTrait
             throw new FieldValidationFailedException($exception->getMessage(), previous: $exception);
         }
 
-        throw new DatabaseException($exception->getMessage());
+        throw new DatabaseException($exception->getMessage(), previous: $exception);
     }
 }

@@ -3,6 +3,13 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
+  `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
+  `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
+  field with `field`, `fieldTitle`, `path`, `message`, `messageKey` and `parameters`. `message` and `errorKey` are
+  unchanged. A client that translates the errors needs `pimcore/pimcore` `^2026.4` (`StructuredValidationException`).
+  The synchronous asset upload and replace answer `422` instead of `500` when the validation of the asset fails. The
+  `parameters` of an error in a language the user may not view do not contain the entered `value`.
 - [Data Objects] Changed: the version detail (`GET /pimcore-studio/api/versions/{id}`) of a data object shows the
   values of calculated fields the version stores when `pimcore.objects.versions.calculated_value_snapshot` is enabled
   in Pimcore 2026.4+; the edit view keeps showing freshly computed values. `FieldContextData` (`@internal`) got the

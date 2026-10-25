@@ -22,9 +22,12 @@ use Pimcore\Model\Element\ValidationException;
 interface ValidationErrorHydratorInterface
 {
     /**
-     * One entry per leaf error of the exception.
+     * One entry per leaf error of the exception. The entered value of an error in a language
+     * that is not in $viewableLanguages is left out of its parameters.
+     *
+     * @param list<string>|null $viewableLanguages null for no restriction
      *
      * @return list<ValidationError>
      */
-    public function hydrate(ValidationException $exception): array;
+    public function hydrate(ValidationException $exception, ?array $viewableLanguages = null): array;
 }

@@ -110,4 +110,55 @@ final class ValidationErrorHydratorTest extends Unit
         $this->assertCount(1, $errors);
         $this->assertStringContainsString('Empty mandatory field [ b ]', $errors[0]->getMessage());
     }
+
+    public function testValueOfALanguageTheUserCannotViewIsLeftOut(): void
+    {
+        $aggregate = (new StructuredValidationException('Validation failed'))->addViolations(
+            $this->invalidEmail('en'),
+            $this->invalidEmail('de'),
+        );
+
+        $errors = (new ValidationErrorHydrator())->hydrate($aggregate, ['de']);
+
+        $this->assertSame([], $errors[0]->getParameters());
+        $this->assertSame(['value' => 'not-an-email'], $errors[1]->getParameters());
+    }
+
+    public function testValueIsKeptWithoutLanguageRestriction(): void
+    {
+        $errors = (new ValidationErrorHydrator())->hydrate($this->invalidEmail('en'));
+
+        $this->assertSame(['value' => 'not-an-email'], $errors[0]->getParameters());
+    }
+
+    public function testValueIsKeptWhenThePathHasNoLanguage(): void
+    {
+        $leaf = (new StructuredValidationException('Not a valid email address'))
+            ->setTranslation(ValidationMessageKey::INVALID_EMAIL, ['value' => 'not-an-email'])
+            ->setField('mail');
+
+        $errors = (new ValidationErrorHydrator())->hydrate($leaf, ['de']);
+
+        $this->assertSame(['value' => 'not-an-email'], $errors[0]->getParameters());
+    }
+
+    public function testOtherParametersOfARestrictedLanguageAreKept(): void
+    {
+        $leaf = (new StructuredValidationException('Too long'))
+            ->setTranslation(ValidationMessageKey::MAX_LENGTH, ['max' => 10, 'value' => 'abcdefghijklmnop'])
+            ->setField('name')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
+
+        $errors = (new ValidationErrorHydrator())->hydrate($leaf, ['de']);
+
+        $this->assertSame(['max' => 10], $errors[0]->getParameters());
+    }
+
+    private function invalidEmail(string $language): StructuredValidationException
+    {
+        return (new StructuredValidationException('Not a valid email address'))
+            ->setTranslation(ValidationMessageKey::INVALID_EMAIL, ['value' => 'not-an-email'])
+            ->setField('mail')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: $language));
+    }
 }

@@ -22,7 +22,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'ValidationErrorPath',
     description: 'One level of the location of a validation error, e.g. a localized field or an object brick',
-    required: ['field'],
+    required: ['field', 'title', 'language', 'index', 'type', 'typeTitle'],
     type: 'object'
 )]
 final readonly class ValidationErrorPath

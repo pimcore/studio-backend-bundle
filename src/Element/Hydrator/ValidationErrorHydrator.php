@@ -17,13 +17,16 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationError;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\ValidationErrorPath;
 use Pimcore\Model\Element\StructuredValidationException;
 use Pimcore\Model\Element\ValidationException;
+use function in_array;
 
 /**
  * @internal
  */
 final readonly class ValidationErrorHydrator implements ValidationErrorHydratorInterface
 {
-    public function hydrate(ValidationException $exception): array
+    private const VALUE_PARAMETER = 'value';
+
+    public function hydrate(ValidationException $exception, ?array $viewableLanguages = null): array
     {
         $errors = [];
         // a plain ValidationException becomes a single error without field, path or translation key
@@ -47,10 +50,36 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
                 // sub items of a plain exception (e.g. from a custom container) only exist in the aggregated message
                 $violation->getSubItems() === [] ? $violation->getMessage() : $violation->getAggregatedMessage(),
                 $violation->getTranslationKey(),
-                $violation->getTranslationParameters(),
+                $this->getParameters($violation->getTranslationParameters(), $path, $viewableLanguages),
             );
         }
 
         return $errors;
+    }
+
+    /**
+     * @param array<string, scalar|null> $parameters
+     * @param list<ValidationErrorPath> $path
+     * @param list<string>|null $viewableLanguages
+     *
+     * @return array<string, scalar|null>
+     */
+    private function getParameters(array $parameters, array $path, ?array $viewableLanguages): array
+    {
+        if ($viewableLanguages === null) {
+            return $parameters;
+        }
+
+        foreach ($path as $segment) {
+            $language = $segment->getLanguage();
+            if ($language !== null && !in_array($language, $viewableLanguages, true)) {
+                // the entered value must not reveal what the user may not see
+                unset($parameters[self::VALUE_PARAMETER]);
+
+                break;
+            }
+        }
+
+        return $parameters;
     }
 }

@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'ValidationError',
     description: 'A single validation error of an element, with the data needed to translate it',
-    required: ['path', 'message', 'parameters'],
+    required: ['field', 'fieldTitle', 'path', 'message', 'messageKey', 'parameters'],
     type: 'object'
 )]
 final readonly class ValidationError

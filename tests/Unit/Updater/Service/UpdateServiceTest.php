@@ -21,13 +21,18 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
@@ -40,7 +45,7 @@ final class UpdateServiceTest extends Unit
 {
     private const int ELEMENT_ID = 42;
 
-    private Asset $element;
+    private ElementInterface $element;
 
     private CoauthorContext $coauthorContext;
 
@@ -224,6 +229,36 @@ final class UpdateServiceTest extends Unit
         }
     }
 
+    public function testValidationFailureOfADataObjectCarriesTheLanguagesTheUserMayView(): void
+    {
+        $this->element = $this->makeEmpty(Concrete::class);
+        $service = $this->createService(static function (): void {
+            throw new ValidationException('Validation failed');
+        });
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, []);
+            $this->fail('A FieldValidationFailedException is expected');
+        } catch (FieldValidationFailedException $e) {
+            $this->assertSame(['de'], $e->getViewableLanguages());
+            $this->assertInstanceOf(ValidationException::class, $e->getPrevious());
+        }
+    }
+
+    public function testValidationFailureOfAnAssetHasNoLanguageRestriction(): void
+    {
+        $service = $this->createService(static function (): void {
+            throw new ValidationException('Validation failed');
+        });
+
+        try {
+            $service->update(ElementTypes::TYPE_ASSET, self::ELEMENT_ID, []);
+            $this->fail('A FieldValidationFailedException is expected');
+        } catch (FieldValidationFailedException $e) {
+            $this->assertNull($e->getViewableLanguages());
+        }
+    }
+
     private function createService(callable $onSave): UpdateService
     {
         return new UpdateService(
@@ -243,6 +278,9 @@ final class UpdateServiceTest extends Unit
                 'save' => $onSave,
             ]),
             coauthorService: new CoauthorService($this->coauthorContext),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getUserAllowedLanguages' => ['de'],
+            ]),
         );
     }
 }

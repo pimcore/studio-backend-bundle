@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'ValidationFailedError',
     description: 'Error response of a failed element validation',
-    required: ['message', 'errorKey'],
+    required: ['message'],
     type: 'object'
 )]
 final readonly class ValidationFailedError
@@ -33,15 +33,19 @@ final readonly class ValidationFailedError
      */
     public function __construct(
         #[Property(
-            description: 'Message, plain text that must not be rendered as HTML',
+            description: 'Message of the failure in the language of the server, can contain HTML (e.g. an image that is too large)',
             type: 'string',
             example: 'Validation failed: Empty mandatory field'
         )]
         private string $message,
-        #[Property(description: 'Error key', type: 'string', example: 'error_element_validation_failed')]
-        private string $errorKey,
         #[Property(
-            description: 'Single validation errors, present when the failure came from the element validation',
+            description: 'Error key, not present when the request failed before the element was validated',
+            type: 'string',
+            example: 'error_element_validation_failed'
+        )]
+        private ?string $errorKey = null,
+        #[Property(
+            description: 'Individual validation errors, present when the failure came from the element validation',
             type: 'array',
             items: new Items(ref: ValidationError::class)
         )]
@@ -54,7 +58,7 @@ final readonly class ValidationFailedError
         return $this->message;
     }
 
-    public function getErrorKey(): string
+    public function getErrorKey(): ?string
     {
         return $this->errorKey;
     }

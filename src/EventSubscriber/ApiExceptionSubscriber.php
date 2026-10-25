@@ -161,7 +161,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
             'errorKey' => $exception->getErrorKey(),
             'validationErrors' => array_map(
                 $this->validationErrorToArray(...),
-                $this->validationErrorHydrator->hydrate($validationException)
+                $this->validationErrorHydrator->hydrate($validationException, $exception->getViewableLanguages())
             ),
         ];
     }
