@@ -26,9 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -89,9 +87,7 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
      * @throws EnvironmentException
-     * @throws FieldValidationFailedException
      * @throws FilesystemException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -175,9 +171,7 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
      * @throws EnvironmentException
-     * @throws FieldValidationFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
      */
@@ -261,9 +255,7 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws DatabaseException
      * @throws EnvironmentException
-     * @throws FieldValidationFailedException
      */
     private function uploadAssetLocally(
         int $parentId,
