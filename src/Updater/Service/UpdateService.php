@@ -203,7 +203,7 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     private function hasClassificationStore(Concrete $element): bool
     {
-        foreach ($element->getClass()?->getFieldDefinitions() ?? [] as $definition) {
+        foreach ($element->getClass()->getFieldDefinitions() as $definition) {
             if ($definition instanceof Classificationstore) {
                 return true;
             }
