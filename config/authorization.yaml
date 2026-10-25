@@ -16,3 +16,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Authorization\EventSubscriber\LogoutSubscriber:
     tags:
       - { name: 'kernel.event_subscriber', dispatcher: 'security.event_dispatcher.pimcore_studio' }
+
+  Pimcore\Bundle\StudioBackendBundle\Authorization\Service\SessionStatusServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Authorization\Service\SessionStatusService

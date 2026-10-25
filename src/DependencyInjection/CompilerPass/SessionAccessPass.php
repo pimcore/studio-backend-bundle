@@ -25,7 +25,8 @@ use function sprintf;
  * A project's `security.access_control` ends in a rule that requires a Studio user for the whole prefix, and
  * Symfony does not let a bundle add a rule of its own to that list. The rule goes straight onto the access map
  * instead, in front of the project's rules, so projects need no change of their security.yaml. The route
- * itself answers 200 either way.
+ * itself answers 200 either way and reveals only the state of the caller's own session. The rule has no
+ * ip, host or channel restriction, so these do not apply to this one route.
  *
  * @internal
  */
@@ -42,7 +43,7 @@ final class SessionAccessPass implements CompilerPassInterface
         }
 
         $matcher = new Definition(PathRequestMatcher::class, [
-            sprintf('^%s/session$', $container->getParameter(self::URL_PREFIX)),
+            sprintf('^%s/session\\z', $container->getParameter(self::URL_PREFIX)),
         ]);
 
         $accessMap = $container->getDefinition(self::ACCESS_MAP);

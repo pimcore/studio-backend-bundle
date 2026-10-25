@@ -33,7 +33,7 @@ final class SessionAccessPassTest extends Unit
     {
         $accessMap = $this->process('/pimcore-studio/api');
 
-        $this->assertSame('/pimcore-studio/api/session', $this->publicPath($accessMap, '/pimcore-studio/api/session'));
+        $this->assertSame(['PUBLIC_ACCESS'], $this->attributesFor($accessMap, '/pimcore-studio/api/session'));
         $this->assertSame(
             ['ROLE_PIMCORE_USER'],
             $this->attributesFor($accessMap, '/pimcore-studio/api/user/current-user-information')
@@ -42,6 +42,7 @@ final class SessionAccessPassTest extends Unit
             ['ROLE_PIMCORE_USER'],
             $this->attributesFor($accessMap, '/pimcore-studio/api/session/other')
         );
+        $this->assertSame(['ROLE_PIMCORE_USER'], $this->attributesFor($accessMap, '/pimcore-studio/api/session%0A'));
     }
 
     public function testSessionRouteFollowsACustomPrefix(): void
@@ -82,13 +83,6 @@ final class SessionAccessPassTest extends Unit
         }
 
         return $accessMap;
-    }
-
-    private function publicPath(AccessMap $accessMap, string $path): string
-    {
-        $this->assertSame(['PUBLIC_ACCESS'], $this->attributesFor($accessMap, $path));
-
-        return $path;
     }
 
     /**

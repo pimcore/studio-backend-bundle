@@ -15,12 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Authorization\Controller
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Controller\SessionController;
-use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\SetupProvider;
-use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
-use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\SessionStatus;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\SessionStatusServiceInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -31,85 +27,31 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class SessionControllerTest extends Unit
 {
-    public function testAnswersTrueForAStudioUser(): void
+    public function testAnswersTheStatusWith200(): void
     {
-        $response = $this->createController(true)->getSessionStatus(new TokenStorage(), 6);
+        $response = $this->createController(new SessionStatus(false))->getSessionStatus();
 
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('{"authenticated":true,"twoFactorRequired":null,"twoFactorStep":null,"digits":null}', $response->getContent());
-    }
-
-    public function testAnswersFalseWithoutSessionAndStillReturns200(): void
-    {
-        $response = $this->createController(false)->getSessionStatus(new TokenStorage(), 6);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('{"authenticated":false,"twoFactorRequired":null,"twoFactorStep":null,"digits":null}', $response->getContent());
+        $this->assertSame('{"authenticated":false}', $response->getContent());
     }
 
     public function testResponseIsNotCacheable(): void
     {
-        $response = $this->createController(false)->getSessionStatus(new TokenStorage(), 6);
+        $response = $this->createController(new SessionStatus(true))->getSessionStatus();
 
         $this->assertTrue($response->headers->hasCacheControlDirective('no-store'));
         $this->assertTrue($response->headers->hasCacheControlDirective('private'));
     }
 
-    public function testPendingCodeIsNotAuthenticatedAndCarriesTheVerifyStep(): void
-    {
-        $response = $this->createController(false)->getSessionStatus($this->storageWith('google'), 6);
-
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame(
-            '{"authenticated":false,"twoFactorRequired":true,"twoFactorStep":"verify","digits":6}',
-            $response->getContent()
-        );
-    }
-
-    public function testPendingSetupCarriesTheSetupStep(): void
-    {
-        $response = $this->createController(false)->getSessionStatus($this->storageWith(SetupProvider::ALIAS), 8);
-
-        $this->assertSame(
-            '{"authenticated":false,"twoFactorRequired":true,"twoFactorStep":"setup","digits":8}',
-            $response->getContent()
-        );
-    }
-
-    private function storageWith(string $provider): TokenStorage
-    {
-        $token = $this->makeEmpty(TwoFactorTokenInterface::class, [
-            'getCurrentTwoFactorProvider' => $provider,
-        ]);
-        $this->assertInstanceOf(TokenInterface::class, $token);
-
-        $storage = new TokenStorage();
-        $storage->setToken($token);
-
-        return $storage;
-    }
-
-    private function createController(bool $granted): SessionController
+    private function createController(SessionStatus $status): SessionController
     {
         $serializer = $this->makeEmpty(SerializerInterface::class, [
-            'serialize' => static fn (object $data): string => json_encode([
-                'authenticated' => $data->isAuthenticated(),
-                'twoFactorRequired' => $data->getTwoFactorRequired(),
-                'twoFactorStep' => $data->getTwoFactorStep(),
-                'digits' => $data->getDigits(),
-            ]),
+            'serialize' => static fn (SessionStatus $data): string => json_encode(['authenticated' => $data->isAuthenticated()]),
+        ]);
+        $service = $this->makeEmpty(SessionStatusServiceInterface::class, [
+            'getSessionStatus' => $status,
         ]);
 
-        $checker = $this->makeEmpty(AuthorizationCheckerInterface::class, [
-            'isGranted' => fn (string $attribute): bool => $attribute === SessionController::ROLE_STUDIO_USER && $granted,
-        ]);
-
-        $container = new Container();
-        $container->set('security.authorization_checker', $checker);
-
-        $controller = new SessionController($serializer);
-        $controller->setContainer($container);
-
-        return $controller;
+        return new SessionController($serializer, $service);
     }
 }
