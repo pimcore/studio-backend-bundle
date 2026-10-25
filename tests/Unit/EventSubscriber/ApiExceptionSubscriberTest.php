@@ -193,12 +193,12 @@ final class ApiExceptionSubscriberTest extends Unit
 
     public function testValueOfALanguageTheUserCannotViewIsNotReturned(): void
     {
-        $leaf = (new StructuredValidationException('Not a valid email address'))
+        $leaf = (new StructuredValidationException("Invalid option 'not-an-email' for field [ mail ]"))
             ->setTranslation(ValidationMessageKey::INVALID_EMAIL, ['value' => 'not-an-email'])
             ->setField('mail')
             ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
         $exception = new FieldValidationFailedException(
-            'Validation failed',
+            "Invalid option 'not-an-email' for field [ mail ]",
             previous: $leaf,
             viewableLanguages: ['de']
         );
@@ -209,6 +209,7 @@ final class ApiExceptionSubscriberTest extends Unit
         $raw = $event->getResponse()->getContent();
         $this->assertStringContainsString('"parameters":{}', $raw);
         $this->assertStringNotContainsString('not-an-email', $raw);
+        $this->assertSame('Validation failed', json_decode($raw, true)['message']);
     }
 
     public function testPayloadMatchesTheDocumentedSchema(): void

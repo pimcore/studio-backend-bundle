@@ -43,7 +43,7 @@ final readonly class ValidationError
             items: new Items(ref: ValidationErrorPath::class)
         )]
         private array $path,
-        #[Property(description: 'Untranslated message', type: 'string', example: 'Empty mandatory field [ title ]')]
+        #[Property(description: 'Untranslated message, untrusted: escape it before rendering it as HTML', type: 'string', example: 'Empty mandatory field [ title ]')]
         private string $message,
         #[Property(description: 'Translation key', type: 'string', example: 'validation.mandatory', nullable: true)]
         private ?string $messageKey,

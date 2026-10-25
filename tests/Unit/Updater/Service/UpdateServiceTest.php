@@ -27,9 +27,12 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
@@ -231,7 +234,7 @@ final class UpdateServiceTest extends Unit
 
     public function testValidationFailureOfADataObjectCarriesTheLanguagesTheUserMayView(): void
     {
-        $this->element = $this->makeEmpty(Concrete::class);
+        $this->element = $this->makeEmpty(Concrete::class, ['getClass' => new ClassDefinition()]);
         $service = $this->createService(static function (): void {
             throw new ValidationException('Validation failed');
         });
@@ -242,6 +245,23 @@ final class UpdateServiceTest extends Unit
         } catch (FieldValidationFailedException $e) {
             $this->assertSame(['de'], $e->getViewableLanguages());
             $this->assertInstanceOf(ValidationException::class, $e->getPrevious());
+        }
+    }
+
+    public function testClassificationStoreUsesItsOwnLanguageRule(): void
+    {
+        $class = new ClassDefinition();
+        $class->setFieldDefinitions(['store' => new Classificationstore()]);
+        $this->element = $this->makeEmpty(Concrete::class, ['getClass' => $class]);
+        $service = $this->createService(static function (): void {
+            throw new ValidationException('Validation failed');
+        });
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, []);
+            $this->fail('A FieldValidationFailedException is expected');
+        } catch (FieldValidationFailedException $e) {
+            $this->assertSame(['default', 'de'], $e->getViewableLanguages());
         }
     }
 
@@ -279,7 +299,16 @@ final class UpdateServiceTest extends Unit
             ]),
             coauthorService: new CoauthorService($this->coauthorContext),
             languageService: $this->makeEmpty(LanguageServiceInterface::class, [
-                'getUserAllowedLanguages' => ['de'],
+                'getUserAllowedLanguagesWithLanguageIndependentValue' => static function ($o, $u, string $permission): array {
+                    self::assertSame(ElementPermissions::LANGUAGE_VIEW_PERMISSIONS, $permission);
+
+                    return ['default', 'de'];
+                },
+                'getUserAllowedLanguages' => static function ($object, $user, string $permission): array {
+                    self::assertSame(ElementPermissions::LANGUAGE_VIEW_PERMISSIONS, $permission);
+
+                    return ['de'];
+                },
             ]),
         );
     }

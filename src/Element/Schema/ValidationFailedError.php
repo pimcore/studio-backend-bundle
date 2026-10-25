@@ -33,7 +33,7 @@ final readonly class ValidationFailedError
      */
     public function __construct(
         #[Property(
-            description: 'Message of the failure in the language of the server, can contain HTML (e.g. an image that is too large)',
+            description: 'Message of the failure in English. It can contain entered data and markup and is untrusted: escape it before rendering it as HTML',
             type: 'string',
             example: 'Validation failed: Empty mandatory field'
         )]

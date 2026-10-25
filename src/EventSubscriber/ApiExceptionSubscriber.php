@@ -30,6 +30,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use function array_key_exists;
 use function array_map;
+use function in_array;
 
 /**
  * @internal
@@ -37,6 +38,8 @@ use function array_map;
 final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 {
     use StudioBackendPathTrait;
+
+    private const HIDDEN_VALIDATION_MESSAGE = 'Validation failed';
 
     public function __construct(
         private string $environment,
@@ -156,14 +159,39 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         FieldValidationFailedException $exception,
         ValidationException $validationException
     ): array {
+        $viewableLanguages = $exception->getViewableLanguages();
+        $errors = $this->validationErrorHydrator->hydrate($validationException, $viewableLanguages);
+
         return [
-            'message' => $exception->getMessage(),
+            // the aggregated message repeats the entered values, it is not returned when one of them is hidden
+            'message' => $this->containsHiddenError($errors, $viewableLanguages)
+                ? self::HIDDEN_VALIDATION_MESSAGE
+                : $exception->getMessage(),
             'errorKey' => $exception->getErrorKey(),
-            'validationErrors' => array_map(
-                $this->validationErrorToArray(...),
-                $this->validationErrorHydrator->hydrate($validationException, $exception->getViewableLanguages())
-            ),
+            'validationErrors' => array_map($this->validationErrorToArray(...), $errors),
         ];
+    }
+
+    /**
+     * @param list<ValidationError> $errors
+     * @param list<string>|null $viewableLanguages
+     */
+    private function containsHiddenError(array $errors, ?array $viewableLanguages): bool
+    {
+        if ($viewableLanguages === null) {
+            return false;
+        }
+
+        foreach ($errors as $error) {
+            foreach ($error->getPath() as $segment) {
+                $language = $segment->getLanguage();
+                if ($language !== null && !in_array($language, $viewableLanguages, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private function validationErrorToArray(ValidationError $error): array

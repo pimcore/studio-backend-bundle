@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
@@ -184,10 +185,30 @@ final readonly class UpdateService implements UpdateServiceInterface
             return null;
         }
 
-        return array_values($this->languageService->getUserAllowedLanguages(
-            $element,
-            $user,
-            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
-        ));
+        // a classification store follows its own language rule (the language independent value counts as a language)
+        $languages = $this->hasClassificationStore($element)
+            ? $this->languageService->getUserAllowedLanguagesWithLanguageIndependentValue(
+                $element,
+                $user,
+                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+            )
+            : $this->languageService->getUserAllowedLanguages(
+                $element,
+                $user,
+                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+            );
+
+        return array_values($languages);
+    }
+
+    private function hasClassificationStore(Concrete $element): bool
+    {
+        foreach ($element->getClass()?->getFieldDefinitions() ?? [] as $definition) {
+            if ($definition instanceof Classificationstore) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -124,6 +124,20 @@ final class ValidationErrorHydratorTest extends Unit
         $this->assertSame(['value' => 'not-an-email'], $errors[1]->getParameters());
     }
 
+    public function testMessageOfALanguageTheUserCannotViewCarriesNoValue(): void
+    {
+        $leaf = (new StructuredValidationException("Invalid option 'secret' for field [ colour ]"))
+            ->setTranslation(ValidationMessageKey::INVALID_EMAIL, ['value' => 'secret', 'characters' => 'secret'])
+            ->setField('colour')
+            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'fr'));
+
+        $errors = (new ValidationErrorHydrator())->hydrate($leaf, ['de']);
+
+        $this->assertSame('The value is not valid.', $errors[0]->getMessage());
+        $this->assertSame([], $errors[0]->getParameters());
+        $this->assertSame(ValidationMessageKey::INVALID_EMAIL->value, $errors[0]->getMessageKey());
+    }
+
     public function testValueIsKeptWithoutLanguageRestriction(): void
     {
         $errors = (new ValidationErrorHydrator())->hydrate($this->invalidEmail('en'));
@@ -140,18 +154,6 @@ final class ValidationErrorHydratorTest extends Unit
         $errors = (new ValidationErrorHydrator())->hydrate($leaf, ['de']);
 
         $this->assertSame(['value' => 'not-an-email'], $errors[0]->getParameters());
-    }
-
-    public function testOtherParametersOfARestrictedLanguageAreKept(): void
-    {
-        $leaf = (new StructuredValidationException('Too long'))
-            ->setTranslation(ValidationMessageKey::MAX_LENGTH, ['max' => 10, 'value' => 'abcdefghijklmnop'])
-            ->setField('name')
-            ->addPathSegment(new ValidationPathSegment(field: 'localizedfields', language: 'en'));
-
-        $errors = (new ValidationErrorHydrator())->hydrate($leaf, ['de']);
-
-        $this->assertSame(['max' => 10], $errors[0]->getParameters());
     }
 
     private function invalidEmail(string $language): StructuredValidationException

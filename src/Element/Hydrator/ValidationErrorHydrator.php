@@ -24,7 +24,7 @@ use function in_array;
  */
 final readonly class ValidationErrorHydrator implements ValidationErrorHydratorInterface
 {
-    private const VALUE_PARAMETER = 'value';
+    private const HIDDEN_MESSAGE = 'The value is not valid.';
 
     public function hydrate(ValidationException $exception, ?array $viewableLanguages = null): array
     {
@@ -43,14 +43,17 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
                 );
             }
 
+            // message and parameters can carry the entered value: for a language the user may not view,
+            // only the generic message and the translation key are returned
+            $hidden = $this->isHidden($path, $viewableLanguages);
+
             $errors[] = new ValidationError(
                 $violation->getFieldName(),
                 $violation->getFieldTitle(),
                 $path,
-                // sub items of a plain exception (e.g. from a custom container) only exist in the aggregated message
-                $violation->getSubItems() === [] ? $violation->getMessage() : $violation->getAggregatedMessage(),
+                $hidden ? self::HIDDEN_MESSAGE : $this->getMessage($violation),
                 $violation->getTranslationKey(),
-                $this->getParameters($violation->getTranslationParameters(), $path, $viewableLanguages),
+                $hidden ? [] : $violation->getTranslationParameters(),
             );
         }
 
@@ -58,28 +61,30 @@ final readonly class ValidationErrorHydrator implements ValidationErrorHydratorI
     }
 
     /**
-     * @param array<string, scalar|null> $parameters
+     * Sub items of a plain exception (e.g. from a custom container) only exist in the aggregated message
+     */
+    private function getMessage(StructuredValidationException $violation): string
+    {
+        return $violation->getSubItems() === [] ? $violation->getMessage() : $violation->getAggregatedMessage();
+    }
+
+    /**
      * @param list<ValidationErrorPath> $path
      * @param list<string>|null $viewableLanguages
-     *
-     * @return array<string, scalar|null>
      */
-    private function getParameters(array $parameters, array $path, ?array $viewableLanguages): array
+    private function isHidden(array $path, ?array $viewableLanguages): bool
     {
         if ($viewableLanguages === null) {
-            return $parameters;
+            return false;
         }
 
         foreach ($path as $segment) {
             $language = $segment->getLanguage();
             if ($language !== null && !in_array($language, $viewableLanguages, true)) {
-                // the entered value must not reveal what the user may not see
-                unset($parameters[self::VALUE_PARAMETER]);
-
-                break;
+                return true;
             }
         }
 
-        return $parameters;
+        return false;
     }
 }
