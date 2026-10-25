@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
@@ -52,6 +54,39 @@ final class PatchServiceTest extends Unit
         $this->element = $this->makeEmpty(Asset::class);
         $this->user = $this->makeEmpty(UserInterface::class);
         $this->coauthorContext = new CoauthorContext();
+    }
+
+    public function testPatchRejectsAnEmptyList(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [], $this->user);
+    }
+
+    public function testPatchRejectsAnEntryWithoutId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [[]], $this->user);
+    }
+
+    public function testPatchRejectsANonIntegerId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(ElementTypes::TYPE_DOCUMENT, [['id' => '83']], $this->user);
+    }
+
+    public function testPatchRejectsAnInvalidEntryInAList(): void
+    {
+        // a batch must not start a job when one of its entries cannot be processed
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->createService(static fn () => null)->patch(
+            ElementTypes::TYPE_DOCUMENT,
+            [['id' => 1], ['key' => 'no-id']],
+            $this->user
+        );
     }
 
     public function testPatchActivatesCoauthorContextDuringSaveAndRestoresAfter(): void
@@ -133,6 +168,22 @@ final class PatchServiceTest extends Unit
         $this->assertFalse($this->coauthorContext->isActive());
         $this->assertNull($this->coauthorContext->getType());
         $this->assertNull($this->coauthorContext->getCoauthor());
+    }
+
+    /**
+     * Regression test for pimcore/platform-version#376: a validation failure during a PATCH must reach
+     * the client as a 422, not as a generic saving error.
+     */
+    public function testPatchMapsValidationExceptionToFieldValidationFailed(): void
+    {
+        $service = $this->createService(static function (): void {
+            throw new ValidationException('field is mandatory');
+        });
+
+        $this->expectException(FieldValidationFailedException::class);
+        $this->expectExceptionMessage('field is mandatory');
+
+        $service->patchElement($this->element, ElementTypes::TYPE_ASSET, [], $this->user);
     }
 
     public function testPatchRestoresOuterContextWhenSaveThrows(): void

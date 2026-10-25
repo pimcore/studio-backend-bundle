@@ -74,6 +74,7 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function dataObjectUpdateById(int $id, #[MapRequestPayload] DataParameter $parameter): JsonResponse
     {

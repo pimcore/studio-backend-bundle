@@ -9,7 +9,12 @@ The following steps are necessary during updating to newer versions.
   field with `field`, `fieldTitle`, `path`, `message`, `messageKey` and `parameters`. `message` and `errorKey` are
   unchanged. A client that translates the errors needs `pimcore/pimcore` `^2026.4` (`StructuredValidationException`).
   The synchronous asset upload and replace answer `422` instead of `500` when the validation of the asset fails. An
-  error of a data object in a language the user may not view is reduced to the generic message `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
+  error of a data object in a language the user may not view is reduced to the generic message
+  `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then
+  `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
+- [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
+  is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
+  `TextEncoder` got the optional constructor argument `$maxFileSize`.
 - [Data Objects] Changed: the version detail (`GET /pimcore-studio/api/versions/{id}`) of a data object shows the
   values of calculated fields the version stores when `pimcore.objects.versions.calculated_value_snapshot` is enabled
   in Pimcore 2026.4+; the edit view keeps showing freshly computed values. `FieldContextData` (`@internal`) got the
