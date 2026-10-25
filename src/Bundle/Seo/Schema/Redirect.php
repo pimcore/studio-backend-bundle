@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     schema: 'BundleSeoRedirect',
     title: 'Bundle Seo Redirect',
     required: [
-        'id', 'type', 'source', 'sourceSite', 'passThroughParameters', 'target', 'targetSite',
+        'id', 'type', 'source', 'sourceSite', 'passThroughParameters', 'target', 'targetType', 'targetSite',
         'statusCode', 'priority', 'regex', 'active', 'expiry', 'creationDate', 'modificationDate',
         'userOwner', 'userModification',
     ],
@@ -46,6 +46,14 @@ final class Redirect implements AdditionalAttributesInterface
         public readonly bool $passThroughParameters,
         #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public readonly ?string $target,
+        #[Property(
+            description: 'Type of the element the target points to',
+            type: 'string',
+            enum: ['document', 'asset', 'object'],
+            example: 'document',
+            nullable: true
+        )]
+        public readonly ?string $targetType,
         #[Property(description: 'ID of the target site', type: 'integer', example: 1, nullable: true)]
         public readonly ?int $targetSite,
         #[Property(description: 'Status code', type: 'integer', example: 301)]
@@ -118,6 +126,11 @@ final class Redirect implements AdditionalAttributesInterface
     public function getTarget(): ?string
     {
         return $this->target;
+    }
+
+    public function getTargetType(): ?string
+    {
+        return $this->targetType;
     }
 
     public function getTargetSite(): ?int

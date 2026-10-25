@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 
 use Exception;
+use Pimcore\Bundle\SeoBundle\Model\ElementType;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectListEvent;
@@ -29,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -57,10 +57,12 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     {
         $this->validateType($parameters->getType());
 
+        $targetType = $this->getTargetType($parameters->getTargetType());
+
         $redirect = new RedirectModel();
         $redirect->setType($parameters->getType());
         $redirect->setSource($parameters->getSource());
-        $redirect->setTarget($this->getTargetValue($parameters->getTarget()));
+        $this->applyTarget($redirect, $parameters->getTarget(), $targetType);
 
         try {
             $redirect->save();
@@ -89,7 +91,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         $redirect->setSourceSite($parameters->getSourceSite());
         $redirect->setSource($source);
         $redirect->setTargetSite($parameters->getTargetSite());
-        $redirect->setTarget($this->getTargetValue($parameters->getTarget()));
+        $this->applyTarget($redirect, $parameters->getTarget(), $this->getTargetType($parameters->getTargetType()));
         $redirect->setStatusCode($parameters->getStatusCode());
         $redirect->setPriority($parameters->getPriority());
         $redirect->setRegex($parameters->isRegex());
@@ -223,17 +225,44 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         }
     }
 
-    private function getTargetValue(?string $target): ?string
+    /**
+     * The target is submitted as an element path. If it resolves to an element of the given
+     * type, the redirect stores the element ID together with the type; otherwise the target
+     * is kept as a plain (external or not yet existing) URL without a type.
+     */
+    private function applyTarget(RedirectModel $redirect, ?string $target, ElementType $targetType): void
     {
         if (empty($target)) {
-            return $target;
+            $redirect->setTarget($target);
+            $redirect->setTargetType(null);
+
+            return;
         }
 
-        $document = $this->serviceResolver->getElementByPath(ElementTypes::TYPE_DOCUMENT, $target);
-        if ($document === null) {
-            return $target;
+        $element = $this->serviceResolver->getElementByPath($targetType->value, $target);
+        if ($element === null) {
+            $redirect->setTarget($target);
+            $redirect->setTargetType(null);
+
+            return;
         }
 
-        return (string)$document->getId();
+        $redirect->setTarget((string)$element->getId());
+        $redirect->setTargetType($targetType);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getTargetType(?string $targetType): ElementType
+    {
+        // clients that do not know about target types yet always point to documents
+        if ($targetType === null || $targetType === '') {
+            return ElementType::Document;
+        }
+
+        return ElementType::tryFrom($targetType) ?? throw new InvalidArgumentException(
+            sprintf('Invalid redirect target type: %s', $targetType)
+        );
     }
 }

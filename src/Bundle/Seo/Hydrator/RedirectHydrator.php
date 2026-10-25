@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator;
 
+use Pimcore\Bundle\SeoBundle\Model\ElementType;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
  * @internal
@@ -36,7 +36,8 @@ final readonly class RedirectHydrator implements RedirectHydratorInterface
             source: $redirect->getSource(),
             sourceSite: $redirect->getSourceSite(),
             passThroughParameters: $redirect->getPassThroughParameters(),
-            target: $this->getTarget($redirect->getTarget()),
+            target: $this->getTarget($redirect->getTarget(), $redirect->getTargetType()),
+            targetType: $redirect->getTargetType()?->value,
             targetSite: $redirect->getTargetSite(),
             statusCode: $redirect->getStatusCode(),
             priority: $redirect->getPriority(),
@@ -50,17 +51,22 @@ final readonly class RedirectHydrator implements RedirectHydratorInterface
         );
     }
 
-    private function getTarget(?string $target): ?string
+    private function getTarget(?string $target, ?ElementType $targetType): ?string
     {
         if (!is_numeric($target)) {
             return $target;
         }
 
-        $document = $this->serviceResolver->getElementById(ElementTypes::TYPE_DOCUMENT, (int)$target);
-        if ($document === null) {
+        // redirects created before target types existed store a numeric document ID
+        $element = $this->serviceResolver->getElementById(
+            ($targetType ?? ElementType::Document)->value,
+            (int)$target
+        );
+
+        if ($element === null) {
             return $target;
         }
 
-        return $document->getRealFullPath();
+        return $element->getRealFullPath();
     }
 }
