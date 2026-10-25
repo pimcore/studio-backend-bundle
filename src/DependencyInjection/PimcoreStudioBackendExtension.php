@@ -441,6 +441,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $container->setParameter('pimcore_studio_backend.url_prefix', $urlPrefix);
 
+        $this->prependSessionAccessControl($container, $urlPrefix);
+
         // Default MCP token map (overwritten in load() with actual config)
         if (!$container->hasParameter('pimcore_studio_backend.mcp.token_map')) {
             $container->setParameter('pimcore_studio_backend.mcp.token_map', []);
@@ -523,6 +525,24 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'enabled' => true,
                 'issuer' => $config['issuer'],
                 'server_name' => $config['server_name'] ?? '%router.request_context.host%',
+            ],
+        ]);
+    }
+
+    /**
+     * Opens the session status route to unauthenticated requests. Prepended, so the rule comes
+     * before the application's own `^<prefix>` rule that requires a Studio user; the endpoint
+     * itself answers 200 with `authenticated: false` for requests without a session.
+     */
+    private function prependSessionAccessControl(ContainerBuilder $container, string $urlPrefix): void
+    {
+        if (!$container->hasExtension('security')) {
+            return;
+        }
+
+        $container->prependExtensionConfig('security', [
+            'access_control' => [
+                ['path' => '^' . $urlPrefix . '/session$', 'roles' => 'PUBLIC_ACCESS'],
             ],
         ]);
     }

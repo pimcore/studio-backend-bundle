@@ -3,6 +3,12 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
+  (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200,
+  so the Studio login page no longer shows a failed `user/current-user-information` request. The bundle opens the route
+  itself with a `PUBLIC_ACCESS` rule for `<url_prefix>/session`, prepended to the `security.access_control` of the
+  application: no change of `config/packages/security.yaml` is needed, also not with a custom `url_prefix`.
+  `user/current-user-information` keeps answering 401 without a session.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
