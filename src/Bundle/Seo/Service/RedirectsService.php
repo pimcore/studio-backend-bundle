@@ -226,39 +226,46 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     }
 
     /**
-     * The target is submitted as an element path. If it resolves to an element of the given
-     * type, the redirect stores the element ID together with the type; otherwise the target
-     * is kept as a plain (external or not yet existing) URL without a type.
+     * The target is submitted as an element path. If it resolves to an element, the redirect
+     * stores the element ID together with its type; otherwise the target is kept as a plain
+     * (external or not yet existing) URL without a type.
+     *
+     * A submitted target type restricts the lookup to that type, which is how a path existing
+     * in more than one tree is disambiguated. Without one, the element types are tried in
+     * order - documents first, so targets behave as they did before types existed.
      */
-    private function applyTarget(RedirectModel $redirect, ?string $target, ElementType $targetType): void
+    private function applyTarget(RedirectModel $redirect, ?string $target, ?ElementType $targetType): void
     {
-        if (empty($target)) {
-            $redirect->setTarget($target);
-            $redirect->setTargetType(null);
+        if (!empty($target)) {
+            $candidates = $targetType !== null ? [$targetType] : ElementType::cases();
 
-            return;
+            foreach ($candidates as $candidate) {
+                $element = $this->serviceResolver->getElementByPath($candidate->value, $target);
+
+                if ($element !== null) {
+                    $redirect->setTarget((string)$element->getId());
+                    $redirect->setTargetType($candidate);
+
+                    return;
+                }
+            }
         }
 
-        $element = $this->serviceResolver->getElementByPath($targetType->value, $target);
-        if ($element === null) {
-            $redirect->setTarget($target);
-            $redirect->setTargetType(null);
-
-            return;
-        }
-
-        $redirect->setTarget((string)$element->getId());
-        $redirect->setTargetType($targetType);
+        $redirect->setTarget($target);
+        $redirect->setTargetType(null);
     }
 
     /**
      * @throws InvalidArgumentException
      */
-    private function getTargetType(?string $targetType): ElementType
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getTargetType(?string $targetType): ?ElementType
     {
-        // clients that do not know about target types yet always point to documents
+        // clients that do not know about target types leave the type to be detected
         if ($targetType === null || $targetType === '') {
-            return ElementType::Document;
+            return null;
         }
 
         return ElementType::tryFrom($targetType) ?? throw new InvalidArgumentException(
