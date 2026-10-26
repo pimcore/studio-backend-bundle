@@ -45,7 +45,7 @@ final readonly class RedirectUpdateParameters
         #[Property(
             description: 'Type of the element the target points to. Detected from the target when omitted.',
             type: 'string',
-            enum: ['document', 'asset', 'object'],
+            enum: ['document', 'asset', 'object', null],
             example: 'document',
             nullable: true
         )]

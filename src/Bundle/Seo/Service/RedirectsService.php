@@ -86,12 +86,14 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         if ($source !== null && $parameters->isRegex() === false) {
             $source = str_replace('+', ' ', $source);
         }
+        $targetType = $this->getTargetType($parameters->getTargetType());
+
         $redirect = $this->repository->getById($id);
         $redirect->setType($parameters->getType());
         $redirect->setSourceSite($parameters->getSourceSite());
         $redirect->setSource($source);
         $redirect->setTargetSite($parameters->getTargetSite());
-        $this->applyTarget($redirect, $parameters->getTarget(), $this->getTargetType($parameters->getTargetType()));
+        $this->applyTarget($redirect, $parameters->getTarget(), $targetType);
         $redirect->setStatusCode($parameters->getStatusCode());
         $redirect->setPriority($parameters->getPriority());
         $redirect->setRegex($parameters->isRegex());
@@ -226,27 +228,61 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     }
 
     /**
-     * The target is submitted as an element path. If it resolves to an element, the redirect
-     * stores the element ID together with its type; otherwise the target is kept as a plain
-     * (external or not yet existing) URL without a type.
+     * The target is submitted as the element path the API renders, so it is resolved back to
+     * the element it names. A target that belongs to no element is kept as a plain (external
+     * or not yet existing) URL and has no element type.
+     *
+     * @throws InvalidArgumentException when the submitted target type names no such element
      */
     private function applyTarget(RedirectModel $redirect, ?string $target, ?ElementType $targetType): void
     {
+        // an edit that touches neither the target nor its type must not re-resolve it: the
+        // element it points at could have been deleted, or its path could since have been
+        // taken by an element of another type. A submitted type that differs is a deliberate
+        // request to resolve the same path in another tree.
+        $keepsTargetType = $targetType === null || $targetType === $redirect->getTargetType();
+
+        if ($keepsTargetType && $target === $this->renderTarget($redirect)) {
+            return;
+        }
+
+        if (empty($target)) {
+            $redirect->setTarget($target);
+            $redirect->setTargetType(null);
+
+            return;
+        }
+
         // a client that sends no type cannot say which tree it meant, so the type is detected;
         // one that does restricts the lookup, which is how an ambiguous path is disambiguated
-        $resolved = match (true) {
-            empty($target) => null,
-            $targetType !== null => $this->targetResolver->resolveElement($target, $targetType),
-            default => $this->targetResolver->detectElement($target),
-        };
+        $resolved = $targetType !== null
+            ? $this->targetResolver->resolveElement($target, $targetType)
+            : $this->targetResolver->detectElement($target);
+
+        if ($resolved === null && $targetType !== null) {
+            throw new InvalidArgumentException(
+                sprintf('No %s usable as a redirect target found at "%s"', $targetType->value, $target)
+            );
+        }
 
         $redirect->setTarget($resolved?->getTargetValue() ?? $target);
         $redirect->setTargetType($resolved?->type);
     }
 
     /**
-     * @throws InvalidArgumentException
+     * The target as the API renders it, i.e. what a client sends back unchanged.
      */
+    private function renderTarget(RedirectModel $redirect): ?string
+    {
+        $target = $redirect->getTarget();
+
+        if ($target === null) {
+            return null;
+        }
+
+        return $this->targetResolver->resolvePath($target, $redirect->getTargetType()) ?? $target;
+    }
+
     /**
      * @throws InvalidArgumentException
      */
