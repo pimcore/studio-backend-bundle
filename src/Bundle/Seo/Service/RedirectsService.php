@@ -232,9 +232,13 @@ final readonly class RedirectsService implements RedirectsServiceInterface
      */
     private function applyTarget(RedirectModel $redirect, ?string $target, ?ElementType $targetType): void
     {
-        $resolved = empty($target)
-            ? null
-            : $this->targetResolver->resolveElement($target, $targetType);
+        // a client that sends no type cannot say which tree it meant, so the type is detected;
+        // one that does restricts the lookup, which is how an ambiguous path is disambiguated
+        $resolved = match (true) {
+            empty($target) => null,
+            $targetType !== null => $this->targetResolver->resolveElement($target, $targetType),
+            default => $this->targetResolver->detectElement($target),
+        };
 
         $redirect->setTarget($resolved?->getTargetValue() ?? $target);
         $redirect->setTargetType($resolved?->type);
