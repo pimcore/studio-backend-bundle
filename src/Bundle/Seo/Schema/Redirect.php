@@ -23,9 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     schema: 'BundleSeoRedirect',
     title: 'Bundle Seo Redirect',
     required: [
-        'id', 'type', 'source', 'sourceSite', 'passThroughParameters', 'target', 'targetType', 'targetSite',
+        'id', 'type', 'source', 'sourceSite', 'passThroughParameters', 'target', 'targetSite',
         'statusCode', 'priority', 'regex', 'active', 'expiry', 'creationDate', 'modificationDate',
-        'userOwner', 'userModification',
+        'userOwner', 'userModification', 'targetType',
     ],
     type: 'object'
 )]
@@ -46,14 +46,6 @@ final class Redirect implements AdditionalAttributesInterface
         public readonly bool $passThroughParameters,
         #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public readonly ?string $target,
-        #[Property(
-            description: 'Type of the element the target points to',
-            type: 'string',
-            enum: ['document', 'asset', 'object', null],
-            example: 'document',
-            nullable: true
-        )]
-        public readonly ?string $targetType,
         #[Property(description: 'ID of the target site', type: 'integer', example: 1, nullable: true)]
         public readonly ?int $targetSite,
         #[Property(description: 'Status code', type: 'integer', example: 301)]
@@ -93,7 +85,15 @@ final class Redirect implements AdditionalAttributesInterface
             example: 1,
             nullable: true
         )]
-        public readonly ?int $userModification
+        public readonly ?int $userModification,
+        // last and defaulted, so that callers written before target types keep working
+        #[Property(
+            description: "Type of the element the target points to - 'document', 'asset' or 'object'",
+            type: 'string',
+            example: 'document',
+            nullable: true
+        )]
+        public readonly ?string $targetType = null
     ) {
 
     }
