@@ -36,7 +36,7 @@ final readonly class RedirectAddParameters
         #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public ?string $target = null,
         #[Property(
-            description: 'Type of the element the target points to. Defaults to a document target.',
+            description: 'Type of the element the target points to. Detected from the target when omitted.',
             type: 'string',
             enum: ['document', 'asset', 'object'],
             example: 'document',
