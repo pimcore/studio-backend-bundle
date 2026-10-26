@@ -15,10 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Bundle\Seo\Hydrator;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\SeoBundle\Redirect\TargetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydrator;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementType;
 
 /**
@@ -26,75 +24,57 @@ use Pimcore\Model\Element\ElementType;
  */
 final class RedirectHydratorTest extends Unit
 {
-    public function testNumericDocumentTargetIsResolvedToItsPath(): void
+    public function testStoredElementTargetIsShownAsItsPath(): void
     {
-        $document = $this->createMock(Document::class);
-        $document->method('getRealFullPath')->willReturn('/en/landing-page');
-
-        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
-        $serviceResolver
+        $resolver = $this->createMock(TargetResolverInterface::class);
+        $resolver
             ->expects($this->once())
-            ->method('getElementById')
-            ->with('document', 5)
-            ->willReturn($document);
+            ->method('resolvePath')
+            ->with('5', ElementType::Asset)
+            ->willReturn('/manual.pdf');
 
-        $result = (new RedirectHydrator($serviceResolver))->hydrate(
-            $this->redirect('5', ElementType::Document)
-        );
-
-        $this->assertSame('/en/landing-page', $result->getTarget());
-        $this->assertSame('document', $result->getTargetType());
-    }
-
-    public function testNumericTargetWithoutTargetTypeIsResolvedAsDocument(): void
-    {
-        $document = $this->createMock(Document::class);
-        $document->method('getRealFullPath')->willReturn('/en/legacy');
-
-        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
-        $serviceResolver
-            ->expects($this->once())
-            ->method('getElementById')
-            ->with('document', 5)
-            ->willReturn($document);
-
-        $result = (new RedirectHydrator($serviceResolver))->hydrate($this->redirect('5', null));
-
-        $this->assertSame('/en/legacy', $result->getTarget());
-        $this->assertNull($result->getTargetType());
-    }
-
-    public function testNumericAssetTargetIsResolvedToItsPath(): void
-    {
-        $asset = $this->createMock(Asset::class);
-        $asset->method('getRealFullPath')->willReturn('/manual.pdf');
-
-        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
-        $serviceResolver
-            ->expects($this->once())
-            ->method('getElementById')
-            ->with('asset', 7)
-            ->willReturn($asset);
-
-        $result = (new RedirectHydrator($serviceResolver))->hydrate(
-            $this->redirect('7', ElementType::Asset)
-        );
+        $result = (new RedirectHydrator($resolver))->hydrate($this->redirect('5', ElementType::Asset));
 
         $this->assertSame('/manual.pdf', $result->getTarget());
         $this->assertSame('asset', $result->getTargetType());
     }
 
-    public function testNonNumericTargetIsPassedThrough(): void
+    public function testTargetTypeIsPassedOnForLegacyUntypedTargets(): void
     {
-        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
-        $serviceResolver->expects($this->never())->method('getElementById');
+        $resolver = $this->createMock(TargetResolverInterface::class);
+        $resolver
+            ->expects($this->once())
+            ->method('resolvePath')
+            ->with('5', null)
+            ->willReturn('/en/legacy');
 
-        $result = (new RedirectHydrator($serviceResolver))->hydrate(
-            $this->redirect('https://example.com', null)
-        );
+        $result = (new RedirectHydrator($resolver))->hydrate($this->redirect('5', null));
+
+        $this->assertSame('/en/legacy', $result->getTarget());
+        $this->assertNull($result->getTargetType());
+    }
+
+    public function testUnresolvableTargetIsPassedThrough(): void
+    {
+        $resolver = $this->createMock(TargetResolverInterface::class);
+        $resolver->method('resolvePath')->willReturn(null);
+
+        $result = (new RedirectHydrator($resolver))->hydrate($this->redirect('https://example.com', null));
 
         $this->assertSame('https://example.com', $result->getTarget());
         $this->assertNull($result->getTargetType());
+    }
+
+    public function testEmptyTargetIsNotResolved(): void
+    {
+        $resolver = $this->createMock(TargetResolverInterface::class);
+        $resolver->expects($this->never())->method('resolvePath');
+
+        $redirect = new RedirectModel();
+        $redirect->setType(RedirectModel::TYPE_PATH);
+        $redirect->setSource('/old');
+
+        $this->assertNull((new RedirectHydrator($resolver))->hydrate($redirect)->getTarget());
     }
 
     private function redirect(string $target, ?ElementType $targetType): RedirectModel

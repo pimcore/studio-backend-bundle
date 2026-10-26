@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 
 use Exception;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\SeoBundle\Redirect\TargetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectStatusEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface;
@@ -46,7 +46,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         private RedirectHydratorInterface $hydrator,
         private RedirectStatusHydratorInterface $statusHydrator,
         private RedirectsRepositoryInterface $repository,
-        private ServiceResolverInterface $serviceResolver,
+        private TargetResolverInterface $targetResolver,
     ) {
     }
 
@@ -229,30 +229,15 @@ final readonly class RedirectsService implements RedirectsServiceInterface
      * The target is submitted as an element path. If it resolves to an element, the redirect
      * stores the element ID together with its type; otherwise the target is kept as a plain
      * (external or not yet existing) URL without a type.
-     *
-     * A submitted target type restricts the lookup to that type, which is how a path existing
-     * in more than one tree is disambiguated. Without one, the element types are tried in
-     * order - documents first, so targets behave as they did before types existed.
      */
     private function applyTarget(RedirectModel $redirect, ?string $target, ?ElementType $targetType): void
     {
-        if (!empty($target)) {
-            $candidates = $targetType !== null ? [$targetType] : ElementType::cases();
+        $resolved = empty($target)
+            ? null
+            : $this->targetResolver->resolveElement($target, $targetType);
 
-            foreach ($candidates as $candidate) {
-                $element = $this->serviceResolver->getElementByPath($candidate->value, $target);
-
-                if ($element !== null) {
-                    $redirect->setTarget((string)$element->getId());
-                    $redirect->setTargetType($candidate);
-
-                    return;
-                }
-            }
-        }
-
-        $redirect->setTarget($target);
-        $redirect->setTargetType(null);
+        $redirect->setTarget($resolved?->getTargetValue() ?? $target);
+        $redirect->setTargetType($resolved?->type);
     }
 
     /**
