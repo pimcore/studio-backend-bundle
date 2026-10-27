@@ -43,7 +43,8 @@ final readonly class RedirectUpdateParameters
         #[Property(description: 'Target URL', type: 'string', example: '/new-path', nullable: true)]
         public ?string $target = null,
         #[Property(
-            description: "Type of the element the target points to - 'document', 'asset' or 'object'. Detected from the target when omitted.",
+            description: "Type of the element the target points to - 'document', 'asset' or 'object'. " .
+                'Detected from the target when omitted.',
             type: 'string',
             example: 'document',
             nullable: true
