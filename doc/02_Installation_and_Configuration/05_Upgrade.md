@@ -3,6 +3,20 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Classification Store] Changed: the key relations of a group are loaded once per request and shared by every
+  consumer (the layout endpoints, the data object detail and search preview, the grid column resolver and the
+  classification store grid filters), instead of each one running its own listing. The memo is dropped after every
+  configuration write and between messages of a long-running worker, so a read after a write in the same request
+  reflects the write.
+
+> **Note:** the within-group key order of the data object detail (`objectData` of a classification store field) and
+> of the search preview is now deterministic — `id` ascending, the order the layout endpoints already used. It
+> previously was whatever the database returned, as those two payloads were loaded without an `ORDER BY`. Clients
+> that relied on the previous, unspecified order see a different order; clients that key by the key id are
+> unaffected. The `@internal` `KeyGroupRelationRepositoryInterface` (`ClassificationStore\Repository`) replaces
+> `getByGroupId()` and `getByKeyGroupId()` with `getByGroupIds(array $groupIds)`; the new `@internal`
+> `KeyRelationResolverInterface` (`ClassificationStore\Service`) is the way in for cached reads.
+
 - [Classification Store] Added: every key of the three layout responses (`GET /classification-store/layout-by-key/{keyId}/{groupId}`,
   `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`) carries
   an optional `title`, holding the stored title of the key configuration. It is the raw stored string — `null` when no title is

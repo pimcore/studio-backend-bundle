@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DetailDataInterface;
@@ -45,12 +46,12 @@ use Pimcore\Model\DataObject\Classificationstore as ClassificationstoreModel;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\CalculatedValue;
 use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_keys;
 use function in_array;
 use function is_array;
 
@@ -74,6 +75,7 @@ final readonly class ClassificationStoreAdapter implements
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
         private InheritanceServiceInterface $inheritanceService,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private LanguageServiceInterface $languageService,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
@@ -201,8 +203,10 @@ final readonly class ClassificationStoreAdapter implements
 
         $fieldName =$this->dataService->getPreviewFieldName($fieldDefinition);
         $validLanguages = $this->getValidLanguages($value->getObject(), $fieldDefinition->isLocalized());
-        foreach ($this->getActiveGroupsConfig($value->getActiveGroups()) as $groupId => $groupConfig) {
-            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
+        $activeGroups = $this->getActiveGroupsConfig($value->getActiveGroups());
+        $keysByGroup = $this->keyRelationResolver->getByGroups(array_keys($activeGroups));
+        foreach ($activeGroups as $groupId => $groupConfig) {
+            $keys = $keysByGroup[$groupId];
             $groupName = $groupConfig->getName();
             foreach ($keys as $key) {
                 foreach ($validLanguages as $validLanguage) {
@@ -240,9 +244,11 @@ final readonly class ClassificationStoreAdapter implements
         $resultItems['activeGroups'] = $value->getActiveGroups();
         $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
 
-        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
+        $activeGroups = $this->getActiveGroupsConfig($resultItems['activeGroups']);
+        $keysByGroup = $this->keyRelationResolver->getByGroups(array_keys($activeGroups));
+        foreach ($activeGroups as $groupId => $groupConfig) {
             $resultItems[$groupId] = [];
-            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
+            $keys = $keysByGroup[$groupId];
             foreach ($validLanguages as $validLanguage) {
                 foreach ($keys as $key) {
                     $normalizedValue = $this->getResolvedValue(
@@ -485,10 +491,7 @@ final readonly class ClassificationStoreAdapter implements
      */
     private function getClassificationStoreKeysFromGroup(int $groupId): array
     {
-        $listing = new KeyGroupRelationListing();
-        $listing->addConditionParam('groupId = ?', $groupId);
-
-        return $listing->getList();
+        return $this->keyRelationResolver->getByGroup($groupId);
     }
 
     /**

@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -33,6 +34,7 @@ final readonly class CollectionService implements CollectionServiceInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private CollectionRepositoryInterface $collectionConfigurationRepository,
         private CollectionHydratorInterface $collectionHydrator,
     ) {
@@ -67,10 +69,14 @@ final readonly class CollectionService implements CollectionServiceInterface
      */
     public function createCollection(CollectionCreate $parameters): CollectionDetail
     {
-        $collectionConfig = $this->collectionConfigurationRepository->create(
-            $parameters->getName(),
-            $parameters->getStoreId()
-        );
+        try {
+            $collectionConfig = $this->collectionConfigurationRepository->create(
+                $parameters->getName(),
+                $parameters->getStoreId()
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedCollectionDetail($collectionConfig);
     }
@@ -80,11 +86,15 @@ final readonly class CollectionService implements CollectionServiceInterface
      */
     public function updateCollection(int $id, CollectionUpdate $parameters): CollectionDetail
     {
-        $collectionConfig = $this->collectionConfigurationRepository->update(
-            $id,
-            $parameters->getName(),
-            $parameters->getDescription(),
-        );
+        try {
+            $collectionConfig = $this->collectionConfigurationRepository->update(
+                $id,
+                $parameters->getName(),
+                $parameters->getDescription(),
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedCollectionDetail($collectionConfig);
     }
@@ -94,7 +104,11 @@ final readonly class CollectionService implements CollectionServiceInterface
      */
     public function deleteCollection(int $id): void
     {
-        $this->collectionConfigurationRepository->delete($id);
+        try {
+            $this->collectionConfigurationRepository->delete($id);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
     }
 
     private function getHydratedCollectionDetail(CollectionConfig $collectionConfig): CollectionDetail

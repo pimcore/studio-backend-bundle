@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -500,6 +501,7 @@ final class ClassificationStoreAdapterTest extends Unit
         ?DataServiceInterface $dataService = null,
         ?GroupConfigResolverInterface $groupConfigResolver = null,
         ?InheritanceServiceInterface $inheritanceService = null,
+        ?KeyRelationResolverInterface $keyRelationResolver = null,
         ?LanguageServiceInterface $languageService = null,
         ?ServiceResolverInterface $serviceResolver = null,
         ?SecurityServiceInterface $securityService = null,
@@ -512,6 +514,7 @@ final class ClassificationStoreAdapterTest extends Unit
             $dataService ?? $this->makeEmpty(DataServiceInterface::class),
             $groupConfigResolver ?? $this->makeEmpty(GroupConfigResolverInterface::class),
             $inheritanceService ?? $this->makeEmpty(InheritanceServiceInterface::class),
+            $keyRelationResolver ?? $this->makeEmpty(KeyRelationResolverInterface::class),
             $languageService ?? $this->makeEmpty(LanguageServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),

@@ -19,9 +19,9 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Ke
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -91,10 +91,10 @@ final class KeyGroupLayoutServiceTest extends Unit
         $relation->setDefinition('{"fieldtype":"input"}');
         $relation->setType('input');
 
-        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $repository
-            ->method('getByKeyGroupId')
-            ->with(self::KEY_ID, self::GROUP_ID)
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroupAndKey')
+            ->with(self::GROUP_ID, self::KEY_ID)
             ->willReturn($relation);
 
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
@@ -115,7 +115,7 @@ final class KeyGroupLayoutServiceTest extends Unit
 
         $service = new KeyGroupLayoutService(
             $serviceResolver,
-            $repository,
+            $keyRelationResolver,
             new ConcreteObjectResolver(),
             $keyConfigResolver,
         );

@@ -17,7 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -54,7 +54,7 @@ final class ClassificationStoreResolver implements
 
     public function __construct(
         private readonly GridServiceInterface $gridService,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private readonly KeyRelationResolverInterface $keyRelationResolver,
         private readonly ServiceResolverInterface $classificationStoreServiceResolver,
         private readonly DataServiceInterface $dataService,
         private readonly ToolResolverInterface $toolResolver,
@@ -179,7 +179,7 @@ final class ClassificationStoreResolver implements
 
     public function findKeyGroupRelation(int $groupId, int $keyId): KeyGroupRelation
     {
-        $keys = $this->keyGroupRelationRepository->getByGroupId($groupId);
+        $keys = $this->keyRelationResolver->getByGroup($groupId);
 
         foreach ($keys as $key) {
             if ($key->getKeyId() === $keyId) {
