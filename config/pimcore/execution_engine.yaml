@@ -12,7 +12,7 @@ framework:
   messenger:
     routing:
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage: pimcore_generic_execution_engine
-      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetFolderCloneMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipDownloadMessage: pimcore_generic_execution_engine

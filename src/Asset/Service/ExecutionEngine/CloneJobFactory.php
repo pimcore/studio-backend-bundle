@@ -17,7 +17,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetFolderCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Model\CloneDescendants;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
@@ -40,7 +40,7 @@ final readonly class CloneJobFactory implements CloneJobFactoryInterface
         if ($descendants->getFolderIds() !== []) {
             $steps[] = new JobStep(
                 JobSteps::ASSET_FOLDER_CLONING->value,
-                AssetFolderCloneMessage::class,
+                FolderCloneMessage::class,
                 '',
                 [StepConfig::FOLDERS_TO_CLONE->value => $descendants->getFolderIds()],
                 SelectionProcessingMode::ONCE

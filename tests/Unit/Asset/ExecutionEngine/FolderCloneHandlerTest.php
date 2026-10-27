@@ -23,12 +23,14 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStepInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetFolderCloneHandler;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetFolderCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\FolderCloneHandler;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Model\Asset;
@@ -40,7 +42,7 @@ use ReflectionProperty;
 /**
  * @internal
  */
-final class AssetFolderCloneHandlerTest extends Unit
+final class FolderCloneHandlerTest extends Unit
 {
     private const int ORIGINAL_PARENT_ID = 10;
 
@@ -79,7 +81,7 @@ final class AssetFolderCloneHandlerTest extends Unit
             }
         );
 
-        $this->createHandler($cloneService, $user, [15, 11, 12])(new AssetFolderCloneMessage(1, 0));
+        $this->createHandler($cloneService, $user, [15, 11, 12])(new FolderCloneMessage(1, 0));
 
         // Every folder is created before the next one is looked up, so a sub folder always finds its parent
         $this->assertSame(
@@ -93,6 +95,29 @@ final class AssetFolderCloneHandlerTest extends Unit
     }
 
     /**
+     * @throws Exception
+     */
+    public function testReportsTheProgressOfTheFoldersNotOfTheSelectedAssets(): void
+    {
+        $cloneService = $this->createMock(CloneServiceInterface::class);
+        $cloneService->method('getNewCloneTarget')->willReturn($this->makeFolder(100));
+        $cloneService->method('cloneElement')->willReturn($this->makeFolder(200));
+
+        $published = [];
+        $publishService = $this->createMock(PublishServiceInterface::class);
+        $publishService->method('publish')->willReturnCallback(
+            static function (string $topic, Progress $progress) use (&$published): void {
+                $published[] = [$progress->getProgress(), $progress->getCurrentStep(), $progress->getTotalSteps()];
+            }
+        );
+
+        // 245 assets are selected for the following step, the folder step itself has 3 folders
+        $this->createHandler($cloneService, new User(), [15, 11, 12], $publishService)(new FolderCloneMessage(1, 0));
+
+        $this->assertSame([[33, 1, 2], [66, 1, 2], [100, 1, 2]], $published);
+    }
+
+    /**
      * @param int[] $folderIds
      *
      * @throws Exception
@@ -100,8 +125,9 @@ final class AssetFolderCloneHandlerTest extends Unit
     private function createHandler(
         CloneServiceInterface $cloneService,
         User $user,
-        array $folderIds
-    ): AssetFolderCloneHandler {
+        array $folderIds,
+        ?PublishServiceInterface $publishService = null
+    ): FolderCloneHandler {
         $userResolver = $this->createMock(UserResolverInterface::class);
         $userResolver->method('getById')->willReturn($user);
 
@@ -113,9 +139,9 @@ final class AssetFolderCloneHandlerTest extends Unit
         $userTopicService = $this->createMock(UserTopicServiceInterface::class);
         $userTopicService->method('getUserTopic')->willReturn('topic');
 
-        $handler = new AssetFolderCloneHandler(
+        $handler = new FolderCloneHandler(
             $elementService,
-            $this->createMock(PublishServiceInterface::class),
+            $publishService ?? $this->createMock(PublishServiceInterface::class),
             $userResolver,
             $userTopicService,
             $cloneService
@@ -134,9 +160,13 @@ final class AssetFolderCloneHandlerTest extends Unit
         $jobRun = new JobRun(1);
         $jobRun->setState(JobRunStates::RUNNING);
         $jobRun->setCurrentStep(0);
+        $jobRun->setTotalElements(245);
         $jobRun->setJob(new Job(
             name: 'job',
-            steps: [new JobStep('step', AssetFolderCloneMessage::class, '', [])],
+            steps: [
+                new JobStep('step', FolderCloneMessage::class, '', []),
+                new JobStep('assets', AssetCloneMessage::class, '', []),
+            ],
             environmentData: [
                 EnvironmentVariables::ORIGINAL_PARENT_ID->value => self::ORIGINAL_PARENT_ID,
                 EnvironmentVariables::PARENT_ID->value => self::NEW_PARENT_ID,

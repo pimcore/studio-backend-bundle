@@ -17,7 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetFolderCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Model\CloneDescendants;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneJobFactory;
@@ -50,7 +50,7 @@ final class CloneJobFactoryTest extends Unit
         $this->assertCount(2, $job->getSteps());
 
         $this->assertSame(JobSteps::ASSET_FOLDER_CLONING->value, $folderStep->getName());
-        $this->assertSame(AssetFolderCloneMessage::class, $folderStep->getMessageFQCN());
+        $this->assertSame(FolderCloneMessage::class, $folderStep->getMessageFQCN());
         $this->assertSame(SelectionProcessingMode::ONCE, $folderStep->getSelectionProcessingMode());
         // The folders are cloned in exactly the order they are given in, parents before their children
         $this->assertSame([11, 15, 12], $folderStep->getConfig()[StepConfig::FOLDERS_TO_CLONE->value]);
@@ -80,7 +80,7 @@ final class CloneJobFactoryTest extends Unit
 
         $this->assertInstanceOf(Job::class, $job);
         $this->assertCount(1, $job->getSteps());
-        $this->assertSame(AssetFolderCloneMessage::class, $job->getSteps()[0]->getMessageFQCN());
+        $this->assertSame(FolderCloneMessage::class, $job->getSteps()[0]->getMessageFQCN());
         // An empty for-each step would still be dispatched once, without an element
         $this->assertSame([], $job->getSelectedElements());
     }

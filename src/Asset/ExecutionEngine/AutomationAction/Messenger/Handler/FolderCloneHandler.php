@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetFolderCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\FolderCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -29,6 +29,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
+use function intdiv;
+use function max;
 
 /**
  * Clones all folders of a recursive asset clone in one message. The folders are given parents first, so the target of
@@ -37,7 +40,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class AssetFolderCloneHandler extends AbstractHandler
+final class FolderCloneHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -54,7 +57,7 @@ final class AssetFolderCloneHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(AssetFolderCloneMessage $message): void
+    public function __invoke(FolderCloneMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -80,6 +83,10 @@ final class AssetFolderCloneHandler extends AbstractHandler
         }
 
         $folderIds = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::FOLDERS_TO_CLONE->value);
+        $stepName = $this->getJobStep($message)->getName();
+        $totalFolders = count($folderIds);
+        $updateFrequency = max(1, intdiv($totalFolders, self::FREQUENCY));
+        $clonedFolders = 0;
         foreach ($folderIds as $folderId) {
             $source = $this->getElementById(
                 new ElementDescriptor(ElementTypes::TYPE_ASSET, $folderId),
@@ -97,14 +104,19 @@ final class AssetFolderCloneHandler extends AbstractHandler
                 $environmentData[EnvironmentVariables::PARENT_ID->value],
             );
             $this->cloneService->cloneElement($source, $parent, $user);
-        }
 
-        $this->updateProgress(
-            $this->publishService,
-            $this->userTopicService,
-            $jobRun,
-            $this->getJobStep($message)->getName()
-        );
+            // The progress of this step is counted in folders; the selected elements are the assets of the next step
+            $clonedFolders++;
+            if ($clonedFolders % $updateFrequency === 0 || $clonedFolders === $totalFolders) {
+                $this->publishProgress(
+                    $this->publishService,
+                    $this->userTopicService,
+                    $jobRun,
+                    $stepName,
+                    intdiv($clonedFolders * 100, $totalFolders)
+                );
+            }
+        }
     }
 
     protected function configureStep(): void

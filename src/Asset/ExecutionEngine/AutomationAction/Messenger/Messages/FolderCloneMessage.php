@@ -18,6 +18,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecu
 /**
  * @internal
  */
-final class AssetFolderCloneMessage extends AbstractExecutionEngineMessage
+final class FolderCloneMessage extends AbstractExecutionEngineMessage
 {
 }
