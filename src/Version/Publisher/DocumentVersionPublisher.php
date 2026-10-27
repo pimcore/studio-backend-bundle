@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedExce
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Document;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 
 /**
  * @internal
@@ -35,7 +36,8 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
      */
     public function publish(
         Document $versionDocument,
-        UserInterface $user
+        UserInterface $user,
+        Version $version
     ): void {
         $currentDocument = $this->documentResolver->getById($versionDocument->getId());
         if (!$currentDocument) {
@@ -47,7 +49,8 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
             $versionDocument->setKey($currentDocument->getKey());
             $versionDocument->setPath($currentDocument->getPath());
             $versionDocument->setUserModification($user->getId());
-            $versionDocument->save();
+            // the published state is written into the version itself, so the history shows which version went live
+            $versionDocument->save(['existingVersion' => $version]);
         } catch (Exception $e) {
             throw new ElementPublishingFailedException(
                 $versionDocument->getId(),

@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 
 /**
  * @internal
@@ -25,11 +26,13 @@ final class AssetVersionPublisher implements AssetVersionPublisherInterface
 {
     public function publish(
         Asset $versionAsset,
-        UserInterface $user
+        UserInterface $user,
+        Version $version
     ): void {
         try {
             $versionAsset->setUserModification($user->getId());
-            $versionAsset->save();
+            // the published state is written into the version itself, so the history shows which version went live
+            $versionAsset->save(['existingVersion' => $version]);
         } catch (Exception $e) {
             throw new ElementPublishingFailedException(
                 $versionAsset->getId(),

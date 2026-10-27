@@ -129,25 +129,14 @@ final readonly class VersionService implements VersionServiceInterface
             throw new InvalidElementTypeException($class);
         }
 
+        // the version is published in place: no new version is created, the published one is the version itself
         $this->versionPublisherLocator->get($class)->publish(
             $element,
-            $user
+            $user,
+            $version
         );
 
-        $lastVersion = $this->repository->getLastVersion(
-            $elementId,
-            $this->getElementType($element, true),
-            $user
-        );
-
-        if (!$lastVersion) {
-            throw new ElementPublishingFailedException(
-                $elementId,
-                'No last version was found'
-            );
-        }
-
-        return $lastVersion->getId();
+        return $version->getId();
     }
 
     /**
