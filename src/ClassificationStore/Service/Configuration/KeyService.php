@@ -75,7 +75,8 @@ final readonly class KeyService implements KeyServiceInterface
     {
         $keyConfig = $this->keyConfigurationRepository->create(
             $parameters->getName(),
-            $parameters->getStoreId()
+            $parameters->getStoreId(),
+            $parameters->getTitle()
         );
 
         return $this->getHydratedKeyDetail($keyConfig);

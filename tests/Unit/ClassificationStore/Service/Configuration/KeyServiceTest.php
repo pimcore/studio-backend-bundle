@@ -18,6 +18,7 @@ use Exception;
 use Pimcore\Bundle\CoreBundle\OptionsProvider\SelectOptionsOptionsProvider;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyService;
@@ -96,6 +97,36 @@ final class KeyServiceTest extends Unit
             ->willReturn(new KeyConfig());
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', 'Title', 'Description', 'input'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyPassesTheSuppliedTitleToTheRepository(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('weight', 3, 'Weight')
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('weight', 3, 'Weight'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyPassesANullTitleThrough(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('length', 3, null)
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('length', 3));
     }
 
     /**
