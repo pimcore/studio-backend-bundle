@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
@@ -35,6 +36,7 @@ use function sprintf;
 final class ClassificationStoreResolver extends AbstractResolver
 {
     public function __construct(
+        private readonly GroupConfigRepositoryInterface $groupConfigRepository,
         private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private readonly ServiceResolverInterface $classificationStoreServiceResolver,
     ) {
@@ -74,8 +76,21 @@ final class ClassificationStoreResolver extends AbstractResolver
         $groupId = $dotNotationParts[1];
         $keyId = end($dotNotationParts);
 
-        if (!$this->getFieldDefinition($storeFieldName) instanceof Classificationstore) {
+        $storeFieldDefinition = $this->getFieldDefinition($storeFieldName);
+        if (!$storeFieldDefinition instanceof Classificationstore) {
             throw new ParseException(sprintf('Field "%s" is not a classification store', $storeFieldName));
+        }
+
+        try {
+            $group = $this->groupConfigRepository->getById((int) $groupId);
+        } catch (NotFoundException) {
+            throw new ParseException(sprintf('Classification store group "%s" does not exist', $groupId));
+        }
+
+        if ($group->getStoreId() !== $storeFieldDefinition->getStoreId()) {
+            throw new ParseException(
+                sprintf('Group "%s" does not belong to the store of classification store "%s"', $groupId, $storeFieldName)
+            );
         }
 
         try {
@@ -96,7 +111,8 @@ final class ClassificationStoreResolver extends AbstractResolver
             $fd->__wakeup();
         }
 
-        return $this->wrapFieldDefinition(
+        // Built directly, wrapFieldDefinition() keeps its signature for resolvers overriding it
+        return new FieldDefinitionWrapper(
             fieldDefinition: $fd,
             containerType: ContainerTypes::CLASSIFICATION_STORE->value,
             fieldname: $storeFieldName,
