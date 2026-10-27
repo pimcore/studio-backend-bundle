@@ -53,8 +53,15 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneJobFactoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneJobFactory
+
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipService
+
+  # Repositories
+  Pimcore\Bundle\StudioBackendBundle\Asset\Repository\CloneDescendantsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Repository\CloneDescendantsRepository
 
   #
   # Updaters
@@ -78,6 +85,7 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetCloneHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetFolderCloneHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetUploadHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ExportDataCollectionHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipDownloadHandler: ~

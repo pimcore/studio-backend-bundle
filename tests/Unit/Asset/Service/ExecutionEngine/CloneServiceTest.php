@@ -17,9 +17,10 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Repository\CloneDescendantsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneJobFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneService;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder;
@@ -137,7 +138,8 @@ final class CloneServiceTest extends Unit
 
         return new CloneService(
             $assetService,
-            $this->makeEmpty(AssetSearchServiceInterface::class),
+            $this->makeEmpty(CloneDescendantsRepositoryInterface::class),
+            $this->makeEmpty(CloneJobFactoryInterface::class),
             $this->makeEmpty(JobExecutionAgentInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class),
             $this->makeEmpty(SynchronousProcessingServiceInterface::class)
