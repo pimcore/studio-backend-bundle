@@ -55,7 +55,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
      */
     public function getByGroupIds(array $groupIds): array
     {
-        if (count($groupIds) === 0) {
+        if (empty($groupIds)) {
             return [];
         }
 
