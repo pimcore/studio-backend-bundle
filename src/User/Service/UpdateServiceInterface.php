@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
@@ -31,7 +32,7 @@ interface UpdateServiceInterface
      *
      * @param T $user
      *
-     * @throws NotFoundException
+     * @throws ForbiddenException|NotFoundException
      *
      * @return T
      */
@@ -41,7 +42,7 @@ interface UpdateServiceInterface
     ): UserInterface|UserRoleInterface;
 
     /**
-     * @throws NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function updateRoles(array $rolesToSet, UserInterface $user): UserInterface;
 

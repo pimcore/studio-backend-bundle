@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
@@ -24,8 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginService;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Model\Site;
 use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -256,6 +259,92 @@ final class UserLoginServiceTest extends Unit
         $service->resetPassword($resetPassword);
     }
 
+    public function testGetLoginTokenUrlDoesNotAcceptAnyUrlParameter(): void
+    {
+        $method = (new ReflectionClass(UserLoginService::class))->getMethod('getLoginTokenUrl');
+
+        $this->assertCount(1, $method->getParameters());
+        $this->assertSame('id', $method->getParameters()[0]->getName());
+    }
+
+    public function testGetLoginTokenUrlRejectsTargetWithPermissionCallerDoesNotHold(): void
+    {
+        $targetUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'getPassword' => 'hashed-password',
+        ]);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => false,
+        ]);
+        $service = $this->createLoginTokenService($targetUser, $currentUser, ['assets']);
+
+        $this->expectException(ForbiddenException::class);
+        $service->getLoginTokenUrl(42);
+    }
+
+    public function testGetLoginTokenUrlAllowsTargetWithPermissionsCallerAlsoHolds(): void
+    {
+        $targetUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'getPassword' => 'hashed-password',
+        ]);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+        ]);
+        $service = $this->createLoginTokenService($targetUser, $currentUser, ['assets']);
+
+        $url = $service->getLoginTokenUrl(42);
+
+        $this->assertSame('https://mysite.com/login?token=test-token-123', $url);
+    }
+
+    public function testGetLoginTokenUrlAllowsAdminCallerRegardlessOfTargetPermissions(): void
+    {
+        $targetUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'getPassword' => 'hashed-password',
+        ]);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => true,
+        ]);
+        $service = $this->createLoginTokenService($targetUser, $currentUser, ['assets', 'documents', 'seo']);
+
+        $url = $service->getLoginTokenUrl(42);
+
+        $this->assertSame('https://mysite.com/login?token=test-token-123', $url);
+    }
+
+    private function createLoginTokenService(
+        UserInterface $targetUser,
+        UserInterface $currentUser,
+        array $targetPermissions,
+    ): UserLoginService {
+        return new UserLoginService(
+            $this->makeEmpty(AuthenticationResolverInterface::class, [
+                'generateTokenByUser' => 'test-token-123',
+            ]),
+            $this->makeEmpty(MailServiceInterface::class),
+            $this->makeEmpty(LoggerInterface::class),
+            $this->makeEmpty(UrlGeneratorInterface::class, [
+                'generate' => 'https://mysite.com/login?token=test-token-123',
+            ]),
+            $this->makeEmpty(UserRepositoryInterface::class, [
+                'getUserById' => $targetUser,
+            ]),
+            $this->makeEmpty(UserResolverInterface::class),
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $currentUser,
+            ]),
+            $this->makeEmpty(SettingsProviderInterface::class),
+            $this->makeEmpty(SiteRepositoryInterface::class),
+            $this->makeEmpty(UserPermissionServiceInterface::class, [
+                'getAllowedUserPermissions' => $targetPermissions,
+            ]),
+        );
+    }
+
     private function createService(
         string $mainDomain,
         array $sites,
@@ -288,6 +377,7 @@ final class UserLoginServiceTest extends Unit
             $this->makeEmpty(SiteRepositoryInterface::class, [
                 'listSites' => $sites,
             ]),
+            $this->makeEmpty(UserPermissionServiceInterface::class),
         );
     }
 }
