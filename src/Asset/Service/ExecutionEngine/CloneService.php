@@ -16,26 +16,19 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Model\CloneDescendants;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Repository\CloneDescendantsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Asset\Service as AssetService;
-use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
@@ -48,7 +41,8 @@ final readonly class CloneService implements CloneServiceInterface
 {
     public function __construct(
         private AssetServiceInterface $assetService,
-        private AssetSearchServiceInterface $assetSearchService,
+        private CloneDescendantsRepositoryInterface $cloneDescendantsRepository,
+        private CloneJobFactoryInterface $cloneJobFactory,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
@@ -70,6 +64,8 @@ final readonly class CloneService implements CloneServiceInterface
             $user,
             $sourceId,
         );
+        // Loaded before the source is cloned, so that a clone into the source itself does not clone itself again
+        $descendants = $this->cloneDescendantsRepository->getDescendants($source);
         $newParent = $this->cloneElement(
             $source,
             $this->assetService->getAssetElement(
@@ -79,14 +75,11 @@ final readonly class CloneService implements CloneServiceInterface
             $this->securityService->getCurrentUser()
         );
 
-        if (!$source->hasChildren()) {
-            return null;
-        }
-
         return $this->cloneChildrenWithExecutionEngine(
             user: $user,
             originalParent: $source,
             newParent: $newParent,
+            descendants: $descendants,
         );
 
     }
@@ -154,25 +147,13 @@ final readonly class CloneService implements CloneServiceInterface
         UserInterface $user,
         Asset $originalParent,
         Asset $newParent,
-    ): int {
-        $ids = $this->assetSearchService->getChildrenIds($originalParent->getRealFullPath(), 'asc');
-        $job = new Job(
-            name: Jobs::CLONE_ASSETS->value,
-            steps: [
-                new JobStep(JobSteps::ASSET_CLONING->value, AssetCloneMessage::class, '', []),
-            ],
-            selectedElements: array_map(
-                static fn (int $id) => new ElementDescriptor(
-                    ElementTypes::TYPE_ASSET,
-                    $id
-                ),
-                $ids
-            ),
-            environmentData: [
-                EnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
-                EnvironmentVariables::PARENT_ID->value => $newParent->getId(),
-            ]
-        );
+        CloneDescendants $descendants,
+    ): ?int {
+        $job = $this->cloneJobFactory->create($descendants, $originalParent->getId(), $newParent->getId());
+        if ($job === null) {
+            return null;
+        }
+
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
             $user->getId(),
