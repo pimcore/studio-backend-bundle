@@ -14,7 +14,9 @@ The following steps are necessary during updating to newer versions.
   /classification-store/configuration/keys/add` accepts an optional `title`; when it is sent, it is stored as the key's title
   and as `definition.title`, instead of the name used for both so far. Sending no `title`, or `null`, keeps writing the name
   to both, so clients that do not send the new field are unaffected. The `@internal`
-  `KeyRepositoryInterface::create()` got the optional argument `$title`.
+  `KeyRepositoryInterface::create()` got the optional argument `$title`. The update endpoint is unchanged and its request
+  schema still lists `title` as required, so a client editing an unrelated column of a key has to send the key's stored
+  title — readable from these responses from now on — instead of its name, which would otherwise overwrite the title.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
