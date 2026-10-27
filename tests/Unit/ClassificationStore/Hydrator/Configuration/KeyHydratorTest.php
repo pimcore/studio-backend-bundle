@@ -22,12 +22,19 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
  */
 final class KeyHydratorTest extends Unit
 {
+    private KeyHydrator $hydrator;
+
+    public function _before(): void
+    {
+        $this->hydrator = new KeyHydrator();
+    }
+
     public function testStoredTitleIsPassedThroughVerbatim(): void
     {
         $keyConfig = $this->createKeyConfig();
         $keyConfig->setTitle('Weight');
 
-        $this->assertSame('Weight', (new KeyHydrator())->hydrateKeyDetail($keyConfig)->getTitle());
+        $this->assertSame('Weight', $this->hydrator->hydrateKeyDetail($keyConfig)->getTitle());
     }
 
     public function testUnsetTitleIsNotSubstitutedWithTheName(): void
@@ -36,7 +43,7 @@ final class KeyHydratorTest extends Unit
 
         $this->assertSame(
             $keyConfig->getTitle(),
-            (new KeyHydrator())->hydrateKeyDetail($keyConfig)->getTitle()
+            $this->hydrator->hydrateKeyDetail($keyConfig)->getTitle()
         );
     }
 
