@@ -18,5 +18,6 @@ enum JobSteps: string
     case ZIP_COPY = 'studio_ee_job_step_zip_copy';
     case ZIP_UPLOADING = 'studio_ee_jop_step_zip_uploading';
     case ASSET_CLONING = 'studio_ee_job_step_asset_cloning';
+    case ASSET_FOLDER_CLONING = 'studio_ee_job_step_asset_folder_cloning';
     case ASSET_UPLOADING = 'studio_ee_job_step_asset_uploading';
 }
