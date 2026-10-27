@@ -89,7 +89,11 @@ final class ClassificationStoreResolver extends AbstractResolver
 
         if ($group->getStoreId() !== $storeFieldDefinition->getStoreId()) {
             throw new ParseException(
-                sprintf('Group "%s" does not belong to the store of classification store "%s"', $groupId, $storeFieldName)
+                sprintf(
+                    'Group "%s" does not belong to the store of classification store "%s"',
+                    $groupId,
+                    $storeFieldName
+                )
             );
         }
 
