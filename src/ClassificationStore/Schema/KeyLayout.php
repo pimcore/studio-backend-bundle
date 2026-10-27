@@ -42,6 +42,8 @@ final readonly class KeyLayout
         private string $description,
         #[Property(description: 'Layout Definition', type: 'object')]
         private EncryptedField|Data $definition,
+        #[Property(description: 'Configured title of the key', type: 'string', example: 'value', nullable: true)]
+        private ?string $title = null,
     ) {
     }
 
@@ -63,5 +65,10 @@ final readonly class KeyLayout
     public function getDefinition(): EncryptedField|Data
     {
         return $this->definition;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
     }
 }
