@@ -269,10 +269,7 @@ final class UserLoginServiceTest extends Unit
 
     public function testGetLoginTokenUrlRejectsTargetWithPermissionCallerDoesNotHold(): void
     {
-        $targetUser = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => false,
-            'getPassword' => 'hashed-password',
-        ]);
+        $targetUser = $this->createTargetUser(false);
         $currentUser = $this->makeEmpty(UserInterface::class, [
             'isAdmin' => false,
             'isAllowed' => false,
@@ -285,10 +282,7 @@ final class UserLoginServiceTest extends Unit
 
     public function testGetLoginTokenUrlAllowsTargetWithPermissionsCallerAlsoHolds(): void
     {
-        $targetUser = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => false,
-            'getPassword' => 'hashed-password',
-        ]);
+        $targetUser = $this->createTargetUser(false);
         $currentUser = $this->makeEmpty(UserInterface::class, [
             'isAdmin' => false,
             'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
@@ -302,10 +296,7 @@ final class UserLoginServiceTest extends Unit
 
     public function testGetLoginTokenUrlAllowsAdminCallerRegardlessOfTargetPermissions(): void
     {
-        $targetUser = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => false,
-            'getPassword' => 'hashed-password',
-        ]);
+        $targetUser = $this->createTargetUser(false);
         $currentUser = $this->makeEmpty(UserInterface::class, [
             'isAdmin' => true,
         ]);
@@ -314,6 +305,15 @@ final class UserLoginServiceTest extends Unit
         $url = $service->getLoginTokenUrl(42);
 
         $this->assertSame('https://mysite.com/login?token=test-token-123', $url);
+    }
+
+    private function createTargetUser(bool $isAdmin, string $password = 'hashed-password'): User
+    {
+        $user = new User();
+        $user->setAdmin($isAdmin);
+        $user->setPassword($password);
+
+        return $user;
     }
 
     private function createLoginTokenService(
