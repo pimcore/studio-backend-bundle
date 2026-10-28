@@ -54,6 +54,25 @@ final class DocumentVersionPublisherTest extends Unit
         $this->createPublisher($currentDocument)->publish($versionDocument, $this->createUser(), $version);
     }
 
+    /**
+     * An auto-save version is rewritten by the editor of its user at any time, it is published as a new version
+     */
+    public function testPublishSavesAnAutoSaveVersionAsANewVersion(): void
+    {
+        $version = $this->createVersion();
+        $version->setAutoSave(true);
+
+        $currentDocument = $this->createMock(Page::class);
+        $currentDocument->method('getKey')->willReturn('current-key');
+        $currentDocument->method('getPath')->willReturn('/current/');
+
+        $versionDocument = $this->createMock(Page::class);
+        $versionDocument->method('getId')->willReturn(self::DOCUMENT_ID);
+        $versionDocument->expects($this->once())->method('save')->with([]);
+
+        $this->createPublisher($currentDocument)->publish($versionDocument, $this->createUser(), $version);
+    }
+
     public function testPublishFailsWhenTheDocumentNoLongerExists(): void
     {
         $versionDocument = $this->createMock(Page::class);

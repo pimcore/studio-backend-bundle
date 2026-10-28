@@ -23,7 +23,8 @@ use Pimcore\Model\Version;
 interface DataObjectVersionPublisherInterface
 {
     /**
-     * Publishes the state restored from $version into $versionDataObject and writes it into $version itself
+     * Publishes the state restored from $version into $versionDataObject and writes it into $version itself,
+     * an auto-save version is published as a new version
      */
     public function publish(
         DataObject $versionDataObject,

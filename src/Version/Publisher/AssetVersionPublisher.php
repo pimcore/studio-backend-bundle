@@ -31,8 +31,9 @@ final class AssetVersionPublisher implements AssetVersionPublisherInterface
     ): void {
         try {
             $versionAsset->setUserModification($user->getId());
-            // the published state is written into the version itself, so the history shows which version went live
-            $versionAsset->save(['existingVersion' => $version]);
+            // the published state is written into the version itself, so the history shows which version went live;
+            // an auto-save version is rewritten by the editor of its user at any time, it is published as a new version
+            $versionAsset->save($version->isAutoSave() ? [] : ['existingVersion' => $version]);
         } catch (Exception $e) {
             throw new ElementPublishingFailedException(
                 $versionAsset->getId(),

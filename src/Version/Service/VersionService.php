@@ -106,11 +106,6 @@ final readonly class VersionService implements VersionServiceInterface
         UserInterface $user
     ): int {
         $version = $this->repository->getVersionById($versionId);
-        // the version is published in place, so an auto-save version of another user would be taken over
-        if ($version->isAutoSave() && $version->getUserId() !== $user->getId()) {
-            throw new ForbiddenException('You are not allowed to publish this version');
-        }
-
         $element = $this->repository->getElementFromVersion(
             $version,
             $user
@@ -134,14 +129,32 @@ final readonly class VersionService implements VersionServiceInterface
             throw new InvalidElementTypeException($class);
         }
 
-        // the version is published in place: no new version is created, the published one is the version itself
         $this->versionPublisherLocator->get($class)->publish(
             $element,
             $user,
             $version
         );
 
-        return $version->getId();
+        // the version is published in place: no new version is created, the published one is the version itself
+        if (!$version->isAutoSave()) {
+            return $version->getId();
+        }
+
+        // an auto-save version is published as a new version
+        $lastVersion = $this->repository->getLastVersion(
+            $elementId,
+            $this->getElementType($element, true),
+            $user
+        );
+
+        if (!$lastVersion) {
+            throw new ElementPublishingFailedException(
+                $elementId,
+                'No last version was found'
+            );
+        }
+
+        return $lastVersion->getId();
     }
 
     /**

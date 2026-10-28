@@ -44,6 +44,20 @@ final class AssetVersionPublisherTest extends Unit
         (new AssetVersionPublisher())->publish($asset, $this->createUser(), $version);
     }
 
+    /**
+     * An auto-save version is rewritten by the editor of its user at any time, it is published as a new version
+     */
+    public function testPublishSavesAnAutoSaveVersionAsANewVersion(): void
+    {
+        $version = $this->createVersion();
+        $version->setAutoSave(true);
+
+        $asset = $this->createMock(Image::class);
+        $asset->expects($this->once())->method('save')->with([]);
+
+        (new AssetVersionPublisher())->publish($asset, $this->createUser(), $version);
+    }
+
     public function testFailedSaveIsReportedAsPublishingFailure(): void
     {
         $asset = $this->createMock(Image::class);

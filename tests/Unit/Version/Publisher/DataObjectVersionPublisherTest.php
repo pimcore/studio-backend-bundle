@@ -46,6 +46,20 @@ final class DataObjectVersionPublisherTest extends Unit
         (new DataObjectVersionPublisher())->publish($dataObject, $this->createUser(), $version);
     }
 
+    /**
+     * An auto-save version is rewritten by the editor of its user at any time, it is published as a new version
+     */
+    public function testPublishSavesAnAutoSaveVersionAsANewVersion(): void
+    {
+        $version = $this->createVersion();
+        $version->setAutoSave(true);
+
+        $dataObject = $this->createMock(Concrete::class);
+        $dataObject->expects($this->once())->method('save')->with([]);
+
+        (new DataObjectVersionPublisher())->publish($dataObject, $this->createUser(), $version);
+    }
+
     public function testPublishIgnoresElementsWithoutVersions(): void
     {
         $folder = $this->createMock(Folder::class);
