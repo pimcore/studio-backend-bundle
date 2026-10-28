@@ -64,11 +64,13 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
     private function resolveKeyTitle(array $key): string
     {
         $definition = $key['definition'] ?? null;
-        // Falls back to the name so the editor never renders a blank label; getKeyTitle() stays verbatim.
-        if ($definition instanceof Data && !empty($definition->getTitle())) {
-            return $definition->getTitle();
+        if (!$definition instanceof Data) {
+            return $key['name'];
         }
 
-        return $key['name'];
+        // Falls back to the name only on an unset title, so a stored '0' survives; getKeyTitle() stays verbatim.
+        $title = $definition->getTitle();
+
+        return $title !== '' ? $title : $key['name'];
     }
 }

@@ -95,6 +95,21 @@ final class ActiveGroupTitleEnricherTest extends Unit
     }
 
     /**
+     * A stored '0' is a configured title like any other: only an unset one falls back to the key name.
+     */
+    public function testAKeyTitleOfZeroIsCarriedOver(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(11, 'weight', '0')]),
+        ]);
+
+        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+
+        $this->assertSame(['0'], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    /**
      * The payload already carries the group name and the enriched key definition, so resolving the
      * titles needs no group or key lookup at all.
      */
@@ -120,15 +135,25 @@ final class ActiveGroupTitleEnricherTest extends Unit
      */
     private function createGroup(): array
     {
+        return $this->createGroupWithKeys([
+            $this->createKey(11, 'weight', 'Weight'),
+            $this->createKey(12, 'height', ''),
+            $this->createKey(13, 'depth', null),
+        ]);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $keys
+     *
+     * @return array<string, mixed>
+     */
+    private function createGroupWithKeys(array $keys): array
+    {
         return [
             'name' => self::GROUP_NAME,
             'id' => self::GROUP_ID,
             'description' => 'Technical attributes',
-            'keys' => [
-                $this->createKey(11, 'weight', 'Weight'),
-                $this->createKey(12, 'height', ''),
-                $this->createKey(13, 'depth', null),
-            ],
+            'keys' => $keys,
         ];
     }
 
