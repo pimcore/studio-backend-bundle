@@ -63,8 +63,15 @@ final class CollectionRelationsRepository implements CollectionRelationsReposito
     public function getFromCollection(int $collectionId): array
     {
         $listing = new CollectionGroupRelation\Listing();
+        $this->applyGroupOrder($listing);
         $listing->setCondition('colId = ?', $collectionId);
 
         return $listing->load();
+    }
+
+    private function applyGroupOrder(CollectionGroupRelation\Listing $listing): void
+    {
+        $listing->setOrderKey(['sorter', 'groupId']);
+        $listing->setOrder(['ASC', 'ASC']);
     }
 }

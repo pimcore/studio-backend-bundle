@@ -31,8 +31,9 @@ interface CollectionRelationsRepositoryInterface
     public function getCollectionIdsWith(array $groupIds): array;
 
     /**
-     * @return array<int, CollectionGroupRelation>
+     * Ordered by sorter ASC, then groupId ASC.
      *
+     * @return array<int, CollectionGroupRelation>
      */
     public function getFromCollection(int $collectionId): array;
 }

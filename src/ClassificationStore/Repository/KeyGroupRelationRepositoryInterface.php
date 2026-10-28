@@ -23,6 +23,8 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 interface KeyGroupRelationRepositoryInterface
 {
     /**
+     * Ordered by groupId ASC, then sorter ASC, then id ASC.
+     *
      * @return KeyGroupRelation[]
      */
     public function getPaginatedKeyGroupRelationByStore(
@@ -35,6 +37,8 @@ interface KeyGroupRelationRepositoryInterface
     public function getCountByStoreId(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): int;
 
     /**
+     * Ordered by sorter ASC, then id ASC.
+     *
      * @return KeyGroupRelation[]
      */
     public function getByGroupId(int $groupId): array;

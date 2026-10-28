@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceI
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 
 /**
  * @internal
@@ -79,6 +80,39 @@ final class CollectionServiceTest extends Unit
         $this->assertSame('Weight', $groups[0]->getKeys()[0]->getTitle());
         $this->assertNull($groups[0]->getKeys()[1]->getTitle());
         $this->assertSame('', $groups[1]->getKeys()[0]->getTitle());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetLayoutDefinitionKeepsRelationOrder(): void
+    {
+        $collectionRelationsRepository = $this->createMock(CollectionRelationsRepositoryInterface::class);
+        $collectionRelationsRepository
+            ->method('getFromCollection')
+            ->with(self::COLLECTION_ID)
+            ->willReturn([$this->createRelation(4), $this->createRelation(3)]);
+
+        $groupService = $this->createMock(GroupServiceInterface::class);
+        $groupService
+            ->method('getLayoutDefinition')
+            ->willReturnCallback(
+                static fn (int $groupId): GroupLayout => new GroupLayout($groupId, 'Group', 'Description', [])
+            );
+
+        $service = new CollectionService(
+            $collectionRelationsRepository,
+            $this->createMock(CollectionConfigRepositoryInterface::class),
+            $this->createMock(CollectionHydratorInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $groupService,
+        );
+
+        $groups = $service
+            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter('classificationStore', self::OBJECT_ID))
+            ->getGroups();
+
+        $this->assertSame([4, 3], array_map(static fn (GroupLayout $group): int => $group->getId(), $groups));
     }
 
     private function createRelation(int $groupId): CollectionGroupRelation
