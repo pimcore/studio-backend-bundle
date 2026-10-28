@@ -2240,6 +2240,10 @@ ownership_management_delete_configurations_summary: Delete configurations
 ownership_management_delete_configurations_description: Deletes one or more configurations of the given type.
 ownership_management_delete_configurations_success_response: Configurations deleted successfully
 ownership_management_delete_configurations_created_response: A job run was created to delete the configurations asynchronously
+tag_index_sync_description: Operations to bring the search index back in line with the database.
+index_sync_start_summary: Synchronize the search index
+index_sync_start_description: Starts a background job that updates the mappings of all search indices and queues every data object, asset and document for re-indexing. Existing indices are updated in place; only an index whose changed mapping cannot be applied to the documents it already holds (e.g. after a field type change) is recreated and refilled. Requires the system settings permission.
+index_sync_start_created_response: A job run was created to synchronize the search index asynchronously
 notification_get_subscriptions_description: Get the current user's notification preferences, merged with the defaults of every registered notification type
 notification_get_subscriptions_summary: Get notification preferences for the current user
 notification_get_subscriptions_success_response: Notification preferences for the current user

@@ -50,4 +50,7 @@ enum Config: string
     case BULK_IMPORT_FAILED_MESSAGE = 'studio_ee_bulk_import_failed';
     case OWNERSHIP_MANAGEMENT_REASSIGN_FAILED = 'studio_ee_ownership_management_reassign_failed';
     case OWNERSHIP_MANAGEMENT_DELETE_FAILED = 'studio_ee_ownership_management_delete_failed';
+    case INDEX_SYNC_FAILED = 'studio_ee_index_sync_failed';
+    case INDEX_SYNC_ALREADY_RUNNING = 'studio_ee_index_sync_already_running';
+    case INDEX_SYNC_PERMISSION_MISSING = 'studio_ee_index_sync_permission_missing';
 }
