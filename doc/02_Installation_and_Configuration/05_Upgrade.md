@@ -13,7 +13,8 @@ The following steps are necessary during updating to newer versions.
   configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
   /classification-store/configuration/keys/add` accepts an optional `title`; when it is sent, it is stored as the key's title
   and as `definition.title`, instead of the name used for both so far. Sending no `title`, or `null`, keeps writing the name
-  to both, so clients that do not send the new field are unaffected. The `@internal`
+  to both, so clients that do not send the new field are unaffected. An empty `title` (`""`) is treated like an
+  absent one and writes the name to both as well. The `@internal`
   `KeyRepositoryInterface::create()` got the optional argument `$title`. The update endpoint is unchanged and its request
   schema still lists `title` as required, so a client editing an unrelated column of a key has to send the key's stored
   title — readable from these responses from now on — instead of its name, which would otherwise overwrite the title.

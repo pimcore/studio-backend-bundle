@@ -91,7 +91,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
      */
     public function create(string $name, int $storeId, ?string $title = null): KeyConfig
     {
-        $title ??= $name;
+        $title = ($title === null || $title === '') ? $name : $title;
         $definition = [
             'fieldtype' => 'input',
             'name' => $name,

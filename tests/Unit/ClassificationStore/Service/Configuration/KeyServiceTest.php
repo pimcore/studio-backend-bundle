@@ -132,6 +132,21 @@ final class KeyServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testCreateKeyPassesAnEmptyTitleThrough(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('depth', 3, '')
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('depth', 3, ''));
+    }
+
+    /**
+     * @throws Exception
+     */
     private function createService(KeyRepositoryInterface $repository): KeyService
     {
         $hydrator = $this->createMock(KeyHydratorInterface::class);
