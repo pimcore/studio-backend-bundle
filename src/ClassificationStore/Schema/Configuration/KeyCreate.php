@@ -36,6 +36,8 @@ final readonly class KeyCreate
         private string $name,
         #[Property(description: 'ID of the store this key belongs to', type: 'integer', example: 1)]
         private int $storeId,
+        #[Property(description: 'Title of the key', type: 'string', example: 'My Key Title', nullable: true)]
+        private ?string $title = null,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
@@ -50,5 +52,10 @@ final readonly class KeyCreate
     public function getStoreId(): int
     {
         return $this->storeId;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
     }
 }

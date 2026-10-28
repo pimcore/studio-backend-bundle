@@ -103,6 +103,51 @@ final class KeyServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testCreateKeyPassesTheSuppliedTitleToTheRepository(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('weight', 3, 'Weight')
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('weight', 3, 'Weight'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyPassesANullTitleThrough(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('length', 3, null)
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('length', 3));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyPassesAnEmptyTitleThrough(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('depth', 3, '')
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('depth', 3, ''));
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testCreateKeyClearsTheKeyRelationMemo(): void
     {
         $resolver = $this->expectClearedOnce();

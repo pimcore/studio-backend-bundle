@@ -60,6 +60,8 @@ final class KeyDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?int $modificationDate = null,
+        #[Property(description: 'Title of the key', type: 'string', example: 'My Key Title', nullable: true)]
+        private readonly ?string $title = null,
     ) {
     }
 
@@ -106,5 +108,10 @@ final class KeyDetail implements AdditionalAttributesInterface
     public function getModificationDate(): ?int
     {
         return $this->modificationDate;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
     }
 }

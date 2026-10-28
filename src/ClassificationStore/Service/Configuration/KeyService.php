@@ -78,7 +78,8 @@ final readonly class KeyService implements KeyServiceInterface
         try {
             $keyConfig = $this->keyConfigurationRepository->create(
                 $parameters->getName(),
-                $parameters->getStoreId()
+                $parameters->getStoreId(),
+                $parameters->getTitle()
             );
         } finally {
             $this->keyRelationResolver->clear();
