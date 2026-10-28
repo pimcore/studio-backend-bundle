@@ -42,17 +42,38 @@ final class ConfigSettingsProviderTest extends Unit
         $this->assertSame(0, $settings['object_auto_save_interval']);
     }
 
+    public function testExposesDocumentAutoSaveInterval(): void
+    {
+        Config::setSystemConfiguration($this->buildConfiguration(documentAutoSaveInterval: 60));
+
+        $settings = (new ConfigSettingsProvider(new Config()))->getSettings();
+
+        $this->assertSame(60, $settings['document_auto_save_interval']);
+    }
+
+    public function testExposesDisabledDocumentAutoSave(): void
+    {
+        Config::setSystemConfiguration($this->buildConfiguration(documentAutoSaveInterval: 0));
+
+        $settings = (new ConfigSettingsProvider(new Config()))->getSettings();
+
+        $this->assertSame(0, $settings['document_auto_save_interval']);
+    }
+
     /**
      * @return array<string, mixed>
      */
-    private function buildConfiguration(int $objectAutoSaveInterval): array
+    private function buildConfiguration(int $objectAutoSaveInterval = 60, int $documentAutoSaveInterval = 60): array
     {
         return [
             'assets' => [
                 'tree_paging_limit' => 100,
                 'frontend_prefixes' => ['source' => ''],
             ],
-            'documents' => ['tree_paging_limit' => 50],
+            'documents' => [
+                'tree_paging_limit' => 50,
+                'auto_save_interval' => $documentAutoSaveInterval,
+            ],
             'objects' => [
                 'tree_paging_limit' => 30,
                 'auto_save_interval' => $objectAutoSaveInterval,
