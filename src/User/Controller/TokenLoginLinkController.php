@@ -21,14 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParame
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\User\Attribute\Request\TokenLinkRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\Attribute\Response\TokenLinkJson;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -60,7 +57,6 @@ final class TokenLoginLinkController extends AbstractApiController
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'user')]
-    #[TokenLinkRequestBody]
     #[SuccessResponse(
         description: 'user_token_link_get_success_response',
         content: new TokenLinkJson(),
@@ -69,8 +65,8 @@ final class TokenLoginLinkController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getTokenLink(int $id, #[MapRequestPayload] TokenLink $parameter): JsonResponse
+    public function getTokenLink(int $id): JsonResponse
     {
-        return $this->jsonResponse(['link' => $this->loginService->getLoginTokenUrl($id, $parameter)]);
+        return $this->jsonResponse(['link' => $this->loginService->getLoginTokenUrl($id)]);
     }
 }
