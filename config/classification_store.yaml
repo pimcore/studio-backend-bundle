@@ -28,6 +28,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
 

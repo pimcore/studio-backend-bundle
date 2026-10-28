@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -39,6 +40,7 @@ final readonly class KeyService implements KeyServiceInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private KeyRepositoryInterface $keyConfigurationRepository,
         private KeyHydratorInterface $keyHydrator,
     ) {
@@ -73,10 +75,15 @@ final readonly class KeyService implements KeyServiceInterface
      */
     public function createKey(KeyCreate $parameters): KeyDetail
     {
-        $keyConfig = $this->keyConfigurationRepository->create(
-            $parameters->getName(),
-            $parameters->getStoreId()
-        );
+        try {
+            $keyConfig = $this->keyConfigurationRepository->create(
+                $parameters->getName(),
+                $parameters->getStoreId(),
+                $parameters->getTitle()
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedKeyDetail($keyConfig);
     }
@@ -91,14 +98,18 @@ final readonly class KeyService implements KeyServiceInterface
             $definition = $this->applyOptionsProviderDefaults($definition);
         }
 
-        $keyConfig = $this->keyConfigurationRepository->update(
-            $id,
-            $parameters->getName(),
-            $parameters->getTitle(),
-            $parameters->getDescription(),
-            $parameters->getType(),
-            $definition,
-        );
+        try {
+            $keyConfig = $this->keyConfigurationRepository->update(
+                $id,
+                $parameters->getName(),
+                $parameters->getTitle(),
+                $parameters->getDescription(),
+                $parameters->getType(),
+                $definition,
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedKeyDetail($keyConfig);
     }
@@ -108,7 +119,11 @@ final readonly class KeyService implements KeyServiceInterface
      */
     public function softDeleteKey(int $id): void
     {
-        $this->keyConfigurationRepository->softDelete($id);
+        try {
+            $this->keyConfigurationRepository->softDelete($id);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
     }
 
     /**

@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\De
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -31,15 +32,24 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
+use function array_keys;
+use function array_merge;
+use function sprintf;
 
 /**
  * @internal
  */
 final class ClassificationStoreAdapterTest extends Unit
 {
+    private const string PREVIEW_FIELD = 'previewField';
+
+    private const array GROUP_NAMES = [10 => 'Colour', 20 => 'Size'];
+
     /**
      * @throws Exception
      */
@@ -427,6 +437,63 @@ final class ClassificationStoreAdapterTest extends Unit
     }
 
     /**
+     * The batched read asks the resolver once for all active groups, so it has to put every relation
+     * back under the group it was loaded for, in the order the resolver handed it over. The key ids
+     * are non contiguous and not ascending, so a lookup by position or a sort by key id would show up.
+     *
+     * @throws Exception
+     */
+    public function testGetDetailDataGroupsKeysByGroupInResolverOrder(): void
+    {
+        $requestedGroupIds = [];
+        $adapter = $this->createAdapterReadingRelations($this->relationsOfTwoGroups(), $requestedGroupIds);
+
+        $result = $adapter->getDetailData(
+            $this->makeEmpty(Concrete::class),
+            $this->createStore([10 => true, 20 => true, 30 => false]),
+            $this->make(ClassificationstoreDefinition::class, ['isLocalized' => false])
+        );
+
+        // group 30 is inactive, so it is neither asked for nor part of the result
+        $this->assertSame([10, 20], $requestedGroupIds);
+        $this->assertArrayNotHasKey(30, $result);
+
+        $this->assertSame([51, 7], array_keys($result[10]['default']));
+        $this->assertSame('g10-k51-default', $result[10]['default'][51]);
+        $this->assertSame('g10-k7-default', $result[10]['default'][7]);
+        $this->assertSame([33 => 'g20-k33-default'], $result[20]['default']);
+    }
+
+    /**
+     * The preview path reads the same batch and labels each value with the group it belongs to, so
+     * a relation attributed to the wrong group would surface as the wrong label.
+     *
+     * @throws Exception
+     */
+    public function testGetPreviewFieldDataLabelsEveryKeyOfEveryActiveGroup(): void
+    {
+        $requestedGroupIds = [];
+        $adapter = $this->createAdapterReadingRelations($this->relationsOfTwoGroups(), $requestedGroupIds);
+
+        $data = $adapter->getPreviewFieldData(
+            $this->createStore([10 => true, 20 => true, 30 => false]),
+            $this->make(ClassificationstoreDefinition::class, ['isLocalized' => false]),
+            ['otherField' => 'untouched']
+        );
+
+        $this->assertSame([10, 20], $requestedGroupIds);
+        $this->assertSame('untouched', $data['otherField']);
+
+        $this->assertSame(
+            ['Colour - key-51', 'Colour - key-7', 'Size - key-33'],
+            array_keys($data[self::PREVIEW_FIELD])
+        );
+        $this->assertSame('g10-k51-default', $data[self::PREVIEW_FIELD]['Colour - key-51']);
+        $this->assertSame('g10-k7-default', $data[self::PREVIEW_FIELD]['Colour - key-7']);
+        $this->assertSame('g20-k33-default', $data[self::PREVIEW_FIELD]['Size - key-33']);
+    }
+
+    /**
      * @param array<int, string> $allowedLanguages
      *
      * @return array<int, string|null>
@@ -493,6 +560,120 @@ final class ClassificationStoreAdapterTest extends Unit
         return $storedLanguages;
     }
 
+    /**
+     * @return array<int, KeyGroupRelation[]>
+     */
+    private function relationsOfTwoGroups(): array
+    {
+        return [
+            10 => [
+                51 => $this->createRelation(51, 10),
+                7 => $this->createRelation(7, 10),
+            ],
+            20 => [
+                33 => $this->createRelation(33, 20),
+            ],
+        ];
+    }
+
+    private function createRelation(int $keyId, int $groupId): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId($keyId);
+        $relation->setGroupId($groupId);
+        $relation->setName('key-' . $keyId);
+
+        return $relation;
+    }
+
+    /**
+     * @param array<int, bool> $activeGroups
+     *
+     * @throws Exception
+     */
+    private function createStore(array $activeGroups): Classificationstore
+    {
+        return $this->make(Classificationstore::class, [
+            'getObject' => $this->makeEmpty(Concrete::class),
+            'getActiveGroups' => $activeGroups,
+            'getGroupCollectionMappings' => [],
+            'getLocalizedKeyValue' => static fn (
+                int $groupId,
+                int $keyId,
+                ?string $language = null
+            ): string => sprintf('g%d-k%d-%s', $groupId, $keyId, $language),
+        ]);
+    }
+
+    /**
+     * @param array<int, KeyGroupRelation[]> $relationsByGroup
+     * @param int[] $requestedGroupIds
+     *
+     * @throws Exception
+     */
+    private function createKeyRelationResolver(
+        array $relationsByGroup,
+        array &$requestedGroupIds
+    ): KeyRelationResolverInterface {
+        $resolver = $this->createMock(KeyRelationResolverInterface::class);
+        $resolver
+            ->method('getByGroups')
+            ->willReturnCallback(
+                static function (array $groupIds) use ($relationsByGroup, &$requestedGroupIds): array {
+                    $requestedGroupIds = $groupIds;
+
+                    $relations = [];
+                    foreach ($groupIds as $groupId) {
+                        $relations[$groupId] = $relationsByGroup[$groupId] ?? [];
+                    }
+
+                    return $relations;
+                }
+            );
+
+        return $resolver;
+    }
+
+    /**
+     * @param array<int, KeyGroupRelation[]> $relationsByGroup
+     * @param int[] $requestedGroupIds
+     *
+     * @throws Exception
+     */
+    private function createAdapterReadingRelations(
+        array $relationsByGroup,
+        array &$requestedGroupIds
+    ): ClassificationStoreAdapter {
+        return $this->createAdapter(
+            definitionCacheResolver: $this->makeEmpty(DefinitionCacheResolverInterface::class, [
+                'get' => new KeyConfig(),
+            ]),
+            dataService: $this->makeEmpty(DataServiceInterface::class, [
+                'getNormalizedValue' => static fn (mixed $value): mixed => $value,
+                'getPreviewFieldData' => static fn (
+                    mixed $value,
+                    Data $fieldDefinition,
+                    array $data
+                ): array => array_merge($data, [self::PREVIEW_FIELD => $value]),
+                'getPreviewFieldName' => self::PREVIEW_FIELD,
+            ]),
+            groupConfigResolver: $this->makeEmpty(GroupConfigResolverInterface::class, [
+                'getById' => static function (int $id): GroupConfig {
+                    $groupConfig = new GroupConfig();
+                    $groupConfig->setName(self::GROUP_NAMES[$id]);
+
+                    return $groupConfig;
+                },
+            ]),
+            keyRelationResolver: $this->createKeyRelationResolver($relationsByGroup, $requestedGroupIds),
+            serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
+                'getFieldDefinitionFromKeyConfig' => $this->makeEmpty(Data::class, [
+                    'getName' => 'inputField',
+                ]),
+            ]),
+        );
+    }
+
     private function createAdapter(
         ?DataObjectServiceResolverInterface $dataObjectServiceResolver = null,
         ?DefinitionCacheResolverInterface $definitionCacheResolver = null,
@@ -500,6 +681,7 @@ final class ClassificationStoreAdapterTest extends Unit
         ?DataServiceInterface $dataService = null,
         ?GroupConfigResolverInterface $groupConfigResolver = null,
         ?InheritanceServiceInterface $inheritanceService = null,
+        ?KeyRelationResolverInterface $keyRelationResolver = null,
         ?LanguageServiceInterface $languageService = null,
         ?ServiceResolverInterface $serviceResolver = null,
         ?SecurityServiceInterface $securityService = null,
@@ -512,6 +694,7 @@ final class ClassificationStoreAdapterTest extends Unit
             $dataService ?? $this->makeEmpty(DataServiceInterface::class),
             $groupConfigResolver ?? $this->makeEmpty(GroupConfigResolverInterface::class),
             $inheritanceService ?? $this->makeEmpty(InheritanceServiceInterface::class),
+            $keyRelationResolver ?? $this->makeEmpty(KeyRelationResolverInterface::class),
             $languageService ?? $this->makeEmpty(LanguageServiceInterface::class),
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $securityService ?? $this->makeEmpty(SecurityServiceInterface::class),

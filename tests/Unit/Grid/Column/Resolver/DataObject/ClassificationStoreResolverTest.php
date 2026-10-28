@@ -17,7 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\ClassificationStoreResolver;
@@ -103,7 +103,7 @@ final class ClassificationStoreResolverTest extends Unit
     {
         return new ClassificationStoreResolver(
             $this->makeEmpty(GridServiceInterface::class),
-            $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
+            $this->makeEmpty(KeyRelationResolverInterface::class),
             $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(DataServiceInterface::class),
             $this->makeEmpty(ToolResolverInterface::class),

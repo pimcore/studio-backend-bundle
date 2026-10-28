@@ -3,11 +3,36 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Classification Store] Changed: the key relations of a group are loaded once per request and shared by every
+  consumer (the layout endpoints, the data object detail and search preview, the grid column resolver and the
+  classification store grid filters), instead of each one running its own listing. The memo is dropped after every
+  configuration write and between messages of a long-running worker, so a read after a write in the same request
+  reflects the write.
+
+> **Note:** the within-group key order of the data object detail (`objectData` of a classification store field) and
+> of the search preview is now deterministic — the configured `sorter` ascending, then `id` ascending, the order the
+> layout endpoints use. It previously was whatever the database returned, as those two payloads were loaded without
+> an `ORDER BY`. Clients
+> that relied on the previous, unspecified order see a different order; clients that key by the key id are
+> unaffected. The `@internal` `KeyGroupRelationRepositoryInterface` (`ClassificationStore\Repository`) replaces
+> `getByGroupId()` and `getByKeyGroupId()` with `getByGroupIds(array $groupIds)`; the new `@internal`
+> `KeyRelationResolverInterface` (`ClassificationStore\Service`) is the way in for cached reads.
+
 - [Classification Store] Added: every key of the three layout responses (`GET /classification-store/layout-by-key/{keyId}/{groupId}`,
   `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`) carries
   an optional `title`, holding the stored title of the key configuration. It is the raw stored string — `null` when no title is
   stored, `''` when the stored title is empty — and is not translated; clients that want a translated label must translate it
   themselves and can keep falling back to `name`.
+- [Classification Store] Added: the key configuration responses (`POST /classification-store/configuration/stores/{storeId}/keys`
+  and `POST /classification-store/configuration/keys/add`) carry an optional `title`, holding the stored title of the key
+  configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
+  /classification-store/configuration/keys/add` accepts an optional `title`; when it is sent, it is stored as the key's title
+  and as `definition.title`, instead of the name used for both so far. Sending no `title`, or `null`, keeps writing the name
+  to both, so clients that do not send the new field are unaffected. An empty `title` (`""`) is treated like an
+  absent one and writes the name to both as well. The `@internal`
+  `KeyRepositoryInterface::create()` got the optional argument `$title`. The update endpoint is unchanged and its request
+  schema still lists `title` as required, so a client editing an unrelated column of a key has to send the key's stored
+  title — readable from these responses from now on — instead of its name, which would otherwise overwrite the title.
 - [Classification Store] Changed: three endpoints return their items in a new order, unconditionally and without a
   configuration option. `GET /classification-store/layout-by-group/{groupId}` returns `keys` ordered by the configured
   `sorter` ascending, then by key id ascending, instead of by key id alone.

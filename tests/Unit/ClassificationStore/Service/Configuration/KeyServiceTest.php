@@ -18,9 +18,11 @@ use Exception;
 use Pimcore\Bundle\CoreBundle\OptionsProvider\SelectOptionsOptionsProvider;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -101,8 +103,114 @@ final class KeyServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function createService(KeyRepositoryInterface $repository): KeyService
+    public function testCreateKeyPassesTheSuppliedTitleToTheRepository(): void
     {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('weight', 3, 'Weight')
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('weight', 3, 'Weight'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyPassesANullTitleThrough(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('length', 3, null)
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('length', 3));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyPassesAnEmptyTitleThrough(): void
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('create')
+            ->with('depth', 3, '')
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->createKey(new KeyCreate('depth', 3, ''));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateKeyClearsTheKeyRelationMemo(): void
+    {
+        $resolver = $this->expectClearedOnce();
+
+        $this->createService($this->writableRepository(), $resolver)->createKey(new KeyCreate('key', 1));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateKeyClearsTheKeyRelationMemo(): void
+    {
+        $resolver = $this->expectClearedOnce();
+
+        $this->createService($this->writableRepository(), $resolver)->updateKey(1, new KeyUpdate('key'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testSoftDeleteKeyClearsTheKeyRelationMemo(): void
+    {
+        $resolver = $this->expectClearedOnce();
+
+        $this->createService($this->writableRepository(), $resolver)->softDeleteKey(1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function expectClearedOnce(): KeyRelationResolverInterface
+    {
+        $resolver = $this->createMock(KeyRelationResolverInterface::class);
+        $resolver
+            ->expects($this->once())
+            ->method('clear');
+
+        return $resolver;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function writableRepository(): KeyRepositoryInterface
+    {
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->method('create')
+            ->willReturn(new KeyConfig());
+        $repository
+            ->method('update')
+            ->willReturn(new KeyConfig());
+
+        return $repository;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createService(
+        KeyRepositoryInterface $repository,
+        ?KeyRelationResolverInterface $resolver = null
+    ): KeyService {
         $hydrator = $this->createMock(KeyHydratorInterface::class);
         $hydrator
             ->method('hydrateKeyDetail')
@@ -111,6 +219,7 @@ final class KeyServiceTest extends Unit
         return new KeyService(
             $this->createMock(EventDispatcherInterface::class),
             $this->createMock(FilterMapperServiceInterface::class),
+            $resolver ?? $this->createMock(KeyRelationResolverInterface::class),
             $repository,
             $hydrator,
         );
