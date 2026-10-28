@@ -72,17 +72,22 @@ final class KeyGroupRelationRepositoryTest extends Unit
 
     public function testGetPaginatedKeyGroupRelationByStoreKeepsItsOrderWithASearchTerm(): void
     {
-        $this->stubDatabaseReturning([$this->createRow(keyId: 11, sorter: 0)]);
+        $this->stubDatabaseReturning([
+            $this->createRow(keyId: 13, sorter: 0),
+            $this->createRow(keyId: 11, sorter: 0),
+        ]);
 
-        $this->createRepository($this->createSearchHelperService())->getPaginatedKeyGroupRelationByStore(
-            self::STORE_ID,
-            new CollectionParameters(page: 1, pageSize: 10),
-            searchTerm: 'weight'
-        );
+        $relations = $this->createRepository($this->createSearchHelperService())
+            ->getPaginatedKeyGroupRelationByStore(
+                self::STORE_ID,
+                new CollectionParameters(page: 1, pageSize: 10),
+                searchTerm: 'weight'
+            );
 
         $query = $this->getExecutedQuery();
         $this->assertStringContainsString("name LIKE '%weight%'", $query);
         $this->assertStringContainsString(' ORDER BY `groupId` ASC, `sorter` ASC, `id` ASC', $query);
+        $this->assertSame([13, 11], $this->getKeyIds($relations));
     }
 
     private function createRepository(
