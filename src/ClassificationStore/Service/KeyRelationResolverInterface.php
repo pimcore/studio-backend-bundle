@@ -22,11 +22,15 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 interface KeyRelationResolverInterface
 {
     /**
-     * @return KeyGroupRelation[] keyed by keyId, in id ascending order
+     * Ordered by sorter ASC, then id ASC.
+     *
+     * @return KeyGroupRelation[] keyed by keyId
      */
     public function getByGroup(int $groupId): array;
 
     /**
+     * Each entry is ordered by sorter ASC, then id ASC.
+     *
      * @param int[] $groupIds
      *
      * @return array<int, KeyGroupRelation[]> keyed by groupId, one entry per requested group

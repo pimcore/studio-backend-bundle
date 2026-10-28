@@ -39,7 +39,7 @@ final class KeyRelationResolverTest extends Unit
     private const int ABSENT_KEY_ID = 99;
 
     /**
-     * The id ascending order is the `ORDER BY` of
+     * The sorter ascending, then id ascending order is the `ORDER BY` of
      * {@see \Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepository}; the row id
      * is not on the model, so what the resolver owes is to hand the loaded rows back in the order it got them.
      * The relations here are keyed 13, 42, 5 so that keying by keyId cannot be mistaken for sorting by it.
