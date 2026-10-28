@@ -60,8 +60,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         }
 
         $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->setOrderKey('id');
+        $this->applyGroupKeyOrder($listing);
         $this->applyGroupIdsFilter($listing, $groupIds);
 
         return $listing->load();
@@ -75,13 +74,24 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         );
 
         $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->setOrderKey('sorter');
+        $this->applyStoreKeyOrder($listing);
         $this->applyGroupIdsFilter($listing, $groupIds);
 
         $this->searchHelperService->applyKeyGroupRelationSearchFilter($listing, $searchTerm);
 
         return $listing;
+    }
+
+    private function applyGroupKeyOrder(Listing $listing): void
+    {
+        $listing->setOrderKey(['sorter', 'id']);
+        $listing->setOrder(['ASC', 'ASC']);
+    }
+
+    private function applyStoreKeyOrder(Listing $listing): void
+    {
+        $listing->setOrderKey(['groupId', 'sorter', 'id']);
+        $listing->setOrder(['ASC', 'ASC', 'ASC']);
     }
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void

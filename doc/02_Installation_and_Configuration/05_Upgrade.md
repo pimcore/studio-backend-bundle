@@ -10,8 +10,9 @@ The following steps are necessary during updating to newer versions.
   reflects the write.
 
 > **Note:** the within-group key order of the data object detail (`objectData` of a classification store field) and
-> of the search preview is now deterministic — `id` ascending, the order the layout endpoints already used. It
-> previously was whatever the database returned, as those two payloads were loaded without an `ORDER BY`. Clients
+> of the search preview is now deterministic — the configured `sorter` ascending, then `id` ascending, the order the
+> layout endpoints use. It previously was whatever the database returned, as those two payloads were loaded without
+> an `ORDER BY`. Clients
 > that relied on the previous, unspecified order see a different order; clients that key by the key id are
 > unaffected. The `@internal` `KeyGroupRelationRepositoryInterface` (`ClassificationStore\Repository`) replaces
 > `getByGroupId()` and `getByKeyGroupId()` with `getByGroupIds(array $groupIds)`; the new `@internal`
@@ -32,6 +33,17 @@ The following steps are necessary during updating to newer versions.
   `KeyRepositoryInterface::create()` got the optional argument `$title`. The update endpoint is unchanged and its request
   schema still lists `title` as required, so a client editing an unrelated column of a key has to send the key's stored
   title — readable from these responses from now on — instead of its name, which would otherwise overwrite the title.
+- [Classification Store] Changed: three endpoints return their items in a new order, unconditionally and without a
+  configuration option. `GET /classification-store/layout-by-group/{groupId}` returns `keys` ordered by the configured
+  `sorter` ascending, then by key id ascending, instead of by key id alone.
+  `GET /classification-store/layout-by-collection/{collectionId}` returns `groups` ordered by the configured `sorter`
+  ascending, then by group id ascending; it applied no order before, so the previous order was whatever the database
+  returned. `GET /classification-store/key-group-relations` is ordered by group id ascending, then `sorter` ascending,
+  then key id ascending, so that the keys of a group stay together; it was ordered by `sorter` alone across the whole
+  store before, which means a client that pages this endpoint gets different relations on a given page than before.
+  The order is conveyed by array position only — no response schema changed. The two configuration listing endpoints
+  (`POST /classification-store/configuration/groups/{groupId}/key-relations` and
+  `POST /classification-store/configuration/collections/{colId}/relations`) are unchanged.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
