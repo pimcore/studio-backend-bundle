@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
@@ -51,7 +52,7 @@ final class ResetPasswordController extends AbstractApiController
      * @throws RateLimitException|DomainConfigurationException|SendMailException
      */
     #[Route('/user/reset-password', name: 'pimcore_studio_api_user_reset_password', methods: ['POST'])]
-    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'resetPassword')]
+    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, new Expression('"resetPassword"'))]
     #[Post(
         path: self::PREFIX . '/user/reset-password',
         operationId: 'user_reset_password',
