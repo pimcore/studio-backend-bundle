@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\CollectionRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
@@ -39,6 +40,7 @@ final readonly class CollectionRelationService implements CollectionRelationServ
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
         private GroupRepositoryInterface $groupConfigurationRepository,
+        private KeyRelationResolverInterface $keyRelationResolver,
     ) {
     }
 
@@ -76,11 +78,15 @@ final readonly class CollectionRelationService implements CollectionRelationServ
     public function createOrUpdateCollectionRelation(
         CollectionRelationCreate $parameters
     ): CollectionRelationDetail {
-        $relation = $this->collectionRelationRepository->createOrUpdate(
-            $parameters->getColId(),
-            $parameters->getGroupId(),
-            $parameters->getSorter()
-        );
+        try {
+            $relation = $this->collectionRelationRepository->createOrUpdate(
+                $parameters->getColId(),
+                $parameters->getGroupId(),
+                $parameters->getSorter()
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         [$groupName, $groupDescription] = $this->resolveGroupInfo(
             $relation->getGroupId(),
@@ -95,7 +101,11 @@ final readonly class CollectionRelationService implements CollectionRelationServ
      */
     public function deleteCollectionRelation(int $colId, int $groupId): void
     {
-        $this->collectionRelationRepository->delete($colId, $groupId);
+        try {
+            $this->collectionRelationRepository->delete($colId, $groupId);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
     }
 
     private function getHydratedCollectionRelationDetail(

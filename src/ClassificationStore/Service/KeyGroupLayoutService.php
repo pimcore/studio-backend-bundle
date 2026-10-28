@@ -18,7 +18,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Ke
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -34,7 +33,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
-        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private ConcreteObjectResolver $concreteObjectResolver,
         private KeyConfigResolverInterface $keyConfigResolver,
     ) {
@@ -91,7 +90,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             }
         }
 
-        $key = $this->keyGroupRelationRepository->getByKeyGroupId($keyId, $groupId);
+        $key = $this->keyRelationResolver->getByGroupAndKey($groupId, $keyId);
         $definition = $this->getLayoutDefinition($key, $layoutParameter->getFieldName(), $object);
 
         return new KeyLayout(

@@ -37,6 +37,7 @@ final readonly class KeyHydrator implements KeyHydratorInterface
             $this->getKeyDefinition($keyConfig),
             $keyConfig->getCreationDate(),
             $keyConfig->getModificationDate(),
+            $keyConfig->getTitle(),
         );
     }
 

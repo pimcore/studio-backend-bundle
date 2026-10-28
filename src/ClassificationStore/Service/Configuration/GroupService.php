@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\GroupUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -34,6 +35,7 @@ final readonly class GroupService implements GroupServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
         private GroupRepositoryInterface $groupConfigurationRepository,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private GroupHydratorInterface $groupHydrator,
     ) {
     }
@@ -67,10 +69,14 @@ final readonly class GroupService implements GroupServiceInterface
      */
     public function createGroup(GroupCreate $parameters): GroupDetail
     {
-        $groupConfig = $this->groupConfigurationRepository->create(
-            $parameters->getName(),
-            $parameters->getStoreId()
-        );
+        try {
+            $groupConfig = $this->groupConfigurationRepository->create(
+                $parameters->getName(),
+                $parameters->getStoreId()
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedGroupDetail($groupConfig);
     }
@@ -80,11 +86,15 @@ final readonly class GroupService implements GroupServiceInterface
      */
     public function updateGroup(int $id, GroupUpdate $parameters): GroupDetail
     {
-        $groupConfig = $this->groupConfigurationRepository->update(
-            $id,
-            $parameters->getName(),
-            $parameters->getDescription(),
-        );
+        try {
+            $groupConfig = $this->groupConfigurationRepository->update(
+                $id,
+                $parameters->getName(),
+                $parameters->getDescription(),
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         return $this->getHydratedGroupDetail($groupConfig);
     }
@@ -94,7 +104,11 @@ final readonly class GroupService implements GroupServiceInterface
      */
     public function deleteGroup(int $id): void
     {
-        $this->groupConfigurationRepository->delete($id);
+        try {
+            $this->groupConfigurationRepository->delete($id);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
     }
 
     private function getHydratedGroupDetail(GroupConfig $groupConfig): GroupDetail

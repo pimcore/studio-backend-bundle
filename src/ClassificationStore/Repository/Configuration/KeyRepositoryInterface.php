@@ -38,7 +38,7 @@ interface KeyRepositoryInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function create(string $name, int $storeId): KeyConfig;
+    public function create(string $name, int $storeId, ?string $title = null): KeyConfig;
 
     /**
      * @throws NotFoundException
