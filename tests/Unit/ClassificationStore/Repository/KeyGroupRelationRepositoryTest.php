@@ -37,7 +37,7 @@ final class KeyGroupRelationRepositoryTest extends Unit
 
     private const int GROUP_ID = 7;
 
-    public function testGetByGroupIdOrdersBySorterThenId(): void
+    public function testGetByGroupIdsOrdersBySorterThenId(): void
     {
         // Equal sorters: without the id tie-break the order of these two keys is whatever the
         // storage engine happens to return.
@@ -46,7 +46,7 @@ final class KeyGroupRelationRepositoryTest extends Unit
             $this->createRow(keyId: 11, sorter: 0),
         ]);
 
-        $relations = $this->createRepository()->getByGroupId(self::GROUP_ID);
+        $relations = $this->createRepository()->getByGroupIds([self::GROUP_ID]);
 
         $this->assertStringEndsWith(' ORDER BY `sorter` ASC, `id` ASC', $this->getExecutedQuery());
         $this->assertSame([13, 11], $this->getKeyIds($relations));
