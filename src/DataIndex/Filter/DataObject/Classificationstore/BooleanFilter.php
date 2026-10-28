@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classif
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\BooleanMultiSelectFilter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -34,7 +34,7 @@ final class BooleanFilter implements FilterInterface
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
+        private readonly KeyRelationResolverInterface $keyRelationResolver
     ) {
 
     }
@@ -53,9 +53,9 @@ final class BooleanFilter implements FilterInterface
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
 
-            $key = $this->keyGroupRelationRepository->getByKeyGroupId(
-                $filterValue->getKeyId(),
-                $filterValue->getGroupId()
+            $key = $this->keyRelationResolver->getByGroupAndKey(
+                $filterValue->getGroupId(),
+                $filterValue->getKeyId()
             );
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
 

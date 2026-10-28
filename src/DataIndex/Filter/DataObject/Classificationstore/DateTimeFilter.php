@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classificationstore;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateTimeTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
@@ -33,7 +33,7 @@ final class DateTimeFilter implements FilterInterface
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
+        private readonly KeyRelationResolverInterface $keyRelationResolver
     ) {
 
     }
@@ -50,9 +50,9 @@ final class DateTimeFilter implements FilterInterface
 
         foreach ($parameters->getColumnFilterByType(ColumnType::CLASSIFICATION_STORE_DATETIME->value) as $column) {
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
-            $key = $this->keyGroupRelationRepository->getByKeyGroupId(
-                $filterValue->getKeyId(),
-                $filterValue->getGroupId()
+            $key = $this->keyRelationResolver->getByGroupAndKey(
+                $filterValue->getGroupId(),
+                $filterValue->getKeyId()
             );
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             /** @var DataObjectQueryInterface $query */

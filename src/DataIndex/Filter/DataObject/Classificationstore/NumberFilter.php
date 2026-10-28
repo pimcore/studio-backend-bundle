@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\Classif
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
@@ -39,7 +39,7 @@ final class NumberFilter implements FilterInterface
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
+        private readonly KeyRelationResolverInterface $keyRelationResolver
     ) {
 
     }
@@ -69,9 +69,9 @@ final class NumberFilter implements FilterInterface
             $this->addFilterToQuery(
                 $query,
                 $column,
-                $this->keyGroupRelationRepository->getByKeyGroupId(
-                    $filterValue->getKeyId(),
-                    $filterValue->getGroupId()
+                $this->keyRelationResolver->getByGroupAndKey(
+                    $filterValue->getGroupId(),
+                    $filterValue->getKeyId()
                 ),
                 $this->groupConfigRepository->getById($filterValue->getGroupId()),
                 $mode,

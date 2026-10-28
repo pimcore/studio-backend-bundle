@@ -17,7 +17,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Num
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\NumberRangeFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterModes;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
@@ -43,7 +43,7 @@ final class QuantityValueFilter implements FilterInterface
 
     public function __construct(
         private readonly GroupConfigRepositoryInterface $groupConfigRepository,
-        private readonly KeyGroupRelationRepositoryInterface $keyGroupRelationRepository
+        private readonly KeyRelationResolverInterface $keyRelationResolver
     ) {
 
     }
@@ -64,9 +64,9 @@ final class QuantityValueFilter implements FilterInterface
 
             $filterValue = $this->getClassificationStoreFilterValue($column->getFilterValue());
 
-            $key = $this->keyGroupRelationRepository->getByKeyGroupId(
-                $filterValue->getKeyId(),
-                $filterValue->getGroupId()
+            $key = $this->keyRelationResolver->getByGroupAndKey(
+                $filterValue->getGroupId(),
+                $filterValue->getKeyId()
             );
             $group = $this->groupConfigRepository->getById($filterValue->getGroupId());
             $value = $filterValue->getValue();
