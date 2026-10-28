@@ -15,14 +15,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
 
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 
 /**
  * @internal
  */
 interface DataObjectVersionPublisherInterface
 {
+    /**
+     * Publishes the state restored from $version into $versionDataObject and writes it into $version itself,
+     * an auto-save version is published as a new version
+     */
     public function publish(
         DataObject $versionDataObject,
-        UserInterface $user
+        UserInterface $user,
+        Version $version
     ): void;
 }

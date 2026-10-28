@@ -131,9 +131,16 @@ final readonly class VersionService implements VersionServiceInterface
 
         $this->versionPublisherLocator->get($class)->publish(
             $element,
-            $user
+            $user,
+            $version
         );
 
+        // the version is published in place: no new version is created, the published one is the version itself
+        if (!$version->isAutoSave()) {
+            return $version->getId();
+        }
+
+        // an auto-save version is published as a new version
         $lastVersion = $this->repository->getLastVersion(
             $elementId,
             $this->getElementType($element, true),
