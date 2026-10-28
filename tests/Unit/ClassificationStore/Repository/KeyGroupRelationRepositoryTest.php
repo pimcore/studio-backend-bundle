@@ -19,110 +19,81 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRe
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
-use ReflectionMethod;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function array_map;
 
 /**
  * @internal
  */
 final class KeyGroupRelationRepositoryTest extends Unit
 {
-    private const array GROUP_ORDER_KEYS = ['sorter', 'id'];
+    use ListingDatabaseStubTrait;
 
-    private const array GROUP_ORDER = ['ASC', 'ASC'];
+    private const int STORE_ID = 1;
 
-    private const array STORE_ORDER_KEYS = ['groupId', 'sorter', 'id'];
-
-    private const array STORE_ORDER = ['ASC', 'ASC', 'ASC'];
+    private const int GROUP_ID = 7;
 
     public function testGetByGroupIdOrdersBySorterThenId(): void
     {
-        $orderKey = null;
-        $order = null;
-        $listing = $this->createCapturingListing($orderKey, $order);
-
-        $this->applyOrder('applyGroupKeyOrder', $listing);
-
-        $this->assertSame(self::GROUP_ORDER_KEYS, $orderKey);
-        $this->assertSame(self::GROUP_ORDER, $order);
-    }
-
-    public function testBaseListingOrdersByGroupThenSorterThenId(): void
-    {
-        $orderKey = null;
-        $order = null;
-        $listing = $this->createCapturingListing($orderKey, $order);
-
-        $this->applyOrder('applyStoreKeyOrder', $listing);
-
-        $this->assertSame(self::STORE_ORDER_KEYS, $orderKey);
-        $this->assertSame(self::STORE_ORDER, $order);
-    }
-
-    public function testBaseListingKeepsItsOrderWithASearchTerm(): void
-    {
-        // A real subclass, not a double: the search filter calls the @deprecated quote(), which fails the suite.
-        $listing = new class() extends Listing {
-            public array|string|null $capturedOrderKey = null;
-
-            public array|string|null $capturedOrder = null;
-
-            public function setOrderKey(array|string $orderKey, bool $quote = true): static
-            {
-                $this->capturedOrderKey = $orderKey;
-
-                return $this;
-            }
-
-            public function setOrder(array|string $order): static
-            {
-                $this->capturedOrder = $order;
-
-                return $this;
-            }
-
-            public function quote(mixed $value, ?int $type = null): string
-            {
-                return "'" . $value . "'";
-            }
-        };
-
-        $this->applyOrder('applyStoreKeyOrder', $listing);
-        $this->createSearchHelperService()->applyKeyGroupRelationSearchFilter($listing, 'weight');
-
-        $this->assertSame(self::STORE_ORDER_KEYS, $listing->capturedOrderKey);
-        $this->assertSame(self::STORE_ORDER, $listing->capturedOrder);
-    }
-
-    private function createCapturingListing(array|string|null &$orderKey, array|string|null &$order): Listing
-    {
-        $listing = null;
-        $listing = $this->makeEmpty(Listing::class, [
-            'setOrderKey' => static function (array|string $key) use (&$listing, &$orderKey): Listing {
-                $orderKey = $key;
-
-                return $listing;
-            },
-            'setOrder' => static function (array|string $direction) use (&$listing, &$order): Listing {
-                $order = $direction;
-
-                return $listing;
-            },
+        // Equal sorters: without the id tie-break the order of these two keys is whatever the
+        // storage engine happens to return.
+        $this->stubDatabaseReturning([
+            $this->createRow(keyId: 13, sorter: 0),
+            $this->createRow(keyId: 11, sorter: 0),
         ]);
 
-        return $listing;
+        $relations = $this->createRepository()->getByGroupId(self::GROUP_ID);
+
+        $this->assertStringEndsWith(' ORDER BY `sorter` ASC, `id` ASC', $this->getExecutedQuery());
+        $this->assertSame([13, 11], $this->getKeyIds($relations));
     }
 
-    private function applyOrder(string $method, Listing $listing): void
+    public function testGetPaginatedKeyGroupRelationByStoreOrdersByGroupSorterThenId(): void
     {
-        $repository = new KeyGroupRelationRepository(
-            $this->makeEmpty(GroupConfigRepositoryInterface::class),
-            $this->makeEmpty(SearchHelperServiceInterface::class)
+        $this->stubDatabaseReturning([
+            $this->createRow(keyId: 13, sorter: 0),
+            $this->createRow(keyId: 11, sorter: 0),
+        ]);
+
+        $relations = $this->createRepository()->getPaginatedKeyGroupRelationByStore(
+            self::STORE_ID,
+            new CollectionParameters(page: 2, pageSize: 2)
         );
 
-        (new ReflectionMethod($repository, $method))->invoke($repository, $listing);
+        $query = $this->getExecutedQuery();
+        $this->assertStringContainsString(' ORDER BY `groupId` ASC, `sorter` ASC, `id` ASC', $query);
+        $this->assertStringEndsWith(' LIMIT 2,2', $query);
+        $this->assertSame([13, 11], $this->getKeyIds($relations));
+    }
+
+    public function testGetPaginatedKeyGroupRelationByStoreKeepsItsOrderWithASearchTerm(): void
+    {
+        $this->stubDatabaseReturning([$this->createRow(keyId: 11, sorter: 0)]);
+
+        $this->createRepository($this->createSearchHelperService())->getPaginatedKeyGroupRelationByStore(
+            self::STORE_ID,
+            new CollectionParameters(page: 1, pageSize: 10),
+            searchTerm: 'weight'
+        );
+
+        $query = $this->getExecutedQuery();
+        $this->assertStringContainsString("name LIKE '%weight%'", $query);
+        $this->assertStringContainsString(' ORDER BY `groupId` ASC, `sorter` ASC, `id` ASC', $query);
+    }
+
+    private function createRepository(
+        ?SearchHelperServiceInterface $searchHelperService = null
+    ): KeyGroupRelationRepository {
+        $groupConfig = (new GroupConfig())->setId(self::GROUP_ID);
+
+        return new KeyGroupRelationRepository(
+            $this->makeEmpty(GroupConfigRepositoryInterface::class, ['getAllGroupsByStore' => [$groupConfig]]),
+            $searchHelperService ?? $this->makeEmpty(SearchHelperServiceInterface::class)
+        );
     }
 
     private function createSearchHelperService(): SearchHelperService
@@ -133,5 +104,33 @@ final class KeyGroupRelationRepositoryTest extends Unit
                 'getCurrentUser' => static fn (): never => throw new UserNotFoundException(),
             ])
         );
+    }
+
+    /**
+     * @param KeyGroupRelation[] $relations
+     *
+     * @return int[]
+     */
+    private function getKeyIds(array $relations): array
+    {
+        return array_map(static fn (KeyGroupRelation $relation): int => $relation->getKeyId(), $relations);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function createRow(int $keyId, int $sorter): array
+    {
+        return [
+            'keyId' => $keyId,
+            'groupId' => self::GROUP_ID,
+            'sorter' => $sorter,
+            'name' => 'key' . $keyId,
+            'description' => '',
+            'type' => 'input',
+            'definition' => '{"fieldtype":"input"}',
+            'enabled' => 1,
+            'mandatory' => 0,
+        ];
     }
 }

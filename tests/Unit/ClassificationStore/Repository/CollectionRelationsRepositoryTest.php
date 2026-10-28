@@ -16,36 +16,61 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repo
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionRelationsRepository;
-use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation\Listing;
-use ReflectionMethod;
+use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
+use function array_map;
 
 /**
  * @internal
  */
 final class CollectionRelationsRepositoryTest extends Unit
 {
+    use ListingDatabaseStubTrait;
+
+    private const int COLLECTION_ID = 7;
+
     public function testGetFromCollectionOrdersBySorterThenGroupId(): void
     {
-        $orderKey = null;
-        $order = null;
-        $listing = null;
-        $listing = $this->makeEmpty(Listing::class, [
-            'setOrderKey' => static function (array|string $key) use (&$listing, &$orderKey): Listing {
-                $orderKey = $key;
-
-                return $listing;
-            },
-            'setOrder' => static function (array|string $direction) use (&$listing, &$order): Listing {
-                $order = $direction;
-
-                return $listing;
-            },
+        // Equal sorters: without the groupId tie-break the order of these two relations is whatever
+        // the storage engine happens to return.
+        $this->stubDatabaseReturning([
+            $this->createRow(groupId: 4, sorter: 0),
+            $this->createRow(groupId: 3, sorter: 0),
         ]);
 
-        $repository = new CollectionRelationsRepository($this->makeEmpty(DbResolverInterface::class));
-        (new ReflectionMethod($repository, 'applyGroupOrder'))->invoke($repository, $listing);
+        $relations = $this->createRepository()->getFromCollection(self::COLLECTION_ID);
 
-        $this->assertSame(['sorter', 'groupId'], $orderKey);
-        $this->assertSame(['ASC', 'ASC'], $order);
+        $this->assertStringEndsWith(' ORDER BY `sorter` ASC, `groupId` ASC', $this->getExecutedQuery());
+        $this->assertSame(
+            [4, 3],
+            array_map(static fn (CollectionGroupRelation $relation): int => $relation->getGroupId(), $relations)
+        );
+    }
+
+    public function testGetFromCollectionFiltersByTheGivenCollection(): void
+    {
+        $this->stubDatabaseReturning([$this->createRow(groupId: 4, sorter: 0)]);
+
+        $this->createRepository()->getFromCollection(self::COLLECTION_ID);
+
+        $this->assertStringContainsString('colId = ?', $this->getExecutedQuery());
+    }
+
+    private function createRepository(): CollectionRelationsRepository
+    {
+        return new CollectionRelationsRepository($this->makeEmpty(DbResolverInterface::class));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function createRow(int $groupId, int $sorter): array
+    {
+        return [
+            'colId' => self::COLLECTION_ID,
+            'groupId' => $groupId,
+            'sorter' => $sorter,
+            'name' => 'Group ' . $groupId,
+            'description' => '',
+        ];
     }
 }
