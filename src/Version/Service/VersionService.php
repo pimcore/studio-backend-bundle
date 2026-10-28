@@ -106,6 +106,11 @@ final readonly class VersionService implements VersionServiceInterface
         UserInterface $user
     ): int {
         $version = $this->repository->getVersionById($versionId);
+        // the version is published in place, so an auto-save version of another user would be taken over
+        if ($version->isAutoSave() && $version->getUserId() !== $user->getId()) {
+            throw new ForbiddenException('You are not allowed to publish this version');
+        }
+
         $element = $this->repository->getElementFromVersion(
             $version,
             $user

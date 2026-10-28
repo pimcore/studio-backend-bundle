@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -27,6 +28,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
 use ReflectionClass;
+use ReflectionProperty;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -38,6 +40,8 @@ final class VersionServiceTest extends Unit
     private const int VERSION_ID = 42;
 
     private const int ELEMENT_ID = 5;
+
+    private const int USER_ID = 7;
 
     /**
      * The version is published in place: the publisher gets the version to write into, and the published
@@ -74,6 +78,61 @@ final class VersionServiceTest extends Unit
         $publisher->expects($this->once())->method('publish')->with($versionElement, $user, $version);
 
         $service = $this->createService($repository, $serviceResolver, $securityService, $publisher);
+
+        $this->assertSame(self::VERSION_ID, $service->publishVersion(self::VERSION_ID, $user));
+    }
+
+    /**
+     * Publishing writes into the version itself, so it must not take over the auto-save version of another user
+     */
+    public function testPublishVersionRejectsAnAutoSaveVersionOfAnotherUser(): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn(self::USER_ID);
+        $version = $this->createAutoSaveVersion(self::USER_ID + 1);
+
+        $repository = $this->createMock(VersionRepositoryInterface::class);
+        $repository->method('getVersionById')->willReturn($version);
+        $repository->expects($this->never())->method('getElementFromVersion');
+
+        $publisher = $this->createMock(DataObjectVersionPublisherInterface::class);
+        $publisher->expects($this->never())->method('publish');
+
+        $service = $this->createService(
+            $repository,
+            $this->createMock(ServiceResolverInterface::class),
+            $this->createMock(SecurityServiceInterface::class),
+            $publisher
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $service->publishVersion(self::VERSION_ID, $user);
+    }
+
+    public function testPublishVersionPublishesAnOwnAutoSaveVersion(): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getId')->willReturn(self::USER_ID);
+        $version = $this->createAutoSaveVersion(self::USER_ID);
+        $versionElement = $this->createMock(Concrete::class);
+        $versionElement->method('getId')->willReturn(self::ELEMENT_ID);
+
+        $repository = $this->createMock(VersionRepositoryInterface::class);
+        $repository->method('getVersionById')->willReturn($version);
+        $repository->method('getElementFromVersion')->willReturn($versionElement);
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->willReturn($this->createMock(Concrete::class));
+
+        $publisher = $this->createMock(DataObjectVersionPublisherInterface::class);
+        $publisher->expects($this->once())->method('publish')->with($versionElement, $user, $version);
+
+        $service = $this->createService(
+            $repository,
+            $serviceResolver,
+            $this->createMock(SecurityServiceInterface::class),
+            $publisher
+        );
 
         $this->assertSame(self::VERSION_ID, $service->publishVersion(self::VERSION_ID, $user));
     }
@@ -121,6 +180,16 @@ final class VersionServiceTest extends Unit
             $this->createMock(VersionHydratorInterface::class),
             $securityService
         );
+    }
+
+    private function createAutoSaveVersion(int $userId): Version
+    {
+        $version = $this->createVersion();
+        $version->setAutoSave(true);
+        // setUserId() loads the user from the database
+        (new ReflectionProperty(Version::class, 'userId'))->setValue($version, $userId);
+
+        return $version;
     }
 
     private function createVersion(): Version
