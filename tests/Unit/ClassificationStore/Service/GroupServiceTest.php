@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydrato
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
@@ -46,14 +46,14 @@ final class GroupServiceTest extends Unit
     {
         $titles = [11 => 'Weight', 12 => null, 13 => ''];
 
-        $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $keyGroupRelationRepository
-            ->method('getByGroupId')
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroup')
             ->with(self::GROUP_ID)
             ->willReturn([
-                $this->createRelation(11, 'weight'),
-                $this->createRelation(12, 'height'),
-                $this->createRelation(13, 'depth'),
+                11 => $this->createRelation(11, 'weight'),
+                12 => $this->createRelation(12, 'height'),
+                13 => $this->createRelation(13, 'depth'),
             ]);
 
         $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
@@ -86,7 +86,7 @@ final class GroupServiceTest extends Unit
             $groupConfigRepository,
             $this->createMock(EventDispatcherInterface::class),
             $this->createMock(GroupHydratorInterface::class),
-            $keyGroupRelationRepository,
+            $keyRelationResolver,
             $keyGroupLayoutService,
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),

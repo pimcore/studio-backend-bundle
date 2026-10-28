@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
@@ -40,6 +41,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private FilterMapperServiceInterface $filterMapper,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyGroupRelationHydratorInterface $keyGroupRelationHydrator,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private GroupRepositoryInterface $groupConfigurationRepository,
         private KeyRepositoryInterface $keyConfigurationRepository,
     ) {
@@ -76,12 +78,16 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     public function createOrUpdateKeyGroupRelation(
         KeyGroupRelationCreate $parameters
     ): KeyGroupRelationDetail {
-        $relation = $this->keyGroupRelationRepository->createOrUpdate(
-            $parameters->getKeyId(),
-            $parameters->getGroupId(),
-            $parameters->getSorter(),
-            $parameters->isMandatory()
-        );
+        try {
+            $relation = $this->keyGroupRelationRepository->createOrUpdate(
+                $parameters->getKeyId(),
+                $parameters->getGroupId(),
+                $parameters->getSorter(),
+                $parameters->isMandatory()
+            );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
 
         [$keyName, $keyDescription] = $this->resolveKeyInfo($relation->getKeyId());
 
@@ -93,7 +99,11 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
      */
     public function deleteKeyGroupRelation(int $keyId, int $groupId): void
     {
-        $this->keyGroupRelationRepository->delete($keyId, $groupId);
+        try {
+            $this->keyGroupRelationRepository->delete($keyId, $groupId);
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
     }
 
     private function getHydratedKeyGroupRelationDetail(

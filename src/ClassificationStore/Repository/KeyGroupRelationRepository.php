@@ -14,9 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function count;
 
@@ -55,33 +53,18 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * {@inheritdoc}
      */
-    public function getByGroupId(int $groupId): array
+    public function getByGroupIds(array $groupIds): array
     {
+        if (empty($groupIds)) {
+            return [];
+        }
+
         $listing = new Listing();
         $listing->setOrder('ASC');
         $listing->setOrderKey('id');
-        $listing->setCondition('groupID = ?', [$groupId]);
+        $this->applyGroupIdsFilter($listing, $groupIds);
 
         return $listing->load();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getByKeyGroupId(int $keyId, int $groupId): KeyGroupRelation
-    {
-        $listing = new Listing();
-        $listing->setOrder('ASC');
-        $listing->addConditionParam('keyId = ?', $keyId);
-        $listing->addConditionParam('groupId = ?', $groupId);
-
-        $list = $listing->load();
-
-        if (count($list) !== 1) {
-            throw new NotFoundException('KeyGroupRelation', $keyId);
-        }
-
-        return $list[0];
     }
 
     private function getBaseListing(int $storeId, ?array $groupIds = null, ?string $searchTerm = null): Listing

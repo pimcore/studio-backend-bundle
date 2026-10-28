@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutH
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -41,7 +40,7 @@ final readonly class GroupService implements GroupServiceInterface
         private GroupConfigRepositoryInterface $groupConfigRepository,
         private EventDispatcherInterface $eventDispatcher,
         private GroupHydratorInterface $groupHydrator,
-        private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
+        private KeyRelationResolverInterface $keyRelationResolver,
         private KeyGroupLayoutServiceInterface $keyGroupLayoutService,
         private GroupLayoutHydratorInterface $groupLayoutHydrator,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -111,7 +110,7 @@ final readonly class GroupService implements GroupServiceInterface
      */
     public function getLayoutDefinition(int $groupId, LayoutParameter $layoutParameter): GroupLayout
     {
-        $keys = $this->keyGroupRelationRepository->getByGroupId($groupId);
+        $keys = $this->keyRelationResolver->getByGroup($groupId);
         $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
 
         if (!$object) {
