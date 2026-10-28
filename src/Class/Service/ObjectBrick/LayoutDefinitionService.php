@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefiniti
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
@@ -48,6 +49,7 @@ final readonly class LayoutDefinitionService implements LayoutDefinitionServiceI
         private ObjectBrickRepositoryInterface $objectBrickRepository,
         private ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
         private EventDispatcherInterface $eventDispatcher,
+        private ActiveGroupTitleEnricherInterface $activeGroupTitleEnricher,
     ) {
     }
 
@@ -123,6 +125,7 @@ final readonly class LayoutDefinitionService implements LayoutDefinitionServiceI
                 'outerFieldname' => $field,
             ]
         );
+        $this->activeGroupTitleEnricher->enrich($layoutDefinitions);
         $layoutDefinition = $this->layoutDefinitionHydrator->hydrate($definition);
 
         $this->eventDispatcher->dispatch(

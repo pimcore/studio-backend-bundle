@@ -44,6 +44,19 @@ The following steps are necessary during updating to newer versions.
   The order is conveyed by array position only — no response schema changed. The two configuration listing endpoints
   (`POST /classification-store/configuration/groups/{groupId}/key-relations` and
   `POST /classification-store/configuration/collections/{colId}/relations`) are unchanged.
+- [Classification Store] Added: the three object layout responses (`GET /data-objects/{id}/layout`,
+  `GET /class/field-collection/{objectId}/object/layout` and `GET /class/object-brick/{objectId}/object/layout`) carry a
+  `title` on every already-active group of a classification store field and on every key of such a group. The key title
+  is the title of the key's enriched field definition and falls back to the key's `name` when no title is stored, so the
+  editor never renders a blank label. That fallback is deliberately different from the key titles of
+  `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
+  which keep returning the stored value verbatim — `null` when none is stored, `''` when it is empty — so the
+  configuration UI can still tell "no title set" apart from "title equals name". The group title is the group's `name`,
+  because `classificationstore_groups` has no title column.
+- [Classification Store] Added: `GroupLayout` (`GET /classification-store/layout-by-group/{groupId}` and
+  `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
+  group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
+  `CollectionLayout` is unchanged and still carries only `groups`.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.

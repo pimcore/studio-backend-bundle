@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefi
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
@@ -48,6 +49,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
         private readonly ConfigLayoutDefinitionHydratorInterface $configLayoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ActiveGroupTitleEnricherInterface $activeGroupTitleEnricher,
     ) {
     }
 
@@ -112,6 +114,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         }
         $layoutDefinitions = $definition->getLayoutDefinitions();
         $this->dataObjectServiceResolver->enrichLayoutDefinition($layoutDefinitions, $dataObject);
+        $this->activeGroupTitleEnricher->enrich($layoutDefinitions);
         $layoutDefinition = $this->layoutDefinitionHydrator->hydrate($definition);
 
         $this->eventDispatcher->dispatch(
