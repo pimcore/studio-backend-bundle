@@ -41,6 +41,7 @@ final readonly class RenderletService implements RenderletServiceInterface
 {
     /**
      * Request parameters which are not passed to the renderlet controller as attributes.
+     * The attributes are also used as fragment rendering options, so the options of the inline renderer are excluded.
      */
     private const array IGNORED_ATTRIBUTE_KEYS = [
         'controller' => true,
@@ -48,6 +49,9 @@ final readonly class RenderletService implements RenderletServiceInterface
         'module' => true,
         'bundle' => true,
         'parentDocumentId' => true,
+        'strategy' => true,
+        'alt' => true,
+        'ignore_errors' => true,
     ];
 
     public function __construct(

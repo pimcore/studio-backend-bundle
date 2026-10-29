@@ -81,6 +81,37 @@ final class RenderletServiceTest extends Unit
     }
 
     /**
+     * The attributes are also used as fragment rendering options, so a custom parameter
+     * like "strategy" must not select the fragment renderer.
+     *
+     * @throws Exception
+     */
+    public function testRenderDoesNotPassFragmentOptionsAsAttributes(): void
+    {
+        $requestParameters = [
+            'id' => '42',
+            'type' => 'object',
+            'controller' => 'App\Controller\NewsController::newsTeaserAction',
+            'strategy' => 'compact',
+            'alt' => 'App\Controller\OtherController::otherAction',
+            'ignore_errors' => '1',
+        ];
+
+        $this->getRenderletService()->render(
+            new RenderletParameter(42, 'object', 'App\Controller\NewsController::newsTeaserAction'),
+            $requestParameters
+        );
+
+        $this->assertArrayNotHasKey('strategy', $this->renderedAttributes);
+        $this->assertArrayNotHasKey('alt', $this->renderedAttributes);
+        $this->assertArrayNotHasKey('ignore_errors', $this->renderedAttributes);
+
+        $this->assertSame('compact', $this->renderedQuery['strategy']);
+        $this->assertSame('App\Controller\OtherController::otherAction', $this->renderedQuery['alt']);
+        $this->assertSame('1', $this->renderedQuery['ignore_errors']);
+    }
+
+    /**
      * @throws Exception
      */
     private function getRenderletService(): RenderletService
