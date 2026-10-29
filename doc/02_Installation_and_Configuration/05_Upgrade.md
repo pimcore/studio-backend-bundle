@@ -42,7 +42,8 @@ The following steps are necessary during updating to newer versions.
 - [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
   [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
   - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
-    `server_name` (default `Pimcore`).
+    `server_name` (default: the router's request context host, i.e. `framework.router.default_uri`, or `Pimcore`
+    without it).
   - New rate limiter `studio_two_factor_code` (5 wrong codes per user in 5 minutes).
   - New endpoints: `POST /login/2fa`, `POST /user/two-factor/setup`, `POST /user/two-factor/confirm`,
     `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.

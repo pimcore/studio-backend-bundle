@@ -517,12 +517,15 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             return;
         }
 
+        // Only an application-set host is visible here: framework sets its 'localhost' default later.
+        $routerHost = $container->hasParameter('router.request_context.host') ? '%router.request_context.host%' : null;
+
         $container->prependExtensionConfig('scheb_two_factor', [
             'two_factor_condition' => UserCondition::class,
             'google' => [
                 'enabled' => true,
                 'issuer' => $config['issuer'],
-                'server_name' => $config['server_name'] ?? 'Pimcore',
+                'server_name' => $config['server_name'] ?? $routerHost ?? 'Pimcore',
             ],
         ]);
     }

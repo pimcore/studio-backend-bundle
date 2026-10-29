@@ -30,12 +30,13 @@ pimcore_studio_backend:
         # Name shown in the authenticator app. Default: Pimcore
         issuer: 'Acme PIM'
         # Shown next to the user name in the authenticator app.
-        # Default: Pimcore
+        # Default: the router's request context host (%router.request_context.host%)
         server_name: 'pim.acme.com'
 ```
 
-The default server name is `Pimcore`. Set `server_name` so users can tell the entries of several installations
-apart in the app.
+The default server name is the host the router is configured with, not the host of the current request. Without
+`framework.router.default_uri` it is `Pimcore`. Set `default_uri` or `server_name` so users can tell their
+entries apart in the app.
 
 Codes sent to `POST /login/2fa` are limited per user: after 5 attempts within 5 minutes, further codes are refused
 with `429` until the window is over, even a correct one. A correct code resets the count, a password login does not.

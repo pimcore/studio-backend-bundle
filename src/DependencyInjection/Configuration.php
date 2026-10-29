@@ -1350,7 +1350,10 @@ class Configuration implements ConfigurationInterface
                         ->defaultValue('Pimcore')
                     ->end()
                     ->scalarNode('server_name')
-                        ->info('Server name in the authenticator app. Defaults to "Pimcore".')
+                        ->info(
+                            'Server name in the authenticator app. Defaults to the router\'s request context host, ' .
+                            'or "Pimcore" without it.'
+                        )
                         ->defaultNull()
                     ->end()
                 ->end()
