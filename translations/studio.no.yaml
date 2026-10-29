@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: 'CSV-eksporten mislyktes: %message%'
 studio_ee_xlsx_creation_failed: 'XLSX-eksporten mislyktes: %message%'
 studio_ee_recycle_bin_delete_failed: 'Element med ID %id% kunne ikke slettes fra papirkurven: %message%'
 studio_ee_recycle_bin_restore_failed: 'Element fra papirkurven med ID %id% kunne ikke gjenopprettes: %message%'
+studio_ee_recycle_bin_restore_relocated: Element av typen %type% med ID %id% ble gjenopprettet i %path% fordi det overordnede elementet ikke lenger finnes
 studio_ee_csv_data_collection_failed: 'Data for CSV-eksporten kunne ikke hentes ut for %id%: %message%'
 studio_ee_element_patch_failed: 'Element av type %type% med ID %id% kunne ikke oppdateres: %message%'
 studio_ee_element_rewrite_references_failed: 'Referanser for element av type %type% med ID %id% kunne ikke skrives om: %message%'

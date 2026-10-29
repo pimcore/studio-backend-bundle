@@ -2122,10 +2122,14 @@ recycle_bin_get_collection_success_response: Paginated recycle bin items with to
 recycle_bin_restore_items_description: |
   Restores items from the recycle bin based on the given <strong>{items}</strong> array. <br> 
   The <strong>{items}</strong> array must contain IDs of existing recycle bin items. <br> 
-  If multiple items are being restored, the operation is executed asynchronously.
+  If multiple items are being restored, the operation is executed asynchronously. <br>
+  Elements whose parent no longer exists are restored into the <strong>/__restored</strong> folder of their
+  element type, which requires the publish permission on that folder.
 recycle_bin_restore_items_created_response: Successfully created <strong>jobRun</strong> to restore recycle bin items
 recycle_bin_restore_items_summary: Restore items from the recycle bin
-recycle_bin_restore_items_success_response: Successfully restored recycle bin item
+recycle_bin_restore_items_success_response: |
+  Successfully restored recycle bin item. <strong>items</strong> lists the elements that were restored into the
+  <strong>/__restored</strong> folder because their parent no longer exists.
 website_settings_add_description: |
   Add a new website setting with the provided name and type.
   The following types are supported: <strong>text</strong>, <strong>document</strong>, <strong>asset</strong>, <strong>object</strong>, <strong>bool</strong>. <br>

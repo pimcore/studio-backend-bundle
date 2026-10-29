@@ -24,6 +24,7 @@ studio_ee_job_step_ownership_management_reassign_owner: Reassigning owner of con
 studio_ee_job_step_ownership_management_delete: Deleting configurations
 studio_ee_recycle_bin_delete_failed: 'Failed to delete Item with ID %id% from the Recycle Bin: %message%'
 studio_ee_recycle_bin_restore_failed: 'Item from Recycle Bin with ID %id% could not be restored: %message%'
+studio_ee_recycle_bin_restore_relocated: Element with type %type% and ID %id% was restored to %path% because its parent no longer exists
 studio_ee_csv_data_collection_failed: 'Data for CSV export could not be extracted for %id%: %message%'
 studio_ee_element_patch_failed: 'Element with type %type% with ID %id% could not be updated: %message%'
 studio_ee_element_rewrite_references_failed: 'Element references with type %type% with ID %id% could not be rewritten: %message%'

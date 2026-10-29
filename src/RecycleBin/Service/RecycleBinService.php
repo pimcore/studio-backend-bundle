@@ -24,23 +24,37 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RecycleBinEvent;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RelocatedItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\DeleteItemsMessage;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RelocatedItemHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Model\RestoreResult;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RecycleBin;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Recyclebin as ElementRecycleBin;
 use Pimcore\Model\Element\Recyclebin\Item;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function count;
+use function str_contains;
 
 /**
  * @internal
  */
 final readonly class RecycleBinService implements RecycleBinServiceInterface
 {
+    private const array MISSING_PARENT_MESSAGES = [
+        'ParentID is mandatory and can´t be null',
+        'ParentID not found.',
+    ];
+
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
@@ -48,7 +62,10 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         private JobServiceInterface $jobService,
         private RecycleBinHydratorInterface $hydrator,
         private RecycleBinRepositoryInterface $recycleBinRepository,
-        private SynchronousProcessingServiceInterface $synchronousProcessing
+        private SynchronousProcessingServiceInterface $synchronousProcessing,
+        private RelocatedItemHydratorInterface $relocatedItemHydrator,
+        private RestoreContextInterface $restoreContext,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -71,18 +88,24 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function restore(ItemsParameter $parameter): ?int
+    public function restore(ItemsParameter $parameter): RestoreResult
     {
         $items = $parameter->getItems();
         if (count($items) === 1) {
-            $this->restoreItem($items[0]);
+            $relocatedItems = $this->restoreItem($items[0]);
+            foreach ($relocatedItems as $relocatedItem) {
+                $this->eventDispatcher->dispatch(
+                    new RelocatedItemEvent($relocatedItem),
+                    RelocatedItemEvent::EVENT_NAME
+                );
+            }
 
-            return null;
+            return new RestoreResult(relocatedItems: $relocatedItems);
         }
 
         $sortedIds = $this->recycleBinRepository->getItemIdsSortedByPath($items);
 
-        return $this->jobService->createRestoreJob($sortedIds);
+        return new RestoreResult(jobRunId: $this->jobService->createRestoreJob($sortedIds));
     }
 
     /**
@@ -114,7 +137,7 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function restoreItem(int $id): void
+    public function restoreItem(int $id, ?UserInterface $user = null): array
     {
         $syncProcessingEnabled = $this->synchronousProcessing->isEnabled();
         $item = $this->itemResolver->getById($id);
@@ -122,20 +145,25 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
             throw new NotFoundException('recycle bin item', $id);
         }
 
+        $user ??= $this->securityService->getCurrentUser();
+
         try {
             $this->synchronousProcessing->enable();
+            $this->restoreContext->start($user);
             $item->restore();
+            $relocatedElements = $this->restoreContext->getRelocatedElements();
         } catch (Exception $e) {
-            $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE;
-            if (str_contains($e->getMessage(), 'ParentID is mandatory and can´t be null')) {
-                $errorKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT;
-            }
-
-            throw new EnvironmentException($e->getMessage(), $errorKey->value, $e);
+            throw new EnvironmentException($e->getMessage(), $this->getRestoreErrorKey($e)->value, $e);
         } finally {
+            $this->restoreContext->clear();
             $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
             $this->synchronousProcessing->disable();
         }
+
+        return array_map(
+            fn (ElementInterface $element): RelocatedItem => $this->relocatedItemHydrator->hydrate($element),
+            $relocatedElements
+        );
     }
 
     /**
@@ -153,6 +181,22 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         } catch (Exception $e) {
             throw new EnvironmentException($e->getMessage());
         }
+    }
+
+    private function getRestoreErrorKey(Exception $exception): HttpResponseErrorKeys
+    {
+        $missingParentKey = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT;
+        if ($exception instanceof EnvironmentException && $exception->getErrorKey() === $missingParentKey->value) {
+            return $missingParentKey;
+        }
+
+        foreach (self::MISSING_PARENT_MESSAGES as $message) {
+            if (str_contains($exception->getMessage(), $message)) {
+                return $missingParentKey;
+            }
+        }
+
+        return HttpResponseErrorKeys::RECYCLE_BIN_RESTORE;
     }
 
     private function getHydratedItem(Item $item): RecycleBin

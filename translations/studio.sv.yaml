@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: 'CSV-exporten misslyckades: %message%'
 studio_ee_xlsx_creation_failed: 'XLSX-exporten misslyckades: %message%'
 studio_ee_recycle_bin_delete_failed: 'Element med ID %id% kunde inte tas bort från papperskorgen: %message%'
 studio_ee_recycle_bin_restore_failed: 'Element från papperskorgen med ID %id% kunde inte återställas: %message%'
+studio_ee_recycle_bin_restore_relocated: Element av typen %type% med ID %id% återställdes i %path% eftersom dess överordnade element inte längre finns
 studio_ee_csv_data_collection_failed: 'Data för CSV-exporten kunde inte extraheras för %id%: %message%'
 studio_ee_element_patch_failed: 'Element av typ %type% med ID %id% kunde inte uppdateras: %message%'
 studio_ee_element_rewrite_references_failed: 'Referenser för element av typ %type% med ID %id% kunde inte skrivas om: %message%'
