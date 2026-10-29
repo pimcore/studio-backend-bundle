@@ -30,13 +30,26 @@ use Symfony\Cmf\Bundle\RoutingBundle\Routing\DynamicRouter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\Response;
+use function array_key_exists;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * @internal
  */
 final readonly class RenderletService implements RenderletServiceInterface
 {
+    /**
+     * Request parameters which are not passed to the renderlet controller as attributes.
+     */
+    private const array IGNORED_ATTRIBUTE_KEYS = [
+        'controller' => true,
+        'action' => true,
+        'module' => true,
+        'bundle' => true,
+        'parentDocumentId' => true,
+    ];
+
     public function __construct(
         private ActionRenderer $actionRenderer,
         private EditableHandler $editableHandler,
@@ -61,7 +74,7 @@ final readonly class RenderletService implements RenderletServiceInterface
 
         $this->dispatchEvent($requestParameters, $element);
 
-        $attributes = $this->getAttributes($parameter, $user);
+        $attributes = $this->getAttributes($parameter, $requestParameters, $user);
         if (isset($attributes['_locale'])) {
             $this->localeService->setLocale($attributes['_locale']);
         }
@@ -99,8 +112,14 @@ final readonly class RenderletService implements RenderletServiceInterface
         $this->eventDispatcher->dispatch($event, DocumentEvents::EDITABLE_RENDERLET_PRE_RENDER);
     }
 
-    private function getAttributes(RenderletParameter $parameter, UserInterface $user): array
-    {
+    /**
+     * Passes the renderlet parameters as attributes, the same way as the renderlet editable does on the frontend
+     */
+    private function getAttributes(
+        RenderletParameter $parameter,
+        array $requestParameters,
+        UserInterface $user
+    ): array {
         $attributes = [];
 
         if ($parameter->getParentDocumentId() !== null) {
@@ -109,6 +128,24 @@ final readonly class RenderletService implements RenderletServiceInterface
 
         if ($parameter->getTemplate()) {
             $attributes[DynamicRouter::CONTENT_TEMPLATE] = $parameter->getTemplate();
+        }
+
+        $attributes['template'] = $parameter->getTemplate();
+        $attributes['id'] = $parameter->getElementId();
+        $attributes['type'] = $parameter->getElementType();
+        $attributes['subtype'] = $requestParameters['subtype'] ?? null;
+        $attributes['pimcore_request_source'] = 'renderlet';
+
+        foreach ($requestParameters as $key => $value) {
+            if (
+                isset(self::IGNORED_ATTRIBUTE_KEYS[$key]) ||
+                str_starts_with((string)$key, '_') ||
+                array_key_exists($key, $attributes)
+            ) {
+                continue;
+            }
+
+            $attributes[$key] = $value;
         }
 
         return $attributes;
