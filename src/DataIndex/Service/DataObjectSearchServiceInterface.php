@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -28,7 +29,10 @@ use Pimcore\Model\UserInterface;
  */
 interface DataObjectSearchServiceInterface
 {
-    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
+    public function searchDataObjects(
+        QueryInterface $dataObjectQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): DataObjectSearchResult;
 
     public function getDataObjectById(int $id, ?UserInterface $user): DataObjectDetail|DataObjectFolder;
 
@@ -37,7 +41,10 @@ interface DataObjectSearchServiceInterface
      *
      * @return array<int>
      */
-    public function fetchDataObjectIds(QueryInterface $assetQuery): array;
+    public function fetchDataObjectIds(
+        QueryInterface $assetQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): array;
 
     /**
      * @throws SearchException

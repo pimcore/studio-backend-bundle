@@ -36,16 +36,24 @@ trait HandlerProgressTrait
 
     private const string TOTAL_STEPS = 'totalSteps';
 
+    /**
+     * @param bool $persist Whether the processed elements counter is written to the database on every call.
+     *                      Handlers that process many elements inside one message must pass false: the job run
+     *                      context can hold all data collected so far, so persisting it per element rewrites it
+     *                      over and over. The counter is then kept in memory and written with the next regular
+     *                      job run update of the handler or the execution engine.
+     */
     private function updateProgress(
         PublishServiceInterface $publishService,
         UserTopicServiceInterface $userTopicService,
         JobRun $jobRun,
         string $jobStepName,
         int $stepElements = 1,
-        int $frequency = self::FREQUENCY
+        int $frequency = self::FREQUENCY,
+        bool $persist = true
     ): void {
-        $currentStep = $this->getCurrentStep($jobRun);
-        $totalSteps = $this->getTotalSteps($jobRun);
+        // Resets the counters when a new step has started, so it has to run before they are read
+        $this->getCurrentStep($jobRun);
         $totalEvents = $this->getElementsPerStep($jobRun, $stepElements);
 
         $processedElements = $jobRun->getContext()[self::PROCESSED_ELEMENTS] ?? 0;
@@ -54,7 +62,8 @@ trait HandlerProgressTrait
             $jobRun,
             [
                 self::PROCESSED_ELEMENTS => $processedElements,
-            ]
+            ],
+            $persist
         );
         $updateFrequency = max(1, (int)($totalEvents / $frequency));
 
@@ -64,13 +73,26 @@ trait HandlerProgressTrait
             return;
         }
 
+        $this->publishProgress($publishService, $userTopicService, $jobRun, $jobStepName, $progress);
+    }
+
+    /**
+     * Publishes the progress of the current step as it is, for steps that count their progress themselves.
+     */
+    private function publishProgress(
+        PublishServiceInterface $publishService,
+        UserTopicServiceInterface $userTopicService,
+        JobRun $jobRun,
+        string $jobStepName,
+        int $progress
+    ): void {
         $publishService->publish(
             $userTopicService->getUserTopic($jobRun->getOwnerId()),
             new Progress(
                 $progress,
-                // $currentStep + 1 because the current step is 0-based
-                $currentStep + 1,
-                $totalSteps,
+                // $this->getCurrentStep() + 1 because the current step is 0-based
+                $this->getCurrentStep($jobRun) + 1,
+                $this->getTotalSteps($jobRun),
                 $jobStepName,
                 $jobRun->getJob()?->getName() ?? '',
                 $jobRun->getId(),

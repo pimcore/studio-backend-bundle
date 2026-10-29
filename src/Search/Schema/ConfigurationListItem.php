@@ -36,7 +36,7 @@ final class ConfigurationListItem implements AdditionalAttributesInterface
         private readonly int $id,
         #[Property(description: 'Name', type: 'string', example: 'My Configuration')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string', example: 'My Configuration Description')]
+        #[Property(description: 'Description', type: 'string', example: 'My Configuration Description', nullable: true)]
         private readonly ?string $description,
         #[Property(
             description: 'Whether the configuration is owned by the current user (false if only shared)',

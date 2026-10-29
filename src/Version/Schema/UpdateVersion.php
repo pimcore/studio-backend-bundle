@@ -24,22 +24,24 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 final readonly class UpdateVersion
 {
     public function __construct(
-        #[Property(description: 'Public', type: 'boolean', example: null)]
+        #[Property(description: 'Public', type: 'boolean', example: null, nullable: true)]
         private ?bool $public,
-        #[Property(description: 'Note', type: 'string', example: null)]
+        #[Property(description: 'Note', type: 'string', example: null, nullable: true)]
         private ?string $note,
         #[Property(
             description: 'Coauthor type, empty string clears it',
             type: 'string',
             maxLength: VersionCoauthor::MAX_TYPE_LENGTH,
-            example: null
+            example: null,
+            nullable: true
         )]
         private ?string $coauthorType = null,
         #[Property(
             description: 'Coauthor, empty string clears it',
             type: 'string',
             maxLength: VersionCoauthor::MAX_COAUTHOR_LENGTH,
-            example: null
+            example: null,
+            nullable: true
         )]
         private ?string $coauthor = null
     ) {

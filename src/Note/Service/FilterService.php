@@ -19,6 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
+use function is_array;
+use function is_string;
 
 /**
  * @internal
@@ -53,16 +55,22 @@ final readonly class FilterService implements FilterServiceInterface
             $propertyKey = 'field';
 
             foreach ($parameters->getFieldFiltersArray() as $index => $filter) {
+                // Use index to ensure unique bind parameters for fields with multiple
+                // usages (e.g. a date "between" range sends `gt` and `lt` on `date`)
+                $parameterName = 'filter_' . $index;
+
+                if ($filter[$propertyKey] === 'userName' && is_array($filter['value'])) {
+                    $this->applyUserNamesFilter($list, $filter['value'], $parameterName);
+
+                    continue;
+                }
+
                 $operator = $this->findOperator($filter['type'], $filter['operator']);
                 $value = $this->prepareValue($filter['type'], $filter['operator'], $filter['value']);
 
                 if ($operator === 'LIKE') {
                     $value = '%' . $value . '%';
                 }
-
-                // Use index to ensure unique bind parameters for fields with multiple
-                // usages (e.g. a date "between" range sends `gt` and `lt` on `date`)
-                $parameterName = 'filter_' . $index;
 
                 if ($filter[$propertyKey] === 'userName') {
                     $list->addConditionParam(
@@ -101,6 +109,31 @@ final readonly class FilterService implements FilterServiceInterface
                 ['id' => $noteElement->getId(), 'type' => $noteElement->getType()]
             );
         }
+    }
+
+    /**
+     * Multi-select user filter: exact match on any of the given user names.
+     * An empty selection means no restriction.
+     *
+     * @throws InvalidFilterException
+     */
+    private function applyUserNamesFilter(NoteListing $list, array $userNames, string $parameterName): void
+    {
+        if ($userNames === []) {
+            return;
+        }
+
+        foreach ($userNames as $userName) {
+            if (!is_string($userName)) {
+                throw new InvalidFilterException('fieldFilters');
+            }
+        }
+
+        $list->addConditionParam(
+            '`user` IN (SELECT `id` FROM `users` WHERE `name` IN (:' . $parameterName . '))',
+            // array_values: the core listing only binds as a string list when index 0 is a string
+            [$parameterName => array_values($userNames)]
+        );
     }
 
     private function prepareValue(string $type, string $operator, mixed $value): mixed

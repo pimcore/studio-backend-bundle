@@ -31,12 +31,13 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 class Document extends Asset implements ThumbnailPathInterface
 {
     public function __construct(
-        #[Property(description: 'Page count', type: 'integer', example: 2)]
+        #[Property(description: 'Page count', type: 'integer', example: 2, nullable: true)]
         private readonly ?int $pageCount,
         #[Property(
             description: 'Path to image thumbnail',
             type: 'string',
-            example: '/path/to/document/imagethumbnail.jpg'
+            example: '/path/to/document/imagethumbnail.jpg',
+            nullable: true
         )]
         private readonly ?string $imageThumbnailPath,
         bool $hasChildren,

@@ -38,6 +38,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\W
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\TreePqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFoldersFirst;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -104,6 +105,13 @@ final class AssetQuery implements AssetQueryInterface
     public function orderByPath(string $direction): self
     {
         $this->search->addModifier(new OrderByFullPath(SortDirection::tryFrom($direction)));
+
+        return $this;
+    }
+
+    public function orderFoldersFirst(): self
+    {
+        $this->search->addModifier(new OrderByFoldersFirst());
 
         return $this;
     }

@@ -36,17 +36,22 @@ final readonly class AuthorizationConsentClient
             example: 'Studio MCP',
         )]
         private string $name,
+        /**
+         * The trustworthy signal of where access is granted.
+         */
         #[Property(
-            description: 'Host (with port) of the redirect URI the authorization code will be sent to. '
-                . 'The trustworthy signal of where access is granted.',
+            description: 'Host (with port) of the redirect URI the authorization code will be sent to',
             type: 'string',
             example: 'localhost:6274',
             nullable: true,
         )]
         private ?string $redirectHost,
+        /**
+         * False for self-registered (DCR) or URL-identified (CIMD) clients, which should be shown as
+         * unverified.
+         */
         #[Property(
-            description: 'True if the client was pre-registered by an administrator; false for '
-                . 'self-registered (DCR) or URL-identified (CIMD) clients, which should be shown as unverified.',
+            description: 'True if the client was pre-registered by an administrator',
             type: 'boolean',
             example: false,
         )]

@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterMa
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnDefinitionPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnResolverPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\McpToolPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\NotificationDispatchPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\OAuthProtectedResourceProviderPass;
@@ -101,6 +102,10 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new DocumentTypeAdapterPass());
         $container->addCompilerPass(new NotificationDispatchPass());
         $container->addCompilerPass(new OAuthProtectedResourceProviderPass());
+
+        // MCP tools are SDK-native #[McpTool] services, opted in with the
+        // McpToolRegistry::TAG tag; the pass reflects them into the registry.
+        $container->addCompilerPass(new McpToolPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void

@@ -33,10 +33,11 @@ final readonly class ObjectDependencies
         private array $dependencies,
         #[Property(description: 'If it has hidden dependencies', type: 'boolean', example: true)]
         private bool $hasHidden,
+        /**
+         * Not the count of objects actually returned via dependencies or the paginated endpoint.
+         */
         #[Property(
-            description: 'Total number of objects referencing this user, including ones the caller is not '
-                . 'permitted to view - not the count of objects actually returned via dependencies or the '
-                . 'paginated endpoint.',
+            description: 'Total number of objects referencing this user, including ones the caller may not view',
             type: 'integer',
             example: 666
         )]

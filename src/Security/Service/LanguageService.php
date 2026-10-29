@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
+use function array_intersect;
+use function array_values;
 use function count;
 use function in_array;
 use function sprintf;
@@ -109,11 +111,28 @@ final readonly class LanguageService implements LanguageServiceInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getTranslationAllowedLanguages(UserInterface $user, string $domain): array
     {
-        $allowedLanguages = $user->getAllowedLanguagesForViewingWebsiteTranslations();
         if (in_array($domain, [TranslatorServiceInterface::DOMAIN, 'admin'], true)) {
-            $allowedLanguages = $this->adminLanguageService->getAvailableAdminLanguages();
+            return $this->adminLanguageService->getAvailableAdminLanguages();
+        }
+
+        // Languages granted via user or role settings are stored unvalidated,
+        // so only keep the ones that are configured as valid system languages.
+        /** @var string[] $validAllowedLanguages */
+        $validAllowedLanguages = array_intersect(
+            $user->getAllowedLanguagesForViewingWebsiteTranslations(),
+            $this->toolResolver->getValidLanguages()
+        );
+        $allowedLanguages = array_values($validAllowedLanguages);
+
+        // An empty language list means "all languages" for the core translation APIs,
+        // so a user without any valid language must be denied explicitly.
+        if ($allowedLanguages === []) {
+            throw new ForbiddenException('User is not allowed to access any website translation language');
         }
 
         return $allowedLanguages;

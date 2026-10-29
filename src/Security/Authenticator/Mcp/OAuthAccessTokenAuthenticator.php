@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
-use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Contract\TokenValidatorInterface;
-use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
+use Pimcore\Bundle\StudioBackendBundle\OAuth\Resolver\RequestResourceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\McpAccessTokenService;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
@@ -53,6 +52,7 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     public function __construct(
         private readonly bool $enabled,
         private readonly TokenValidatorInterface $tokenValidator,
+        private readonly RequestResourceResolverInterface $resourceResolver,
         private readonly ?string $issuer = null,
     ) {
     }
@@ -60,7 +60,7 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
     public function supports(Request $request): bool
     {
         // Inert without a configured issuer as well as when disabled. There is no safe
-        // fallback for the audience to check against: see self::resourceUri().
+        // fallback for the audience to check against: see authenticate().
         if (!$this->enabled || $this->issuer === null) {
             return false;
         }
@@ -90,7 +90,21 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
 
         $token = $this->bearerToken($request) ?? '';
 
-        $resolved = $this->tokenValidator->validate($token, $this->resourceUri($issuer));
+        // The endpoints behind this firewall are owned by different bundles, and each
+        // owner registers its own protected resource. The audience is the most specific
+        // registered resource covering this request, resolved against the configured
+        // issuer rather than the request host: `Host` is caller-supplied unless
+        // `framework.trusted_hosts` is set, and TokenValidatorInterface compares a
+        // token's `aud` against the URI it is handed without consulting the registry,
+        // so a request-derived audience would be checked against itself and pass.
+        // Without a registered resource there is no audience a token could carry for
+        // this endpoint, so decline and leave the request to the rest of the chain.
+        $resource = $this->resourceResolver->resolve($request);
+        if ($resource === null) {
+            throw new AuthenticationException('This endpoint is not a registered OAuth protected resource.');
+        }
+
+        $resolved = $this->tokenValidator->validate($token, $resource->canonicalUri);
         if ($resolved === null) {
             throw new AuthenticationException('Invalid or expired OAuth access token.');
         }
@@ -131,27 +145,5 @@ final class OAuthAccessTokenAuthenticator extends AbstractAuthenticator
         $token = substr($header, strlen(self::BEARER_PREFIX));
 
         return $token === '' ? null : $token;
-    }
-
-    /**
-     * The configured issuer, not the request host. `Host` is caller-supplied unless
-     * `framework.trusted_hosts` is set, and deriving the expected audience from it would
-     * make this check compare an attacker's string against the same attacker's string.
-     * The issuer is mandatory while OAuth is enabled, and the resource is contributed from
-     * that same value, so the two agree by construction rather than by coincidence.
-     *
-     * There is deliberately no fallback to the request when the issuer is absent. Being
-     * unregistered is not what refuses an audience: TokenValidatorInterface compares a
-     * token's `aud` against the URI it is handed and never consults the resource registry,
-     * so a request-derived URI here would be checked against itself and pass. The
-     * configuration forbids a null issuer while OAuth is enabled, but this does not rely
-     * on that - the authenticator simply declines.
-     *
-     * McpPath::BASE, not a local copy: the resource this validates against is the one
-     * Mcp\ProtectedResourceProvider declares, and they must be the same string.
-     */
-    private function resourceUri(string $issuer): string
-    {
-        return CanonicalUri::canonicalize($issuer . McpPath::BASE);
     }
 }

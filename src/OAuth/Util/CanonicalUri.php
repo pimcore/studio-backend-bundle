@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OAuth\Util;
 
+use function in_array;
 use function parse_url;
 use function rtrim;
 use function strtolower;
@@ -57,5 +58,39 @@ final class CanonicalUri
     public static function equals(string $a, string $b): bool
     {
         return self::canonicalize($a) === self::canonicalize($b);
+    }
+
+    /**
+     * A bare origin: scheme, host, optional port, and nothing else, already in canonical
+     * form. This is the shape the issuer must have, because every URI the server derives
+     * from it is the issuer with a root path appended, compared byte for byte.
+     *
+     * Canonicality is decided by canonicalize() rather than by a second set of rules, so
+     * the shape accepted is exactly the shape compared. That is what rejects a trailing
+     * slash, an uppercase host and a redundant default port; the explicit part checks
+     * reject the components an origin may not carry at all.
+     */
+    public static function isCanonicalOrigin(string $uri): bool
+    {
+        if ($uri === '' || $uri !== trim($uri)) {
+            return false;
+        }
+
+        $parts = parse_url($uri);
+        if ($parts === false || !isset($parts['scheme'], $parts['host'])) {
+            return false;
+        }
+
+        if (!in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return false;
+        }
+
+        foreach (['path', 'query', 'fragment', 'user', 'pass'] as $part) {
+            if (($parts[$part] ?? '') !== '') {
+                return false;
+            }
+        }
+
+        return $uri === self::canonicalize($uri);
     }
 }

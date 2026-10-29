@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
@@ -40,9 +41,11 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     ) {
     }
 
-    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
-    {
-        return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery);
+    public function searchDataObjects(
+        QueryInterface $dataObjectQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): DataObjectSearchResult {
+        return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery, $permissionType);
     }
 
     public function getDataObjectById(int $id, ?UserInterface $user): DataObjectDetail|DataObjectFolder
@@ -55,9 +58,11 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
      *
      * @return array<int>
      */
-    public function fetchDataObjectIds(QueryInterface $assetQuery): array
-    {
-        return $this->dataObjectSearchAdapter->fetchDataObjectIds($assetQuery);
+    public function fetchDataObjectIds(
+        QueryInterface $assetQuery,
+        PermissionTypes $permissionType = PermissionTypes::LIST
+    ): array {
+        return $this->dataObjectSearchAdapter->fetchDataObjectIds($assetQuery, $permissionType);
     }
 
     /**

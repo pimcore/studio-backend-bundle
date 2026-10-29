@@ -31,6 +31,7 @@ studio_ee_job_upload_assets: Cargar assets
 studio_ee_job_clone_data_objects: Clonar objetos de datos
 studio_ee_job_delete_data_objects: Eliminar objetos de datos
 studio_ee_job_batch_delete_data_objects: Eliminar objetos de datos por lotes
+studio_ee_job_batch_delete_documents: Eliminar documentos por lotes
 studio_ee_job_clone_documents: Clonar documentos
 studio_ee_job_delete_documents: Eliminar documentos
 studio_ee_job_rewrite_element_references: Reescribir referencias de elementos

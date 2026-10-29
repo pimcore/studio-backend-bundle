@@ -28,6 +28,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\TwoFactorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\TwoFactorService
+    arguments:
+      $digits: '%scheb_two_factor.google.digits%'
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService
 

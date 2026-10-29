@@ -121,8 +121,16 @@ final readonly class ElementService implements ElementServiceInterface
 
     public function hasElementChildren(ElementInterface $element): bool
     {
-        return ($element instanceof Asset || $element instanceof Document || $element instanceof DataObject) &&
-            $element->hasChildren();
+        // Unpublished children count as well. Without the explicit flag the answer follows
+        // the process wide "hide unpublished" setting, which the CLI bootstrap turns on: in a
+        // worker a parent holding only unpublished children looked childless, was deleted on
+        // its own and left its children behind without a parent.
+        return match (true) {
+            $element instanceof Document => $element->hasChildren(true),
+            $element instanceof DataObject => $element->hasChildren(includingUnpublished: true),
+            $element instanceof Asset => $element->hasChildren(),
+            default => false,
+        };
     }
 
     public function hasElementDependencies(ElementInterface $element): bool

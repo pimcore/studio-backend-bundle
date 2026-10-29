@@ -27,7 +27,7 @@ use OpenApi\Attributes\Schema;
 final readonly class DocumentCloneParameters
 {
     public function __construct(
-        #[Property(description: 'Language for the new translation', type: 'string', example: 'en')]
+        #[Property(description: 'Language for the new translation', type: 'string', example: 'en', nullable: true)]
         private ?string $language = null,
         #[Property(description: 'Enable Inheritance', type: 'bool', example: false)]
         private bool $enableInheritance = false,

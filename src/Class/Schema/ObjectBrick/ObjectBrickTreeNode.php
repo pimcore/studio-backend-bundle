@@ -36,7 +36,7 @@ final class ObjectBrickTreeNode implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Group name', type: 'string', example: 'News')]
+        #[Property(description: 'Group name', type: 'string', example: 'News', nullable: true)]
         private readonly ?string $group = null,
     ) {
     }

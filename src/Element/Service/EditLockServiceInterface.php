@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\EditLock;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
@@ -22,17 +24,17 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 interface EditLockServiceInterface
 {
     /**
-     * @throws InvalidElementTypeException
+     * @throws InvalidElementTypeException|NotFoundException|ForbiddenException
      */
     public function getEditLock(int $id, string $elementType): EditLock;
 
     /**
-     * @throws InvalidElementTypeException
+     * @throws InvalidElementTypeException|NotFoundException|ForbiddenException
      */
     public function lockElement(int $id, string $elementType): void;
 
     /**
-     * @throws InvalidElementTypeException
+     * @throws InvalidElementTypeException|NotFoundException|ForbiddenException
      */
     public function unlockElement(int $id, string $elementType): void;
 }

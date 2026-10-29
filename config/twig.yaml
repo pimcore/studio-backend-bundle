@@ -8,6 +8,10 @@ services:
     Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGeneratorInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Twig\TemplateGenerator
 
-    # The parameters are handled by the Dependency Injection Extension
+    # The sandbox lists are set by the Dependency Injection Extension. $additionalExtensions are the services
+    # tagged pimcore_studio_backend.twig_operator_extension (TWIG_OPERATOR_EXTENSION_TAG), the way to add a
+    # further safe Twig extension to the isolated environment. $twig (unused, kept for BC) and $logger are autowired.
     Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface:
         class: Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializer
+        arguments:
+            $additionalExtensions: !tagged_iterator pimcore_studio_backend.twig_operator_extension

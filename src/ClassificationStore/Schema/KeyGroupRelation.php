@@ -43,9 +43,9 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
         private readonly string $keyName,
         #[Property(description: 'Group Name', type: 'string', example: 'value')]
         private readonly string $groupName,
-        #[Property(description: 'Key Description', type: 'string', example: 'value')]
+        #[Property(description: 'Key Description', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $keyDescription,
-        #[Property(description: 'Key Description', type: 'string', example: 'value')]
+        #[Property(description: 'Key Description', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $groupDescription,
     ) {
     }

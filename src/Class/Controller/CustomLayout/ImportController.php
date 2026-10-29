@@ -60,7 +60,7 @@ final class ImportController extends AbstractApiController
         name: 'class_custom_layout_import',
         methods: ['POST']
     )]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . '/class/custom-layout/import/{customLayoutId}',
         operationId: 'class_custom_layout_import',

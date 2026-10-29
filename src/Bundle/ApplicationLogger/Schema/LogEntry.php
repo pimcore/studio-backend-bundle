@@ -37,19 +37,24 @@ final class LogEntry implements AdditionalAttributesInterface
         private readonly int $id,
         #[Property(description: 'Log priority level', type: 'integer', example: 2)]
         private readonly int $priority,
-        #[Property(description: 'Date', type: 'string', example: '2023-10-01T12:00:00+00:00')]
+        #[Property(description: 'Date', type: 'string', example: '2023-10-01T12:00:00+00:00', nullable: true)]
         private readonly ?string $date = null,
-        #[Property(description: 'PID', type: 'integer', example: 22)]
+        #[Property(description: 'PID', type: 'integer', example: 22, nullable: true)]
         private readonly ?int $pid = null,
-        #[Property(description: 'Message', type: 'string', example: 'Some Log Message')]
+        #[Property(description: 'Message', type: 'string', example: 'Some Log Message', nullable: true)]
         private readonly ?string $message = null,
-        #[Property(description: 'File object path', type: 'string', example: 'path/to/file.txt')]
+        #[Property(description: 'File object path', type: 'string', example: 'path/to/file.txt', nullable: true)]
         private readonly ?string $fileObject = null,
-        #[Property(ref: RelatedElementData::class, description: 'Data of related element', type: 'object')]
+        #[Property(
+            ref: RelatedElementData::class,
+            description: 'Data of related element',
+            type: 'object',
+            nullable: true
+        )]
         private readonly ?RelatedElementData $relatedElementData = null,
-        #[Property(description: 'Component', type: 'string', example: 'SomeComponent::Class')]
+        #[Property(description: 'Component', type: 'string', example: 'SomeComponent::Class', nullable: true)]
         private readonly ?string $component = null,
-        #[Property(description: 'Source', type: 'string', example: 'Pimcore\Bundle')]
+        #[Property(description: 'Source', type: 'string', example: 'Pimcore\Bundle', nullable: true)]
         private readonly ?string $source = null,
 
     ) {

@@ -30,7 +30,7 @@ final class ElementProperty implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'key', type: 'string', example: 'key_of_the_property')]
         private readonly string $key,
-        #[Property(description: 'data', type: 'mixed', example: '123')]
+        #[Property(description: 'data', type: 'mixed', example: '123', nullable: true)]
         private readonly mixed $data,
         #[Property(description: 'type', type: 'string', example: 'document')]
         private readonly string $type,
@@ -38,11 +38,21 @@ final class ElementProperty implements AdditionalAttributesInterface
         private readonly bool $inheritable,
         #[Property(description: 'inherited', type: 'boolean', example: false)]
         private readonly bool $inherited,
-        #[Property(description: 'config', type: 'string', example: 'comma,separated,values')]
+        #[Property(description: 'config', type: 'string', example: 'comma,separated,values', nullable: true)]
         private readonly ?string $config,
-        #[Property(description: 'predefinedName', type: 'string', example: 'name of the predefined property')]
+        #[Property(
+            description: 'predefinedName',
+            type: 'string',
+            example: 'name of the predefined property',
+            nullable: true
+        )]
         private readonly ?string $predefinedName,
-        #[Property(description: 'description', type: 'string', example: 'Description of the predefined property')]
+        #[Property(
+            description: 'description',
+            type: 'string',
+            example: 'Description of the predefined property',
+            nullable: true
+        )]
         private readonly ?string $description,
     ) {
     }

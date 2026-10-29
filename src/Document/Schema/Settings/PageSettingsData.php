@@ -27,11 +27,11 @@ use OpenApi\Attributes\Schema;
 final readonly class PageSettingsData extends SnippetSettingsData
 {
     public function __construct(
-        #[Property(description: 'Title', type: 'string', example: 'Link Title')]
+        #[Property(description: 'Title', type: 'string', example: 'Link Title', nullable: true)]
         private ?string $title,
-        #[Property(description: 'Description', type: 'string', example: 'Link Description')]
+        #[Property(description: 'Description', type: 'string', example: 'Link Description', nullable: true)]
         private ?string $description,
-        #[Property(description: 'Pretty Url', type: 'string', example: 'pretty/url')]
+        #[Property(description: 'Pretty Url', type: 'string', example: 'pretty/url', nullable: true)]
         private ?string $prettyUrl,
         ?string $controller,
         ?string $template,

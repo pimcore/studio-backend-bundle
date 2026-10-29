@@ -53,7 +53,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     {
         $this->checkValidOpenApiScanPaths();
 
-        $config = Generator::scan([...$this->openApiScanPaths]);
+        $config = (new Generator())->generate([...$this->openApiScanPaths]);
 
         if ($config) {
             $this->filterConfigs($config);

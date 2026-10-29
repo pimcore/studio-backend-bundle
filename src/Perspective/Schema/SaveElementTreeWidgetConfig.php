@@ -77,9 +77,9 @@ final readonly class SaveElementTreeWidgetConfig
         private bool $showRoot = false,
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]
         private array $classes = [],
-        #[Property(description: 'PQL', type: 'string', example: null)]
+        #[Property(description: 'PQL', type: 'string', example: null, nullable: true)]
         private ?string $pql = null,
-        #[Property(description: 'Page size', type: 'int', example: 20)]
+        #[Property(description: 'Page size', type: 'int', example: 20, nullable: true)]
         private ?int $pageSize = null,
     ) {
     }

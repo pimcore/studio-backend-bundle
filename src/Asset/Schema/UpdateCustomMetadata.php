@@ -30,7 +30,7 @@ final readonly class UpdateCustomMetadata
         private string $language,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private string $type,
-        #[Property(description: 'Data', type: 'mixed', example: 'data')]
+        #[Property(description: 'Data', type: 'mixed', example: 'data', nullable: true)]
         private mixed $data
     ) {
     }

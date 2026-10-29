@@ -22,7 +22,10 @@ use function sprintf;
 
 final class TextEncoder implements TextEncoderInterface
 {
-    private const MAX_FILE_SIZE = 2000000;
+    public function __construct(
+        private readonly int $maxFileSize = self::DEFAULT_MAX_FILE_SIZE,
+    ) {
+    }
 
     /**
      * @throws InvalidElementTypeException|MaxFileSizeExceededException
@@ -40,8 +43,8 @@ final class TextEncoder implements TextEncoderInterface
             );
         }
 
-        if ($element->getFileSize() > self::MAX_FILE_SIZE) {
-            throw new MaxFileSizeExceededException(self::MAX_FILE_SIZE);
+        if ($element->getFileSize() > $this->maxFileSize) {
+            throw new MaxFileSizeExceededException($this->maxFileSize);
         }
 
         return Encoding::toUTF8($element->getData());

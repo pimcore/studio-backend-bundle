@@ -39,6 +39,7 @@ studio_ee_job_upload_assets: Prześlij assety
 studio_ee_job_clone_data_objects: Klonuj obiekty danych
 studio_ee_job_delete_data_objects: Usuń obiekty danych
 studio_ee_job_batch_delete_data_objects: Usuń obiekty danych zbiorczo
+studio_ee_job_batch_delete_documents: Usuń dokumenty zbiorczo
 studio_ee_job_clone_documents: Klonuj dokumenty
 studio_ee_job_delete_documents: Usuń dokumenty
 studio_ee_job_rewrite_element_references: Przepisz odwołania elementów

@@ -27,4 +27,14 @@ enum DocumentTypes: string
     case LINK = 'link';
     case PAGE = 'page';
     case SNIPPET = 'snippet';
+
+    /**
+     * The types whose documents are rendered by a controller and a template.
+     *
+     * @return list<string>
+     */
+    public static function pageSnippetValues(): array
+    {
+        return [self::PAGE->value, self::SNIPPET->value, self::EMAIL->value];
+    }
 }

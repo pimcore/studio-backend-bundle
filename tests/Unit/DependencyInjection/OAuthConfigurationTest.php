@@ -17,6 +17,8 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 
 /**
  * The OAuth server cannot run without an issuer or key material, and both failures
@@ -87,7 +89,6 @@ final class OAuthConfigurationTest extends Unit
     public static function malformedIssuerProvider(): array
     {
         return [
-            'empty' => [''],
             'trailing slash' => ['https://pimcore.example.com/'],
             'with a path' => ['https://pimcore.example.com/oauth'],
             'with a query' => ['https://pimcore.example.com?a=b'],
@@ -152,14 +153,83 @@ final class OAuthConfigurationTest extends Unit
     }
 
     /**
-     * A malformed issuer only matters once the server is running, so it must not break the
-     * build of an installation that never enabled OAuth.
+     * The shape is checked on the `issuer` node itself, which cannot see `enabled`, so a
+     * malformed literal fails the build even while OAuth is off. That is the price of
+     * letting Symfony skip the check for `%env()%` values, see below.
      */
-    public function testAMalformedIssuerIsIgnoredWhileDisabled(): void
+    public function testAMalformedIssuerIsRejectedEvenWhileDisabled(): void
     {
-        $config = $this->process(['enabled' => false, 'issuer' => 'https://pimcore.example.com/']);
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/must be a bare origin/');
 
-        $this->assertSame('https://pimcore.example.com/', $config['issuer']);
+        $this->process(['enabled' => false, 'issuer' => 'https://pimcore.example.com/']);
+    }
+
+    /**
+     * At build time an environment variable is only a placeholder string, never an origin,
+     * so checking its shape failed every build that took the issuer from the environment.
+     * Symfony does not validate the placeholder; it validates a typed dummy value instead,
+     * `''` for a string, which the node leaves to the required check. Symfony only does this
+     * for a value that is a placeholder as a whole, so the issuer has to come from one
+     * variable rather than be assembled around one.
+     *
+     * @dataProvider envIssuerProvider
+     */
+    public function testAnIssuerFromAnEnvironmentVariablePassesTheBuild(string $issuer): void
+    {
+        $container = $this->compile($issuer);
+
+        $this->assertSame(
+            $issuer,
+            $container->resolveEnvPlaceholders($container->getParameter('probe.oauth.issuer'), '%%env(%s)%%'),
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function envIssuerProvider(): array
+    {
+        return [
+            'plain' => ['%env(OAUTH_ISSUER)%'],
+            'with a processor' => ['%env(string:OAUTH_ISSUER)%'],
+        ];
+    }
+
+    /**
+     * When the `env(NAME)` parameter supplies a default, Symfony validates that default in
+     * place of the dummy value.
+     */
+    public function testACanonicalEnvironmentDefaultIsAccepted(): void
+    {
+        $container = $this->compile('%env(OAUTH_ISSUER)%', ['env(OAUTH_ISSUER)' => 'https://pimcore.example.com']);
+
+        $this->assertSame(
+            '%env(OAUTH_ISSUER)%',
+            $container->resolveEnvPlaceholders($container->getParameter('probe.oauth.issuer'), '%%env(%s)%%'),
+        );
+    }
+
+    /**
+     * The same validation catches a malformed default at build, like a literal.
+     */
+    public function testAMalformedEnvironmentDefaultIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/must be a bare origin/');
+
+        $this->compile('%env(OAUTH_ISSUER)%', ['env(OAUTH_ISSUER)' => 'https://pimcore.example.com/']);
+    }
+
+    /**
+     * An empty issuer is as unusable as a missing one and gets the same message.
+     */
+    public function testEnabledWithAnEmptyIssuerIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessageMatches('/issuer must be set/');
+
+        $this->process(['enabled' => true, 'issuer' => '', 'keys' => self::KEYS]);
     }
 
     public function testEnabledWithoutIssuerIsRejected(): void
@@ -227,6 +297,45 @@ final class OAuthConfigurationTest extends Unit
 
         $this->assertFalse($config['enabled']);
         $this->assertTrue($config['dynamic_client_registration']['enabled']);
+    }
+
+    /**
+     * Compiles a real container, so the placeholder handling is exactly the build's: the
+     * merge pass substitutes placeholders and ValidateEnvPlaceholdersPass later validates
+     * them with typed dummy values.
+     *
+     * @param array<string, string> $parameters
+     */
+    private function compile(string $issuer, array $parameters = []): ContainerBuilder
+    {
+        $container = new ContainerBuilder();
+        foreach ($parameters as $name => $value) {
+            $container->setParameter($name, $value);
+        }
+        $container->registerExtension(new class() extends Extension {
+            public function load(array $configs, ContainerBuilder $container): void
+            {
+                $oauth = $this->processConfiguration(new Configuration(), $configs)['oauth'];
+                $container->setParameter('probe.oauth.issuer', $oauth['issuer']);
+            }
+
+            public function getConfiguration(array $config, ContainerBuilder $container): Configuration
+            {
+                return new Configuration();
+            }
+
+            public function getAlias(): string
+            {
+                return 'pimcore_studio_backend';
+            }
+        });
+        $container->loadFromExtension(
+            'pimcore_studio_backend',
+            ['oauth' => ['enabled' => true, 'issuer' => $issuer, 'keys' => self::KEYS]],
+        );
+        $container->compile();
+
+        return $container;
     }
 
     /**
