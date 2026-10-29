@@ -42,6 +42,8 @@ final class GroupLayout implements AdditionalAttributesInterface
         private readonly ?string $description,
         #[Property(description: 'Description', type: 'array', items: new Items(ref: KeyLayout::class))]
         private readonly array $keys = [],
+        #[Property(description: 'Title of the group', type: 'string', example: 'value', nullable: true)]
+        private readonly ?string $title = null,
     ) {
     }
 
@@ -66,5 +68,10 @@ final class GroupLayout implements AdditionalAttributesInterface
     public function getKeys(): array
     {
         return $this->keys;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
     }
 }

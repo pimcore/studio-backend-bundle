@@ -16,6 +16,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService
 
