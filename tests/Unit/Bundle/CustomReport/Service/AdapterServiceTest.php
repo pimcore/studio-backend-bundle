@@ -162,6 +162,14 @@ final class AdapterServiceTest extends Unit
         $this->assertSame(10, $paginated->getPageSize());
     }
 
+    public function testHasAdapterReflectsRegisteredFactories(): void
+    {
+        $service = $this->createService();
+
+        $this->assertTrue($service->hasAdapter('sql'));
+        $this->assertFalse($service->hasAdapter('graphql'));
+    }
+
     private function createReportConfig(array $dataSourceConfig): Config
     {
         $config = new Config();
