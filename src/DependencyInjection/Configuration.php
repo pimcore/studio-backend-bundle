@@ -1350,7 +1350,7 @@ class Configuration implements ConfigurationInterface
                         ->defaultValue('Pimcore')
                     ->end()
                     ->scalarNode('server_name')
-                        ->info('Server name in the authenticator app. Defaults to the main domain, if set.')
+                        ->info('Server name in the authenticator app. Defaults to "Pimcore".')
                         ->defaultNull()
                     ->end()
                 ->end()

@@ -30,13 +30,12 @@ pimcore_studio_backend:
         # Name shown in the authenticator app. Default: Pimcore
         issuer: 'Acme PIM'
         # Shown next to the user name in the authenticator app.
-        # Default: the main domain (pimcore.general.domain), if set
+        # Default: Pimcore
         server_name: 'pim.acme.com'
 ```
 
-Without `server_name`, the entry shows the user name together with the main domain (`pimcore.general.domain`), e.g.
-`admin@pim.acme.com`, or only the user name when no main domain is set. Set `server_name` so users can tell the
-entries of several installations apart in the app.
+The default server name is `Pimcore`. Set `server_name` so users can tell the entries of several installations
+apart in the app.
 
 Codes sent to `POST /login/2fa` are limited per user: after 5 attempts within 5 minutes, further codes are refused
 with `429` until the window is over, even a correct one. A correct code resets the count, a password login does not.

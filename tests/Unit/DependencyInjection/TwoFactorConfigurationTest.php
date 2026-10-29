@@ -16,10 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DependencyInjection;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\UserCondition;
-use Scheb\TwoFactorBundle\DependencyInjection\Configuration as SchebConfiguration;
 use Scheb\TwoFactorBundle\DependencyInjection\SchebTwoFactorExtension;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
-use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -43,43 +41,12 @@ final class TwoFactorConfigurationTest extends Unit
         $this->assertArrayNotHasKey('security_tokens', $scheb);
     }
 
-    public function testNoServerNameIsPrependedByDefault(): void
+    public function testServerNameDefaultsToPimcore(): void
     {
         $scheb = $this->prependWith([]);
 
         $this->assertSame('Pimcore', $scheb['google']['issuer']);
-        $this->assertArrayNotHasKey('server_name', $scheb['google']);
-    }
-
-    /**
-     * Core prepends its main-domain default after Studio did, so it comes first in the merge.
-     */
-    public function testCoreMainDomainIsKeptWithoutStudioServerName(): void
-    {
-        $google = $this->mergedGoogleConfigWithCoreDomain([], 'example.com');
-
-        $this->assertSame('Pimcore', $google['issuer']);
-        $this->assertSame('example.com', $google['server_name']);
-    }
-
-    public function testStudioServerNameWinsOverCoreMainDomain(): void
-    {
-        $google = $this->mergedGoogleConfigWithCoreDomain(
-            ['two_factor_authentication' => ['server_name' => 'pim.acme.test']],
-            'example.com'
-        );
-
-        $this->assertSame('pim.acme.test', $google['server_name']);
-    }
-
-    public function testServerNameStaysUnsetWithoutStudioServerNameAndCoreMainDomain(): void
-    {
-        $container = $this->createContainer(withScheb: true);
-        (new PimcoreStudioBackendExtension())->prepend($container);
-
-        $google = $this->processSchebConfig($container)['google'];
-
-        $this->assertNull($google['server_name']);
+        $this->assertSame('Pimcore', $scheb['google']['server_name']);
     }
 
     /**
@@ -110,33 +77,6 @@ final class TwoFactorConfigurationTest extends Unit
         $this->assertCount(1, $configs);
 
         return $configs[0];
-    }
-
-    /**
-     * @param array<string, mixed> $studioConfig
-     *
-     * @return array<string, mixed>
-     */
-    private function mergedGoogleConfigWithCoreDomain(array $studioConfig, string $domain): array
-    {
-        $container = $this->createContainer(withScheb: true);
-        $container->prependExtensionConfig('pimcore_studio_backend', $studioConfig);
-
-        (new PimcoreStudioBackendExtension())->prepend($container);
-        $container->prependExtensionConfig('scheb_two_factor', ['google' => ['server_name' => $domain]]);
-
-        return $this->processSchebConfig($container)['google'];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function processSchebConfig(ContainerBuilder $container): array
-    {
-        return (new Processor())->processConfiguration(
-            new SchebConfiguration(),
-            $container->getExtensionConfig('scheb_two_factor')
-        );
     }
 
     private function createContainer(bool $withScheb): ContainerBuilder
