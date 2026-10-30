@@ -508,6 +508,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     /**
      * Prepended, so the application's own scheb_two_factor config still wins. `security_tokens`
      * is left to scheb's defaults: lists are merged, so a prepended one could never be narrowed.
+     * Without a `server_name`, none is prepended, so core's main-domain default (or no host) applies.
      *
      * @param array{issuer: string, server_name: ?string} $config
      */
@@ -517,16 +518,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             return;
         }
 
-        // Only an application-set host is visible here: framework sets its 'localhost' default later.
-        $routerHost = $container->hasParameter('router.request_context.host') ? '%router.request_context.host%' : null;
+        $google = [
+            'enabled' => true,
+            'issuer' => $config['issuer'],
+        ];
+        if ($config['server_name'] !== null) {
+            $google['server_name'] = $config['server_name'];
+        }
 
         $container->prependExtensionConfig('scheb_two_factor', [
             'two_factor_condition' => UserCondition::class,
-            'google' => [
-                'enabled' => true,
-                'issuer' => $config['issuer'],
-                'server_name' => $config['server_name'] ?? $routerHost ?? 'Pimcore',
-            ],
+            'google' => $google,
         ]);
     }
 

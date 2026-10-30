@@ -16,11 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DependencyInjection;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
 use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\UserCondition;
+use Scheb\TwoFactorBundle\DependencyInjection\Configuration as SchebConfiguration;
 use Scheb\TwoFactorBundle\DependencyInjection\SchebTwoFactorExtension;
 use Symfony\Bundle\FrameworkBundle\DependencyInjection\FrameworkExtension;
-use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
+use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\Extension;
 
 /**
  * Studio configures scheb itself: nothing else in a Studio installation enables the Google
@@ -43,39 +43,43 @@ final class TwoFactorConfigurationTest extends Unit
         $this->assertArrayNotHasKey('security_tokens', $scheb);
     }
 
-    public function testServerNameDefaultsToTheRouterHost(): void
-    {
-        $scheb = $this->prependWith([], routerHost: 'pim.acme.test');
-
-        $this->assertSame('Pimcore', $scheb['google']['issuer']);
-        $this->assertSame('%router.request_context.host%', $scheb['google']['server_name']);
-    }
-
-    public function testServerNameDefaultsToPimcoreWithoutRouterHost(): void
+    public function testNoServerNameIsPrependedByDefault(): void
     {
         $scheb = $this->prependWith([]);
 
-        $this->assertSame('Pimcore', $scheb['google']['server_name']);
+        $this->assertSame('Pimcore', $scheb['google']['issuer']);
+        $this->assertArrayNotHasKey('server_name', $scheb['google']);
     }
 
     /**
-     * Symfony runs every prepend before any extension loads, after the application's config files.
+     * Core prepends its main-domain default after Studio did, so it comes first in the merge.
      */
-    public function testServerNameIsResolvedWhenTheContainerIsBuilt(): void
+    public function testCoreMainDomainIsKeptWithoutStudioServerName(): void
     {
-        $withHost = new ContainerBuilder();
-        $withHost->setParameter('router.request_context.host', 'pim.acme.test');
-        $withoutHost = new ContainerBuilder();
+        $google = $this->mergedGoogleConfigWithCoreDomain([], 'example.com');
 
-        foreach ([$withHost, $withoutHost] as $container) {
-            $container->registerExtension($this->createFrameworkStub());
-            $container->registerExtension(new PimcoreStudioBackendExtension());
-            $container->registerExtension(new SchebTwoFactorExtension());
-            (new MergeExtensionConfigurationPass())->process($container);
-        }
+        $this->assertSame('Pimcore', $google['issuer']);
+        $this->assertSame('example.com', $google['server_name']);
+    }
 
-        $this->assertSame('pim.acme.test', $withHost->getParameter('scheb_two_factor.google.server_name'));
-        $this->assertSame('Pimcore', $withoutHost->getParameter('scheb_two_factor.google.server_name'));
+    public function testStudioServerNameWinsOverCoreMainDomain(): void
+    {
+        $google = $this->mergedGoogleConfigWithCoreDomain(
+            ['two_factor_authentication' => ['server_name' => 'pim.acme.test']],
+            'example.com'
+        );
+
+        $this->assertSame('pim.acme.test', $google['server_name']);
+    }
+
+    public function testServerNameStaysUnsetWithoutStudioServerNameAndCoreMainDomain(): void
+    {
+        $container = $this->createContainer(withScheb: true);
+        (new PimcoreStudioBackendExtension())->prepend($container);
+
+        $google = $this->processSchebConfig($container)['google'];
+
+        $this->assertNull($google['server_name']);
     }
 
     /**
@@ -95,12 +99,9 @@ final class TwoFactorConfigurationTest extends Unit
      *
      * @return array<string, mixed>
      */
-    private function prependWith(array $studioConfig, ?string $routerHost = null): array
+    private function prependWith(array $studioConfig): array
     {
         $container = $this->createContainer(withScheb: true);
-        if ($routerHost !== null) {
-            $container->setParameter('router.request_context.host', $routerHost);
-        }
         $container->prependExtensionConfig('pimcore_studio_backend', $studioConfig);
 
         (new PimcoreStudioBackendExtension())->prepend($container);
@@ -112,21 +113,30 @@ final class TwoFactorConfigurationTest extends Unit
     }
 
     /**
-     * Sets Symfony's own router host default the way FrameworkExtension does: when it loads.
+     * @param array<string, mixed> $studioConfig
+     *
+     * @return array<string, mixed>
      */
-    private function createFrameworkStub(): Extension
+    private function mergedGoogleConfigWithCoreDomain(array $studioConfig, string $domain): array
     {
-        return new class() extends Extension {
-            public function load(array $configs, ContainerBuilder $container): void
-            {
-                $container->setParameter('router.request_context.host', 'localhost');
-            }
+        $container = $this->createContainer(withScheb: true);
+        $container->prependExtensionConfig('pimcore_studio_backend', $studioConfig);
 
-            public function getAlias(): string
-            {
-                return 'framework';
-            }
-        };
+        (new PimcoreStudioBackendExtension())->prepend($container);
+        $container->prependExtensionConfig('scheb_two_factor', ['google' => ['server_name' => $domain]]);
+
+        return $this->processSchebConfig($container)['google'];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function processSchebConfig(ContainerBuilder $container): array
+    {
+        return (new Processor())->processConfiguration(
+            new SchebConfiguration(),
+            $container->getExtensionConfig('scheb_two_factor')
+        );
     }
 
     private function createContainer(bool $withScheb): ContainerBuilder
