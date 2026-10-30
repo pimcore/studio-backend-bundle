@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 
 use Exception;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\SeoBundle\Redirect\TargetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectStatusEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface;
@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Element\ElementType;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -46,7 +46,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         private RedirectHydratorInterface $hydrator,
         private RedirectStatusHydratorInterface $statusHydrator,
         private RedirectsRepositoryInterface $repository,
-        private ServiceResolverInterface $serviceResolver,
+        private TargetResolverInterface $targetResolver,
     ) {
     }
 
@@ -57,10 +57,12 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     {
         $this->validateType($parameters->getType());
 
+        $targetType = $this->getTargetType($parameters->getTargetType());
+
         $redirect = new RedirectModel();
         $redirect->setType($parameters->getType());
         $redirect->setSource($parameters->getSource());
-        $redirect->setTarget($this->getTargetValue($parameters->getTarget()));
+        $this->applyTarget($redirect, $parameters->getTarget(), $targetType);
 
         try {
             $redirect->save();
@@ -84,12 +86,14 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         if ($source !== null && $parameters->isRegex() === false) {
             $source = str_replace('+', ' ', $source);
         }
+        $targetType = $this->getTargetType($parameters->getTargetType());
+
         $redirect = $this->repository->getById($id);
         $redirect->setType($parameters->getType());
         $redirect->setSourceSite($parameters->getSourceSite());
         $redirect->setSource($source);
         $redirect->setTargetSite($parameters->getTargetSite());
-        $redirect->setTarget($this->getTargetValue($parameters->getTarget()));
+        $this->applyTarget($redirect, $parameters->getTarget(), $targetType);
         $redirect->setStatusCode($parameters->getStatusCode());
         $redirect->setPriority($parameters->getPriority());
         $redirect->setRegex($parameters->isRegex());
@@ -223,17 +227,74 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         }
     }
 
-    private function getTargetValue(?string $target): ?string
+    /**
+     * The target is submitted as the element path the API renders, so it is resolved back to
+     * the element it names. A target that belongs to no element is kept as a plain (external
+     * or not yet existing) URL and has no element type.
+     *
+     * @throws InvalidArgumentException when the submitted target type names no such element
+     */
+    private function applyTarget(RedirectModel $redirect, ?string $target, ?ElementType $targetType): void
     {
+        // an edit that touches neither the target nor its type must not re-resolve it: the
+        // element it points at could have been deleted, or its path could since have been
+        // taken by an element of another type. A submitted type that differs is a deliberate
+        // request to resolve the same path in another tree.
+        $keepsTargetType = $targetType === null || $targetType === $redirect->getTargetType();
+
+        if ($keepsTargetType && $target === $this->renderTarget($redirect)) {
+            return;
+        }
+
         if (empty($target)) {
-            return $target;
+            $redirect->setTarget($target);
+            $redirect->setTargetType(null);
+
+            return;
         }
 
-        $document = $this->serviceResolver->getElementByPath(ElementTypes::TYPE_DOCUMENT, $target);
-        if ($document === null) {
-            return $target;
+        // a client that sends no type cannot say which tree it meant, so the type is detected;
+        // one that does restricts the lookup, which is how an ambiguous path is disambiguated
+        $resolved = $targetType !== null
+            ? $this->targetResolver->resolveElement($target, $targetType)
+            : $this->targetResolver->detectElement($target);
+
+        if ($resolved === null && $targetType !== null) {
+            throw new InvalidArgumentException(
+                sprintf('No %s usable as a redirect target found at "%s"', $targetType->value, $target)
+            );
         }
 
-        return (string)$document->getId();
+        $redirect->setTarget($resolved?->getTargetValue() ?? $target);
+        $redirect->setTargetType($resolved?->type);
+    }
+
+    /**
+     * The target as the API renders it, i.e. what a client sends back unchanged.
+     */
+    private function renderTarget(RedirectModel $redirect): ?string
+    {
+        $target = $redirect->getTarget();
+
+        if ($target === null) {
+            return null;
+        }
+
+        return $this->targetResolver->resolvePath($target, $redirect->getTargetType()) ?? $target;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getTargetType(?string $targetType): ?ElementType
+    {
+        // clients that do not know about target types leave the type to be detected
+        if ($targetType === null || $targetType === '') {
+            return null;
+        }
+
+        return ElementType::tryFrom($targetType) ?? throw new InvalidArgumentException(
+            sprintf('Invalid redirect target type: %s', $targetType)
+        );
     }
 }
