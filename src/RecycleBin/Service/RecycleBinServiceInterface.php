@@ -20,9 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Model\RestoreResult;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -44,14 +42,9 @@ interface RecycleBinServiceInterface
     public function flushRecycleBin(): void;
 
     /**
-     * Restores elements whose parent is missing into the fallback folder, the given user (default: the current
-     * user) needs the publish permission on it.
-     *
-     * @return RelocatedItem[] the elements restored into the fallback folder
-     *
      * @throws EnvironmentException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
-    public function restoreItem(int $id, ?UserInterface $user = null): array;
+    public function restoreItem(int $id): void;
 
     /**
      * @throws EnvironmentException|NotFoundException

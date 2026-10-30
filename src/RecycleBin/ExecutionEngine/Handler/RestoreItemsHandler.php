@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
 
@@ -39,7 +39,7 @@ final class RestoreItemsHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
-        private readonly RecycleBinServiceInterface $recycleBinService,
+        private readonly RestoreItemServiceInterface $restoreItemService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
         private readonly UserResolverInterface $userResolver,
@@ -74,7 +74,7 @@ final class RestoreItemsHandler extends AbstractHandler
             $relocatedItems = [];
 
             try {
-                $relocatedItems = $this->recycleBinService->restoreItem($id, $user);
+                $relocatedItems = $this->restoreItemService->restoreItem($id, $user);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::RECYCLE_BIN_RESTORE_FAILED->value,

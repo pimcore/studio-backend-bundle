@@ -25,6 +25,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreContextInterface:
     class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreContext
 
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemService
+
   #
   # Hydrators
   #

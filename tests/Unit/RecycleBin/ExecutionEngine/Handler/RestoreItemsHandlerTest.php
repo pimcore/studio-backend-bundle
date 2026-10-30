@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Handler\RestoreItemsHandler;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use ReflectionProperty;
@@ -47,8 +47,8 @@ final class RestoreItemsHandlerTest extends Unit
         $owner = new User();
         $restoredIds = [];
 
-        $recycleBinService = $this->createMock(RecycleBinServiceInterface::class);
-        $recycleBinService->method('restoreItem')->willReturnCallback(
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->method('restoreItem')->willReturnCallback(
             function (int $id, ?UserInterface $user) use (&$restoredIds, $owner): array {
                 $this->assertSame($owner, $user);
                 $restoredIds[] = $id;
@@ -63,7 +63,7 @@ final class RestoreItemsHandlerTest extends Unit
 
         $jobRun = $this->createJobRun(['relocatedItems' => [['id' => 1, 'elementType' => 'document', 'path' => '/x']]]);
 
-        $this->createHandler($recycleBinService, $owner, $jobRun, [3, 4, 5])(new RestoreItemsMessage(1, 0));
+        $this->createHandler($restoreItemService, $owner, $jobRun, [3, 4, 5])(new RestoreItemsMessage(1, 0));
 
         $this->assertSame([3, 4, 5], $restoredIds);
         $this->assertSame(
@@ -81,12 +81,12 @@ final class RestoreItemsHandlerTest extends Unit
      */
     public function testLeavesTheContextWithoutRelocatedItemsWhenEveryParentExists(): void
     {
-        $recycleBinService = $this->createMock(RecycleBinServiceInterface::class);
-        $recycleBinService->method('restoreItem')->willReturn([]);
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->method('restoreItem')->willReturn([]);
 
         $jobRun = $this->createJobRun([]);
 
-        $this->createHandler($recycleBinService, new User(), $jobRun, [3, 4])(new RestoreItemsMessage(1, 0));
+        $this->createHandler($restoreItemService, new User(), $jobRun, [3, 4])(new RestoreItemsMessage(1, 0));
 
         $this->assertArrayNotHasKey('relocatedItems', $jobRun->getContext());
     }
@@ -95,7 +95,7 @@ final class RestoreItemsHandlerTest extends Unit
      * @param int[] $itemIds
      */
     private function createHandler(
-        RecycleBinServiceInterface $recycleBinService,
+        RestoreItemServiceInterface $restoreItemService,
         User $owner,
         JobRun $jobRun,
         array $itemIds
@@ -112,7 +112,7 @@ final class RestoreItemsHandlerTest extends Unit
         $extractor->method('getJobStep')->willReturn($jobStep);
 
         $handler = new RestoreItemsHandler(
-            $recycleBinService,
+            $restoreItemService,
             $this->createMock(PublishServiceInterface::class),
             $this->createMock(UserTopicServiceInterface::class),
             $userResolver,

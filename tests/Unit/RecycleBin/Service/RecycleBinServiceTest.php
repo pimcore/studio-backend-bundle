@@ -16,26 +16,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\RecycleBin\Service;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Exception;
-use PHPUnit\Framework\Attributes\DataProvider;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RelocatedItemEvent;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RelocatedItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\JobServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinService;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreContextInterface;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\Recyclebin\Item;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -48,10 +39,8 @@ final class RecycleBinServiceTest extends Unit
      */
     public function testRestoreSingleItemDoesNotCreateJob(): void
     {
-        $itemResolver = $this->makeEmpty(ItemResolverInterface::class, [
-            'getById' => $this->make(Item::class, [
-                'restore' => null,
-            ]),
+        $restoreItemService = $this->makeEmpty(RestoreItemServiceInterface::class, [
+            'restoreItem' => Expected::once([]),
         ]);
 
         $jobService = $this->makeEmpty(JobServiceInterface::class, [
@@ -60,7 +49,7 @@ final class RecycleBinServiceTest extends Unit
 
         $service = $this->createService(
             jobService: $jobService,
-            itemResolver: $itemResolver,
+            restoreItemService: $restoreItemService,
         );
 
         $result = $service->restore(new ItemsParameter([42]));
@@ -97,11 +86,13 @@ final class RecycleBinServiceTest extends Unit
      */
     public function testRestoreItemException(): void
     {
-        $itemResolver = $this->makeEmpty(ItemResolverInterface::class, [
-            'getById' => null,
+        $restoreItemService = $this->makeEmpty(RestoreItemServiceInterface::class, [
+            'restoreItem' => static function (int $id): array {
+                throw new NotFoundException('recycle bin item', $id);
+            },
         ]);
 
-        $service = $this->createService(itemResolver: $itemResolver);
+        $service = $this->createService(restoreItemService: $restoreItemService);
 
         $this->expectException(NotFoundException::class);
         $service->restore(new ItemsParameter([999]));
@@ -180,14 +171,13 @@ final class RecycleBinServiceTest extends Unit
      */
     public function testRestoreSingleItemReturnsTheRelocatedItemsAndDispatchesTheirEvents(): void
     {
-        $element = $this->makeEmpty(Asset::class);
         $relocatedItem = new RelocatedItem(83, 'asset', '/__restored/image.jpg');
 
-        $restoreContext = $this->createMock(RestoreContextInterface::class);
-        $restoreContext->method('getRelocatedElements')->willReturn([$element]);
-
-        $hydrator = $this->createMock(RelocatedItemHydratorInterface::class);
-        $hydrator->expects($this->once())->method('hydrate')->with($element)->willReturn($relocatedItem);
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->expects($this->once())
+            ->method('restoreItem')
+            ->with(42, null)
+            ->willReturn([$relocatedItem]);
 
         $dispatchedEvents = [];
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class, [
@@ -199,10 +189,8 @@ final class RecycleBinServiceTest extends Unit
         ]);
 
         $service = $this->createService(
-            itemResolver: $this->createItemResolver(),
             eventDispatcher: $eventDispatcher,
-            relocatedItemHydrator: $hydrator,
-            restoreContext: $restoreContext,
+            restoreItemService: $restoreItemService,
         );
 
         $result = $service->restore(new ItemsParameter([42]));
@@ -215,124 +203,12 @@ final class RecycleBinServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testRestoreItemRunsTheRestoreInTheContextOfTheGivenUser(): void
+    public function testRestoreItemDelegatesForTheCurrentUser(): void
     {
-        $user = $this->makeEmpty(UserInterface::class);
-        $calls = [];
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->expects($this->once())->method('restoreItem')->with(42, null)->willReturn([]);
 
-        $restoreContext = $this->createMock(RestoreContextInterface::class);
-        $restoreContext->method('start')->willReturnCallback(
-            function (UserInterface $contextUser) use (&$calls, $user): void {
-                $this->assertSame($user, $contextUser);
-                $calls[] = 'start';
-            }
-        );
-        $restoreContext->method('getRelocatedElements')->willReturn([]);
-        $restoreContext->method('clear')->willReturnCallback(static function () use (&$calls): void {
-            $calls[] = 'clear';
-        });
-
-        $securityService = $this->createMock(SecurityServiceInterface::class);
-        $securityService->expects($this->never())->method('getCurrentUser');
-
-        $service = $this->createService(
-            itemResolver: $this->createItemResolver(static function () use (&$calls): void {
-                $calls[] = 'restore';
-            }),
-            restoreContext: $restoreContext,
-            securityService: $securityService,
-        );
-
-        $this->assertSame([], $service->restoreItem(42, $user));
-        $this->assertSame(['start', 'restore', 'clear'], $calls);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testRestoreItemUsesTheCurrentUserByDefault(): void
-    {
-        $user = $this->makeEmpty(UserInterface::class);
-
-        $securityService = $this->createMock(SecurityServiceInterface::class);
-        $securityService->expects($this->once())->method('getCurrentUser')->willReturn($user);
-
-        $restoreContext = $this->createMock(RestoreContextInterface::class);
-        $restoreContext->expects($this->once())->method('start')->with($user);
-        $restoreContext->method('getRelocatedElements')->willReturn([]);
-
-        $service = $this->createService(
-            itemResolver: $this->createItemResolver(),
-            restoreContext: $restoreContext,
-            securityService: $securityService,
-        );
-
-        $service->restoreItem(42);
-    }
-
-    /**
-     * @throws Exception
-     */
-    #[DataProvider('restoreFailureProvider')]
-    public function testRestoreItemMapsTheFailureToAnErrorKeyAndClearsTheContext(
-        Exception $failure,
-        HttpResponseErrorKeys $expectedKey
-    ): void {
-        $restoreContext = $this->createMock(RestoreContextInterface::class);
-        $restoreContext->expects($this->once())->method('clear');
-
-        $service = $this->createService(
-            itemResolver: $this->createItemResolver(static function () use ($failure): void {
-                throw $failure;
-            }),
-            restoreContext: $restoreContext,
-        );
-
-        try {
-            $service->restoreItem(42, $this->makeEmpty(UserInterface::class));
-            $this->fail('EnvironmentException expected');
-        } catch (EnvironmentException $exception) {
-            $this->assertSame($expectedKey->value, $exception->getErrorKey());
-            $this->assertSame($failure, $exception->getPrevious());
-        }
-    }
-
-    public static function restoreFailureProvider(): array
-    {
-        $missingParent = HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT;
-
-        return [
-            'data object without parent id' => [
-                new Exception('ParentID is mandatory and can´t be null. If you want to add the element ...'),
-                $missingParent,
-            ],
-            'asset or document with a deleted parent' => [new Exception('ParentID not found.'), $missingParent],
-            'fallback folder not allowed' => [
-                new EnvironmentException('Missing publish permission', $missingParent->value),
-                $missingParent,
-            ],
-            'other api failure' => [
-                new EnvironmentException('Something else'),
-                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE,
-            ],
-            'other failure' => [
-                new Exception('Not sufficient permissions'),
-                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE,
-            ],
-        ];
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function createItemResolver(?callable $restore = null): ItemResolverInterface
-    {
-        return $this->makeEmpty(ItemResolverInterface::class, [
-            'getById' => $this->make(Item::class, [
-                'restore' => $restore ?? static function (): void {
-                },
-            ]),
-        ]);
+        $this->createService(restoreItemService: $restoreItemService)->restoreItem(42);
     }
 
     /**
@@ -341,25 +217,17 @@ final class RecycleBinServiceTest extends Unit
     private function createService(
         ?RecycleBinRepositoryInterface $repository = null,
         ?JobServiceInterface $jobService = null,
-        ?ItemResolverInterface $itemResolver = null,
         ?EventDispatcherInterface $eventDispatcher = null,
-        ?RelocatedItemHydratorInterface $relocatedItemHydrator = null,
-        ?RestoreContextInterface $restoreContext = null,
-        ?SecurityServiceInterface $securityService = null,
+        ?RestoreItemServiceInterface $restoreItemService = null,
     ): RecycleBinService {
         return new RecycleBinService(
             $eventDispatcher ?? $this->makeEmpty(EventDispatcherInterface::class),
             $this->makeEmpty(FilterMapperServiceInterface::class),
-            $itemResolver ?? $this->makeEmpty(ItemResolverInterface::class),
+            $this->makeEmpty(ItemResolverInterface::class),
             $jobService ?? $this->makeEmpty(JobServiceInterface::class),
             $this->makeEmpty(RecycleBinHydratorInterface::class),
             $repository ?? $this->makeEmpty(RecycleBinRepositoryInterface::class),
-            $this->makeEmpty(SynchronousProcessingServiceInterface::class),
-            $relocatedItemHydrator ?? $this->makeEmpty(RelocatedItemHydratorInterface::class),
-            $restoreContext ?? $this->makeEmpty(RestoreContextInterface::class, ['getRelocatedElements' => []]),
-            $securityService ?? $this->makeEmpty(SecurityServiceInterface::class, [
-                'getCurrentUser' => $this->makeEmpty(UserInterface::class),
-            ]),
+            $restoreItemService ?? $this->makeEmpty(RestoreItemServiceInterface::class, ['restoreItem' => []]),
         );
     }
 }
