@@ -17,7 +17,9 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
@@ -100,6 +102,43 @@ final class UserUpdateServiceTest extends Unit
         $service->updateUserById($this->createUpdateParams(), 42);
     }
 
+    public function testPasswordResetWithoutOldPasswordRejectsUnchangedPassword(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $authenticationResolver = $this->createAuthenticationResolver(isSamePassword: true);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $authenticationResolver
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('New password cannot be the same as the old password');
+        $service->updatePasswordById(new UpdatePasswordParameter('new-password-1', 'new-password-1'), 42);
+    }
+
+    public function testPasswordResetWithoutOldPasswordAcceptsDifferentPassword(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createAuthenticationResolver(isSamePassword: false)
+        );
+
+        $service->updatePasswordById(new UpdatePasswordParameter('new-password-1', 'new-password-1'), 42);
+
+        $this->assertSame('hash-of-new-password', $targetUser->getPassword());
+    }
+
+    private function createAuthenticationResolver(bool $isSamePassword): AuthenticationResolverInterface
+    {
+        return $this->makeEmpty(AuthenticationResolverInterface::class, [
+            'verifyPassword' => $isSamePassword,
+            'getPasswordHash' => 'hash-of-new-password',
+        ]);
+    }
+
     private function createTargetUser(bool $isAdmin): User
     {
         $user = new User();
@@ -140,8 +179,11 @@ final class UserUpdateServiceTest extends Unit
         );
     }
 
-    private function createService(User $targetUser, UserInterface $currentUser): UserUpdateService
-    {
+    private function createService(
+        User $targetUser,
+        UserInterface $currentUser,
+        ?AuthenticationResolverInterface $authenticationResolver = null
+    ): UserUpdateService {
         $updateService = $this->makeEmpty(UpdateServiceInterface::class, [
             'updatePermissions' => $targetUser,
             'updateRoles' => $targetUser,
@@ -153,7 +195,7 @@ final class UserUpdateServiceTest extends Unit
         ]);
 
         return new UserUpdateService(
-            $this->makeEmpty(AuthenticationResolverInterface::class),
+            $authenticationResolver ?? $this->makeEmpty(AuthenticationResolverInterface::class),
             $this->makeEmpty(CacheResolverInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $currentUser,
