@@ -27,12 +27,14 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedExcept
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
@@ -40,6 +42,8 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
+use Pimcore\Model\UserInterface;
+use function array_values;
 use function in_array;
 use function sprintf;
 
@@ -60,6 +64,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ElementIndexServiceInterface $indexService,
         private ElementSaveServiceInterface $elementSaveService,
         private CoauthorServiceInterface $coauthorService,
+        private LanguageServiceInterface $languageService,
     ) {
     }
 
@@ -112,7 +117,11 @@ final readonly class UpdateService implements UpdateServiceInterface
                 message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
         } catch (ValidationException $e) {
-            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
+            throw new FieldValidationFailedException(
+                $e->getMessage(),
+                previous: $e,
+                viewableLanguages: $this->getViewableLanguages($element, $user)
+            );
         } catch (ForbiddenException $e) {
             // Publish/unpublish permission is checked inside elementSaveService->save();
             // re-throw so it stays a 403 instead of being masked as a 500 below.
@@ -165,5 +174,41 @@ final readonly class UpdateService implements UpdateServiceInterface
         $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
 
         return $this->getVersionData($element, $version);
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    private function getViewableLanguages(ElementInterface $element, UserInterface $user): ?array
+    {
+        if (!$element instanceof Concrete) {
+            return null;
+        }
+
+        // a classification store follows its own language rule (the language independent value counts as a language)
+        $languages = $this->hasClassificationStore($element)
+            ? $this->languageService->getUserAllowedLanguagesWithLanguageIndependentValue(
+                $element,
+                $user,
+                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+            )
+            : $this->languageService->getUserAllowedLanguages(
+                $element,
+                $user,
+                ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+            );
+
+        return array_values($languages);
+    }
+
+    private function hasClassificationStore(Concrete $element): bool
+    {
+        foreach ($element->getClass()->getFieldDefinitions() as $definition) {
+            if ($definition instanceof Classificationstore) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
