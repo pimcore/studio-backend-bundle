@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: "L'export CSV a échoué : %message%"
 studio_ee_xlsx_creation_failed: "L'export XLSX a échoué : %message%"
 studio_ee_recycle_bin_delete_failed: "L'élément avec l'ID %id% n'a pas pu être supprimé de la corbeille : %message%"
 studio_ee_recycle_bin_restore_failed: "L'élément de la corbeille avec l'ID %id% n'a pas pu être restauré : %message%"
+studio_ee_recycle_bin_restore_relocated: L'élément de type %type% avec l'ID %id% a été restauré dans %path%, car son élément parent n'existe plus
 studio_ee_csv_data_collection_failed: "Les données pour l'export CSV n'ont pas pu être extraites pour %id% : %message%"
 studio_ee_element_patch_failed: "L'élément de type %type% avec l'ID %id% n'a pas pu être mis à jour : %message%"
 studio_ee_element_rewrite_references_failed: "Les références de l'élément de type %type% avec l'ID %id% n'ont pas pu être réécrites : %message%"

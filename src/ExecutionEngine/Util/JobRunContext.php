@@ -15,4 +15,5 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 enum JobRunContext: string
 {
     case CHILD_JOB_RUN = 'jobRunChildId';
+    case RELOCATED_ITEMS = 'relocatedItems';
 }

@@ -14,14 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Handler;
 
 use Exception;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
-use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RelocatedItem;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use function count;
 
@@ -34,9 +39,10 @@ final class RestoreItemsHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
-        private readonly RecycleBinServiceInterface $recycleBinService,
+        private readonly RestoreItemServiceInterface $restoreItemService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
+        private readonly UserResolverInterface $userResolver,
     ) {
         parent::__construct();
     }
@@ -51,6 +57,12 @@ final class RestoreItemsHandler extends AbstractHandler
             return;
         }
 
+        $validatedParameters = $this->validateJobParameters($message, $jobRun, $this->userResolver);
+        if ($validatedParameters instanceof AbortActionData) {
+            $this->abort($validatedParameters);
+        }
+
+        $user = $validatedParameters->getUser();
         $items = $this->extractConfigFieldFromJobStepConfig(
             $message,
             StepConfig::ITEMS_TO_RESTORE->value
@@ -59,8 +71,10 @@ final class RestoreItemsHandler extends AbstractHandler
         $stepName = $this->getJobStep($message)->getName();
 
         foreach ($items as $id) {
+            $relocatedItems = [];
+
             try {
-                $this->recycleBinService->restoreItem($id);
+                $relocatedItems = $this->restoreItemService->restoreItem($id, $user);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::RECYCLE_BIN_RESTORE_FAILED->value,
@@ -68,6 +82,7 @@ final class RestoreItemsHandler extends AbstractHandler
                 ));
             }
 
+            $this->addRelocatedItems($jobRun, $relocatedItems);
             $this->updateProgress(
                 $this->publishService,
                 $this->userTopicService,
@@ -86,5 +101,27 @@ final class RestoreItemsHandler extends AbstractHandler
             StepConfig::ITEMS_TO_RESTORE->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
+    }
+
+    /**
+     * @param RelocatedItem[] $relocatedItems
+     */
+    private function addRelocatedItems(JobRun $jobRun, array $relocatedItems): void
+    {
+        if ($relocatedItems === []) {
+            return;
+        }
+
+        $contextKey = JobRunContext::RELOCATED_ITEMS->value;
+        $storedItems = $jobRun->getContext()[$contextKey] ?? [];
+        foreach ($relocatedItems as $relocatedItem) {
+            $storedItems[] = [
+                'id' => $relocatedItem->getId(),
+                'elementType' => $relocatedItem->getElementType(),
+                'path' => $relocatedItem->getPath(),
+            ];
+        }
+
+        $this->updateJobRunContextValues($jobRun, [$contextKey => $storedItems]);
     }
 }

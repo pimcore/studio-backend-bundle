@@ -19,12 +19,24 @@ services:
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinService
 
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\FallbackFolderServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\FallbackFolderService
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreContextInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreContext
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemService
+
   #
   # Hydrators
   #
 
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RelocatedItemHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RelocatedItemHydrator
 
   #
   # Repository
@@ -46,3 +58,4 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\DeleteItemsSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\RestoreItemsSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\RestoreFallbackFolderSubscriber: ~
