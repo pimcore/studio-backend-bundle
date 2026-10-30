@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
@@ -32,6 +34,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
+use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use function array_key_exists;
 
@@ -57,6 +60,8 @@ final class ObjectBrickCollector implements
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly ObjectBrickServiceInterface $objectBrickService,
+        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly DataObjectResolverInterface $dataObjectResolver,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -118,7 +123,28 @@ final class ObjectBrickCollector implements
         string $fieldname,
         string $baseLayoutName
     ): void {
-        $dataFields = $this->objectBrickService->getDataFields($objectBrick->getLayoutDefinitions());
+        // Like the object editor, enrich the brick layout so options-provider based fields
+        // (e.g. Select Options) carry their options into the column configuration.
+        $layoutDefinitions = $objectBrick->getLayoutDefinitions();
+
+        /**
+         *  @var User $user
+         *  Because Core needs a User
+         * */
+        $user = $this->getUser();
+        $this->dataObjectServiceResolver->enrichLayoutDefinition(
+            $layoutDefinitions,
+            context: [
+                'object' => $this->getFolderId() ? $this->dataObjectResolver->getById($this->getFolderId()) : null,
+                'purpose' => 'gridconfig',
+                'containerType' => 'objectbrick',
+                'containerKey' => $objectBrick->getKey(),
+                'outerFieldname' => $fieldname,
+            ],
+            user: $user
+        );
+
+        $dataFields = $this->objectBrickService->getDataFields($layoutDefinitions);
 
         foreach ($dataFields as $dataField) {
             $grouping = [
