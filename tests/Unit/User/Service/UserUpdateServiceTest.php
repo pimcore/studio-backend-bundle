@@ -28,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -132,6 +134,54 @@ final class UserUpdateServiceTest extends Unit
         $this->assertSame('hash-of-new-password', $targetUser->getPassword());
     }
 
+    public function testPasswordChangeWithCorrectOldPasswordAcceptsDifferentPassword(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createAuthenticationResolver(isSamePassword: false),
+            $this->createValidator(violations: 0)
+        );
+
+        $service->updatePasswordById(
+            new UpdatePasswordParameter('new-password-1', 'new-password-1', 'old-password-1'),
+            42
+        );
+
+        $this->assertSame('hash-of-new-password', $targetUser->getPassword());
+    }
+
+    public function testPasswordChangeWithWrongOldPasswordIsRejected(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createAuthenticationResolver(isSamePassword: false),
+            $this->createValidator(violations: 1)
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Old password is incorrect');
+        $service->updatePasswordById(
+            new UpdatePasswordParameter('new-password-1', 'new-password-1', 'wrong-password'),
+            42
+        );
+    }
+
+    private function createValidator(int $violations): ValidatorInterface
+    {
+        $list = new ConstraintViolationList();
+        for ($i = 0; $i < $violations; $i++) {
+            $list->add(new ConstraintViolation('invalid', null, [], null, '', null));
+        }
+
+        return $this->makeEmpty(ValidatorInterface::class, [
+            'validate' => Expected::once($list),
+        ]);
+    }
+
     private function createAuthenticationResolver(
         bool $isSamePassword,
         ?User $expectedUser = null
@@ -194,7 +244,8 @@ final class UserUpdateServiceTest extends Unit
     private function createService(
         User $targetUser,
         UserInterface $currentUser,
-        ?AuthenticationResolverInterface $authenticationResolver = null
+        ?AuthenticationResolverInterface $authenticationResolver = null,
+        ?ValidatorInterface $validator = null
     ): UserUpdateService {
         $updateService = $this->makeEmpty(UpdateServiceInterface::class, [
             'updatePermissions' => $targetUser,
@@ -217,7 +268,7 @@ final class UserUpdateServiceTest extends Unit
             ]),
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
-            $this->makeEmpty(ValidatorInterface::class),
+            $validator ?? $this->makeEmpty(ValidatorInterface::class),
         );
     }
 }
