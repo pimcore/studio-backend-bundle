@@ -150,7 +150,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         }
 
         if ($updateParameter->getOldPassword() !== null) {
-            $this->validateOldPassword($updateParameter, $user);
+            $this->validateOldPassword($updateParameter);
         }
 
         $this->validatePasswordDiffers($updateParameter, $user);
@@ -176,7 +176,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    private function validateOldPassword(UpdatePasswordParameter $parameter, UserInterface $user): void
+    private function validateOldPassword(UpdatePasswordParameter $parameter): void
     {
         $errors = $this->validator->validate($parameter->getOldPassword(), [new UserPassword()]);
         if (count($errors) > 0) {

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
@@ -105,7 +106,7 @@ final class UserUpdateServiceTest extends Unit
     public function testPasswordResetWithoutOldPasswordRejectsUnchangedPassword(): void
     {
         $targetUser = $this->createTargetUser(isAdmin: false);
-        $authenticationResolver = $this->createAuthenticationResolver(isSamePassword: true);
+        $authenticationResolver = $this->createAuthenticationResolver(isSamePassword: true, expectedUser: $targetUser);
         $service = $this->createService(
             $targetUser,
             $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
@@ -131,10 +132,21 @@ final class UserUpdateServiceTest extends Unit
         $this->assertSame('hash-of-new-password', $targetUser->getPassword());
     }
 
-    private function createAuthenticationResolver(bool $isSamePassword): AuthenticationResolverInterface
-    {
+    private function createAuthenticationResolver(
+        bool $isSamePassword,
+        ?User $expectedUser = null
+    ): AuthenticationResolverInterface {
+        $verifyPassword = $expectedUser === null
+            ? $isSamePassword
+            : Expected::once(function (User $user, string $password) use ($expectedUser, $isSamePassword): bool {
+                $this->assertSame($expectedUser, $user);
+                $this->assertSame('new-password-1', $password);
+
+                return $isSamePassword;
+            });
+
         return $this->makeEmpty(AuthenticationResolverInterface::class, [
-            'verifyPassword' => $isSamePassword,
+            'verifyPassword' => $verifyPassword,
             'getPasswordHash' => 'hash-of-new-password',
         ]);
     }
