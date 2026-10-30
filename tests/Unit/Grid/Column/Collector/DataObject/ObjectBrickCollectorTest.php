@@ -123,4 +123,85 @@ final class ObjectBrickCollectorTest extends Unit
             'outerFieldname' => 'attributes',
         ], $capturedContext);
     }
+
+    /**
+     * The same brick can be assigned to several outer fields. Its layout is enriched once per outer
+     * field, so each column must keep the options of its own outer field instead of sharing the
+     * field definition that the next enrichment overwrites.
+     */
+    public function testBuildColumnConfigurationsKeepsOptionsPerOuterField(): void
+    {
+        $select = new Select();
+        $select->setName('engineType');
+        $select->setOptionsProviderType('class');
+
+        $layout = new Panel();
+        $layout->addChild($select);
+
+        $objectBrick = new ObjectBrickDefinition();
+        $objectBrick->setKey('Engine');
+        $objectBrick->setLayoutDefinitions($layout);
+
+        $capturedDefinitions = [];
+
+        $collector = new ObjectBrickCollector(
+            $this->makeEmpty(ClassDefinitionServiceInterface::class),
+            $this->makeEmpty(ColumnConfigurationServiceInterface::class, [
+                'buildDataObjectAdapterColumnConfiguration' => static function (
+                    ColumnFieldDefinition $definition,
+                    ?string $type = null,
+                    ?string $key = null
+                ) use (&$capturedDefinitions): ColumnConfiguration {
+                    $capturedDefinitions[$key] = $definition;
+
+                    return new ColumnConfiguration(
+                        (string) $key,
+                        [],
+                        true,
+                        true,
+                        true,
+                        true,
+                        false,
+                        null,
+                        'dataobject.objectbrick',
+                        'select',
+                        [],
+                    );
+                },
+            ]),
+            $this->makeEmpty(ObjectBrickServiceInterface::class, [
+                'getDataFields' => static fn (Panel $layout) => [
+                    new ColumnFieldDefinition($layout->getChildren()[0], [], false),
+                ],
+            ]),
+            $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'enrichLayoutDefinition' => static function (
+                    mixed &$layout,
+                    mixed $object = null,
+                    array $context = []
+                ): void {
+                    $layout->getChildren()[0]->setOptions([
+                        ['key' => $context['outerFieldname'], 'value' => $context['outerFieldname']],
+                    ]);
+                },
+            ]),
+            $this->makeEmpty(DataObjectResolverInterface::class),
+            new NullLogger()
+        );
+        $collector->setFolderId(0);
+        $collector->setUser(new User());
+
+        $buildColumnConfigurations = new ReflectionMethod($collector, 'buildColumnConfigurations');
+        $buildColumnConfigurations->invoke($collector, $objectBrick, 'attributes', 'Attributes');
+        $buildColumnConfigurations->invoke($collector, $objectBrick, 'saleAttributes', 'Attributes');
+
+        self::assertSame(
+            [['key' => 'attributes', 'value' => 'attributes']],
+            $capturedDefinitions['attributes.Engine.engineType']->getFieldDefinition()->getOptions()
+        );
+        self::assertSame(
+            [['key' => 'saleAttributes', 'value' => 'saleAttributes']],
+            $capturedDefinitions['saleAttributes.Engine.engineType']->getFieldDefinition()->getOptions()
+        );
+    }
 }

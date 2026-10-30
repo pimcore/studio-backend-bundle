@@ -153,15 +153,19 @@ final class ObjectBrickCollector implements
                 $objectBrick->getKey(),
             ];
 
+            // The brick layout is shared by all outer fields using this brick and is enriched again
+            // for each of them, so keep a copy with the options enriched for this outer field.
+            $fieldDefinition = clone $dataField->getFieldDefinition();
+
             try {
                 $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                    new ColumnFieldDefinition($dataField->getFieldDefinition(), $grouping, $dataField->isLocalized()),
+                    new ColumnFieldDefinition($fieldDefinition, $grouping, $dataField->isLocalized()),
                     'dataobject.objectbrick',
-                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getFieldDefinition()->getName(),
+                    $fieldname . '.'. $objectBrick->getKey() . '.'. $fieldDefinition->getName(),
                     [
                         'field' => $fieldname,
                         'objectBrick' => $objectBrick->getKey(),
-                        'attribute' => $dataField->getFieldDefinition()->getName(),
+                        'attribute' => $fieldDefinition->getName(),
                     ]
                 );
             } catch (InvalidArgumentException $exception) {
