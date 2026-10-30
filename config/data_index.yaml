@@ -4,6 +4,8 @@ services:
     autoconfigure: true
     public: false
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Modifier\SystemFieldsSourceHandler: ~
+
   # Hydrators
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ArchiveHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ArchiveHydrator

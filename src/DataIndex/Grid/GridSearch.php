@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Modifier\SystemFieldsSource;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
@@ -122,6 +123,12 @@ final readonly class GridSearch implements GridSearchInterface
         $type = $this->getStudioElementType($type);
         /** @var AssetQueryInterface|DataObjectQueryInterface|DocumentQueryInterface $query */
         $query = $this->getSearchQuery($type, $gridParameter, $user);
+
+        if ($type === ElementTypes::TYPE_DATA_OBJECT) {
+            // The grid reads every column value from the database. The search result items only need the
+            // system fields, and the full documents of a large page are tens of megabytes.
+            $query->getSearch()->addModifier(new SystemFieldsSource());
+        }
 
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query, PermissionTypes::VIEW),
