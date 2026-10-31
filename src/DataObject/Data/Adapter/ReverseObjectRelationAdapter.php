@@ -27,6 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
@@ -314,14 +316,41 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         string $ownerFieldName
     ): void {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
+        $newEntry = $this->createOwnerEntry($remoteObject, $element, $ownerFieldName);
         if (is_array($currentData)) {
-            $currentData[] = $element;
+            $currentData[] = $newEntry;
         } else {
-            $currentData = $element;
+            $currentData = $newEntry;
         }
         $remoteObject->$setter($currentData);
 
         $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName);
+    }
+
+    /**
+     * Advanced many-to-many owner fields only accept metadata wrappers around their targets, any other
+     * owner field stores the object itself.
+     */
+    private function createOwnerEntry(
+        Concrete $remoteObject,
+        Concrete $element,
+        string $ownerFieldName
+    ): Concrete|ObjectMetadata|ElementMetadata {
+        $ownerFieldDefinition = $remoteObject->getClass()->getFieldDefinition($ownerFieldName);
+
+        return match (true) {
+            $ownerFieldDefinition instanceof AdvancedManyToManyObjectRelation => new ObjectMetadata(
+                $ownerFieldName,
+                $ownerFieldDefinition->getColumnKeys(),
+                $element
+            ),
+            $ownerFieldDefinition instanceof AdvancedManyToManyRelation => new ElementMetadata(
+                $ownerFieldName,
+                $ownerFieldDefinition->getColumnKeys(),
+                $element
+            ),
+            default => $element,
+        };
     }
 
     /**
