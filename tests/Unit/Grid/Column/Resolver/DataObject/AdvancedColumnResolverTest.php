@@ -220,7 +220,7 @@ final class AdvancedColumnResolverTest extends Unit
 
     /**
      * A localizable sub-field that inherits a null locale from its parent column is implicitly
-     * read by core in a locale the grid does not control (the request locale). The resolver must tell the grid service that
+     * read by core in a locale the grid does not control. The resolver must tell the grid service that
      * the field is localized so the implicit locale gets authorized - passing a null locale
      * without that flag would silently skip the language permission check.
      *

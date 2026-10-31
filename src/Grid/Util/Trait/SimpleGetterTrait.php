@@ -20,8 +20,16 @@ use Pimcore\Model\Element\ElementInterface;
 
 trait SimpleGetterTrait
 {
+    use LocalizedFieldTrait;
+
     private function getValue(Column $column, StudioElementInterface|ElementInterface $element): mixed
     {
+        // System columns read system properties. A bare getter on a localized field would resolve to the request
+        // locale, while the grid authorizes the system default language for it - so such a key yields no value.
+        if ($element instanceof ElementInterface && $this->isLocalizedClassField($element, $column->getKey())) {
+            return null;
+        }
+
         $getter = $this->getGetter($column, $element);
         if (method_exists($element, $getter) === false) {
             return null;
