@@ -20,8 +20,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolver
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\AdapterResolver;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContext;
+use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\Concrete;
 use ReflectionMethod;
+use function in_array;
 
 /**
  * @internal
@@ -59,5 +65,100 @@ final class AdapterResolverTest extends Unit
 
         $sourceFieldContext->setResolvingSourceField(false);
         self::assertTrue($method->invoke($resolver), 'the jump must be allowed again once resolution finishes');
+    }
+
+    /**
+     * A localized column without locale ("Default") must read the system default language. Without an
+     * explicit locale core would use the request locale, which in Studio's API is the framework locale.
+     */
+    public function testLocalizedColumnWithoutLocaleReadsTheSystemDefaultLanguage(): void
+    {
+        $element = $this->createElement(localizedKeys: ['name']);
+
+        $this->createResolver('de')->resolveForCoreElement($this->createColumn(null), $element);
+
+        self::assertSame([['de']], $element->calls);
+    }
+
+    public function testExplicitColumnLocaleIsNotReplacedByTheDefaultLanguage(): void
+    {
+        $element = $this->createElement(localizedKeys: ['name']);
+
+        $this->createResolver('de')->resolveForCoreElement($this->createColumn('fr'), $element);
+
+        self::assertSame([['fr']], $element->calls);
+    }
+
+    public function testNonLocalizedColumnWithoutLocaleIsReadWithoutLanguage(): void
+    {
+        $element = $this->createElement(localizedKeys: []);
+
+        $this->createResolver('de')->resolveForCoreElement($this->createColumn(null), $element);
+
+        self::assertSame([[]], $element->calls);
+    }
+
+    private function createColumn(?string $locale): Column
+    {
+        return new Column(key: 'name', locale: $locale, type: 'dataobject.adapter', group: null, config: []);
+    }
+
+    private function createResolver(?string $defaultLanguage): AdapterResolver
+    {
+        return new AdapterResolver(
+            $this->makeEmpty(DataServiceInterface::class, [
+                'getNormalizedValue' => static fn (mixed $value): mixed => $value,
+            ]),
+            $this->makeEmpty(InheritanceServiceInterface::class),
+            $this->makeEmpty(DataObjectServiceResolverInterface::class),
+            $this->makeEmpty(ToolResolverInterface::class, ['getDefaultLanguage' => $defaultLanguage]),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            new AdvancedColumnSourceFieldContext(),
+        );
+    }
+
+    /**
+     * @param list<string> $localizedKeys
+     */
+    private function createElement(array $localizedKeys): Concrete
+    {
+        $fieldDefinition = new Input();
+        $fieldDefinition->setName('name');
+
+        // ClassDefinition is final and cannot be doubled - a real instance seeded through
+        // addFieldDefinition() behaves like a loaded definition for the field lookup.
+        $classDefinition = new ClassDefinition();
+        $classDefinition->setAllowInherit(false);
+
+        if ($localizedKeys === []) {
+            $classDefinition->addFieldDefinition('name', $fieldDefinition);
+        } else {
+            $classDefinition->addFieldDefinition('localizedfields', $this->makeEmpty(Localizedfields::class, [
+                'getFieldDefinition' => static fn (string $key) => in_array($key, $localizedKeys, true)
+                    ? $fieldDefinition
+                    : null,
+            ]));
+        }
+
+        return new class($classDefinition) extends Concrete {
+            /** @var list<list<string>> */
+            public array $calls = [];
+
+            public function __construct(private readonly ClassDefinition $classDefinition)
+            {
+            }
+
+            public function getClass(): ClassDefinition
+            {
+                return $this->classDefinition;
+            }
+
+            public function getName(?string $language = null): string
+            {
+                $this->calls[] = $language === null ? [] : [$language];
+
+                return 'value';
+            }
+        };
     }
 }

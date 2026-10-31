@@ -325,7 +325,8 @@ final class AdvancedColumnResolver implements
             $this->user
         );
 
-        $relationLocale = $isRelationLocalizable ? $column->getLocale() : null;
+        // A localized relation without column locale ("Default") is read in the system default language
+        $relationLocale = $isRelationLocalizable ? ($column->getLocale() ?? $this->getDefaultLanguage()) : null;
 
         if (!$this->gridService->isLocaleViewableForElement(
             $element,

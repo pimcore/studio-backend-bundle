@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -25,7 +27,7 @@ trait LocalizedValueTrait
     {
         $getter = $this->getGetter($column->getKey());
         if (!$column->getLocale()) {
-            return $element->$getter();
+            return $this->getValueInDefaultReadLocale($element, $getter, $column->getKey());
         }
 
         $value = $element->$getter($column->getLocale());
@@ -48,6 +50,29 @@ trait LocalizedValueTrait
         }
 
         return $element->$getter();
+    }
+
+    /**
+     * A column without locale means "Default": a localized field is then read in the system default language.
+     * A bare getter call would resolve to the request locale, which in the Studio API is the framework locale
+     * and never the configured default language.
+     */
+    private function getValueInDefaultReadLocale(ElementInterface $element, string $getter, string $key): mixed
+    {
+        $defaultLanguage = $this->isLocalizedField($element, $key) ? $this->getDefaultLanguage() : null;
+
+        return $defaultLanguage === null ? $element->$getter() : $element->$getter($defaultLanguage);
+    }
+
+    private function isLocalizedField(ElementInterface $element, string $key): bool
+    {
+        if (!$element instanceof Concrete) {
+            return false;
+        }
+
+        $localizedFields = $element->getClass()->getFieldDefinition('localizedfields');
+
+        return $localizedFields instanceof Localizedfields && $localizedFields->getFieldDefinition($key) !== null;
     }
 
     private function getGetter(string $key): string
