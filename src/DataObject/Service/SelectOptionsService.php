@@ -21,12 +21,15 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorI
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
+use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Helper\OptionsProviderResolver;
@@ -51,24 +54,24 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
     /**
      * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidArgumentException
      * @throws UserNotFoundException
      */
     public function getSelectOptions(SelectOptionsParameter $selectOptionsParameter): array
     {
+        $user = $this->securityService->getCurrentUser();
         $object = $this->getObject(
             $selectOptionsParameter->getObjectId()
         );
+        $this->securityService->hasElementPermission($object, $user, ElementPermissions::VIEW_PERMISSION);
 
-        if ($selectOptionsParameter->hasChangedData()) {
+        $changedData = $this->getApplicableChangedData($selectOptionsParameter, $object);
+        if ($changedData !== []) {
             // changedData arrives in the Studio data format (e.g. localizedfields as attribute -> language),
             // so it has to be applied through the same data adapters as a regular save.
-            $this->dataService->updateEditableData(
-                $object,
-                $selectOptionsParameter->getChangedData(),
-                $this->securityService->getCurrentUser()
-            );
+            $this->dataService->updateEditableData($object, $changedData, $user);
         }
 
         $fieldDefinition = $this->getFieldDefinition($selectOptionsParameter, $object);
@@ -100,6 +103,33 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
         return $selectOptions;
 
+    }
+
+    /**
+     * A lookup only reads the object's own values. Reverse relation fields store on other objects
+     * and are therefore never applied here.
+     *
+     * @throws NotFoundException
+     */
+    private function getApplicableChangedData(
+        SelectOptionsParameter $selectOptionsParameter,
+        Concrete $object
+    ): array {
+        if (!$selectOptionsParameter->hasChangedData()) {
+            return [];
+        }
+
+        try {
+            $class = $object->getClass();
+        } catch (Exception) {
+            throw new NotFoundException('class', $object->getClassId());
+        }
+
+        return array_filter(
+            $selectOptionsParameter->getChangedData(),
+            static fn (string|int $key): bool => !$class->getFieldDefinition((string)$key) instanceof ReverseObjectRelation,
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     private function getMode(Select|Multiselect $fieldDefinition): int
