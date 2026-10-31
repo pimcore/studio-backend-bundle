@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
-use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -23,11 +21,13 @@ use Pimcore\Model\Element\ElementInterface;
  */
 trait LocalizedValueTrait
 {
+    use LocalizedFieldTrait;
+
     private function getLocalizedValue(Column $column, ElementInterface $element): mixed
     {
         $getter = $this->getGetter($column->getKey());
         if (!$column->getLocale()) {
-            return $this->getValueInDefaultReadLocale($element, $getter, $column->getKey());
+            return $this->getValueInDefaultReadLocale($element, $getter, $column);
         }
 
         $value = $element->$getter($column->getLocale());
@@ -53,26 +53,24 @@ trait LocalizedValueTrait
     }
 
     /**
-     * A column without locale means "Default": a localized field is then read in the system default language.
-     * A bare getter call would resolve to the request locale, which in the Studio API is the framework locale
-     * and never the configured default language.
+     * The language every read of a column has to use: the column locale or, for a localized field of a column
+     * without locale ("Default"), the system default language. A bare getter call would resolve to the request
+     * locale instead, which in the Studio API is the framework locale. Null means "no language involved".
      */
-    private function getValueInDefaultReadLocale(ElementInterface $element, string $getter, string $key): mixed
+    private function getColumnReadLocale(Column $column, ElementInterface $element): ?string
     {
-        $defaultLanguage = $this->isLocalizedField($element, $key) ? $this->getDefaultLanguage() : null;
-
-        return $defaultLanguage === null ? $element->$getter() : $element->$getter($defaultLanguage);
-    }
-
-    private function isLocalizedField(ElementInterface $element, string $key): bool
-    {
-        if (!$element instanceof Concrete) {
-            return false;
+        if ($column->getLocale()) {
+            return $column->getLocale();
         }
 
-        $localizedFields = $element->getClass()->getFieldDefinition('localizedfields');
+        return $this->isLocalizedClassField($element, $column->getKey()) ? $this->getDefaultLanguage() : null;
+    }
 
-        return $localizedFields instanceof Localizedfields && $localizedFields->getFieldDefinition($key) !== null;
+    private function getValueInDefaultReadLocale(ElementInterface $element, string $getter, Column $column): mixed
+    {
+        $locale = $this->getColumnReadLocale($column, $element);
+
+        return $locale === null ? $element->$getter() : $element->$getter($locale);
     }
 
     private function getGetter(string $key): string

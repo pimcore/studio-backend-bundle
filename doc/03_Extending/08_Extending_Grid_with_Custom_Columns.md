@@ -129,6 +129,11 @@ takes precedence.
 
 Tag the service with `pimcore.studio_backend.grid_column_resolver`.
 
+A column without locale is the "Default" column. For a localized field the grid authorizes the
+system default language (`Tool::getDefaultLanguage()`) for such a column, so a resolver must read
+that language explicitly (`$element->getName($defaultLanguage)`) instead of calling a bare getter,
+which would return the value of the request locale.
+
 ### ColumnData Constructor
 
 The `ColumnData` value object requires four arguments (plus an

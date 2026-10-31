@@ -157,8 +157,70 @@ final class AdvancedColumnResolverTest extends Unit
     }
 
     /**
+     * A localized relation of a column without locale ("Default") is read and authorized in the system default
+     * language - not in the request locale a bare getter call would use.
+     */
+    public function testLocalizedRelationWithoutColumnLocaleUsesTheSystemDefaultLanguage(): void
+    {
+        $authorizedLocale = 'not called';
+
+        $resolver = new AdvancedColumnResolver(
+            $this->makeEmpty(TransformerLoaderInterface::class, ['loadTransformers' => []]),
+            $this->makeEmpty(GridServiceInterface::class, [
+                'isLocaleViewableForElement' => static function (
+                    $element,
+                    ?string $locale
+                ) use (&$authorizedLocale): bool {
+                    $authorizedLocale = $locale;
+
+                    return true;
+                },
+            ]),
+            $this->makeEmpty(ResolverTypeGuesserInterface::class, ['isLocalizable' => true]),
+            $this->makeEmpty(ToolResolverInterface::class, ['getDefaultLanguage' => 'de']),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            new AdvancedColumnSourceFieldContext(),
+        );
+
+        $element = new class extends Concrete {
+            /** @var list<list<string>> */
+            public array $calls = [];
+
+            public function getClassId(): string
+            {
+                return 'CAR';
+            }
+
+            public function getManufacturer(?string $language = null): ?Concrete
+            {
+                $this->calls[] = $language === null ? [] : [$language];
+
+                return null;
+            }
+        };
+
+        $column = new Column(
+            key: 'advanced',
+            locale: null,
+            type: 'dataobject.advanced',
+            group: ['advanced'],
+            config: [
+                'advancedColumns' => [
+                    ['key' => 'relationField', 'config' => ['relation' => 'manufacturer', 'field' => 'name']],
+                ],
+                'transformers' => [],
+            ],
+        );
+
+        $resolver->resolveForCoreElement($column, $element);
+
+        self::assertSame('de', $authorizedLocale);
+        self::assertSame([['de']], $element->calls);
+    }
+
+    /**
      * A localizable sub-field that inherits a null locale from its parent column is implicitly
-     * read in the request/default locale by core. The resolver must tell the grid service that
+     * read by core in a locale the grid does not control (the request locale). The resolver must tell the grid service that
      * the field is localized so the implicit locale gets authorized - passing a null locale
      * without that flag would silently skip the language permission check.
      *

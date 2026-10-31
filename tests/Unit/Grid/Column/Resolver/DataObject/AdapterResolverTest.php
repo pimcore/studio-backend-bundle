@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\LocalizedFieldResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\AdapterResolver;
@@ -26,6 +27,7 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 use ReflectionMethod;
 use function in_array;
 
@@ -98,17 +100,84 @@ final class AdapterResolverTest extends Unit
         self::assertSame([[]], $element->calls);
     }
 
+    /**
+     * The export read must use the same language the permission check authorized: the system default language,
+     * not the request locale a missing "language" parameter would fall back to.
+     */
+    public function testExportOfLocalizedColumnWithoutLocaleReadsTheSystemDefaultLanguage(): void
+    {
+        $exportParameters = null;
+        $resolver = $this->createResolver('de', [
+            'getExportFieldValue' => static function (
+                $element,
+                $fieldDefinition,
+                string $key,
+                FieldContextData $context
+            ) use (&$exportParameters): string {
+                $exportParameters = $context->getLegacyParameters();
+
+                return 'value';
+            },
+        ]);
+
+        $resolver->resolveForExport(
+            $this->createColumn(null),
+            $this->createElement(localizedKeys: ['name']),
+            $this->makeEmpty(UserInterface::class)
+        );
+
+        self::assertSame(['language' => 'de'], $exportParameters);
+    }
+
+    public function testInheritanceDataOfLocalizedColumnWithoutLocaleUsesTheSystemDefaultLanguage(): void
+    {
+        $inheritanceLanguage = 'not called';
+        $resolver = new AdapterResolver(
+            $this->makeEmpty(DataServiceInterface::class, [
+                'getNormalizedValue' => static fn (mixed $value): mixed => $value,
+            ]),
+            $this->makeEmpty(InheritanceServiceInterface::class, [
+                'processFieldDefinition' => static function (
+                    $element,
+                    $fieldDefinition,
+                    string $key,
+                    FieldContextData $context
+                ) use (&$inheritanceLanguage): array {
+                    $inheritanceLanguage = $context->getLanguage();
+
+                    return [];
+                },
+            ]),
+            $this->makeEmpty(DataObjectServiceResolverInterface::class, [
+                'useInheritedValues' => static fn (bool $inherit, callable $callback): mixed => $callback(),
+            ]),
+            $this->makeEmpty(ToolResolverInterface::class, ['getDefaultLanguage' => 'de']),
+            $this->makeEmpty(LocalizedFieldResolverInterface::class),
+            new AdvancedColumnSourceFieldContext(),
+        );
+
+        $resolver->resolveForCoreElement(
+            $this->createColumn(null),
+            $this->createElement(localizedKeys: ['name'], allowInherit: true)
+        );
+
+        self::assertSame('de', $inheritanceLanguage);
+    }
+
     private function createColumn(?string $locale): Column
     {
         return new Column(key: 'name', locale: $locale, type: 'dataobject.adapter', group: null, config: []);
     }
 
-    private function createResolver(?string $defaultLanguage): AdapterResolver
+    /**
+     * @param array<string, mixed> $dataServiceOverrides
+     */
+    private function createResolver(?string $defaultLanguage, array $dataServiceOverrides = []): AdapterResolver
     {
         return new AdapterResolver(
             $this->makeEmpty(DataServiceInterface::class, [
                 'getNormalizedValue' => static fn (mixed $value): mixed => $value,
-            ]),
+            ] + $dataServiceOverrides),
             $this->makeEmpty(InheritanceServiceInterface::class),
             $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $this->makeEmpty(ToolResolverInterface::class, ['getDefaultLanguage' => $defaultLanguage]),
@@ -120,7 +189,7 @@ final class AdapterResolverTest extends Unit
     /**
      * @param list<string> $localizedKeys
      */
-    private function createElement(array $localizedKeys): Concrete
+    private function createElement(array $localizedKeys, bool $allowInherit = false): Concrete
     {
         $fieldDefinition = new Input();
         $fieldDefinition->setName('name');
@@ -128,7 +197,7 @@ final class AdapterResolverTest extends Unit
         // ClassDefinition is final and cannot be doubled - a real instance seeded through
         // addFieldDefinition() behaves like a loaded definition for the field lookup.
         $classDefinition = new ClassDefinition();
-        $classDefinition->setAllowInherit(false);
+        $classDefinition->setAllowInherit($allowInherit);
 
         if ($localizedKeys === []) {
             $classDefinition->addFieldDefinition('name', $fieldDefinition);

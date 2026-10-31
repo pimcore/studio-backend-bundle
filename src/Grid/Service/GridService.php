@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedFieldTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterface;
@@ -47,7 +48,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
@@ -65,6 +65,7 @@ use function is_array;
 final class GridService implements GridServiceInterface
 {
     use ElementProviderTrait;
+    use LocalizedFieldTrait;
 
     /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
@@ -353,18 +354,6 @@ final class GridService implements GridServiceInterface
                     CoreElementColumnResolverInterface'
                 ),
         };
-    }
-
-    private function isLocalizedClassField(ElementInterface $element, string $key): bool
-    {
-        if (!$element instanceof Concrete) {
-            return false;
-        }
-
-        $localizedFields = $element->getClass()->getFieldDefinition('localizedfields');
-
-        return $localizedFields instanceof Localizedfields
-            && $localizedFields->getFieldDefinition($key) !== null;
     }
 
     /**

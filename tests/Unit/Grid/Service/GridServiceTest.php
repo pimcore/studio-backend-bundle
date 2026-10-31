@@ -465,8 +465,8 @@ final class GridServiceTest extends Unit
 
     /**
      * The client controls the column configuration, so it can simply omit the locale for a
-     * localized field: the resolver then calls the bare getter and core implicitly serves the
-     * request locale or the default language. The grid data path must detect that the column
+     * localized field: the resolver then reads the system default language. The grid data
+     * path must detect that the column
      * targets a localized field and authorize the implicit locale - otherwise the explicit-locale
      * guard above is trivially bypassed.
      *
