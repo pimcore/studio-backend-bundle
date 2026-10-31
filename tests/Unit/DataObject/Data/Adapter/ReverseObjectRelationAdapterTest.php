@@ -21,13 +21,17 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
+use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToOneRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\DataObject\ReverseRelationOwnerTestObject;
 use Pimcore\Model\Element\ValidationException;
@@ -39,14 +43,17 @@ use function is_array;
 require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObject.php';
 
 /**
- * Regression tests for pimcore/platform-version#376: removing an entry from a reverse relation
- * must not silently fail when the owner-side relation field is mandatory.
+ * Regression tests for the owner-side saves of a reverse relation: removing an entry must not silently fail when
+ * the owner field is mandatory (pimcore/platform-version#376), and adding an entry must store the wrapper
+ * (ObjectMetadata/ElementMetadata) an advanced many-to-many owner field requires.
  *
  * @internal
  */
 final class ReverseObjectRelationAdapterTest extends Unit
 {
     private const ELEMENT_ID = 10;
+
+    private const ELEMENT_CACHE_KEY = 'object_10';
 
     private const OWNER_ID = 20;
 
@@ -328,6 +335,133 @@ final class ReverseObjectRelationAdapterTest extends Unit
             $this->assertSame([$element], $child->getPublisher());
             $this->assertSame(0, $child->getSaveCount());
         }
+    }
+
+    /**
+     * An advanced many-to-many owner only accepts ObjectMetadata entries; a raw object is rejected by the
+     * owner field's own validation.
+     *
+     * @throws Exception
+     */
+    public function testAddingToAdvancedManyToManyOwnerWrapsTheObjectInMetadata(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $otherObject = $this->makeEmpty(Concrete::class, ['getId' => 99]);
+        $other = new ObjectMetadata(self::OWNER_FIELD, ['note'], $otherObject);
+        $owner = $this->makeOwner($this->makeAdvancedObjectRelation(), [$other]);
+
+        $this->callAdapter($element, $owner, remainingRelations: [['id' => self::OWNER_ID]]);
+
+        $value = $owner->getPublisher();
+        $this->assertCount(2, $value);
+        $this->assertSame($other, $value[0]);
+        $this->assertInstanceOf(ObjectMetadata::class, $value[1]);
+        $this->assertSame(self::ELEMENT_ID, $value[1]->getObjectId());
+        $this->assertSame(self::OWNER_FIELD, $value[1]->getFieldname());
+        $this->assertSame(['note'], $value[1]->getColumns());
+        $this->assertSame(1, $owner->getSaveCount());
+        $this->assertOwnerAcceptsValue($owner, $element, $otherObject);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAddingToEmptyAdvancedManyToManyOwnerAppendsToTheEmptyList(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $owner = $this->makeOwner($this->makeAdvancedObjectRelation(), []);
+
+        $this->callAdapter($element, $owner, remainingRelations: [['id' => self::OWNER_ID]]);
+
+        $value = $owner->getPublisher();
+        $this->assertCount(1, $value);
+        $this->assertInstanceOf(ObjectMetadata::class, $value[0]);
+        $this->assertSame(self::ELEMENT_ID, $value[0]->getObjectId());
+        $this->assertOwnerAcceptsValue($owner, $element);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAddingToAdvancedElementRelationOwnerWrapsTheObjectInElementMetadata(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $owner = $this->makeOwner(
+            (new AdvancedManyToManyRelation())
+                ->setName(self::OWNER_FIELD)
+                ->setObjectsAllowed(true)
+                ->setColumns([['key' => 'note']]),
+            []
+        );
+
+        $this->callAdapter($element, $owner, remainingRelations: [['id' => self::OWNER_ID]]);
+
+        $value = $owner->getPublisher();
+        $this->assertCount(1, $value);
+        $this->assertInstanceOf(ElementMetadata::class, $value[0]);
+        $this->assertSame(self::ELEMENT_ID, $value[0]->getElementId());
+        $this->assertSame('object', $value[0]->getElementType());
+        $this->assertSame(['note'], $value[0]->getColumns());
+        $this->assertOwnerAcceptsValue($owner, $element);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testAddingToPlainManyToManyOwnerKeepsStoringTheObject(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), []);
+
+        $this->callAdapter($element, $owner, remainingRelations: [['id' => self::OWNER_ID]]);
+
+        $this->assertSame([$element], $owner->getPublisher());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRemovingFromAdvancedManyToManyOwnerKeepsTheOtherEntries(): void
+    {
+        $element = $this->makeElement();
+        $removed = new ObjectMetadata(self::OWNER_FIELD, ['note'], $element);
+        $kept = new ObjectMetadata(self::OWNER_FIELD, ['note'], $this->makeEmpty(Concrete::class, ['getId' => 99]));
+        $owner = $this->makeOwner($this->makeAdvancedObjectRelation(), [$removed, $kept]);
+
+        $this->callAdapter($element, $owner, remainingRelations: []);
+
+        $this->assertSame([$kept], $owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * Runs the owner field's own validation on the stored value; the metadata entries resolve their target
+     * through the runtime cache, so the element is registered there instead of booting Pimcore.
+     */
+    private function assertOwnerAcceptsValue(
+        ReverseRelationOwnerTestObject $owner,
+        Concrete $element,
+        Concrete ...$others
+    ): void {
+        RuntimeCache::set(self::ELEMENT_CACHE_KEY, $element);
+        foreach ($others as $other) {
+            RuntimeCache::set('object_' . $other->getId(), $other);
+        }
+        $owner->getClass()->getFieldDefinition(self::OWNER_FIELD)->checkValidity($owner->getPublisher());
+        $this->addToAssertionCount(1);
+    }
+
+    protected function _after(): void
+    {
+        RuntimeCache::getInstance()->offsetUnset(self::ELEMENT_CACHE_KEY);
+        RuntimeCache::getInstance()->offsetUnset('object_99');
+    }
+
+    private function makeAdvancedObjectRelation(): AdvancedManyToManyObjectRelation
+    {
+        return (new AdvancedManyToManyObjectRelation())
+            ->setName(self::OWNER_FIELD)
+            ->setColumns([['key' => 'note', 'label' => 'note', 'type' => 'text']]);
     }
 
     private function makeManyToOne(bool $mandatory): ManyToOneRelation
