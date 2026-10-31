@@ -24,13 +24,16 @@ trait SimpleGetterTrait
 
     private function getValue(Column $column, StudioElementInterface|ElementInterface $element): mixed
     {
+        $property = $this->getProperty($column, $element);
+
         // System columns read system properties. A bare getter on a localized field would resolve to the request
         // locale, while the grid authorizes the system default language for it - so such a key yields no value.
-        if ($element instanceof ElementInterface && $this->isLocalizedClassField($element, $column->getKey())) {
+        // The getter name is case-insensitive, so the key is matched against the localized fields the same way.
+        if ($element instanceof ElementInterface && $this->isLocalizedClassFieldIgnoringCase($element, $property)) {
             return null;
         }
 
-        $getter = $this->getGetter($column, $element);
+        $getter = 'get' . ucfirst($property);
         if (method_exists($element, $getter) === false) {
             return null;
         }
@@ -38,13 +41,12 @@ trait SimpleGetterTrait
         return $element->$getter();
     }
 
-    private function getGetter(Column $column, StudioElementInterface|ElementInterface $element): string
+    private function getProperty(Column $column, StudioElementInterface|ElementInterface $element): string
     {
-        $key = $column->getKey();
-        if ($column->getKey() == 'filename' &&  $element instanceof DataObject) {
-            $key = 'key';
+        if ($column->getKey() === 'filename' && $element instanceof DataObject) {
+            return 'key';
         }
 
-        return 'get' . ucfirst($key);
+        return $column->getKey();
     }
 }

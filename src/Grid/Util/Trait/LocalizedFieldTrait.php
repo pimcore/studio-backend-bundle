@@ -33,4 +33,28 @@ trait LocalizedFieldTrait
         return $localizedFields instanceof Localizedfields
             && $localizedFields->getFieldDefinition($key) !== null;
     }
+
+    /**
+     * PHP getters are case-insensitive while the class definition lookup is not, so a getter derived from a client
+     * supplied key ("Name") can reach a localized field that isLocalizedClassField() does not report ("name").
+     */
+    private function isLocalizedClassFieldIgnoringCase(ElementInterface $element, string $key): bool
+    {
+        if (!$element instanceof Concrete) {
+            return false;
+        }
+
+        $localizedFields = $element->getClass()->getFieldDefinition('localizedfields');
+        if (!$localizedFields instanceof Localizedfields) {
+            return false;
+        }
+
+        foreach (array_keys($localizedFields->getFieldDefinitions()) as $name) {
+            if (strcasecmp((string)$name, $key) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

@@ -41,6 +41,31 @@ final class StringResolverTest extends Unit
         self::assertSame(0, $element->getterCalls);
     }
 
+    public function testLocalizedFieldKeyInAnotherLetterCaseYieldsNoValue(): void
+    {
+        $element = $this->createElement(localized: true);
+        $column = new Column(key: 'Name', locale: null, type: 'system.string', group: null, config: []);
+
+        $data = (new StringResolver())->resolveForCoreElement($column, $element);
+
+        self::assertNull($data->getValue());
+        self::assertSame(0, $element->getterCalls);
+    }
+
+    /**
+     * The "filename" column of a data object is its key. A localized field that happens to be called "filename"
+     * must not blank that system column.
+     */
+    public function testFilenameColumnReadsTheKeyDespiteLocalizedFilenameField(): void
+    {
+        $element = $this->createElement(localized: true, localizedName: 'filename', key: 'object-key');
+        $column = new Column(key: 'filename', locale: null, type: 'system.string', group: null, config: []);
+
+        $data = (new StringResolver())->resolveForCoreElement($column, $element);
+
+        self::assertSame('object-key', $data->getValue());
+    }
+
     public function testNonLocalizedKeyIsStillRead(): void
     {
         $element = $this->createElement(localized: false);
@@ -56,25 +81,27 @@ final class StringResolverTest extends Unit
         return new Column(key: 'name', locale: null, type: 'system.string', group: null, config: []);
     }
 
-    private function createElement(bool $localized): Concrete
+    private function createElement(bool $localized, string $localizedName = 'name', string $key = 'k'): Concrete
     {
         $fieldDefinition = new Input();
-        $fieldDefinition->setName('name');
+        $fieldDefinition->setName($localizedName);
 
         $classDefinition = new ClassDefinition();
         if ($localized) {
             $classDefinition->addFieldDefinition('localizedfields', $this->makeEmpty(Localizedfields::class, [
-                'getFieldDefinition' => static fn (string $key) => $key === 'name' ? $fieldDefinition : null,
+                'getFieldDefinition' => static fn (string $key) => $key === $localizedName ? $fieldDefinition : null,
+                'getFieldDefinitions' => static fn () => [$localizedName => $fieldDefinition],
             ]));
         } else {
-            $classDefinition->addFieldDefinition('name', $fieldDefinition);
+            $classDefinition->addFieldDefinition($localizedName, $fieldDefinition);
         }
 
-        return new class($classDefinition) extends Concrete {
+        return new class($classDefinition, $key) extends Concrete {
             public int $getterCalls = 0;
 
-            public function __construct(private readonly ClassDefinition $classDefinition)
+            public function __construct(private readonly ClassDefinition $classDefinition, string $key)
             {
+                $this->setKey($key);
             }
 
             public function getClass(): ClassDefinition

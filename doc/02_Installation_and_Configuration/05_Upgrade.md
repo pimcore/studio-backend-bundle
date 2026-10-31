@@ -7,8 +7,8 @@ The following steps are necessary during updating to newer versions.
   exports and permission-checks the system default language (`general.default_language`) instead of the language of
   the request. Users who may not view the default language see an empty cell. A custom column resolver that reads a
   localized field has to read the default language for such a column too, see
-  `doc/08_Extending_Grid_with_Custom_Columns.md`. The built-in `system.*` columns return no value for a localized
-  field key.
+  `doc/03_Extending/08_Extending_Grid_with_Custom_Columns.md`. The built-in `system.*` columns return no value for
+  a localized field key (in any letter case).
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
