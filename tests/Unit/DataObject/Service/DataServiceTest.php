@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
@@ -57,6 +58,18 @@ final class DataServiceTest extends Unit
         $this->expectException(ElementSavingFailedException::class);
 
         $this->updateWithAdapterThrowing(new RuntimeException('boom'));
+    }
+
+    /**
+     * A refused permission raised while a data adapter applies a value must reach the client as a 403.
+     *
+     * @throws Exception
+     */
+    public function testUpdateEditableDataKeepsForbiddenException(): void
+    {
+        $this->expectException(ForbiddenException::class);
+
+        $this->updateWithAdapterThrowing(new ForbiddenException());
     }
 
     /**
