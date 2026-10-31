@@ -175,11 +175,11 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
             if ($removal !== null) {
                 $remoteObject->$setter($removal['value']);
             }
-            $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName);
+            $this->saveRemoteObject($remoteObject, $element, 'deleted', $ownerFieldName, $user);
         }
 
         foreach ($additions as $remoteObject) {
-            $this->handleAddCurrentData($remoteObject, $element, $getter, $setter, $ownerFieldName);
+            $this->handleAddCurrentData($remoteObject, $element, $getter, $setter, $ownerFieldName, $user);
         }
     }
 
@@ -207,8 +207,8 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     }
 
     /**
-     * The owner is written on behalf of the current user, so it has to be an object of the owner class and
-     * the user needs the same permission a direct save of it would require.
+     * The owner is written on behalf of the given user, so it has to be an object of the owner class and the
+     * user needs the save permission on it, plus the publish permission when the owner is published.
      *
      * @throws ForbiddenException|ValidationException
      */
@@ -378,7 +378,8 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $element,
         string $getter,
         string $setter,
-        string $ownerFieldName
+        string $ownerFieldName,
+        UserInterface $user
     ): void {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
         $newEntry = $this->createOwnerEntry($remoteObject, $element, $ownerFieldName);
@@ -389,7 +390,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         }
         $remoteObject->$setter($currentData);
 
-        $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName);
+        $this->saveRemoteObject($remoteObject, $element, 'added', $ownerFieldName, $user);
     }
 
     /**
@@ -425,14 +426,15 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $remoteObject,
         Concrete $element,
         string $action,
-        string $fieldName
+        string $fieldName,
+        UserInterface $user
     ): void {
         try {
             $actionTarget = 'to';
             if ($action === 'deleted') {
                 $actionTarget = 'from';
             }
-            $remoteObject->setUserModification($this->securityService->getCurrentUser()->getId());
+            $remoteObject->setUserModification($user->getId());
             $remoteObject->save();
             $this->pimcoreLogger->debug(
                 sprintf(

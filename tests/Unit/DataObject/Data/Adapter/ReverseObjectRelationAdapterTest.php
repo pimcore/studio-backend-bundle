@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\Asset;
@@ -47,7 +48,8 @@ require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObj
 /**
  * Regression tests for the owner-side saves of a reverse relation: removing an entry must not silently fail when
  * the owner field is mandatory (pimcore/platform-version#376), and adding an entry must store the wrapper
- * (ObjectMetadata/ElementMetadata) an advanced many-to-many owner field requires.
+ * (ObjectMetadata/ElementMetadata) an advanced many-to-many owner field requires. Owners are only written when
+ * the passed user may save them (and publish them when published), and are saved as that user.
  *
  * @internal
  */
@@ -582,7 +584,7 @@ final class ReverseObjectRelationAdapterTest extends Unit
     /**
      * @throws Exception
      */
-    public function testPermissionIsCheckedForTheCurrentUser(): void
+    public function testPermissionIsCheckedForThePassedUser(): void
     {
         $element = $this->makeElement(ownerIds: []);
         $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), []);
@@ -605,6 +607,33 @@ final class ReverseObjectRelationAdapterTest extends Unit
         );
 
         $this->assertSame([[true, self::USER_ID, 'save'], [true, self::USER_ID, 'publish']], $checks);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testOwnerIsSavedAsThePassedUserNotTheCurrentUser(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID]);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), [$element]);
+        $otherOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [], self::OWNER_ID + 1);
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'getCurrentUser' => static function (): never {
+                throw new UserNotFoundException();
+            },
+        ]);
+
+        $this->callAdapter(
+            $element,
+            [$owner, $otherOwner],
+            remainingRelations: [['id' => self::OWNER_ID + 1]],
+            securityService: $securityService
+        );
+
+        $this->assertSame(1, $owner->getSaveCount());
+        $this->assertSame(self::USER_ID, $owner->getUserModification());
+        $this->assertSame(1, $otherOwner->getSaveCount());
+        $this->assertSame(self::USER_ID, $otherOwner->getUserModification());
     }
 
     /**
