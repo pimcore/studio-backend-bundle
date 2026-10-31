@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
@@ -23,6 +24,11 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout;
  */
 final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnricherInterface
 {
+    public function __construct(
+        private KeyConfigResolverInterface $keyConfigResolver,
+    ) {
+    }
+
     public function enrich(Data|Layout|null $layout): void
     {
         if ($layout instanceof Classificationstore) {
@@ -46,7 +52,7 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
     {
         // Post-processes a payload core owns; ActiveGroupTitleEnricherTest fails once a slot comes back empty.
         foreach ($fieldDefinition->activeGroupDefinitions as $index => $group) {
-            /** @var array{name: string, keys: array<int|string, array{name: string, definition?: mixed}>} $group */
+            /** @var array{name: string, keys: array<int|string, array{name: string, id: int}>} $group */
             // classificationstore_groups has no title column: the title is the group name until package 16 lands.
             $group['title'] = $group['name'];
 
@@ -59,18 +65,14 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
     }
 
     /**
-     * @param array{name: string, definition?: mixed} $key
+     * @param array{name: string, id: int} $key
      */
     private function resolveKeyTitle(array $key): string
     {
-        $definition = $key['definition'] ?? null;
-        if (!$definition instanceof Data) {
-            return $key['name'];
-        }
+        // The title column the layout endpoints read, so a key is labelled the same before and after a reload.
+        $title = $this->keyConfigResolver->getById($key['id'])?->getTitle();
 
-        // Falls back to the name only on an unset title, so a stored '0' survives; getKeyTitle() stays verbatim.
-        $title = $definition->getTitle();
-
-        return $title !== '' ? $title : $key['name'];
+        // Falls back to the name only on an unset or empty title, so a stored '0' survives.
+        return $title !== null && $title !== '' ? $title : $key['name'];
     }
 }

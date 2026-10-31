@@ -46,13 +46,17 @@ The following steps are necessary during updating to newer versions.
   `POST /classification-store/configuration/collections/{colId}/relations`) are unchanged.
 - [Classification Store] Added: the three object layout responses (`GET /data-objects/{id}/layout`,
   `GET /class/field-collection/{objectId}/object/layout` and `GET /class/object-brick/{objectId}/object/layout`) carry a
-  `title` on every already-active group of a classification store field and on every key of such a group. The key title
-  is the title of the key's enriched field definition and falls back to the key's `name` when no title is stored, so the
-  editor never renders a blank label. That fallback is deliberately different from the key titles of
-  `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
-  which keep returning the stored value verbatim — `null` when none is stored, `''` when it is empty — so the
-  configuration UI can still tell "no title set" apart from "title equals name". The group title is the group's `name`,
-  because `classificationstore_groups` has no title column.
+  `title` on every already-active group of a classification store field and on every key of such a group. The key title is
+  the stored title of the key configuration — the same `title` column the three layout responses above read — and falls back
+  to the key's `name` when none is stored or the stored one is empty, so the editor never renders a blank label. That
+  fallback is the only difference between the two path families:
+  `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`
+  report the stored value verbatim instead — `null` when none is stored, `''` when it is empty — so the configuration UI can
+  still tell "no title set" apart from "title equals name". The title of the key's enriched field definition, which is
+  independent of that column, is no longer read on this path: a key whose two values disagree is labelled identically on
+  both families from now on, and reopening the object does not change the label. The group title is the group's `name`,
+  because `classificationstore_groups` has no title column. The `@internal` `ActiveGroupTitleEnricher`
+  (`ClassificationStore\Service`) got the constructor argument `$keyConfigResolver`.
 - [Classification Store] Added: `GroupLayout` (`GET /classification-store/layout-by-group/{groupId}` and
   `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.

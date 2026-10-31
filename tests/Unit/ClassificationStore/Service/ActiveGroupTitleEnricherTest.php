@@ -14,13 +14,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
-use ReflectionClass;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use function array_column;
+use function array_key_exists;
 use function array_keys;
 
 /**
@@ -36,13 +38,17 @@ final class ActiveGroupTitleEnricherTest extends Unit
 
     private const string GROUP_NAME = 'Technical';
 
+    private const array STORED_TITLES = [11 => 'Weight', 12 => '', 13 => null];
+
     private const array EXPECTED_KEY_TITLES = ['Weight', 'height', 'depth'];
+
+    private const string DEFINITION_TITLE = 'Definition title';
 
     public function testEveryKeyOfAnActiveGroupCarriesATitle(): void
     {
         $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher(self::STORED_TITLES)->enrich($fieldDefinition);
 
         $this->assertSame(
             self::EXPECTED_KEY_TITLES,
@@ -55,7 +61,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher(self::STORED_TITLES)->enrich($fieldDefinition);
 
         $this->assertSame(self::GROUP_NAME, $this->groupTitle($fieldDefinition, self::GROUP_ID));
         $this->assertNoSlotIsEmpty($fieldDefinition);
@@ -69,7 +75,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $fieldDefinition = $this->createFieldDefinition([$this->createGroup()]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher(self::STORED_TITLES)->enrich($fieldDefinition);
 
         $this->assertSame(self::GROUP_NAME, $this->groupTitle($fieldDefinition, 0));
         $this->assertSame(self::EXPECTED_KEY_TITLES, $this->keyTitles($fieldDefinition, 0));
@@ -89,33 +95,71 @@ final class ActiveGroupTitleEnricherTest extends Unit
         $root = new Panel();
         $root->setChildren([$inner]);
 
-        (new ActiveGroupTitleEnricher())->enrich($root);
+        $this->createEnricher(self::STORED_TITLES)->enrich($root);
 
         $this->assertNoSlotIsEmpty($fieldDefinition);
     }
 
     /**
-     * A stored '0' is a configured title like any other: only an unset one falls back to the key name.
+     * A stored '0' is a configured title like any other: only an unset or empty one falls back to the key name.
      */
     public function testAKeyTitleOfZeroIsCarriedOver(): void
     {
         $fieldDefinition = $this->createFieldDefinition([
-            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(11, 'weight', '0')]),
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(11, 'weight')]),
         ]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher([11 => '0'])->enrich($fieldDefinition);
 
         $this->assertSame(['0'], $this->keyTitles($fieldDefinition, self::GROUP_ID));
         $this->assertNoSlotIsEmpty($fieldDefinition);
     }
 
     /**
-     * The payload already carries the group name and the enriched key definition, so resolving the
-     * titles needs no group or key lookup at all.
+     * The payload carries the title of the key's enriched field definition, which is independent of the
+     * title column the layout endpoints read: the column is what both path families report.
      */
-    public function testResolvingTheTitlesNeedsNoCollaborator(): void
+    public function testTheStoredTitleWinsOverTheTitleOfTheFieldDefinition(): void
     {
-        $this->assertNull((new ReflectionClass(ActiveGroupTitleEnricher::class))->getConstructor());
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(11, 'weight')]),
+        ]);
+
+        $this->createEnricher([11 => 'Column title'])->enrich($fieldDefinition);
+
+        $this->assertSame(['Column title'], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+    }
+
+    /**
+     * @param array<int, ?string> $storedTitles
+     */
+    private function createEnricher(array $storedTitles): ActiveGroupTitleEnricher
+    {
+        return new ActiveGroupTitleEnricher($this->createKeyConfigResolver($storedTitles));
+    }
+
+    /**
+     * @param array<int, ?string> $storedTitles
+     */
+    private function createKeyConfigResolver(array $storedTitles): KeyConfigResolverInterface
+    {
+        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
+        $keyConfigResolver
+            ->method('getById')
+            ->willReturnCallback(static function (int $keyId) use ($storedTitles): ?KeyConfig {
+                if (!array_key_exists($keyId, $storedTitles)) {
+                    return null;
+                }
+
+                $keyConfig = new KeyConfig();
+                if ($storedTitles[$keyId] !== null) {
+                    $keyConfig->setTitle($storedTitles[$keyId]);
+                }
+
+                return $keyConfig;
+            });
+
+        return $keyConfigResolver;
     }
 
     /**
@@ -136,9 +180,9 @@ final class ActiveGroupTitleEnricherTest extends Unit
     private function createGroup(): array
     {
         return $this->createGroupWithKeys([
-            $this->createKey(11, 'weight', 'Weight'),
-            $this->createKey(12, 'height', ''),
-            $this->createKey(13, 'depth', null),
+            $this->createKey(11, 'weight'),
+            $this->createKey(12, 'height'),
+            $this->createKey(13, 'depth'),
         ]);
     }
 
@@ -160,14 +204,11 @@ final class ActiveGroupTitleEnricherTest extends Unit
     /**
      * @return array<string, mixed>
      */
-    private function createKey(int $keyId, string $name, ?string $title): array
+    private function createKey(int $keyId, string $name): array
     {
         $definition = new Input();
         $definition->setName($name);
-
-        if ($title !== null) {
-            $definition->setTitle($title);
-        }
+        $definition->setTitle(self::DEFINITION_TITLE);
 
         return [
             'name' => $name,
