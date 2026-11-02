@@ -293,7 +293,7 @@ final class GridService implements GridServiceInterface
             );
         }
 
-        $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId);
+        $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId, $coreElement);
 
         foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver
@@ -439,12 +439,18 @@ final class GridService implements GridServiceInterface
         ?ElementInterface $databaseElement,
         string $elementType,
         int $elementId,
+        ?ElementInterface $coreElement = null,
     ): ?Permissions {
         if ($element === null) {
             return null;
         }
 
         $permissions = $element->getPermissions();
+
+        // A caller-built entry carries no reliable workflow flag, so the provided element decides.
+        if ($coreElement !== null) {
+            return $this->workflowPermissionMerger->mergeWorkflowPermissions($permissions, $coreElement);
+        }
 
         if (!$element instanceof WorkflowPermissionsAwareInterface || !$element->getHasWorkflowWithPermissions()) {
             return $permissions;

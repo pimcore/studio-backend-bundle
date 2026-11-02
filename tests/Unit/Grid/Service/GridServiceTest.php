@@ -738,6 +738,60 @@ final class GridServiceTest extends Unit
     }
 
     /**
+     * A provided element's workflow permissions are merged even when its entry has no workflow
+     * flag (a plain entry, or a stale false flag), so a row never advertises a denied action.
+     *
+     * @dataProvider entryWithoutWorkflowFlagProvider
+     */
+    public function testWorkflowMergeOfProvidedCoreElementIgnoresEntryWorkflowFlag(bool $workflowAware): void
+    {
+        $provided = $this->makeEmpty(AbstractObject::class);
+        $mergedPermissions = new Permissions(delete: false);
+        $entryPermissions = new Permissions(delete: true);
+        $entry = $workflowAware
+            ? $this->createStudioElement($entryPermissions, false)
+            : $this->makeEmpty(StudioElementInterface::class, [
+                'getPermissions' => $entryPermissions,
+                'getIsLocked' => false,
+            ]);
+
+        $service = $this->createService(
+            workflowPermissionMerger: $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
+                'mergeWorkflowPermissions' => Expected::once(
+                    static function (Permissions $permissions, ElementInterface $element) use ($provided, $entryPermissions, $mergedPermissions): Permissions {
+                        self::assertSame($entryPermissions, $permissions);
+                        self::assertSame($provided, $element);
+
+                        return $mergedPermissions;
+                    }
+                ),
+            ]),
+            columnResolverLoader: $this->createColumnResolverLoader(),
+        );
+
+        $data = $service->getGridDataForElement(
+            $this->createTestColumnCollection(),
+            $entry,
+            ElementTypes::TYPE_ASSET,
+            1,
+            false,
+            null,
+            $provided,
+        );
+
+        self::assertSame($mergedPermissions, $data['permissions']);
+        self::assertFalse($data['permissions']->isDelete());
+    }
+
+    public static function entryWithoutWorkflowFlagProvider(): array
+    {
+        return [
+            'plain entry' => [false],
+            'stale false flag' => [true],
+        ];
+    }
+
+    /**
      * Language view permissions apply to a provided element as to a loaded one.
      *
      * @see https://pimcore.atlassian.net/browse/PEES-1063
@@ -1274,7 +1328,9 @@ final class GridServiceTest extends Unit
             $serviceResolver ?? $this->makeEmpty(ServiceResolverInterface::class),
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $localizedFieldResolver ?? $this->makeEmpty(LocalizedFieldResolverInterface::class),
-            $workflowPermissionMerger ?? $this->makeEmpty(WorkflowPermissionMergerInterface::class),
+            $workflowPermissionMerger ?? $this->makeEmpty(WorkflowPermissionMergerInterface::class, [
+                'mergeWorkflowPermissions' => static fn (Permissions $permissions): Permissions => $permissions,
+            ]),
             $logger ?? $this->makeEmpty(LoggerInterface::class),
             $dataObjectServiceResolver ?? $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $toolResolver ?? $this->makeEmpty(ToolResolverInterface::class),
