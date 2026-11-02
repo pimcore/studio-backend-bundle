@@ -36,6 +36,8 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
 {
     use ElementProviderTrait;
 
+    private const string RESTORE_SUFFIX = '_restore';
+
     public function __construct(
         private AssetServiceResolverInterface $assetServiceResolver,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
@@ -61,16 +63,23 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         $folder = $this->getFallbackFolder($elementType);
 
         try {
-            $this->securityService->hasElementPermission($folder, $user, ElementPermissions::PUBLISH_PERMISSION);
+            $this->securityService->hasElementPermission($folder, $user, ElementPermissions::CREATE_PERMISSION);
         } catch (ForbiddenException $exception) {
             throw new EnvironmentException(
-                sprintf('Missing publish permission on the fallback folder %s', self::FOLDER_PATH),
+                sprintf('Missing create permission on the fallback folder %s', self::FOLDER_PATH),
                 HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT->value,
                 $exception
             );
         }
 
         $element->setParent($folder);
+        $key = $element->getKey();
+        if ($this->getUniqueKey($elementType, $element) === $key) {
+            return;
+        }
+
+        // core's recycle bin appends _restore to a taken key, the number only covers a further clash
+        $element->setKey($key . self::RESTORE_SUFFIX);
         $element->setKey($this->getUniqueKey($elementType, $element));
     }
 

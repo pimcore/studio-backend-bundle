@@ -41,6 +41,7 @@ final class FallbackFolderServiceTest extends Unit
 {
     /**
      * @throws Exception
+     * @dataProvider parentWithoutLookupProvider
      */
     #[DataProvider('parentWithoutLookupProvider')]
     public function testReportsAMissingParentIdWithoutALookup(?int $parentId): void
@@ -64,6 +65,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     * @dataProvider parentLookupProvider
      */
     #[DataProvider('parentLookupProvider')]
     public function testLooksUpTheParentWithTheCoreElementType(
@@ -100,6 +102,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     * @dataProvider elementTypeProvider
      */
     #[DataProvider('elementTypeProvider')]
     public function testMovesTheElementIntoTheFallbackFolderOfItsType(
@@ -110,19 +113,57 @@ final class FallbackFolderServiceTest extends Unit
         $user = $this->makeEmpty(UserInterface::class);
         $folder = $this->createMock($folderClass);
         $element = $this->createMock($elementClass);
+        $element->method('getKey')->willReturn('my-key');
 
-        $resolvers = $this->createResolvers($resolver, $element, $folder, 'my-key_1');
+        $resolvers = $this->createResolvers($resolver, $element, $folder, ['my-key']);
 
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->expects($this->once())
             ->method('hasElementPermission')
-            ->with($folder, $user, 'publish');
+            ->with($folder, $user, 'create');
 
         $element->expects($this->once())->method('setParent')->with($folder);
-        $element->expects($this->once())->method('setKey')->with('my-key_1');
+        $element->expects($this->never())->method('setKey');
 
         $this->createService(...$resolvers, securityService: $securityService)
             ->moveToFallbackFolder($element, $user);
+    }
+
+    /**
+     * @throws Exception
+     * @dataProvider takenKeyProvider
+     */
+    #[DataProvider('takenKeyProvider')]
+    public function testAppendsTheRestoreSuffixWhenTheKeyIsTakenInTheFallbackFolder(
+        array $uniqueKeys,
+        array $expectedKeys
+    ): void {
+        $folder = $this->createMock(AssetFolder::class);
+        $element = $this->createMock(Asset::class);
+        $element->method('getKey')->willReturn('image.jpg');
+        $element->expects($this->exactly(2))->method('setKey')->willReturnCallback(
+            function (string $key) use (&$expectedKeys, $element): Asset {
+                $this->assertSame(array_shift($expectedKeys), $key);
+
+                return $element;
+            }
+        );
+
+        $this->createService(...$this->createResolvers('assetServiceResolver', $element, $folder, $uniqueKeys))
+            ->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class));
+
+        $this->assertSame([], $expectedKeys);
+    }
+
+    public static function takenKeyProvider(): array
+    {
+        return [
+            'key taken' => [['image_1.jpg', 'image.jpg_restore'], ['image.jpg_restore', 'image.jpg_restore']],
+            'restore suffix taken too' => [
+                ['image_1.jpg', 'image.jpg_restore_1'],
+                ['image.jpg_restore', 'image.jpg_restore_1'],
+            ],
+        ];
     }
 
     public static function elementTypeProvider(): array
@@ -137,7 +178,7 @@ final class FallbackFolderServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testFailsWithTheMissingParentKeyWithoutPublishPermissionOnTheFallbackFolder(): void
+    public function testFailsWithTheMissingParentKeyWithoutCreatePermissionOnTheFallbackFolder(): void
     {
         $folder = $this->createMock(AssetFolder::class);
         $element = $this->createMock(Asset::class);
@@ -148,7 +189,7 @@ final class FallbackFolderServiceTest extends Unit
         $securityService->method('hasElementPermission')->willThrowException(new ForbiddenException());
 
         $service = $this->createService(
-            ...$this->createResolvers('assetServiceResolver', $element, $folder, 'my-key'),
+            ...$this->createResolvers('assetServiceResolver', $element, $folder, ['my-key']),
             securityService: $securityService
         );
 
@@ -159,6 +200,7 @@ final class FallbackFolderServiceTest extends Unit
 
     /**
      * @throws Exception
+     * @dataProvider folderCreationFailureProvider
      */
     #[DataProvider('folderCreationFailureProvider')]
     public function testFailsWithTheMissingParentKeyWhenTheFallbackFolderCannotBeCreated(bool $throws): void
@@ -186,13 +228,15 @@ final class FallbackFolderServiceTest extends Unit
     }
 
     /**
+     * @param string[] $uniqueKeys what the type's resolver answers on consecutive getUniqueKey() calls
+     *
      * @return array<string, object>
      */
     private function createResolvers(
         string $resolver,
         ElementInterface $element,
         ElementInterface $folder,
-        string $uniqueKey
+        array $uniqueKeys
     ): array {
         $resolvers = [
             'assetServiceResolver' => $this->createMock(AssetServiceResolverInterface::class),
@@ -208,7 +252,10 @@ final class FallbackFolderServiceTest extends Unit
             }
 
             $mock->expects($this->once())->method('createFolderByPath')->with('/__restored')->willReturn($folder);
-            $mock->expects($this->atMost(1))->method('getUniqueKey')->with($element)->willReturn($uniqueKey);
+            $mock->expects($this->atMost(2))
+                ->method('getUniqueKey')
+                ->with($element)
+                ->willReturnOnConsecutiveCalls(...$uniqueKeys);
         }
 
         return $resolvers;

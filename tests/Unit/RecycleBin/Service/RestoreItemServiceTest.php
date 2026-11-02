@@ -131,6 +131,7 @@ final class RestoreItemServiceTest extends Unit
 
     /**
      * @throws Exception
+     * @dataProvider restoreFailureProvider
      */
     #[DataProvider('restoreFailureProvider')]
     public function testRestoreItemMapsTheFailureToAnErrorKeyAndClearsTheContext(

@@ -50,6 +50,7 @@ final class RestoreFallbackFolderSubscriberTest extends Unit
 
     /**
      * @throws Exception
+     * @dataProvider saveWithoutRestoreArgumentProvider
      */
     #[DataProvider('saveWithoutRestoreArgumentProvider')]
     public function testIgnoresSavesOutsideARecycleBinRestore(array $arguments): void
