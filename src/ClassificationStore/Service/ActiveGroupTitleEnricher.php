@@ -13,16 +13,28 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
+use function array_column;
 
 /**
  * @internal
  */
 final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnricherInterface
 {
+    public function __construct(
+        private LabelResolverInterface $labelResolver,
+        private KeyConfigResolverInterface $keyConfigResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
+    ) {
+    }
+
     public function enrich(Data|Layout|null $layout): void
     {
         if ($layout instanceof Classificationstore) {
@@ -44,14 +56,19 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
 
     private function fillTitles(Classificationstore $fieldDefinition): void
     {
+        $language = $this->labelLanguageResolver->getLabelLanguage();
+
         // Post-processes a payload core owns; ActiveGroupTitleEnricherTest fails once a slot comes back empty.
         foreach ($fieldDefinition->activeGroupDefinitions as $index => $group) {
-            /** @var array{name: string, keys: array<int|string, array{name: string, definition?: mixed}>} $group */
+            /** @var array{name: string, keys: array<int|string, array{name: string, id?: int}>} $group */
             // classificationstore_groups has no title column: the title is the group name until package 16 lands.
             $group['title'] = $group['name'];
 
+            // One statement for the whole group, instead of a label query per key.
+            $this->labelResolver->preload(LabelEntityType::Key, array_column($group['keys'], 'id'), $language);
+
             foreach ($group['keys'] as $keyIndex => $key) {
-                $group['keys'][$keyIndex]['title'] = $this->resolveKeyTitle($key);
+                $group['keys'][$keyIndex]['title'] = $this->resolveKeyTitle($key, $language);
             }
 
             $fieldDefinition->activeGroupDefinitions[$index] = $group;
@@ -59,18 +76,20 @@ final readonly class ActiveGroupTitleEnricher implements ActiveGroupTitleEnriche
     }
 
     /**
-     * @param array{name: string, definition?: mixed} $key
+     * @param array{name: string, id?: int} $key
      */
-    private function resolveKeyTitle(array $key): string
+    private function resolveKeyTitle(array $key, string $language): string
     {
-        $definition = $key['definition'] ?? null;
-        if (!$definition instanceof Data) {
+        if (!isset($key['id'])) {
             return $key['name'];
         }
 
-        // Falls back to the name only on an unset title, so a stored '0' survives; getKeyTitle() stays verbatim.
-        $title = $definition->getTitle();
+        $keyConfig = $this->keyConfigResolver->getById($key['id']);
+        if (!$keyConfig instanceof KeyConfig) {
+            return $key['name'];
+        }
 
-        return $title !== '' ? $title : $key['name'];
+        // Falls back to the name only on an unset title, so a resolved '0' survives.
+        return $this->labelResolver->getTitle($keyConfig, $language) ?? $key['name'];
     }
 }

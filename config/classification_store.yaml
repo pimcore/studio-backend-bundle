@@ -18,6 +18,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService
@@ -30,9 +32,14 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService

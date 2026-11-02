@@ -20,9 +20,16 @@ The following steps are necessary during updating to newer versions.
 
 - [Classification Store] Added: every key of the three layout responses (`GET /classification-store/layout-by-key/{keyId}/{groupId}`,
   `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`) carries
-  an optional `title`, holding the stored title of the key configuration. It is the raw stored string — `null` when no title is
-  stored, `''` when the stored title is empty — and is not translated; clients that want a translated label must translate it
-  themselves and can keep falling back to `name`.
+  an optional `title`, holding the label of the key configuration resolved for the requesting user's language. The chain is that
+  language, the languages it falls back to, the installation's default language, and last the key's own `title` column; when none
+  of them carries a title the field is `null`, and the key's technical `name` is never substituted for it. The label is resolved
+  server-side, so clients must **not** treat the field as a translation key and must not translate it themselves; they can keep
+  falling back to `name` for display. A key whose `title` column is the empty string now publishes `null` rather than `''`, as the
+  column is `NOT NULL DEFAULT ''` and an empty title counts as no title. Without a resolvable user the installation's default
+  language is used, so the field is never left unresolved for want of one. The `@internal`
+  `KeyGroupLayoutServiceInterface::getKeyTitle()` got the argument `$language` and the interface gained `preloadKeyTitles()`,
+  which reads a whole group's labels with one statement; the new `@internal` `LabelLanguageResolverInterface`
+  (`ClassificationStore\Service`) is where that language is decided.
 - [Classification Store] Added: the key configuration responses (`POST /classification-store/configuration/stores/{storeId}/keys`
   and `POST /classification-store/configuration/keys/add`) carry an optional `title`, holding the stored title of the key
   configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
@@ -46,13 +53,15 @@ The following steps are necessary during updating to newer versions.
   `POST /classification-store/configuration/collections/{colId}/relations`) are unchanged.
 - [Classification Store] Added: the three object layout responses (`GET /data-objects/{id}/layout`,
   `GET /class/field-collection/{objectId}/object/layout` and `GET /class/object-brick/{objectId}/object/layout`) carry a
-  `title` on every already-active group of a classification store field and on every key of such a group. The key title
-  is the title of the key's enriched field definition and falls back to the key's `name` when no title is stored, so the
-  editor never renders a blank label. That fallback is deliberately different from the key titles of
-  `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
-  which keep returning the stored value verbatim — `null` when none is stored, `''` when it is empty — so the
-  configuration UI can still tell "no title set" apart from "title equals name". The group title is the group's `name`,
-  because `classificationstore_groups` has no title column.
+  `title` on every already-active group of a classification store field and on every key of such a group. The key title is the
+  label of the key configuration resolved for the requesting user's language — the same chain the three classification store
+  layout responses publish, down to the key's own `title` column — and falls back to the key's `name` as a last resort, so the
+  editor never renders a blank label. It is not read from the key's enriched field definition, and it is resolved server-side,
+  so clients must **not** treat the field as a translation key. That last resort is the only deliberate difference from the key
+  titles of `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
+  which stay `null` when nothing is stored in any language of the chain, so the configuration UI can still tell "no title set"
+  apart from "title equals name". The group title is the group's `name`, because `classificationstore_groups` has no title
+  column.
 - [Classification Store] Added: `GroupLayout` (`GET /classification-store/layout-by-group/{groupId}` and
   `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
