@@ -267,26 +267,35 @@ final class GroupServiceTest extends Unit
     }
 
     /**
-     * An objectId that does not resolve is still a 404 — only its absence is tolerated.
+     * An objectId that does not resolve is still a 404 — only its absence is tolerated. Zero is one
+     * of those: `LayoutParameter` accepts it, so it reaches the lookup as a supplied id and must not
+     * be read as an omission the way a truthiness check would read it.
      *
      * @throws Exception
      */
     public function testAnObjectIdThatDoesNotResolveIsStillNotFound(): void
     {
-        $concreteObjectResolver = $this->createMock(ConcreteObjectResolverInterface::class);
-        $concreteObjectResolver
-            ->method('getById')
-            ->willReturn(null);
-
-        $service = $this->createService(
-            $this->createMock(KeyRelationResolverInterface::class),
-            $this->createMock(KeyGroupLayoutServiceInterface::class),
+        foreach ([999999, 0] as $objectId) {
+            $concreteObjectResolver = $this->createMock(ConcreteObjectResolverInterface::class);
             $concreteObjectResolver
-        );
+                ->expects($this->once())
+                ->method('getById')
+                ->with($objectId)
+                ->willReturn(null);
 
-        $this->expectException(NotFoundException::class);
+            $service = $this->createService(
+                $this->createMock(KeyRelationResolverInterface::class),
+                $this->createMock(KeyGroupLayoutServiceInterface::class),
+                $concreteObjectResolver
+            );
 
-        $service->getLayoutDefinition(self::GROUP_ID, new LayoutParameter('classificationStore', 999999));
+            try {
+                $service->getLayoutDefinition(self::GROUP_ID, new LayoutParameter('classificationStore', $objectId));
+                $this->fail('Expected the object ID ' . $objectId . ' to be refused.');
+            } catch (NotFoundException $e) {
+                $this->assertSame(404, $e->getStatusCode());
+            }
+        }
     }
 
     /**

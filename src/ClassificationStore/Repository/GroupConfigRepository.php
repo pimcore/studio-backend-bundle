@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing;
-use function count;
+use function array_values;
 
 /**
  * @internal
@@ -45,7 +45,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         $listing->setOffset($this->getOffset($collectionParameters));
         $listing->setOrder('ASC');
         $listing->setOrderKey('id');
-        $listing->setCondition('storeId = ?', $storeId);
+        $listing->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
 
         $this->searchHelperService->applySearchTermFilter($listing, $searchTerm);
 
@@ -60,7 +60,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     {
         $listing = new Listing();
 
-        $listing->setCondition('storeId = ?', $storeId);
+        $listing->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
 
         if ($groupIds !== null) {
             $this->applyGroupIdsFilter($listing, $groupIds);
@@ -72,7 +72,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     public function getCountByStoreId(int $storeId): int
     {
         $listing = new Listing();
-        $listing->setCondition('storeId = ?', $storeId);
+        $listing->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
 
         return $listing->count();
     }
@@ -91,10 +91,22 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         return $group;
     }
 
+    /**
+     * Named, like the store restriction and the search condition this shares its statement with:
+     * DBAL cannot bind named and positional placeholders in one query.
+     */
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {
-        $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
-        $list->addConditionParam('id IN ('. $placeholders .')', $groupIds);
+        $placeholders = [];
+        $parameters = [];
+
+        foreach (array_values($groupIds) as $index => $groupId) {
+            $parameter = 'scopeGroupId_' . $index;
+            $placeholders[] = ':' . $parameter;
+            $parameters[$parameter] = $groupId;
+        }
+
+        $list->addConditionParam('id IN ('. implode(',', $placeholders) .')', $parameters);
     }
 
     private function getOffset(CollectionParametersInterface $collectionParameters): int

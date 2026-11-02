@@ -118,7 +118,9 @@ final readonly class GroupService implements GroupServiceInterface
         $keys = $this->keyRelationResolver->getByGroup($groupId);
 
         $object = null;
-        if ($layoutParameter->getObjectId()) {
+        // `!== null`, not truthiness: only an omitted objectId is served without an object in
+        // context. An objectId of 0 was supplied and does not resolve, so it is still a 404.
+        if ($layoutParameter->getObjectId() !== null) {
             $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
 
             if (!$object) {
