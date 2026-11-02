@@ -65,6 +65,19 @@ final class KeyTitleAgreementTest extends Unit
     }
 
     /**
+     * With no label row in any language of the chain the resolver falls through to the title column of
+     * the key configuration, which disagrees with the title of the enriched field definition the
+     * payload carries. Both families report the column, so reopening the object does not relabel the key.
+     */
+    public function testBothFamiliesReportTheTitleColumnWhenNoLabelIsStored(): void
+    {
+        $labelResolver = $this->createColumnAnsweringLabelResolver();
+
+        $this->assertSame(self::COLUMN_TITLE, $this->layoutTitle($labelResolver));
+        $this->assertSame(self::COLUMN_TITLE, $this->objectLayoutTitle($labelResolver));
+    }
+
+    /**
      * The one sanctioned divergence: the layout endpoints report the resolved value verbatim, so the
      * configuration UI can tell "no title set" apart from "title equals name", while the object layout
      * falls back to the name rather than rendering a blank label.
@@ -138,6 +151,25 @@ final class KeyTitleAgreementTest extends Unit
                     $this->assertSame(self::USER_LANGUAGE, $language);
 
                     return $resolvedLabel;
+                }
+            );
+
+        return $labelResolver;
+    }
+
+    /**
+     * No label row answers, which is the rung at which the entity's own title column is read.
+     */
+    private function createColumnAnsweringLabelResolver(): LabelResolverInterface
+    {
+        $labelResolver = $this->createMock(LabelResolverInterface::class);
+        $labelResolver
+            ->method('getStoredTitle')
+            ->willReturnCallback(
+                function (KeyConfig $keyConfig, string $language): ?string {
+                    $this->assertSame(self::USER_LANGUAGE, $language);
+
+                    return $keyConfig->getTitle();
                 }
             );
 

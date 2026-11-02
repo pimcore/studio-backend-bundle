@@ -42,7 +42,7 @@ final readonly class KeyLayout
         private string $description,
         #[Property(description: 'Layout Definition', type: 'object')]
         private EncryptedField|Data $definition,
-        #[Property(description: 'Configured title of the key', type: 'string', example: 'value', nullable: true)]
+        #[Property(description: 'Resolved label of the key', type: 'string', example: 'value', nullable: true)]
         private ?string $title = null,
     ) {
     }
