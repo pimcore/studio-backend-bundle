@@ -98,7 +98,8 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             name: $key->getName(),
             description: $key->getDescription(),
             definition: $definition,
-            title: $this->getKeyTitle($key->getKeyId())
+            title: $this->getKeyTitle($key->getKeyId()),
+            subGroup: $key->getSubGroup(),
         );
     }
 

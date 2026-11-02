@@ -22,6 +22,7 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupCon
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing as SubGroupConfigListing;
 
 /**
  * @internal
@@ -34,8 +35,10 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
     ) {
     }
 
-    public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, ?string $searchTerm): void
-    {
+    public function applySearchTermFilter(
+        GroupConfigListing|CollectionConfigListing|SubGroupConfigListing $list,
+        ?string $searchTerm
+    ): void {
         if ($searchTerm === null || trim($searchTerm) === '') {
             return;
         }

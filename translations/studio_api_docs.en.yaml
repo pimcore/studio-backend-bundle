@@ -2033,6 +2033,22 @@ classification_store_configuration_group_update_success_response: Updated group 
 classification_store_configuration_group_delete_description: Delete a classification store group configuration by ID
 classification_store_configuration_group_delete_summary: Delete a group
 classification_store_configuration_group_delete_success_response: Successfully deleted group configuration
+classification_store_configuration_sub_group_collection_description: |
+    Get a paginated list of classification store sub group configurations.
+    You can specify filters, sorting and pagination in the request body.
+classification_store_configuration_sub_group_collection_summary: List sub group configurations
+classification_store_configuration_sub_group_collection_success_response: Paginated list of sub group configurations
+classification_store_configuration_sub_group_create_description: Create a new classification store sub group configuration within a store
+classification_store_configuration_sub_group_create_summary: Create a new sub group
+classification_store_configuration_sub_group_create_success_response: Created sub group configuration
+classification_store_configuration_sub_group_update_description: Update an existing classification store sub group configuration by ID
+classification_store_configuration_sub_group_update_summary: Update a sub group
+classification_store_configuration_sub_group_update_success_response: Updated sub group configuration
+classification_store_configuration_sub_group_delete_description: |
+    Delete a classification store sub group configuration by ID.
+    The deletion is refused while at least one key assignment still carries the sub group.
+classification_store_configuration_sub_group_delete_summary: Delete a sub group
+classification_store_configuration_sub_group_delete_success_response: Successfully deleted sub group configuration
 classification_store_configuration_key_collection_description: |
   Get a paginated list of classification store key configurations.
   Supports filtering, sorting, and pagination via the collection request body.

@@ -24,9 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListC
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\SubGroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -44,6 +46,8 @@ final readonly class GroupService implements GroupServiceInterface
         private KeyGroupLayoutServiceInterface $keyGroupLayoutService,
         private GroupLayoutHydratorInterface $groupLayoutHydrator,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
+        private KeyGroupRelationCache $keyGroupRelationCache,
+        private SubGroupVocabularyResolverInterface $subGroupVocabularyResolver,
     ) {
     }
 
@@ -131,11 +135,16 @@ final readonly class GroupService implements GroupServiceInterface
                 description: $key->getDescription(),
                 definition: $definition,
                 title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId()),
+                subGroup: $key->getSubGroup(),
             );
         }
 
         $group = $this->groupConfigRepository->getById($groupId);
-        $groupLayout = $this->groupLayoutHydrator->hydrate($keyLayouts, $group);
+        $groupLayout = $this->groupLayoutHydrator->hydrate(
+            $keyLayouts,
+            $group,
+            $this->getSubGroupLayouts($groupId, $group->getStoreId())
+        );
 
         $this->eventDispatcher->dispatch(
             new GroupLayoutEvent($groupLayout),
@@ -143,5 +152,34 @@ final readonly class GroupService implements GroupServiceInterface
         );
 
         return $groupLayout;
+    }
+
+    /**
+     * @return array<int, SubGroupLayout>
+     */
+    private function getSubGroupLayouts(int $groupId, int $storeId): array
+    {
+        $vocabulary = $this->subGroupVocabularyResolver->getByStore($storeId);
+        if ($vocabulary === []) {
+            return [];
+        }
+
+        $subGroupLayouts = [];
+
+        // KeyGroupRelationCache::getSubGroupOrder() is the single derivation of this order
+        foreach ($this->keyGroupRelationCache->getSubGroupOrder($groupId) as $identifier) {
+            $subGroupConfig = $vocabulary[$identifier] ?? null;
+            if (!$subGroupConfig) {
+                continue;
+            }
+
+            $subGroupLayouts[] = new SubGroupLayout(
+                identifier: $identifier,
+                name: $subGroupConfig->getName(),
+                description: $subGroupConfig->getDescription(),
+            );
+        }
+
+        return $subGroupLayouts;
     }
 }

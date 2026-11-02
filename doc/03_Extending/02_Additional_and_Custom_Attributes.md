@@ -169,6 +169,7 @@ For more details and frontend customization options, see the
 - `pre_response.classification_store.configuration.key_group_relation`
 - `pre_response.classification_store.configuration.store`
 - `pre_response.classification_store.configuration.store_tree_node`
+- `pre_response.classification_store.configuration.sub_group`
 - `pre_response.classification_store.group`
 - `pre_response.classification_store.group_layout`
 - `pre_response.classification_store.key_group_relation`

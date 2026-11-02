@@ -44,6 +44,13 @@ final readonly class KeyLayout
         private EncryptedField|Data $definition,
         #[Property(description: 'Configured title of the key', type: 'string', example: 'value', nullable: true)]
         private ?string $title = null,
+        #[Property(
+            description: 'Identifier of the sub group this key belongs to within its group',
+            type: 'string',
+            example: '01JBZ8QF6K3M4N5P6R7S8T9V0W',
+            nullable: true
+        )]
+        private ?string $subGroup = null,
     ) {
     }
 
@@ -70,5 +77,10 @@ final readonly class KeyLayout
     public function getTitle(): ?string
     {
         return $this->title;
+    }
+
+    public function getSubGroup(): ?string
+    {
+        return $this->subGroup;
     }
 }

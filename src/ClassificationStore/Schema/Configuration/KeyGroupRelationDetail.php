@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'ClassificationStoreConfigurationKeyGroupRelationDetail',
     title: 'Classification Store Configuration Key Group Relation Detail',
-    required: ['keyId', 'groupId', 'sorter', 'mandatory', 'keyName', 'keyDescription', 'groupName'],
+    required: ['keyId', 'groupId', 'sorter', 'mandatory', 'keyName', 'keyDescription', 'groupName', 'subGroup'],
     type: 'object'
 )]
 final class KeyGroupRelationDetail implements AdditionalAttributesInterface
@@ -43,6 +43,13 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         private readonly ?string $keyDescription = null,
         #[Property(description: 'Name of the group', type: 'string', example: 'My Group', nullable: true)]
         private readonly ?string $groupName = null,
+        #[Property(
+            description: 'Identifier of the sub group this assignment belongs to',
+            type: 'string',
+            example: '01JBZ8QF6K3M4N5P6R7S8T9V0W',
+            nullable: true
+        )]
+        private readonly ?string $subGroup = null,
     ) {
     }
 
@@ -79,5 +86,10 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
     public function getGroupName(): ?string
     {
         return $this->groupName;
+    }
+
+    public function getSubGroup(): ?string
+    {
+        return $this->subGroup;
     }
 }

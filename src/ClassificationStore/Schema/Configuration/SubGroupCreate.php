@@ -1,0 +1,66 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+
+/**
+ * @internal
+ */
+#[Schema(
+    schema: 'ClassificationStoreConfigurationSubGroupCreate',
+    title: 'Classification Store Configuration Sub Group Create',
+    required: ['name', 'storeId'],
+    type: 'object'
+)]
+final readonly class SubGroupCreate
+{
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function __construct(
+        #[Property(description: 'Name of the sub group', type: 'string', example: 'My Sub Group')]
+        private string $name,
+        #[Property(description: 'ID of the store this sub group belongs to', type: 'integer', example: 1)]
+        private int $storeId,
+        #[Property(
+            description: 'Description of the sub group',
+            type: 'string',
+            example: 'Sub group description',
+            nullable: true
+        )]
+        private ?string $description = null,
+    ) {
+        if (empty($this->name)) {
+            throw new InvalidArgumentException('Name cannot be empty.');
+        }
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getStoreId(): int
+    {
+        return $this->storeId;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+}
