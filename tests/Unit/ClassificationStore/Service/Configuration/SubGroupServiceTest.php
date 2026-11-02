@@ -15,185 +15,257 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydrator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydrator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupCreate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\SubGroupService;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupVocabularyResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repository\ListingDatabaseStubTrait;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
-use function array_values;
 
 /**
  * @internal
  */
 final class SubGroupServiceTest extends Unit
 {
+    use ListingDatabaseStubTrait;
+
     private const int STORE_ID = 1;
 
-    private const int SUB_GROUP_ID = 7;
+    private const int GROUP_ID = 7;
 
-    private const int GROUP_ID = 3;
+    private const string IDENTIFIER = '01JBQ8X9Z0ABCDEFGHJKMNPQRS';
 
     private const string SUB_GROUP_NAME = 'Dimensions';
 
-    private const string IDENTIFIER = '01JBZ8QF6K3M4N5P6R7S8T9V0W';
-
-    private const string DESCRIPTION = 'Measured properties';
-
-    private const string NEW_NAME = 'Outer dimensions';
-
-    private const string NEW_DESCRIPTION = 'Width, height and depth';
-
-    private const string METHOD_UPDATE = 'update';
+    private const string RENAMED = 'Measurements';
 
     /**
      * @throws Exception
      */
-    public function testCreateReturnsTheHydratedDetail(): void
+    public function testListSubGroupsReturnsOnlyTheStoresEntries(): void
+    {
+        $this->stubDatabaseReturning(
+            [
+                $this->createRow(id: 21, name: self::SUB_GROUP_NAME),
+                $this->createRow(id: 22, name: 'Logistics'),
+            ],
+            totalCount: 2
+        );
+
+        $repository = $this->createMock(SubGroupRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('getListing')
+            ->with($this->anything(), self::STORE_ID)
+            ->willReturn($this->createListing());
+
+        $collection = $this
+            ->createService($repository)
+            ->listSubGroups(new CollectionFilterParameter(), self::STORE_ID);
+
+        $this->assertSame(2, $collection->getTotalItems());
+        $this->assertSame(
+            [self::SUB_GROUP_NAME, 'Logistics'],
+            array_map(static fn (SubGroupDetail $detail): string => $detail->getName(), $collection->getItems())
+        );
+        $this->assertSame(
+            [self::STORE_ID, self::STORE_ID],
+            array_map(static fn (SubGroupDetail $detail): int => $detail->getStoreId(), $collection->getItems())
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testCreateSubGroupReturnsTheHydratedDetail(): void
     {
         $repository = $this->createMock(SubGroupRepositoryInterface::class);
         $repository
             ->method('create')
-            ->with(self::SUB_GROUP_NAME, self::STORE_ID, self::DESCRIPTION)
+            ->with(self::SUB_GROUP_NAME, self::STORE_ID)
             ->willReturn($this->createConfig(self::SUB_GROUP_NAME));
 
         $detail = $this
             ->createService($repository)
-            ->createSubGroup(new SubGroupCreate(self::SUB_GROUP_NAME, self::STORE_ID, self::DESCRIPTION));
+            ->createSubGroup(new SubGroupCreate(self::SUB_GROUP_NAME, self::STORE_ID));
 
-        $this->assertSame(self::SUB_GROUP_ID, $detail->getId());
         $this->assertSame(self::SUB_GROUP_NAME, $detail->getName());
         $this->assertSame(self::STORE_ID, $detail->getStoreId());
         $this->assertSame(self::IDENTIFIER, $detail->getIdentifier());
-        $this->assertSame(self::DESCRIPTION, $detail->getDescription());
     }
 
     /**
-     * @throws Exception
-     */
-    public function testUpdateRenamesAndDescribes(): void
-    {
-        $repository = $this->createMock(SubGroupRepositoryInterface::class);
-        $repository
-            ->method(self::METHOD_UPDATE)
-            ->with(self::SUB_GROUP_ID, self::NEW_NAME, self::NEW_DESCRIPTION)
-            ->willReturn($this->createConfig(self::NEW_NAME, self::NEW_DESCRIPTION));
-
-        $detail = $this
-            ->createService($repository)
-            ->updateSubGroup(
-                self::SUB_GROUP_ID,
-                new SubGroupUpdate(self::NEW_NAME, self::NEW_DESCRIPTION)
-            );
-
-        $this->assertSame(self::NEW_NAME, $detail->getName());
-        $this->assertSame(self::NEW_DESCRIPTION, $detail->getDescription());
-        $this->assertSame(self::IDENTIFIER, $detail->getIdentifier());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testUpdateOfAnUnknownSubGroupIsNotFound(): void
-    {
-        $repository = $this->createMock(SubGroupRepositoryInterface::class);
-        $repository
-            ->method(self::METHOD_UPDATE)
-            ->willThrowException(new NotFoundException('sub group configuration', 404));
-
-        $this->expectException(NotFoundException::class);
-
-        $this->createService($repository)->updateSubGroup(404, new SubGroupUpdate(self::SUB_GROUP_NAME));
-    }
-
-    /**
-     * The relation column carries the immutable identifier, not the name, so a rename neither reads
-     * nor invalidates the key relations of a group: the key list reports the same sub group after it.
+     * Renaming is the safe operation deleting is not: the assignments name the entry by its
+     * generated identifier, which a rename cannot change, so nothing is orphaned and the layout
+     * reports the new name under the same identifier.
      *
      * @throws Exception
      */
-    public function testRenameDoesNotTouchAssignments(): void
+    public function testRenamingASubGroupKeepsAssignmentsIntact(): void
     {
-        $relationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $relationRepository
-            ->expects($this->once())
-            ->method('getByGroupIds')
-            ->with([self::GROUP_ID])
-            ->willReturn([$this->createRelation()]);
-
-        $keyRelationResolver = new KeyRelationResolver($relationRepository);
+        $renamed = $this->createConfig(self::RENAMED);
 
         $repository = $this->createMock(SubGroupRepositoryInterface::class);
         $repository
-            ->method(self::METHOD_UPDATE)
-            ->willReturn($this->createConfig(self::NEW_NAME));
+            ->method('update')
+            ->willReturn($renamed);
+        $repository
+            ->method('getByIdentifiers')
+            ->with(self::STORE_ID, [self::IDENTIFIER])
+            ->willReturn([self::IDENTIFIER => $renamed]);
 
-        $before = $this->getSubGroups($keyRelationResolver);
+        $detail = $this
+            ->createService($repository)
+            ->updateSubGroup(21, new SubGroupUpdate(self::RENAMED, 'Physical dimensions'));
 
-        $this
-            ->createService($repository, $keyRelationResolver)
-            ->updateSubGroup(self::SUB_GROUP_ID, new SubGroupUpdate(self::NEW_NAME));
+        $this->assertSame(self::RENAMED, $detail->getName());
+        $this->assertSame(self::IDENTIFIER, $detail->getIdentifier());
 
-        $this->assertSame([self::IDENTIFIER], $before);
-        $this->assertSame($before, $this->getSubGroups($keyRelationResolver));
-    }
+        $relation = $this->createRelation(11, self::IDENTIFIER);
+        $groupLayout = $this
+            ->createGroupService($repository, [11 => $relation])
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter('classificationStore'));
 
-    /**
-     * @return array<int, string|null>
-     */
-    private function getSubGroups(KeyRelationResolverInterface $keyRelationResolver): array
-    {
-        return array_map(
-            static fn (KeyGroupRelation $relation): ?string => $relation->getSubGroup(),
-            array_values($keyRelationResolver->getByGroup(self::GROUP_ID))
-        );
+        // the link the assignment holds is untouched by the rename
+        $this->assertSame(self::IDENTIFIER, $relation->getSubGroup());
+        $this->assertSame(self::IDENTIFIER, $groupLayout->getKeys()[0]->getSubGroup());
+
+        $subGroups = $groupLayout->getSubGroups();
+        $this->assertCount(1, $subGroups);
+        $this->assertSame(self::IDENTIFIER, $subGroups[0]->getIdentifier());
+        $this->assertSame(self::RENAMED, $subGroups[0]->getName());
     }
 
     /**
      * @throws Exception
      */
-    private function createService(
-        SubGroupRepositoryInterface $repository,
-        ?KeyRelationResolverInterface $keyRelationResolver = null
-    ): SubGroupService {
+    private function createService(SubGroupRepositoryInterface $repository): SubGroupService
+    {
+        // FilterParameter is final, so the mapper has to hand back a real one
+        $filterMapper = $this->createMock(FilterMapperServiceInterface::class);
+        $filterMapper
+            ->method('getFilterParameters')
+            ->willReturn(new FilterParameter());
+
         return new SubGroupService(
             $this->createMock(EventDispatcherInterface::class),
-            $this->createMock(FilterMapperServiceInterface::class),
+            $filterMapper,
             $repository,
-            $keyRelationResolver ?? $this->createMock(KeyRelationResolverInterface::class),
-            $this->createMock(SubGroupVocabularyResolverInterface::class),
             new SubGroupHydrator(),
         );
     }
 
-    private function createConfig(string $name, ?string $description = self::DESCRIPTION): SubGroupConfig
+    /**
+     * @param KeyGroupRelation[] $relations
+     *
+     * @throws Exception
+     */
+    private function createGroupService(
+        SubGroupRepositoryInterface $subGroupRepository,
+        array $relations
+    ): GroupService {
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroup')
+            ->with(self::GROUP_ID)
+            ->willReturn($relations);
+
+        $keyGroupLayoutService = $this->createMock(KeyGroupLayoutServiceInterface::class);
+        $keyGroupLayoutService
+            ->method('getLayoutDefinition')
+            ->willReturn(new Input());
+
+        $group = new GroupConfig();
+        $group->setId(self::GROUP_ID);
+        $group->setName('Technical');
+        $group->setStoreId(self::STORE_ID);
+
+        $groupConfigRepository = $this->createMock(GroupConfigRepositoryInterface::class);
+        $groupConfigRepository
+            ->method('getById')
+            ->with(self::GROUP_ID)
+            ->willReturn($group);
+
+        return new GroupService(
+            $this->createMock(ConcreteObjectResolverInterface::class),
+            $groupConfigRepository,
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createMock(GroupHydratorInterface::class),
+            $keyRelationResolver,
+            $keyGroupLayoutService,
+            new GroupLayoutHydrator(),
+            $this->createMock(ClassDefinitionResolverInterface::class),
+            $subGroupRepository,
+        );
+    }
+
+    private function createListing(): Listing
+    {
+        $listing = new Listing();
+        $listing->addConditionParam('`storeId` = :storeId', ['storeId' => self::STORE_ID]);
+
+        return $listing;
+    }
+
+    private function createConfig(string $name): SubGroupConfig
     {
         $config = new SubGroupConfig();
-        $config->setId(self::SUB_GROUP_ID);
-        $config->setStoreId(self::STORE_ID);
+        $config->setId(21);
         $config->setName($name);
-        $config->setDescription($description);
+        $config->setStoreId(self::STORE_ID);
+        $config->setDescription('Physical dimensions');
         $config->setIdentifier(self::IDENTIFIER);
 
         return $config;
     }
 
-    private function createRelation(): KeyGroupRelation
+    private function createRelation(int $keyId, ?string $subGroup): KeyGroupRelation
     {
         $relation = new KeyGroupRelation();
-        $relation->setKeyId(11);
+        $relation->setKeyId($keyId);
         $relation->setGroupId(self::GROUP_ID);
-        $relation->setSubGroup(self::IDENTIFIER);
+        $relation->setName('key' . $keyId);
+        $relation->setDescription('');
+        $relation->setDefinition('{"fieldtype":"input"}');
+        $relation->setType('input');
+        $relation->setSubGroup($subGroup);
 
         return $relation;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function createRow(int $id, string $name): array
+    {
+        return [
+            'id' => $id,
+            'storeId' => self::STORE_ID,
+            'name' => $name,
+            'description' => 'A sub group',
+            'identifier' => self::IDENTIFIER . $id,
+            'creationDate' => 1734567890,
+            'modificationDate' => 1734567891,
+        ];
     }
 }

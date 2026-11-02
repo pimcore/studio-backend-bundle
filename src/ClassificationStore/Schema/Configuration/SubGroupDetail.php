@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     schema: 'ClassificationStoreConfigurationSubGroupDetail',
     title: 'Classification Store Configuration Sub Group Detail',
-    required: ['id', 'name', 'storeId', 'identifier', 'description', 'creationDate', 'modificationDate'],
+    required: ['id', 'name', 'storeId', 'description', 'creationDate', 'modificationDate'],
     type: 'object'
 )]
 final class SubGroupDetail implements AdditionalAttributesInterface
@@ -35,14 +35,6 @@ final class SubGroupDetail implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'ID of the store this sub group belongs to', type: 'integer', example: 1)]
         private readonly int $storeId,
-        #[Property(
-            description: 'Immutable identifier a key assignment carries to name this sub group',
-            type: 'string',
-            example: '01JBZ8QF6K3M4N5P6R7S8T9V0W',
-            nullable: true,
-            readOnly: true
-        )]
-        private readonly ?string $identifier = null,
         #[Property(
             description: 'Description of the sub group',
             type: 'string',
@@ -64,6 +56,13 @@ final class SubGroupDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?int $modificationDate = null,
+        #[Property(
+            description: 'Generated identifier a key assignment names this sub group by, read-only',
+            type: 'string',
+            example: '01JBQ8X9Z0ABCDEFGHJKMNPQRS',
+            nullable: true
+        )]
+        private readonly ?string $identifier = null,
     ) {
     }
 
@@ -82,11 +81,6 @@ final class SubGroupDetail implements AdditionalAttributesInterface
         return $this->storeId;
     }
 
-    public function getIdentifier(): ?string
-    {
-        return $this->identifier;
-    }
-
     public function getDescription(): ?string
     {
         return $this->description;
@@ -100,5 +94,10 @@ final class SubGroupDetail implements AdditionalAttributesInterface
     public function getModificationDate(): ?int
     {
         return $this->modificationDate;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
     }
 }

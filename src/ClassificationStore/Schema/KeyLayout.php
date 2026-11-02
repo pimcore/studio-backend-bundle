@@ -45,9 +45,9 @@ final readonly class KeyLayout
         #[Property(description: 'Configured title of the key', type: 'string', example: 'value', nullable: true)]
         private ?string $title = null,
         #[Property(
-            description: 'Identifier of the sub group this key belongs to within its group',
+            description: 'Identifier of the sub group this key is assigned to within the group',
             type: 'string',
-            example: '01JBZ8QF6K3M4N5P6R7S8T9V0W',
+            example: '01JBQ8X9Z0ABCDEFGHJKMNPQRS',
             nullable: true
         )]
         private ?string $subGroup = null,

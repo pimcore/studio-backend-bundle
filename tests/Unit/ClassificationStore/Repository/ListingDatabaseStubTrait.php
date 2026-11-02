@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repo
 
 use Doctrine\DBAL\Connection;
 use Pimcore;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -28,13 +27,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
  * its rows verbatim: the ORDER BY is the observable part of the ordering contract, the row order is
  * what proves the repository passes the result through unsorted.
  *
- * The container also holds the relation cache, which the classification store DAOs resolve from it
- * rather than being handed it.
- *
- * Writes are recorded apart from reads by {@see getExecutedWrites()}, so a guard that must refuse
- * before it changes anything can be held to it: with no database behind the suite, "the rows are
- * intact" is provable only as "no statement that could change them was issued".
- *
  * @internal
  */
 trait ListingDatabaseStubTrait
@@ -46,11 +38,6 @@ trait ListingDatabaseStubTrait
      */
     private array $executedQueries = [];
 
-    /**
-     * @var list<string>
-     */
-    private array $executedWrites = [];
-
     private ?KernelInterface $kernelBeforeStub = null;
 
     private bool $kernelStubbed = false;
@@ -58,49 +45,22 @@ trait ListingDatabaseStubTrait
     /**
      * @param list<array<string, mixed>> $rows
      */
-    private function stubDatabaseReturning(array $rows): void
-    {
-        $this->stubDatabaseAnswering(static fn (string $query): array => $rows);
-    }
-
-    /**
-     * For an entry point whose statements read more than one table - a guard that probes a second
-     * one before it writes, say: the callable is handed each query and answers it with the rows
-     * that table holds.
-     *
-     * @param callable(string): list<array<string, mixed>> $answer
-     */
-    private function stubDatabaseAnswering(callable $answer): void
+    private function stubDatabaseReturning(array $rows, int $totalCount = 0): void
     {
         $connection = $this->makeEmpty(Connection::class, [
             'quoteIdentifier' => static fn (string $identifier): string => '`' . $identifier . '`',
             'quote' => static fn (string $value): string => "'" . $value . "'",
-            'fetchAllAssociative' => function (string $query) use ($answer): array {
+            'fetchAllAssociative' => function (string $query) use ($rows): array {
                 $this->executedQueries[] = $query;
 
-                return $answer($query);
+                return $rows;
             },
-            'fetchAssociative' => static fn (string $query): array|false => $answer($query)[0] ?? false,
-            'delete' => function (string $table): int {
-                $this->executedWrites[] = 'DELETE ' . $table;
-
-                return 0;
-            },
-            'update' => function (string $table): int {
-                $this->executedWrites[] = 'UPDATE ' . $table;
-
-                return 0;
-            },
-            'executeStatement' => function (string $query): int {
-                $this->executedWrites[] = $query;
-
-                return 0;
-            },
+            // the COUNT(*) a listing answers getTotalCount() with
+            'fetchOne' => static fn (): int => $totalCount,
         ]);
 
         $container = new Container();
         $container->set(self::CONNECTION_SERVICE_ID, $connection);
-        $container->set(KeyGroupRelationCache::class, new KeyGroupRelationCache());
 
         $this->kernelBeforeStub = Pimcore::getKernel();
         $this->kernelStubbed = true;
@@ -114,26 +74,9 @@ trait ListingDatabaseStubTrait
         return $this->executedQueries[0];
     }
 
-    /**
-     * @return list<string>
-     */
-    private function getExecutedQueries(): array
-    {
-        return $this->executedQueries;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function getExecutedWrites(): array
-    {
-        return $this->executedWrites;
-    }
-
     protected function _after(): void
     {
         $this->executedQueries = [];
-        $this->executedWrites = [];
 
         if (!$this->kernelStubbed) {
             return;

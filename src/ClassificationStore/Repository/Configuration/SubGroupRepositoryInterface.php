@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -32,22 +33,25 @@ interface SubGroupRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing;
 
     /**
-     * The whole sub group vocabulary of a store, by ascending id.
-     *
-     * @return SubGroupConfig[]
-     */
-    public function getByStoreId(int $storeId): array;
-
-    /**
      * @throws NotFoundException
      */
     public function getById(int $id): SubGroupConfig;
 
     /**
+     * The vocabulary entries of a store a group's keys name, keyed by identifier. An identifier with
+     * no entry is left out, so a dangling tag resolves to nothing instead of to a fabricated entry.
+     *
+     * @param string[] $identifiers
+     *
+     * @return array<string, SubGroupConfig>
+     */
+    public function getByIdentifiers(int $storeId, array $identifiers): array;
+
+    /**
      * @throws InvalidArgumentException
      * @throws ElementSavingFailedException
      */
-    public function create(string $name, int $storeId, ?string $description): SubGroupConfig;
+    public function create(string $name, int $storeId): SubGroupConfig;
 
     /**
      * @throws NotFoundException
@@ -57,8 +61,12 @@ interface SubGroupRepositoryInterface
     public function update(int $id, string $name, ?string $description): SubGroupConfig;
 
     /**
+     * Refused while a key assignment of the store still carries the entry, so that deleting a sub
+     * group cannot silently untag the assignments naming it.
+     *
      * @throws NotFoundException
      * @throws ConflictException
+     * @throws DatabaseException
      */
     public function delete(int $id): void;
 }

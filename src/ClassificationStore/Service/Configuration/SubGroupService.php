@@ -19,8 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupUpdate;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupVocabularyResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -36,8 +34,6 @@ final readonly class SubGroupService implements SubGroupServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
         private SubGroupRepositoryInterface $subGroupConfigurationRepository,
-        private KeyRelationResolverInterface $keyRelationResolver,
-        private SubGroupVocabularyResolverInterface $subGroupVocabularyResolver,
         private SubGroupHydratorInterface $subGroupHydrator,
     ) {
     }
@@ -71,15 +67,10 @@ final readonly class SubGroupService implements SubGroupServiceInterface
      */
     public function createSubGroup(SubGroupCreate $parameters): SubGroupDetail
     {
-        try {
-            $subGroupConfig = $this->subGroupConfigurationRepository->create(
-                $parameters->getName(),
-                $parameters->getStoreId(),
-                $parameters->getDescription(),
-            );
-        } finally {
-            $this->subGroupVocabularyResolver->clear();
-        }
+        $subGroupConfig = $this->subGroupConfigurationRepository->create(
+            $parameters->getName(),
+            $parameters->getStoreId()
+        );
 
         return $this->getHydratedSubGroupDetail($subGroupConfig);
     }
@@ -89,16 +80,11 @@ final readonly class SubGroupService implements SubGroupServiceInterface
      */
     public function updateSubGroup(int $id, SubGroupUpdate $parameters): SubGroupDetail
     {
-        // only the vocabulary memo: an assignment names its sub group by the immutable identifier
-        try {
-            $subGroupConfig = $this->subGroupConfigurationRepository->update(
-                $id,
-                $parameters->getName(),
-                $parameters->getDescription(),
-            );
-        } finally {
-            $this->subGroupVocabularyResolver->clear();
-        }
+        $subGroupConfig = $this->subGroupConfigurationRepository->update(
+            $id,
+            $parameters->getName(),
+            $parameters->getDescription(),
+        );
 
         return $this->getHydratedSubGroupDetail($subGroupConfig);
     }
@@ -108,13 +94,7 @@ final readonly class SubGroupService implements SubGroupServiceInterface
      */
     public function deleteSubGroup(int $id): void
     {
-        // the entry leaves the vocabulary a group layout reports; the guard refuses before a write
-        try {
-            $this->subGroupConfigurationRepository->delete($id);
-        } finally {
-            $this->subGroupVocabularyResolver->clear();
-            $this->keyRelationResolver->clear();
-        }
+        $this->subGroupConfigurationRepository->delete($id);
     }
 
     private function getHydratedSubGroupDetail(SubGroupConfig $subGroupConfig): SubGroupDetail

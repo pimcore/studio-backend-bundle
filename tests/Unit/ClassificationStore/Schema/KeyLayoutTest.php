@@ -24,22 +24,14 @@ use ReflectionClass;
  */
 final class KeyLayoutTest extends Unit
 {
-    private const string SUB_GROUP = '01JBZ8QF6K3M4N5P6R7S8T9V0W';
-
-    private const string NAME = 'weight';
-
-    private const string DESCRIPTION = 'The weight';
-
-    private const string TITLE = 'Weight';
-
     public function testTitleIsOptionalAndNullable(): void
     {
         $definition = new Input();
 
-        $this->assertNull((new KeyLayout(42, self::NAME, self::DESCRIPTION, $definition))->getTitle());
+        $this->assertNull((new KeyLayout(42, 'weight', 'The weight', $definition))->getTitle());
         $this->assertSame(
-            self::TITLE,
-            (new KeyLayout(42, self::NAME, self::DESCRIPTION, $definition, self::TITLE))->getTitle()
+            'Weight',
+            (new KeyLayout(42, 'weight', 'The weight', $definition, 'Weight'))->getTitle()
         );
 
         $attributes = (new ReflectionClass(KeyLayout::class))->getAttributes(Schema::class);
@@ -47,18 +39,6 @@ final class KeyLayoutTest extends Unit
         $this->assertSame(
             ['id', 'name', 'description', 'definition'],
             $attributes[0]->getArguments()['required']
-        );
-    }
-
-    public function testSubGroupIsExposed(): void
-    {
-        $definition = new Input();
-
-        $this->assertNull((new KeyLayout(42, self::NAME, self::DESCRIPTION, $definition))->getSubGroup());
-        $this->assertSame(
-            self::SUB_GROUP,
-            (new KeyLayout(42, self::NAME, self::DESCRIPTION, $definition, self::TITLE, self::SUB_GROUP))
-                ->getSubGroup()
         );
     }
 }

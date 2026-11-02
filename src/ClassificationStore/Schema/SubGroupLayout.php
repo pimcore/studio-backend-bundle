@@ -31,7 +31,7 @@ use OpenApi\Attributes\Schema;
 final readonly class SubGroupLayout
 {
     public function __construct(
-        #[Property(description: 'Identifier', type: 'string', example: '01JBZ8QF6K3M4N5P6R7S8T9V0W')]
+        #[Property(description: 'Identifier the key assignments name this sub group by', type: 'string')]
         private string $identifier,
         #[Property(description: 'Name', type: 'string', example: 'value')]
         private string $name,

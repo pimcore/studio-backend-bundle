@@ -57,32 +57,41 @@ The following steps are necessary during updating to newer versions.
   `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
-- [Classification Store] Added: four endpoints for the sub group vocabulary of a store —
-  `POST /classification-store/configuration/stores/{storeId}/sub-groups` (paginated list, same
-  `CollectionFilterParameter` body as the group listing), `POST /classification-store/configuration/sub-groups/add`
-  (`name` and `storeId` required, `description` optional), `PUT /classification-store/configuration/sub-groups/{id}`
-  and `DELETE /classification-store/configuration/sub-groups/{id}`. All four require the `classificationStore`
-  permission. The detail response (`ClassificationStoreConfigurationSubGroupDetail`) publishes the read-only,
-  nullable `identifier` a key assignment carries to name its sub group; neither request schema accepts one, so a
-  client cannot author it. A second sub group with a name already used in the same store is refused with `422`, on
-  create and on rename alike; renaming an entry to its own current name succeeds. A deletion is refused with `409`
-  while at least one key assignment still carries the entry's identifier, and the message names the groups that
-  still use it — every assignment is left as it was. A rename never touches an assignment: the relation column
-  stores the immutable `identifier`, not the name.
-- [Classification Store] Added: `ClassificationStoreConfigurationKeyGroupRelationDetail`
-  (`POST /classification-store/configuration/groups/{groupId}/key-relations` and
-  `POST /classification-store/configuration/key-group-relations/add`) carries the assignment's `subGroup`, the raw
-  identifier from the relation or `null`. `KeyLayout` (`GET /classification-store/layout-by-key/{keyId}/{groupId}`,
-  `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`)
-  carries the same raw `subGroup`, and `GroupLayout` carries an ordered `subGroups` array, each entry an object with
-  `identifier`, `name` and `description` resolved from that store's vocabulary. A sub group appears where its first
-  key appears under the configured `sorter`, which is the order core derives — neither alphabetical nor by id — and
-  one with no key in the group is absent. The per-key `subGroup` keys into that array. All of these are read-only:
-  no endpoint sets or clears the `subGroup` of an assignment yet, and `ClassificationStoreConfigurationKeyGroupRelationCreate`
-  does not accept one, so the field is populated outside this API for now. The store-wide key picker
-  (`GET /classification-store/key-group-relations`) is unchanged and carries no `subGroup`. The `@internal`
-  `GroupLayoutHydratorInterface::hydrate()` got the optional argument `$subGroups`, and the `@internal`
-  `SearchHelperServiceInterface::applySearchTermFilter()` accepts a `SubGroupConfig\Listing` as well.
+- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
+  Four endpoints manage it, mirroring the group quartet: `POST /classification-store/configuration/stores/{storeId}/sub-groups`
+  (paginated list, taking the usual collection request body), `POST /classification-store/configuration/sub-groups/add`
+  (create, from `name` and `storeId`), `PUT /classification-store/configuration/sub-groups/{id}` (rename and re-describe,
+  from `name` and `description`) and `DELETE /classification-store/configuration/sub-groups/{id}`. All four require the
+  `classificationStore` permission. `SubGroupDetail` carries a generated, read-only `identifier` — the opaque string a key
+  assignment names the entry by — which neither write schema accepts. A second sub group with a name already used in the
+  same store is refused with `422`; the same name in a different store is accepted. Deleting one is refused with `409`
+  while any key assignment in a group of that store still carries it, and the message names those groups; the assignments
+  and the vocabulary row are left untouched, so a sub group is never removed from under the keys that name it. Renaming is
+  always safe: the assignments hold the identifier, which a rename does not change.
+- [Classification Store] Added: `subGroup`, the raw sub group identifier of an assignment, nullable, on
+  `KeyGroupRelationDetail` (`POST /classification-store/configuration/groups/{groupId}/key-relations` and the create
+  response) and on `KeyLayout`, so every key of `GET /classification-store/layout-by-key/{keyId}/{groupId}`,
+  `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`
+  reports it. It is the stored identifier verbatim and is never resolved to a name in these fields. There is no write path
+  for it yet — `KeyGroupRelationCreate` is unchanged — so it is read-only until the assignment update endpoint lands.
+- [Classification Store] Added: `GroupLayout` carries `subGroups`, an array of objects with `identifier`, `name` and
+  `description`, resolved from the store's sub group vocabulary while the layout is built. It is optional and defaults to
+  `[]`, so the schema's `required` list is unchanged. Only sub groups a key of that group actually carries appear, and an
+  identifier with no row in the vocabulary adds no entry at all — the key keeps the identifier in `keys` and no entry is
+  fabricated from it. The order is **derived, never stored**: a sub group appears where its first key appears, following
+  the relation `sorter` ascending then key id ascending that `keys` already uses — neither alphabetically nor by
+  vocabulary id. No order column was added. Because `GET /classification-store/layout-by-collection/{collectionId}`
+  returns a `GroupLayout` per group, its groups gain `subGroups` and their keys gain `subGroup` too: `CollectionLayout`
+  itself still carries only `groups`, as the entry above says, but the objects inside it are no longer unchanged.
+- [Classification Store] Changed: `objectId` is now optional on `GET /classification-store/layout-by-group/{groupId}` and
+  on `GET /classification-store/layout-by-collection/{collectionId}`, the way it already was on
+  `GET /classification-store/layout-by-key/{keyId}/{groupId}`. Without it the layout is returned with its field
+  definitions unenriched, which is what a caller with no object in context — a grid column picker, say — needs. An
+  `objectId` that is sent but does not resolve is still a `404`, so no client that sends one sees a different answer. The
+  `@internal` `GroupLayoutHydratorInterface::hydrate()` got the optional argument `$subGroups`,
+  `SearchHelperServiceInterface::applySearchTermFilter()` accepts the sub group listing in addition to the group and
+  collection ones, and `ClassificationStore\Service\GroupService` got a `SubGroupRepositoryInterface` constructor
+  argument.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.

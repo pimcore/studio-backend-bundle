@@ -40,9 +40,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreService
 
-  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupVocabularyResolverInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SubGroupVocabularyResolver
-
 
   #
   # Repositories
@@ -117,14 +114,14 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepository
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepository
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepository
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepository
-
-  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepository
 
 
   #
@@ -143,14 +140,14 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydrator
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionRelationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionRelationHydrator
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyGroupRelationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyGroupRelationHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydrator
 
 
   #

@@ -36,13 +36,6 @@ final readonly class SubGroupCreate
         private string $name,
         #[Property(description: 'ID of the store this sub group belongs to', type: 'integer', example: 1)]
         private int $storeId,
-        #[Property(
-            description: 'Description of the sub group',
-            type: 'string',
-            example: 'Sub group description',
-            nullable: true
-        )]
-        private ?string $description = null,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
@@ -57,10 +50,5 @@ final readonly class SubGroupCreate
     public function getStoreId(): int
     {
         return $this->storeId;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
     }
 }

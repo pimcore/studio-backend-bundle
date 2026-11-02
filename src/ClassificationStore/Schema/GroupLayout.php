@@ -45,7 +45,7 @@ final class GroupLayout implements AdditionalAttributesInterface
         #[Property(description: 'Title of the group', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $title = null,
         #[Property(
-            description: 'Sub groups of this group, in the order derived from the key order',
+            description: 'Sub groups the keys of this group are assigned to, ordered by their first key',
             type: 'array',
             items: new Items(ref: SubGroupLayout::class)
         )]

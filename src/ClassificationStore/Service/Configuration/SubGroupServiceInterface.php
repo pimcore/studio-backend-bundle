@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupDetail;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\SubGroupUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -52,6 +53,7 @@ interface SubGroupServiceInterface
     /**
      * @throws NotFoundException
      * @throws ConflictException
+     * @throws DatabaseException
      */
     public function deleteSubGroup(int $id): void;
 }

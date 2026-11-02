@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\SubGroupServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
@@ -51,7 +50,6 @@ final class UpdateController extends AbstractApiController
 
     /**
      * @throws NotFoundException
-     * @throws InvalidArgumentException
      * @throws ElementSavingFailedException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_cs_configuration_sub_group_update', methods: ['PUT'])]

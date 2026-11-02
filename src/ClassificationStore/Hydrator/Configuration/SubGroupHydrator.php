@@ -27,10 +27,10 @@ final readonly class SubGroupHydrator implements SubGroupHydratorInterface
             $subGroupConfig->getId(),
             $subGroupConfig->getName(),
             $subGroupConfig->getStoreId(),
-            $subGroupConfig->getIdentifier(),
             $subGroupConfig->getDescription(),
             $subGroupConfig->getCreationDate(),
             $subGroupConfig->getModificationDate(),
+            $subGroupConfig->getIdentifier(),
         );
     }
 }

@@ -13,19 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing;
+use function array_fill;
+use function count;
 use function implode;
 use function sprintf;
 
@@ -34,13 +39,12 @@ use function sprintf;
  */
 final readonly class SubGroupRepository implements SubGroupRepositoryInterface
 {
-    private const string STORE_CONDITION = '`storeId` = :storeId';
-
-    private const string STORE_ID_PARAMETER = 'storeId';
+    private const string NOT_FOUND_TYPE = 'sub group configuration';
 
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private SearchHelperServiceInterface $searchHelperService,
+        private Connection $connection,
     ) {
     }
 
@@ -50,7 +54,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        $listing->addConditionParam(self::STORE_CONDITION, [self::STORE_ID_PARAMETER => $storeId]);
+        $listing->addConditionParam('`storeId` = :storeId', ['storeId' => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -61,41 +65,58 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getByStoreId(int $storeId): array
-    {
-        $listing = new Listing();
-        $listing->addConditionParam(self::STORE_CONDITION, [self::STORE_ID_PARAMETER => $storeId]);
-        $listing->setOrderKey('id');
-        $listing->setOrder('ASC');
-
-        return $listing->load();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getById(int $id): SubGroupConfig
     {
-        $config = $this->findOne('`id` = :id', ['id' => $id]);
+        $listing = new Listing();
+        $listing->addConditionParam('`id` = :id', ['id' => $id]);
+        $configs = $listing->load();
 
-        if (!$config) {
-            throw new NotFoundException('sub group configuration', $id);
+        if (count($configs) === 0) {
+            throw new NotFoundException(self::NOT_FOUND_TYPE, $id);
         }
 
-        return $config;
+        return $configs[0];
     }
 
     /**
      * {@inheritdoc}
      */
-    public function create(string $name, int $storeId, ?string $description): SubGroupConfig
+    public function getByIdentifiers(int $storeId, array $identifiers): array
     {
-        $this->assertNameIsFree($name, $storeId, null);
+        if (count($identifiers) === 0) {
+            return [];
+        }
+
+        // positional throughout, so that the IN list expands the way the other listings build theirs
+        $placeholders = implode(',', array_fill(0, count($identifiers), '?'));
+
+        $listing = new Listing();
+        $listing->addConditionParam('`storeId` = ?', [$storeId]);
+        $listing->addConditionParam('`identifier` IN (' . $placeholders . ')', $identifiers);
+
+        $resolved = [];
+        foreach ($listing->load() as $config) {
+            $identifier = $config->getIdentifier();
+            if ($identifier === null) {
+                continue;
+            }
+
+            $resolved[$identifier] = $config;
+        }
+
+        return $resolved;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function create(string $name, int $storeId): SubGroupConfig
+    {
+        $this->assertNameIsFree($name, $storeId);
 
         $config = new SubGroupConfig();
         $config->setName($name);
         $config->setStoreId($storeId);
-        $config->setDescription($description);
 
         try {
             $config->save();
@@ -112,7 +133,6 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function update(int $id, string $name, ?string $description): SubGroupConfig
     {
         $config = $this->getById($id);
-
         $this->assertNameIsFree($name, $config->getStoreId(), $id);
 
         $config->setName($name);
@@ -133,10 +153,71 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function delete(int $id): void
     {
         $config = $this->getById($id);
+        $usedBy = $this->getGroupNamesUsing($config->getStoreId(), $config->getIdentifier());
 
-        $this->assertNoAssignmentCarriesTheIdentifier($config);
+        if (count($usedBy) > 0) {
+            throw new ConflictException(
+                sprintf(
+                    'Sub group "%s" is still assigned to keys of the group(s) "%s" and cannot be deleted',
+                    $config->getName(),
+                    implode('", "', $usedBy)
+                )
+            );
+        }
 
         $config->delete();
+    }
+
+    /**
+     * The groups of the store whose key assignments carry the identifier. Scoped to the store
+     * because the identifier is unique per store, not globally.
+     *
+     * @return string[]
+     *
+     * @throws DatabaseException
+     */
+    private function getGroupNamesUsing(int $storeId, ?string $identifier): array
+    {
+        if ($identifier === null) {
+            return [];
+        }
+
+        try {
+            return $this->connection->fetchFirstColumn(
+                sprintf(
+                    'SELECT DISTINCT `g`.`name` FROM `%s` `r`'
+                    . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
+                    . ' WHERE `g`.`storeId` = ? AND `r`.`subGroup` = ?',
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                    GroupConfigDao::TABLE_NAME_GROUPS
+                ),
+                [$storeId, $identifier]
+            );
+        } catch (DBALException $e) {
+            throw new DatabaseException('Failed to check the sub group for usage: ' . $e->getMessage(), $e);
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function assertNameIsFree(string $name, int $storeId, ?int $exceptId = null): void
+    {
+        $listing = new Listing();
+        $listing->addConditionParam('`name` = :name', ['name' => $name]);
+        $listing->addConditionParam('`storeId` = :storeId', ['storeId' => $storeId]);
+
+        if ($exceptId !== null) {
+            $listing->addConditionParam('`id` != :exceptId', ['exceptId' => $exceptId]);
+        }
+
+        if (count($listing->load()) === 0) {
+            return;
+        }
+
+        throw new InvalidArgumentException(
+            sprintf('Sub group with the name "%s" already exists in store %d', $name, $storeId)
+        );
     }
 
     private function applySearchCondition(Listing $listing, FilterParameter $parameters): void
@@ -147,77 +228,5 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
         }
 
         $this->searchHelperService->applySearchTermFilter($listing, $searchFilter->getFilterValue());
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function assertNameIsFree(string $name, int $storeId, ?int $exceptId): void
-    {
-        $existing = $this->findOne(
-            self::STORE_CONDITION . ' AND `name` = :name',
-            [self::STORE_ID_PARAMETER => $storeId, 'name' => $name]
-        );
-
-        if (!$existing || $existing->getId() === $exceptId) {
-            return;
-        }
-
-        throw new InvalidArgumentException(
-            sprintf('Sub group with the name "%s" already exists in store %d', $name, $storeId)
-        );
-    }
-
-    /**
-     * The relation column carries the immutable identifier, so an entry that is still named by an
-     * assignment cannot be dropped without orphaning it.
-     *
-     * @throws ConflictException
-     */
-    private function assertNoAssignmentCarriesTheIdentifier(SubGroupConfig $config): void
-    {
-        $identifier = $config->getIdentifier();
-        if ($identifier === null) {
-            return;
-        }
-
-        $listing = new GroupConfigListing();
-        $listing->addConditionParam(
-            self::STORE_CONDITION
-            . ' AND `id` IN (SELECT `groupId` FROM `' . KeyGroupRelationDao::TABLE_NAME_RELATIONS . '`'
-            . ' WHERE `subGroup` = :subGroup)',
-            [self::STORE_ID_PARAMETER => $config->getStoreId(), 'subGroup' => $identifier]
-        );
-        $listing->setOrderKey('name');
-        $listing->setOrder('ASC');
-
-        $groupNames = [];
-        foreach ($listing->load() as $groupConfig) {
-            $groupNames[] = $groupConfig->getName();
-        }
-
-        if ($groupNames === []) {
-            return;
-        }
-
-        throw new ConflictException(
-            sprintf(
-                'Sub group "%s" is still used by the keys of the group(s) "%s"',
-                $config->getName(),
-                implode('", "', $groupNames)
-            )
-        );
-    }
-
-    /**
-     * @param array<string, mixed> $parameters
-     */
-    private function findOne(string $condition, array $parameters): ?SubGroupConfig
-    {
-        $listing = new Listing();
-        $listing->addConditionParam($condition, $parameters);
-        $listing->setLimit(1);
-
-        return $listing->load()[0] ?? null;
     }
 }
