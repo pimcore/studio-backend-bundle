@@ -420,6 +420,32 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     }
 
     /**
+     * Advanced many-to-many owner fields only accept metadata wrappers around their targets, any other
+     * owner field stores the object itself.
+     */
+    private function createOwnerEntry(
+        Concrete $remoteObject,
+        Concrete $element,
+        string $ownerFieldName
+    ): Concrete|ObjectMetadata|ElementMetadata {
+        $ownerFieldDefinition = $remoteObject->getClass()->getFieldDefinition($ownerFieldName);
+
+        return match (true) {
+            $ownerFieldDefinition instanceof AdvancedManyToManyObjectRelation => new ObjectMetadata(
+                $ownerFieldName,
+                $ownerFieldDefinition->getColumnKeys(),
+                $element
+            ),
+            $ownerFieldDefinition instanceof AdvancedManyToManyRelation => new ElementMetadata(
+                $ownerFieldName,
+                $ownerFieldDefinition->getColumnKeys(),
+                $element
+            ),
+            default => $element,
+        };
+    }
+
+    /**
      * @throws ValidationException
      */
     private function saveRemoteObject(
