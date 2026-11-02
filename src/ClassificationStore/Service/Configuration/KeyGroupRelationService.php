@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\GroupInfoResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -85,6 +86,28 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
                 $parameters->getSorter(),
                 $parameters->isMandatory()
             );
+        } finally {
+            $this->keyRelationResolver->clear();
+        }
+
+        [$keyName, $keyDescription] = $this->resolveKeyInfo($relation->getKeyId());
+
+        return $this->getHydratedKeyGroupRelationDetail($relation, $keyName, $keyDescription);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateKeyGroupRelation(
+        int $groupId,
+        int $keyId,
+        KeyGroupRelationUpdate $parameters
+    ): KeyGroupRelationDetail {
+        // an update never creates a row, so an unknown pair is refused before anything is written
+        $this->keyRelationResolver->getByGroupAndKey($groupId, $keyId);
+
+        try {
+            $relation = $this->keyGroupRelationRepository->update($keyId, $groupId, $parameters);
         } finally {
             $this->keyRelationResolver->clear();
         }

@@ -41,9 +41,15 @@ final readonly class StoreUpdate
             nullable: true
         )]
         private ?string $description = null,
+        // not a property of this schema: the identifier is assigned by the system and only refused here
+        ?string $identifier = null,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($identifier !== null) {
+            throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }
 

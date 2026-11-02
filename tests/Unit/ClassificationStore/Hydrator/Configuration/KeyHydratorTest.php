@@ -22,6 +22,8 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
  */
 final class KeyHydratorTest extends Unit
 {
+    private const string IDENTIFIER = '01K9T0ZQ0VX8W4S1R7J3A2B5C6';
+
     private KeyHydrator $hydrator;
 
     public function _before(): void
@@ -45,6 +47,19 @@ final class KeyHydratorTest extends Unit
             $keyConfig->getTitle(),
             $this->hydrator->hydrateKeyDetail($keyConfig)->getTitle()
         );
+    }
+
+    public function testStoredIdentifierIsPassedThroughVerbatim(): void
+    {
+        $keyConfig = $this->createKeyConfig();
+        $keyConfig->setIdentifier(self::IDENTIFIER);
+
+        $this->assertSame(self::IDENTIFIER, $this->hydrator->hydrateKeyDetail($keyConfig)->getIdentifier());
+    }
+
+    public function testUnsetIdentifierStaysNull(): void
+    {
+        $this->assertNull($this->hydrator->hydrateKeyDetail($this->createKeyConfig())->getIdentifier());
     }
 
     private function createKeyConfig(): KeyConfig

@@ -2071,7 +2071,10 @@ classification_store_configuration_collection_relation_collection_description: |
   The colId query parameter is required.
 classification_store_configuration_collection_relation_collection_summary: List collection-group relations
 classification_store_configuration_collection_relation_collection_success_response: Paginated list of collection-group relations
-classification_store_configuration_collection_relation_create_description: Create or update a collection-group relation with collection ID, group ID, and optional sorter
+classification_store_configuration_collection_relation_create_description: |
+  Create or update a collection-group relation with collection ID, group ID, and optional sorter.
+  Posting a pair for which a relation already exists does not fail: it updates the sorter of that
+  relation, so this endpoint is the way to change the sorter of an existing one.
 classification_store_configuration_collection_relation_create_summary: Create or update a collection-group relation
 classification_store_configuration_collection_relation_create_success_response: Created or updated collection-group relation
 classification_store_configuration_collection_relation_delete_description: Delete a collection-group relation by collection ID and group ID
@@ -2083,9 +2086,21 @@ classification_store_configuration_key_group_relation_collection_description: |
   The groupId query parameter is required. Returns key details with layout definition.
 classification_store_configuration_key_group_relation_collection_summary: List key-group relations
 classification_store_configuration_key_group_relation_collection_success_response: Paginated list of key-group relations
-classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag
+classification_store_configuration_key_group_relation_create_description: |
+  Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag.
+  Posting a pair for which a relation already exists does not fail: it updates the sorter and the
+  mandatory flag of that relation and leaves its sub group, definition override and metadata
+  untouched. Those three are written by the update endpoint only.
 classification_store_configuration_key_group_relation_create_summary: Create or update a key-group relation
 classification_store_configuration_key_group_relation_create_success_response: Created or updated key-group relation
+classification_store_configuration_key_group_relation_update_description: |
+  Update the existing key-group relation addressed by group ID and key ID in place, without deleting
+  and re-creating it. A property the payload does not carry keeps its stored value; a property carrying
+  an explicit null clears it, which sorter and mandatory do not allow. Answers 404 when the pair carries
+  no relation - this endpoint never creates one - and 422 when the classification store refuses the sub
+  group or the definition override.
+classification_store_configuration_key_group_relation_update_summary: Update a key-group relation
+classification_store_configuration_key_group_relation_update_success_response: Updated key-group relation
 classification_store_configuration_key_group_relation_delete_description: Delete a key-group relation by key ID and group ID
 classification_store_configuration_key_group_relation_delete_summary: Delete a key-group relation
 classification_store_configuration_key_group_relation_delete_success_response: Successfully deleted key-group relation

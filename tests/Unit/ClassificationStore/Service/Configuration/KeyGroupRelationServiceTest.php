@@ -15,14 +15,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyGroupRelationHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyGroupRelationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -37,6 +41,8 @@ final class KeyGroupRelationServiceTest extends Unit
     private const int KEY_ID = 11;
 
     private const int GROUP_ID = 7;
+
+    private const string RESOLVED_SUB_GROUP = 'Dimensions';
 
     /**
      * @throws Exception
@@ -63,9 +69,95 @@ final class KeyGroupRelationServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function expectClearedOnce(): KeyRelationResolverInterface
+    public function testUpdateKeyGroupRelationClearsTheKeyRelationMemo(): void
+    {
+        $resolver = $this->expectClearedOnce();
+
+        $this->createService($resolver)->updateKeyGroupRelation(
+            self::GROUP_ID,
+            self::KEY_ID,
+            new KeyGroupRelationUpdate(sorter: 5)
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateKeyGroupRelationWritesTheSuppliedFields(): void
+    {
+        $parameters = new KeyGroupRelationUpdate(sorter: 5, metadata: null);
+
+        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('update')
+            ->with(self::KEY_ID, self::GROUP_ID, $parameters)
+            ->willReturn($this->createRelation());
+        $repository->expects($this->never())->method('createOrUpdate');
+        $repository->expects($this->never())->method('delete');
+
+        $detail = $this->createService($this->createPairResolver(), $repository)
+            ->updateKeyGroupRelation(self::GROUP_ID, self::KEY_ID, $parameters);
+
+        $this->assertSame(self::KEY_ID, $detail->getKeyId());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateKeyGroupRelationThrowsNotFoundForAnUnknownPair(): void
     {
         $resolver = $this->createMock(KeyRelationResolverInterface::class);
+        $resolver
+            ->method('getByGroupAndKey')
+            ->willThrowException(new NotFoundException('KeyGroupRelation', self::KEY_ID));
+
+        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $repository->expects($this->never())->method('update');
+
+        $this->expectException(NotFoundException::class);
+
+        $this->createService($resolver, $repository)->updateKeyGroupRelation(
+            self::GROUP_ID,
+            self::KEY_ID,
+            new KeyGroupRelationUpdate(sorter: 5)
+        );
+    }
+
+    /**
+     * The submitted spelling of a sub group is not what gets published: the classification store
+     * resolves it to the identifier of the entry it names while saving, and the response reports what
+     * the model carries afterwards.
+     *
+     * @throws Exception
+     */
+    public function testUpdateKeyGroupRelationPublishesWhatTheModelReportsAfterTheWrite(): void
+    {
+        $relation = $this->createRelation();
+        $relation->setSubGroup(self::RESOLVED_SUB_GROUP);
+
+        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $repository->method('update')->willReturn($relation);
+
+        $detail = $this->createService(
+            $this->createPairResolver(),
+            $repository,
+            new KeyGroupRelationHydrator()
+        )->updateKeyGroupRelation(
+            self::GROUP_ID,
+            self::KEY_ID,
+            new KeyGroupRelationUpdate(subGroup: 'dimensions')
+        );
+
+        $this->assertSame(self::RESOLVED_SUB_GROUP, $detail->getSubGroup());
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function expectClearedOnce(): KeyRelationResolverInterface
+    {
+        $resolver = $this->createPairResolver();
         $resolver
             ->expects($this->once())
             ->method('clear');
@@ -74,23 +166,44 @@ final class KeyGroupRelationServiceTest extends Unit
     }
 
     /**
+     * A resolver reporting that the pair carries an assignment.
+     *
      * @throws Exception
      */
-    private function createService(KeyRelationResolverInterface $resolver): KeyGroupRelationService
+    private function createPairResolver(): KeyRelationResolverInterface&MockObject
     {
-        $relation = new KeyGroupRelation();
-        $relation->setKeyId(self::KEY_ID);
-        $relation->setGroupId(self::GROUP_ID);
+        $resolver = $this->createMock(KeyRelationResolverInterface::class);
+        $resolver
+            ->method('getByGroupAndKey')
+            ->willReturn($this->createRelation());
 
-        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $repository
-            ->method('createOrUpdate')
-            ->willReturn($relation);
+        return $resolver;
+    }
 
-        $hydrator = $this->createMock(KeyGroupRelationHydratorInterface::class);
-        $hydrator
-            ->method('hydrateKeyGroupRelationDetail')
-            ->willReturn(new KeyGroupRelationDetail(self::KEY_ID, self::GROUP_ID, 0, false));
+    /**
+     * @throws Exception
+     */
+    private function createService(
+        KeyRelationResolverInterface $resolver,
+        ?KeyGroupRelationRepositoryInterface $repository = null,
+        ?KeyGroupRelationHydratorInterface $hydrator = null,
+    ): KeyGroupRelationService {
+        if ($repository === null) {
+            $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+            $repository
+                ->method('createOrUpdate')
+                ->willReturn($this->createRelation());
+            $repository
+                ->method('update')
+                ->willReturn($this->createRelation());
+        }
+
+        if ($hydrator === null) {
+            $hydrator = $this->createMock(KeyGroupRelationHydratorInterface::class);
+            $hydrator
+                ->method('hydrateKeyGroupRelationDetail')
+                ->willReturn(new KeyGroupRelationDetail(self::KEY_ID, self::GROUP_ID, 0, false));
+        }
 
         $group = new GroupConfig();
         $group->setName('My Group');
@@ -117,5 +230,14 @@ final class KeyGroupRelationServiceTest extends Unit
             $groupRepository,
             $keyRepository,
         );
+    }
+
+    private function createRelation(): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId(self::KEY_ID);
+        $relation->setGroupId(self::GROUP_ID);
+
+        return $relation;
     }
 }

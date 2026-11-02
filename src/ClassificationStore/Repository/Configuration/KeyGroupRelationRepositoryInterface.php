@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
@@ -34,6 +36,16 @@ interface KeyGroupRelationRepositoryInterface
      * @throws ElementSavingFailedException
      */
     public function createOrUpdate(int $keyId, int $groupId, int $sorter, bool $mandatory): KeyGroupRelation;
+
+    /**
+     * Updates the existing assignment row in place: a property the payload does not carry keeps its
+     * stored value, one carrying an explicit null clears it.
+     *
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException core refused the sub group or the definition override
+     * @throws NotFoundException
+     */
+    public function update(int $keyId, int $groupId, KeyGroupRelationUpdate $parameters): KeyGroupRelation;
 
     /**
      * @throws Exception

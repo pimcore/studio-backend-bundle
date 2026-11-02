@@ -36,9 +36,15 @@ final readonly class CollectionCreate
         private string $name,
         #[Property(description: 'ID of the store this collection belongs to', type: 'integer', example: 1)]
         private int $storeId,
+        // not a property of this schema: the identifier is assigned by the system and only refused here
+        ?string $identifier = null,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($identifier !== null) {
+            throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }
 

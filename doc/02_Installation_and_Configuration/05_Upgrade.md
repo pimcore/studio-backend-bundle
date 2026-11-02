@@ -57,6 +57,27 @@ The following steps are necessary during updating to newer versions.
   `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
+- [Classification Store] Added: `PUT /classification-store/configuration/groups/{groupId}/key-relations/{keyId}` updates an
+  existing key assignment in place. It writes `sorter`, `mandatory`, `definitionOverride`, `subGroup` and `metadata`; the pair is
+  addressed by the path only and is not accepted in the body. A property the payload does not carry keeps its stored value, a
+  property carrying an explicit null clears it — which `sorter` and `mandatory` refuse with `422`, as their columns cannot hold
+  null. An unknown `(groupId, keyId)` pair answers `404`: the endpoint never creates a row. A `subGroup` that names no entry of
+  the sub group vocabulary of the store, and a `definitionOverride` carrying anything but `options`, `defaultUnit` or
+  `validUnits`, answer `422` with the message of the classification store, and nothing is written. On success the stored
+  `subGroup` is the identifier the classification store resolved the submitted value to, not the submitted spelling.
+  `POST /classification-store/configuration/key-group-relations/add` is unchanged: it still writes `sorter` and `mandatory` only
+  and leaves the three per-assignment columns of an existing relation untouched, so delete-and-re-create is no longer needed to
+  change an assignment and no longer the only way to lose those columns. The `@internal`
+  `KeyGroupRelationRepositoryInterface` and `KeyGroupRelationServiceInterface` (`ClassificationStore\...\Configuration`) gained
+  `update()` and `updateKeyGroupRelation()`.
+- [Classification Store] Added: `ClassificationStoreConfigurationKeyGroupRelationDetail` carries an optional, nullable
+  `definitionOverride`, `subGroup` and `metadata`, so the listing and both write endpoints report the three per-assignment
+  columns. No other property changed.
+- [Classification Store] Added: the store, collection, group and key configuration responses carry an optional, nullable
+  `identifier`, the opaque identifier the classification store assigns to the entity — on
+  `ClassificationStoreConfigurationStoreDetail`, `...StoreTreeNode`, `...CollectionDetail`, `...GroupDetail` and `...KeyDetail`.
+  It is read-only: a create or update payload carrying `identifier` is refused with `422` instead of being ignored, on all eight
+  create and update schemas of those four entities. Other unrecognised properties of those payloads stay ignored as before.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
