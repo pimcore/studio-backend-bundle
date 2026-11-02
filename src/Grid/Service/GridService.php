@@ -594,6 +594,7 @@ final class GridService implements GridServiceInterface
         $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
         foreach ($items as $item) {
             $rowCacheKey = $this->getRowObjectCacheKey($elementType, $item->getId());
+
             try {
                 $data[] = $this->getGridDataForElement(
                     $columns,
