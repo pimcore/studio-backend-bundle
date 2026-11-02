@@ -71,7 +71,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
         $listing->addConditionParam('`id` = :id', ['id' => $id]);
         $configs = $listing->load();
 
-        if (count($configs) === 0) {
+        if (empty($configs)) {
             throw new NotFoundException(self::NOT_FOUND_TYPE, $id);
         }
 
@@ -83,7 +83,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
      */
     public function getByIdentifiers(int $storeId, array $identifiers): array
     {
-        if (count($identifiers) === 0) {
+        if (empty($identifiers)) {
             return [];
         }
 
@@ -155,7 +155,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
         $config = $this->getById($id);
         $usedBy = $this->getGroupNamesUsing($config->getStoreId(), $config->getIdentifier());
 
-        if (count($usedBy) > 0) {
+        if (!empty($usedBy)) {
             throw new ConflictException(
                 sprintf(
                     'Sub group "%s" is still assigned to keys of the group(s) "%s" and cannot be deleted',
@@ -211,7 +211,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
             $listing->addConditionParam('`id` != :exceptId', ['exceptId' => $exceptId]);
         }
 
-        if (count($listing->load()) === 0) {
+        if (empty($listing->load())) {
             return;
         }
 

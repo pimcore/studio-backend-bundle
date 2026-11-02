@@ -182,7 +182,7 @@ final readonly class GroupService implements GroupServiceInterface
             $identifiers[$identifier] = $identifier;
         }
 
-        if (count($identifiers) === 0) {
+        if (empty($identifiers)) {
             return [];
         }
 
