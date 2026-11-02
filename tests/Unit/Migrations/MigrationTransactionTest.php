@@ -46,6 +46,7 @@ final class MigrationTransactionTest extends Unit
         'Version20260115100546',
         'Version20260505124233',
         'Version20260826120000',
+        'Version20261102120000',
     ];
 
     /**

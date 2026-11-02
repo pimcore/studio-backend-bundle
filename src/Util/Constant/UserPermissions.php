@@ -30,6 +30,7 @@ enum UserPermissions: string
     case EMAILS = 'emails';
     case FIELD_COLLECTIONS = 'fieldcollections';
     case GDPR = 'gdpr_data_extractor';
+    case MAINTENANCE_MODE = 'maintenance_mode';
     case MCP_SERVERS = 'mcp_servers';
     case NOTES_EVENTS = 'notes_events';
     case NOTIFICATIONS = 'notifications';
