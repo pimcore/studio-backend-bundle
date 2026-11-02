@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Source\SystemFieldsOnlySource;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Modifier\SystemFieldsSource;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
@@ -126,8 +126,9 @@ final readonly class GridSearch implements GridSearchInterface
 
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
             // The grid reads every column value from the database. The search result items only need the
-            // system fields, and the full documents of a large page are tens of megabytes.
-            $query->getSearch()->addModifier(new SystemFieldsSource());
+            // system fields, and the full documents of a large page are tens of megabytes. The items lazy-load
+            // their full search index data if something reads it.
+            $query->getSearch()->addModifier(new SystemFieldsOnlySource());
         }
 
         return match($type) {
