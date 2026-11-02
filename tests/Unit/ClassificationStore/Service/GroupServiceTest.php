@@ -17,6 +17,9 @@ use Codeception\Test\Unit;
 use Exception;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydrator;
@@ -25,26 +28,44 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfi
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_keys;
 use function array_map;
+use function sprintf;
 
 /**
  * @internal
  */
 final class GroupServiceTest extends Unit
 {
+    use LabelResolverMockTrait;
+
     private const int GROUP_ID = 3;
 
     private const int OBJECT_ID = 5;
 
+    private const string FIELD_NAME = 'classificationStore';
+
     private const string GROUP_NAME = 'Technical';
+
+    private const string LANGUAGE = 'de';
+
+    private const string DEFAULT_LANGUAGE = 'en';
+
+    /**
+     * The largest group ETIM ships, which is the size the per-key label query used to cost 121 queries
+     * on.
+     */
+    private const int ETIM_MAX_KEYS = 121;
 
     /**
      * @throws Exception
@@ -69,11 +90,11 @@ final class GroupServiceTest extends Unit
             ->willReturn(new Input());
         $keyGroupLayoutService
             ->method('getKeyTitle')
-            ->willReturnCallback(static fn (int $keyId): ?string => $titles[$keyId]);
+            ->willReturnCallback(static fn (int $keyId, string $language): ?string => $titles[$keyId]);
 
         $keys = $this
             ->createService($keyRelationResolver, $keyGroupLayoutService)
-            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter('classificationStore', self::OBJECT_ID))
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getKeys();
 
         $this->assertCount(3, $keys);
@@ -96,7 +117,7 @@ final class GroupServiceTest extends Unit
                 $this->createMock(KeyRelationResolverInterface::class),
                 $this->createMock(KeyGroupLayoutServiceInterface::class)
             )
-            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter('classificationStore', self::OBJECT_ID));
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID));
 
         $this->assertSame(self::GROUP_NAME, $groupLayout->getTitle());
 
@@ -130,10 +151,92 @@ final class GroupServiceTest extends Unit
 
         $keys = $this
             ->createService($keyRelationResolver, $keyGroupLayoutService)
-            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter('classificationStore', self::OBJECT_ID))
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getKeys();
 
         $this->assertSame([13, 11, 12], array_map(static fn (KeyLayout $key): int => $key->getId(), $keys));
+    }
+
+    /**
+     * The group's whole label set is read with one statement, so the largest group ETIM ships costs
+     * one label query instead of 121.
+     *
+     * @throws Exception
+     */
+    public function testGetLayoutDefinitionResolvesEveryKeyLabelAfterOnePreload(): void
+    {
+        $labels = [];
+        for ($keyId = 1; $keyId <= self::ETIM_MAX_KEYS; $keyId++) {
+            $labels[$keyId] = [self::LANGUAGE => sprintf('Label %d', $keyId)];
+        }
+
+        $keys = $this
+            ->createServiceWithRealKeyLabels($labels)
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
+            ->getKeys();
+
+        $this->assertSame([array_keys($labels)], $this->preloadedIds());
+        $this->assertCount(self::ETIM_MAX_KEYS, $keys);
+        $this->assertSame(
+            array_map(static fn (int $keyId): string => sprintf('Label %d', $keyId), array_keys($labels)),
+            array_map(static fn (KeyLayout $key): ?string => $key->getTitle(), $keys)
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetLayoutDefinitionPublishesTheLabelOfTheRequestingUsersLanguage(): void
+    {
+        $keys = $this
+            ->createServiceWithRealKeyLabels([1 => [self::LANGUAGE => 'Gewicht']])
+            ->getLayoutDefinition(self::GROUP_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
+            ->getKeys();
+
+        $this->assertSame('Gewicht', $keys[0]->getTitle());
+    }
+
+    /**
+     * @param array<int, array<string, string>> $labels one entry per key of the group
+     *
+     * @throws Exception
+     */
+    private function createServiceWithRealKeyLabels(array $labels): GroupService
+    {
+        $relations = [];
+        $keyConfigs = [];
+        foreach (array_keys($labels) as $keyId) {
+            $keyName = sprintf('key%d', $keyId);
+            $relations[$keyId] = $this->createRelation($keyId, $keyName);
+            $keyConfigs[$keyId] = $this->createKeyConfig($keyId, $keyName);
+        }
+
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroup')
+            ->with(self::GROUP_ID)
+            ->willReturn($relations);
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver
+            ->method('getFieldDefinitionFromJson')
+            ->willReturn(new Input());
+
+        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
+        $keyConfigResolver
+            ->method('getById')
+            ->willReturnCallback(static fn (int $keyId): ?KeyConfig => $keyConfigs[$keyId] ?? null);
+
+        $keyGroupLayoutService = new KeyGroupLayoutService(
+            $serviceResolver,
+            $keyRelationResolver,
+            new ConcreteObjectResolver(),
+            $keyConfigResolver,
+            $this->createLabelResolver($labels),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+        );
+
+        return $this->createService($keyRelationResolver, $keyGroupLayoutService);
     }
 
     /**
@@ -169,6 +272,7 @@ final class GroupServiceTest extends Unit
             $keyGroupLayoutService,
             new GroupLayoutHydrator(),
             $this->createMock(ClassDefinitionResolverInterface::class),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
         );
     }
 

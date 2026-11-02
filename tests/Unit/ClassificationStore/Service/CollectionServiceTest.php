@@ -15,30 +15,60 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionRelationsRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\CollectionLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Concrete;
 use ReflectionClass;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_keys;
 use function array_map;
 use function array_values;
+use function sprintf;
 
 /**
  * @internal
  */
 final class CollectionServiceTest extends Unit
 {
+    use LabelResolverMockTrait;
+
     private const int COLLECTION_ID = 9;
 
     private const int OBJECT_ID = 5;
+
+    private const string FIELD_NAME = 'classificationStore';
+
+    private const string LANGUAGE = 'de';
+
+    private const string DEFAULT_LANGUAGE = 'en';
+
+    /**
+     * @var array<int, list<int>> the keys of each group this collection wraps
+     */
+    private const array GROUP_KEY_IDS = [3 => [11, 12], 4 => [13]];
 
     /**
      * @throws Exception
@@ -76,7 +106,7 @@ final class CollectionServiceTest extends Unit
         );
 
         $groups = $service
-            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter('classificationStore', self::OBJECT_ID))
+            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getGroups();
 
         $this->assertCount(2, $groups);
@@ -123,7 +153,7 @@ final class CollectionServiceTest extends Unit
         );
 
         $groups = $service
-            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter('classificationStore', self::OBJECT_ID))
+            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getGroups();
 
         $this->assertSame(array_values($titles), array_map(
@@ -164,10 +194,118 @@ final class CollectionServiceTest extends Unit
         );
 
         $groups = $service
-            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter('classificationStore', self::OBJECT_ID))
+            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
             ->getGroups();
 
         $this->assertSame([4, 3], array_map(static fn (GroupLayout $group): int => $group->getId(), $groups));
+    }
+
+    /**
+     * The collection endpoint walks the groups it wraps, so it inherits the group endpoint's one
+     * label query per group - two groups, two preloads, each carrying only its own keys.
+     *
+     * @throws Exception
+     */
+    public function testGetLayoutDefinitionPreloadsOncePerGroupItWalks(): void
+    {
+        $collectionRelationsRepository = $this->createMock(CollectionRelationsRepositoryInterface::class);
+        $collectionRelationsRepository
+            ->method('getFromCollection')
+            ->with(self::COLLECTION_ID)
+            ->willReturn(array_map(
+                fn (int $groupId): CollectionGroupRelation => $this->createRelation($groupId),
+                array_keys(self::GROUP_KEY_IDS)
+            ));
+
+        $service = new CollectionService(
+            $collectionRelationsRepository,
+            $this->createMock(CollectionConfigRepositoryInterface::class),
+            $this->createMock(CollectionHydratorInterface::class),
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createGroupServiceWithRealKeyLabels(),
+        );
+
+        $groups = $service
+            ->getLayoutDefinition(self::COLLECTION_ID, new LayoutParameter(self::FIELD_NAME, self::OBJECT_ID))
+            ->getGroups();
+
+        $this->assertSame(array_values(self::GROUP_KEY_IDS), $this->preloadedIds());
+        $this->assertCount(2, $groups);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createGroupServiceWithRealKeyLabels(): GroupService
+    {
+        $relationsByGroup = [];
+        $keyConfigs = [];
+        foreach (self::GROUP_KEY_IDS as $groupId => $keyIds) {
+            foreach ($keyIds as $keyId) {
+                $keyName = sprintf('key%d', $keyId);
+                $relation = new KeyGroupRelation();
+                $relation->setKeyId($keyId);
+                $relation->setGroupId($groupId);
+                $relation->setName($keyName);
+                $relation->setDescription('');
+                $relation->setDefinition('{"fieldtype":"input"}');
+                $relation->setType('input');
+
+                $relationsByGroup[$groupId][$keyId] = $relation;
+                $keyConfigs[$keyId] = $this->createKeyConfig($keyId, $keyName);
+            }
+        }
+
+        $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
+        $keyRelationResolver
+            ->method('getByGroup')
+            ->willReturnCallback(static fn (int $groupId): array => $relationsByGroup[$groupId]);
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver
+            ->method('getFieldDefinitionFromJson')
+            ->willReturn(new Input());
+
+        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
+        $keyConfigResolver
+            ->method('getById')
+            ->willReturnCallback(static fn (int $keyId): ?KeyConfig => $keyConfigs[$keyId] ?? null);
+
+        $concreteObjectResolver = $this->createMock(ConcreteObjectResolverInterface::class);
+        $concreteObjectResolver
+            ->method('getById')
+            ->with(self::OBJECT_ID)
+            ->willReturn($this->createMock(Concrete::class));
+
+        $groupConfigRepository = $this->createMock(GroupConfigRepositoryInterface::class);
+        $groupConfigRepository
+            ->method('getById')
+            ->willReturnCallback(static function (int $groupId): GroupConfig {
+                $group = new GroupConfig();
+                $group->setId($groupId);
+                $group->setName(sprintf('Group %d', $groupId));
+
+                return $group;
+            });
+
+        return new GroupService(
+            $concreteObjectResolver,
+            $groupConfigRepository,
+            $this->createMock(EventDispatcherInterface::class),
+            $this->createMock(GroupHydratorInterface::class),
+            $keyRelationResolver,
+            new KeyGroupLayoutService(
+                $serviceResolver,
+                $keyRelationResolver,
+                new ConcreteObjectResolver(),
+                $keyConfigResolver,
+                $this->createLabelResolver(),
+                $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+            ),
+            new GroupLayoutHydrator(),
+            $this->createMock(ClassDefinitionResolverInterface::class),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE),
+        );
     }
 
     private function createRelation(int $groupId): CollectionGroupRelation
