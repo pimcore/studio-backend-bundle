@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Exception;
 use InvalidArgumentException;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -61,6 +62,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServi
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\OAuthAccessTokenAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp\PatAuthenticator;
 use Pimcore\Bundle\StudioBackendBundle\Security\EntryPoint\McpAuthenticationEntryPoint;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\UserCondition;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Admin\Repository\SettingRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\AdminLanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Twig\Initializers\SandboxExtensionInitializerInterface;
@@ -139,6 +141,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(ZipServiceInterface::class);
         $definition->setArgument('$downloadLimits', $config['asset_download_settings']);
+
+        $definition = $container->getDefinition(TextEncoderInterface::class);
+        $definition->setArgument('$maxFileSize', $config['asset_text_settings']['max_file_size']);
 
         $definition = $container->getDefinition(CsvExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
@@ -492,10 +497,39 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             );
         }
 
+        $this->prependTwoFactorConfig($container, $processedConfig[Configuration::TWO_FACTOR_AUTHENTICATION_NODE]);
+
         $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::ADMIN_SETTINGS_NODE);
         $this->prependCustomConfig($container, $containerConfig, Configuration::MCP_SERVERS_NODE);
+    }
+
+    /**
+     * Prepended, so the application's own scheb_two_factor config still wins. `security_tokens`
+     * is left to scheb's defaults: lists are merged, so a prepended one could never be narrowed.
+     * Without a `server_name`, none is prepended, so core's main-domain default (or no host) applies.
+     *
+     * @param array{issuer: string, server_name: ?string} $config
+     */
+    private function prependTwoFactorConfig(ContainerBuilder $container, array $config): void
+    {
+        if (!$container->hasExtension('scheb_two_factor')) {
+            return;
+        }
+
+        $google = [
+            'enabled' => true,
+            'issuer' => $config['issuer'],
+        ];
+        if ($config['server_name'] !== null) {
+            $google['server_name'] = $config['server_name'];
+        }
+
+        $container->prependExtensionConfig('scheb_two_factor', [
+            'two_factor_condition' => UserCondition::class,
+            'google' => $google,
+        ]);
     }
 
     /**
@@ -542,6 +576,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     {
         $configLocation = $containerConfig['config_location'][$node];
         $configDir = $configLocation['write_target']['options']['directory'];
+
+        // Track the directory, not only the files loaded from it: a configuration saved at
+        // runtime is a new file there, and the container has to rebuild for it. Without this
+        // it only did when Pimcore could touch config/services.yaml, which it skips whenever
+        // PHP-FPM cannot write that file. Core imports its own config directories the same
+        // way (Kernel::registerContainerConfiguration()); this also covers the directory not
+        // existing until the first configuration is saved.
+        $container->fileExists($configDir, '/\.ya?ml$/');
 
         $configLoader = new YamlFileLoader(
             $container,

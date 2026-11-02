@@ -107,7 +107,7 @@ Available filters are:
 
 |                   Type                   |               filterValue                |                 Options                 | `key` required |
 |:----------------------------------------:|:----------------------------------------:|:---------------------------------------:|:--------------:|
-|              system.string               |                  string                  |       Wildcard search can be used       |      true      |
+|              system.string               |        string or array of strings        | String: wildcard search can be used.<br/>Array: exact match of any value, see below |      true      |
 |             system.datetime              |            object of ISO 8601            |          `from`, `to`, or `on`          |      true      |
 |               system.date                | object of ISO 8601<br/>will round to day |          `from`, `to`, or `on`          |      true      |
 |               system.time                |              object (12:15)              |          `from`, `to`, or `on`          |      true      |
@@ -140,6 +140,36 @@ Available filters are:
 
 
 ### Examples:
+
+Filter by a string column with a wildcard search:
+```json
+...
+"columnFilters" [
+  {
+    "key": "filename",
+    "type": "system.string",
+    "filterValue": "car"
+  }
+]
+...
+```
+
+Filter by a string column with a list of values, e.g. a list of product codes:
+```json
+...
+"columnFilters" [
+  {
+    "key": "sku",
+    "type": "system.string",
+    "filterValue": ["A-100", "A-101", "B-7"]
+  }
+]
+...
+```
+Rows are returned whose value equals **any** of the values exactly: no wildcards, and the match is case-sensitive.
+The values are trimmed, empty values are ignored and duplicates are removed. A list without values does not filter,
+and at most 1000 values are accepted. Every value must be a string; otherwise (or above the limit) the request is
+rejected with HTTP status 422.
 
 Filter by a select column:
 ```json

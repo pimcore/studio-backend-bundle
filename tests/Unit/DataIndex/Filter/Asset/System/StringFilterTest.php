@@ -92,4 +92,108 @@ final class StringFilterTest extends Unit
         $stringFilter = new StringFilter();
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
+
+    public function testApplyStringFilterWithListOfValuesUsesExactMatch(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'wildcardSearch' => Expected::never(),
+            'filterMultiSelect' => Expected::once(function ($key, $values) {
+                $this->assertSame('sku', $key);
+                $this->assertSame(['A-1', 'B-2', 'C 3'], $values);
+
+                return $this->makeEmpty(AssetQueryInterface::class);
+            }),
+        ]);
+
+        $stringFilter = new StringFilter();
+        $stringFilter->apply($this->getParameterMock(['A-1', ' B-2 ', '', 'A-1', 'C 3', '  ']), $queryMock);
+    }
+
+    public function testApplyStringFilterWithListOfValuesMapsClassnameColumnKeyToIndexField(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'filterMultiSelect' => Expected::once(function ($key, $values) {
+                $this->assertSame('className', $key);
+                $this->assertSame(['Car', 'Boat'], $values);
+
+                return $this->makeEmpty(AssetQueryInterface::class);
+            }),
+        ]);
+
+        $stringFilter = new StringFilter();
+        $stringFilter->apply($this->getParameterMock(['Car', 'Boat'], 'classname'), $queryMock);
+    }
+
+    public function testEmptyListOfValuesDoesNotFilter(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'wildcardSearch' => Expected::never(),
+            'filterMultiSelect' => Expected::never(),
+        ]);
+
+        $stringFilter = new StringFilter();
+        $stringFilter->apply($this->getParameterMock(['', '  ']), $queryMock);
+        $stringFilter->apply($this->getParameterMock([]), $queryMock);
+    }
+
+    public function testExceptionIsThrownWhenListContainsNonStringValue(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'filterMultiSelect' => Expected::never(),
+        ]);
+
+        $stringFilter = new StringFilter();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Each value of the filter must be a string');
+        $stringFilter->apply($this->getParameterMock(['A-1', 2]), $queryMock);
+    }
+
+    public function testExceptionIsThrownWhenListContainsTooManyValues(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'filterMultiSelect' => Expected::never(),
+        ]);
+
+        $stringFilter = new StringFilter();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The filter accepts at most 1000 values');
+        $stringFilter->apply($this->getParameterMock($this->getValues(1001)), $queryMock);
+    }
+
+    public function testListOfValuesAtTheLimitIsAccepted(): void
+    {
+        $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
+            'filterMultiSelect' => Expected::once(function ($key, $values) {
+                $this->assertCount(1000, $values);
+
+                return $this->makeEmpty(AssetQueryInterface::class);
+            }),
+        ]);
+
+        $stringFilter = new StringFilter();
+        $stringFilter->apply($this->getParameterMock($this->getValues(1000)), $queryMock);
+    }
+
+    private function getValues(int $count): array
+    {
+        $values = [];
+        for ($i = 0; $i < $count; $i++) {
+            $values[] = 'value-' . $i;
+        }
+
+        return $values;
+    }
+
+    private function getParameterMock(array $filterValue, string $key = 'sku'): ColumnFiltersParameterInterface
+    {
+        return $this->makeEmpty(ColumnFiltersParameterInterface::class, [
+            'getColumnFilterByType' => function () use ($key, $filterValue) {
+                return [
+                    new ColumnFilter($key, 'system.string', $filterValue),
+                ];
+            },
+        ]);
+    }
 }

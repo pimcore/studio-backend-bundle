@@ -91,7 +91,11 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
      */
     public function batchDeleteElements(IdsParameter $elementIds, string $elementType, UserInterface $user): ?int
     {
-        if (!in_array($elementType, [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DATA_OBJECT], true)) {
+        if (!in_array(
+            $elementType,
+            [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DATA_OBJECT, ElementTypes::TYPE_DOCUMENT],
+            true
+        )) {
             throw new InvalidElementTypeException($elementType);
         }
 

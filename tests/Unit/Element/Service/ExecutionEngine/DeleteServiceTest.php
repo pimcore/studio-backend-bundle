@@ -347,6 +347,7 @@ final class DeleteServiceTest extends Unit
         $typeToJob = [
             ElementTypes::TYPE_ASSET => Jobs::BATCH_DELETE_ASSETS->value,
             ElementTypes::TYPE_DATA_OBJECT => Jobs::BATCH_DELETE_DATA_OBJECTS->value,
+            ElementTypes::TYPE_DOCUMENT => Jobs::BATCH_DELETE_DOCUMENTS->value,
         ];
 
         foreach ($typeToJob as $type => $expectedName) {

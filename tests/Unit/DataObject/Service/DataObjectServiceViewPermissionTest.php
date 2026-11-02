@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -28,12 +29,14 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\Folder as CoreFolder;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
 use ReflectionClass;
+use ReflectionProperty;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -92,7 +95,11 @@ final class DataObjectServiceViewPermissionTest extends Unit
 
     private function createElement(): DataObjectFolder
     {
-        return (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
+        $element = (new ReflectionClass(DataObjectFolder::class))->newInstanceWithoutConstructor();
+        // read by the service to decide whether the workflow place permissions have to be applied
+        (new ReflectionProperty(DataObject::class, 'hasWorkflowWithPermissions'))->setValue($element, false);
+
+        return $element;
     }
 
     private function createService(bool $view, StubMarshaler $dispatch, ?DataObjectFolder $element = null, bool $list = true): DataObjectService
@@ -125,6 +132,7 @@ final class DataObjectServiceViewPermissionTest extends Unit
             $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $this->user]),
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => $coreElement]),
             $this->makeEmpty(ElementSaveServiceInterface::class),
+            $this->makeEmpty(WorkflowPermissionMergerInterface::class),
         );
     }
 }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\McpPath;
 use Pimcore\Bundle\StudioBackendBundle\OAuth\Util\CanonicalUri;
@@ -53,6 +54,8 @@ class Configuration implements ConfigurationInterface
     public const string PERSPECTIVES_NODE = 'studio_perspectives';
 
     public const string ADMIN_SETTINGS_NODE = 'admin_settings';
+
+    public const string TWO_FACTOR_AUTHENTICATION_NODE = 'two_factor_authentication';
 
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
@@ -107,6 +110,7 @@ class Configuration implements ConfigurationInterface
         $this->addRecycleBinThreshold($rootNode);
         $this->addMercureConfiguration($rootNode);
         $this->addAssetDownloadLimits($rootNode);
+        $this->addAssetTextSettings($rootNode);
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
@@ -128,6 +132,7 @@ class Configuration implements ConfigurationInterface
         $this->addMcpServersConfigurationNode($rootNode);
         $this->addOAuthNode($rootNode);
         $this->addRateLimitingNode($rootNode);
+        $this->addTwoFactorAuthenticationNode($rootNode);
         $this->addTranslation($rootNode);
         $rootNode->append($this->addTwigSandboxNode());
 
@@ -331,11 +336,12 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('hub_url_server')
                         ->info(
-                            'The url to the mercure hub for the server.' .
-                            'This can also be the docker container name '.
-                            '(e.g., http://mercure/.well-known/mercure). ' .
-                            'If it is not set, default will be set to ' .
-                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub/.well-known/mercure".'
+                            'The url to the mercure hub for the server. ' .
+                            'This setting must be set and has no default, because the server url ' .
+                            'cannot be derived from the browser request. ' .
+                            'It is not checked at boot; when it is empty, no updates are published. ' .
+                            'This can also be the docker container name ' .
+                            '(e.g., http://mercure/.well-known/mercure).'
                         )
                         ->defaultNull()
                     ->end()
@@ -382,6 +388,21 @@ class Configuration implements ConfigurationInterface
                     ->integerNode(DownloadLimits::MAX_ZIP_FILE_AMOUNT->value)
                         ->info('The maximum amount of assets that can be downloaded at once.')
                         ->defaultValue(1000)
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addAssetTextSettings(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('asset_text_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('max_file_size')
+                        ->info('The maximum size in bytes of a text asset that Studio loads for preview and editing.')
+                        ->defaultValue(TextEncoderInterface::DEFAULT_MAX_FILE_SIZE)
+                        ->min(1)
                     ->end()
                 ->end()
             ->end();
@@ -844,6 +865,9 @@ class Configuration implements ConfigurationInterface
                 ->info('MCP server definitions, keyed by server id, which is also the URL slug.')
                 ->defaultValue([])
                 ->useAttributeAsKey('id')
+                // The id is the URL slug, and slugs use hyphens. Without this Symfony rewrites
+                // `test-server` to `test_server` on load: an id the route cannot serve.
+                ->normalizeKeys(false)
                 ->validate()
                     ->ifTrue(static fn (array $servers): bool => array_filter(
                         array_keys($servers),
@@ -1307,6 +1331,27 @@ class Configuration implements ConfigurationInterface
                     ->booleanNode('enabled')
                         ->info('Enable or disable general rate limiting for all Studio API endpoints.')
                         ->defaultTrue()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
+    private function addTwoFactorAuthenticationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::TWO_FACTOR_AUTHENTICATION_NODE)
+                ->addDefaultsIfNotSet()
+                ->info('Google Authenticator settings, shown in the user\'s authenticator app.')
+                ->children()
+                    ->scalarNode('issuer')
+                        ->info('Issuer name in the authenticator app.')
+                        ->cannotBeEmpty()
+                        ->defaultValue('Pimcore')
+                    ->end()
+                    ->scalarNode('server_name')
+                        ->info('Server name in the authenticator app. Defaults to the main domain, if set.')
+                        ->defaultNull()
                     ->end()
                 ->end()
             ->end()

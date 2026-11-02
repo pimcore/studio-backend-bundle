@@ -31,6 +31,7 @@ studio_ee_job_upload_assets: Assets hochladen
 studio_ee_job_clone_data_objects: Datenobjekte klonen
 studio_ee_job_delete_data_objects: Datenobjekte löschen
 studio_ee_job_batch_delete_data_objects: Datenobjekte stapelweise löschen
+studio_ee_job_batch_delete_documents: Dokumente stapelweise löschen
 studio_ee_job_clone_documents: Dokumente klonen
 studio_ee_job_delete_documents: Dokumente löschen
 studio_ee_job_rewrite_element_references: Elementreferenzen umschreiben

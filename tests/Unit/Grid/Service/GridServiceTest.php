@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Service;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
@@ -46,6 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\WorkflowPermissionsAwareInterfac
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Cache\RuntimeCache;
 use Pimcore\Localization\LocaleServiceInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
@@ -110,6 +112,47 @@ final class GridServiceTest extends Unit
         $this->assertCount(1, $result->getItems());
         // The search-reported total is intentionally left untouched.
         $this->assertSame(2, $result->getTotalItems());
+    }
+
+    /**
+     * The grid loads each row's data object through getById(), which keeps it in the runtime cache until
+     * the request ends. Once the row is built, the object must be dropped again, so the memory of a grid
+     * request does not grow with the page size.
+     */
+    public function testDataObjectGridReleasesARowObjectThatWasNotCachedBeforeTheRow(): void
+    {
+        $runtimeCache = new RuntimeCache();
+
+        $this->getDataObjectGridRow(100, $runtimeCache);
+
+        $this->assertFalse($runtimeCache->offsetExists('object_100'));
+    }
+
+    /**
+     * An object that was in the runtime cache before its row started may still be held by other code,
+     * so the grid must keep it.
+     */
+    public function testDataObjectGridKeepsARowObjectThatWasCachedBeforeTheRow(): void
+    {
+        $runtimeCache = new RuntimeCache();
+        $cachedObject = $this->makeEmpty(AbstractObject::class);
+        $runtimeCache->offsetSet('object_100', $cachedObject);
+
+        $this->getDataObjectGridRow(100, $runtimeCache);
+
+        $this->assertSame($cachedObject, $runtimeCache->offsetGet('object_100'));
+    }
+
+    /**
+     * Only the row's own object is released, not other objects the row loaded into the runtime cache.
+     */
+    public function testDataObjectGridKeepsOtherObjectsTheRowLoaded(): void
+    {
+        $runtimeCache = new RuntimeCache();
+
+        $this->getDataObjectGridRow(100, $runtimeCache, ['object_200']);
+
+        $this->assertTrue($runtimeCache->offsetExists('object_200'));
     }
 
     /**
@@ -965,6 +1008,55 @@ final class GridServiceTest extends Unit
      * User is final and cannot be doubled - a real instance with just the admin flag set is
      * enough for the permission checks under test here.
      */
+    /**
+     * Builds a data object grid with one row. Loading the row's element puts it into the runtime cache,
+     * like AbstractObject::getById() does, together with the given additional cache keys.
+     *
+     * @param string[] $additionalCacheKeys
+     */
+    private function getDataObjectGridRow(int $id, RuntimeCache $runtimeCache, array $additionalCacheKeys = []): void
+    {
+        $searchResult = new DataObjectSearchResult(
+            items: [$this->makeEmpty(StudioElementInterface::class, ['getId' => $id])],
+            currentPage: 1,
+            pageSize: 10,
+            totalItems: 1,
+        );
+
+        $object = $this->makeEmpty(AbstractObject::class);
+        $serviceResolver = $this->makeEmpty(ServiceResolverInterface::class, [
+            'getElementById' => static function (string $type, int|string $elementId) use (
+                $runtimeCache,
+                $object,
+                $additionalCacheKeys
+            ): AbstractObject {
+                $runtimeCache->offsetSet($type . '_' . $elementId, $runtimeCache->offsetExists($type . '_' . $elementId)
+                    ? $runtimeCache->offsetGet($type . '_' . $elementId)
+                    : $object);
+                foreach ($additionalCacheKeys as $cacheKey) {
+                    $runtimeCache->offsetSet($cacheKey, $object);
+                }
+
+                return $object;
+            },
+        ]);
+
+        $service = $this->createService(
+            gridSearch: $this->makeEmpty(GridSearchInterface::class, [
+                'searchDataObjects' => $searchResult,
+            ]),
+            serviceResolver: $serviceResolver,
+            runtimeCacheResolver: $this->makeEmpty(RuntimeCacheResolverInterface::class, [
+                'isRegistered' => static fn (string $index): bool => $runtimeCache->offsetExists($index),
+                'getInstance' => $runtimeCache,
+            ]),
+        );
+
+        $result = $service->getDataObjectGrid(new GridParameter(folderId: 1, columns: [], filters: null), null);
+
+        $this->assertCount(1, $result->getItems());
+    }
+
     private function buildUser(bool $isAdmin): User
     {
         $user = new User();
@@ -1168,6 +1260,7 @@ final class GridServiceTest extends Unit
         ?ToolResolverInterface $toolResolver = null,
         ?LocaleServiceInterface $localeService = null,
         ?EventDispatcherInterface $eventDispatcher = null,
+        ?RuntimeCacheResolverInterface $runtimeCacheResolver = null,
     ): GridService {
         return new GridService(
             $this->makeEmpty(ColumnDefinitionLoaderInterface::class),
@@ -1186,6 +1279,7 @@ final class GridServiceTest extends Unit
             $dataObjectServiceResolver ?? $this->makeEmpty(DataObjectServiceResolverInterface::class),
             $toolResolver ?? $this->makeEmpty(ToolResolverInterface::class),
             $localeService ?? $this->makeEmpty(LocaleServiceInterface::class),
+            $runtimeCacheResolver ?? $this->makeEmpty(RuntimeCacheResolverInterface::class),
         );
     }
 }

@@ -32,6 +32,7 @@ enum Jobs: string
     case BATCH_DELETE_DATA_OBJECTS = 'studio_ee_job_batch_delete_data_objects';
     case CLONE_DOCUMENTS = 'studio_ee_job_clone_documents';
     case DELETE_DOCUMENTS = 'studio_ee_job_delete_documents';
+    case BATCH_DELETE_DOCUMENTS = 'studio_ee_job_batch_delete_documents';
     case BATCH_TAG_ASSIGN = 'studio_ee_job_batch_tag_assign';
     case BATCH_TAG_REPLACE = 'studio_ee_job_batch_tag_replace';
     case RECYCLE_BIN_DELETE = 'studio_ee_job_recycle_bin_delete';

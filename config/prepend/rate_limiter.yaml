@@ -19,6 +19,12 @@ framework:
       policy: 'fixed_window'
       limit: 5
       interval: '5 minutes'
+    # Wrong two-factor codes, keyed on the user and reset only by a correct code - see
+    # CodeAttemptLimiter. A password login does not reset it.
+    studio_two_factor_code:
+      policy: 'fixed_window'
+      limit: 5
+      interval: '5 minutes'
     # Request volume on /pimcore-mcp/, kept separate from studio_api_general because it is
     # sized for machine clients rather than the Studio UI: a single agent server can serve
     # every chat in the installation from one address, so this is a denial-of-service

@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\WorkflowPermissionMergerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\User;
@@ -75,6 +76,7 @@ final class DataObjectServiceTreeSearchTest extends Unit
             // The parent lookup after filtering fails on purpose, only the order up to that point matters.
             $this->makeEmpty(ServiceResolverInterface::class, ['getElementById' => null]),
             $this->makeEmpty(ElementSaveServiceInterface::class),
+            $this->makeEmpty(WorkflowPermissionMergerInterface::class),
         );
 
         try {

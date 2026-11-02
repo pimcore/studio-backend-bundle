@@ -78,6 +78,7 @@ final class PatchController extends AbstractApiController
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function dataObjectPatchById(#[MapRequestPayload] DataParameter $parameter): Response
     {

@@ -12,5 +12,13 @@ pimcore_studio_backend:
       path: pimcore_studio_api_logout
     json_login:
       check_path: pimcore_studio_api_login
+      success_handler: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler
     custom_authenticators:
       - Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\AdminTokenAuthenticator
+    two_factor:
+      check_path: pimcore_studio_api_login_2fa
+      auth_form_path: pimcore_studio_api_login_2fa
+      auth_code_parameter_name: code
+      success_handler: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\LoginSuccessHandler
+      failure_handler: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\CodeFailureHandler
+      authentication_required_handler: Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\AuthenticationRequiredHandler

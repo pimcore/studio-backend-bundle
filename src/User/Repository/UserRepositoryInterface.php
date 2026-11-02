@@ -46,6 +46,15 @@ interface UserRepositoryInterface
      */
     public function updateUser(UserInterface $user): void;
 
+    /**
+     * The two-factor settings as stored now, past the user already loaded for this request.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws NotFoundException
+     */
+    public function getStoredTwoFactorAuthentication(int $userId): array;
+
     public function getUserListingByRoleId(int $roleId, ?int $excludeUserId = null): UserListing;
 
     /**

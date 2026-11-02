@@ -1,0 +1,40 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
+
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\RelatedElementData;
+
+/**
+ * Optional capability of the element data service: describing a related element from a relation summary
+ * (see the lightweight relation loading of the core) without loading the element. Callers fall back to the
+ * loaded element when the registered service does not provide it.
+ *
+ * @internal
+ */
+interface ElementSummaryDataServiceInterface extends ElementDataServiceInterface
+{
+    /**
+     * @param array{
+     *     id: int,
+     *     parentId: int,
+     *     type: string,
+     *     subtype: string,
+     *     className: string|null,
+     *     fullpath: string,
+     *     filename: string,
+     *     published: bool
+     * } $summary
+     */
+    public function getRelatedElementDataFromSummary(array $summary): RelatedElementData;
+}

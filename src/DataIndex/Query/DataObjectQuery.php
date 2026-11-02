@@ -360,9 +360,12 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function filterMultiSelect(
         string $fieldName,
         array $values,
-        bool $enablePqlFieldNameResolution = true
+        bool $enablePqlFieldNameResolution = true,
+        bool $matchMissingForEmptyValue = false
     ): self {
-        $this->search->addModifier(new MultiSelectFilter($fieldName, $values, $enablePqlFieldNameResolution));
+        $this->search->addModifier(
+            new MultiSelectFilter($fieldName, $values, $enablePqlFieldNameResolution, $matchMissingForEmptyValue)
+        );
 
         return $this;
     }

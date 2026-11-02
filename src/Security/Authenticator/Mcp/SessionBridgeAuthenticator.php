@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Authenticator\Mcp;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\TwoFactor\PendingSessionCheckerInterface;
 use Pimcore\Model\User;
 use Pimcore\Security\User\User as SecurityUser;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,6 +39,7 @@ class SessionBridgeAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
         private readonly AuthenticationResolverInterface $authenticationResolver,
+        private readonly PendingSessionCheckerInterface $pendingSessionChecker,
     ) {
     }
 
@@ -48,6 +50,10 @@ class SessionBridgeAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
+        if ($this->pendingSessionChecker->isCodePending($request)) {
+            throw new AuthenticationException('The two-factor authentication code is still pending.');
+        }
+
         $pimcoreUser = $this->authenticationResolver->authenticateSession($request);
 
         if (!$pimcoreUser instanceof User) {

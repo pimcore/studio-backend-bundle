@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationActi
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
@@ -80,15 +81,17 @@ final class ExportDataCollectionHandlerTest extends Unit
                 return $result;
             });
 
+        $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
+        $exportDataStorageService->expects($this->once())
+            ->method('store')
+            ->with(1, 0, [self::ELEMENT_ID => self::GRID_VALUES]);
+
         $jobRun = $this->createJobRun();
-        $handler = $this->createHandler($gridService, $elementContextService, $jobRun, $user);
+        $handler = $this->createHandler($gridService, $elementContextService, $exportDataStorageService, $jobRun, $user);
 
         $handler(new ExportDataCollectionMessage(1, 0));
 
-        $this->assertSame(
-            [self::ELEMENT_ID => self::GRID_VALUES],
-            $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value]
-        );
+        $this->assertArrayNotHasKey(StepConfig::GRID_EXPORT_DATA->value, $jobRun->getContext() ?? []);
     }
 
     private function createJobRun(): JobRun
@@ -113,11 +116,13 @@ final class ExportDataCollectionHandlerTest extends Unit
     private function createHandler(
         GridServiceInterface $gridService,
         ElementContextServiceInterface $elementContextService,
+        ExportDataStorageServiceInterface $exportDataStorageService,
         JobRun $jobRun,
         User $user
     ): ExportDataCollectionHandler {
         $handler = new ExportDataCollectionHandler(
             $this->makeEmpty(ColumnConfigurationServiceInterface::class),
+            $exportDataStorageService,
             $this->makeEmpty(PublishServiceInterface::class),
             $this->makeEmpty(UserTopicServiceInterface::class, ['getUserTopic' => 'topic']),
             $this->makeEmpty(UserResolverInterface::class, ['getById' => $user]),
