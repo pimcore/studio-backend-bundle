@@ -84,6 +84,8 @@ interface GridServiceInterface
      * The caller passes only elements the current user may view, and $totalItems counts only
      * those. The view, language and workflow permissions still apply as in the grid; an
      * element the user may not view is left out of the page, without changing $totalItems.
+     * An element not saved yet carries the integer placeholder id of its entry: rows and
+     * inheritance data name elements by integer id.
      *
      * @param ProvidedGridElement[] $elements
      *
