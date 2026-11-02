@@ -20,6 +20,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\Asset;
@@ -38,6 +40,7 @@ use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use function array_map;
+use function in_array;
 use function is_array;
 
 require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObject.php';
@@ -45,7 +48,8 @@ require_once __DIR__ . '/../../../../Support/Fixture/ReverseRelationOwnerTestObj
 /**
  * Regression tests for the owner-side saves of a reverse relation: removing an entry must not silently fail when
  * the owner field is mandatory (pimcore/platform-version#376), and adding an entry must store the wrapper
- * (ObjectMetadata/ElementMetadata) an advanced many-to-many owner field requires.
+ * (ObjectMetadata/ElementMetadata) an advanced many-to-many owner field requires. Owners are only written when
+ * the passed user may save them (and publish them when published), and are saved as that user.
  *
  * @internal
  */
@@ -58,6 +62,10 @@ final class ReverseObjectRelationAdapterTest extends Unit
     private const OWNER_ID = 20;
 
     private const OWNER_FIELD = 'publisher';
+
+    private const OWNER_CLASS = 'Owner';
+
+    private const USER_ID = 7;
 
     /**
      * @throws Exception
@@ -138,6 +146,7 @@ final class ReverseObjectRelationAdapterTest extends Unit
             }
         };
         $owner->setId(self::OWNER_ID);
+        $owner->setClassName(self::OWNER_CLASS);
         $owner->setClass($this->makeOwnerClass($this->makeManyToOne(mandatory: false)));
         $owner->setPublisher($element);
 
@@ -451,10 +460,227 @@ final class ReverseObjectRelationAdapterTest extends Unit
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function testRefusedOwnerToAddLeavesEveryOwnerUntouched(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $allowedOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), []);
+        $refusedOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [], id: self::OWNER_ID + 1);
+
+        $this->expectException(ForbiddenException::class);
+
+        try {
+            $this->callAdapter(
+                $element,
+                [$allowedOwner, $refusedOwner],
+                remainingRelations: [['id' => self::OWNER_ID], ['id' => self::OWNER_ID + 1]],
+                securityService: $this->makeSecurityService(denied: [self::OWNER_ID + 1 => ['save']])
+            );
+        } finally {
+            $this->assertSame([], $allowedOwner->getPublisher());
+            $this->assertSame(0, $allowedOwner->getSaveCount());
+            $this->assertSame([], $refusedOwner->getPublisher());
+            $this->assertSame(0, $refusedOwner->getSaveCount());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testRefusedOwnerToRemoveLeavesEveryOwnerUntouched(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID, self::OWNER_ID + 1]);
+        $allowedOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [$element]);
+        $refusedOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [$element], id: self::OWNER_ID + 1);
+
+        $this->expectException(ForbiddenException::class);
+
+        try {
+            $this->callAdapter(
+                $element,
+                [$allowedOwner, $refusedOwner],
+                remainingRelations: [],
+                securityService: $this->makeSecurityService(denied: [self::OWNER_ID + 1 => ['save']])
+            );
+        } finally {
+            $this->assertSame([$element], $allowedOwner->getPublisher());
+            $this->assertSame(0, $allowedOwner->getSaveCount());
+            $this->assertSame([$element], $refusedOwner->getPublisher());
+            $this->assertSame(0, $refusedOwner->getSaveCount());
+        }
+    }
+
+    /**
+     * Regression: a refused owner to add must also stop the removals of the same edit.
+     *
+     * @throws Exception
+     */
+    public function testRefusedOwnerToAddLeavesTheRemovalOfAnotherOwnerUntouched(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID]);
+        $removedOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [$element]);
+        $refusedOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [], id: self::OWNER_ID + 1);
+
+        $this->expectException(ForbiddenException::class);
+
+        try {
+            $this->callAdapter(
+                $element,
+                [$removedOwner, $refusedOwner],
+                remainingRelations: [['id' => self::OWNER_ID + 1]],
+                securityService: $this->makeSecurityService(denied: [self::OWNER_ID + 1 => ['save']])
+            );
+        } finally {
+            $this->assertSame([$element], $removedOwner->getPublisher());
+            $this->assertSame(0, $removedOwner->getSaveCount());
+            $this->assertSame(0, $refusedOwner->getSaveCount());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testPublishedOwnerNeedsPublishPermission(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), []);
+
+        $this->expectException(ForbiddenException::class);
+
+        try {
+            $this->callAdapter(
+                $element,
+                $owner,
+                remainingRelations: [['id' => self::OWNER_ID]],
+                securityService: $this->makeSecurityService(denied: [self::OWNER_ID => ['publish']])
+            );
+        } finally {
+            $this->assertSame([], $owner->getPublisher());
+            $this->assertSame(0, $owner->getSaveCount());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUnpublishedOwnerNeedsOnlySavePermission(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), [], published: false);
+
+        $this->callAdapter(
+            $element,
+            $owner,
+            remainingRelations: [['id' => self::OWNER_ID]],
+            securityService: $this->makeSecurityService(denied: [self::OWNER_ID => ['publish']])
+        );
+
+        $this->assertSame([$element], $owner->getPublisher());
+        $this->assertSame(1, $owner->getSaveCount());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testPermissionIsCheckedForThePassedUser(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), []);
+        $checks = [];
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'hasElementPermission' => static function (
+                mixed $checked,
+                UserInterface $user,
+                string $permission
+            ) use (&$checks, $owner): void {
+                $checks[] = [$checked === $owner, $user->getId(), $permission];
+            },
+        ]);
+
+        $this->callAdapter(
+            $element,
+            $owner,
+            remainingRelations: [['id' => self::OWNER_ID]],
+            securityService: $securityService
+        );
+
+        $this->assertSame([[true, self::USER_ID, 'save'], [true, self::USER_ID, 'publish']], $checks);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testOwnerIsSavedAsThePassedUserNotTheCurrentUser(): void
+    {
+        $element = $this->makeElement(ownerIds: [self::OWNER_ID]);
+        $owner = $this->makeOwner($this->makeManyToMany(mandatory: false), [$element]);
+        $otherOwner = $this->makeOwner($this->makeManyToMany(mandatory: false), [], self::OWNER_ID + 1);
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'getCurrentUser' => static function (): never {
+                throw new UserNotFoundException();
+            },
+        ]);
+
+        $this->callAdapter(
+            $element,
+            [$owner, $otherOwner],
+            remainingRelations: [['id' => self::OWNER_ID + 1]],
+            securityService: $securityService
+        );
+
+        $this->assertSame(1, $owner->getSaveCount());
+        $this->assertSame(self::USER_ID, $owner->getUserModification());
+        $this->assertSame(1, $otherOwner->getSaveCount());
+        $this->assertSame(self::USER_ID, $otherOwner->getUserModification());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testObjectOfAnotherClassIsRejectedAndNotWritten(): void
+    {
+        $element = $this->makeElement(ownerIds: []);
+        $otherClassObject = $this->makeOwner($this->makeManyToMany(mandatory: false), []);
+        $otherClassObject->setClassName('Other');
+
+        $this->expectException(ValidationException::class);
+
+        try {
+            $this->callAdapter(
+                $element,
+                $otherClassObject,
+                remainingRelations: [['id' => self::OWNER_ID]]
+            );
+        } finally {
+            $this->assertSame([], $otherClassObject->getPublisher());
+            $this->assertSame(0, $otherClassObject->getSaveCount());
+        }
+    }
+
     protected function _after(): void
     {
         RuntimeCache::getInstance()->offsetUnset(self::ELEMENT_CACHE_KEY);
         RuntimeCache::getInstance()->offsetUnset('object_99');
+    }
+
+    /**
+     * @param array<int, string[]> $denied the permissions refused per owner id
+     */
+    private function makeSecurityService(array $denied): SecurityServiceInterface
+    {
+        return $this->makeEmpty(SecurityServiceInterface::class, [
+            'hasElementPermission' => static function (
+                Concrete $element,
+                UserInterface $user,
+                string $permission
+            ) use ($denied): void {
+                if (in_array($permission, $denied[$element->getId()] ?? [], true)) {
+                    throw new ForbiddenException();
+                }
+            },
+        ]);
     }
 
     private function makeAdvancedObjectRelation(): AdvancedManyToManyObjectRelation
@@ -502,6 +728,7 @@ final class ReverseObjectRelationAdapterTest extends Unit
         $owner = new ReverseRelationOwnerTestObject();
         $owner->setId($id);
         $owner->setPublished($published);
+        $owner->setClassName(self::OWNER_CLASS);
         $owner->setClass($this->makeOwnerClass($ownerField));
         $owner->setPublisher($currentValue);
 
@@ -513,8 +740,12 @@ final class ReverseObjectRelationAdapterTest extends Unit
      *
      * @throws Exception
      */
-    private function callAdapter(Concrete $element, Concrete|array $owners, array $remainingRelations): void
-    {
+    private function callAdapter(
+        Concrete $element,
+        Concrete|array $owners,
+        array $remainingRelations,
+        ?SecurityServiceInterface $securityService = null
+    ): void {
         $owners = is_array($owners) ? $owners : [$owners];
         $ownersById = [];
         foreach ($owners as $owner) {
@@ -532,14 +763,14 @@ final class ReverseObjectRelationAdapterTest extends Unit
             ]),
             $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(RelationDataServiceInterface::class, ['getSetterData' => $remainingRelations]),
-            $this->makeEmpty(SecurityServiceInterface::class, [
+            $securityService ?? $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['getId' => 1]),
             ])
         );
 
         $fieldDefinition = (new ReverseObjectRelation())
             ->setName('reverse')
-            ->setOwnerClassName('Owner')
+            ->setOwnerClassName(self::OWNER_CLASS)
             ->setOwnerFieldName(self::OWNER_FIELD);
 
         $adapter->getDataForSetter(
@@ -547,7 +778,7 @@ final class ReverseObjectRelationAdapterTest extends Unit
             $fieldDefinition,
             'reverse',
             ['reverse' => $remainingRelations],
-            $this->makeEmpty(UserInterface::class)
+            $this->makeEmpty(UserInterface::class, ['getId' => self::USER_ID])
         );
     }
 }
