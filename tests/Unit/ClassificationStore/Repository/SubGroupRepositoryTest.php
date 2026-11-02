@@ -118,8 +118,9 @@ final class SubGroupRepositoryTest extends Unit
             $this->assertStringContainsString(self::SUB_GROUP_NAME, $e->getMessage());
         }
 
-        // the lookup and the in-use probe, and nothing that could change a relation
+        // the lookup and the in-use probe, and no statement that could change an assignment
         $this->assertCount(2, $this->getExecutedQueries());
+        $this->assertSame([], $this->getExecutedWrites());
     }
 
     public function testDeleteSucceedsWhenNoRelationCarriesTheIdentifier(): void
@@ -128,8 +129,8 @@ final class SubGroupRepositoryTest extends Unit
 
         $this->createRepository()->delete(self::SUB_GROUP_ID);
 
-        // the lookup and the in-use probe; the deletion itself is no read and is not recorded here
         $this->assertCount(2, $this->getExecutedQueries());
+        $this->assertContains('DELETE ' . self::SUB_GROUPS_TABLE, $this->getExecutedWrites());
     }
 
     /**

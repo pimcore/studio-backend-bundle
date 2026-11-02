@@ -36,6 +36,8 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
 {
     private const string STORE_CONDITION = '`storeId` = :storeId';
 
+    private const string STORE_ID_PARAMETER = 'storeId';
+
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private SearchHelperServiceInterface $searchHelperService,
@@ -48,7 +50,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        $listing->addConditionParam(self::STORE_CONDITION, ['storeId' => $storeId]);
+        $listing->addConditionParam(self::STORE_CONDITION, [self::STORE_ID_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -62,7 +64,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getByStoreId(int $storeId): array
     {
         $listing = new Listing();
-        $listing->addConditionParam(self::STORE_CONDITION, ['storeId' => $storeId]);
+        $listing->addConditionParam(self::STORE_CONDITION, [self::STORE_ID_PARAMETER => $storeId]);
         $listing->setOrderKey('id');
         $listing->setOrder('ASC');
 
@@ -154,7 +156,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     {
         $existing = $this->findOne(
             self::STORE_CONDITION . ' AND `name` = :name',
-            ['storeId' => $storeId, 'name' => $name]
+            [self::STORE_ID_PARAMETER => $storeId, 'name' => $name]
         );
 
         if (!$existing || $existing->getId() === $exceptId) {
@@ -184,7 +186,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
             self::STORE_CONDITION
             . ' AND `id` IN (SELECT `groupId` FROM `' . KeyGroupRelationDao::TABLE_NAME_RELATIONS . '`'
             . ' WHERE `subGroup` = :subGroup)',
-            ['storeId' => $config->getStoreId(), 'subGroup' => $identifier]
+            [self::STORE_ID_PARAMETER => $config->getStoreId(), 'subGroup' => $identifier]
         );
         $listing->setOrderKey('name');
         $listing->setOrder('ASC');

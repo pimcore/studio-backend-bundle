@@ -31,6 +31,10 @@ use Symfony\Component\HttpKernel\KernelInterface;
  * The container also holds the relation cache, which the classification store DAOs resolve from it
  * rather than being handed it.
  *
+ * Writes are recorded apart from reads by {@see getExecutedWrites()}, so a guard that must refuse
+ * before it changes anything can be held to it: with no database behind the suite, "the rows are
+ * intact" is provable only as "no statement that could change them was issued".
+ *
  * @internal
  */
 trait ListingDatabaseStubTrait
@@ -41,6 +45,11 @@ trait ListingDatabaseStubTrait
      * @var list<string>
      */
     private array $executedQueries = [];
+
+    /**
+     * @var list<string>
+     */
+    private array $executedWrites = [];
 
     private ?KernelInterface $kernelBeforeStub = null;
 
@@ -71,8 +80,22 @@ trait ListingDatabaseStubTrait
 
                 return $answer($query);
             },
-            // the answer a single row read gets from an empty database
-            'fetchAssociative' => false,
+            'fetchAssociative' => static fn (string $query): array|false => $answer($query)[0] ?? false,
+            'delete' => function (string $table): int {
+                $this->executedWrites[] = 'DELETE ' . $table;
+
+                return 0;
+            },
+            'update' => function (string $table): int {
+                $this->executedWrites[] = 'UPDATE ' . $table;
+
+                return 0;
+            },
+            'executeStatement' => function (string $query): int {
+                $this->executedWrites[] = $query;
+
+                return 0;
+            },
         ]);
 
         $container = new Container();
@@ -99,9 +122,18 @@ trait ListingDatabaseStubTrait
         return $this->executedQueries;
     }
 
+    /**
+     * @return list<string>
+     */
+    private function getExecutedWrites(): array
+    {
+        return $this->executedWrites;
+    }
+
     protected function _after(): void
     {
         $this->executedQueries = [];
+        $this->executedWrites = [];
 
         if (!$this->kernelStubbed) {
             return;

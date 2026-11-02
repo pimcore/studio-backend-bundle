@@ -108,7 +108,7 @@ final readonly class SubGroupService implements SubGroupServiceInterface
      */
     public function deleteSubGroup(int $id): void
     {
-        // a deletion clears the tag from every assignment that carried it, so the key relations go too
+        // the entry leaves the vocabulary a group layout reports; the guard refuses before a write
         try {
             $this->subGroupConfigurationRepository->delete($id);
         } finally {
