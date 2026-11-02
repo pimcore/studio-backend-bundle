@@ -14,16 +14,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\KeyLabelResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Pimcore\Model\DataObject\Concrete;
 
 /**
@@ -31,11 +35,16 @@ use Pimcore\Model\DataObject\Concrete;
  */
 final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInterface
 {
+    use KeyLabelResolverTrait;
+
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
         private KeyRelationResolverInterface $keyRelationResolver,
         private ConcreteObjectResolver $concreteObjectResolver,
         private KeyConfigResolverInterface $keyConfigResolver,
+        private LabelResolverInterface $labelResolver,
+        private SecurityServiceInterface $securityService,
+        private ToolResolverInterface $toolResolver,
     ) {
     }
 
@@ -105,8 +114,26 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     /**
      * {@inheritdoc}
      */
+    public function preloadKeyTitles(array $keyIds): void
+    {
+        $this->preloadKeyLabels($this->labelResolver, $keyIds, $this->getLabelLanguage());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getKeyTitle(int $keyId): ?string
     {
-        return $this->keyConfigResolver->getById($keyId)?->getTitle();
+        return $this->resolveStoredKeyTitle(
+            $this->keyConfigResolver,
+            $this->labelResolver,
+            $keyId,
+            $this->getLabelLanguage()
+        );
+    }
+
+    private function getLabelLanguage(): string
+    {
+        return $this->resolveLabelLanguage($this->securityService, $this->toolResolver);
     }
 }

@@ -27,7 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
+use function array_values;
 use function count;
 
 /**
@@ -116,6 +119,11 @@ final readonly class GroupService implements GroupServiceInterface
         if (!$object) {
             throw new NotFoundException('object', $layoutParameter->getObjectId());
         }
+
+        // one statement for the labels of the whole group, so the loop below costs no query per key
+        $this->keyGroupLayoutService->preloadKeyTitles(
+            array_values(array_map(static fn (KeyGroupRelation $key): int => $key->getKeyId(), $keys))
+        );
 
         $keyLayouts = [];
         foreach ($keys as $key) {

@@ -14,15 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
+use Pimcore\Model\UserInterface;
 use function array_column;
 
 /**
@@ -40,45 +44,55 @@ final class KeyTitleAgreementTest extends Unit
 
     private const string KEY_NAME = 'weight';
 
-    private const string STORED_TITLE = 'Column title';
+    private const string USER_LANGUAGE = 'de';
+
+    private const string RESOLVED_LABEL = 'Gehäuse';
+
+    /**
+     * The title column of the key configuration, which neither family reads directly any more.
+     */
+    private const string COLUMN_TITLE = 'Column title';
 
     /**
      * The enriched field definition of the payload carries a title of its own; neither family reads it.
      */
-    public function testBothFamiliesReportTheStoredTitle(): void
+    public function testBothFamiliesReportTheResolvedLabel(): void
     {
-        $keyConfigResolver = $this->createKeyConfigResolver(self::STORED_TITLE);
+        $labelResolver = $this->createLabelResolver(self::RESOLVED_LABEL);
 
-        $this->assertSame(self::STORED_TITLE, $this->layoutTitle($keyConfigResolver));
-        $this->assertSame(self::STORED_TITLE, $this->objectLayoutTitle($keyConfigResolver));
+        $this->assertSame(self::RESOLVED_LABEL, $this->layoutTitle($labelResolver));
+        $this->assertSame(self::RESOLVED_LABEL, $this->objectLayoutTitle($labelResolver));
     }
 
     /**
-     * The one sanctioned divergence: the layout endpoints report the stored value verbatim, so the
+     * The one sanctioned divergence: the layout endpoints report the resolved value verbatim, so the
      * configuration UI can tell "no title set" apart from "title equals name", while the object layout
      * falls back to the name rather than rendering a blank label.
      */
-    public function testOnlyTheFallbackOfAStoredNothingDiffers(): void
+    public function testOnlyTheFallbackOfAResolvedNothingDiffers(): void
     {
-        $keyConfigResolver = $this->createKeyConfigResolver(null);
+        $labelResolver = $this->createLabelResolver(null);
 
-        $this->assertNull($this->layoutTitle($keyConfigResolver));
-        $this->assertSame(self::KEY_NAME, $this->objectLayoutTitle($keyConfigResolver));
+        $this->assertNull($this->layoutTitle($labelResolver));
+        $this->assertSame(self::KEY_NAME, $this->objectLayoutTitle($labelResolver));
     }
 
-    private function layoutTitle(KeyConfigResolverInterface $keyConfigResolver): ?string
+    private function layoutTitle(LabelResolverInterface $labelResolver): ?string
     {
         $service = new KeyGroupLayoutService(
             $this->createMock(ServiceResolverInterface::class),
             $this->createMock(KeyRelationResolverInterface::class),
             new ConcreteObjectResolver(),
-            $keyConfigResolver,
+            $this->createKeyConfigResolver(),
+            $labelResolver,
+            $this->createSecurityService(),
+            $this->createMock(ToolResolverInterface::class),
         );
 
         return $service->getKeyTitle(self::KEY_ID);
     }
 
-    private function objectLayoutTitle(KeyConfigResolverInterface $keyConfigResolver): mixed
+    private function objectLayoutTitle(LabelResolverInterface $labelResolver): mixed
     {
         $definition = new Input();
         $definition->setName(self::KEY_NAME);
@@ -102,17 +116,39 @@ final class KeyTitleAgreementTest extends Unit
             ],
         ];
 
-        (new ActiveGroupTitleEnricher($keyConfigResolver))->enrich($fieldDefinition);
+        $enricher = new ActiveGroupTitleEnricher(
+            $this->createKeyConfigResolver(),
+            $labelResolver,
+            $this->createSecurityService(),
+            $this->createMock(ToolResolverInterface::class),
+        );
+        $enricher->enrich($fieldDefinition);
 
         return array_column($fieldDefinition->activeGroupDefinitions[self::GROUP_ID]['keys'], 'title')[0];
     }
 
-    private function createKeyConfigResolver(?string $storedTitle): KeyConfigResolverInterface
+    private function createLabelResolver(?string $resolvedLabel): LabelResolverInterface
+    {
+        $labelResolver = $this->createMock(LabelResolverInterface::class);
+        $labelResolver
+            ->method('getStoredTitle')
+            ->willReturnCallback(
+                function (KeyConfig $keyConfig, string $language) use ($resolvedLabel): ?string {
+                    $this->assertSame(self::KEY_ID, $keyConfig->getId());
+                    $this->assertSame(self::USER_LANGUAGE, $language);
+
+                    return $resolvedLabel;
+                }
+            );
+
+        return $labelResolver;
+    }
+
+    private function createKeyConfigResolver(): KeyConfigResolverInterface
     {
         $keyConfig = new KeyConfig();
-        if ($storedTitle !== null) {
-            $keyConfig->setTitle($storedTitle);
-        }
+        $keyConfig->setId(self::KEY_ID);
+        $keyConfig->setTitle(self::COLUMN_TITLE);
 
         $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
         $keyConfigResolver
@@ -121,5 +157,20 @@ final class KeyTitleAgreementTest extends Unit
             ->willReturn($keyConfig);
 
         return $keyConfigResolver;
+    }
+
+    private function createSecurityService(): SecurityServiceInterface
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user
+            ->method('getLanguage')
+            ->willReturn(self::USER_LANGUAGE);
+
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService
+            ->method('getCurrentUser')
+            ->willReturn($user);
+
+        return $securityService;
     }
 }
