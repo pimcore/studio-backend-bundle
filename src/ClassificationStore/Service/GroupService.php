@@ -30,7 +30,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_map;
-use function array_values;
 use function count;
 
 /**
@@ -47,6 +46,7 @@ final readonly class GroupService implements GroupServiceInterface
         private KeyGroupLayoutServiceInterface $keyGroupLayoutService,
         private GroupLayoutHydratorInterface $groupLayoutHydrator,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
 
@@ -120,9 +120,12 @@ final readonly class GroupService implements GroupServiceInterface
             throw new NotFoundException('object', $layoutParameter->getObjectId());
         }
 
-        // one statement for the labels of the whole group, so the loop below costs no query per key
+        $language = $this->labelLanguageResolver->getLabelLanguage();
+
+        // One statement for the whole group, instead of a label query per key.
         $this->keyGroupLayoutService->preloadKeyTitles(
-            array_values(array_map(static fn (KeyGroupRelation $key): int => $key->getKeyId(), $keys))
+            array_map(static fn (KeyGroupRelation $key): int => $key->getKeyId(), $keys),
+            $language
         );
 
         $keyLayouts = [];
@@ -138,7 +141,7 @@ final readonly class GroupService implements GroupServiceInterface
                 name: $key->getName(),
                 description: $key->getDescription(),
                 definition: $definition,
-                title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId()),
+                title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId(), $language),
             );
         }
 

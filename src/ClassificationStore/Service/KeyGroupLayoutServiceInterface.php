@@ -42,15 +42,16 @@ interface KeyGroupLayoutServiceInterface
     ): KeyLayout;
 
     /**
-     * Reads the labels of the given keys with a single statement, so that {@see self::getKeyTitle()}
-     * costs no query per key afterwards.
+     * Reads the labels of the given keys with a single statement, so that the getKeyTitle() calls
+     * that follow cost nothing.
      *
      * @param int[] $keyIds
      */
-    public function preloadKeyTitles(array $keyIds): void;
+    public function preloadKeyTitles(array $keyIds, string $language): void;
 
     /**
-     * Returns the label stored for the key in the requesting user's language, null if none is stored.
+     * Returns the label of the key configuration resolved for $language: the title stored for a
+     * language of the chain, then the key's own title, then null - never its technical name.
      */
-    public function getKeyTitle(int $keyId): ?string;
+    public function getKeyTitle(int $keyId, string $language): ?string;
 }

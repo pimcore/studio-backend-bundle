@@ -14,19 +14,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\KeyLabelResolverTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
 use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use Pimcore\Model\DataObject\Concrete;
 
@@ -35,16 +34,13 @@ use Pimcore\Model\DataObject\Concrete;
  */
 final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInterface
 {
-    use KeyLabelResolverTrait;
-
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
         private KeyRelationResolverInterface $keyRelationResolver,
         private ConcreteObjectResolver $concreteObjectResolver,
         private KeyConfigResolverInterface $keyConfigResolver,
         private LabelResolverInterface $labelResolver,
-        private SecurityServiceInterface $securityService,
-        private ToolResolverInterface $toolResolver,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
 
@@ -107,33 +103,29 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             name: $key->getName(),
             description: $key->getDescription(),
             definition: $definition,
-            title: $this->getKeyTitle($key->getKeyId())
+            title: $this->getKeyTitle($key->getKeyId(), $this->labelLanguageResolver->getLabelLanguage())
         );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function preloadKeyTitles(array $keyIds): void
+    public function preloadKeyTitles(array $keyIds, string $language): void
     {
-        $this->preloadKeyLabels($this->labelResolver, $keyIds, $this->getLabelLanguage());
+        $this->labelResolver->preload(LabelEntityType::Key, $keyIds, $language);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getKeyTitle(int $keyId): ?string
+    public function getKeyTitle(int $keyId, string $language): ?string
     {
-        return $this->resolveStoredKeyTitle(
-            $this->keyConfigResolver,
-            $this->labelResolver,
-            $keyId,
-            $this->getLabelLanguage()
-        );
-    }
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
 
-    private function getLabelLanguage(): string
-    {
-        return $this->resolveLabelLanguage($this->securityService, $this->toolResolver);
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->labelResolver->getStoredTitle($keyConfig, $language);
     }
 }

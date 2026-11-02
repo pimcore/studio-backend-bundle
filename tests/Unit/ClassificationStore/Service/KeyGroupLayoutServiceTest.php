@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Serv
 
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
@@ -23,48 +22,49 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\Layou
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
-use Pimcore\Model\DataObject\Classificationstore\LabelEntityType;
-use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
-use Pimcore\Model\UserInterface;
 use ReflectionClass;
-use function range;
+use function array_column;
 use function str_contains;
 
 /**
+ * The label is resolved through core's resolver, so none of the chain below the title column is
+ * asserted here - only the rung this endpoint ends on, which is null rather than the technical name.
+ * The per-key KeyConfig load stays; what the group endpoint no longer issues is a label query per key.
+ *
  * @internal
  */
 final class KeyGroupLayoutServiceTest extends Unit
 {
+    use LabelResolverMockTrait;
+
     private const int KEY_ID = 7;
 
     private const int GROUP_ID = 3;
 
     private const string KEY_NAME = 'weight';
 
-    private const string USER_LANGUAGE = 'de';
+    private const string LANGUAGE = 'de';
 
     private const string DEFAULT_LANGUAGE = 'en';
 
-    private const string RESOLVED_LABEL = 'Gehäuse';
+    private const string LABEL = 'Gewicht';
 
-    /**
-     * The title column of the key configuration, which the service does not read any more.
-     */
-    private const string COLUMN_TITLE = 'Column title';
+    private const string COLUMN_TITLE = 'classificationstore.key.weight';
 
     /**
      * @throws Exception
      */
-    public function testGetKeyLayoutReturnsTheResolvedLabel(): void
+    public function testGetKeyLayoutReturnsTheLabelOfTheRequestingUsersLanguage(): void
     {
-        $keyLayout = $this->getKeyLayout(self::RESOLVED_LABEL);
+        $keyLayout = $this->getKeyLayout(
+            $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
+            [self::KEY_ID => [self::LANGUAGE => self::LABEL]]
+        );
 
-        $this->assertSame(self::RESOLVED_LABEL, $keyLayout->getTitle());
+        $this->assertSame(self::LABEL, $keyLayout->getTitle());
         $this->assertSame(self::KEY_NAME, $keyLayout->getName());
 
         foreach ((new ReflectionClass(KeyGroupLayoutService::class))->getConstructor()->getParameters() as $parameter) {
@@ -73,14 +73,38 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
-     * The nullable accessor is the one this path reads, so the configuration UI can still tell
-     * "no title set" apart from "title equals name".
+     * An installation with an empty labels table is unchanged from the release before: the chain ends
+     * at the key's title column.
      *
      * @throws Exception
      */
-    public function testGetKeyLayoutReturnsNullWhenNoLabelIsResolved(): void
+    public function testGetKeyLayoutReturnsTheTitleColumnWithoutALabelRow(): void
     {
-        $keyLayout = $this->getKeyLayout(null);
+        $keyLayout = $this->getKeyLayout($this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE));
+
+        $this->assertSame(self::COLUMN_TITLE, $keyLayout->getTitle());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetKeyLayoutReturnsNullWhenNoTitleIsStored(): void
+    {
+        $keyLayout = $this->getKeyLayout($this->createKeyConfig(self::KEY_ID, self::KEY_NAME));
+
+        $this->assertNull($keyLayout->getTitle());
+        $this->assertSame(self::KEY_NAME, $keyLayout->getName());
+    }
+
+    /**
+     * classificationstore_keys.title is NOT NULL DEFAULT '', so an empty title is the ordinary case
+     * rather than an exotic one. It reaches the response as null, not as the empty string it was.
+     *
+     * @throws Exception
+     */
+    public function testGetKeyLayoutReturnsNullForAnEmptyTitleColumn(): void
+    {
+        $keyLayout = $this->getKeyLayout($this->createKeyConfig(self::KEY_ID, self::KEY_NAME, ''));
 
         $this->assertNull($keyLayout->getTitle());
         $this->assertSame(self::KEY_NAME, $keyLayout->getName());
@@ -89,80 +113,68 @@ final class KeyGroupLayoutServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testGetKeyLayoutReturnsAnEmptyLabelVerbatim(): void
+    public function testGetKeyLayoutReturnsNullWhenTheKeyConfigurationCannotBeLoaded(): void
     {
-        $keyLayout = $this->getKeyLayout('');
+        $keyLayout = $this->getKeyLayout(null);
 
-        $this->assertSame('', $keyLayout->getTitle());
+        $this->assertNull($keyLayout->getTitle());
         $this->assertSame(self::KEY_NAME, $keyLayout->getName());
     }
 
     /**
-     * An ETIM-sized group is preloaded with one call, so the loop that follows costs no query per key.
-     */
-    public function testThePreloadReadsTheLabelsOfEveryGivenKeyWithOneCall(): void
-    {
-        $keyIds = range(1, 121);
-
-        $labelResolver = $this->createMock(LabelResolverInterface::class);
-        $labelResolver
-            ->expects($this->once())
-            ->method('preload')
-            ->with(LabelEntityType::Key, $keyIds, self::USER_LANGUAGE);
-
-        $this->createService($labelResolver, $this->createSecurityService())->preloadKeyTitles($keyIds);
-    }
-
-    /**
-     * Without a resolvable user there is no language to ask for, so the installation's default one is
-     * what the resolver walks from.
+     * A user whose language is unset is labelled in the installation default language rather than
+     * against an empty one.
      *
      * @throws Exception
      */
-    public function testTheLabelIsReadForTheDefaultLanguageWithoutAUser(): void
+    public function testAnEmptyUserLanguageFallsBackToTheDefaultLanguage(): void
     {
-        $securityService = $this->createMock(SecurityServiceInterface::class);
-        $securityService
-            ->method('getCurrentUser')
-            ->willThrowException(new UserNotFoundException());
+        $keyLayout = $this->getKeyLayout(
+            $this->createKeyConfig(self::KEY_ID, self::KEY_NAME),
+            [self::KEY_ID => [self::DEFAULT_LANGUAGE => self::LABEL]],
+            ''
+        );
 
-        $labelResolver = $this->createMock(LabelResolverInterface::class);
-        $labelResolver
-            ->expects($this->once())
-            ->method('getStoredTitle')
-            ->with($this->anything(), self::DEFAULT_LANGUAGE)
-            ->willReturn(self::RESOLVED_LABEL);
-
-        $title = $this->createService($labelResolver, $securityService)->getKeyTitle(self::KEY_ID);
-
-        $this->assertSame(self::RESOLVED_LABEL, $title);
+        $this->assertSame(self::LABEL, $keyLayout->getTitle());
+        $this->assertSame([self::DEFAULT_LANGUAGE], array_column($this->labelResolverCalls, 'language'));
     }
 
     /**
      * @throws Exception
      */
-    private function getKeyLayout(?string $resolvedLabel): KeyLayout
+    public function testPreloadKeyTitlesReadsAWholeGroupWithOneCall(): void
     {
-        $labelResolver = $this->createMock(LabelResolverInterface::class);
-        $labelResolver
-            ->method('getStoredTitle')
-            ->willReturnCallback(
-                function (KeyConfig $keyConfig, string $language) use ($resolvedLabel): ?string {
-                    $this->assertSame(self::KEY_ID, $keyConfig->getId());
-                    $this->assertSame(self::USER_LANGUAGE, $language);
+        $keyIds = [11, 12, 13];
 
-                    return $resolvedLabel;
-                }
-            );
+        $this->createService(null)->preloadKeyTitles($keyIds, self::LANGUAGE);
 
-        $service = $this->createService($labelResolver, $this->createSecurityService());
-
-        return $service->getKeyLayout(new LayoutParameter('classificationStore'), self::KEY_ID, self::GROUP_ID);
+        $this->assertSame([$keyIds], $this->preloadedIds());
     }
 
+    /**
+     * @param array<int, array<string, string>> $labels
+     *
+     * @throws Exception
+     */
+    private function getKeyLayout(
+        ?KeyConfig $keyConfig,
+        array $labels = [],
+        ?string $userLanguage = self::LANGUAGE
+    ): KeyLayout {
+        return $this
+            ->createService($keyConfig, $labels, $userLanguage)
+            ->getKeyLayout(new LayoutParameter('classificationStore'), self::KEY_ID, self::GROUP_ID);
+    }
+
+    /**
+     * @param array<int, array<string, string>> $labels
+     *
+     * @throws Exception
+     */
     private function createService(
-        LabelResolverInterface $labelResolver,
-        SecurityServiceInterface $securityService
+        ?KeyConfig $keyConfig,
+        array $labels = [],
+        ?string $userLanguage = self::LANGUAGE
     ): KeyGroupLayoutService {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
@@ -183,53 +195,19 @@ final class KeyGroupLayoutServiceTest extends Unit
             ->method('getFieldDefinitionFromJson')
             ->willReturn(new Input());
 
-        $toolResolver = $this->createMock(ToolResolverInterface::class);
-        $toolResolver
-            ->method('getDefaultLanguage')
-            ->willReturn(self::DEFAULT_LANGUAGE);
-
-        return new KeyGroupLayoutService(
-            $serviceResolver,
-            $keyRelationResolver,
-            new ConcreteObjectResolver(),
-            $this->createKeyConfigResolver(),
-            $labelResolver,
-            $securityService,
-            $toolResolver,
-        );
-    }
-
-    /**
-     * The key configuration carries a title of its own; it is the resolver's last rung, not the
-     * service's, so a disagreeing column never reaches the response directly.
-     */
-    private function createKeyConfigResolver(): KeyConfigResolverInterface
-    {
-        $keyConfig = new KeyConfig();
-        $keyConfig->setId(self::KEY_ID);
-        $keyConfig->setTitle(self::COLUMN_TITLE);
-
         $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
         $keyConfigResolver
             ->method('getById')
             ->with(self::KEY_ID)
             ->willReturn($keyConfig);
 
-        return $keyConfigResolver;
-    }
-
-    private function createSecurityService(): SecurityServiceInterface
-    {
-        $user = $this->createMock(UserInterface::class);
-        $user
-            ->method('getLanguage')
-            ->willReturn(self::USER_LANGUAGE);
-
-        $securityService = $this->createMock(SecurityServiceInterface::class);
-        $securityService
-            ->method('getCurrentUser')
-            ->willReturn($user);
-
-        return $securityService;
+        return new KeyGroupLayoutService(
+            $serviceResolver,
+            $keyRelationResolver,
+            new ConcreteObjectResolver(),
+            $keyConfigResolver,
+            $this->createLabelResolver($labels),
+            $this->createLabelLanguageResolver($userLanguage, self::DEFAULT_LANGUAGE)
+        );
     }
 }
