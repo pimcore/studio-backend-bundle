@@ -622,7 +622,7 @@ final class Installer extends SettingsStoreAwareInstaller
     /**
      * @throws Exception
      */
-    private function addUserPermission(Schema $schema): void
+    public function addUserPermission(Schema $schema): void
     {
         if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
             $permissions = [
@@ -631,6 +631,11 @@ final class Installer extends SettingsStoreAwareInstaller
                 ...self::MAINTENANCE_MODE_PERMISSIONS,
             ];
             foreach ($permissions as $permission) {
+                // The key is the primary key; a kept or foreign row must not break (re)installing.
+                if ($this->hasUserPermission($permission)) {
+                    continue;
+                }
+
                 $queryBuilder = $this->db->createQueryBuilder();
                 $queryBuilder
                     ->insert(UserPermissions::DEFINITIONS_TABLE->value)
@@ -646,6 +651,19 @@ final class Installer extends SettingsStoreAwareInstaller
                 $queryBuilder->executeStatement();
             }
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function hasUserPermission(string $permission): bool
+    {
+        $key = $this->db->quoteIdentifier('key');
+
+        return $this->db->fetchOne(
+            'SELECT ' . $key . ' FROM ' . UserPermissions::DEFINITIONS_TABLE->value . ' WHERE ' . $key . ' = :key',
+            ['key' => $permission]
+        ) !== false;
     }
 
     /**
