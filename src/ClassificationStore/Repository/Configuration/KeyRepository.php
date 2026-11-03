@@ -17,6 +17,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -121,22 +122,25 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function update(
-        int $id,
-        string $name,
-        ?string $title,
-        ?string $description,
-        ?string $type,
-        ?array $definition,
-    ): KeyConfig {
+    public function update(int $id, KeyUpdate $parameters): KeyConfig
+    {
         $config = $this->getById($id);
-        $config->setName($name);
-        $config->setTitle($title ?? $config->getTitle());
-        $config->setDescription($description ?? $config->getDescription());
+        $config->setName($parameters->getName());
 
+        if ($parameters->isTitleSupplied()) {
+            $config->setTitle($parameters->getTitle() ?? '');
+        }
+
+        if ($parameters->isDescriptionSupplied()) {
+            $config->setDescription($parameters->getDescription() ?? '');
+        }
+
+        $type = $parameters->getType();
         if ($type !== null) {
             $config->setType($type);
         }
+
+        $definition = $parameters->getDefinition();
 
         try {
             if ($definition !== null) {

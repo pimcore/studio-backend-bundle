@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -41,17 +42,13 @@ interface KeyRepositoryInterface
     public function create(string $name, int $storeId, ?string $title = null): KeyConfig;
 
     /**
+     * The title and the description are written only when the payload supplied them, a supplied
+     * empty one clearing the stored value; the definition is written only when it is not null.
+     *
      * @throws NotFoundException
      * @throws ElementSavingFailedException
      */
-    public function update(
-        int $id,
-        string $name,
-        ?string $title,
-        ?string $description,
-        ?string $type,
-        ?array $definition,
-    ): KeyConfig;
+    public function update(int $id, KeyUpdate $parameters): KeyConfig;
 
     /**
      * @throws NotFoundException
