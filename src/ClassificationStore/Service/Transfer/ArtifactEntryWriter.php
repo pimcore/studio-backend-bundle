@@ -83,53 +83,104 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         Closure $walk,
         Closure $save,
     ): void {
-        $entries = $document->getEntries($section);
-        $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
-        $matched = [];
+        $walks = [];
 
         // the rows that own an identifier before the rows a name may adopt, which is what
         // ArtifactTargetMatcherInterface::IDENTIFIER_PHASES is for
         foreach (ArtifactTargetMatcherInterface::IDENTIFIER_PHASES as $withIdentifier) {
-            $phase = static fn (int $afterId, int $limit): array => $walk($withIdentifier, $afterId, $limit);
+            $walks[] = static fn (int $afterId, int $limit): array => $walk($withIdentifier, $afterId, $limit);
+        }
 
-            foreach ($this->matcher->walkTargetByIdCursor($context, $phase) as $target) {
-                $entryKey = $this->matcher->matchEntryKey(
-                    $entries,
-                    $entriesByName,
-                    $target->getIdentifier(),
-                    $target->getName()
-                );
-                $claimedBy = $entryKey === null ? null : ($matched[$entryKey] ?? null);
+        $this->reconcileWalkedTargets(
+            $context,
+            $section,
+            $document->getEntries($section),
+            $walks,
+            function (
+                SubGroupConfig|CollectionConfig|GroupConfig|null $target,
+                array $entry,
+            ) use ($context, $section, $save): void {
+                $this->writeNamedEntity($context, $section, $target, $entry, $save);
+            }
+        );
+    }
 
-                if ($claimedBy !== null && $claimedBy === (int) $target->getId()) {
-                    // the same row reached twice, in a walk its own write moved it into
-                    continue;
+    /**
+     * {@inheritdoc}
+     */
+    public function reconcileWalkedTargets(
+        ApplyContext $context,
+        ArtifactSection $section,
+        array $entries,
+        array $walks,
+        Closure $write,
+    ): void {
+        $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
+        $matched = [];
+
+        foreach ($walks as $walk) {
+            foreach ($this->matcher->walkTargetByIdCursor($context, $walk) as $target) {
+                $entryKey = $this->claimEntryKey($context, $section, $entries, $entriesByName, $target, $matched);
+
+                if ($entryKey !== null) {
+                    $write($target, $entries[$entryKey]);
                 }
-
-                if ($entryKey === null || $claimedBy !== null) {
-                    $this->diagnostics->recordUnmatchedTarget(
-                        $context,
-                        $section,
-                        $entriesByName,
-                        $target,
-                        $matched
-                    );
-
-                    continue;
-                }
-
-                $matched[$entryKey] = (int) $target->getId();
-                $this->writeNamedEntity($context, $section, $target, $entries[$entryKey], $save);
             }
         }
 
         foreach ($entries as $entryKey => $entry) {
-            if (isset($matched[$entryKey])) {
-                continue;
+            if (!isset($matched[$entryKey])) {
+                $write(null, $entry);
             }
-
-            $this->writeNamedEntity($context, $section, null, $entry, $save);
         }
+    }
+
+    /**
+     * The entry one walked row claims, or null where it claims nothing: a row whose entry is already
+     * another row's, and a row the section describes nothing of, are both left in place as the
+     * target they are - the first because the file is then naming one row under two identifiers,
+     * the second because an apply never deletes.
+     *
+     * A row reached twice is the one case that is neither, and is silent: stamping an identifier
+     * onto an adopted row moves it into the walk that follows, where the entry it has already
+     * answered for would otherwise read as claimed by somebody else.
+     *
+     * `$matched` is the claim ledger of the level, and the claim is recorded in it.
+     *
+     * @param array<string, array<string, mixed>> $entries
+     * @param array<string, string> $entriesByName
+     * @param array<string, int> $matched
+     */
+    private function claimEntryKey(
+        ApplyContext $context,
+        ArtifactSection $section,
+        array $entries,
+        array $entriesByName,
+        SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
+        array &$matched,
+    ): ?string {
+        $entryKey = $this->matcher->matchEntryKey(
+            $entries,
+            $entriesByName,
+            $target->getIdentifier(),
+            $target->getName()
+        );
+        $claimedBy = $entryKey === null ? null : ($matched[$entryKey] ?? null);
+
+        if ($claimedBy !== null && $claimedBy === (int) $target->getId()) {
+            // the same row reached twice, in a walk its own write moved it into
+            return null;
+        }
+
+        if ($entryKey === null || $claimedBy !== null) {
+            $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target, $matched);
+
+            return null;
+        }
+
+        $matched[$entryKey] = (int) $target->getId();
+
+        return $entryKey;
     }
 
     /**

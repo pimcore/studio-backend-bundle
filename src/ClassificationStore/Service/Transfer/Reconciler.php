@@ -23,10 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use Throwable;
@@ -274,59 +274,37 @@ final readonly class Reconciler implements ReconcilerInterface
 
     private function applyKeys(ApplyContext $context, ArtifactDocument $document): void
     {
-        $storeId = (int) $context->getStoreId();
-        $entries = $document->getEntries(ArtifactSection::KEYS);
-        $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
-        $matched = [];
+        $this->writer->reconcileWalkedTargets(
+            $context,
+            ArtifactSection::KEYS,
+            $document->getEntries(ArtifactSection::KEYS),
+            $this->keyTargetWalks((int) $context->getStoreId()),
+            function (?KeyConfig $target, array $entry) use ($context): void {
+                $this->writer->writeKey($context, $target, $entry);
+            }
+        );
+    }
 
-        // the identifier owners before the rows a name may adopt, which is what
-        // ArtifactTargetMatcherInterface::IDENTIFIER_PHASES is for; and inside each phase the
-        // disabled rows first, because a key the file enables moves into the walk that follows,
-        // where the entry it has already answered for is skipped
+    /**
+     * The walks the key rows of the store are taken in: the identifier owners before the rows a name
+     * may adopt, which is what {@see ArtifactTargetMatcherInterface::IDENTIFIER_PHASES} is for; and
+     * inside each phase the disabled rows first, because a key the file enables moves into the walk
+     * that follows, where the entry it has already answered for is skipped.
+     *
+     * @return list<Closure>
+     */
+    private function keyTargetWalks(int $storeId): array
+    {
+        $walks = [];
+
         foreach (ArtifactTargetMatcherInterface::IDENTIFIER_PHASES as $withIdentifier) {
             foreach ([true, false] as $disabledOnly) {
-                $walk = fn (int $afterId, int $limit): array => $this->keyRepository
+                $walks[] = fn (int $afterId, int $limit): array => $this->keyRepository
                     ->getChunkAfterId($storeId, $disabledOnly, $afterId, $limit, $withIdentifier);
-
-                foreach ($this->matcher->walkTargetByIdCursor($context, $walk) as $target) {
-                    $entryKey = $this->matcher->matchEntryKey(
-                        $entries,
-                        $entriesByName,
-                        $target->getIdentifier(),
-                        $target->getName()
-                    );
-                    $claimedBy = $entryKey === null ? null : ($matched[$entryKey] ?? null);
-
-                    if ($claimedBy !== null && $claimedBy === (int) $target->getId()) {
-                        // the same row reached twice, in a walk its own write moved it into
-                        continue;
-                    }
-
-                    if ($entryKey === null || $claimedBy !== null) {
-                        $this->diagnostics->recordUnmatchedTarget(
-                            $context,
-                            ArtifactSection::KEYS,
-                            $entriesByName,
-                            $target,
-                            $matched
-                        );
-
-                        continue;
-                    }
-
-                    $matched[$entryKey] = (int) $target->getId();
-                    $this->writer->writeKey($context, $target, $entries[$entryKey]);
-                }
             }
         }
 
-        foreach ($entries as $entryKey => $entry) {
-            if (isset($matched[$entryKey])) {
-                continue;
-            }
-
-            $this->writer->writeKey($context, null, $entry);
-        }
+        return $walks;
     }
 
     /**

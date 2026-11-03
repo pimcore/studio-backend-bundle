@@ -25,8 +25,9 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
  * The other half of an apply: one entry of the file against the row it was matched to - what that
  * is, created, updated, adopted, unchanged or refused, and the write it takes.
  *
- * Which rows there are to match is the reconciler's ({@see ReconcilerInterface}), and what matches
- * is the matcher's ({@see ArtifactTargetMatcherInterface}).
+ * Which rows there are to match is still the reconciler's ({@see ReconcilerInterface}) - it supplies
+ * the walks a level is taken in - and what a row describes is the matcher's
+ * ({@see ArtifactTargetMatcherInterface}).
  *
  * @internal
  */
@@ -52,6 +53,36 @@ interface ArtifactEntryWriterInterface
         ArtifactDocument $document,
         Closure $walk,
         Closure $save,
+    ): void;
+
+    /**
+     * The rows of one level against the entries of its section: every row the walks reach claims the
+     * entry it describes, and `$write` is called once with that row and that entry; afterwards
+     * `$write` is called once per entry no row claimed, with null in the row's place. A row that
+     * describes no entry, or one whose entry another row has claimed already, is reported by the
+     * diagnostics and written over by nothing.
+     *
+     * `$walks` are the walks the level is taken in, in the order they have to be taken: each reads
+     * one chunk of rows by cursor and is called with the cursor and the chunk size. A level takes
+     * more than one because identifier ownership has to be resolved across it before a name may
+     * adopt anything ({@see ArtifactTargetMatcherInterface::IDENTIFIER_PHASES}), and keys take two
+     * more because a disabled row the file enables moves into the walk that follows.
+     *
+     * `$write` is handed the row - typed by the caller to the level it walks - and the entry.
+     *
+     * @param array<string, array<string, mixed>> $entries
+     * @param list<Closure> $walks
+     *
+     * @throws DatabaseException
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     */
+    public function reconcileWalkedTargets(
+        ApplyContext $context,
+        ArtifactSection $section,
+        array $entries,
+        array $walks,
+        Closure $write,
     ): void;
 
     /**
