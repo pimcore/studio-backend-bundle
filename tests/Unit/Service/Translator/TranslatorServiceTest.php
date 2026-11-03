@@ -24,12 +24,14 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Config;
+use Pimcore\Model\Translation as TranslationModel;
 use Pimcore\Model\Translation\Listing;
 use Pimcore\Model\UserInterface;
 use Pimcore\Translation\Translator;
@@ -142,6 +144,44 @@ final class TranslatorServiceTest extends Unit
         $parameter = new CollectionFilterParameter($filterParameter);
 
         $this->assertSame($listing, $translatorService->getTranslationList('messages', $parameter));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testListTranslationsOnlyReturnsAllowedLanguages(): void
+    {
+        $user = $this->makeEmpty(UserInterface::class);
+
+        $translation = new TranslationModel();
+        $translation->setKey('pme_key');
+        $translation->setType('simple');
+        $translation->setTranslations(['en' => 'Car', 'de' => 'Auto', 'cs' => 'Auto cs', 'fr_BE' => 'Voiture']);
+
+        $listing = $this->createMock(Listing::class);
+        $listing->method('getTranslations')->willReturn([$translation]);
+        $listing->method('count')->willReturn(1);
+
+        $repository = $this->createMock(TranslationRepositoryInterface::class);
+        $repository->method('getTranslationList')->willReturn($listing);
+
+        $translatorService = $this->mockTranslatorService(
+            repository: $repository,
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'isLoggedIn' => true,
+                'getCurrentUser' => $user,
+            ]),
+            languageService: $this->makeEmpty(LanguageServiceInterface::class, [
+                'getTranslationAllowedLanguages' => ['en', 'fr_BE'],
+            ]),
+            translationsHydrator: new TranslationsHydrator(),
+        );
+
+        $items = $translatorService->listTranslations('admin', new CollectionFilterParameter())->getItems();
+
+        $this->assertCount(1, $items);
+        $this->assertSame('pme_key', $items[0]->getKey());
+        $this->assertSame(['en' => 'Car', 'fr_BE' => 'Voiture'], $items[0]->getTranslations());
     }
 
     /**
@@ -273,6 +313,7 @@ final class TranslatorServiceTest extends Unit
         ?LanguageServiceInterface $languageService = null,
         ?ListingFilterInterface $listingFilter = null,
         ?FilterMapperServiceInterface $filterMapper = null,
+        ?TranslationsHydratorInterface $translationsHydrator = null,
     ): TranslatorServiceInterface {
         $translator = $this->makeEmpty(Translator::class);
         $repository ??= $this->makeEmpty(TranslationRepositoryInterface::class);
@@ -282,7 +323,7 @@ final class TranslatorServiceTest extends Unit
         $languageService ??= $this->makeEmpty(LanguageServiceInterface::class);
         $listingFilter ??= $this->makeEmpty(ListingFilterInterface::class);
         $filterMapper ??= $this->makeEmpty(FilterMapperServiceInterface::class);
-        $translationsHydrator = $this->makeEmpty(TranslationsHydratorInterface::class);
+        $translationsHydrator ??= $this->makeEmpty(TranslationsHydratorInterface::class);
         $eventDispatcher = $this->makeEmpty(EventDispatcherInterface::class);
         $cacheResolver = $this->makeEmpty(CacheResolverInterface::class);
         $toolResolver = $this->makeEmpty(ToolResolverInterface::class);
