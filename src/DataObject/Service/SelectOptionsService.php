@@ -127,7 +127,8 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
         return array_filter(
             $selectOptionsParameter->getChangedData(),
-            static fn (string|int $key): bool => !$class->getFieldDefinition((string)$key) instanceof ReverseObjectRelation,
+            static fn (string|int $key): bool =>
+                !$class->getFieldDefinition((string)$key) instanceof ReverseObjectRelation,
             ARRAY_FILTER_USE_KEY
         );
     }
