@@ -87,13 +87,15 @@ final class KeyGroupRelationSchemaTest extends Unit
 
     /**
      * The payload mapping substitutes the constructor default for a key the body did not carry, so a
-     * plain nullable default could not tell an absent property from an explicit null. The three carry a
+     * plain nullable default could not tell an absent property from an explicit null. All five carry a
      * presence marker instead.
      */
     public function testAnAbsentPropertyIsDistinguishableFromAnExplicitNull(): void
     {
         $absent = new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID);
 
+        $this->assertFalse($absent->hasSorter());
+        $this->assertFalse($absent->hasMandatory());
         $this->assertFalse($absent->hasDefinitionOverride());
         $this->assertFalse($absent->hasSubGroup());
         $this->assertFalse($absent->hasMetadata());
@@ -126,6 +128,8 @@ final class KeyGroupRelationSchemaTest extends Unit
             self::METADATA
         );
 
+        $this->assertTrue($parameters->hasSorter());
+        $this->assertTrue($parameters->hasMandatory());
         $this->assertSame(5, $parameters->getSorter());
         $this->assertTrue($parameters->isMandatory());
         $this->assertSame(self::DEFINITION_OVERRIDE, $parameters->getDefinitionOverride());
@@ -134,8 +138,8 @@ final class KeyGroupRelationSchemaTest extends Unit
     }
 
     /**
-     * The two released properties keep their defaults when absent, so a payload that names neither
-     * behaves as it did; an explicit null on either is refused by the field's own name.
+     * The two released properties cannot be cleared, so an explicit null on either is refused by the
+     * field's own name - which is the half of the absent-versus-null rule they do not take part in.
      *
      * @dataProvider nonNullableFieldProvider
      *
@@ -161,6 +165,18 @@ final class KeyGroupRelationSchemaTest extends Unit
             'sorter' => ['sorter', ['sorter' => null]],
             'mandatory' => ['mandatory', ['mandatory' => null]],
         ];
+    }
+
+    /**
+     * Only the pair is required. `sorter` and `mandatory` were listed as required while the mapping
+     * substituted a default for either anyway, and now that omitting one keeps the stored value, a
+     * client the generated schema makes send them could not leave a stored value alone at all.
+     */
+    public function testOnlyThePairIsRequiredOnTheCreateSchema(): void
+    {
+        $attributes = (new ReflectionClass(KeyGroupRelationCreate::class))->getAttributes(Schema::class);
+
+        $this->assertSame(['keyId', 'groupId'], $attributes[0]->getArguments()['required']);
     }
 
     public function testAValueOfTheWrongTypeIsRefused(): void

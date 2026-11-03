@@ -23,15 +23,18 @@ use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpKernel\KernelInterface;
 use function array_shift;
-use function ltrim;
-use function rtrim;
 use function str_contains;
+use function trim;
 
 /**
  * The repository writes through `KeyGroupRelation`, which resolves its connection through `Pimcore\Db`
  * and cannot be injected. This stands in for that connection, so a test can call the public entry point
  * and assert on the row that reaches the database - which is where "an absent property is not written"
  * and "the resolved sub group identifier is written, not the submitted one" are observable at all.
+ *
+ * A successful upsert is applied to the rows the listing loads, so the read-back the repository ends
+ * with answers with what the write left rather than with the seeded fixture. Without that, a test can
+ * only assert on the outgoing write and a response reporting a stale value passes unnoticed.
  *
  * There is no database in the unit suite, so the column list the write path reads is pre-seeded into the
  * runtime cache the way a first read would leave it, which keeps `SHOW COLUMNS` out of the stub.
@@ -86,6 +89,17 @@ trait RelationWriteDatabaseStubTrait
      */
     private $competingWriteOnRelationLock = null;
 
+    /**
+     * The key side columns a newly inserted relation joins to, null when the pair names no key
+     * configuration. The relation listing inner joins the key row
+     * ({@see \Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing\Dao::getWhere()}
+     * puts `relations.keyId = keys.id` in its WHERE), so an inserted relation becomes readable only
+     * once there is a key row for it - which is why a create has to say so rather than have it assumed.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $keyColumnsForNewAssignments = null;
+
     private ?Connection $stubbedConnection = null;
 
     private ?KernelInterface $kernelBeforeStub = null;
@@ -107,13 +121,20 @@ trait RelationWriteDatabaseStubTrait
             'fetchOne' => static function () use (&$singleValues): mixed {
                 return array_shift($singleValues);
             },
-            // the locking reads the repository fronts its write with; the value is never used, so
+            // the group lock the repository fronts its write with; the value is never used, so
             // standing in for the lock is all this has to do - besides recording that it was taken
             'fetchFirstColumn' => function (string $query): array {
                 $this->lockingReads[] = $query;
                 $this->letACompetingWriterLand($query);
 
                 return [];
+            },
+            // the assignment lock, which also answers with the two columns the write re-supplies
+            'fetchAssociative' => function (string $query, array $params = []): array|false {
+                $this->lockingReads[] = $query;
+                $this->letACompetingWriterLand($query);
+
+                return $this->findStoredRelation($params[0] ?? null, $params[1] ?? null);
             },
             // tracked rather than answered with a constant, so that core's own write joins the
             // transaction this one opens instead of opening a second one of its own
@@ -138,6 +159,7 @@ trait RelationWriteDatabaseStubTrait
             },
             'insert' => function (string $table, array $data): int {
                 $this->writtenRows[] = $data;
+                $this->applyWrite($this->unquoteColumns($data));
 
                 return 1;
             },
@@ -176,6 +198,72 @@ trait RelationWriteDatabaseStubTrait
     private function letACompetingWriterCommitOnTheRelationLock(callable $rowsItLeaves): void
     {
         $this->competingWriteOnRelationLock = $rowsItLeaves;
+    }
+
+    /**
+     * Makes the key id of the payload name a key configuration, so a relation this write inserts is
+     * readable afterwards. Without it an inserted relation joins to nothing, which is the pair the
+     * read-back refuses.
+     *
+     * @param array<string, mixed> $keyColumns the key side columns the relation listing selects
+     */
+    private function letTheKeyExistForNewAssignments(array $keyColumns): void
+    {
+        $this->keyColumnsForNewAssignments = $keyColumns;
+    }
+
+    /**
+     * Applies a successful upsert to the rows the listing loads. A column the write left out keeps its
+     * stored value, which is what leaving it out of the statement means, and the values are taken as
+     * the write handed them over - already encoded the way the stored row carries them.
+     *
+     * @param array<string, mixed> $written
+     */
+    private function applyWrite(array $written): void
+    {
+        foreach ($this->storedRows as $index => $stored) {
+            if (!$this->isTheSamePair($stored, $written)) {
+                continue;
+            }
+
+            $this->storedRows[$index] = $written + $stored;
+
+            return;
+        }
+
+        if ($this->keyColumnsForNewAssignments === null) {
+            return;
+        }
+
+        $this->storedRows[] = $written + $this->keyColumnsForNewAssignments;
+    }
+
+    /**
+     * The two columns the assignment lock answers with, or false for a pair with no row yet.
+     *
+     * @return array<string, mixed>|false
+     */
+    private function findStoredRelation(mixed $keyId, mixed $groupId): array|false
+    {
+        $addressed = ['keyId' => $keyId, 'groupId' => $groupId];
+
+        foreach ($this->storedRows as $row) {
+            if ($this->isTheSamePair($row, $addressed)) {
+                return ['sorter' => $row['sorter'] ?? null, 'mandatory' => $row['mandatory'] ?? null];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @param array<string, mixed> $other
+     */
+    private function isTheSamePair(array $row, array $other): bool
+    {
+        return (int) ($row['keyId'] ?? 0) === (int) ($other['keyId'] ?? 0)
+            && (int) ($row['groupId'] ?? 0) === (int) ($other['groupId'] ?? 0);
     }
 
     private function letACompetingWriterLand(string $query): void
@@ -219,12 +307,22 @@ trait RelationWriteDatabaseStubTrait
     {
         $this->assertCount(1, $this->writtenRows, 'Expected the entry point to write a single row.');
 
-        $row = [];
-        foreach ($this->writtenRows[0] as $column => $value) {
-            $row[ltrim(rtrim($column, '`'), '`')] = $value;
+        return $this->unquoteColumns($this->writtenRows[0]);
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
+    private function unquoteColumns(array $row): array
+    {
+        $unquoted = [];
+        foreach ($row as $column => $value) {
+            $unquoted[trim($column, '`')] = $value;
         }
 
-        return $row;
+        return $unquoted;
     }
 
     private function assertNothingWasWritten(): void
@@ -240,6 +338,7 @@ trait RelationWriteDatabaseStubTrait
         $this->transactionSteps = [];
         $this->inTransaction = false;
         $this->competingWriteOnRelationLock = null;
+        $this->keyColumnsForNewAssignments = null;
         $this->stubbedConnection = null;
 
         if (!$this->kernelStubbed) {

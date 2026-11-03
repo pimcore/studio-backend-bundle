@@ -39,6 +39,10 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 {
     private const string NOT_FOUND_TYPE = 'key group relation';
 
+    private const int NEW_RELATION_SORTER = 0;
+
+    private const bool NEW_RELATION_MANDATORY = false;
+
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private Connection $connection,
@@ -68,6 +72,14 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
      * initialization guard), so an absent property leaves the stored value alone while an explicit null
      * clears it.
      *
+     * `sorter` and `mandatory` follow the same rule, but they reach it from this side: core has no
+     * initialization guard for them - they are plain `int` and `bool` properties defaulting to 0 and
+     * false ({@see KeyGroupRelation}), so every save writes both columns whether or not a setter ran.
+     * The stored values are therefore read here and re-supplied for a property the payload omitted,
+     * which is what {@see self::holdRelation()} answers with; a pair with no row yet takes the defaults
+     * of a new relation instead, so the released payload still creates an assignment sorted first and
+     * not mandatory.
+     *
      * The write and the read-back are one unit of work, with the assignment row held from before the
      * write until the unit commits. The instance saved here carries only the properties the payload
      * named, so the ones the write left alone are reported from the stored row - and a competing writer
@@ -93,9 +105,9 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
         try {
             $this->holdGroup($groupId);
-            $this->holdRelation($keyId, $groupId);
+            $stored = $this->holdRelation($keyId, $groupId);
 
-            $this->applyAndSave($keyId, $groupId, $parameters);
+            $this->applyAndSave($keyId, $groupId, $parameters, $stored);
 
             $relation = $this->getByKeyAndGroup($keyId, $groupId);
         } catch (Throwable $e) {
@@ -156,12 +168,17 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     }
 
     /**
-     * Holds the addressed assignment row for the rest of the transaction. It is a lock rather than a
-     * read - {@see self::getByKeyAndGroup()} does the reading - and it is taken before the write so that
-     * the read after it answers with what the writer this transaction waited for left behind: this and
-     * {@see self::holdGroup()} are locking reads, which take no consistent-read view of their own, so
-     * the view the plain read establishes is the transaction's first and is created once the lock is
-     * already held - and the row cannot move while it is.
+     * Holds the addressed assignment row for the rest of the transaction, and answers with the two
+     * released properties it carries - the only ones the write has to re-supply, because core writes
+     * their columns unconditionally. The joined row {@see self::getByKeyAndGroup()} reads is the one the
+     * response is built from; this reads the two columns off the row it is locking anyway rather than
+     * taking a statement of its own for them.
+     *
+     * It is taken before the write so that the read after it answers with what the writer this
+     * transaction waited for left behind: this and {@see self::holdGroup()} are locking reads, which
+     * take no consistent-read view of their own, so the view the plain read establishes is the
+     * transaction's first and is created once the lock is already held - and the row cannot move while
+     * it is.
      *
      * That ordering is what a transaction opened here gives. An enclosing one brought by a caller may
      * already carry a view older than this lock, and a read under it would answer from that view; there
@@ -173,32 +190,55 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
      * The row this holds is the row core's own upsert writes ({@see KeyGroupRelationDao::update()}), so
      * every write of this assignment contends here, whichever endpoint it arrived through.
      *
+     * @return array<string, mixed>|null the stored row's `sorter` and `mandatory`, null for no such row
+     *
      * @throws DBALException
      */
-    private function holdRelation(int $keyId, int $groupId): void
+    private function holdRelation(int $keyId, int $groupId): ?array
     {
-        $this->connection->fetchFirstColumn(
+        $stored = $this->connection->fetchAssociative(
             sprintf(
-                'SELECT `keyId` FROM `%s` WHERE `keyId` = ? AND `groupId` = ? FOR UPDATE',
+                'SELECT `sorter`, `mandatory` FROM `%s` WHERE `keyId` = ? AND `groupId` = ? FOR UPDATE',
                 KeyGroupRelationDao::TABLE_NAME_RELATIONS
             ),
             [$keyId, $groupId]
         );
+
+        return $stored === false ? null : $stored;
     }
 
     /**
      * Only a property the payload carried reaches core's setter, so one it did not carry leaves the
-     * column of an already stored row alone.
+     * column of an already stored row alone - except for the two whose columns core writes whichever
+     * setters ran, which are re-supplied from the stored row instead.
+     *
+     * Both columns are nullable and a relation written before they were set carries NULL in them, which
+     * reads as the value a new relation takes: the same coercion core's own load applies
+     * ({@see KeyGroupRelationDao::getById()} casts `mandatory` to bool).
+     *
+     * @param array<string, mixed>|null $stored the stored row's `sorter` and `mandatory`, null for none
      *
      * @throws Throwable
      */
-    private function applyAndSave(int $keyId, int $groupId, KeyGroupRelationCreate $parameters): void
-    {
+    private function applyAndSave(
+        int $keyId,
+        int $groupId,
+        KeyGroupRelationCreate $parameters,
+        ?array $stored,
+    ): void {
         $relation = new KeyGroupRelation();
         $relation->setKeyId($keyId);
         $relation->setGroupId($groupId);
-        $relation->setSorter($parameters->getSorter());
-        $relation->setMandatory($parameters->isMandatory());
+        $relation->setSorter(
+            $parameters->hasSorter()
+                ? $parameters->getSorter()
+                : (int) ($stored['sorter'] ?? self::NEW_RELATION_SORTER)
+        );
+        $relation->setMandatory(
+            $parameters->hasMandatory()
+                ? $parameters->isMandatory()
+                : (bool) ($stored['mandatory'] ?? self::NEW_RELATION_MANDATORY)
+        );
 
         if ($parameters->hasDefinitionOverride()) {
             $relation->setDefinitionOverride($parameters->getDefinitionOverride());

@@ -73,10 +73,12 @@ The following steps are necessary during updating to newer versions.
   generated identifier of a store, collection, group and key is published alongside them. The definition override is
   stored and published but not yet applied to the field definitions the object editor renders. A collection-group
   relation has no in-place update endpoint because its add endpoint already creates or updates.
-- [Classification Store] Changed: two configuration payloads that used to pass are now refused. A store,
-  collection, group or key create or update that carries an identifier is rejected rather than ignored, because
-  the identifier is assigned by the system; and adding a key's assignment to a group is rejected when the key id
-  names no key configuration, rather than writing an assignment that points at nothing.
+- [Classification Store] Changed: adding a key's assignment to a group no longer resets its sort order and mandatory
+  flag when the payload leaves them out — an assignment keeps what it has stored, and only a new one starts unsorted
+  and optional. Two payloads that used to pass are also refused now: a store, collection, group or key create or
+  update that carries an identifier is rejected rather than ignored, because the identifier is assigned by the
+  system; and adding a key's assignment to a group is rejected when the key id names no key configuration, rather
+  than writing an assignment that points at nothing.
 - [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
   returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
   page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as

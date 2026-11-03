@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use function str_contains;
 
@@ -44,6 +45,8 @@ final class KeyGroupRelationUpsertTest extends Unit
     private const int GROUP_ID = 7;
 
     private const int STORE_ID = 1;
+
+    private const int STORED_SORTER = 3;
 
     private const string STORED_SUB_GROUP = 'Dimensions';
 
@@ -131,11 +134,14 @@ final class KeyGroupRelationUpsertTest extends Unit
     }
 
     /**
+     * A property carrying a value is written, and the response reports the value the write left on the
+     * row rather than the one the row carried before it.
+     *
      * @dataProvider perAssignmentValueProvider
      *
      * @param list<mixed> $subGroupResolution
      */
-    public function testAPropertyCarryingAValueWritesIt(
+    public function testAPropertyCarryingAValueWritesItAndReportsIt(
         string $column,
         mixed $value,
         mixed $writtenValue,
@@ -143,9 +149,149 @@ final class KeyGroupRelationUpsertTest extends Unit
     ): void {
         $this->stubDatabase([$this->createRow()], $subGroupResolution);
 
-        $this->createRepository()->createOrUpdate($this->createPayload([$column => $value]));
+        $relation = $this->createRepository()->createOrUpdate($this->createPayload([$column => $value]));
 
         $this->assertSame($writtenValue, $this->getWrittenRow()[$column]);
+        $this->assertSame($value, $this->readPerAssignment($relation, $column));
+    }
+
+    /**
+     * The response is the row as the write left it, so a changed value is reported as changed. Read
+     * from the seeded fixture instead, every one of these would report the value it had before.
+     */
+    public function testAChangedPropertyIsReportedFromTheStoredRow(): void
+    {
+        $this->stubDatabase([$this->createRow()]);
+
+        $relation = $this->createRepository()->createOrUpdate(
+            $this->createPayload([self::COLUMN_METADATA => self::COMPETING_METADATA])
+        );
+
+        $this->assertSame(self::COMPETING_METADATA_JSON, $this->getWrittenRow()[self::COLUMN_METADATA]);
+        $this->assertSame(self::COMPETING_METADATA, $relation->getMetadata());
+    }
+
+    /**
+     * And a cleared one is reported as cleared, rather than still naming what the row carried.
+     *
+     * @dataProvider perAssignmentColumnProvider
+     */
+    public function testAClearedPropertyIsReportedAsCleared(string $column): void
+    {
+        $this->stubDatabase([$this->createRow()]);
+
+        $relation = $this->createRepository()->createOrUpdate($this->createPayload([$column => null]));
+
+        $this->assertNull($this->readPerAssignment($relation, $column));
+    }
+
+    /**
+     * A pair with no row yet is created, and the response is built from the row the write created - the
+     * read-back is the only thing that has it, because the instance the write saved carries no key side
+     * columns at all.
+     */
+    public function testANewAssignmentIsReportedFromTheRowItCreated(): void
+    {
+        $this->stubDatabase([], [self::STORE_ID, self::STORED_SUB_GROUP]);
+        $this->letTheKeyExistForNewAssignments($this->createKeyColumns());
+
+        $relation = $this->createRepository()->createOrUpdate(new KeyGroupRelationCreate(
+            keyId: self::KEY_ID,
+            groupId: self::GROUP_ID,
+            sorter: 5,
+            mandatory: true,
+            subGroup: self::STORED_SUB_GROUP,
+            metadata: self::STORED_METADATA
+        ));
+
+        $this->assertSame(5, $relation->getSorter());
+        $this->assertTrue($relation->isMandatory());
+        $this->assertSame(self::STORED_SUB_GROUP, $relation->getSubGroup());
+        $this->assertSame(self::STORED_METADATA, $relation->getMetadata());
+        $this->assertNull($relation->getDefinitionOverride());
+        $this->assertSame('weight', $relation->getName());
+    }
+
+    /**
+     * The defect this pins: a metadata only update used to reorder the key it was updating and drop its
+     * mandatory flag, because both setters ran with the schema defaults of a payload that named neither.
+     * Core has no initialization guard for these two columns - every save writes them - so the stored
+     * values have to be read and re-supplied, and the response reports them too.
+     */
+    public function testOmittedSorterAndMandatoryKeepTheirStoredValues(): void
+    {
+        $this->stubDatabase([$this->createRow()]);
+
+        $relation = $this->createRepository()->createOrUpdate($this->createPairOnlyPayload([
+            self::COLUMN_METADATA => self::COMPETING_METADATA,
+        ]));
+
+        $row = $this->getWrittenRow();
+
+        $this->assertSame(self::STORED_SORTER, $row[self::COLUMN_SORTER]);
+        $this->assertSame(1, $row[self::COLUMN_MANDATORY]);
+        $this->assertSame(self::STORED_SORTER, $relation->getSorter());
+        $this->assertTrue($relation->isMandatory());
+    }
+
+    /**
+     * The other half of the same distinction: an explicitly supplied 0 and false are values, and they
+     * overwrite a stored 3 and true. The two used to default to exactly these values, so neither state
+     * could be told from the other.
+     */
+    public function testAnExplicitlySuppliedZeroAndFalseOverwriteTheStoredValues(): void
+    {
+        $this->stubDatabase([$this->createRow()]);
+
+        $relation = $this->createRepository()->createOrUpdate(
+            new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID, 0, false)
+        );
+
+        $row = $this->getWrittenRow();
+
+        $this->assertSame(0, $row[self::COLUMN_SORTER]);
+        $this->assertSame(0, $row[self::COLUMN_MANDATORY]);
+        $this->assertSame(0, $relation->getSorter());
+        $this->assertFalse($relation->isMandatory());
+    }
+
+    /**
+     * A pair with no row yet has no stored value to keep, so omitting the two creates the assignment the
+     * released endpoint created: sorted first and not mandatory.
+     */
+    public function testANewAssignmentOmittingSorterAndMandatoryTakesTheDefaults(): void
+    {
+        $this->stubDatabase([]);
+        $this->letTheKeyExistForNewAssignments($this->createKeyColumns());
+
+        $relation = $this->createRepository()->createOrUpdate($this->createPairOnlyPayload());
+
+        $row = $this->getWrittenRow();
+
+        $this->assertSame(0, $row[self::COLUMN_SORTER]);
+        $this->assertSame(0, $row[self::COLUMN_MANDATORY]);
+        $this->assertSame(0, $relation->getSorter());
+        $this->assertFalse($relation->isMandatory());
+    }
+
+    /**
+     * Both columns are nullable, and a row written before anything was stored in them carries NULL,
+     * which reads as the value a new relation takes rather than reaching core's `int` setter as null.
+     */
+    public function testAStoredNullSorterAndMandatoryReadAsTheDefaults(): void
+    {
+        $this->stubDatabase([
+            [self::COLUMN_SORTER => null, self::COLUMN_MANDATORY => null] + $this->createRow(),
+        ]);
+
+        $relation = $this->createRepository()->createOrUpdate($this->createPairOnlyPayload());
+
+        $row = $this->getWrittenRow();
+
+        $this->assertSame(0, $row[self::COLUMN_SORTER]);
+        $this->assertSame(0, $row[self::COLUMN_MANDATORY]);
+        $this->assertSame(0, $relation->getSorter());
+        $this->assertFalse($relation->isMandatory());
     }
 
     /**
@@ -357,6 +503,17 @@ final class KeyGroupRelationUpsertTest extends Unit
         return new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID, 2, true, ...$perAssignment);
     }
 
+    /**
+     * A payload naming the pair and nothing else beside what it is given, so that every other property
+     * is absent rather than carrying a default.
+     *
+     * @param array<string, mixed> $perAssignment
+     */
+    private function createPairOnlyPayload(array $perAssignment = []): KeyGroupRelationCreate
+    {
+        return new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID, ...$perAssignment);
+    }
+
     private function createRepository(): KeyGroupRelationRepository
     {
         return new KeyGroupRelationRepository(
@@ -375,16 +532,36 @@ final class KeyGroupRelationUpsertTest extends Unit
         return [
             'groupId' => self::GROUP_ID,
             'keyId' => self::KEY_ID,
-            self::COLUMN_SORTER => 3,
+            self::COLUMN_SORTER => self::STORED_SORTER,
             self::COLUMN_MANDATORY => 1,
             self::COLUMN_METADATA => self::STORED_METADATA_JSON,
             self::COLUMN_DEFINITION_OVERRIDE => self::STORED_DEFINITION_OVERRIDE_JSON,
             self::COLUMN_SUB_GROUP => self::STORED_SUB_GROUP,
+        ] + $this->createKeyColumns();
+    }
+
+    /**
+     * The key side of the joined row, which is what a relation the write inserts joins to.
+     *
+     * @return array<string, mixed>
+     */
+    private function createKeyColumns(): array
+    {
+        return [
             'name' => 'weight',
             'description' => '',
             'type' => 'input',
             'definition' => '{"fieldtype":"input"}',
             'enabled' => 1,
         ];
+    }
+
+    private function readPerAssignment(KeyGroupRelation $relation, string $column): mixed
+    {
+        return match ($column) {
+            self::COLUMN_DEFINITION_OVERRIDE => $relation->getDefinitionOverride(),
+            self::COLUMN_SUB_GROUP => $relation->getSubGroup(),
+            default => $relation->getMetadata(),
+        };
     }
 }

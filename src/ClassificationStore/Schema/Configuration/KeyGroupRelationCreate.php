@@ -21,18 +21,22 @@ use function get_debug_type;
 use function sprintf;
 
 /**
- * The three per assignment properties are optional in both directions: one absent from the payload
- * leaves the stored value untouched, one carrying an explicit null clears it. Their defaults
- * therefore stand for "the payload did not carry it" rather than for a value, which is why they are
- * typed `mixed` - the two states have to stay distinguishable, and the payload mapping substitutes
- * the default for a missing key.
+ * Every property but the pair is optional: one absent from the payload leaves the stored value
+ * untouched. The three per assignment ones are optional in both directions, so one carrying an
+ * explicit null clears it; `sorter` and `mandatory` cannot be cleared and refuse an explicit null.
+ *
+ * All five defaults therefore stand for "the payload did not carry it" rather than for a value,
+ * which is why they are typed `mixed` - the two states have to stay distinguishable, and the
+ * payload mapping substitutes the default for a missing key. `sorter` and `mandatory` used to
+ * default to `0` and `false`, which made a payload naming neither reset them on an already stored
+ * assignment; only a new assignment takes those values now, and it takes them from the repository.
  *
  * @internal
  */
 #[Schema(
     schema: 'ClassificationStoreConfigurationKeyGroupRelationCreate',
     title: 'Classification Store Configuration Key Group Relation Create',
-    required: ['keyId', 'groupId', 'sorter', 'mandatory'],
+    required: ['keyId', 'groupId'],
     type: 'object'
 )]
 final readonly class KeyGroupRelationCreate
@@ -45,10 +49,18 @@ final readonly class KeyGroupRelationCreate
         private int $keyId,
         #[Property(description: 'ID of the group', type: 'integer', example: 1)]
         private int $groupId,
-        #[Property(description: 'Sort order of the relation', type: 'integer', example: 0)]
-        private mixed $sorter = 0,
-        #[Property(description: 'Whether the key is mandatory in this group', type: 'boolean', example: false)]
-        private mixed $mandatory = false,
+        #[Property(
+            description: 'Sort order of the relation. Omitting it keeps the stored one, 0 on a new relation',
+            type: 'integer',
+            example: 0
+        )]
+        private mixed $sorter = AbsentValue::ABSENT,
+        #[Property(
+            description: 'Whether the key is mandatory here. Omitting it keeps the stored flag, false if new',
+            type: 'boolean',
+            example: false
+        )]
+        private mixed $mandatory = AbsentValue::ABSENT,
         #[Property(
             description: 'Partial field definition overriding the one of the key for this assignment',
             type: 'object',
@@ -88,11 +100,27 @@ final readonly class KeyGroupRelationCreate
         return $this->groupId;
     }
 
+    public function hasSorter(): bool
+    {
+        return $this->sorter !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * Carries a value only when {@see self::hasSorter()} reports one.
+     */
     public function getSorter(): int
     {
         return $this->sorter;
     }
 
+    public function hasMandatory(): bool
+    {
+        return $this->mandatory !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * Carries a value only when {@see self::hasMandatory()} reports one.
+     */
     public function isMandatory(): bool
     {
         return $this->mandatory;
