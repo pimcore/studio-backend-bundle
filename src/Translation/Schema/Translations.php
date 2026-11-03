@@ -75,10 +75,16 @@ final class Translations implements AdditionalAttributesInterface
      */
     public function withLanguages(array $languages): self
     {
-        return new self(
+        $filtered = new self(
             $this->key,
             array_intersect_key($this->translations, array_flip($languages)),
             $this->type
         );
+
+        foreach ($this->additionalAttributes as $key => $value) {
+            $filtered->addAdditionalAttribute($key, $value);
+        }
+
+        return $filtered;
     }
 }

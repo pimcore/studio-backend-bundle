@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
@@ -174,7 +175,15 @@ final class TranslatorServiceTest extends Unit
             languageService: $this->makeEmpty(LanguageServiceInterface::class, [
                 'getTranslationAllowedLanguages' => ['en', 'fr_BE'],
             ]),
-            translationsHydrator: new TranslationsHydrator(),
+            translationsHydrator: new class implements TranslationsHydratorInterface {
+                public function hydrate(TranslationModel $translation): Translations
+                {
+                    $schema = (new TranslationsHydrator())->hydrate($translation);
+                    $schema->addAdditionalAttribute('pme_meta', 'kept');
+
+                    return $schema;
+                }
+            },
         );
 
         $items = $translatorService->listTranslations('admin', new CollectionFilterParameter())->getItems();
@@ -182,6 +191,7 @@ final class TranslatorServiceTest extends Unit
         $this->assertCount(1, $items);
         $this->assertSame('pme_key', $items[0]->getKey());
         $this->assertSame(['en' => 'Car', 'fr_BE' => 'Voiture'], $items[0]->getTranslations());
+        $this->assertSame(['pme_meta' => 'kept'], $items[0]->getAdditionalAttributes());
     }
 
     /**
