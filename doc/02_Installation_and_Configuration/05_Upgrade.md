@@ -101,6 +101,53 @@ The following steps are necessary during updating to newer versions.
   `SearchHelperServiceInterface::applySearchTermFilter()` accepts the sub group listing in addition to the group and
   collection ones, and `ClassificationStore\Service\GroupService` got a `SubGroupRepositoryInterface` constructor
   argument.
+- [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults —
+  `filters.page` `1` and `filters.pageSize` `50` — instead of returning every row. A request body of `{}` previously
+  reached the listing with no limit at all, because the paging columns `PaginationFilter` acts on were only built when
+  `filters` was present. **A client that sends `{}` and treats the answer as the complete collection now sees the first
+  50 rows and must page.** The affected endpoints are the ones that build their listing through
+  `FilterMapperServiceInterface::getFilterParameters()`:
+  `POST /recycle-bin/items`, `POST /website-settings`, `POST /unit/quantity-value/units/collection`,
+  `POST /bundle/seo/redirects`, `POST /translations/list` and the Classification Store configuration listings
+  `POST /classification-store/configuration/stores/{storeId}/groups`,
+  `POST /classification-store/configuration/stores/{storeId}/keys`,
+  `POST /classification-store/configuration/stores/{storeId}/collections`,
+  `POST /classification-store/configuration/groups/{groupId}/key-relations` and
+  `POST /classification-store/configuration/collections/{colId}/relations`.
+  To read the whole collection, send `filters.page` and `filters.pageSize` explicitly and walk the pages until you have
+  as many items as the response's `totalItems` reports (also returned as the `X-Pimcore-Total-Items` header); the count
+  is of the whole collection and is not reduced by the page size. A client that wants the previous unpaged answer in one
+  request has to ask for it, by sending a `filters.pageSize` large enough to cover `totalItems`.
+
+> **Note:** two listings deliberately keep their previous behaviour and are **not** in the list above.
+> `POST /notifications` applies the paging defaults only when `filters` is sent, because it maps its own parameters
+> rather than going through `getFilterParameters()`. `POST /translations/export` is unpaged by design — it clears the
+> limit and offset again before reading, so an export is never truncated to a page.
+
+- [Classification Store] Fixed: a client-supplied `equals` column filter on the column a route-scoped configuration
+  listing is already scoped by no longer replaces that scope — it narrows it. The route scope and an `equals` filter on
+  the same column used to build the identical condition string, and a listing keys its conditions by that string, so
+  the filter overwrote the binding: `POST /classification-store/configuration/stores/1/groups` with an `equals` filter
+  of `storeId` `2` answered with the groups of store 2. The five affected endpoints are
+  `POST /classification-store/configuration/stores/{storeId}/groups`,
+  `POST /classification-store/configuration/stores/{storeId}/keys`,
+  `POST /classification-store/configuration/stores/{storeId}/collections` (all scoped by `storeId`),
+  `POST /classification-store/configuration/groups/{groupId}/key-relations` (`groupId`) and
+  `POST /classification-store/configuration/collections/{colId}/relations` (`colId`). Such a filter now adds a second
+  condition next to the route scope, so a value other than the route's returns an empty collection instead of another
+  scope's rows. A client that relied on reading across the route scope this way has to address the other scope through
+  its own route.
+- [Listing] Fixed: a `date` column filter on a date column stored as a Unix timestamp now selects the window it names.
+  Those columns were compared against a datetime string, which MySQL coerces to a number, so an `on`/`from`/`to` filter
+  matched nothing and a `>` filter matched everything. The affected columns are `creationDate` and `modificationDate` on
+  `POST /classification-store/configuration/stores/{storeId}/groups`,
+  `POST /classification-store/configuration/stores/{storeId}/keys`,
+  `POST /classification-store/configuration/stores/{storeId}/collections`, `POST /translations/list`,
+  `POST /website-settings` and `POST /bundle/seo/redirects`, plus `expiry` on the redirects listing. **A client that
+  sent such a filter and got an empty — or complete — collection now gets the filtered one.** The two relation listings
+  and the quantity-value units listing have no date column and are unchanged, and the notification listing's dates are
+  a real `DATETIME` and were already filtered correctly.
+
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.

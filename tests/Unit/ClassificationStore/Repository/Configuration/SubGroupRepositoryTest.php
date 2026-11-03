@@ -24,6 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Cache\RuntimeCache;
 use Pimcore\Model\Dao\AbstractDao;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelationCache;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Dao as SubGroupConfigDao;
 use ReflectionProperty;
@@ -214,6 +216,87 @@ final class SubGroupRepositoryTest extends Unit
 
         // every relation row and the vocabulary row are left as they were
         $this->assertSame([], $this->writes, 'A refused delete must not write.');
+        $this->assertFalse($this->inTransaction, 'A refused delete has to leave no transaction open.');
+    }
+
+    /**
+     * The interleaving the probe used to lose: an assignment commits after the usage probe would
+     * have run as a read of its own, and before the delete. Probing from inside the delete's own
+     * transaction, behind the lock an assignment writer has to take, is what turns that into the
+     * 409 instead of into a tag cleared without one.
+     */
+    public function testDeleteIsRefusedWhenTheAssignmentArrivesWhileTheLocksAreTaken(): void
+    {
+        $repository = $this->createRepository(
+            subGroupRows: [$this->createRow()],
+            tagCommittedOnceLocked: true
+        );
+
+        try {
+            $repository->delete(self::SUB_GROUP_ID);
+            $this->fail('Expected the sub group tagged under the lock to be refused.');
+        } catch (ConflictException $e) {
+            $this->assertSame(409, $e->getStatusCode());
+            $this->assertStringContainsString(self::OTHER_NAME, $e->getMessage());
+        }
+
+        $this->assertSame([], $this->writes, 'The arriving assignment must not be cleared.');
+        $this->assertFalse($this->inTransaction, 'A refused delete has to leave no transaction open.');
+    }
+
+    /**
+     * Groups, then the vocabulary row, then the relations under them - the order every writer of
+     * this family takes the three tables in. Taking them the other way round closes a deadlock
+     * cycle against {@see KeyGroupRelationDao::update()} and core's own delete.
+     */
+    public function testDeleteTakesItsLocksInTheOrderTheOtherWritersDo(): void
+    {
+        $repository = $this->createRepository(
+            subGroupRows: [$this->createRow()],
+            usedByGroups: []
+        );
+
+        $repository->delete(self::SUB_GROUP_ID);
+
+        $groups = $this->indexOfRead(
+            GroupConfigDao::TABLE_NAME_GROUPS . '` WHERE `storeId` = ? ORDER BY `id` FOR UPDATE'
+        );
+        $subGroup = $this->indexOfRead(
+            'SELECT `storeId`, `identifier` FROM `' . SubGroupConfigDao::TABLE_NAME_SUBGROUPS
+        );
+        $relations = $this->indexOfRead(KeyGroupRelationDao::TABLE_NAME_RELATIONS);
+
+        $this->assertNotNull($groups, 'The groups of the store have to be locked first.');
+        $this->assertNotNull($subGroup, 'The vocabulary row has to be locked as a current read.');
+        $this->assertNotNull($relations, 'The assignments have to be probed.');
+        $this->assertLessThan($subGroup, $groups, 'The groups have to be locked before the entry.');
+        $this->assertLessThan($relations, $subGroup, 'The entry has to be locked before the relations.');
+    }
+
+    /**
+     * Both reads the decision rests on read as of now rather than from the transaction's snapshot,
+     * which is what lets them see an assignment a competing writer has already committed.
+     */
+    public function testDeleteProbesWithLockingReads(): void
+    {
+        $repository = $this->createRepository(
+            subGroupRows: [$this->createRow()],
+            usedByGroups: ['Technical']
+        );
+
+        try {
+            $repository->delete(self::SUB_GROUP_ID);
+            $this->fail('Expected the sub group in use to be refused.');
+        } catch (ConflictException) {
+            // the refusal itself is asserted above; this case is about how it was decided
+        }
+
+        foreach ([SubGroupConfigDao::TABLE_NAME_SUBGROUPS, KeyGroupRelationDao::TABLE_NAME_RELATIONS] as $table) {
+            $this->assertTrue(
+                $this->hasLockingRead($table),
+                sprintf('The read of `%s` the delete decides on has to be a locking one.', $table)
+            );
+        }
     }
 
     /**
@@ -226,6 +309,7 @@ final class SubGroupRepositoryTest extends Unit
         array $duplicateRows = [],
         array $usedByGroups = [],
         bool $savingANewRow = false,
+        bool $tagCommittedOnceLocked = false,
     ): SubGroupRepository {
         // a create writes into the placeholder row it just inserted, which carries neither yet
         $storedStoreId = $savingANewRow ? null : self::STORE_ID;
@@ -252,16 +336,33 @@ final class SubGroupRepositoryTest extends Unit
 
                 return $subGroupRows;
             },
-            // the usage probe, and the group locks core takes on the way into its own delete
-            'fetchFirstColumn' => function (string $query) use ($usedByGroups): array {
+            // the usage probe, and the group locks the repository and core take ahead of it
+            'fetchFirstColumn' => function (string $query) use ($usedByGroups, $tagCommittedOnceLocked): array {
                 $this->reads[] = $query;
+
+                // a group lock reports ids; only the join over the relations reports group names
+                if (!str_contains($query, KeyGroupRelationDao::TABLE_NAME_RELATIONS)) {
+                    return [];
+                }
+
+                // The interleaving: the assignment is committed while the locks are being taken,
+                // so a read before the transaction reports the entry unused and only a read from
+                // inside it sees the tag. A probe taken outside the delete's transaction - which is
+                // what this used to be - would answer the first way and let the delete through.
+                if ($tagCommittedOnceLocked) {
+                    return $this->inTransaction ? [self::OTHER_NAME] : [];
+                }
 
                 return $usedByGroups;
             },
-            'fetchAssociative' => static fn (): array => [
-                'storeId' => self::STORE_ID,
-                'identifier' => self::IDENTIFIER,
-            ],
+            'fetchAssociative' => function (string $query): array {
+                $this->reads[] = $query;
+
+                return [
+                    'storeId' => self::STORE_ID,
+                    'identifier' => self::IDENTIFIER,
+                ];
+            },
             'fetchOne' => function (
                 string $query
             ) use ($duplicateRows, $storedStoreId, $storedIdentifier): bool|int|string|null {
@@ -341,8 +442,28 @@ final class SubGroupRepositoryTest extends Unit
 
     private function hasRead(string $needle): bool
     {
-        foreach ($this->reads as $query) {
+        return $this->indexOfRead($needle) !== null;
+    }
+
+    /**
+     * Where in the sequence of reads the first one matching appeared, so that a test can assert the
+     * order two locks were taken in rather than only that both were.
+     */
+    private function indexOfRead(string $needle): ?int
+    {
+        foreach ($this->reads as $index => $query) {
             if (str_contains($query, $needle)) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    private function hasLockingRead(string $table): bool
+    {
+        foreach ($this->reads as $query) {
+            if (str_contains($query, $table) && str_contains($query, 'FOR UPDATE')) {
                 return true;
             }
         }

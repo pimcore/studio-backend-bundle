@@ -64,6 +64,10 @@ interface SubGroupRepositoryInterface
      * Refused while a key assignment of the store still carries the entry, so that deleting a sub
      * group cannot silently untag the assignments naming it.
      *
+     * The probe and the delete run as one unit of work behind the lock an assignment writer has to
+     * take to tag anything with the entry, so an assignment committed while the delete is in flight
+     * is either seen by the probe and refused, or arrives after the entry is gone.
+     *
      * @throws NotFoundException
      * @throws ConflictException
      * @throws DatabaseException

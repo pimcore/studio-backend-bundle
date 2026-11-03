@@ -37,6 +37,7 @@ use Throwable;
 use function array_fill;
 use function count;
 use function implode;
+use function is_string;
 use function sprintf;
 
 /**
@@ -152,24 +153,153 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function delete(int $id): void
     {
         $config = $this->getById($id);
-        $usedBy = $this->getGroupNamesUsing($config->getStoreId(), $config->getIdentifier());
 
-        if (!empty($usedBy)) {
-            throw new ConflictException(
-                sprintf(
-                    'Sub group "%s" is still assigned to keys of the group(s) "%s" and cannot be deleted',
-                    $config->getName(),
-                    implode('", "', $usedBy)
-                )
-            );
+        $this->deleteWhileUnused($config, $id);
+    }
+
+    /**
+     * Probes the assignments and deletes the row as one unit of work, so that the entry the probe
+     * finds unused is still unused when the row is deleted.
+     *
+     * The two used to be separate statements, and the 409 is a decision of this repository alone -
+     * core's own delete clears the tags rather than refusing ({@see SubGroupConfigDao::delete()}),
+     * and the locks it takes on its way in protect only its own clearing. An assignment committed
+     * between the probe and the delete therefore left the delete proceeding on a probe result that
+     * was no longer true, and the tag it reported nothing about was cleared without the 409.
+     *
+     * What makes them exclusive is the vocabulary row itself, taken before the assignments are read
+     * and held until the delete commits: it is the row an assignment writer has to take to tag
+     * anything with this entry ({@see KeyGroupRelationDao::update()} through its sub group
+     * resolution), so a writer racing this delete either committed before the probe read - and is
+     * refused with the 409 - or waits for it and then finds the entry gone.
+     *
+     * The locks are taken in the order every writer of this family takes these three tables in -
+     * the groups of the store, then the vocabulary row, then the relations under them - because
+     * reaching them the other way round closes a cycle that InnoDB resolves by aborting one of the
+     * two writers with a deadlock that nothing here retries.
+     *
+     * @throws ConflictException
+     * @throws DatabaseException
+     * @throws NotFoundException
+     */
+    private function deleteWhileUnused(SubGroupConfig $config, int $id): void
+    {
+        // an enclosing transaction stays the caller's to finish, the way core's own writes join one
+        $ownTransaction = !$this->connection->isTransactionActive();
+        if ($ownTransaction) {
+            $this->connection->beginTransaction();
         }
 
-        $config->delete();
+        try {
+            $this->holdGroupsOf($config->getStoreId());
+            $stored = $this->holdSubGroup($id);
+
+            if ($stored === null) {
+                throw new NotFoundException(self::NOT_FOUND_TYPE, $id);
+            }
+
+            $usedBy = $this->getGroupNamesUsing($stored['storeId'], $stored['identifier']);
+
+            if (!empty($usedBy)) {
+                throw new ConflictException(
+                    sprintf(
+                        'Sub group "%s" is still assigned to keys of the group(s) "%s" and cannot be deleted',
+                        $config->getName(),
+                        implode('", "', $usedBy)
+                    )
+                );
+            }
+
+            $config->delete();
+        } catch (Throwable $e) {
+            if ($ownTransaction && $this->connection->isTransactionActive()) {
+                $this->connection->rollBack();
+            }
+
+            throw match (true) {
+                $e instanceof AbstractApiException => $e,
+                $e instanceof DBALException => new DatabaseException(
+                    'Failed to delete the sub group: ' . $e->getMessage(),
+                    $e
+                ),
+                default => $e,
+            };
+        }
+
+        if ($ownTransaction) {
+            $this->connection->commit();
+        }
+    }
+
+    /**
+     * Holds the groups of the store before the vocabulary row, because groups before sub groups
+     * before relations is the order {@see SubGroupConfigDao::delete()} and
+     * {@see KeyGroupRelationDao::update()} take the three tables in, and the usage probe below
+     * reads the relations through a join over exactly these group rows.
+     *
+     * The store is the one the stored entry carries, which a stored entry never changes
+     * ({@see SubGroupConfigDao::update()} refuses a save that would), so naming it from the model
+     * read a moment ago is sound without a lock on the entry - which is the lock that may not be
+     * taken yet.
+     *
+     * @throws DBALException
+     */
+    private function holdGroupsOf(int $storeId): void
+    {
+        // ascending id, so that two deletions of differently scoped entries still agree on an order
+        $this->connection->fetchFirstColumn(
+            sprintf(
+                'SELECT `id` FROM `%s` WHERE `storeId` = ? ORDER BY `id` FOR UPDATE',
+                GroupConfigDao::TABLE_NAME_GROUPS
+            ),
+            [$storeId]
+        );
+    }
+
+    /**
+     * Holds the vocabulary row and reports the store and identifier it actually carries, read as of
+     * now rather than from the snapshot of the transaction this runs in - the same current read
+     * core's own delete opens with, and the row whose lock an assignment writer has to wait for.
+     *
+     * A row that is already gone reports nothing, which is the 404 the lookup a moment earlier
+     * would have answered with.
+     *
+     * @return array{storeId: int, identifier: string|null}|null
+     *
+     * @throws DBALException
+     */
+    private function holdSubGroup(int $id): ?array
+    {
+        $stored = $this->connection->fetchAssociative(
+            sprintf(
+                'SELECT `storeId`, `identifier` FROM `%s` WHERE `id` = ? FOR UPDATE',
+                SubGroupConfigDao::TABLE_NAME_SUBGROUPS
+            ),
+            [$id]
+        );
+
+        if ($stored === false) {
+            return null;
+        }
+
+        $identifier = $stored['identifier'] ?? null;
+
+        return [
+            'storeId' => (int) $stored['storeId'],
+            'identifier' => is_string($identifier) ? $identifier : null,
+        ];
     }
 
     /**
      * The groups of the store whose key assignments carry the identifier. Scoped to the store
      * because the identifier is unique per store, not globally.
+     *
+     * Read as of now and locked, the way core's own clearing of these tags reads them
+     * ({@see SubGroupConfigDao::delete()}): a plain read would answer from a snapshot that can
+     * predate an assignment a competing writer has already committed, and report an entry unused
+     * that is not. The group rows this join reads are already held by {@see self::holdGroupsOf()},
+     * so the only locks left for it to take are on the relations - after the groups, whichever way
+     * the optimizer drives it.
      *
      * @return string[]
      *
@@ -186,7 +316,8 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
                 sprintf(
                     'SELECT DISTINCT `g`.`name` FROM `%s` `r`'
                     . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
-                    . ' WHERE `g`.`storeId` = ? AND `r`.`subGroup` = ?',
+                    . ' WHERE `g`.`storeId` = ? AND `r`.`subGroup` = ?'
+                    . ' FOR UPDATE',
                     KeyGroupRelationDao::TABLE_NAME_RELATIONS,
                     GroupConfigDao::TABLE_NAME_GROUPS
                 ),
