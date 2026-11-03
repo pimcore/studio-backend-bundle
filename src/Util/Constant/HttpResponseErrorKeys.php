@@ -34,6 +34,9 @@ enum HttpResponseErrorKeys: string
     case VALIDATION_FAILED = 'error_validation_failed';
     case LOGIN_TOKEN_NON_ADMIN = 'error_login_token_as_admin_non_admin_user';
     case LOGIN_TOKEN_NO_PASSWORD = 'error_login_token_no_user_password';
+    case INVITATION_NON_ADMIN = 'error_invitation_as_admin_non_admin_user';
+    case INVITATION_NO_EMAIL = 'error_invitation_no_email';
+    case INVITATION_USER_INACTIVE = 'error_invitation_user_inactive';
     case GDI_PARSING_EXCEPTION = 'error_gdi_parsing_exception';
     case UID_ALREADY_EXISTS = 'error_uid_used';
     case RECYCLE_BIN_RESTORE  = 'error_recycle_bin_restore';

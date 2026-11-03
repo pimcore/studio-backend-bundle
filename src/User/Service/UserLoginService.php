@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\Invitation;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\TokenLink;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
@@ -38,7 +39,7 @@ use function in_array;
  */
 final readonly class UserLoginService implements UserLoginServiceInterface
 {
-    private const array RESET_PASSWORD_URL_ALLOWED_SCHEMES = ['http', 'https'];
+    private const array TRUSTED_URL_ALLOWED_SCHEMES = ['http', 'https'];
 
     public function __construct(
         private AuthenticationResolverInterface $authenticationResolver,
@@ -58,7 +59,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
      */
     public function resetPassword(ResetPassword $resetPassword): void
     {
-        $this->validateResetPasswordUrl($resetPassword->getResetPasswordUrl());
+        $this->validateTrustedUrl($resetPassword->getResetPasswordUrl(), 'reset password URL');
 
         $user = $this->userResolver->getByName($resetPassword->getUsername());
 
@@ -112,7 +113,53 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         );
     }
 
-    private function validateResetPasswordUrl(string $url): void
+    /**
+     * {@inheritdoc}
+     */
+    public function sendInvitation(int $id, Invitation $parameter): void
+    {
+        $this->validateTrustedUrl($parameter->getInvitationUrl(), 'invitation URL');
+
+        $user = $this->userRepository->getUserById($id);
+
+        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+            throw new ForbiddenException(
+                'Cannot invite this user',
+                HttpResponseErrorKeys::INVITATION_NON_ADMIN->value
+            );
+        }
+
+        if (!$user->isActive()) {
+            throw new InvalidArgumentException(
+                'Cannot invite an inactive user',
+                HttpResponseErrorKeys::INVITATION_USER_INACTIVE->value
+            );
+        }
+
+        $email = $user->getEmail();
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException(
+                'Cannot invite a user without a valid email address',
+                HttpResponseErrorKeys::INVITATION_NO_EMAIL->value
+            );
+        }
+
+        /** @var User $user */
+        // The token is only accepted for a user that has a password: Tool\Authentication::isValidUser()
+        // requires one. An invited user usually has none, so give them one they will never learn. It is
+        // stored verbatim - hashing happens in the update service - so it can never satisfy password_verify
+        // and the account stays password-less in practice. The Classic UI does the same.
+        if (!$user->getPassword()) {
+            $user->setPassword(bin2hex(random_bytes(16)));
+            $user->save();
+        }
+
+        $token = $this->authenticationResolver->generateTokenByUser($user);
+
+        $this->mailService->sendInvitationMail($user, $parameter->getInvitationUrl() . '?token=' . $token);
+    }
+
+    private function validateTrustedUrl(string $url, string $subject): void
     {
         $parsed = parse_url($url);
 
@@ -121,12 +168,12 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         if (
             $parsed === false
             || !isset($parsed['scheme'], $parsed['host'])
-            || !in_array(strtolower($parsed['scheme']), self::RESET_PASSWORD_URL_ALLOWED_SCHEMES, true)
+            || !in_array(strtolower($parsed['scheme']), self::TRUSTED_URL_ALLOWED_SCHEMES, true)
             || isset($parsed['user'])
             || isset($parsed['pass'])
             || preg_match('/[\x00-\x20\x7f\\\\]/', $url) === 1
         ) {
-            throw new InvalidArgumentException('Invalid reset password URL provided');
+            throw new InvalidArgumentException(sprintf('Invalid %s provided', $subject));
         }
 
         if ($this->isRegisteredDomain($parsed['host'])) {
@@ -134,7 +181,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         throw new InvalidArgumentException(
-            'Reset password URL domain does not match any trusted domain'
+            sprintf('%s domain does not match any trusted domain', ucfirst($subject))
         );
     }
 
