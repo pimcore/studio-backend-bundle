@@ -58,6 +58,37 @@ final class KeyGroupRelationDetailTest extends Unit
     }
 
     /**
+     * The positional signature published before the definition override and the metadata were added
+     * ends with the sub group as the eighth argument. Both new fields are appended after it, so a
+     * caller written against that signature keeps working and its eighth argument is still the sub
+     * group rather than an array.
+     */
+    public function testPreviousPositionalSignatureStillConstructsTheSameRelation(): void
+    {
+        $detail = new KeyGroupRelationDetail(
+            self::KEY_ID,
+            self::GROUP_ID,
+            3,
+            true,
+            'My Key',
+            'Key description',
+            'My Group',
+            'Dimensions'
+        );
+
+        $this->assertSame(self::KEY_ID, $detail->getKeyId());
+        $this->assertSame(self::GROUP_ID, $detail->getGroupId());
+        $this->assertSame(3, $detail->getSorter());
+        $this->assertTrue($detail->isMandatory());
+        $this->assertSame('My Key', $detail->getKeyName());
+        $this->assertSame('Key description', $detail->getKeyDescription());
+        $this->assertSame('My Group', $detail->getGroupName());
+        $this->assertSame('Dimensions', $detail->getSubGroup());
+        $this->assertNull($detail->getDefinitionOverride());
+        $this->assertNull($detail->getMetadata());
+    }
+
+    /**
      * @param array<string, mixed>|null $definitionOverride
      * @param array<string, mixed>|null $metadata
      */
