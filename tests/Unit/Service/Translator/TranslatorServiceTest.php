@@ -26,8 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Hydrator\TranslationsHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
