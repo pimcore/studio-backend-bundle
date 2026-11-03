@@ -65,7 +65,9 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        $listing->addConditionParam('`storeId` = :storeId', ['storeId' => $storeId]);
+        // own parameter name, so a client supplied equals filter on `storeId` narrows the route's
+        // store binding instead of replacing the condition Pimcore keys by its own string
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);

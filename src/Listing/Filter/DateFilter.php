@@ -14,13 +14,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
 use Carbon\Carbon;
+use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing as RedirectListing;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
+use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing as CollectionConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Listing as KeyConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Listing as SubGroupConfigListing;
 use Pimcore\Model\Element\Recyclebin\Item\Listing as RecycleBinListing;
 use Pimcore\Model\Listing\AbstractListing;
 use Pimcore\Model\Notification\Listing as NotificationListing;
+use Pimcore\Model\Translation\Listing as TranslationListing;
+use Pimcore\Model\WebsiteSetting\Listing as WebsiteSettingListing;
 use function in_array;
 use function is_array;
 
@@ -30,13 +37,36 @@ use function is_array;
 final readonly class DateFilter implements FilterInterface
 {
     /**
+     * The audit columns every pimcore configuration table carries as `INT(11) UNSIGNED`,
+     * a Unix timestamp - not a DATETIME.
+     */
+    private const array AUDIT_TIMESTAMP_COLUMNS = ['creationDate', 'modificationDate'];
+
+    /**
      * Listings whose date columns are stored as Unix timestamps (integer) rather than a
      * native DATE/DATETIME/TIMESTAMP. Such columns must be compared against an integer
      * timestamp instead of a datetime string, otherwise MySQL coerces the string to a
      * number and the comparison never matches. Keyed by listing class => column keys.
+     *
+     * Every configuration listing this bundle exposes through `ListingFilter` and whose
+     * table has a date column belongs here: `classificationstore_subgroups`,
+     * `classificationstore_groups`, `classificationstore_keys`,
+     * `classificationstore_collections`, `translations_messages`, `website_settings` and
+     * `redirects` all declare theirs as `INT(11) UNSIGNED`. The relation tables
+     * (`classificationstore_relations`, `classificationstore_collectionrelations`) and
+     * `quantityvalue_units` carry no date column, and the notification columns below are
+     * a real DATETIME, so neither appears here.
      */
     private const UNIX_TIMESTAMP_COLUMNS = [
         RecycleBinListing::class => ['date'],
+        SubGroupConfigListing::class => self::AUDIT_TIMESTAMP_COLUMNS,
+        GroupConfigListing::class => self::AUDIT_TIMESTAMP_COLUMNS,
+        KeyConfigListing::class => self::AUDIT_TIMESTAMP_COLUMNS,
+        CollectionConfigListing::class => self::AUDIT_TIMESTAMP_COLUMNS,
+        TranslationListing::class => self::AUDIT_TIMESTAMP_COLUMNS,
+        WebsiteSettingListing::class => self::AUDIT_TIMESTAMP_COLUMNS,
+        // `expiry` is an int timestamp of its own, and the redirect schema publishes it
+        RedirectListing::class => ['expiry', ...self::AUDIT_TIMESTAMP_COLUMNS],
     ];
 
     /**

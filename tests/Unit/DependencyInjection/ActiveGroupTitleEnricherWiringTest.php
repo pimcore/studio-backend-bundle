@@ -18,7 +18,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefin
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService as ObjectBrickService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutService;
+use Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface;
 use ReflectionClass;
 use ReflectionNamedType;
 use Symfony\Component\Config\FileLocator;
@@ -47,6 +49,28 @@ final class ActiveGroupTitleEnricherWiringTest extends Unit
             ActiveGroupTitleEnricher::class,
             $container->getDefinition(ActiveGroupTitleEnricherInterface::class)->getClass()
         );
+    }
+
+    /**
+     * Both layout paths resolve their labels through core's resolver, which is reached by an explicit
+     * argument rather than left to autowiring discovery: the supported contract is an alias in core,
+     * and an unresolvable id would only surface when the container compiles.
+     */
+    public function testBothLayoutServicesTakeCoresLabelResolverExplicitly(): void
+    {
+        $container = new ContainerBuilder();
+        $loader = new YamlFileLoader($container, new FileLocator(dirname(__DIR__, 3) . '/config'));
+        $loader->load('classification_store.yaml');
+
+        $services = [ActiveGroupTitleEnricherInterface::class, KeyGroupLayoutServiceInterface::class];
+
+        foreach ($services as $service) {
+            $this->assertSame(
+                LabelResolverInterface::class,
+                (string)$container->getDefinition($service)->getArgument('$labelResolver'),
+                sprintf('%s does not take core\'s label resolver explicitly', $service)
+            );
+        }
     }
 
     public function testTheThreeLayoutServicesTakeTheEnricher(): void

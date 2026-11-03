@@ -45,7 +45,7 @@ trait ListingDatabaseStubTrait
     /**
      * @param list<array<string, mixed>> $rows
      */
-    private function stubDatabaseReturning(array $rows): void
+    private function stubDatabaseReturning(array $rows, int $totalCount = 0): void
     {
         $connection = $this->makeEmpty(Connection::class, [
             'quoteIdentifier' => static fn (string $identifier): string => '`' . $identifier . '`',
@@ -55,6 +55,8 @@ trait ListingDatabaseStubTrait
 
                 return $rows;
             },
+            // the COUNT(*) a listing answers getTotalCount() with
+            'fetchOne' => static fn (): int => $totalCount,
         ]);
 
         $container = new Container();

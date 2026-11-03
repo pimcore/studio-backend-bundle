@@ -14,12 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
-use ReflectionClass;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use function array_column;
 use function array_keys;
 
@@ -32,17 +33,37 @@ use function array_keys;
  */
 final class ActiveGroupTitleEnricherTest extends Unit
 {
+    use LabelResolverMockTrait;
+
     private const int GROUP_ID = 3;
+
+    private const int SECOND_GROUP_ID = 4;
 
     private const string GROUP_NAME = 'Technical';
 
-    private const array EXPECTED_KEY_TITLES = ['Weight', 'height', 'depth'];
+    private const string LANGUAGE = 'de';
+
+    private const string DEFAULT_LANGUAGE = 'en';
+
+    private const int KEY_ID = 11;
+
+    private const string KEY_NAME = 'weight';
+
+    private const array KEY_NAMES = [11 => self::KEY_NAME, 12 => 'height', 13 => 'depth', 21 => 'claim'];
+
+    private const array LABELS = [11 => 'Weight', 12 => 'Height', 13 => 'Depth', 21 => 'Claim'];
+
+    private const array EXPECTED_KEY_TITLES = ['Weight', 'Height', 'Depth'];
+
+    private const string COLUMN_TITLE = 'Column title';
+
+    private const string DEFINITION_TITLE = 'Definition title';
 
     public function testEveryKeyOfAnActiveGroupCarriesATitle(): void
     {
         $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher()->enrich($fieldDefinition);
 
         $this->assertSame(
             self::EXPECTED_KEY_TITLES,
@@ -55,7 +76,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher()->enrich($fieldDefinition);
 
         $this->assertSame(self::GROUP_NAME, $this->groupTitle($fieldDefinition, self::GROUP_ID));
         $this->assertNoSlotIsEmpty($fieldDefinition);
@@ -69,7 +90,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $fieldDefinition = $this->createFieldDefinition([$this->createGroup()]);
 
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
+        $this->createEnricher()->enrich($fieldDefinition);
 
         $this->assertSame(self::GROUP_NAME, $this->groupTitle($fieldDefinition, 0));
         $this->assertSame(self::EXPECTED_KEY_TITLES, $this->keyTitles($fieldDefinition, 0));
@@ -80,6 +101,252 @@ final class ActiveGroupTitleEnricherTest extends Unit
     {
         $fieldDefinition = $this->createFieldDefinition([self::GROUP_ID => $this->createGroup()]);
 
+        $this->createEnricher()->enrich($this->nestInALayout($fieldDefinition));
+
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    /**
+     * The whole point of the resolver: a group costs one label query, not one per key. Every group of
+     * every classification store field of the layout gets its own, and no title of a group is resolved
+     * before the preload that covers it.
+     */
+    public function testEveryGroupIsPreloadedOnceBeforeAnyOfItsTitlesIsResolved(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroup(),
+            self::SECOND_GROUP_ID => $this->createGroupWithKeys([$this->createKey(21)]),
+        ]);
+        $nested = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $root = new Panel();
+        $root->setChildren([$this->nestInALayout($fieldDefinition), $nested]);
+
+        $this->createEnricher()->enrich($root);
+
+        $this->assertSame([[11, 12, 13], [21], [self::KEY_ID]], $this->preloadedIds());
+        $this->assertSame(
+            [
+                'preload', 'getTitle', 'getTitle', 'getTitle',
+                'preload', 'getTitle',
+                'preload', 'getTitle',
+            ],
+            $this->calledMethods()
+        );
+    }
+
+    /**
+     * The label the resolver answers with wins over the title carried by the serialized field
+     * definition, which the enricher does not read at all any more.
+     */
+    public function testTheResolvedLabelIsPublishedInsteadOfTheDefinitionTitle(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([
+                $this->createKey(self::KEY_ID, self::DEFINITION_TITLE),
+            ]),
+        ]);
+
+        $this->createEnricher([self::KEY_ID => self::COLUMN_TITLE])->enrich($fieldDefinition);
+
+        $this->assertSame([self::COLUMN_TITLE], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+    }
+
+    public function testChangingOnlyTheDefinitionTitleChangesNothing(): void
+    {
+        $withTitle = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([
+                $this->createKey(self::KEY_ID, self::DEFINITION_TITLE),
+            ]),
+        ]);
+        $withoutTitle = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $this->createEnricher([self::KEY_ID => self::COLUMN_TITLE])->enrich($withTitle);
+        $this->createEnricher([self::KEY_ID => self::COLUMN_TITLE])->enrich($withoutTitle);
+
+        $this->assertSame(
+            $this->keyTitles($withoutTitle, self::GROUP_ID),
+            $this->keyTitles($withTitle, self::GROUP_ID)
+        );
+    }
+
+    /**
+     * A resolved '0' is a configured label like any other: only an unresolved one falls back to the
+     * key name.
+     */
+    public function testAKeyTitleOfZeroIsCarriedOver(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $this->createEnricher([self::KEY_ID => '0'])->enrich($fieldDefinition);
+
+        $this->assertSame(['0'], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    public function testAKeyWithoutAnIdFallsBackToItsName(): void
+    {
+        $key = $this->createKey(self::KEY_ID);
+        unset($key['id']);
+
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$key]),
+        ]);
+
+        $this->createEnricher([self::KEY_ID => self::COLUMN_TITLE])->enrich($fieldDefinition);
+
+        $this->assertSame([self::KEY_NAME], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    public function testAKeyWhoseConfigurationCannotBeLoadedFallsBackToItsName(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $enricher = new ActiveGroupTitleEnricher(
+            $this->createLabelResolver([self::KEY_ID => [self::LANGUAGE => self::COLUMN_TITLE]]),
+            $this->createKeyConfigResolver([]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+        );
+
+        $enricher->enrich($fieldDefinition);
+
+        $this->assertSame([self::KEY_NAME], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    /**
+     * The label row of the requesting user's language is what the editor sees, ahead of the title
+     * column the chain ends on.
+     */
+    public function testTheLabelOfTheRequestingUsersLanguageIsPublished(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([
+                $this->createKey(self::KEY_ID, self::DEFINITION_TITLE),
+            ]),
+        ]);
+
+        $enricher = new ActiveGroupTitleEnricher(
+            $this->createLabelResolver([self::KEY_ID => [self::LANGUAGE => 'Gewicht']]),
+            $this->createKeyConfigResolver([
+                $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
+            ]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+        );
+
+        $enricher->enrich($fieldDefinition);
+
+        $this->assertSame(['Gewicht'], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+    }
+
+    /**
+     * An installation with an empty labels table is unchanged from the release before: the key's
+     * title column, and then its technical name.
+     */
+    public function testWithoutALabelRowTheTitleColumnAndThenTheNameIsPublished(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([
+                $this->createKey(self::KEY_ID),
+                $this->createKey(12),
+            ]),
+        ]);
+
+        $enricher = new ActiveGroupTitleEnricher(
+            $this->createLabelResolver(),
+            $this->createKeyConfigResolver([
+                $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
+                $this->createKeyConfig(12, self::KEY_NAMES[12], ''),
+            ]),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+        );
+
+        $enricher->enrich($fieldDefinition);
+
+        $this->assertSame(
+            [self::COLUMN_TITLE, self::KEY_NAMES[12]],
+            $this->keyTitles($fieldDefinition, self::GROUP_ID)
+        );
+        $this->assertNoSlotIsEmpty($fieldDefinition);
+    }
+
+    /**
+     * A layout read without a resolvable user is labelled in the installation default language
+     * rather than left unlabelled.
+     */
+    public function testWithoutACurrentUserTheDefaultLanguageIsUsed(): void
+    {
+        $fieldDefinition = $this->createFieldDefinition([
+            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(self::KEY_ID)]),
+        ]);
+
+        $enricher = new ActiveGroupTitleEnricher(
+            $this->createLabelResolver([self::KEY_ID => [self::DEFAULT_LANGUAGE => self::COLUMN_TITLE]]),
+            $this->createKeyConfigResolver([$this->createKeyConfig(self::KEY_ID, self::KEY_NAME)]),
+            $this->createLabelLanguageResolver(null, self::DEFAULT_LANGUAGE)
+        );
+
+        $enricher->enrich($fieldDefinition);
+
+        $this->assertSame([self::COLUMN_TITLE], $this->keyTitles($fieldDefinition, self::GROUP_ID));
+        $this->assertSame(
+            [self::DEFAULT_LANGUAGE, self::DEFAULT_LANGUAGE],
+            array_column($this->labelResolverCalls, 'language')
+        );
+    }
+
+    /**
+     * @param array<int, string> $labels key id => label stored for the user's language
+     */
+    private function createEnricher(array $labels = self::LABELS): ActiveGroupTitleEnricher
+    {
+        $labelsByKeyId = [];
+        $keyConfigs = [];
+
+        foreach (self::KEY_NAMES as $keyId => $keyName) {
+            $keyConfigs[] = $this->createKeyConfig($keyId, $keyName);
+
+            if (isset($labels[$keyId])) {
+                $labelsByKeyId[$keyId] = [self::LANGUAGE => $labels[$keyId]];
+            }
+        }
+
+        return new ActiveGroupTitleEnricher(
+            $this->createLabelResolver($labelsByKeyId),
+            $this->createKeyConfigResolver($keyConfigs),
+            $this->createLabelLanguageResolver(self::LANGUAGE, self::DEFAULT_LANGUAGE)
+        );
+    }
+
+    /**
+     * @param list<KeyConfig> $keyConfigs
+     */
+    private function createKeyConfigResolver(array $keyConfigs): KeyConfigResolverInterface
+    {
+        $byId = [];
+        foreach ($keyConfigs as $keyConfig) {
+            $byId[$keyConfig->getId() ?? 0] = $keyConfig;
+        }
+
+        $keyConfigResolver = $this->createMock(KeyConfigResolverInterface::class);
+        $keyConfigResolver
+            ->method('getById')
+            ->willReturnCallback(static fn (int $keyId): ?KeyConfig => $byId[$keyId] ?? null);
+
+        return $keyConfigResolver;
+    }
+
+    private function nestInALayout(Classificationstore $fieldDefinition): Panel
+    {
         $localizedFields = new Localizedfields();
         $localizedFields->setChildren([$fieldDefinition]);
 
@@ -89,33 +356,7 @@ final class ActiveGroupTitleEnricherTest extends Unit
         $root = new Panel();
         $root->setChildren([$inner]);
 
-        (new ActiveGroupTitleEnricher())->enrich($root);
-
-        $this->assertNoSlotIsEmpty($fieldDefinition);
-    }
-
-    /**
-     * A stored '0' is a configured title like any other: only an unset one falls back to the key name.
-     */
-    public function testAKeyTitleOfZeroIsCarriedOver(): void
-    {
-        $fieldDefinition = $this->createFieldDefinition([
-            self::GROUP_ID => $this->createGroupWithKeys([$this->createKey(11, 'weight', '0')]),
-        ]);
-
-        (new ActiveGroupTitleEnricher())->enrich($fieldDefinition);
-
-        $this->assertSame(['0'], $this->keyTitles($fieldDefinition, self::GROUP_ID));
-        $this->assertNoSlotIsEmpty($fieldDefinition);
-    }
-
-    /**
-     * The payload already carries the group name and the enriched key definition, so resolving the
-     * titles needs no group or key lookup at all.
-     */
-    public function testResolvingTheTitlesNeedsNoCollaborator(): void
-    {
-        $this->assertNull((new ReflectionClass(ActiveGroupTitleEnricher::class))->getConstructor());
+        return $root;
     }
 
     /**
@@ -136,9 +377,9 @@ final class ActiveGroupTitleEnricherTest extends Unit
     private function createGroup(): array
     {
         return $this->createGroupWithKeys([
-            $this->createKey(11, 'weight', 'Weight'),
-            $this->createKey(12, 'height', ''),
-            $this->createKey(13, 'depth', null),
+            $this->createKey(self::KEY_ID),
+            $this->createKey(12),
+            $this->createKey(13),
         ]);
     }
 
@@ -160,17 +401,17 @@ final class ActiveGroupTitleEnricherTest extends Unit
     /**
      * @return array<string, mixed>
      */
-    private function createKey(int $keyId, string $name, ?string $title): array
+    private function createKey(int $keyId, ?string $definitionTitle = null): array
     {
         $definition = new Input();
-        $definition->setName($name);
+        $definition->setName(self::KEY_NAMES[$keyId]);
 
-        if ($title !== null) {
-            $definition->setTitle($title);
+        if ($definitionTitle !== null) {
+            $definition->setTitle($definitionTitle);
         }
 
         return [
-            'name' => $name,
+            'name' => self::KEY_NAMES[$keyId],
             'id' => $keyId,
             'description' => '',
             'definition' => $definition,

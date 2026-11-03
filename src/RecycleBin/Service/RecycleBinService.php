@@ -19,7 +19,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
@@ -54,7 +53,9 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
 
     public function listRecycleBin(CollectionFilterParameter $parameters): Collection
     {
-        $listing = $this->recycleBinRepository->getListing($this->getFilterParameters($parameters));
+        $listing = $this->recycleBinRepository->getListing(
+            $this->filterMapper->getFilterParameters($parameters)
+        );
         $items = $listing->load();
         $list = [];
 
@@ -164,15 +165,5 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         );
 
         return $entry;
-    }
-
-    private function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter
-    {
-        $filterParameters = new FilterParameter();
-        if ($parameters->getFilters()) {
-            $filterParameters = $this->filterMapper->map($parameters);
-        }
-
-        return $filterParameters;
     }
 }
