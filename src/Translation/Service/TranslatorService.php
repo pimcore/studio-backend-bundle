@@ -33,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\MappedParameter\UpdateParamet
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Config;
 use Pimcore\Model\Exception\NotFoundException;
@@ -42,8 +41,6 @@ use Pimcore\Translation\Translator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use function array_flip;
-use function array_intersect_key;
 use function array_key_exists;
 use function in_array;
 
@@ -192,18 +189,13 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     public function listTranslations(string $domain, CollectionFilterParameter $parameter): Collection
     {
         $translations = [];
-        $allowedLanguages = array_flip($this->getAllowedLanguages($domain));
+        $allowedLanguages = $this->getAllowedLanguages($domain);
         $list = $this->getTranslationList($domain, $parameter);
         foreach ($list->getTranslations() as $translation) {
+            // The core listing ignores the requested languages for the admin domain and returns every language.
             $translation = $this->translationsHydrator->hydrate(
                 $translation
-            );
-            // The core listing ignores the requested languages for the admin domain and returns every language.
-            $translation = new Translations(
-                $translation->getKey(),
-                array_intersect_key($translation->getTranslations(), $allowedLanguages),
-                $translation->getType()
-            );
+            )->withLanguages($allowedLanguages);
 
             $this->eventDispatcher->dispatch(
                 new TranslationsEvent($translation),

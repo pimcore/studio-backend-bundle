@@ -18,6 +18,8 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use function array_flip;
+use function array_intersect_key;
 
 /**
  * @internal
@@ -66,5 +68,17 @@ final class Translations implements AdditionalAttributesInterface
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @param string[] $languages
+     */
+    public function withLanguages(array $languages): self
+    {
+        return new self(
+            $this->key,
+            array_intersect_key($this->translations, array_flip($languages)),
+            $this->type
+        );
     }
 }
