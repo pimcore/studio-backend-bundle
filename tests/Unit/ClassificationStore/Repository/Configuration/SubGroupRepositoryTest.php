@@ -72,6 +72,8 @@ final class SubGroupRepositoryTest extends Unit
 
     private bool $kernelStubbed = false;
 
+    private bool $inTransaction = false;
+
     public function testUpdateReturnsTheModifiedConfig(): void
     {
         $repository = $this->createRepository(subGroupRows: [$this->createRow()]);
@@ -232,11 +234,23 @@ final class SubGroupRepositoryTest extends Unit
         $connection = $this->makeEmpty(Connection::class, [
             'quoteIdentifier' => static fn (string $identifier): string => '`' . $identifier . '`',
             'quote' => static fn (string $value): string => "'" . $value . "'",
-            'isTransactionActive' => static fn (): bool => false,
-            'fetchAllAssociative' => function (string $query) use ($subGroupRows, $duplicateRows): array {
+            // the repository runs its probe and its write as one unit of work, and core's own writes
+            // join an active transaction instead of opening a second one, so the stub has to answer
+            // this the way the connection would
+            'isTransactionActive' => fn (): bool => $this->inTransaction,
+            'beginTransaction' => function (): void {
+                $this->inTransaction = true;
+            },
+            'commit' => function (): void {
+                $this->inTransaction = false;
+            },
+            'rollBack' => function (): void {
+                $this->inTransaction = false;
+            },
+            'fetchAllAssociative' => function (string $query) use ($subGroupRows): array {
                 $this->reads[] = $query;
 
-                return str_contains($query, '`name` =') ? $duplicateRows : $subGroupRows;
+                return $subGroupRows;
             },
             // the usage probe, and the group locks core takes on the way into its own delete
             'fetchFirstColumn' => function (string $query) use ($usedByGroups): array {
@@ -248,13 +262,27 @@ final class SubGroupRepositoryTest extends Unit
                 'storeId' => self::STORE_ID,
                 'identifier' => self::IDENTIFIER,
             ],
-            'fetchOne' => static fn (string $query): bool|int|string|null => match (true) {
-                // core reads the stored identifier back to enforce that it is written once
-                str_contains($query, 'SELECT `identifier`') => $storedIdentifier,
-                str_contains($query, 'SELECT `storeId`') => $storedStoreId,
-                // the identifier is unique per store and this one is not taken by another row
-                str_contains($query, 'SELECT id FROM') => false,
-                default => null,
+            'fetchOne' => function (
+                string $query
+            ) use ($duplicateRows, $storedStoreId, $storedIdentifier): bool|int|string|null {
+                // the duplicate probe and the lock it takes on the store first, both locking reads
+                // on the way into a write rather than listings
+                if (str_contains($query, '`name` =') || str_contains($query, 'classificationstore_stores')) {
+                    $this->reads[] = $query;
+                }
+
+                return match (true) {
+                    // no row for the name, the way the connection answers a probe that found it free
+                    str_contains($query, '`name` =') => $duplicateRows === []
+                        ? false
+                        : (int) $duplicateRows[0]['id'],
+                    // core reads the stored identifier back to enforce that it is written once
+                    str_contains($query, 'SELECT `identifier`') => $storedIdentifier,
+                    str_contains($query, 'SELECT `storeId`') => $storedStoreId,
+                    // the identifier is unique per store and this one is not taken by another row
+                    str_contains($query, 'SELECT id FROM') => false,
+                    default => null,
+                };
             },
             'executeStatement' => function (string $query): int {
                 $this->writes[] = $query;
@@ -353,6 +381,7 @@ final class SubGroupRepositoryTest extends Unit
     {
         $this->writes = [];
         $this->reads = [];
+        $this->inTransaction = false;
 
         if (!$this->kernelStubbed) {
             return;
