@@ -28,6 +28,7 @@ final readonly class StoreHydrator implements StoreHydratorInterface
             $storeConfig->getId(),
             $storeConfig->getName(),
             $storeConfig->getDescription(),
+            $storeConfig->getIdentifier(),
         );
     }
 
@@ -37,6 +38,7 @@ final readonly class StoreHydrator implements StoreHydratorInterface
             $storeConfig->getId(),
             $storeConfig->getName(),
             $storeConfig->getDescription(),
+            $storeConfig->getIdentifier(),
         );
     }
 }

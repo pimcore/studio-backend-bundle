@@ -31,6 +31,7 @@ use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Dao as SubGroupC
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpKernel\KernelInterface;
+use function sprintf;
 use function str_contains;
 
 /**

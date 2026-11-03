@@ -62,6 +62,13 @@ final class KeyDetail implements AdditionalAttributesInterface
         private readonly ?int $modificationDate = null,
         #[Property(description: 'Title of the key', type: 'string', example: 'My Key Title', nullable: true)]
         private readonly ?string $title = null,
+        #[Property(
+            description: 'Opaque identifier of the key, assigned by the system and never writable',
+            type: 'string',
+            example: '01K9T0ZQ0VX8W4S1R7J3A2B5C6',
+            nullable: true
+        )]
+        private readonly ?string $identifier = null,
     ) {
     }
 
@@ -113,5 +120,10 @@ final class KeyDetail implements AdditionalAttributesInterface
     public function getTitle(): ?string
     {
         return $this->title;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
     }
 }

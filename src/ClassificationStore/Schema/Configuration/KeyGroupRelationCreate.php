@@ -15,8 +15,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use function get_debug_type;
+use function sprintf;
 
 /**
+ * The three per assignment properties are optional in both directions: one absent from the payload
+ * leaves the stored value untouched, one carrying an explicit null clears it. Their defaults
+ * therefore stand for "the payload did not carry it" rather than for a value, which is why they are
+ * typed `mixed` - the two states have to stay distinguishable, and the payload mapping substitutes
+ * the default for a missing key.
+ *
  * @internal
  */
 #[Schema(
@@ -27,16 +37,45 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class KeyGroupRelationCreate
 {
+    /**
+     * @throws InvalidArgumentException
+     */
     public function __construct(
         #[Property(description: 'ID of the key', type: 'integer', example: 1)]
         private int $keyId,
         #[Property(description: 'ID of the group', type: 'integer', example: 1)]
         private int $groupId,
         #[Property(description: 'Sort order of the relation', type: 'integer', example: 0)]
-        private int $sorter = 0,
+        private mixed $sorter = 0,
         #[Property(description: 'Whether the key is mandatory in this group', type: 'boolean', example: false)]
-        private bool $mandatory = false,
+        private mixed $mandatory = false,
+        #[Property(
+            description: 'Partial field definition overriding the one of the key for this assignment',
+            type: 'object',
+            example: ['defaultUnit' => 'kg'],
+            nullable: true
+        )]
+        private mixed $definitionOverride = AbsentValue::ABSENT,
+        #[Property(
+            description: 'Sub group of the store this assignment belongs to',
+            type: 'string',
+            example: 'dimensions',
+            nullable: true
+        )]
+        private mixed $subGroup = AbsentValue::ABSENT,
+        #[Property(
+            description: 'Metadata carried by this assignment',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private mixed $metadata = AbsentValue::ABSENT,
     ) {
+        $this->validate('sorter', $this->sorter, 'int', false);
+        $this->validate('mandatory', $this->mandatory, 'bool', false);
+        $this->validate('definitionOverride', $this->definitionOverride, 'array', true);
+        $this->validate('subGroup', $this->subGroup, 'string', true);
+        $this->validate('metadata', $this->metadata, 'array', true);
     }
 
     public function getKeyId(): int
@@ -57,5 +96,63 @@ final readonly class KeyGroupRelationCreate
     public function isMandatory(): bool
     {
         return $this->mandatory;
+    }
+
+    public function hasDefinitionOverride(): bool
+    {
+        return $this->definitionOverride !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getDefinitionOverride(): ?array
+    {
+        return $this->definitionOverride;
+    }
+
+    public function hasSubGroup(): bool
+    {
+        return $this->subGroup !== AbsentValue::ABSENT;
+    }
+
+    public function getSubGroup(): ?string
+    {
+        return $this->subGroup;
+    }
+
+    public function hasMetadata(): bool
+    {
+        return $this->metadata !== AbsentValue::ABSENT;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getMetadata(): ?array
+    {
+        return $this->metadata;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validate(string $property, mixed $value, string $type, bool $nullable): void
+    {
+        if ($value === AbsentValue::ABSENT) {
+            return;
+        }
+
+        if ($value === null) {
+            if ($nullable) {
+                return;
+            }
+
+            throw new InvalidArgumentException(sprintf('%s cannot be null.', $property));
+        }
+
+        if (get_debug_type($value) !== $type) {
+            throw new InvalidArgumentException(sprintf('%s has to be of type %s.', $property, $type));
+        }
     }
 }

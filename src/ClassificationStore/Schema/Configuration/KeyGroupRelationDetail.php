@@ -50,6 +50,20 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $subGroup = null,
+        #[Property(
+            description: 'Partial field definition overriding the one of the key for this assignment',
+            type: 'object',
+            example: ['defaultUnit' => 'kg'],
+            nullable: true
+        )]
+        private readonly ?array $definitionOverride = null,
+        #[Property(
+            description: 'Metadata carried by this assignment',
+            type: 'object',
+            example: ['source' => 'erp'],
+            nullable: true
+        )]
+        private readonly ?array $metadata = null,
     ) {
     }
 
@@ -91,5 +105,15 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
     public function getSubGroup(): ?string
     {
         return $this->subGroup;
+    }
+
+    public function getDefinitionOverride(): ?array
+    {
+        return $this->definitionOverride;
+    }
+
+    public function getMetadata(): ?array
+    {
+        return $this->metadata;
     }
 }
