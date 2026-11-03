@@ -63,6 +63,35 @@ final class IdentifierInputRejectionTest extends Unit
     }
 
     /**
+     * An explicit null is a supplied value, not an omission: the request asked to set the identifier
+     * and has to be told that it cannot, rather than being answered as though it had not asked.
+     *
+     * @dataProvider payloadProvider
+     *
+     * @param class-string $class
+     * @param array<string, mixed> $arguments
+     */
+    public function testAPayloadCarryingAnExplicitlyNullIdentifierIsRefused(string $class, array $arguments): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new $class(...[...$arguments, 'identifier' => null]);
+    }
+
+    /**
+     * @dataProvider payloadProvider
+     *
+     * @param class-string $class
+     * @param array<string, mixed> $arguments
+     */
+    public function testAPayloadCarryingAnIdentifierOfAnotherTypeIsRefused(string $class, array $arguments): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new $class(...[...$arguments, 'identifier' => 0]);
+    }
+
+    /**
      * @return array<string, array{0: class-string, 1: array<string, mixed>}>
      */
     public static function payloadProvider(): array

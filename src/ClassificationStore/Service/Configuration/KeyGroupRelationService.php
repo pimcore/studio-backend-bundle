@@ -103,9 +103,9 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         int $keyId,
         KeyGroupRelationUpdate $parameters
     ): KeyGroupRelationDetail {
-        // an update never creates a row, so an unknown pair is refused before anything is written
-        $this->keyRelationResolver->getByGroupAndKey($groupId, $keyId);
-
+        // an update never creates a row: the repository loads the addressed pair and refuses an unknown
+        // one itself, so there is no pre-read here - it would load every relation of the group to
+        // throw the result away
         try {
             $relation = $this->keyGroupRelationRepository->update($keyId, $groupId, $parameters);
         } finally {

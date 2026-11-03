@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -41,14 +42,16 @@ final readonly class CollectionUpdate
             nullable: true
         )]
         private ?string $description = null,
-        // not a property of this schema: the identifier is assigned by the system and only refused here
-        ?string $identifier = null,
+        // not a property of this schema: the identifier is assigned by the system and only refused
+        // here. The default stands for "the payload did not carry it", so an explicit null is refused
+        // too rather than read as an omission.
+        mixed $identifier = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
         }
 
-        if ($identifier !== null) {
+        if ($identifier !== AbsentValue::ABSENT) {
             throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }

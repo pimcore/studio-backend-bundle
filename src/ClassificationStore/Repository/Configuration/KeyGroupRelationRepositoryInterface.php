@@ -33,6 +33,10 @@ interface KeyGroupRelationRepositoryInterface
     public function getListingByGroupId(FilterParameter $parameters, int $groupId): Listing;
 
     /**
+     * Writes the four properties the payload carries and leaves an existing row's definition override,
+     * sub group and metadata alone. The returned relation is the row as stored afterwards, not the
+     * instance that was saved, so the three untouched properties are reported rather than null.
+     *
      * @throws ElementSavingFailedException
      */
     public function createOrUpdate(int $keyId, int $groupId, int $sorter, bool $mandatory): KeyGroupRelation;

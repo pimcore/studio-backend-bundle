@@ -47,6 +47,10 @@ final class KeyGroupRelationServiceTest extends Unit
 
     private const string RESOLVED_SUB_GROUP = 'Dimensions';
 
+    private const array DEFINITION_OVERRIDE = ['defaultUnit' => 'kg'];
+
+    private const array METADATA = ['source' => 'erp'];
+
     /**
      * @throws Exception
      */
@@ -126,24 +130,29 @@ final class KeyGroupRelationServiceTest extends Unit
         $repository->expects($this->never())->method('createOrUpdate');
         $repository->expects($this->never())->method('delete');
 
-        $detail = $this->createService($this->createPairResolver(), $repository)
+        $detail = $this->createService($this->createResolver(), $repository)
             ->updateKeyGroupRelation(self::GROUP_ID, self::KEY_ID, $parameters);
 
         $this->assertSame(self::KEY_ID, $detail->getKeyId());
     }
 
     /**
+     * The repository loads the addressed pair and refuses an unknown one, so the service does no
+     * existence pre-read of its own - which on a cold resolver would load every relation of the group
+     * only to discard it.
+     *
      * @throws Exception
      */
     public function testUpdateKeyGroupRelationThrowsNotFoundForAnUnknownPair(): void
     {
-        $resolver = $this->createMock(KeyRelationResolverInterface::class);
-        $resolver
-            ->method('getByGroupAndKey')
-            ->willThrowException(new NotFoundException('KeyGroupRelation', self::KEY_ID));
+        $resolver = $this->createResolver();
+        $resolver->expects($this->once())->method('clear');
 
         $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $repository->expects($this->never())->method('update');
+        $repository
+            ->expects($this->once())
+            ->method('update')
+            ->willThrowException(new NotFoundException('KeyGroupRelation', self::KEY_ID));
 
         $this->expectException(NotFoundException::class);
 
@@ -152,6 +161,32 @@ final class KeyGroupRelationServiceTest extends Unit
             self::KEY_ID,
             new KeyGroupRelationUpdate(sorter: 5)
         );
+    }
+
+    /**
+     * The repository hands back the stored row rather than the instance it saved, so an assignment that
+     * already carried the three per assignment properties reports them in the response to the create.
+     *
+     * @throws Exception
+     */
+    public function testCreateOrUpdateKeyGroupRelationPublishesWhatTheRepositoryReportsAfterTheWrite(): void
+    {
+        $relation = $this->createRelation(self::RESOLVED_SUB_GROUP);
+        $relation->setDefinitionOverride(self::DEFINITION_OVERRIDE);
+        $relation->setMetadata(self::METADATA);
+
+        $repository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
+        $repository->method('createOrUpdate')->willReturn($relation);
+
+        $detail = $this->createService(
+            $this->createResolver(),
+            $repository,
+            new KeyGroupRelationHydrator()
+        )->createOrUpdateKeyGroupRelation(new KeyGroupRelationCreate(self::KEY_ID, self::GROUP_ID));
+
+        $this->assertSame(self::RESOLVED_SUB_GROUP, $detail->getSubGroup());
+        $this->assertSame(self::DEFINITION_OVERRIDE, $detail->getDefinitionOverride());
+        $this->assertSame(self::METADATA, $detail->getMetadata());
     }
 
     /**
@@ -170,7 +205,7 @@ final class KeyGroupRelationServiceTest extends Unit
         $repository->method('update')->willReturn($relation);
 
         $detail = $this->createService(
-            $this->createPairResolver(),
+            $this->createResolver(),
             $repository,
             new KeyGroupRelationHydrator()
         )->updateKeyGroupRelation(
@@ -187,7 +222,7 @@ final class KeyGroupRelationServiceTest extends Unit
      */
     private function expectClearedOnce(): KeyRelationResolverInterface
     {
-        $resolver = $this->createPairResolver();
+        $resolver = $this->createResolver();
         $resolver
             ->expects($this->once())
             ->method('clear');
@@ -196,16 +231,15 @@ final class KeyGroupRelationServiceTest extends Unit
     }
 
     /**
-     * A resolver reporting that the pair carries an assignment.
+     * No write path asks the resolver for a single pair: the repository loads the row it writes, and
+     * the resolver is here only to have its memo cleared afterwards.
      *
      * @throws Exception
      */
-    private function createPairResolver(): KeyRelationResolverInterface&MockObject
+    private function createResolver(): KeyRelationResolverInterface&MockObject
     {
         $resolver = $this->createMock(KeyRelationResolverInterface::class);
-        $resolver
-            ->method('getByGroupAndKey')
-            ->willReturn($this->createRelation());
+        $resolver->expects($this->never())->method('getByGroupAndKey');
 
         return $resolver;
     }

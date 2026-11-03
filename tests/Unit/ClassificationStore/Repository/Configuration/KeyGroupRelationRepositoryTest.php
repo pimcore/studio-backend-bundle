@@ -175,23 +175,36 @@ final class KeyGroupRelationRepositoryTest extends Unit
         }
     }
 
-    public function testCreateOrUpdateLeavesThePerAssignmentColumnsUninitialized(): void
+    public function testCreateOrUpdateLeavesThePerAssignmentColumnsOfAnExistingRowAlone(): void
     {
-        $this->stubDatabase([]);
+        $this->stubDatabase([$this->createRow()]);
 
-        $relation = $this->createRepository()->createOrUpdate(self::KEY_ID, self::GROUP_ID, 2, true);
-
-        $this->assertFalse($relation->isDefinitionOverrideInitialized());
-        $this->assertFalse($relation->isSubGroupInitialized());
-        $this->assertFalse($relation->isMetadataInitialized());
+        $this->createRepository()->createOrUpdate(self::KEY_ID, self::GROUP_ID, 2, true);
 
         $row = $this->getWrittenRow();
 
+        // absent from the write, so the three columns of an existing row keep what they hold
         $this->assertArrayNotHasKey(self::COLUMN_DEFINITION_OVERRIDE, $row);
         $this->assertArrayNotHasKey(self::COLUMN_SUB_GROUP, $row);
         $this->assertArrayNotHasKey(self::COLUMN_METADATA, $row);
         $this->assertSame(2, $row[self::COLUMN_SORTER]);
         $this->assertSame(1, $row[self::COLUMN_MANDATORY]);
+    }
+
+    /**
+     * The instance the write path saves carries only the four properties the payload set, so the three
+     * the write preserved are reported only because the stored row is read back afterwards.
+     */
+    public function testCreateOrUpdateReportsThePerAssignmentColumnsTheWritePreserved(): void
+    {
+        // the one row the relation listing loads, so the read-back after the write resolves to it
+        $this->stubDatabase([$this->createRow()]);
+
+        $relation = $this->createRepository()->createOrUpdate(self::KEY_ID, self::GROUP_ID, 2, true);
+
+        $this->assertSame(self::STORED_DEFINITION_OVERRIDE, $relation->getDefinitionOverride());
+        $this->assertSame(self::STORED_SUB_GROUP, $relation->getSubGroup());
+        $this->assertSame(self::STORED_METADATA, $relation->getMetadata());
     }
 
     private function createRepository(): KeyGroupRelationRepository

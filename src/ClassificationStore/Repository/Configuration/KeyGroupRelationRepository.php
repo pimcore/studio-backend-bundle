@@ -63,11 +63,14 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
         try {
             $relation->save();
+
+            // The saved instance carries only the four properties the payload set, while the write
+            // leaves an existing row's definition override, sub group and metadata untouched. Reading
+            // the row back is what keeps the response from reporting those three as null.
+            return $this->getByKeyAndGroup($keyId, $groupId);
         } catch (Exception $e) {
             throw new ElementSavingFailedException(null, $e->getMessage(), $e);
         }
-
-        return $relation;
     }
 
     /**
@@ -138,8 +141,9 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     }
 
     /**
-     * The row the update writes is loaded here rather than taken from the request memo of the key
-     * relation resolver, which hands out clones of what it saw earlier in the request.
+     * The addressed row is loaded here rather than taken from the request memo of the key relation
+     * resolver, which hands out clones of what it saw earlier in the request and would load every
+     * relation of the group to answer for one pair.
      *
      * @throws NotFoundException
      */
