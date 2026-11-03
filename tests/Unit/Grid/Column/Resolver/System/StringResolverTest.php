@@ -90,7 +90,12 @@ final class StringResolverTest extends Unit
         if ($localized) {
             $classDefinition->addFieldDefinition('localizedfields', $this->makeEmpty(Localizedfields::class, [
                 'getFieldDefinition' => static fn (string $key) => $key === $localizedName ? $fieldDefinition : null,
-                'getFieldDefinitions' => static fn () => [$localizedName => $fieldDefinition],
+                // Enrichment (provider calls for every localized field) must not run per system cell.
+                'getFieldDefinitions' => function (array $context = []) use ($localizedName, $fieldDefinition): array {
+                    $this->assertTrue($context['suppressEnrichment'] ?? false);
+
+                    return [$localizedName => $fieldDefinition];
+                },
             ]));
         } else {
             $classDefinition->addFieldDefinition($localizedName, $fieldDefinition);

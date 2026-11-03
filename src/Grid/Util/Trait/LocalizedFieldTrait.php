@@ -49,7 +49,7 @@ trait LocalizedFieldTrait
             return false;
         }
 
-        foreach (array_keys($localizedFields->getFieldDefinitions()) as $name) {
+        foreach (array_keys($localizedFields->getFieldDefinitions(['suppressEnrichment' => true])) as $name) {
             if (strcasecmp((string)$name, $key) === 0) {
                 return true;
             }

@@ -33,12 +33,17 @@ trait SimpleGetterTrait
             return null;
         }
 
-        $getter = 'get' . ucfirst($property);
+        $getter = $this->getGetter($column, $element);
         if (method_exists($element, $getter) === false) {
             return null;
         }
 
         return $element->$getter();
+    }
+
+    private function getGetter(Column $column, StudioElementInterface|ElementInterface $element): string
+    {
+        return 'get' . ucfirst($this->getProperty($column, $element));
     }
 
     private function getProperty(Column $column, StudioElementInterface|ElementInterface $element): string

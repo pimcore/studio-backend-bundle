@@ -219,10 +219,9 @@ final class AdvancedColumnResolverTest extends Unit
     }
 
     /**
-     * A localizable sub-field that inherits a null locale from its parent column is implicitly
-     * read by core without an explicit locale. The resolver must tell the grid service that
-     * the field is localized so the system default language gets authorized - passing a null locale
-     * without that flag would silently skip the language permission check.
+     * A localized sub-field of a column without a locale is read with the system default language.
+     * The resolver must tell the grid service that the field is localized so that language gets
+     * authorized - passing a null locale without that flag would skip the language permission check.
      *
      * @see https://pimcore.atlassian.net/browse/PEES-1063
      */
