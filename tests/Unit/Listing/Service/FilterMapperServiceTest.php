@@ -15,8 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Listing\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
-use Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperService;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
