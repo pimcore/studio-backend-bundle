@@ -43,6 +43,13 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         private readonly ?string $keyDescription = null,
         #[Property(description: 'Name of the group', type: 'string', example: 'My Group', nullable: true)]
         private readonly ?string $groupName = null,
+        #[Property(
+            description: 'Identifier of the sub group this assignment carries',
+            type: 'string',
+            example: '01JBQ8X9Z0ABCDEFGHJKMNPQRS',
+            nullable: true
+        )]
+        private readonly ?string $subGroup = null,
     ) {
     }
 
@@ -79,5 +86,10 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
     public function getGroupName(): ?string
     {
         return $this->groupName;
+    }
+
+    public function getSubGroup(): ?string
+    {
+        return $this->subGroup;
     }
 }

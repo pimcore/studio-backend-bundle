@@ -66,6 +66,16 @@ The following steps are necessary during updating to newer versions.
   `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
+- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
+- [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
+  returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
+  page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as
+  `totalItems` reports.
+- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by now
+  narrows that scope instead of replacing it. A client that relied on reaching another scope's rows that way gets an
+  empty collection, and has to address that scope through its own route.
+- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp now selects the window it names, instead
+  of matching nothing or everything. A client that sent such a filter gets different rows than before.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.

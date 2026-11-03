@@ -87,7 +87,9 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     ): KeyLayout {
 
         $object = null;
-        if ($layoutParameter->getObjectId()) {
+        // `!== null`, not truthiness: only an omitted objectId is served without an object in
+        // context. An objectId of 0 was supplied and does not resolve, so it is still a 404.
+        if ($layoutParameter->getObjectId() !== null) {
             $object = $this->concreteObjectResolver->getById($layoutParameter->getObjectId());
 
             if (!$object) {
@@ -103,7 +105,8 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             name: $key->getName(),
             description: $key->getDescription(),
             definition: $definition,
-            title: $this->getKeyTitle($key->getKeyId(), $this->labelLanguageResolver->getLabelLanguage())
+            title: $this->getKeyTitle($key->getKeyId(), $this->labelLanguageResolver->getLabelLanguage()),
+            subGroup: $key->getSubGroup(),
         );
     }
 

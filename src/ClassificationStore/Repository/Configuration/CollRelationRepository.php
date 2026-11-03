@@ -36,7 +36,9 @@ final readonly class CollRelationRepository implements CollRelationRepositoryInt
     public function getListing(FilterParameter $parameters, int $colId): Listing
     {
         $listing = new Listing();
-        $listing->addConditionParam('`colId` = :colId', ['colId' => $colId]);
+        // own parameter name, so a client supplied equals filter on `colId` narrows the route's
+        // collection binding instead of replacing the condition Pimcore keys by its own string
+        $listing->addConditionParam('`colId` = :scopeColId', ['scopeColId' => $colId]);
 
         $this->listingFilter->applyFilters($parameters, $listing);
 
