@@ -108,7 +108,7 @@ The following steps are necessary during updating to newer versions.
   50 rows and must page.** The affected endpoints are the ones that build their listing through
   `FilterMapperServiceInterface::getFilterParameters()`:
   `POST /recycle-bin/items`, `POST /website-settings`, `POST /unit/quantity-value/units/collection`,
-  `POST /bundle/seo/redirects`, `POST /translations/list` and the Classification Store configuration listings
+  `POST /bundle/seo/redirects` and the Classification Store configuration listings
   `POST /classification-store/configuration/stores/{storeId}/groups`,
   `POST /classification-store/configuration/stores/{storeId}/keys`,
   `POST /classification-store/configuration/stores/{storeId}/collections`,
@@ -119,10 +119,16 @@ The following steps are necessary during updating to newer versions.
   is of the whole collection and is not reduced by the page size. A client that wants the previous unpaged answer in one
   request has to ask for it, by sending a `filters.pageSize` large enough to cover `totalItems`.
 
-> **Note:** two listings deliberately keep their previous behaviour and are **not** in the list above.
+> **Note:** three listings keep their previous behaviour and are **not** in the list above, so a body of `{}` still
+> returns every row there.
 > `POST /notifications` applies the paging defaults only when `filters` is sent, because it maps its own parameters
-> rather than going through `getFilterParameters()`. `POST /translations/export` is unpaged by design — it clears the
-> limit and offset again before reading, so an export is never truncated to a page.
+> rather than going through `getFilterParameters()`.
+> `POST /translations/list` does call `getFilterParameters()`, but only once it has a `filters` object to read sort and
+> column filters from: `TranslatorService::getTranslationList()` returns the listing as soon as `getFilters()` is
+> `null`, before the mapper and the filter application further down the method. An omitted `filters` therefore never
+> reaches the paging defaults on this endpoint. Sending `filters` — even an empty object — pages it like the others.
+> `POST /translations/export` is unpaged by design — it clears the limit and offset again before reading, so an export
+> is never truncated to a page.
 
 - [Classification Store] Fixed: a client-supplied `equals` column filter on the column a route-scoped configuration
   listing is already scoped by no longer replaces that scope — it narrows it. The route scope and an `equals` filter on
