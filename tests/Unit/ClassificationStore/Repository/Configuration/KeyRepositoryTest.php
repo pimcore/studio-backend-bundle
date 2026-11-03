@@ -27,7 +27,6 @@ use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpKernel\KernelInterface;
-use function json_decode;
 
 /**
  * @internal
@@ -149,34 +148,23 @@ final class KeyRepositoryTest extends Unit
     }
 
     /**
-     * @dataProvider createTitleProvider
+     * A directly constructed DTO carries no presence flags, so without the inference in
+     * KeyUpdate both writes below are skipped and the stored values survive unchanged.
      *
      * @throws Exception
      */
-    public function testCreateNoLongerStoresTheNameAsTheTitle(
-        ?string $title,
-        string $expectedStored,
-        string $expectedInDefinition
-    ): void {
-        $config = new KeyConfig();
+    public function testDirectConstructionStillWritesTheTitleAndTheDescription(): void
+    {
+        $config = $this->createStoredKeyConfig();
         $repository = $this->createRepository($config);
 
-        $this->write(static fn (): KeyConfig => $repository->create(self::KEY_NAME, 3, $title));
+        $this->write(static fn (): KeyConfig => $repository->update(
+            self::KEY_ID,
+            new KeyUpdate('weight', 'Mass', 'The mass of the product')
+        ));
 
-        $this->assertSame($expectedStored, $config->getTitle());
-        $this->assertSame($expectedInDefinition, json_decode($config->getDefinition(), true)['title']);
-    }
-
-    /**
-     * @return array<string, array{0: ?string, 1: string, 2: string}>
-     */
-    public static function createTitleProvider(): array
-    {
-        return [
-            'no title stores nothing and seeds the name' => [null, '', self::KEY_NAME],
-            'an empty title stores nothing and seeds the name' => ['', '', self::KEY_NAME],
-            'a title is stored and seeded' => [self::STORED_TITLE, self::STORED_TITLE, self::STORED_TITLE],
-        ];
+        $this->assertSame('Mass', $config->getTitle());
+        $this->assertSame('The mass of the product', $config->getDescription());
     }
 
     private function createStoredKeyConfig(): KeyConfig
@@ -213,7 +201,6 @@ final class KeyRepositoryTest extends Unit
         return new KeyRepository(
             $this->makeEmpty(KeyConfigResolverInterface::class, [
                 'getById' => $config,
-                'create' => $config,
             ]),
             $this->makeEmpty(ListingFilterInterface::class),
             $this->makeEmpty(SearchHelperServiceInterface::class),

@@ -34,9 +34,10 @@ The following steps are necessary during updating to newer versions.
   and `POST /classification-store/configuration/keys/add`) carry an optional `title`, holding the stored title of the key
   configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
   /classification-store/configuration/keys/add` accepts an optional `title`; when it is sent, it is stored as the key's title
-  and as `definition.title`, instead of the name used for both so far. Sending no `title`, `null` or an empty one (`""`)
-  leaves the key's own title empty and writes the name to `definition.title`, so the object editor label is unchanged. The
-  `@internal` `KeyRepositoryInterface::create()` got the optional argument `$title`.
+  and as `definition.title`, instead of the name used for both so far. Sending no `title`, or `null`, keeps writing the name
+  to both, so clients that do not send the new field are unaffected. An empty `title` (`""`) is treated like an
+  absent one and writes the name to both as well. The `@internal`
+  `KeyRepositoryInterface::create()` got the optional argument `$title`.
 - [Classification Store] Changed: clearing a key's title or description now stores the cleared value, where it was
   previously ignored. A field left out of the request still leaves the stored value alone.
 - [Classification Store] Changed: a client that sent an empty `title` or `description` to

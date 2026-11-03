@@ -38,6 +38,30 @@ final class KeyUpdateTest extends Unit
         $this->assertFalse($parameters->isDescriptionSupplied());
     }
 
+    /**
+     * @dataProvider inferredPresenceProvider
+     */
+    public function testANonNullValueCountsAsSuppliedWithoutAFlag(?string $value, bool $expected): void
+    {
+        $title = new KeyUpdate(name: 'weight', title: $value);
+        $description = new KeyUpdate(name: 'weight', description: $value);
+
+        $this->assertSame($expected, $title->isTitleSupplied());
+        $this->assertSame($expected, $description->isDescriptionSupplied());
+    }
+
+    /**
+     * @return array<string, array{0: ?string, 1: bool}>
+     */
+    public static function inferredPresenceProvider(): array
+    {
+        return [
+            'a filled value is supplied' => ['Mass', true],
+            'an empty value is supplied' => ['', true],
+            'null without a flag is an omission' => [null, false],
+        ];
+    }
+
     public function testWithDefinitionKeepsThePresenceFlags(): void
     {
         $parameters = (new KeyUpdate(name: 'weight', title: '', titleSupplied: true, descriptionSupplied: true))

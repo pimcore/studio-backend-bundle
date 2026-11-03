@@ -18,6 +18,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use function array_key_exists;
+use function is_array;
+use function is_string;
+use function sprintf;
 
 /**
  * The payload keys are only visible here: the mapped DTO cannot tell an absent `title` from a
@@ -52,16 +55,57 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
         ?string $format = null,
         array $context = []
     ): KeyUpdate {
+        // A JSON body that is not an object arrives here as a scalar, so the shape is checked
+        // before anything indexes it: without this the field reads below raise a TypeError, and
+        // ApiExceptionSubscriber forwards only HTTP exceptions, so the client would see a 500.
+        if (!is_array($data)) {
+            throw new InvalidArgumentException('The request payload must be an object.');
+        }
+
         return new KeyUpdate(
             // Left to the constructor guard, so a missing name stays a 422 instead of a TypeError.
-            name: $data['name'] ?? '',
-            title: $data['title'] ?? null,
-            description: $data['description'] ?? null,
-            type: $data['type'] ?? null,
-            definition: $data['definition'] ?? null,
+            name: $this->stringOrNull($data, 'name') ?? '',
+            title: $this->stringOrNull($data, 'title'),
+            description: $this->stringOrNull($data, 'description'),
+            type: $this->stringOrNull($data, 'type'),
+            definition: $this->arrayOrNull($data, 'definition'),
             titleSupplied: array_key_exists('title', $data),
             descriptionSupplied: array_key_exists('description', $data),
         );
+    }
+
+    /**
+     * @param array<array-key, mixed> $data
+     *
+     * @throws InvalidArgumentException
+     */
+    private function stringOrNull(array $data, string $field): ?string
+    {
+        $value = $data[$field] ?? null;
+
+        if ($value !== null && !is_string($value)) {
+            throw new InvalidArgumentException(sprintf('`%s` must be a string or null.', $field));
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<array-key, mixed> $data
+     *
+     * @return array<array-key, mixed>|null
+     *
+     * @throws InvalidArgumentException
+     */
+    private function arrayOrNull(array $data, string $field): ?array
+    {
+        $value = $data[$field] ?? null;
+
+        if ($value !== null && !is_array($value)) {
+            throw new InvalidArgumentException(sprintf('`%s` must be an object or null.', $field));
+        }
+
+        return $value;
     }
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool

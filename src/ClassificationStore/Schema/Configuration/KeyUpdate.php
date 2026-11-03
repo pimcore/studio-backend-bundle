@@ -115,14 +115,19 @@ final readonly class KeyUpdate
         return $this->definition;
     }
 
+    /**
+     * A non-null title counts as supplied on its own, so constructing this DTO directly — without
+     * the denormalizer that sets the flag — cannot silently drop the value. The flag is what tells
+     * a title supplied as null apart from an omitted one, which inference cannot recover.
+     */
     public function isTitleSupplied(): bool
     {
-        return $this->titleSupplied;
+        return $this->titleSupplied || $this->title !== null;
     }
 
     public function isDescriptionSupplied(): bool
     {
-        return $this->descriptionSupplied;
+        return $this->descriptionSupplied || $this->description !== null;
     }
 
     /**

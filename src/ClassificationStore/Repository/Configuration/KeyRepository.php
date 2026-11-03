@@ -94,16 +94,17 @@ final readonly class KeyRepository implements KeyRepositoryInterface
      */
     public function create(string $name, int $storeId, ?string $title = null): KeyConfig
     {
+        $title = ($title === null || $title === '') ? $name : $title;
         $definition = [
             'fieldtype' => 'input',
             'name' => $name,
-            'title' => ($title === null || $title === '') ? $name : $title,
+            'title' => $title,
             'datatype' => 'data',
         ];
 
-        $config = $this->keyConfigResolver->create();
+        $config = new KeyConfig();
         $config->setName($name);
-        $config->setTitle($title ?? '');
+        $config->setTitle($title);
         $config->setType('input');
         $config->setStoreId($storeId);
         $config->setEnabled(true);

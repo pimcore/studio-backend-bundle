@@ -87,6 +87,36 @@ final class KeyUpdateDenormalizerTest extends Unit
         $this->denormalizer->denormalize([], KeyUpdate::class);
     }
 
+    /**
+     * @dataProvider malformedPayloadProvider
+     */
+    public function testAMalformedPayloadIsRejectedAsAnInvalidArgument(mixed $data): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->denormalizer->denormalize($data, KeyUpdate::class);
+    }
+
+    /**
+     * A TypeError here would leave ApiExceptionSubscriber untouched and surface as a 500, so each
+     * of these has to reach the client as this bundle's own 422 instead.
+     *
+     * @return array<string, array{0: mixed}>
+     */
+    public static function malformedPayloadProvider(): array
+    {
+        return [
+            'a scalar body' => [42],
+            'a string body' => ['weight'],
+            'a null body' => [null],
+            'a non-string name' => [['name' => 42]],
+            'a non-string title' => [['name' => self::KEY_NAME, 'title' => 42]],
+            'a non-string description' => [['name' => self::KEY_NAME, 'description' => ['a']]],
+            'a non-string type' => [['name' => self::KEY_NAME, 'type' => false]],
+            'a string definition' => [['name' => self::KEY_NAME, 'definition' => 'input']],
+        ];
+    }
+
     public function testOnlyKeyUpdateIsSupported(): void
     {
         $this->assertTrue($this->denormalizer->supportsDenormalization([], KeyUpdate::class));
