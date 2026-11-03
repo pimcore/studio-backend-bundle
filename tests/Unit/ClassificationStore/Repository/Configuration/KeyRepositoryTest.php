@@ -131,9 +131,15 @@ final class KeyRepositoryTest extends Unit
     }
 
     /**
+     * A definition carrying a title of its own does not refill the cleared title, and is itself
+     * left untouched. Only the model is asserted here, because this suite has no database: that
+     * the empty title survives `KeyConfig::save()` and a reload is covered in core, by
+     * `tests/Model/DataType/ClassificationStore/KeyTitleTest.php`, where the title column is
+     * seeded from the definition only for a key whose title was neither loaded nor set.
+     *
      * @throws Exception
      */
-    public function testClearingATitleLeavesTheDefinitionAlone(): void
+    public function testClearingATitleEmptiesItAndLeavesTheDefinitionAlone(): void
     {
         $config = $this->createStoredKeyConfig();
         $config->setDefinition('{"title":"Weight"}');
@@ -144,6 +150,7 @@ final class KeyRepositoryTest extends Unit
             new KeyUpdate(name: self::KEY_NAME, titleSupplied: true)
         ));
 
+        $this->assertSame('', $config->getTitle());
         $this->assertSame('{"title":"Weight"}', $config->getDefinition());
     }
 
