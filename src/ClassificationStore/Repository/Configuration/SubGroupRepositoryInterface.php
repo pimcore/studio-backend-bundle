@@ -48,6 +48,37 @@ interface SubGroupRepositoryInterface
     public function getByIdentifiers(int $storeId, array $identifiers): array;
 
     /**
+     * One page of the store's sub groups, ordered by identifier, so that a configuration transfer
+     * never holds a whole store at once.
+     *
+     * @return SubGroupConfig[]
+     */
+    public function getChunkByStore(int $storeId, int $limit, int $offset): array;
+
+    /**
+     * One page of the store's sub groups, taken after the given row id, which is the paging an apply
+     * walks the target in - it writes while it walks, and an offset into an identifier ordering
+     * would skip the rows an adopted identifier moved past.
+     *
+     * @return SubGroupConfig[]
+     */
+    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array;
+
+    /**
+     * Writes the artifact's values onto the given configuration, or onto a new one when there is
+     * none, stamping the identifier on a row that does not carry one yet.
+     *
+     * @throws ElementSavingFailedException
+     */
+    public function saveFromArtifact(
+        ?SubGroupConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): SubGroupConfig;
+
+    /**
      * @throws InvalidArgumentException
      * @throws ElementSavingFailedException
      */

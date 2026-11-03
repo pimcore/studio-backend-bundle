@@ -19,6 +19,8 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -37,6 +39,8 @@ use function strtoupper;
  */
 final readonly class KeyRepository implements KeyRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
     private const array ALLOWED_SORT_KEYS = [
         'name',
         'title',
@@ -84,6 +88,60 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
         if (!$config) {
             throw new NotFoundException('key configuration', $id);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkByStore(int $storeId, bool $disabledOnly, int $limit, int $offset): array
+    {
+        $listing = new Listing();
+        // the flag core spells `includeDisabled` narrows to the disabled rows rather than adding
+        // them, so the two states are two walks and never one
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(int $storeId, bool $disabledOnly, int $afterId, int $limit): array
+    {
+        $listing = new Listing();
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig
+    {
+        $config ??= new KeyConfig();
+        $config->setStoreId($storeId);
+        $config->setName($entry->getName());
+        $config->setTitle($entry->getTitle() ?? '');
+        $config->setDescription($entry->getDescription());
+        $config->setType($entry->getType());
+        $config->setEnabled($entry->isEnabled());
+
+        try {
+            $config->setDefinition(json_encode($entry->getDefinition() ?? [], JSON_THROW_ON_ERROR));
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($entry->getIdentifier());
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
         }
 
         return $config;

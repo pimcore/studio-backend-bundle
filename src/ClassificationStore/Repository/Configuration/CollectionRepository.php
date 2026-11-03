@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Conf
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\CollectionConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -32,6 +33,8 @@ use function sprintf;
  */
 final readonly class CollectionRepository implements CollectionRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
     public function __construct(
         private CollectionConfigResolverInterface $collectionConfigResolver,
         private ListingFilterInterface $listingFilter,
@@ -64,6 +67,57 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
 
         if (!$config) {
             throw new NotFoundException('collection configuration', $id);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkByStore(int $storeId, int $limit, int $offset): array
+    {
+        $listing = new Listing();
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array
+    {
+        $listing = new Listing();
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function saveFromArtifact(
+        ?CollectionConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): CollectionConfig {
+        $config ??= new CollectionConfig();
+        $config->setStoreId($storeId);
+        $config->setName($name);
+        $config->setDescription($description ?? '');
+
+        try {
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($identifier);
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
         }
 
         return $config;

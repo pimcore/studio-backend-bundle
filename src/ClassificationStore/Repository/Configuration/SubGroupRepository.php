@@ -18,6 +18,7 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -45,6 +46,8 @@ use function sprintf;
  */
 final readonly class SubGroupRepository implements SubGroupRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
     private const string NOT_FOUND_TYPE = 'sub group configuration';
 
     public function __construct(
@@ -115,6 +118,57 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
         }
 
         return $resolved;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkByStore(int $storeId, int $limit, int $offset): array
+    {
+        $listing = new Listing();
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array
+    {
+        $listing = new Listing();
+        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function saveFromArtifact(
+        ?SubGroupConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): SubGroupConfig {
+        $config ??= new SubGroupConfig();
+        $config->setStoreId($storeId);
+        $config->setName($name);
+        $config->setDescription($description);
+
+        try {
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($identifier);
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
+        }
+
+        return $config;
     }
 
     /**

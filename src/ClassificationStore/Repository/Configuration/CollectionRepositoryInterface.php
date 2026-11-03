@@ -37,6 +37,37 @@ interface CollectionRepositoryInterface
     public function getById(int $id): CollectionConfig;
 
     /**
+     * One page of the store's collections, ordered by identifier, so that a configuration transfer
+     * never holds a whole store at once.
+     *
+     * @return CollectionConfig[]
+     */
+    public function getChunkByStore(int $storeId, int $limit, int $offset): array;
+
+    /**
+     * One page of the store's collections, taken after the given row id, which is the paging an apply
+     * walks the target in - it writes while it walks, and an offset into an identifier ordering
+     * would skip the rows an adopted identifier moved past.
+     *
+     * @return CollectionConfig[]
+     */
+    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array;
+
+    /**
+     * Writes the artifact's values onto the given configuration, or onto a new one when there is
+     * none, stamping the identifier on a row that does not carry one yet.
+     *
+     * @throws ElementSavingFailedException
+     */
+    public function saveFromArtifact(
+        ?CollectionConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): CollectionConfig;
+
+    /**
      * @throws InvalidArgumentException
      * @throws ElementSavingFailedException
      */
