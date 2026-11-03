@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Cache\RuntimeCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
@@ -22,6 +23,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -96,6 +98,7 @@ final class GridService implements GridServiceInterface
         private readonly LoggerInterface $pimcoreLogger,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ToolResolverInterface $toolResolver,
+        private readonly RuntimeCacheResolverInterface $runtimeCacheResolver,
     ) {
     }
 
@@ -265,19 +268,21 @@ final class GridService implements GridServiceInterface
         int $elementId,
         bool $isExport = false,
         ?UserInterface $user = null,
+        ?ElementInterface $coreElement = null,
     ): array {
         $data = [];
 
-        $databaseElement = null;
-        if ($isExport || $elementType === ElementTypes::TYPE_OBJECT) {
+        $databaseElement = $coreElement;
+        if ($databaseElement === null && ($isExport || $elementType === ElementTypes::TYPE_OBJECT)) {
             $databaseElement = $this->getElement($this->serviceResolver, $elementType, $elementId);
-            if ($user !== null) {
-                $this->securityService->hasElementPermission(
-                    $databaseElement,
-                    $user,
-                    ElementPermissions::VIEW_PERMISSION
-                );
-            }
+        }
+
+        if ($user !== null && $databaseElement !== null) {
+            $this->securityService->hasElementPermission(
+                $databaseElement,
+                $user,
+                ElementPermissions::VIEW_PERMISSION
+            );
         }
 
         if ($isExport && $databaseElement->getType() === ElementTypes::TYPE_FOLDER) {
@@ -287,7 +292,7 @@ final class GridService implements GridServiceInterface
             );
         }
 
-        $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId);
+        $permissions = $this->resolvePermissions($element, $databaseElement, $elementType, $elementId, $coreElement);
 
         foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver
@@ -315,6 +320,47 @@ final class GridService implements GridServiceInterface
         }
 
         return $data;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getGridForProvidedElements(
+        GridParameter $gridParameter,
+        array $elements,
+        int $totalItems,
+        string $elementType,
+    ): Collection {
+        $user = $this->securityService->getCurrentUser();
+        $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
+
+        $fallbackBackup = $this->localizedFieldResolver->getGetFallbackValues();
+        $this->localizedFieldResolver->setGetFallbackValues($gridParameter->getApplyFallbackLanguages());
+
+        try {
+            $data = [];
+            foreach ($elements as $providedElement) {
+                $entry = $providedElement->getEntry();
+
+                try {
+                    $data[] = $this->getGridDataForElement(
+                        $columns,
+                        $entry,
+                        $elementType,
+                        $entry->getId(),
+                        false,
+                        $user,
+                        $providedElement->getElement()
+                    );
+                } catch (ForbiddenException) {
+                    // Not viewable: the search index would not have listed it either.
+                }
+            }
+
+            return new Collection(totalItems: $totalItems, items: $data);
+        } finally {
+            $this->localizedFieldResolver->setGetFallbackValues($fallbackBackup);
+        }
     }
 
     private function resolveColumnDataRespectingLocalePermission(
@@ -365,12 +411,18 @@ final class GridService implements GridServiceInterface
         ?ElementInterface $databaseElement,
         string $elementType,
         int $elementId,
+        ?ElementInterface $coreElement = null,
     ): ?Permissions {
         if ($element === null) {
             return null;
         }
 
         $permissions = $element->getPermissions();
+
+        // A caller-built entry carries no reliable workflow flag, so the provided element decides.
+        if ($coreElement !== null) {
+            return $this->workflowPermissionMerger->mergeWorkflowPermissions($permissions, $coreElement);
+        }
 
         if (!$element instanceof WorkflowPermissionsAwareInterface || !$element->getHasWorkflowWithPermissions()) {
             return $permissions;
@@ -563,6 +615,8 @@ final class GridService implements GridServiceInterface
         $data = [];
         $columns = $this->getConfigurationFromArray($gridParameter->getColumns());
         foreach ($items as $item) {
+            $rowCacheKey = $this->getRowObjectCacheKey($elementType, $item->getId());
+
             try {
                 $data[] = $this->getGridDataForElement(
                     $columns,
@@ -581,6 +635,8 @@ final class GridService implements GridServiceInterface
                         'exception' => $exception,
                     ]
                 );
+            } finally {
+                $this->releaseRowObject($rowCacheKey);
             }
         }
 
@@ -588,6 +644,35 @@ final class GridService implements GridServiceInterface
             totalItems: $searchResultItem->getTotalItems(),
             items: $data
         );
+    }
+
+    /**
+     * Returns the runtime cache key of the data object a grid row is about to load, or null if the row
+     * does not load one or the object is already in the runtime cache (other code may still hold it).
+     */
+    private function getRowObjectCacheKey(string $elementType, int $elementId): ?string
+    {
+        if ($elementType !== ElementTypes::TYPE_OBJECT) {
+            return null;
+        }
+
+        // Same key as Element\Service::getElementCacheTag(), under which AbstractObject::getById() keeps the object.
+        $cacheKey = $elementType . '_' . $elementId;
+
+        return $this->runtimeCacheResolver->isRegistered($cacheKey) ? null : $cacheKey;
+    }
+
+    /**
+     * Drops the row's own data object from the runtime cache once its row is built, so the memory
+     * of a grid request does not grow with the page size.
+     */
+    private function releaseRowObject(?string $cacheKey): void
+    {
+        if ($cacheKey === null || !$this->runtimeCacheResolver->isRegistered($cacheKey)) {
+            return;
+        }
+
+        $this->runtimeCacheResolver->getInstance()->offsetUnset($cacheKey);
     }
 
     private function findColumnConfiguration(string $key, array $columnConfigurations): ?ColumnConfiguration
