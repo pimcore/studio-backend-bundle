@@ -75,12 +75,13 @@ final class MailServiceTest extends Unit
         );
 
         $mailWasRequested = false;
+        $mail = $this->makeEmpty(Mail::class);
         $service = $this->createService(
             dispatcher: $dispatcher,
-            onGetMail: function () use (&$mailWasRequested): Mail {
+            onGetMail: static function () use (&$mailWasRequested, $mail): Mail {
                 $mailWasRequested = true;
 
-                return $this->makeEmpty(Mail::class);
+                return $mail;
             }
         );
 
@@ -92,16 +93,18 @@ final class MailServiceTest extends Unit
     public function testSendInvitationMailBodyCarriesTheLink(): void
     {
         $text = null;
-        $service = $this->createService(
-            onGetMail: function () use (&$text): Mail {
-                return $this->makeEmpty(Mail::class, [
-                    'text' => function (string $body) use (&$text): Mail {
-                        $text = $body;
+        $mail = null;
+        // `use (&$mail)` resolves at call time, so the stub returns itself: Mail::text() and its
+        // siblings are declared `: static`, and handing back any other instance is a TypeError.
+        $mail = $this->makeEmpty(Mail::class, [
+            'text' => static function (string $body) use (&$text, &$mail): Mail {
+                $text = $body;
 
-                        return $this->makeEmpty(Mail::class);
-                    },
-                ]);
-            }
+                return $mail;
+            },
+        ]);
+        $service = $this->createService(
+            onGetMail: static fn (): Mail => $mail
         );
 
         $service->sendInvitationMail($this->createUser(), self::INVITATION_URL);
@@ -113,14 +116,13 @@ final class MailServiceTest extends Unit
 
     public function testSendInvitationMailWrapsTransportFailures(): void
     {
+        $mail = $this->makeEmpty(Mail::class, [
+            'send' => static function (): void {
+                throw new Exception('transport down');
+            },
+        ]);
         $service = $this->createService(
-            onGetMail: function (): Mail {
-                return $this->makeEmpty(Mail::class, [
-                    'send' => static function (): void {
-                        throw new Exception('transport down');
-                    },
-                ]);
-            }
+            onGetMail: static fn (): Mail => $mail
         );
 
         $this->expectException(SendMailException::class);
@@ -143,7 +145,8 @@ final class MailServiceTest extends Unit
         ?EventDispatcher $dispatcher = null,
         ?callable $onGetMail = null,
     ): MailService {
-        $onGetMail ??= fn (): Mail => $this->makeEmpty(Mail::class);
+        $defaultMail = $this->makeEmpty(Mail::class);
+        $onGetMail ??= static fn (): Mail => $defaultMail;
 
         return new MailService(
             $this->makeEmpty(SettingsProviderInterface::class, [
