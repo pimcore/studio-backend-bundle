@@ -31,6 +31,8 @@ use Pimcore\Cache;
  */
 final class Version20261102120000 extends AbstractMigration
 {
+    private const string WHERE_KEY = ' WHERE `key` = ?';
+
     public function getDescription(): string
     {
         return 'Add the "' . UserPermissions::MAINTENANCE_MODE->value . '" user permission definition';
@@ -38,12 +40,12 @@ final class Version20261102120000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $table = UserPermissions::DEFINITIONS_TABLE->value;
+        $table = '`' . UserPermissions::DEFINITIONS_TABLE->value . '`';
 
         // Idempotent: a fresh install adds this via the installer, and forward-merges across release
         // lines can replay the change, so only insert when the row is absent.
         $exists = $this->connection->fetchOne(
-            'SELECT `key` FROM `' . $table . '` WHERE `key` = ?',
+            'SELECT `key` FROM ' . $table . self::WHERE_KEY,
             [UserPermissions::MAINTENANCE_MODE->value]
         );
 
@@ -52,17 +54,17 @@ final class Version20261102120000 extends AbstractMigration
         }
 
         $this->addSql(
-            'INSERT INTO `' . $table . '` (`key`, `category`) VALUES (?, ?)',
+            'INSERT INTO ' . $table . ' (`key`, `category`) VALUES (?, ?)',
             [UserPermissions::MAINTENANCE_MODE->value, UserPermissions::PERMISSIONS_CATEGORY->value]
         );
     }
 
     public function down(Schema $schema): void
     {
-        $table = UserPermissions::DEFINITIONS_TABLE->value;
+        $table = '`' . UserPermissions::DEFINITIONS_TABLE->value . '`';
 
         $exists = $this->connection->fetchOne(
-            'SELECT `key` FROM `' . $table . '` WHERE `key` = ?',
+            'SELECT `key` FROM ' . $table . self::WHERE_KEY,
             [UserPermissions::MAINTENANCE_MODE->value]
         );
 
@@ -71,7 +73,7 @@ final class Version20261102120000 extends AbstractMigration
         }
 
         $this->addSql(
-            'DELETE FROM `' . $table . '` WHERE `key` = ?',
+            'DELETE FROM ' . $table . self::WHERE_KEY,
             [UserPermissions::MAINTENANCE_MODE->value]
         );
     }
