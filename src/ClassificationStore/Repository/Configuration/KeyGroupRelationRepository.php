@@ -41,7 +41,9 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     public function getListingByGroupId(FilterParameter $parameters, int $groupId): Listing
     {
         $listing = new Listing();
-        $listing->addConditionParam('`groupId` = :groupId', ['groupId' => $groupId]);
+        // own parameter name, so a client supplied equals filter on `groupId` narrows the route's
+        // group binding instead of replacing the condition Pimcore keys by its own string
+        $listing->addConditionParam('`groupId` = :scopeGroupId', ['scopeGroupId' => $groupId]);
 
         $this->listingFilter->applyFilters($parameters, $listing);
 

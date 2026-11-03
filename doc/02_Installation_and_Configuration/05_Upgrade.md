@@ -20,9 +20,16 @@ The following steps are necessary during updating to newer versions.
 
 - [Classification Store] Added: every key of the three layout responses (`GET /classification-store/layout-by-key/{keyId}/{groupId}`,
   `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`) carries
-  an optional `title`, holding the stored title of the key configuration. It is the raw stored string — `null` when no title is
-  stored, `''` when the stored title is empty — and is not translated; clients that want a translated label must translate it
-  themselves and can keep falling back to `name`.
+  an optional `title`, holding the label of the key configuration resolved for the requesting user's language. The chain is that
+  language, the languages it falls back to, the installation's default language, and last the key's own `title` column; when none
+  of them carries a title the field is `null`, and the key's technical `name` is never substituted for it. The label is resolved
+  server-side, so clients must **not** treat the field as a translation key and must not translate it themselves; they can keep
+  falling back to `name` for display. A key whose `title` column is the empty string now publishes `null` rather than `''`, as the
+  column is `NOT NULL DEFAULT ''` and an empty title counts as no title. Without a resolvable user the installation's default
+  language is used, so the field is never left unresolved for want of one. The `@internal`
+  `KeyGroupLayoutServiceInterface::getKeyTitle()` got the argument `$language` and the interface gained `preloadKeyTitles()`,
+  which reads a whole group's labels with one statement; the new `@internal` `LabelLanguageResolverInterface`
+  (`ClassificationStore\Service`) is where that language is decided.
 - [Classification Store] Added: the key configuration responses (`POST /classification-store/configuration/stores/{storeId}/keys`
   and `POST /classification-store/configuration/keys/add`) carry an optional `title`, holding the stored title of the key
   configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
@@ -46,38 +53,36 @@ The following steps are necessary during updating to newer versions.
   `POST /classification-store/configuration/collections/{colId}/relations`) are unchanged.
 - [Classification Store] Added: the three object layout responses (`GET /data-objects/{id}/layout`,
   `GET /class/field-collection/{objectId}/object/layout` and `GET /class/object-brick/{objectId}/object/layout`) carry a
-  `title` on every already-active group of a classification store field and on every key of such a group. The key title
-  is the title of the key's enriched field definition and falls back to the key's `name` when no title is stored, so the
-  editor never renders a blank label. That fallback is deliberately different from the key titles of
-  `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
-  which keep returning the stored value verbatim — `null` when none is stored, `''` when it is empty — so the
-  configuration UI can still tell "no title set" apart from "title equals name". The group title is the group's `name`,
-  because `classificationstore_groups` has no title column.
+  `title` on every already-active group of a classification store field and on every key of such a group. The key title is the
+  label of the key configuration resolved for the requesting user's language — the same chain the three classification store
+  layout responses publish, down to the key's own `title` column — and falls back to the key's `name` as a last resort, so the
+  editor never renders a blank label. It is not read from the key's enriched field definition, and it is resolved server-side,
+  so clients must **not** treat the field as a translation key. That last resort is the only deliberate difference from the key
+  titles of `GET /classification-store/layout-by-key/{keyId}/{groupId}` and `GET /classification-store/layout-by-group/{groupId}`,
+  which stay `null` when nothing is stored in any language of the chain, so the configuration UI can still tell "no title set"
+  apart from "title equals name". The group title is the group's `name`, because `classificationstore_groups` has no title
+  column.
 - [Classification Store] Added: `GroupLayout` (`GET /classification-store/layout-by-group/{groupId}` and
   `GET /classification-store/layout-by-collection/{collectionId}`) carries an optional, nullable `title`, holding the
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
-- [Classification Store] Added: `PUT /classification-store/configuration/groups/{groupId}/key-relations/{keyId}` updates an
-  existing key assignment in place. It writes `sorter`, `mandatory`, `definitionOverride`, `subGroup` and `metadata`; the pair is
-  addressed by the path only and is not accepted in the body. A property the payload does not carry keeps its stored value, a
-  property carrying an explicit null clears it — which `sorter` and `mandatory` refuse with `422`, as their columns cannot hold
-  null. An unknown `(groupId, keyId)` pair answers `404`: the endpoint never creates a row. A `subGroup` that names no entry of
-  the sub group vocabulary of the store, and a `definitionOverride` carrying anything but `options`, `defaultUnit` or
-  `validUnits`, answer `422` with the message of the classification store, and nothing is written. On success the stored
-  `subGroup` is the identifier the classification store resolved the submitted value to, not the submitted spelling.
-  `POST /classification-store/configuration/key-group-relations/add` is unchanged: it still writes `sorter` and `mandatory` only
-  and leaves the three per-assignment columns of an existing relation untouched, so delete-and-re-create is no longer needed to
-  change an assignment and no longer the only way to lose those columns. The `@internal`
-  `KeyGroupRelationRepositoryInterface` and `KeyGroupRelationServiceInterface` (`ClassificationStore\...\Configuration`) gained
-  `update()` and `updateKeyGroupRelation()`.
-- [Classification Store] Added: `ClassificationStoreConfigurationKeyGroupRelationDetail` carries an optional, nullable
-  `definitionOverride`, `subGroup` and `metadata`, so the listing and both write endpoints report the three per-assignment
-  columns. No other property changed.
-- [Classification Store] Added: the store, collection, group and key configuration responses carry an optional, nullable
-  `identifier`, the opaque identifier the classification store assigns to the entity — on
-  `ClassificationStoreConfigurationStoreDetail`, `...StoreTreeNode`, `...CollectionDetail`, `...GroupDetail` and `...KeyDetail`.
-  It is read-only: a create or update payload carrying `identifier` is refused with `422` instead of being ignored, on all eight
-  create and update schemas of those four entities. Other unrecognised properties of those payloads stay ignored as before.
+- [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
+- [Classification Store] Added: a key's assignment to a group can be updated in place instead of only created and
+  deleted, and its definition override, sub group and metadata are readable and writable, so changing an assignment no
+  longer means delete-and-re-create and no longer loses those three columns.
+- [Classification Store] Added: identifiers, the opaque identifier the classification store assigns to a store,
+  collection, group or key, on their configuration responses.
+- [Classification Store] Changed: a classification store create or update payload that carries `identifier` is refused
+  instead of ignored, as the property is read-only. Other unrecognised properties of those payloads stay ignored.
+- [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
+  returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
+  page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as
+  `totalItems` reports.
+- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by now
+  narrows that scope instead of replacing it. A client that relied on reaching another scope's rows that way gets an
+  empty collection, and has to address that scope through its own route.
+- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp now selects the window it names, instead
+  of matching nothing or everything. A client that sent such a filter gets different rows than before.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.

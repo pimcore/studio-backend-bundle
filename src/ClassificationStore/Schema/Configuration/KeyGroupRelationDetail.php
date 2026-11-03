@@ -51,9 +51,9 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         )]
         private readonly ?array $definitionOverride = null,
         #[Property(
-            description: 'Sub group of the store this assignment belongs to',
+            description: 'Identifier of the sub group this assignment carries',
             type: 'string',
-            example: 'dimensions',
+            example: '01JBQ8X9Z0ABCDEFGHJKMNPQRS',
             nullable: true
         )]
         private readonly ?string $subGroup = null,

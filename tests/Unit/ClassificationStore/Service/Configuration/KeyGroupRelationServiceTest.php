@@ -31,7 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterf
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use ReflectionClass;
+use ReflectionProperty;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 
 /**
  * @internal
@@ -64,6 +67,33 @@ final class KeyGroupRelationServiceTest extends Unit
         $resolver = $this->expectClearedOnce();
 
         $this->createService($resolver)->deleteKeyGroupRelation(self::KEY_ID, self::GROUP_ID);
+    }
+
+    /**
+     * The detail carries the raw identifier the assignment holds, not a resolved name: the layout
+     * endpoints resolve it against the store's vocabulary, the configuration grid does not.
+     *
+     * @throws Exception
+     */
+    public function testDetailCarriesTheRawSubGroupOfTheAssignment(): void
+    {
+        $hydrator = new KeyGroupRelationHydrator();
+
+        $this->assertSame(
+            'sg-abc',
+            $hydrator->hydrateKeyGroupRelationDetail($this->createRelation('sg-abc'))->getSubGroup()
+        );
+        $this->assertNull(
+            $hydrator->hydrateKeyGroupRelationDetail($this->createRelation(null))->getSubGroup()
+        );
+
+        $properties = array_map(
+            static fn (ReflectionProperty $property): string => $property->getName(),
+            (new ReflectionClass(KeyGroupRelationDetail::class))->getProperties()
+        );
+
+        $this->assertContains('subGroup', $properties);
+        $this->assertNotContains('subGroupName', $properties);
     }
 
     /**
@@ -232,11 +262,12 @@ final class KeyGroupRelationServiceTest extends Unit
         );
     }
 
-    private function createRelation(): KeyGroupRelation
+    private function createRelation(?string $subGroup = null): KeyGroupRelation
     {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
         $relation->setGroupId(self::GROUP_ID);
+        $relation->setSubGroup($subGroup);
 
         return $relation;
     }

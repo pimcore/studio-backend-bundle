@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\SubGroupLayout;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 
 /**
@@ -24,6 +25,7 @@ interface GroupLayoutHydratorInterface
 {
     /**
      * @param array<int, KeyLayout> $keys
+     * @param array<int, SubGroupLayout> $subGroups
      */
-    public function hydrate(array $keys, GroupConfig $group): GroupLayout;
+    public function hydrate(array $keys, GroupConfig $group, array $subGroups = []): GroupLayout;
 }

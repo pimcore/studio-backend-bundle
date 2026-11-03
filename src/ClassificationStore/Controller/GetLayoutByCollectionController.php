@@ -74,7 +74,7 @@ final class GetLayoutByCollectionController extends AbstractApiController
     #[QueryIdParameter(
         description: 'object ID',
         namePrefix: 'object',
-        required: true
+        required: false
     )]
     #[PathIdParameter(
         type: 'Collection ID',

@@ -18,6 +18,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricherInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\ActiveGroupTitleEnricher
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService
@@ -30,9 +32,14 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService
+    arguments:
+      $labelResolver: '@Pimcore\Model\DataObject\Classificationstore\LabelResolverInterface'
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyRelationResolver
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\LabelLanguageResolver
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
@@ -94,6 +101,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\CollectionService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\SubGroupServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\SubGroupService
+
 
   #
   # Configuration Repositories
@@ -110,6 +120,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollectionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepository
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepository
@@ -133,6 +146,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\SubGroupHydrator
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionRelationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\CollectionRelationHydrator
