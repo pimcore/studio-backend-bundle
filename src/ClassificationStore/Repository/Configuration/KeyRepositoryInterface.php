@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -35,6 +36,58 @@ interface KeyRepositoryInterface
      * @throws NotFoundException
      */
     public function getById(int $id): KeyConfig;
+
+    /**
+     * One page of the store's keys, ordered by identifier and taken after the identifier and
+     * row id of the last row handed back, so that a configuration transfer never holds a whole
+     * store at once.
+     *
+     * A cursor rather than an offset: an export is a read per page per section, and a row deleted
+     * between two of them shifts every later row one place towards the start - which an offset then
+     * resumes past, leaving the shifted row out of a download that reports success. Null for
+     * `$afterIdentifier` is the first page.
+     *
+     * `$disabledOnly` is the state the page covers: the listing's own `includeDisabled` narrows
+     * to `(enabled is null or enabled = 0)` rather than widening to every row, so full coverage of
+     * a store is the two walks together.
+     *
+     * @return KeyConfig[]
+     */
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        bool $disabledOnly,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array;
+
+    /**
+     * One page of the store's keys in the given state, taken after the given row id, which is the
+     * paging an apply walks the target in - it writes while it walks, and writing `enabled` moves a
+     * key out of the state its walk covers, which an offset into that walk would then skip past.
+     *
+     * `$withIdentifier` is the identifier phase the page covers: true for the rows that carry an
+     * identifier, false for the rows that do not, null for every row in one walk. An apply takes
+     * the two phases in that order, so that the row owning an entry's identifier claims it before
+     * an identifierless namesake can be adopted onto the wrong row.
+     *
+     * @return KeyConfig[]
+     */
+    public function getChunkAfterId(
+        int $storeId,
+        bool $disabledOnly,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array;
+
+    /**
+     * Writes the artifact's key entry onto the given configuration, or onto a new one when there is
+     * none, stamping the identifier on a row that does not carry one yet.
+     *
+     * @throws ElementSavingFailedException
+     */
+    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig;
 
     /**
      * @throws ElementSavingFailedException

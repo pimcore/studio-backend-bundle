@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Conf
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\CollectionConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -32,6 +34,16 @@ use function sprintf;
  */
 final readonly class CollectionRepository implements CollectionRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
+    /**
+     * Own parameter name, so a client supplied equals filter on `storeId` narrows the route's store
+     * binding instead of replacing the condition Pimcore keys by its own string.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private CollectionConfigResolverInterface $collectionConfigResolver,
         private ListingFilterInterface $listingFilter,
@@ -45,9 +57,7 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        // own parameter name, so a client supplied equals filter on `storeId` narrows the route's
-        // store binding instead of replacing the condition Pimcore keys by its own string
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -64,6 +74,78 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
 
         if (!$config) {
             throw new NotFoundException('collection configuration', $id);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array {
+        $listing = new Listing();
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $this->applyIdentifierCursorChunk($listing, $limit, $afterIdentifier, $afterId);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(
+        int $storeId,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array {
+        $listing = new Listing();
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdentifierPhase($listing, $withIdentifier);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isNameTaken(int $storeId, string $name): bool
+    {
+        try {
+            return (bool) $this->collectionConfigResolver->getByName($name, $storeId);
+        } catch (Exception $e) {
+            throw new DatabaseException('Failed to check the collection name: ' . $e->getMessage(), $e);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function saveFromArtifact(
+        ?CollectionConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): CollectionConfig {
+        $config ??= new CollectionConfig();
+        $config->setStoreId($storeId);
+        $config->setName($name);
+        $config->setDescription($description ?? '');
+
+        try {
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($identifier);
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
         }
 
         return $config;

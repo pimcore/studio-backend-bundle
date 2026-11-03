@@ -79,6 +79,12 @@ The following steps are necessary during updating to newer versions.
   update that carries an identifier is rejected rather than ignored, because the identifier is assigned by the
   system; and adding a key's assignment to a group is rejected when the key id names no key configuration, rather
   than writing an assignment that points at nothing.
+- [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
+  store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
+  `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a
+  key from a group stays a manual step in the Studio UI, and it writes the file's store name and description onto the
+  store it is applied to. The report naming what was created, updated, adopted and left in place is the command's and
+  the API response's; the editor's import action only reports that the file was applied.
 - [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
   returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
   page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as

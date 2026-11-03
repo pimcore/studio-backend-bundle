@@ -11,6 +11,11 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Command\:
+    resource: '../src/ClassificationStore/Command'
+    public: true
+    tags: [ 'console.command' ]
+
 
   #
   # Services
@@ -166,6 +171,38 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationService
+
+
+  #
+  # Configuration Transfer
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParserInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnosticsInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusalsInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ReconcilerInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\StoreTransferService
 
 
   #

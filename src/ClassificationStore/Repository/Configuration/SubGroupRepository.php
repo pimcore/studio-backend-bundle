@@ -18,6 +18,7 @@ use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConflictException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -45,7 +46,19 @@ use function sprintf;
  */
 final readonly class SubGroupRepository implements SubGroupRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
     private const string NOT_FOUND_TYPE = 'sub group configuration';
+
+    /**
+     * `:scopeStoreId`, not `:storeId`: a client supplied equals filter on `storeId` builds the very
+     * condition string the route binding would, and Pimcore keys its conditions by that string - an
+     * identical one replaces the binding instead of being added next to it. Under its own name the
+     * two conditions stand side by side, so a filter can only narrow the store.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
 
     public function __construct(
         private ListingFilterInterface $listingFilter,
@@ -60,11 +73,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        // `:scopeStoreId`, not `:storeId`: a client supplied equals filter on `storeId` builds the
-        // very condition string the route binding would, and Pimcore keys its conditions by that
-        // string - an identical one replaces the binding instead of being added next to it. Under
-        // its own name the two conditions stand side by side, so a filter can only narrow the store.
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -115,6 +124,84 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
         }
 
         return $resolved;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array {
+        $listing = new Listing();
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $this->applyIdentifierCursorChunk($listing, $limit, $afterIdentifier, $afterId);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(
+        int $storeId,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array {
+        $listing = new Listing();
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdentifierPhase($listing, $withIdentifier);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isNameTaken(int $storeId, string $name, ?int $exceptId): bool
+    {
+        try {
+            return $this->findIdByName($name, $storeId, $exceptId, false) !== false;
+        } catch (DBALException $e) {
+            throw new DatabaseException('Failed to check the sub group name: ' . $e->getMessage(), $e);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * Through the same guarded path {@see self::create()} and {@see self::update()} take: the name
+     * is unique per store, nothing in the schema enforces that pair, and an artifact write is no
+     * more exempt from it than a write from the UI is. Two identifiers of one file sharing a name,
+     * or an apply racing a create, would otherwise persist the duplicate the API refuses.
+     */
+    public function saveFromArtifact(
+        ?SubGroupConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): SubGroupConfig {
+        $config ??= new SubGroupConfig();
+        $config->setStoreId($storeId);
+        $config->setName($name);
+        $config->setDescription($description);
+
+        try {
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($identifier);
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
+        }
+
+        $this->saveUnderAFreeName($config, $name, $storeId, $config->getId());
+
+        return $config;
     }
 
     /**
@@ -412,6 +499,25 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
      */
     private function assertNameIsFree(string $name, int $storeId, ?int $exceptId = null): void
     {
+        if ($this->findIdByName($name, $storeId, $exceptId, true) === false) {
+            return;
+        }
+
+        throw $this->duplicateName($name, $storeId);
+    }
+
+    /**
+     * The row of the store that carries the name, excluding the row being written, or `false` where
+     * the name is free.
+     *
+     * Held when the caller is about to write under that answer, and read without a lock when it is
+     * not: a reconcile asks this before it decides anything, and has no row of its own to protect
+     * at that point - the decision it goes on to write under is taken under the locking read above.
+     *
+     * @throws DBALException
+     */
+    private function findIdByName(string $name, int $storeId, ?int $exceptId, bool $hold): mixed
+    {
         $parameters = [$name, $storeId];
         $condition = '`name` = ? AND `storeId` = ?';
 
@@ -420,20 +526,15 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
             $parameters[] = $exceptId;
         }
 
-        $taken = $this->connection->fetchOne(
+        return $this->connection->fetchOne(
             sprintf(
-                'SELECT `id` FROM `%s` WHERE %s LIMIT 1 FOR UPDATE',
+                'SELECT `id` FROM `%s` WHERE %s LIMIT 1%s',
                 SubGroupConfigDao::TABLE_NAME_SUBGROUPS,
-                $condition
+                $condition,
+                $hold ? ' FOR UPDATE' : ''
             ),
             $parameters
         );
-
-        if ($taken === false) {
-            return;
-        }
-
-        throw $this->duplicateName($name, $storeId);
     }
 
     /**

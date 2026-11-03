@@ -19,6 +19,8 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -37,6 +39,8 @@ use function strtoupper;
  */
 final readonly class KeyRepository implements KeyRepositoryInterface
 {
+    use IdentifierOrderedChunkTrait;
+
     private const array ALLOWED_SORT_KEYS = [
         'name',
         'title',
@@ -50,6 +54,14 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     ];
 
     private const array ALLOWED_SORT_DIRECTIONS = ['ASC', 'DESC'];
+
+    /**
+     * Own parameter name, so a client supplied equals filter on `storeId` narrows the route's store
+     * binding instead of replacing the condition Pimcore keys by its own string.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
 
     public function __construct(
         private KeyConfigResolverInterface $keyConfigResolver,
@@ -65,9 +77,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        // own parameter name, so a client supplied equals filter on `storeId` narrows the route's
-        // store binding instead of replacing the condition Pimcore keys by its own string
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -84,6 +94,71 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
         if (!$config) {
             throw new NotFoundException('key configuration', $id);
+        }
+
+        return $config;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        bool $disabledOnly,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array {
+        $listing = new Listing();
+        // the flag core spells `includeDisabled` narrows to the disabled rows rather than adding
+        // them, so the two states are two walks and never one
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $this->applyIdentifierCursorChunk($listing, $limit, $afterIdentifier, $afterId);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfterId(
+        int $storeId,
+        bool $disabledOnly,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array {
+        $listing = new Listing();
+        $listing->setIncludeDisabled($disabledOnly);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
+        $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdentifierPhase($listing, $withIdentifier);
+        $this->applyIdCursorChunk($listing, $limit);
+
+        return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function saveFromArtifact(?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig
+    {
+        $config ??= new KeyConfig();
+        $config->setStoreId($storeId);
+        $config->setName($entry->getName());
+        $config->setTitle($entry->getTitle() ?? '');
+        $config->setDescription($entry->getDescription());
+        $config->setType($entry->getType());
+        $config->setEnabled($entry->isEnabled());
+
+        try {
+            $config->setDefinition(json_encode($entry->getDefinition() ?? [], JSON_THROW_ON_ERROR));
+            // before the save, so that a new row carries the file's identifier instead of a fresh one
+            $config->setIdentifier($entry->getIdentifier());
+            $config->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($config->getId(), $e->getMessage(), $e);
         }
 
         return $config;

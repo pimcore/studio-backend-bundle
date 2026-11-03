@@ -48,6 +48,72 @@ interface SubGroupRepositoryInterface
     public function getByIdentifiers(int $storeId, array $identifiers): array;
 
     /**
+     * One page of the store's sub groups, ordered by identifier and taken after the identifier and
+     * row id of the last row handed back, so that a configuration transfer never holds a whole
+     * store at once.
+     *
+     * A cursor rather than an offset: an export is a read per page per section, and a row deleted
+     * between two of them shifts every later row one place towards the start - which an offset then
+     * resumes past, leaving the shifted row out of a download that reports success. Null for
+     * `$afterIdentifier` is the first page.
+     *
+     * @return SubGroupConfig[]
+     */
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array;
+
+    /**
+     * One page of the store's sub groups, taken after the given row id, which is the paging an apply
+     * walks the target in - it writes while it walks, and an offset into an identifier ordering
+     * would skip the rows an adopted identifier moved past.
+     *
+     * `$withIdentifier` is the identifier phase the page covers: true for the rows that carry an
+     * identifier, false for the rows that do not, null for every row in one walk. An apply takes
+     * the two phases in that order, so that the row owning an entry's identifier claims it before
+     * an identifierless namesake can be adopted onto the wrong row.
+     *
+     * @return SubGroupConfig[]
+     */
+    public function getChunkAfterId(
+        int $storeId,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array;
+
+    /**
+     * Whether another sub group of the store already carries the name, which is the rule
+     * {@see self::create()} and {@see self::update()} refuse a write over. Asked before an artifact
+     * is applied, so that the collision is reported as a conflict of the reconcile rather than as a
+     * failed save.
+     *
+     * @throws DatabaseException
+     */
+    public function isNameTaken(int $storeId, string $name, ?int $exceptId): bool;
+
+    /**
+     * Writes the artifact's values onto the given configuration, or onto a new one when there is
+     * none, stamping the identifier on a row that does not carry one yet.
+     *
+     * Takes the same guarded path the create and the update endpoints take, so a name the store
+     * already carries is refused rather than written a second time.
+     *
+     * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     */
+    public function saveFromArtifact(
+        ?SubGroupConfig $config,
+        int $storeId,
+        string $identifier,
+        string $name,
+        ?string $description,
+    ): SubGroupConfig;
+
+    /**
      * @throws InvalidArgumentException
      * @throws ElementSavingFailedException
      */

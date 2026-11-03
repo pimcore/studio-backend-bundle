@@ -15,21 +15,30 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Conf
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\DBAL\ParameterType;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig\Dao as SubGroupConfigDao;
 use Pimcore\Model\Exception\InvalidConfigException;
 use Throwable;
+use function is_array;
+use function is_string;
+use function json_decode;
 use function sprintf;
 
 /**
@@ -43,9 +52,22 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
     private const bool NEW_RELATION_MANDATORY = false;
 
+    /**
+     * The cursor a transfer pages these assignments by: the identifier pair the artifact sorts them
+     * by, with the id pair - the relation's whole primary key - behind it, so that the comparison is
+     * total even for a row whose endpoints carry no identifier yet.
+     *
+     * A cursor rather than an offset, because a transfer is a read per page and an assignment
+     * deleted between two of them shifts every later one towards the start, past an offset that has
+     * already counted it - which leaves it out of an export that reports success.
+     */
+    private const string CURSOR_CONDITION = " AND (COALESCE(`g`.`identifier`, ''),"
+        . " COALESCE(`k`.`identifier`, ''), `r`.`groupId`, `r`.`keyId`) > (?, ?, ?, ?)";
+
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private Connection $connection,
+        private ArtifactEntryMapperInterface $entryMapper,
     ) {
     }
 
@@ -62,6 +84,107 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         $this->listingFilter->applyFilters($parameters, $listing);
 
         return $listing;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getChunkAfter(int $storeId, ?ScopedKeyAssignment $after, int $limit): array
+    {
+        $query = sprintf(
+            'SELECT `r`.`keyId`, `r`.`groupId`, `r`.`sorter`, `r`.`mandatory`, `r`.`metadata`,'
+            . ' `r`.`definitionOverride`, `r`.`subGroup`,'
+            . ' `g`.`identifier` AS `groupIdentifier`, `k`.`identifier` AS `keyIdentifier`'
+            . ' FROM `%s` `r`'
+            . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
+            . ' INNER JOIN `%s` `k` ON `k`.`id` = `r`.`keyId`'
+            . ' WHERE `g`.`storeId` = ?%s'
+            . ' ORDER BY `g`.`identifier`, `k`.`identifier`, `r`.`groupId`, `r`.`keyId`'
+            . ' LIMIT ?',
+            KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+            GroupConfigDao::TABLE_NAME_GROUPS,
+            KeyConfigDao::TABLE_NAME_KEYS,
+            $after === null ? '' : self::CURSOR_CONDITION
+        );
+
+        $parameters = [$storeId];
+        $types = [ParameterType::INTEGER];
+
+        if ($after !== null) {
+            $cursor = $after->getRelation();
+            $parameters[] = $after->getGroupIdentifier();
+            $parameters[] = $after->getKeyIdentifier();
+            $parameters[] = (int) $cursor->getGroupId();
+            $parameters[] = (int) $cursor->getKeyId();
+            $types[] = ParameterType::STRING;
+            $types[] = ParameterType::STRING;
+            $types[] = ParameterType::INTEGER;
+            $types[] = ParameterType::INTEGER;
+        }
+
+        $parameters[] = $limit;
+        $types[] = ParameterType::INTEGER;
+
+        $assignments = [];
+
+        try {
+            // the paging bounds are bound as integers, which is what the server needs them to be
+            $rows = $this->connection->fetchAllAssociative($query, $parameters, $types);
+
+            foreach ($rows as $row) {
+                $assignments[] = new ScopedKeyAssignment(
+                    $this->hydrateRelation($row),
+                    (string) $row['groupIdentifier'],
+                    (string) $row['keyIdentifier']
+                );
+            }
+        } catch (DBALException|Exception $e) {
+            throw new DatabaseException('Failed to read the key assignments: ' . $e->getMessage(), $e);
+        }
+
+        return $assignments;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getGroupNamesByKeyId(int $keyId, bool $hold = false): array
+    {
+        try {
+            return $this->connection->fetchFirstColumn(
+                sprintf(
+                    'SELECT DISTINCT `g`.`name` FROM `%s` `r`'
+                    . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
+                    . ' WHERE `r`.`keyId` = ? ORDER BY `g`.`name`%s',
+                    KeyGroupRelationDao::TABLE_NAME_RELATIONS,
+                    GroupConfigDao::TABLE_NAME_GROUPS,
+                    $hold ? ' FOR UPDATE' : ''
+                ),
+                [$keyId]
+            );
+        } catch (DBALException $e) {
+            throw new DatabaseException('Failed to read the groups of the key: ' . $e->getMessage(), $e);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function createOrUpdateFromArtifact(
+        ArtifactAssignmentEntry $entry,
+        int $keyId,
+        int $groupId,
+    ): KeyGroupRelation {
+        try {
+            // the mapper sets only what the entry supplies, which is what the model's own
+            // initialized guards gate the write on
+            $relation = $this->entryMapper->mapToAssignment($entry, $keyId, $groupId);
+            $relation->save();
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException(null, $e->getMessage(), $e);
+        }
+
+        return $relation;
     }
 
     /**
@@ -139,6 +262,42 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         $relation->setKeyId($keyId);
         $relation->setGroupId($groupId);
         $relation->delete();
+    }
+
+    /**
+     * The stored row as the model carries it: the own columns only, the two JSON ones decoded. The
+     * three per assignment columns are set from the row, which is what marks them as loaded.
+     *
+     * @param array<string, mixed> $row
+     */
+    private function hydrateRelation(array $row): KeyGroupRelation
+    {
+        $relation = new KeyGroupRelation();
+        $relation->setKeyId((int) $row['keyId']);
+        $relation->setGroupId((int) $row['groupId']);
+        $relation->setSorter((int) $row['sorter']);
+        $relation->setMandatory((bool) $row['mandatory']);
+        $relation->setMetadata($this->decodeJsonColumn($row['metadata'] ?? null));
+        $relation->setDefinitionOverride($this->decodeJsonColumn($row['definitionOverride'] ?? null));
+
+        $subGroup = $row['subGroup'] ?? null;
+        $relation->setSubGroup(is_string($subGroup) ? $subGroup : null);
+
+        return $relation;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function decodeJsonColumn(mixed $value): ?array
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        $decoded = json_decode($value, true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     /**
