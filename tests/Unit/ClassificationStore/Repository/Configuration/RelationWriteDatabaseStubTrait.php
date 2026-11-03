@@ -25,6 +25,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use function array_shift;
 use function ltrim;
 use function rtrim;
+use function str_contains;
 
 /**
  * The repository writes through `KeyGroupRelation`, which resolves its connection through `Pimcore\Db`
@@ -56,6 +57,28 @@ trait RelationWriteDatabaseStubTrait
      */
     private array $writtenRows = [];
 
+    /**
+     * The rows the relation listing loads. Held here rather than captured by the stub so that a
+     * competing writer can be made to land between the lock and the read that follows it.
+     *
+     * @var list<array<string, mixed>>
+     */
+    private array $storedRows = [];
+
+    /**
+     * The locking reads the write path issued, in order, so a test can assert what was held and when.
+     *
+     * @var list<string>
+     */
+    private array $lockingReads = [];
+
+    /**
+     * @var (callable(): list<array<string, mixed>>)|null
+     */
+    private $competingWriteOnRelationLock = null;
+
+    private ?Connection $stubbedConnection = null;
+
     private ?KernelInterface $kernelBeforeStub = null;
 
     private bool $kernelStubbed = false;
@@ -66,11 +89,21 @@ trait RelationWriteDatabaseStubTrait
      */
     private function stubDatabase(array $rows, array $singleValues = []): void
     {
+        $this->storedRows = $rows;
+
         $connection = $this->makeEmpty(Connection::class, [
             'quoteIdentifier' => static fn (string $identifier): string => '`' . $identifier . '`',
-            'fetchAllAssociative' => static fn (): array => $rows,
+            'fetchAllAssociative' => fn (): array => $this->storedRows,
             'fetchOne' => static function () use (&$singleValues): mixed {
                 return array_shift($singleValues);
+            },
+            // the locking reads the repository fronts its writes with; the value is never used, so
+            // standing in for the lock is all this has to do - besides recording that it was taken
+            'fetchFirstColumn' => function (string $query): array {
+                $this->lockingReads[] = $query;
+                $this->letACompetingWriterLand($query);
+
+                return [];
             },
             'isTransactionActive' => static fn (): bool => false,
             'beginTransaction' => static fn (): bool => true,
@@ -84,6 +117,8 @@ trait RelationWriteDatabaseStubTrait
             'lastInsertId' => static fn (): string => '0',
         ]);
 
+        $this->stubbedConnection = $connection;
+
         $container = new Container();
         $container->set(self::CONNECTION_SERVICE_ID, $connection);
         $container->set(KeyGroupRelationCache::class, new KeyGroupRelationCache());
@@ -96,6 +131,46 @@ trait RelationWriteDatabaseStubTrait
             'columns' => self::RELATION_COLUMNS,
             'primaryKeyColumns' => ['groupId', 'keyId'],
         ]);
+    }
+
+    private function getStubbedConnection(): Connection
+    {
+        return $this->stubbedConnection ?? $this->makeEmpty(Connection::class);
+    }
+
+    /**
+     * Stands in for a second request that commits its own update of the same assignment while this one
+     * waits for the row - the interleaving the lock exists to rule out. The replacement row set is the
+     * state that writer left, and it is installed when the relation lock is granted, so a read taken
+     * before the lock would miss it and a read taken after it cannot.
+     *
+     * @param callable(): list<array<string, mixed>> $rowsItLeaves
+     */
+    private function letACompetingWriterCommitOnTheRelationLock(callable $rowsItLeaves): void
+    {
+        $this->competingWriteOnRelationLock = $rowsItLeaves;
+    }
+
+    private function letACompetingWriterLand(string $query): void
+    {
+        $competingWrite = $this->competingWriteOnRelationLock;
+        if ($competingWrite === null || !str_contains($query, Dao::TABLE_NAME_RELATIONS)) {
+            return;
+        }
+
+        // once, so the writer commits rather than being replayed on every lock the path takes
+        $this->competingWriteOnRelationLock = null;
+        $this->storedRows = $competingWrite();
+    }
+
+    /**
+     * The locking reads the write path issued, in order.
+     *
+     * @return list<string>
+     */
+    private function getLockingReads(): array
+    {
+        return $this->lockingReads;
     }
 
     /**
@@ -123,6 +198,10 @@ trait RelationWriteDatabaseStubTrait
     protected function _after(): void
     {
         $this->writtenRows = [];
+        $this->storedRows = [];
+        $this->lockingReads = [];
+        $this->competingWriteOnRelationLock = null;
+        $this->stubbedConnection = null;
 
         if (!$this->kernelStubbed) {
             return;

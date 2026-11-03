@@ -19,6 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Dao as KeyGroupRelationDao;
+use function str_contains;
 
 /**
  * @internal
@@ -42,6 +45,10 @@ final class KeyGroupRelationRepositoryTest extends Unit
     private const array STORED_DEFINITION_OVERRIDE = ['defaultUnit' => 'kg'];
 
     private const array STORED_METADATA = ['source' => 'erp'];
+
+    private const string COMPETING_METADATA_JSON = '{"source":"pim"}';
+
+    private const array COMPETING_METADATA = ['source' => 'pim'];
 
     private const string COLUMN_SORTER = 'sorter';
 
@@ -207,9 +214,92 @@ final class KeyGroupRelationRepositoryTest extends Unit
         $this->assertSame(self::STORED_METADATA, $relation->getMetadata());
     }
 
+    /**
+     * The defect this pins: the row used to be read before the write opened its transaction, so two
+     * PUTs that both read before either saved each wrote their own view of all five columns, and the
+     * second to commit restored the first's omitted columns to what it had read.
+     *
+     * The competing writer here commits its metadata update while this request waits for the row, which
+     * is the interleaving that used to lose it: the update that follows carries only a sorter, so the
+     * metadata it writes back is the competitor's only if the row was read after the lock was granted.
+     */
+    public function testUpdateKeepsAnOmittedPropertyACompetingWriterCommittedFirst(): void
+    {
+        $this->stubDatabase([$this->createRow()], [self::STORE_ID, self::STORED_SUB_GROUP]);
+        $this->letACompetingWriterCommitOnTheRelationLock(
+            fn (): array => [[self::COLUMN_METADATA => self::COMPETING_METADATA_JSON] + $this->createRow()]
+        );
+
+        $relation = $this->createRepository()->update(
+            self::KEY_ID,
+            self::GROUP_ID,
+            new KeyGroupRelationUpdate(sorter: 5)
+        );
+
+        $row = $this->getWrittenRow();
+
+        $this->assertSame(5, $row[self::COLUMN_SORTER]);
+        $this->assertSame(self::COMPETING_METADATA_JSON, $row[self::COLUMN_METADATA]);
+        $this->assertSame(self::COMPETING_METADATA, $relation->getMetadata());
+    }
+
+    /**
+     * The group before the relation, which is the order every writer of this family takes these tables
+     * in; reaching them the other way round closes a cycle InnoDB resolves with a deadlock.
+     */
+    public function testUpdateHoldsTheGroupBeforeTheAssignmentRow(): void
+    {
+        $this->stubDatabase([$this->createRow()], [self::STORE_ID, self::STORED_SUB_GROUP]);
+
+        $this->createRepository()->update(self::KEY_ID, self::GROUP_ID, new KeyGroupRelationUpdate(sorter: 5));
+
+        $this->assertSame(
+            [GroupConfigDao::TABLE_NAME_GROUPS, KeyGroupRelationDao::TABLE_NAME_RELATIONS],
+            $this->getLockedTablesInOrder()
+        );
+    }
+
+    /**
+     * The create path reports the three columns its write preserved from the stored row, so its
+     * read-back is exposed to the same interleaving and takes the same lock.
+     */
+    public function testCreateOrUpdateHoldsTheAssignmentRowAcrossItsReadBack(): void
+    {
+        $this->stubDatabase([$this->createRow()]);
+
+        $this->createRepository()->createOrUpdate(self::KEY_ID, self::GROUP_ID, 2, true);
+
+        $this->assertSame(
+            [GroupConfigDao::TABLE_NAME_GROUPS, KeyGroupRelationDao::TABLE_NAME_RELATIONS],
+            $this->getLockedTablesInOrder()
+        );
+    }
+
+    /**
+     * The tables the write path took a lock on, in the order it took them.
+     *
+     * @return list<string>
+     */
+    private function getLockedTablesInOrder(): array
+    {
+        $tables = [];
+        foreach ($this->getLockingReads() as $query) {
+            $this->assertStringContainsString(' FOR UPDATE', $query, 'Expected a locking read.');
+
+            $tables[] = str_contains($query, GroupConfigDao::TABLE_NAME_GROUPS)
+                ? GroupConfigDao::TABLE_NAME_GROUPS
+                : KeyGroupRelationDao::TABLE_NAME_RELATIONS;
+        }
+
+        return $tables;
+    }
+
     private function createRepository(): KeyGroupRelationRepository
     {
-        return new KeyGroupRelationRepository($this->makeEmpty(ListingFilterInterface::class));
+        return new KeyGroupRelationRepository(
+            $this->makeEmpty(ListingFilterInterface::class),
+            $this->getStubbedConnection()
+        );
     }
 
     /**
