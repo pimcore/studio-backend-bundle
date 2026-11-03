@@ -42,6 +42,10 @@ final class KeyGroupRelationServiceTest extends Unit
 
     private const int GROUP_ID = 7;
 
+    private const array DEFINITION_OVERRIDE = ['defaultUnit' => 'kg'];
+
+    private const array METADATA = ['source' => 'erp'];
+
     /**
      * @throws Exception
      */
@@ -89,6 +93,24 @@ final class KeyGroupRelationServiceTest extends Unit
 
         $this->assertContains('subGroup', $properties);
         $this->assertNotContains('subGroupName', $properties);
+    }
+
+    /**
+     * The detail carries the two per assignment columns of the relation it was hydrated from, which is
+     * how the values the upsert preserved reach the response.
+     *
+     * @throws Exception
+     */
+    public function testDetailCarriesTheDefinitionOverrideAndMetadataOfTheAssignment(): void
+    {
+        $relation = $this->createRelation(null);
+        $relation->setDefinitionOverride(self::DEFINITION_OVERRIDE);
+        $relation->setMetadata(self::METADATA);
+
+        $detail = (new KeyGroupRelationHydrator())->hydrateKeyGroupRelationDetail($relation);
+
+        $this->assertSame(self::DEFINITION_OVERRIDE, $detail->getDefinitionOverride());
+        $this->assertSame(self::METADATA, $detail->getMetadata());
     }
 
     /**

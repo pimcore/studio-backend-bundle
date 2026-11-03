@@ -30,6 +30,7 @@ final readonly class CollectionHydrator implements CollectionHydratorInterface
             $collectionConfig->getDescription(),
             $collectionConfig->getCreationDate(),
             $collectionConfig->getModificationDate(),
+            $collectionConfig->getIdentifier(),
         );
     }
 }

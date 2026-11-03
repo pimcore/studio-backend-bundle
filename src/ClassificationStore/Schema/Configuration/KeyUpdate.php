@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configur
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
@@ -84,9 +85,15 @@ final readonly class KeyUpdate
         // Set by KeyUpdateDenormalizer: an absent field leaves the stored value alone, a present empty one clears it.
         private bool $titleSupplied = false,
         private bool $descriptionSupplied = false,
+        // only refused here, never a property of this schema; the default stands for an absent key
+        mixed $identifier = AbsentValue::ABSENT,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
+        }
+
+        if ($identifier !== AbsentValue::ABSENT) {
+            throw new InvalidArgumentException('Identifier is assigned by the system and cannot be set.');
         }
     }
 
