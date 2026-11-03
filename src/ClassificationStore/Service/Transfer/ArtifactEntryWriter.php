@@ -117,15 +117,35 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
     ): void {
         $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
         $matched = [];
+        $awaitingTheLevel = [];
+
+        $reportUnmatched = function (
+            SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
+        ) use ($context, $section, $entriesByName, &$matched, &$awaitingTheLevel): void {
+            if ($this->diagnostics->unmatchedTargetAwaitsTheLevel($section, $entriesByName, $target)) {
+                $awaitingTheLevel[] = $target;
+
+                return;
+            }
+
+            $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target, $matched);
+        };
 
         foreach ($walks as $walk) {
             foreach ($this->matcher->walkTargetByIdCursor($context, $walk) as $target) {
-                $entryKey = $this->claimEntryKey($context, $section, $entries, $entriesByName, $target, $matched);
+                $entryKey = $this->claimEntryKey($entries, $entriesByName, $target, $matched, $reportUnmatched);
 
                 if ($entryKey !== null) {
                     $write($target, $entries[$entryKey]);
                 }
             }
+        }
+
+        // now that every walk of the level has claimed what it claims: whether the entry one of
+        // these rows merely shares a name with is answered for is a fact about the level, so it is
+        // read once the ledger is whole rather than at the row the walk happened to reach first
+        foreach ($awaitingTheLevel as $target) {
+            $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target, $matched);
         }
 
         foreach ($entries as $entryKey => $entry) {
@@ -145,19 +165,21 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
      * onto an adopted row moves it into the walk that follows, where the entry it has already
      * answered for would otherwise read as claimed by somebody else.
      *
-     * `$matched` is the claim ledger of the level, and the claim is recorded in it.
+     * `$matched` is the claim ledger of the level, and the claim is recorded in it. A row that
+     * claims nothing and is not the same row twice is handed to `$reportUnmatched`, which decides
+     * whether the level can answer for it yet.
      *
      * @param array<string, array<string, mixed>> $entries
      * @param array<string, string> $entriesByName
      * @param array<string, int> $matched
+     * @param Closure(SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig): void $reportUnmatched
      */
     private function claimEntryKey(
-        ApplyContext $context,
-        ArtifactSection $section,
         array $entries,
         array $entriesByName,
         SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
         array &$matched,
+        Closure $reportUnmatched,
     ): ?string {
         $entryKey = $this->matcher->matchEntryKey(
             $entries,
@@ -173,7 +195,7 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         }
 
         if ($entryKey === null || $claimedBy !== null) {
-            $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target, $matched);
+            $reportUnmatched($target);
 
             return null;
         }

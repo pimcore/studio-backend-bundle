@@ -85,6 +85,19 @@ final readonly class ApplyDiagnostics implements ApplyDiagnosticsInterface
     /**
      * {@inheritdoc}
      */
+    public function unmatchedTargetAwaitsTheLevel(
+        ArtifactSection $section,
+        array $entriesByName,
+        SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
+    ): bool {
+        return (self::NAME_IS_UNIQUE_PER_STORE[$section->value] ?? false)
+            && $target->getIdentifier() !== null
+            && isset($entriesByName[mb_strtolower($target->getName())]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function recordUnmatchedTarget(
         ApplyContext $context,
         ArtifactSection $section,

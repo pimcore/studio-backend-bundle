@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use function count;
 use function json_encode;
 use function sprintf;
+use function strcmp;
 
 /**
  * @internal
@@ -138,6 +139,13 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
     }
 
     /**
+     * `strcmp()`, not `<=`: PHP compares two numeric strings numerically whatever their type, so a
+     * pair of identifiers that both read as numbers would be merged in numeric order while each
+     * walk hands them over in the string order the database sorted them in. An identifier may be
+     * digits and `E` - `/^[A-Za-z0-9][A-Za-z0-9_-]*$/` permits it - and `00000000000000000000002E10`
+     * sorts before `00000000000000000000003E09` as a string while reading as the larger number, so
+     * `<=` would take the second one first and emit a section that is not sorted by identifier.
+     *
      * @param Generator<KeyConfig> $first
      * @param Generator<KeyConfig> $second
      *
@@ -146,7 +154,10 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
     private function mergeByIdentifier(Generator $first, Generator $second): Generator
     {
         while ($first->valid() && $second->valid()) {
-            $takeFirst = (string) $first->current()->getIdentifier() <= (string) $second->current()->getIdentifier();
+            $takeFirst = strcmp(
+                (string) $first->current()->getIdentifier(),
+                (string) $second->current()->getIdentifier()
+            ) <= 0;
             $taken = $takeFirst ? $first : $second;
 
             yield $taken->current();

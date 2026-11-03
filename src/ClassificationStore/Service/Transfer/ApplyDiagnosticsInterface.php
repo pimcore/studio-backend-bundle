@@ -43,6 +43,26 @@ interface ApplyDiagnosticsInterface
     public function recordUnresolvedEndpoints(ApplyContext $context, string $label, array $missing): void;
 
     /**
+     * Whether what an unmatched row is cannot be told until every walk of the level has finished
+     * claiming: the row shares its name with an entry of the file, so the verdict turns on whether
+     * some other row of the level answers for that entry - which is a fact about the level, not
+     * about the row a walk happens to reach first.
+     *
+     * A caller walking a level in chunks asks this before reporting a row it could not match, and
+     * holds back the rows it answers true for. Only those: a level whose names are not unique, or a
+     * row sharing its name with nothing in the file, is target only whatever the rest of the level
+     * turns out to say, and the big section - keys, whose names are deliberately not unique - never
+     * awaits anything.
+     *
+     * @param array<string, string> $entriesByName
+     */
+    public function unmatchedTargetAwaitsTheLevel(
+        ArtifactSection $section,
+        array $entriesByName,
+        SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
+    ): bool;
+
+    /**
      * A target row the file does not answer for. It is left in place either way; what is refused is
      * a row whose name the file reuses under another identifier, because applying the file would
      * then have to write two rows under one name.
@@ -53,8 +73,12 @@ interface ApplyDiagnosticsInterface
      * owner has already claimed is not a name this file is asking for twice, which leaves the row
      * that merely shares the name as the target-only row it is.
      *
-     * `$claimed` maps the entry keys this section has already matched to the row id that matched
-     * them.
+     * `$claimed` maps the entry keys this section has matched to the row id that matched them, and
+     * has to be the ledger of the WHOLE level for the second condition to hold. Reading it while a
+     * walk is still running decides the refusal by row order: two rows named `Measurements` carrying
+     * the identifiers `A` and `B`, a file naming only `A`, and `A` on the higher row id, would refuse
+     * `B` over an entry `A` was about to claim one row later. {@see self::unmatchedTargetAwaitsTheLevel()}
+     * is how a chunked walk tells which rows it may not report yet.
      *
      * @param array<string, string> $entriesByName
      * @param array<string, int> $claimed

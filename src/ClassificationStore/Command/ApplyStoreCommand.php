@@ -68,6 +68,7 @@ final class ApplyStoreCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $path = (string) $input->getArgument(self::ARGUMENT_FILE);
+        $dryRun = (bool) $input->getOption(self::OPTION_DRY_RUN);
         $json = @file_get_contents($path);
 
         if (!is_string($json)) {
@@ -79,7 +80,7 @@ final class ApplyStoreCommand extends Command
         try {
             $report = $this->storeTransferService->applyArtifact(
                 $json,
-                (bool) $input->getOption(self::OPTION_DRY_RUN),
+                $dryRun,
                 // printed as it is decided and not kept, so that the output of an ETIM sized store
                 // does not become the one part of this command that grows with it
                 static fn (string $line) => $output->writeln($line)
@@ -90,10 +91,15 @@ final class ApplyStoreCommand extends Command
             return Command::FAILURE;
         }
 
-        return $this->reportOutcome($report, $io);
+        return $this->reportOutcome($report, $io, $dryRun);
     }
 
-    private function reportOutcome(ApplyReport $report, SymfonyStyle $io): int
+    /**
+     * What the run decided, and whether any of it was written. A dry run reaches the same successful
+     * outcome as a real one and has persisted nothing, so it may not report the configuration as
+     * applied: a deployment reading the line would take a validation pass for a completed one.
+     */
+    private function reportOutcome(ApplyReport $report, SymfonyStyle $io, bool $dryRun): int
     {
         $counts = [];
         foreach ($report->getCounts() as $outcome => $count) {
@@ -103,7 +109,11 @@ final class ApplyStoreCommand extends Command
         $io->listing($counts);
 
         if (!$report->hasConflicts()) {
-            $io->success('The store configuration was applied.');
+            $io->success(
+                $dryRun
+                    ? 'Dry run: nothing was written; the configuration can be applied.'
+                    : 'The store configuration was applied.'
+            );
 
             return Command::SUCCESS;
         }

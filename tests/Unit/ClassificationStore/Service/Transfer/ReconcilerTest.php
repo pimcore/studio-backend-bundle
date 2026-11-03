@@ -213,6 +213,74 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * The same two rows the other way round. Whether a namesake is a refusal or a target-only row
+     * turns on whether some other row of the level answers for the entry it shares a name with -
+     * which is a fact about the level, not about the row the chunked walk reaches first. Two groups
+     * called `Measurements` carrying `01GROUP` and `01DIFFERENT`, a file naming only `01GROUP`:
+     * `01GROUP` is matched and the namesake is left in place, whichever of the two has the lower row
+     * id. Read mid-walk, the row order alone decided it, and an unchanged import failed on the one
+     * ordering.
+     *
+     * @dataProvider namesakeRowOrders
+     */
+    public function testANamesakeIsLeftInPlaceWhateverOrderTheRowsComeBackIn(bool $ownerFirst): void
+    {
+        $owner = $this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME, id: self::GROUP_ID);
+        $namesake = $this->createGroup('01DIFFERENT', self::GROUP_NAME, id: self::GROUP_ID + 1);
+
+        $report = $this->createReconciler(groups: $ownerFirst ? [$owner, $namesake] : [$namesake, $owner])
+            ->apply($this->createDocument(), $this->createStore(), false);
+
+        $this->assertFalse(
+            $report->hasConflicts(),
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertSame(
+            [sprintf('group "%s"', self::GROUP_NAME)],
+            $report->getNamed(ApplyOutcome::TARGET_ONLY)
+        );
+    }
+
+    /**
+     * The same, at the collection level: the level is walked by the one shared path, so a collection
+     * namesake is answered for the same way a group's is.
+     *
+     * @dataProvider namesakeRowOrders
+     */
+    public function testACollectionNamesakeIsLeftInPlaceWhateverOrderTheRowsComeBackIn(bool $ownerFirst): void
+    {
+        $owner = $this->createCollection(self::COLLECTION_IDENTIFIER, 'Lighting', id: self::COLLECTION_ID);
+        $namesake = $this->createCollection('01DIFFERENT', 'Lighting', id: self::COLLECTION_ID + 1);
+
+        $document = $this->createDocument([
+            'collections' => [
+                ['identifier' => self::COLLECTION_IDENTIFIER, 'name' => 'Lighting', 'description' => null],
+            ],
+        ]);
+
+        $report = $this
+            ->createReconciler(collections: $ownerFirst ? [$owner, $namesake] : [$namesake, $owner])
+            ->apply($document, $this->createStore(), false);
+
+        $this->assertFalse(
+            $report->hasConflicts(),
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertContains('collection "Lighting"', $report->getNamed(ApplyOutcome::TARGET_ONLY));
+    }
+
+    /**
+     * The owner of the file's identifier on the lower row id, and on the higher one.
+     *
+     * @return iterable<string, array{bool}>
+     */
+    public static function namesakeRowOrders(): iterable
+    {
+        yield 'the owner first' => [true];
+        yield 'the namesake first' => [false];
+    }
+
+    /**
      * Writing `enabled = 0` deletes every assignment of the key, so a file that disables a key and
      * assigns it in the same breath is refused rather than left to drop the row it just wrote.
      */

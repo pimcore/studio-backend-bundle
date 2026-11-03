@@ -44,7 +44,14 @@ interface StoreTransferServiceInterface
     public function exportStore(int $storeId): iterable;
 
     /**
-     * The store a console argument names, by row id or by identifier.
+     * The store a console argument names, by identifier first and by row id only failing that.
+     *
+     * The order is the contract, not an implementation detail. An identifier is a string matching
+     * `/^[A-Za-z0-9][A-Za-z0-9_-]*$/`, so a digits-only identifier is legal - and reading a
+     * reference as a row id because it happens to be digits would export whichever store sits at
+     * that id instead of the one the operator named. The identifier is the identity of a store
+     * across installations (requirements register R18); the row id is local to one, so it answers
+     * only for a reference no identifier claims.
      *
      * @throws NotFoundException
      */

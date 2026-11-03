@@ -177,6 +177,47 @@ final class StoreTransferServiceTest extends Unit
         $this->assertSame(self::STORE_ID, $store->getId());
     }
 
+    /**
+     * An identifier is `/^[A-Za-z0-9][A-Za-z0-9_-]*$/`, so a store may carry one made of digits
+     * alone. Reading such a reference as a row id would export the store that happens to sit at
+     * that id - a different store, under a reference the operator used because it is the one thing
+     * that identifies a configuration across installations.
+     */
+    public function testADigitsOnlyIdentifierResolvesToItsOwnStoreAndNotToThatRowId(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository
+            ->method('getByIdentifier')
+            ->with('1')
+            ->willReturn($this->createStore(self::OTHER_STORE_ID, '1'));
+        $storeRepository
+            ->expects($this->never())
+            ->method('getById');
+
+        $store = $this->createService($storeRepository)->resolveStore('1');
+
+        $this->assertSame(self::OTHER_STORE_ID, $store->getId());
+    }
+
+    /**
+     * A numeric reference no identifier claims is still the row id it has always been, which is what
+     * keeps a store with no identifier exportable by id.
+     */
+    public function testANumericReferenceNoIdentifierClaimsIsStillARowId(): void
+    {
+        $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('getByIdentifier')->willReturn(null);
+        $storeRepository
+            ->expects($this->once())
+            ->method('getById')
+            ->with(self::STORE_ID)
+            ->willReturn($this->createStore(self::STORE_ID));
+
+        $store = $this->createService($storeRepository)->resolveStore((string) self::STORE_ID);
+
+        $this->assertSame(self::STORE_ID, $store->getId());
+    }
+
     public function testAnUnknownStoreIdentifierIsNotFound(): void
     {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);

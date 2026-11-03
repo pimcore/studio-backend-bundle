@@ -54,7 +54,7 @@ final class ExportStoreCommand extends Command
             ->addArgument(
                 self::ARGUMENT_STORE,
                 InputArgument::REQUIRED,
-                'The store to export, by identifier or by numeric ID.'
+                'The store to export, by identifier, or by numeric ID when no identifier matches.'
             )
             ->addOption(
                 self::OPTION_OUTPUT,

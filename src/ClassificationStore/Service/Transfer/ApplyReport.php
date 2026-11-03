@@ -28,7 +28,13 @@ use function sprintf;
  */
 final class ApplyReport
 {
-    public const int NAMED_ENTRY_CAP = 50;
+    /**
+     * How many entries one category names before it says how many it left out. An implementation
+     * limit of this report rather than a value anything else reads: a caller asks what the report
+     * says, and {@see self::getNamed()} carries the overflow marker that tells a capped list from a
+     * complete one.
+     */
+    private const int NAMED_ENTRY_CAP = 50;
 
     /**
      * @var array<string, int>

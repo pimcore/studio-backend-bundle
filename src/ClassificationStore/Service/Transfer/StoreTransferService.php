@@ -67,17 +67,17 @@ final readonly class StoreTransferService implements StoreTransferServiceInterfa
      */
     public function resolveStore(string $reference): StoreConfig
     {
+        $store = $this->storeRepository->getByIdentifier($reference);
+
+        if ($store !== null) {
+            return $store;
+        }
+
         if (ctype_digit($reference)) {
             return $this->storeRepository->getById((int) $reference);
         }
 
-        $store = $this->storeRepository->getByIdentifier($reference);
-
-        if ($store === null) {
-            throw new NotFoundException(self::NOT_FOUND_TYPE, $reference, 'identifier');
-        }
-
-        return $store;
+        throw new NotFoundException(self::NOT_FOUND_TYPE, $reference, 'identifier');
     }
 
     /**

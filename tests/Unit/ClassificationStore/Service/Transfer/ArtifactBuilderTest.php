@@ -34,6 +34,7 @@ use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use function array_column;
 use function array_keys;
+use function array_map;
 use function implode;
 use function json_decode;
 
@@ -123,19 +124,51 @@ final class ArtifactBuilderTest extends Unit
     }
 
     /**
+     * An identifier is `/^[A-Za-z0-9][A-Za-z0-9_-]*$/`, which permits one made of digits and an `E`.
+     * PHP compares two such strings as numbers, so merging the two walks with `<=` would order them
+     * by value rather than by the string order each walk already arrived in: `...2E10` reads as the
+     * larger number and sorts first as a string. The section is sorted by identifier either way.
+     */
+    public function testKeyIdentifiersThatReadAsNumbersAreStillSortedAsStrings(): void
+    {
+        $document = $this->buildDocument(
+            enabledKeys: ['00000000000000000000003E09'],
+            disabledKeys: ['00000000000000000000002E10']
+        );
+
+        $this->assertSame(
+            ['00000000000000000000002E10', '00000000000000000000003E09'],
+            array_column($document['keys'], 'identifier')
+        );
+        $this->assertSame([false, true], array_column($document['keys'], 'enabled'));
+    }
+
+    /**
+     * @param list<string> $enabledKeys
+     * @param list<string> $disabledKeys
+     *
      * @return array<string, mixed>
      */
-    private function buildDocument(): array
+    private function buildDocument(?array $enabledKeys = null, ?array $disabledKeys = null): array
     {
         $pieces = [];
-        foreach ($this->createBuilder()->stream($this->createStore()) as $piece) {
+        $builder = $this->createBuilder(
+            $enabledKeys ?? ['01JA', '01JC'],
+            $disabledKeys ?? ['01JB', '01JD']
+        );
+
+        foreach ($builder->stream($this->createStore()) as $piece) {
             $pieces[] = $piece;
         }
 
         return json_decode(implode('', $pieces), true, 512, JSON_THROW_ON_ERROR);
     }
 
-    private function createBuilder(): ArtifactBuilder
+    /**
+     * @param list<string> $enabledKeys
+     * @param list<string> $disabledKeys
+     */
+    private function createBuilder(array $enabledKeys, array $disabledKeys): ArtifactBuilder
     {
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createSubGroup()]);
@@ -151,9 +184,10 @@ final class ArtifactBuilderTest extends Unit
         $keyRepository
             ->method('getChunkAfterIdentifier')
             ->willReturnCallback(
-                fn (int $storeId, bool $disabledOnly): array => $disabledOnly
-                    ? [$this->createKey('01JB', false), $this->createKey('01JD', false)]
-                    : [$this->createKey('01JA', true), $this->createKey('01JC', true)]
+                fn (int $storeId, bool $disabledOnly): array => array_map(
+                    fn (string $identifier): KeyConfig => $this->createKey($identifier, !$disabledOnly),
+                    $disabledOnly ? $disabledKeys : $enabledKeys
+                )
             );
 
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);

@@ -49,21 +49,28 @@ final class ApplyReportTest extends Unit
     /**
      * Past the cap the list carries an explicit marker instead of simply ending, so that a reader
      * can tell a complete list from a capped one.
+     *
+     * Asserted on what the report says rather than against the cap itself, which is the report's own
+     * implementation limit: the contract is that the list stops short of the count, names the
+     * entries it kept in the order they were recorded, and accounts for every one it left out.
      */
     public function testTheNamedListIsCappedWithAnExplicitOverflowMarker(): void
     {
         $report = new ApplyReport();
-        $recorded = ApplyReport::NAMED_ENTRY_CAP + 12;
+        $recorded = 500;
 
         for ($i = 0; $i < $recorded; $i++) {
             $report->record(ApplyOutcome::CREATED, sprintf('key "k%d"', $i));
         }
 
         $named = $report->getNamed(ApplyOutcome::CREATED);
+        $kept = count($named) - 1;
 
         $this->assertSame($recorded, $report->getCount(ApplyOutcome::CREATED));
-        $this->assertSame(ApplyReport::NAMED_ENTRY_CAP + 1, count($named));
-        $this->assertSame('and 12 more', $named[ApplyReport::NAMED_ENTRY_CAP]);
+        $this->assertLessThan($recorded, count($named));
+        $this->assertSame('key "k0"', $named[0]);
+        $this->assertSame(sprintf('key "k%d"', $kept - 1), $named[$kept - 1]);
+        $this->assertSame(sprintf('and %d more', $recorded - $kept), $named[$kept]);
     }
 
     public function testAListWithinTheCapCarriesNoMarker(): void
