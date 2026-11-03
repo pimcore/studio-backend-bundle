@@ -41,6 +41,8 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 {
     private const array TRUSTED_URL_ALLOWED_SCHEMES = ['http', 'https'];
 
+    private const string TOKEN_QUERY_PARAMETER = '?token=';
+
     public function __construct(
         private AuthenticationResolverInterface $authenticationResolver,
         private MailServiceInterface $mailService,
@@ -71,7 +73,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
-        $loginUrl = $resetPassword->getResetPasswordUrl() . '?token=' . $token;
+        $loginUrl = $resetPassword->getResetPasswordUrl() . self::TOKEN_QUERY_PARAMETER . $token;
 
         try {
             $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);
@@ -103,7 +105,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
         if ($parameter->getTokenLoginUrl() !== '') {
-            return $parameter->getTokenLoginUrl() . '?token=' . $token;
+            return $parameter->getTokenLoginUrl() . self::TOKEN_QUERY_PARAMETER . $token;
         }
 
         return $this->urlGenerator->generate(
@@ -156,7 +158,10 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
-        $this->mailService->sendInvitationMail($user, $parameter->getInvitationUrl() . '?token=' . $token);
+        $this->mailService->sendInvitationMail(
+            $user,
+            $parameter->getInvitationUrl() . self::TOKEN_QUERY_PARAMETER . $token
+        );
     }
 
     private function validateTrustedUrl(string $url, string $subject): void
