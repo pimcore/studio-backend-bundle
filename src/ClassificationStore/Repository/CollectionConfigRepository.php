@@ -23,6 +23,14 @@ use function array_values;
  */
 final class CollectionConfigRepository implements CollectionConfigRepositoryInterface
 {
+    /**
+     * `scopeStoreId`, not `storeId`: a client supplied equals filter on `storeId` binds its own
+     * parameter, so the route scope keeps a name of its own that such a filter cannot overwrite.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = 'storeId = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private SearchHelperServiceInterface $searchHelperService
     ) {
@@ -43,7 +51,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
         $list->setOffset($this->getOffset($collectionParameters));
         $list->setOrder('ASC');
         $list->setOrderKey('id');
-        $list->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $list->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         if ($collectionIds !== null) {
             $this->applyCollectionIdsFilter($list, $collectionIds);
@@ -57,7 +65,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
     public function getCountByStoreId(int $storeId): int
     {
         $list = new Listing();
-        $list->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $list->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         return $list->count();
     }

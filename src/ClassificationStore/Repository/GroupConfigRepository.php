@@ -25,6 +25,14 @@ use function array_values;
  */
 final class GroupConfigRepository implements GroupConfigRepositoryInterface
 {
+    /**
+     * `scopeStoreId`, not `storeId`: a client supplied equals filter on `storeId` binds its own
+     * parameter, so the route scope keeps a name of its own that such a filter cannot overwrite.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = 'storeId = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private SearchHelperServiceInterface $searchHelperService
     ) {
@@ -45,7 +53,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         $listing->setOffset($this->getOffset($collectionParameters));
         $listing->setOrder('ASC');
         $listing->setOrderKey('id');
-        $listing->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->searchHelperService->applySearchTermFilter($listing, $searchTerm);
 
@@ -60,7 +68,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     {
         $listing = new Listing();
 
-        $listing->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         if ($groupIds !== null) {
             $this->applyGroupIdsFilter($listing, $groupIds);
@@ -72,7 +80,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     public function getCountByStoreId(int $storeId): int
     {
         $listing = new Listing();
-        $listing->setCondition('storeId = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->setCondition(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         return $listing->count();
     }
