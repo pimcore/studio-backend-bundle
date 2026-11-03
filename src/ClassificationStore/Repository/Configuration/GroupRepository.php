@@ -34,6 +34,14 @@ final readonly class GroupRepository implements GroupRepositoryInterface
 {
     use IdentifierOrderedChunkTrait;
 
+    /**
+     * Own parameter name, so a client supplied equals filter on `storeId` narrows the route's store
+     * binding instead of replacing the condition Pimcore keys by its own string.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private GroupConfigResolverInterface $groupConfigResolver,
         private ListingFilterInterface $listingFilter,
@@ -47,9 +55,7 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        // own parameter name, so a client supplied equals filter on `storeId` narrows the route's
-        // store binding instead of replacing the condition Pimcore keys by its own string
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -77,7 +83,7 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     public function getChunkByStore(int $storeId, int $limit, int $offset): array
     {
         $listing = new Listing();
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
 
         return $listing->load();
@@ -89,7 +95,7 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     public function getChunkAfterId(int $storeId, int $afterId, int $limit): array
     {
         $listing = new Listing();
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
         $this->applyIdCursorChunk($listing, $limit);
 

@@ -55,6 +55,14 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
     private const array ALLOWED_SORT_DIRECTIONS = ['ASC', 'DESC'];
 
+    /**
+     * Own parameter name, so a client supplied equals filter on `storeId` narrows the route's store
+     * binding instead of replacing the condition Pimcore keys by its own string.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private KeyConfigResolverInterface $keyConfigResolver,
         private ListingFilterInterface $listingFilter,
@@ -69,9 +77,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        // own parameter name, so a client supplied equals filter on `storeId` narrows the route's
-        // store binding instead of replacing the condition Pimcore keys by its own string
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -102,7 +108,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         // the flag core spells `includeDisabled` narrows to the disabled rows rather than adding
         // them, so the two states are two walks and never one
         $listing->setIncludeDisabled($disabledOnly);
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
 
         return $listing->load();
@@ -115,7 +121,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
     {
         $listing = new Listing();
         $listing->setIncludeDisabled($disabledOnly);
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
         $this->applyIdCursorChunk($listing, $limit);
 

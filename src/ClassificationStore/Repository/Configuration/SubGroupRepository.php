@@ -50,6 +50,16 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
 
     private const string NOT_FOUND_TYPE = 'sub group configuration';
 
+    /**
+     * `:scopeStoreId`, not `:storeId`: a client supplied equals filter on `storeId` builds the very
+     * condition string the route binding would, and Pimcore keys its conditions by that string - an
+     * identical one replaces the binding instead of being added next to it. Under its own name the
+     * two conditions stand side by side, so a filter can only narrow the store.
+     */
+    private const string STORE_SCOPE_PARAMETER = 'scopeStoreId';
+
+    private const string STORE_SCOPE_CONDITION = '`storeId` = :' . self::STORE_SCOPE_PARAMETER;
+
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private SearchHelperServiceInterface $searchHelperService,
@@ -63,11 +73,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getListing(FilterParameter $parameters, int $storeId): Listing
     {
         $listing = new Listing();
-        // `:scopeStoreId`, not `:storeId`: a client supplied equals filter on `storeId` builds the
-        // very condition string the route binding would, and Pimcore keys its conditions by that
-        // string - an identical one replaces the binding instead of being added next to it. Under
-        // its own name the two conditions stand side by side, so a filter can only narrow the store.
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
 
         $this->applySearchCondition($listing, $parameters);
         $this->listingFilter->applyFilters($parameters, $listing);
@@ -126,7 +132,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getChunkByStore(int $storeId, int $limit, int $offset): array
     {
         $listing = new Listing();
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
 
         return $listing->load();
@@ -138,7 +144,7 @@ final readonly class SubGroupRepository implements SubGroupRepositoryInterface
     public function getChunkAfterId(int $storeId, int $afterId, int $limit): array
     {
         $listing = new Listing();
-        $listing->addConditionParam('`storeId` = :scopeStoreId', ['scopeStoreId' => $storeId]);
+        $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
         $this->applyIdCursorChunk($listing, $limit);
 
