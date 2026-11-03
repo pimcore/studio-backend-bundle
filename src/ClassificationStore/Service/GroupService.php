@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_map;
 use function array_values;
 use function count;
 
@@ -49,6 +50,7 @@ final readonly class GroupService implements GroupServiceInterface
         private GroupLayoutHydratorInterface $groupLayoutHydrator,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private SubGroupRepositoryInterface $subGroupConfigurationRepository,
+        private LabelLanguageResolverInterface $labelLanguageResolver,
     ) {
     }
 
@@ -128,6 +130,14 @@ final readonly class GroupService implements GroupServiceInterface
             }
         }
 
+        $language = $this->labelLanguageResolver->getLabelLanguage();
+
+        // One statement for the whole group, instead of a label query per key.
+        $this->keyGroupLayoutService->preloadKeyTitles(
+            array_map(static fn (KeyGroupRelation $key): int => $key->getKeyId(), $keys),
+            $language
+        );
+
         $keyLayouts = [];
         foreach ($keys as $key) {
             $definition = $this->keyGroupLayoutService->getLayoutDefinition(
@@ -141,7 +151,7 @@ final readonly class GroupService implements GroupServiceInterface
                 name: $key->getName(),
                 description: $key->getDescription(),
                 definition: $definition,
-                title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId()),
+                title: $this->keyGroupLayoutService->getKeyTitle($key->getKeyId(), $language),
                 subGroup: $key->getSubGroup(),
             );
         }
