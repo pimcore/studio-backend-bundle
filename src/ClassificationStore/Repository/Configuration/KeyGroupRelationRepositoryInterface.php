@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
@@ -68,8 +70,10 @@ interface KeyGroupRelationRepositoryInterface
 
     /**
      * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
-    public function createOrUpdate(int $keyId, int $groupId, int $sorter, bool $mandatory): KeyGroupRelation;
+    public function createOrUpdate(KeyGroupRelationCreate $parameters): KeyGroupRelation;
 
     /**
      * @throws Exception

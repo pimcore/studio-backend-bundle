@@ -68,6 +68,17 @@ The following steps are necessary during updating to newer versions.
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
 - [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
+- [Classification Store] Added: a key's assignment to a group can now be written and read with its own per-assignment
+  options — the definition override, the sub group and free-form metadata — through the configuration API, and the
+  generated identifier of a store, collection, group and key is published alongside them. The definition override is
+  stored and published but not yet applied to the field definitions the object editor renders. A collection-group
+  relation has no in-place update endpoint because its add endpoint already creates or updates.
+- [Classification Store] Changed: adding a key's assignment to a group no longer resets its sort order and mandatory
+  flag when the payload leaves them out — an assignment keeps what it has stored, and only a new one starts unsorted
+  and optional. Two payloads that used to pass are also refused now: a store, collection, group or key create or
+  update that carries an identifier is rejected rather than ignored, because the identifier is assigned by the
+  system; and adding a key's assignment to a group is rejected when the key id names no key configuration, rather
+  than writing an assignment that points at nothing.
 - [Classification Store] Added: a store's whole configuration can be exported and applied again as one file, from the
   store editor and from the console commands `studio-backend-bundle:classificationstore:export` and
   `studio-backend-bundle:classificationstore:apply`. Applying creates and updates but never deletes, so un-assigning a

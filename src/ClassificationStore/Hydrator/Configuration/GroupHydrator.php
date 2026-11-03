@@ -30,6 +30,7 @@ final readonly class GroupHydrator implements GroupHydratorInterface
             $groupConfig->getDescription(),
             $groupConfig->getCreationDate(),
             $groupConfig->getModificationDate(),
+            $groupConfig->getIdentifier(),
         );
     }
 }

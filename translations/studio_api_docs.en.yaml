@@ -2114,7 +2114,7 @@ classification_store_configuration_key_group_relation_collection_description: |
   The groupId query parameter is required. Returns key details with layout definition.
 classification_store_configuration_key_group_relation_collection_summary: List key-group relations
 classification_store_configuration_key_group_relation_collection_success_response: Paginated list of key-group relations
-classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag
+classification_store_configuration_key_group_relation_create_description: Create or update a key-group relation with key ID, group ID, optional sorter and mandatory flag, and the optional per-assignment definition override, sub group and metadata. Each of the three is left as stored when the payload omits it and cleared when the payload sends it as null
 classification_store_configuration_key_group_relation_create_summary: Create or update a key-group relation
 classification_store_configuration_key_group_relation_create_success_response: Created or updated key-group relation
 classification_store_configuration_key_group_relation_delete_description: Delete a key-group relation by key ID and group ID

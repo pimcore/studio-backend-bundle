@@ -40,6 +40,13 @@ final class StoreTreeNode implements AdditionalAttributesInterface
             nullable: true
         )]
         private readonly ?string $description = null,
+        #[Property(
+            description: 'Opaque identifier of the store, assigned by the system and never writable',
+            type: 'string',
+            example: '01K9T0ZQ0VX8W4S1R7J3A2B5C6',
+            nullable: true
+        )]
+        private readonly ?string $identifier = null,
     ) {
     }
 
@@ -56,5 +63,10 @@ final class StoreTreeNode implements AdditionalAttributesInterface
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
     }
 }

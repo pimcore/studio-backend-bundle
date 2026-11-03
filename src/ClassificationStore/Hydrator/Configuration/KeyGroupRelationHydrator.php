@@ -40,6 +40,8 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
             $keyDescription,
             $groupName,
             $relation->getSubGroup(),
+            $relation->getDefinitionOverride(),
+            $relation->getMetadata(),
         );
     }
 }

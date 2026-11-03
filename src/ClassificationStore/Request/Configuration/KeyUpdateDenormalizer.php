@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Request\Configuration;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\AbsentValue;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -71,6 +72,9 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
             definition: $this->arrayOrNull($data, 'definition'),
             titleSupplied: array_key_exists('title', $data),
             descriptionSupplied: array_key_exists('description', $data),
+            // Forwarded so the schema's refusal still fires: this denormalizer replaces the
+            // mapping that used to hand a supplied `identifier` to the constructor.
+            identifier: array_key_exists('identifier', $data) ? $data['identifier'] : AbsentValue::ABSENT,
         );
     }
 

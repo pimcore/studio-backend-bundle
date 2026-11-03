@@ -20,6 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -48,6 +50,8 @@ final class CreateController extends AbstractApiController
 
     /**
      * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
     #[Route(
         self::ROUTE,

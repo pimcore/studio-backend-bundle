@@ -79,12 +79,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         KeyGroupRelationCreate $parameters
     ): KeyGroupRelationDetail {
         try {
-            $relation = $this->keyGroupRelationRepository->createOrUpdate(
-                $parameters->getKeyId(),
-                $parameters->getGroupId(),
-                $parameters->getSorter(),
-                $parameters->isMandatory()
-            );
+            $relation = $this->keyGroupRelationRepository->createOrUpdate($parameters);
         } finally {
             $this->keyRelationResolver->clear();
         }
