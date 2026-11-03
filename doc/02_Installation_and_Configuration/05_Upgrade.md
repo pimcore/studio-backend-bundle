@@ -38,11 +38,9 @@ The following steps are necessary during updating to newer versions.
   to both, so clients that do not send the new field are unaffected. An empty `title` (`""`) is treated like an
   absent one and writes the name to both as well. The `@internal`
   `KeyRepositoryInterface::create()` got the optional argument `$title`.
-- [Classification Store] Changed: clearing a key's title or description now stores the cleared value, where it was
-  previously ignored. A field left out of the request still leaves the stored value alone.
-- [Classification Store] Changed: a client that sent an empty `title` or `description` to
-  `PUT /classification-store/configuration/keys/{id}` to mean "leave this alone" now clears the stored value. Leave the
-  field out of the request instead.
+- [Classification Store] Changed: a `title` or `description` sent as `null` to
+  `PUT /classification-store/configuration/keys/{id}` now clears the stored value, where it previously left it alone. An
+  empty string (`""`) clears it as it already did, and leaving the field out of the request keeps the stored value.
 - [Classification Store] Changed: three endpoints return their items in a new order, unconditionally and without a
   configuration option. `GET /classification-store/layout-by-group/{groupId}` returns `keys` ordered by the configured
   `sorter` ascending, then by key id ascending, instead of by key id alone.
