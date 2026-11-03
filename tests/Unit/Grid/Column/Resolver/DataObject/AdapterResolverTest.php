@@ -107,14 +107,16 @@ final class AdapterResolverTest extends Unit
     public function testExportOfLocalizedColumnWithoutLocaleReadsTheSystemDefaultLanguage(): void
     {
         $exportParameters = null;
+        $exportLanguage = null;
         $resolver = $this->createResolver('de', [
             'getExportFieldValue' => static function (
                 $element,
                 $fieldDefinition,
                 string $key,
                 FieldContextData $context
-            ) use (&$exportParameters): string {
+            ) use (&$exportParameters, &$exportLanguage): string {
                 $exportParameters = $context->getLegacyParameters();
+                $exportLanguage = $context->getLanguage();
 
                 return 'value';
             },
@@ -127,6 +129,7 @@ final class AdapterResolverTest extends Unit
         );
 
         self::assertSame(['language' => 'de'], $exportParameters);
+        self::assertSame('de', $exportLanguage);
     }
 
     public function testInheritanceDataOfLocalizedColumnWithoutLocaleUsesTheSystemDefaultLanguage(): void

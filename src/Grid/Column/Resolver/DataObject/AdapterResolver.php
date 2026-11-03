@@ -92,8 +92,10 @@ final class AdapterResolver implements
         $classDefinition = $element->getClass();
         $fieldDefinition = $this->getFieldDefinition($column->getKey(), $classDefinition);
 
+        $language = $this->getColumnReadLocale($column, $element);
         $context = new FieldContextData(
-            legacyParameters: ['language' => $this->getColumnReadLocale($column, $element)]
+            language: $language,
+            legacyParameters: ['language' => $language]
         );
 
         $value = $this->dataService->getExportFieldValue($element, $fieldDefinition, $column->getKey(), $context);
