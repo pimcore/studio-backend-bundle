@@ -27,6 +27,7 @@ use function fopen;
 use function fwrite;
 use function is_string;
 use function sprintf;
+use function substr;
 
 /**
  * @internal
@@ -110,7 +111,7 @@ final class ExportStoreCommand extends Command
 
         try {
             foreach ($artifact as $piece) {
-                if (fwrite($handle, $piece) === false) {
+                if (!$this->writePiece($handle, $piece)) {
                     $io->getErrorStyle()->error(sprintf('Could not write to "%s".', $path));
 
                     return Command::FAILURE;
@@ -123,5 +124,30 @@ final class ExportStoreCommand extends Command
         $io->success(sprintf('The store configuration was written to "%s".', $path));
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * `fwrite()` reports how many bytes it took, and a destination that is full takes fewer than it
+     * was given - or none - without reporting a failure at all. The rest of the piece is written
+     * until it is gone, and a call that takes nothing is the failure the count alone is not: left
+     * at the first count, the file would be a truncated artifact reported as a successful export.
+     *
+     * @param resource $handle
+     */
+    private function writePiece($handle, string $piece): bool
+    {
+        $remaining = $piece;
+
+        while ($remaining !== '') {
+            $written = fwrite($handle, $remaining);
+
+            if ($written === false || $written === 0) {
+                return false;
+            }
+
+            $remaining = substr($remaining, $written);
+        }
+
+        return true;
     }
 }

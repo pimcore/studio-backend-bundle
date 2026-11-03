@@ -140,6 +140,73 @@ final class ArtifactParserTest extends Unit
     }
 
     /**
+     * A value of the wrong shape is refused rather than read as the default an absent field stands
+     * for: read as a default, `"name": 17` renames the group to "17", `"enabled": "true"` disables
+     * the key it was meant to enable, and `"mandatory": "true"` clears the constraint it was meant
+     * to set - every one of them a change, under a file that is wrong rather than a file that says
+     * so.
+     *
+     * @dataProvider wronglyShapedEntries
+     *
+     * @param array<string, mixed> $overrides
+     */
+    public function testAFieldSuppliedInTheWrongShapeIsRefused(string $section, array $overrides): void
+    {
+        $artifact = $this->createArtifact();
+        $artifact[$section][0] = [...$artifact[$section][0], ...$overrides];
+
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->parse($this->encode($artifact));
+    }
+
+    /**
+     * @return array<string, array{string, array<string, mixed>}>
+     */
+    public function wronglyShapedEntries(): array
+    {
+        return [
+            'a group named with a number' => ['groups', ['name' => 17]],
+            'an empty group name' => ['groups', ['name' => '']],
+            'a group description that is not a string' => ['groups', ['description' => 17]],
+            'a key enabled flag that is a string' => ['keys', ['enabled' => 'true']],
+            'a key title that is not a string' => ['keys', ['title' => 17]],
+            'a key type that is missing' => ['keys', ['type' => null]],
+            'a key definition that is not an object' => ['keys', ['definition' => 'input']],
+            'a mandatory flag that is a string' => ['keyGroupRelations', ['mandatory' => 'true']],
+            'a sorter that is a string' => ['keyGroupRelations', ['sorter' => '1']],
+            'a sub group that is not a string' => ['keyGroupRelations', ['subGroup' => 17]],
+        ];
+    }
+
+    /**
+     * The readers are reachable on their own, so each guards the fields it reads rather than
+     * trusting that the file went through {@see ArtifactParser::parse()} first.
+     */
+    public function testANonBooleanEnabledFlagIsRefusedByTheKeyReader(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->readKeyEntry([
+            'identifier' => self::KEY_IDENTIFIER,
+            'name' => 'weight',
+            'type' => 'input',
+            'enabled' => 'true',
+        ]);
+    }
+
+    public function testANonBooleanMandatoryFlagIsRefusedByTheAssignmentReader(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->readAssignmentEntry([
+            'group' => self::GROUP_IDENTIFIER,
+            'key' => self::KEY_IDENTIFIER,
+            'mandatory' => 'true',
+        ]);
+    }
+
+    /**
      * A key row whose `enabled` column was never written reads as disabled, which is what it is.
      */
     public function testAKeyEntryWithoutAnEnabledFlagReadsAsDisabled(): void

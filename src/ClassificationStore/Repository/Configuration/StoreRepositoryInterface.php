@@ -47,6 +47,13 @@ interface StoreRepositoryInterface
     public function findEntitiesWithoutIdentifier(int $storeId): array;
 
     /**
+     * Whether another store already carries the name, which is the rule {@see self::create()} and
+     * {@see self::update()} refuse a write over. Asked before an artifact is applied, so that the
+     * collision is reported as a conflict of the reconcile rather than as a failed save.
+     */
+    public function isNameTaken(string $name, ?int $exceptId): bool;
+
+    /**
      * Writes the artifact's store entry onto the given configuration, or onto a new one when there
      * is none, stamping the identifier on a row that does not carry one yet.
      *

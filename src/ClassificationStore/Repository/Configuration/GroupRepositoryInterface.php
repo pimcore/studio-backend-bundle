@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -51,6 +52,16 @@ interface GroupRepositoryInterface
      * @return GroupConfig[]
      */
     public function getChunkAfterId(int $storeId, int $afterId, int $limit): array;
+
+    /**
+     * Whether a group of the store already carries the name, which is the rule
+     * {@see self::create()} refuses a write over - a rename is not checked, because
+     * {@see self::update()} does not check one either. Asked before an artifact is applied, so that
+     * the collision is reported as a conflict of the reconcile rather than written past the rule.
+     *
+     * @throws DatabaseException
+     */
+    public function isNameTaken(int $storeId, string $name): bool;
 
     /**
      * Writes the artifact's values onto the given configuration, or onto a new one when there is

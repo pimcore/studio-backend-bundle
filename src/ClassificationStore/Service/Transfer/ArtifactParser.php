@@ -45,6 +45,74 @@ final readonly class ArtifactParser implements ArtifactParserInterface
         ],
     ];
 
+    private const string REQUIRED_STRING = 'a non empty string';
+
+    private const string OPTIONAL_STRING = 'a string or null';
+
+    private const string OPTIONAL_INT = 'an integer or null';
+
+    private const string OPTIONAL_BOOL = 'a boolean or null';
+
+    private const string OPTIONAL_OBJECT = 'an object or null';
+
+    /**
+     * Every field an entry of each section may carry, and the shape it has to arrive in. The whole
+     * table is checked while the file is read, because the parser is the only gate in front of
+     * apply: a field left out of it is a field a wrongly shaped file reaches a write with, where
+     * the value is no longer a refusal but a change - `"enabled": "true"` silently disabling a key,
+     * or `"name": 17` renaming a group to "17".
+     *
+     * Absent and null are the same thing for every optional field, which is what the artifact
+     * writes for a column that carries nothing. The one place the two are told apart is the three
+     * per assignment columns, and that is decided on the key being present rather than on its
+     * shape ({@see self::readAssignmentEntry()}).
+     */
+    private const array ENTRY_SHAPE = [
+        ArtifactSection::STORE->value => [
+            ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
+            ArtifactField::NAME->value => self::REQUIRED_STRING,
+            ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+        ],
+        ArtifactSection::SUB_GROUPS->value => [
+            ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
+            ArtifactField::NAME->value => self::REQUIRED_STRING,
+            ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+        ],
+        ArtifactSection::COLLECTIONS->value => [
+            ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
+            ArtifactField::NAME->value => self::REQUIRED_STRING,
+            ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+        ],
+        ArtifactSection::GROUPS->value => [
+            ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
+            ArtifactField::NAME->value => self::REQUIRED_STRING,
+            ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+        ],
+        ArtifactSection::KEYS->value => [
+            ArtifactField::IDENTIFIER->value => self::REQUIRED_STRING,
+            ArtifactField::NAME->value => self::REQUIRED_STRING,
+            ArtifactField::TITLE->value => self::OPTIONAL_STRING,
+            ArtifactField::DESCRIPTION->value => self::OPTIONAL_STRING,
+            ArtifactField::TYPE->value => self::REQUIRED_STRING,
+            ArtifactField::DEFINITION->value => self::OPTIONAL_OBJECT,
+            ArtifactField::ENABLED->value => self::OPTIONAL_BOOL,
+        ],
+        ArtifactSection::COLLECTION_GROUP_RELATIONS->value => [
+            ArtifactField::COLLECTION->value => self::REQUIRED_STRING,
+            ArtifactField::GROUP->value => self::REQUIRED_STRING,
+            ArtifactField::SORTER->value => self::OPTIONAL_INT,
+        ],
+        ArtifactSection::KEY_GROUP_RELATIONS->value => [
+            ArtifactField::GROUP->value => self::REQUIRED_STRING,
+            ArtifactField::KEY->value => self::REQUIRED_STRING,
+            ArtifactField::SORTER->value => self::OPTIONAL_INT,
+            ArtifactField::MANDATORY->value => self::OPTIONAL_BOOL,
+            ArtifactField::METADATA->value => self::OPTIONAL_OBJECT,
+            ArtifactField::DEFINITION_OVERRIDE->value => self::OPTIONAL_OBJECT,
+            ArtifactField::SUB_GROUP->value => self::OPTIONAL_STRING,
+        ],
+    ];
+
     /**
      * {@inheritdoc}
      */
@@ -85,12 +153,9 @@ final readonly class ArtifactParser implements ArtifactParserInterface
     public function readKeyEntry(array $entry): ArtifactKeyEntry
     {
         $section = ArtifactSection::KEYS->value;
+        $this->assertEntryShape($entry, ArtifactSection::KEYS);
+
         $definition = $entry[ArtifactField::DEFINITION->value] ?? null;
-
-        if ($definition !== null && !is_array($definition)) {
-            throw $this->invalidField($section, ArtifactField::DEFINITION->value, 'an object');
-        }
-
         $enabled = $entry[ArtifactField::ENABLED->value] ?? null;
 
         return new ArtifactKeyEntry(
@@ -99,7 +164,7 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             $this->readNullableString($entry, ArtifactField::TITLE->value),
             $this->readNullableString($entry, ArtifactField::DESCRIPTION->value),
             $this->requireString($entry, ArtifactField::TYPE->value, $section),
-            $definition,
+            is_array($definition) ? $definition : null,
             // a key row whose column was never written reads as disabled, which is what it is
             is_bool($enabled) ? $enabled : false
         );
@@ -111,6 +176,8 @@ final readonly class ArtifactParser implements ArtifactParserInterface
     public function readAssignmentEntry(array $entry): ArtifactAssignmentEntry
     {
         $section = ArtifactSection::KEY_GROUP_RELATIONS->value;
+        $this->assertEntryShape($entry, ArtifactSection::KEY_GROUP_RELATIONS);
+
         $mandatory = $entry[ArtifactField::MANDATORY->value] ?? null;
 
         return new ArtifactAssignmentEntry(
@@ -156,6 +223,8 @@ final readonly class ArtifactParser implements ArtifactParserInterface
             throw new InvalidArgumentException('The configuration file carries no store entry.');
         }
 
+        $this->assertEntryShape($store, ArtifactSection::STORE);
+
         return $store;
     }
 
@@ -187,6 +256,7 @@ final readonly class ArtifactParser implements ArtifactParserInterface
                 );
             }
 
+            $this->assertEntryShape($entry, $section);
             $key = $this->buildEntryKey($entry, $section);
 
             if (array_key_exists($key, $keyed)) {
@@ -199,6 +269,33 @@ final readonly class ArtifactParser implements ArtifactParserInterface
         }
 
         return $keyed;
+    }
+
+    /**
+     * Every field of the section's shape, refused where the file supplies one in another shape
+     * rather than read as the default an absent field stands for.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @throws InvalidArgumentException
+     */
+    private function assertEntryShape(array $entry, ArtifactSection $section): void
+    {
+        foreach (self::ENTRY_SHAPE[$section->value] as $field => $shape) {
+            $value = $entry[$field] ?? null;
+
+            $valid = match ($shape) {
+                self::REQUIRED_STRING => is_string($value) && $value !== '',
+                self::OPTIONAL_STRING => $value === null || is_string($value),
+                self::OPTIONAL_INT => $value === null || is_int($value),
+                self::OPTIONAL_BOOL => $value === null || is_bool($value),
+                default => $value === null || is_array($value),
+            };
+
+            if (!$valid) {
+                throw $this->invalidField($section->value, $field, $shape);
+            }
+        }
     }
 
     /**

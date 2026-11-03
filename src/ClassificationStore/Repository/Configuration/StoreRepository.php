@@ -123,6 +123,16 @@ final readonly class StoreRepository implements StoreRepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function isNameTaken(string $name, ?int $exceptId): bool
+    {
+        $existing = $this->storeConfigResolver->getByName($name);
+
+        return $existing !== null && $existing->getId() !== $exceptId;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function saveFromArtifact(
         ?StoreConfig $config,
         string $identifier,

@@ -65,10 +65,24 @@ interface SubGroupRepositoryInterface
     public function getChunkAfterId(int $storeId, int $afterId, int $limit): array;
 
     /**
+     * Whether another sub group of the store already carries the name, which is the rule
+     * {@see self::create()} and {@see self::update()} refuse a write over. Asked before an artifact
+     * is applied, so that the collision is reported as a conflict of the reconcile rather than as a
+     * failed save.
+     *
+     * @throws DatabaseException
+     */
+    public function isNameTaken(int $storeId, string $name, ?int $exceptId): bool;
+
+    /**
      * Writes the artifact's values onto the given configuration, or onto a new one when there is
      * none, stamping the identifier on a row that does not carry one yet.
      *
+     * Takes the same guarded path the create and the update endpoints take, so a name the store
+     * already carries is refused rather than written a second time.
+     *
      * @throws ElementSavingFailedException
+     * @throws InvalidArgumentException
      */
     public function saveFromArtifact(
         ?SubGroupConfig $config,

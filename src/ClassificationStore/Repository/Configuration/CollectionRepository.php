@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\CollectionConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -101,6 +102,18 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
         $this->applyIdCursorChunk($listing, $limit);
 
         return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isNameTaken(int $storeId, string $name): bool
+    {
+        try {
+            return (bool) $this->collectionConfigResolver->getByName($name, $storeId);
+        } catch (Exception $e) {
+            throw new DatabaseException('Failed to check the collection name: ' . $e->getMessage(), $e);
+        }
     }
 
     /**

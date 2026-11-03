@@ -1,0 +1,173 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer;
+
+use Closure;
+use Generator;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use function count;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function mb_strtolower;
+
+/**
+ * @internal
+ */
+final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInterface
+{
+    private const int CHUNK_SIZE = 200;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function matchEntryKey(
+        array $entries,
+        array $entriesByName,
+        ?string $identifier,
+        string $name,
+    ): ?string {
+        if ($identifier !== null) {
+            return isset($entries[$identifier]) ? $identifier : null;
+        }
+
+        return $entriesByName[mb_strtolower($name)] ?? null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function indexByName(array $entries, string $field): array
+    {
+        $byName = [];
+
+        foreach ($entries as $entryKey => $entry) {
+            $name = $entry[$field] ?? null;
+
+            if (!is_string($name)) {
+                continue;
+            }
+
+            $byName[mb_strtolower($name)] ??= $entryKey;
+        }
+
+        return $byName;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function walkTargetByIdCursor(ApplyContext $context, Closure $walk): Generator
+    {
+        if ($context->getStoreId() === null) {
+            return;
+        }
+
+        $afterId = 0;
+
+        do {
+            $targets = $walk($afterId, self::CHUNK_SIZE);
+
+            foreach ($targets as $target) {
+                $afterId = (int) $target->getId();
+
+                yield $target;
+            }
+        } while (count($targets) === self::CHUNK_SIZE);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function walkTargetByOffset(ApplyContext $context, Closure $walk): Generator
+    {
+        if ($context->getStoreId() === null) {
+            return;
+        }
+
+        $offset = 0;
+
+        do {
+            $targets = $walk(self::CHUNK_SIZE, $offset);
+
+            foreach ($targets as $target) {
+                yield $target;
+            }
+
+            $offset += self::CHUNK_SIZE;
+        } while (count($targets) === self::CHUNK_SIZE);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function describesSameEntity(
+        ?string $storedName,
+        ?string $storedDescription,
+        string $name,
+        ?string $description,
+    ): bool {
+        return $storedName === $name && ($storedDescription ?? '') === ($description ?? '');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function describesSameKey(KeyConfig $target, ArtifactKeyEntry $entry): bool
+    {
+        $storedDefinition = json_decode($target->getDefinition(), true);
+
+        return $target->getName() === $entry->getName()
+            && ($target->getTitle() ?? '') === ($entry->getTitle() ?? '')
+            && ($target->getDescription() ?? '') === ($entry->getDescription() ?? '')
+            && $target->getType() === $entry->getType()
+            && $target->getEnabled() === $entry->isEnabled()
+            && (is_array($storedDefinition) ? $storedDefinition : null) === $entry->getDefinition();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * `sorter` and `mandatory` are always compared; a per assignment column only when the entry
+     * supplies it, because an entry that leaves one out does not write it either.
+     */
+    public function describesSameAssignment(KeyGroupRelation $target, ArtifactAssignmentEntry $entry): bool
+    {
+        if ($target->getSorter() !== $entry->getSorter() || $target->isMandatory() !== $entry->isMandatory()) {
+            return false;
+        }
+
+        if ($entry->isMetadataSupplied() && $target->getMetadata() !== $entry->getMetadata()) {
+            return false;
+        }
+
+        if ($entry->isDefinitionOverrideSupplied()
+            && $target->getDefinitionOverride() !== $entry->getDefinitionOverride()) {
+            return false;
+        }
+
+        return !$entry->isSubGroupSupplied() || $target->getSubGroup() === $entry->getSubGroup();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readNullableString(array $entry, string $field): ?string
+    {
+        $value = $entry[$field] ?? null;
+
+        return is_string($value) ? $value : null;
+    }
+}

@@ -216,6 +216,63 @@ final class SubGroupNameUniquenessTest extends Unit
     }
 
     /**
+     * An apply writes through the same unit of work. The rule is the sub group's, not the
+     * endpoint's: a file that names two identifiers the same way, or an apply racing a create from
+     * the UI, would otherwise persist the duplicate every other path refuses.
+     */
+    public function testTheArtifactSaveTakesTheSameLockedPath(): void
+    {
+        $repository = $this->createRepository(savingANewRow: true);
+
+        $repository->saveFromArtifact(null, self::STORE_ID, self::IDENTIFIER, self::SUB_GROUP_NAME, null);
+
+        $this->assertStepsInOrder([
+            'begin',
+            StoreConfigDao::TABLE_NAME_STORES,
+            '`name` =',
+            'INSERT ' . SubGroupConfigDao::TABLE_NAME_SUBGROUPS,
+            'commit',
+        ]);
+    }
+
+    /**
+     * And is refused by it: the apply that reaches the store second finds the row the first writer
+     * left and is told the name is taken, instead of writing a second row under it.
+     */
+    public function testTheArtifactSaveThatLosesTheRaceForTheNameIsRefused(): void
+    {
+        $repository = $this->createRepository(
+            savingANewRow: true,
+            probe: static fn (int $call, bool $storeHeld): int|false => $storeHeld ? self::WINNER_ID : false
+        );
+
+        try {
+            $repository->saveFromArtifact(null, self::STORE_ID, self::IDENTIFIER, self::SUB_GROUP_NAME, null);
+            $this->fail('Expected the artifact save that lost the name to be refused.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(422, $e->getStatusCode());
+            $this->assertStringContainsString(self::SUB_GROUP_NAME, $e->getMessage());
+        }
+
+        $this->assertSame([], $this->writes, 'The apply that lost the name must not write.');
+        $this->assertStepsInOrder(['begin', StoreConfigDao::TABLE_NAME_STORES, '`name` =', 'rollback']);
+    }
+
+    /**
+     * The probe a reconcile asks before it decides anything reads the same pair without holding it:
+     * it has no row of its own to protect at that point, and the decision it goes on to write under
+     * is taken under the locking read above.
+     */
+    public function testTheReconcileProbeReadsTheNameWithoutHoldingIt(): void
+    {
+        $repository = $this->createRepository(probe: static fn (): int|false => self::WINNER_ID);
+
+        $this->assertTrue($repository->isNameTaken(self::STORE_ID, self::SUB_GROUP_NAME, null));
+        $this->assertStringNotContainsString('FOR UPDATE', $this->firstStepContaining('`name` ='));
+        $this->assertSame([], $this->writes);
+    }
+
+    /**
      * @param list<array<string, mixed>> $storedRows the rows a listing reads back, for `getById()`
      * @param null|callable(int, bool): (int|false) $probe what the duplicate probe answers, by the
      *        number of the call and whether the store is held by then; `false` is a free name

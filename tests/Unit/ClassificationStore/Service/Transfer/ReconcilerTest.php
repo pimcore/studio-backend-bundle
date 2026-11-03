@@ -23,11 +23,14 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactDocument;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapper;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
@@ -61,6 +64,8 @@ final class ReconcilerTest extends Unit
     private const string GROUP_IDENTIFIER = '01GROUP';
 
     private const string KEY_IDENTIFIER = '01KEY';
+
+    private const string SUB_GROUP_IDENTIFIER = '01SUBGROUP';
 
     private const string GROUP_NAME = 'Measurements';
 
@@ -359,6 +364,125 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * A dry run resolves no id, because it writes nothing. An entry the file itself declares is
+     * still a valid reference, so the assignment that names a sub group and endpoints the file
+     * creates is the creation it would be - not a refusal over entries that are right there.
+     */
+    public function testADryRunAcceptsAReferenceToAnEntryTheFileDeclares(): void
+    {
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+            ],
+            'keyGroupRelations' => [
+                $this->createAssignmentEntry(['subGroup' => self::SUB_GROUP_IDENTIFIER]),
+            ],
+        ]);
+
+        $report = $this->createReconciler()->apply($document, $this->createStore(), true);
+
+        $this->assertFalse($report->hasConflicts(), implode(' ', $report->getNamed(ApplyOutcome::CONFLICT)));
+        // the sub group, the group, the key and the assignment between them
+        $this->assertSame(4, $report->getCount(ApplyOutcome::CREATED));
+        $this->assertSame([], $this->writes);
+    }
+
+    /**
+     * The other half of the same question: an endpoint that is in neither the file nor the store is
+     * refused in a dry run as well, rather than reported as a creation no later run could make.
+     */
+    public function testADryRunRefusesAReferenceNothingDeclares(): void
+    {
+        $document = $this->createDocument([
+            'keyGroupRelations' => [$this->createAssignmentEntry(['group' => '01ABSENT'])],
+        ]);
+
+        $report = $this->createReconciler()->apply($document, $this->createStore(), true);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertStringContainsString(
+            'it names "01ABSENT", which exists neither in the file nor in the store',
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+    }
+
+    /**
+     * The store's name is another store's to carry: renaming onto it is refused where
+     * `StoreRepository::update()` refuses it, and reported as a conflict of the reconcile rather
+     * than left to arrive as a failed save.
+     */
+    public function testAStoreNameAnotherStoreCarriesIsRefused(): void
+    {
+        $store = $this->createStore();
+        $store->setName('Old name');
+
+        $reconciler = $this->createReconciler(storeNameIsTaken: true);
+
+        $report = $reconciler->apply($this->createDocument(), $store, false);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertStringContainsString(
+            'the name is already another store\'s',
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertNotContains(
+            sprintf('store:%s:ETIM:The ETIM classification', self::STORE_IDENTIFIER),
+            $this->writes
+        );
+    }
+
+    /**
+     * And the same for a sub group, whose name is unique per store: the file does not get to write
+     * a second row under a name the store already carries just because it arrived as an artifact.
+     */
+    public function testASubGroupNameTheStoreAlreadyCarriesIsRefused(): void
+    {
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+            ],
+        ]);
+
+        $reconciler = $this->createReconciler(subGroupNameIsTaken: true);
+
+        $report = $reconciler->apply($document, $this->createStore(), false);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertStringContainsString(
+            'sub group "Dimensions": the name is already another entry\'s in this store',
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertNotContains(
+            sprintf('subGroup:%s:Dimensions', self::SUB_GROUP_IDENTIFIER),
+            $this->writes,
+            'The entry whose name is taken must not be written.'
+        );
+    }
+
+    /**
+     * Two identifiers of one file under one name are the same collision seen from inside the file.
+     * A real run finds the second one in the row the first one left; a dry run writes nothing, so
+     * it is the run's own answer that has to refuse it - in both modes, before the apply.
+     */
+    public function testAFileNamingTwoSubGroupsTheSameWayIsRefused(): void
+    {
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+                ['identifier' => '01OTHERSUBGROUP', 'name' => 'dimensions', 'description' => null],
+            ],
+        ]);
+
+        $report = $this->createReconciler()->apply($document, $this->createStore(), true);
+
+        $this->assertTrue($report->hasConflicts());
+        $this->assertStringContainsString(
+            'sub group "dimensions": the name is already another entry\'s in this store',
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+    }
+
+    /**
      * A dry run reports what it would do and asks for nothing.
      */
     public function testADryRunReportsWithoutWriting(): void
@@ -489,8 +613,11 @@ final class ReconcilerTest extends Unit
         array $keyAssignments = [],
         array $groupNamesByKeyId = [],
         ?Connection $connection = null,
+        bool $storeNameIsTaken = false,
+        bool $subGroupNameIsTaken = false,
     ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
+        $storeRepository->method('isNameTaken')->willReturn($storeNameIsTaken);
         $storeRepository->method('saveFromArtifact')->willReturnCallback(
             function (
                 ?StoreConfig $config,
@@ -507,6 +634,7 @@ final class ReconcilerTest extends Unit
 
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository->method('getChunkAfterId')->willReturn($subGroups);
+        $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameIsTaken);
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?SubGroupConfig $config, int $storeId, string $identifier, string $name): SubGroupConfig {
                 $this->writes[] = sprintf('subGroup:%s:%s', $identifier, $name);
@@ -573,8 +701,25 @@ final class ReconcilerTest extends Unit
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);
         $collectionRelationRepository->method('getChunkByStore')->willReturn([]);
 
+        $parser = new ArtifactParser();
+        $matcher = new ArtifactTargetMatcher();
+        $diagnostics = new ApplyDiagnostics();
+
         return new Reconciler(
-            new ArtifactParser(),
+            $parser,
+            $matcher,
+            new ArtifactEntryWriter(
+                $parser,
+                $matcher,
+                $diagnostics,
+                $collectionRepository,
+                $collectionRelationRepository,
+                $groupRepository,
+                $keyGroupRelationRepository,
+                $keyRepository,
+                $subGroupRepository
+            ),
+            $diagnostics,
             $collectionRepository,
             $collectionRelationRepository,
             $connection ?? $this->makeEmpty(Connection::class),
