@@ -27,12 +27,20 @@ The following steps are necessary during updating to newer versions.
   and `POST /classification-store/configuration/keys/add`) carry an optional `title`, holding the stored title of the key
   configuration. It is the raw stored string, is not translated and does not fall back to `name`. `POST
   /classification-store/configuration/keys/add` accepts an optional `title`; when it is sent, it is stored as the key's title
-  and as `definition.title`, instead of the name used for both so far. Sending no `title`, or `null`, keeps writing the name
-  to both, so clients that do not send the new field are unaffected. An empty `title` (`""`) is treated like an
-  absent one and writes the name to both as well. The `@internal`
-  `KeyRepositoryInterface::create()` got the optional argument `$title`. The update endpoint is unchanged and its request
-  schema still lists `title` as required, so a client editing an unrelated column of a key has to send the key's stored
-  title — readable from these responses from now on — instead of its name, which would otherwise overwrite the title.
+  and as `definition.title`, instead of the name used for both so far. Sending no `title`, `null` or an empty one (`""`)
+  writes an empty title to the key's own title column — the name is no longer written there — while `definition.title`
+  still falls back to the name, so the object editor label is unchanged. The `@internal`
+  `KeyRepositoryInterface::create()` got the optional argument `$title`.
+- [Classification Store] Changed: `PUT /classification-store/configuration/keys/{id}` tells a `title` and a `description`
+  that are absent from the request body apart from ones sent as `null`. An absent field leaves the stored value alone, which
+  is the supported way to edit an unrelated column of a key; a field that is present is written, so `null` and `""` both
+  clear the stored value instead of being ignored. `title` and `description` are therefore no longer listed as `required`
+  in the request schema of `ClassificationStoreConfigurationKeyUpdate`, which now requires `name`, `type` and `definition`.
+  Clients that kept sending the stored title along with an unrelated edit — the previously documented workaround — keep
+  working unchanged. The key's `definition` is still only written when the request carries one, so clearing a title does
+  not empty `definition.title`, and a key whose definition carries a title keeps rendering it in the object editor. The
+  `@internal` `KeyRepositoryInterface::update()` now takes the mapped `KeyUpdate` payload instead of the individual
+  values, because the presence of each field is part of what it has to write.
 - [Classification Store] Changed: three endpoints return their items in a new order, unconditionally and without a
   configuration option. `GET /classification-store/layout-by-group/{groupId}` returns `keys` ordered by the configured
   `sorter` ascending, then by key id ascending, instead of by key id alone.

@@ -95,18 +95,11 @@ final readonly class KeyService implements KeyServiceInterface
     {
         $definition = $parameters->getDefinition();
         if ($definition !== null) {
-            $definition = $this->applyOptionsProviderDefaults($definition);
+            $parameters = $parameters->withDefinition($this->applyOptionsProviderDefaults($definition));
         }
 
         try {
-            $keyConfig = $this->keyConfigurationRepository->update(
-                $id,
-                $parameters->getName(),
-                $parameters->getTitle(),
-                $parameters->getDescription(),
-                $parameters->getType(),
-                $definition,
-            );
+            $keyConfig = $this->keyConfigurationRepository->update($id, $parameters);
         } finally {
             $this->keyRelationResolver->clear();
         }

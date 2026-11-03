@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 #[Schema(
     schema: 'ClassificationStoreConfigurationKeyUpdate',
     title: 'Classification Store Configuration Key Update',
-    required: ['name', 'title', 'description', 'type', 'definition'],
+    required: ['name', 'type', 'definition'],
     type: 'object'
 )]
 final readonly class KeyUpdate
@@ -81,6 +81,9 @@ final readonly class KeyUpdate
             nullable: true
         )]
         private ?array $definition = null,
+        // Set by KeyUpdateDenormalizer: an absent field leaves the stored value alone, a present empty one clears it.
+        private bool $titleSupplied = false,
+        private bool $descriptionSupplied = false,
     ) {
         if (empty($this->name)) {
             throw new InvalidArgumentException('Name cannot be empty.');
@@ -110,5 +113,31 @@ final readonly class KeyUpdate
     public function getDefinition(): ?array
     {
         return $this->definition;
+    }
+
+    public function isTitleSupplied(): bool
+    {
+        return $this->titleSupplied;
+    }
+
+    public function isDescriptionSupplied(): bool
+    {
+        return $this->descriptionSupplied;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function withDefinition(array $definition): self
+    {
+        return new self(
+            name: $this->name,
+            title: $this->title,
+            description: $this->description,
+            type: $this->type,
+            definition: $definition,
+            titleSupplied: $this->titleSupplied,
+            descriptionSupplied: $this->descriptionSupplied,
+        );
     }
 }

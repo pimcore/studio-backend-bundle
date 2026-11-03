@@ -150,3 +150,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Configuration\KeyGroupRelationService
+
+
+  #
+  # Denormalizers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Request\Configuration\KeyUpdateDenormalizer:
+    tags: [ 'serializer.normalizer' ]
