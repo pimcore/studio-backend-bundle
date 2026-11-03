@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactBuilder;
@@ -382,12 +383,15 @@ final class ArtifactRoundTripTest extends Unit
                 $parser,
                 $matcher,
                 $diagnostics,
-                $collectionRepository,
+                new ApplyRefusals(
+                    $collectionRepository,
+                    $groupRepository,
+                    $keyGroupRelationRepository,
+                    $subGroupRepository
+                ),
                 $collectionRelationRepository,
-                $groupRepository,
                 $keyGroupRelationRepository,
-                $keyRepository,
-                $subGroupRepository
+                $keyRepository
             ),
             $diagnostics,
             $collectionRepository,

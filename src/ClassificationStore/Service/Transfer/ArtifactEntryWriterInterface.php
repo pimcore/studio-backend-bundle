@@ -26,8 +26,9 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
  * is, created, updated, adopted, unchanged or refused, and the write it takes.
  *
  * Which rows there are to match is still the reconciler's ({@see ReconcilerInterface}) - it supplies
- * the walks a level is taken in - and what a row describes is the matcher's
- * ({@see ArtifactTargetMatcherInterface}).
+ * the walks a level is taken in - what a row describes is the matcher's
+ * ({@see ArtifactTargetMatcherInterface}), and whether an entry may be written at all is the
+ * refusals' ({@see ApplyRefusalsInterface}).
  *
  * @internal
  */

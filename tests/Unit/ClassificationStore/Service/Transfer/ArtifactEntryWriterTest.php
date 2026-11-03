@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyContext;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
@@ -188,12 +189,15 @@ final class ArtifactEntryWriterTest extends Unit
             new ArtifactParser(),
             new ArtifactTargetMatcher(),
             new ApplyDiagnostics(),
-            $this->makeEmpty(CollectionRepositoryInterface::class),
+            new ApplyRefusals(
+                $this->makeEmpty(CollectionRepositoryInterface::class),
+                $this->makeEmpty(GroupRepositoryInterface::class),
+                $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
+                $this->makeEmpty(SubGroupRepositoryInterface::class)
+            ),
             $this->makeEmpty(CollRelationRepositoryInterface::class),
-            $this->makeEmpty(GroupRepositoryInterface::class),
             $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
-            $this->makeEmpty(KeyRepositoryInterface::class),
-            $this->makeEmpty(SubGroupRepositoryInterface::class)
+            $this->makeEmpty(KeyRepositoryInterface::class)
         );
     }
 }
