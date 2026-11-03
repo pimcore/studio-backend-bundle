@@ -54,6 +54,8 @@ final class KeyGroupLayoutServiceTest extends Unit
 
     private const string COLUMN_TITLE = 'classificationstore.key.weight';
 
+    private const string SUB_GROUP = '01JBQ8X9Z0ABCDEFGHJKMNPQRS';
+
     /**
      * @throws Exception
      */
@@ -140,6 +142,34 @@ final class KeyGroupLayoutServiceTest extends Unit
     }
 
     /**
+     * This endpoint builds its own KeyLayout rather than going through the group layout hydrator, so the
+     * sub-group identifier reaches the response along a second, independent path. It is the raw identifier
+     * of the assignment: this payload has no sub-group vocabulary to resolve it against, and nothing here
+     * may substitute a name for it.
+     *
+     * @throws Exception
+     */
+    public function testGetKeyLayoutCarriesTheRawSubGroupIdentifierOfTheRelation(): void
+    {
+        $keyLayout = $this->getKeyLayout(
+            $this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE),
+            subGroup: self::SUB_GROUP
+        );
+
+        $this->assertSame(self::SUB_GROUP, $keyLayout->getSubGroup());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetKeyLayoutReturnsNoSubGroupWhenTheRelationCarriesNone(): void
+    {
+        $keyLayout = $this->getKeyLayout($this->createKeyConfig(self::KEY_ID, self::KEY_NAME, self::COLUMN_TITLE));
+
+        $this->assertNull($keyLayout->getSubGroup());
+    }
+
+    /**
      * @throws Exception
      */
     public function testPreloadKeyTitlesReadsAWholeGroupWithOneCall(): void
@@ -159,10 +189,11 @@ final class KeyGroupLayoutServiceTest extends Unit
     private function getKeyLayout(
         ?KeyConfig $keyConfig,
         array $labels = [],
-        ?string $userLanguage = self::LANGUAGE
+        ?string $userLanguage = self::LANGUAGE,
+        ?string $subGroup = null
     ): KeyLayout {
         return $this
-            ->createService($keyConfig, $labels, $userLanguage)
+            ->createService($keyConfig, $labels, $userLanguage, $subGroup)
             ->getKeyLayout(new LayoutParameter('classificationStore'), self::KEY_ID, self::GROUP_ID);
     }
 
@@ -174,7 +205,8 @@ final class KeyGroupLayoutServiceTest extends Unit
     private function createService(
         ?KeyConfig $keyConfig,
         array $labels = [],
-        ?string $userLanguage = self::LANGUAGE
+        ?string $userLanguage = self::LANGUAGE,
+        ?string $subGroup = null
     ): KeyGroupLayoutService {
         $relation = new KeyGroupRelation();
         $relation->setKeyId(self::KEY_ID);
@@ -183,6 +215,7 @@ final class KeyGroupLayoutServiceTest extends Unit
         $relation->setDescription('The weight of the product');
         $relation->setDefinition('{"fieldtype":"input"}');
         $relation->setType('input');
+        $relation->setSubGroup($subGroup);
 
         $keyRelationResolver = $this->createMock(KeyRelationResolverInterface::class);
         $keyRelationResolver
