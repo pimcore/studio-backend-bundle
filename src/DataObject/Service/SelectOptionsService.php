@@ -121,8 +121,8 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
         try {
             $class = $object->getClass();
-        } catch (Exception) {
-            throw new NotFoundException('class', $object->getClassId());
+        } catch (Exception $exception) {
+            throw new NotFoundException('class', $object->getClassId(), previous: $exception);
         }
 
         return array_filter(
