@@ -50,11 +50,13 @@ final class KeyServiceTest extends Unit
             ->method('update')
             ->with(
                 29,
-                'tessd',
-                'tessd',
-                null,
-                'select',
-                $definition + ['optionsProviderClass' => SelectOptionsOptionsProvider::class]
+                new KeyUpdate(
+                    'tessd',
+                    'tessd',
+                    null,
+                    'select',
+                    $definition + ['optionsProviderClass' => SelectOptionsOptionsProvider::class]
+                )
             )
             ->willReturn(new KeyConfig());
 
@@ -79,7 +81,7 @@ final class KeyServiceTest extends Unit
         $repository
             ->expects($this->once())
             ->method('update')
-            ->with(1, 'key', null, null, null, $definition)
+            ->with(1, new KeyUpdate('key', definition: $definition))
             ->willReturn(new KeyConfig());
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', definition: $definition));
@@ -94,10 +96,35 @@ final class KeyServiceTest extends Unit
         $repository
             ->expects($this->once())
             ->method('update')
-            ->with(1, 'key', 'Title', 'Description', 'input', null)
+            ->with(1, new KeyUpdate('key', 'Title', 'Description', 'input'))
             ->willReturn(new KeyConfig());
 
         $this->createService($repository)->updateKey(1, new KeyUpdate('key', 'Title', 'Description', 'input'));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testUpdateKeyForwardsThePresenceFlagsWithoutFlatteningThem(): void
+    {
+        // A definition makes the service hand on a new instance, so the flags have to survive the copy.
+        $parameters = new KeyUpdate(
+            name: 'key',
+            title: null,
+            description: '',
+            definition: ['fieldtype' => 'input'],
+            titleSupplied: true,
+            descriptionSupplied: true
+        );
+
+        $repository = $this->createMock(KeyRepositoryInterface::class);
+        $repository
+            ->expects($this->once())
+            ->method('update')
+            ->with(1, $parameters)
+            ->willReturn(new KeyConfig());
+
+        $this->createService($repository)->updateKey(1, $parameters);
     }
 
     /**
