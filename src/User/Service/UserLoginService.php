@@ -132,7 +132,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         if (!$user->isActive()) {
             throw new InvalidArgumentException(
                 'Cannot invite an inactive user',
-                HttpResponseErrorKeys::INVITATION_USER_INACTIVE->value
+                errorKey: HttpResponseErrorKeys::INVITATION_USER_INACTIVE->value
             );
         }
 
@@ -140,7 +140,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException(
                 'Cannot invite a user without a valid email address',
-                HttpResponseErrorKeys::INVITATION_NO_EMAIL->value
+                errorKey: HttpResponseErrorKeys::INVITATION_NO_EMAIL->value
             );
         }
 
@@ -151,7 +151,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         // and the account stays password-less in practice. The Classic UI does the same.
         if (!$user->getPassword()) {
             $user->setPassword(bin2hex(random_bytes(16)));
-            $user->save();
+            $this->userRepository->updateUser($user);
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);

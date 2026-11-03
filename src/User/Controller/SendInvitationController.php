@@ -66,7 +66,7 @@ final class SendInvitationController extends AbstractApiController
     #[InvitationRequestBody]
     #[SuccessResponse]
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]

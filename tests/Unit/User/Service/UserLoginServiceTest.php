@@ -398,14 +398,7 @@ final class UserLoginServiceTest extends Unit
         bool $active = true,
         bool $admin = false,
     ): User {
-        // A real User whose save() is neutralised: the service persists the throwaway
-        // password, and a unit test has no database to persist it to.
-        /** @var User $user */
-        $user = $this->make(User::class, [
-            'save' => function (): User {
-                return $this;
-            },
-        ]);
+        $user = new User();
         $user->setId(7);
         $user->setName('invitee');
         $user->setActive($active);
