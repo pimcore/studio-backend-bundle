@@ -67,93 +67,15 @@ The following steps are necessary during updating to newer versions.
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
 - [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
-  Four endpoints manage it, mirroring the group quartet: `POST /classification-store/configuration/stores/{storeId}/sub-groups`
-  (paginated list, taking the usual collection request body), `POST /classification-store/configuration/sub-groups/add`
-  (create, from `name` and `storeId`), `PUT /classification-store/configuration/sub-groups/{id}` (rename and re-describe,
-  from `name` and `description`) and `DELETE /classification-store/configuration/sub-groups/{id}`. All four require the
-  `classificationStore` permission. `SubGroupDetail` carries a generated, read-only `identifier` — the opaque string a key
-  assignment names the entry by — which neither write schema accepts. A second sub group with a name already used in the
-  same store is refused with `422`; the same name in a different store is accepted. Deleting one is refused with `409`
-  while any key assignment in a group of that store still carries it, and the message names those groups; the assignments
-  and the vocabulary row are left untouched, so a sub group is never removed from under the keys that name it. Renaming is
-  always safe: the assignments hold the identifier, which a rename does not change.
-- [Classification Store] Added: `subGroup`, the raw sub group identifier of an assignment, nullable, on
-  `KeyGroupRelationDetail` (`POST /classification-store/configuration/groups/{groupId}/key-relations` and the create
-  response) and on `KeyLayout`, so every key of `GET /classification-store/layout-by-key/{keyId}/{groupId}`,
-  `GET /classification-store/layout-by-group/{groupId}` and `GET /classification-store/layout-by-collection/{collectionId}`
-  reports it. It is the stored identifier verbatim and is never resolved to a name in these fields. There is no write path
-  for it yet — `KeyGroupRelationCreate` is unchanged — so it is read-only until the assignment update endpoint lands.
-- [Classification Store] Added: `GroupLayout` carries `subGroups`, an array of objects with `identifier`, `name` and
-  `description`, resolved from the store's sub group vocabulary while the layout is built. It is optional and defaults to
-  `[]`, so the schema's `required` list is unchanged. Only sub groups a key of that group actually carries appear, and an
-  identifier with no row in the vocabulary adds no entry at all — the key keeps the identifier in `keys` and no entry is
-  fabricated from it. The order is **derived, never stored**: a sub group appears where its first key appears, following
-  the relation `sorter` ascending then key id ascending that `keys` already uses — neither alphabetically nor by
-  vocabulary id. No order column was added. Because `GET /classification-store/layout-by-collection/{collectionId}`
-  returns a `GroupLayout` per group, its groups gain `subGroups` and their keys gain `subGroup` too: `CollectionLayout`
-  itself still carries only `groups`, as the entry above says, but the objects inside it are no longer unchanged.
-- [Classification Store] Changed: `objectId` is now optional on `GET /classification-store/layout-by-group/{groupId}` and
-  on `GET /classification-store/layout-by-collection/{collectionId}`, the way it already was on
-  `GET /classification-store/layout-by-key/{keyId}/{groupId}`. Without it the layout is returned with its field
-  definitions unenriched, which is what a caller with no object in context — a grid column picker, say — needs. An
-  `objectId` that is sent but does not resolve is still a `404`, so no client that sends one sees a different answer. The
-  `@internal` `GroupLayoutHydratorInterface::hydrate()` got the optional argument `$subGroups`,
-  `SearchHelperServiceInterface::applySearchTermFilter()` accepts the sub group listing in addition to the group and
-  collection ones, and `ClassificationStore\Service\GroupService` got a `SubGroupRepositoryInterface` constructor
-  argument.
-- [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults —
-  `filters.page` `1` and `filters.pageSize` `50` — instead of returning every row. A request body of `{}` previously
-  reached the listing with no limit at all, because the paging columns `PaginationFilter` acts on were only built when
-  `filters` was present. **A client that sends `{}` and treats the answer as the complete collection now sees the first
-  50 rows and must page.** The affected endpoints are the ones that build their listing through
-  `FilterMapperServiceInterface::getFilterParameters()`:
-  `POST /recycle-bin/items`, `POST /website-settings`, `POST /unit/quantity-value/units/collection`,
-  `POST /bundle/seo/redirects` and the Classification Store configuration listings
-  `POST /classification-store/configuration/stores/{storeId}/groups`,
-  `POST /classification-store/configuration/stores/{storeId}/keys`,
-  `POST /classification-store/configuration/stores/{storeId}/collections`,
-  `POST /classification-store/configuration/groups/{groupId}/key-relations` and
-  `POST /classification-store/configuration/collections/{colId}/relations`.
-  To read the whole collection, send `filters.page` and `filters.pageSize` explicitly and walk the pages until you have
-  as many items as the response's `totalItems` reports (also returned as the `X-Pimcore-Total-Items` header); the count
-  is of the whole collection and is not reduced by the page size. A client that wants the previous unpaged answer in one
-  request has to ask for it, by sending a `filters.pageSize` large enough to cover `totalItems`.
-
-> **Note:** three listings keep their previous behaviour and are **not** in the list above, so a body of `{}` still
-> returns every row there.
-> `POST /notifications` applies the paging defaults only when `filters` is sent, because it maps its own parameters
-> rather than going through `getFilterParameters()`.
-> `POST /translations/list` does call `getFilterParameters()`, but only once it has a `filters` object to read sort and
-> column filters from: `TranslatorService::getTranslationList()` returns the listing as soon as `getFilters()` is
-> `null`, before the mapper and the filter application further down the method. An omitted `filters` therefore never
-> reaches the paging defaults on this endpoint. Sending `filters` — even an empty object — pages it like the others.
-> `POST /translations/export` is unpaged by design — it clears the limit and offset again before reading, so an export
-> is never truncated to a page.
-
-- [Classification Store] Fixed: a client-supplied `equals` column filter on the column a route-scoped configuration
-  listing is already scoped by no longer replaces that scope — it narrows it. The route scope and an `equals` filter on
-  the same column used to build the identical condition string, and a listing keys its conditions by that string, so
-  the filter overwrote the binding: `POST /classification-store/configuration/stores/1/groups` with an `equals` filter
-  of `storeId` `2` answered with the groups of store 2. The five affected endpoints are
-  `POST /classification-store/configuration/stores/{storeId}/groups`,
-  `POST /classification-store/configuration/stores/{storeId}/keys`,
-  `POST /classification-store/configuration/stores/{storeId}/collections` (all scoped by `storeId`),
-  `POST /classification-store/configuration/groups/{groupId}/key-relations` (`groupId`) and
-  `POST /classification-store/configuration/collections/{colId}/relations` (`colId`). Such a filter now adds a second
-  condition next to the route scope, so a value other than the route's returns an empty collection instead of another
-  scope's rows. A client that relied on reading across the route scope this way has to address the other scope through
-  its own route.
-- [Listing] Fixed: a `date` column filter on a date column stored as a Unix timestamp now selects the window it names.
-  Those columns were compared against a datetime string, which MySQL coerces to a number, so an `on`/`from`/`to` filter
-  matched nothing and a `>` filter matched everything. The affected columns are `creationDate` and `modificationDate` on
-  `POST /classification-store/configuration/stores/{storeId}/groups`,
-  `POST /classification-store/configuration/stores/{storeId}/keys`,
-  `POST /classification-store/configuration/stores/{storeId}/collections`, `POST /translations/list`,
-  `POST /website-settings` and `POST /bundle/seo/redirects`, plus `expiry` on the redirects listing. **A client that
-  sent such a filter and got an empty — or complete — collection now gets the filtered one.** The two relation listings
-  and the quantity-value units listing have no date column and are unchanged, and the notification listing's dates are
-  a real `DATETIME` and were already filtered correctly.
-
+- [Listing] Changed: a collection request body that omits `filters` is now paged with the documented defaults instead of
+  returning every row. A client that sends `{}` and treats the answer as the complete collection now gets only the first
+  page, and has to send `filters.page` and `filters.pageSize` and walk the pages until it has as many items as
+  `totalItems` reports.
+- [Listing] Fixed: a client-supplied `equals` filter on the column a route-scoped listing is already scoped by now
+  narrows that scope instead of replacing it. A client that relied on reaching another scope's rows that way gets an
+  empty collection, and has to address that scope through its own route.
+- [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp now selects the window it names, instead
+  of matching nothing or everything. A client that sent such a filter gets different rows than before.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
