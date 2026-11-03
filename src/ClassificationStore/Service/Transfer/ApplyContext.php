@@ -34,6 +34,19 @@ final class ApplyContext
     private array $resolved = [];
 
     /**
+     * The same resolutions the other way round, row id to identifier, per level.
+     *
+     * A relation of the target names its endpoints by the identifiers their rows carry, and an
+     * adopted row carries the file's identifier only once the adoption has been written - which a
+     * dry run never does. Asking this instead of the row answers with the identifier the run has
+     * decided the row has, in both modes, so a dry run reports an existing relation as the update
+     * or the match it is rather than as target only and then created.
+     *
+     * @var array<string, array<int, string>>
+     */
+    private array $identifiersById = [];
+
+    /**
      * The identifiers the run has decided will exist once it is done, whether or not it wrote a row
      * for them. A dry run writes nothing and so resolves no new id at all, which is why a planned
      * identifier is tracked beside the resolved ones rather than instead of them: a reference the
@@ -106,12 +119,24 @@ final class ApplyContext
     public function register(ArtifactSection $section, string $identifier, int $id): void
     {
         $this->resolved[$section->value][$identifier] = $id;
+        $this->identifiersById[$section->value][$id] = $identifier;
         $this->plan($section, $identifier);
     }
 
     public function resolve(ArtifactSection $section, string $identifier): ?int
     {
         return $this->resolved[$section->value][$identifier] ?? null;
+    }
+
+    /**
+     * The identifier this run has resolved for the row, or null for a row it has not registered.
+     *
+     * {@see self::$identifiersById} for why a relation reads its endpoints through this rather than
+     * off the row it was read with.
+     */
+    public function identifierOf(ArtifactSection $section, int $id): ?string
+    {
+        return $this->identifiersById[$section->value][$id] ?? null;
     }
 
     /**

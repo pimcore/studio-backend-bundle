@@ -32,14 +32,19 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
+use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
+use function array_filter;
+use function array_values;
 use function implode;
 use function json_encode;
 use function sprintf;
@@ -59,6 +64,8 @@ final class ReconcilerTest extends Unit
 
     private const int KEY_ID = 51;
 
+    private const int COLLECTION_ID = 31;
+
     private const string STORE_IDENTIFIER = '01STORE';
 
     private const string GROUP_IDENTIFIER = '01GROUP';
@@ -66,6 +73,8 @@ final class ReconcilerTest extends Unit
     private const string KEY_IDENTIFIER = '01KEY';
 
     private const string SUB_GROUP_IDENTIFIER = '01SUBGROUP';
+
+    private const string COLLECTION_IDENTIFIER = '01COLLECTION';
 
     private const string GROUP_NAME = 'Measurements';
 
@@ -82,6 +91,21 @@ final class ReconcilerTest extends Unit
      * @var list<KeyGroupRelation>
      */
     private array $savedAssignments = [];
+
+    /**
+     * The writes and the locks in the order the apply reached them, so that a test can assert which
+     * came first. `$writes` stays what was written; the locks are not writes.
+     *
+     * @var list<string>
+     */
+    private array $steps = [];
+
+    /**
+     * Whether each probe of the groups a key is assigned to was asked for under a lock.
+     *
+     * @var list<bool>
+     */
+    private array $disableProbesHeld = [];
 
     /**
      * The identifier is what matches, so a renamed row is updated rather than duplicated.
@@ -538,6 +562,231 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * A name is not an identity. An identifierless key called `weight` and the key that owns the
+     * file's `weight` entry can both exist, so identifier ownership is resolved across the level
+     * before a name may adopt anything: the owner is updated and the namesake stays target only.
+     * Adopting the namesake instead would write the file's identifier onto the wrong row and skip
+     * the row that already carries it.
+     */
+    public function testAnIdentifierlessNamesakeDoesNotTakeTheEntryOfTheRowThatOwnsItsIdentifier(): void
+    {
+        $owner = $this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true);
+        $owner->setTitle('Old title');
+        $namesake = $this->createKey(null, self::KEY_NAME, enabled: true, id: 52);
+
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME)],
+            enabledKeys: [$owner, $namesake]
+        );
+
+        $report = $reconciler->apply($this->createDocument(), $this->createStore(), false);
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::ADOPTED), 'The namesake must not be adopted.');
+        $this->assertSame(1, $report->getCount(ApplyOutcome::UPDATED));
+        $this->assertSame([sprintf('key "%s"', self::KEY_NAME)], $report->getNamed(ApplyOutcome::UPDATED));
+        $this->assertSame([sprintf('key "%s"', self::KEY_NAME)], $report->getNamed(ApplyOutcome::TARGET_ONLY));
+    }
+
+    /**
+     * Key names are deliberately non-unique, so the second key of a store called `weight` is the
+     * target-only row it is - not a conflict that rolls the whole import back. The refusal of a
+     * name the file reuses under another identifier holds for the levels whose name is unique per
+     * store, and keys are not one of them.
+     */
+    public function testASecondKeyUnderTheSameNameIsLeftInPlaceRatherThanRefused(): void
+    {
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME)],
+            enabledKeys: [
+                $this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true),
+                $this->createKey('01OTHERKEY', self::KEY_NAME, enabled: true, id: 52),
+            ]
+        );
+
+        $report = $reconciler->apply($this->createDocument(), $this->createStore(), false);
+
+        $this->assertFalse(
+            $report->hasConflicts(),
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertSame([sprintf('key "%s"', self::KEY_NAME)], $report->getNamed(ApplyOutcome::TARGET_ONLY));
+    }
+
+    /**
+     * A definition the file leaves out is stored as `[]`, so the apply after it has to read `[]` as
+     * the absent definition it wrote rather than as a change. Without that, deploying one file twice
+     * never becomes a no-op: every run reports the key updated and saves it again.
+     */
+    public function testAKeyWhoseDefinitionTheFileLeavesOutIsUnchangedOnTheApplyAfterIt(): void
+    {
+        $entry = $this->createKeyEntry(enabled: true);
+        unset($entry[ArtifactField::DEFINITION->value]);
+
+        $stored = $this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true);
+        // what the first apply wrote for a definition the file did not carry
+        $stored->setDefinition('[]');
+
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME)],
+            enabledKeys: [$stored],
+            keyAssignments: [$this->createAssignment(self::GROUP_IDENTIFIER, self::KEY_IDENTIFIER)]
+        );
+
+        $report = $reconciler->apply(
+            $this->createDocument(['keys' => [$entry]]),
+            $this->createStore(),
+            false
+        );
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::UPDATED));
+        $this->assertSame(4, $report->getCount(ApplyOutcome::MATCHED_UNCHANGED));
+        $this->assertSame([], $this->writes);
+    }
+
+    /**
+     * A dry run decides an adoption without writing it, so the row it adopted still carries no
+     * identifier while the run has already settled what its identifier is. A relation of the store
+     * is matched through what the run resolved, not through the row - otherwise an assignment the
+     * store already carries reads as target only and the file's entry for it as a creation.
+     */
+    public function testADryRunMatchesAnAssignmentWhoseEndpointItHasOnlyJustAdopted(): void
+    {
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup(null, self::GROUP_NAME)],
+            enabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true)],
+            // the row's group identifier is still NULL, because the adoption has not been written
+            keyAssignments: [$this->createAssignment('', self::KEY_IDENTIFIER)]
+        );
+
+        $report = $reconciler->apply($this->createDocument(), $this->createStore(), true);
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::TARGET_ONLY));
+        $this->assertSame(0, $report->getCount(ApplyOutcome::CREATED));
+        $this->assertSame(1, $report->getCount(ApplyOutcome::ADOPTED));
+        // the store, the key and the assignment between the adopted group and that key
+        $this->assertSame(3, $report->getCount(ApplyOutcome::MATCHED_UNCHANGED));
+    }
+
+    /**
+     * The same for the other relation kind.
+     */
+    public function testADryRunMatchesACollectionRelationWhoseEndpointItHasOnlyJustAdopted(): void
+    {
+        $document = $this->createDocument([
+            'collections' => [
+                ['identifier' => self::COLLECTION_IDENTIFIER, 'name' => 'Fasteners', 'description' => null],
+            ],
+            'collectionGroupRelations' => [
+                [
+                    'collection' => self::COLLECTION_IDENTIFIER,
+                    'group' => self::GROUP_IDENTIFIER,
+                    'sorter' => 1,
+                ],
+            ],
+        ]);
+
+        $reconciler = $this->createReconciler(
+            groups: [$this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME)],
+            collections: [$this->createCollection(null, 'Fasteners')],
+            collectionRelations: [$this->createCollectionRelation('', self::GROUP_IDENTIFIER)]
+        );
+
+        $report = $reconciler->apply($document, $this->createStore(), true);
+
+        $this->assertSame(0, $report->getCount(ApplyOutcome::TARGET_ONLY));
+        $this->assertSame(1, $report->getCount(ApplyOutcome::ADOPTED));
+        $this->assertContains(
+            'collection group relation "01COLLECTION -> 01GROUP"',
+            $report->getNamed(ApplyOutcome::MATCHED_UNCHANGED)
+        );
+    }
+
+    /**
+     * Groups before sub groups before relations is the order every writer of this family takes these
+     * three tables in. An apply writes sub groups first, so it has to reach the group rows before
+     * that write - otherwise it holds a sub group while waiting for a group that a concurrent sub
+     * group deletion already holds, and InnoDB aborts one of the two.
+     */
+    public function testTheGroupsOfTheStoreAreHeldBeforeTheFirstSubGroupIsWritten(): void
+    {
+        $document = $this->createDocument([
+            'subGroups' => [
+                ['identifier' => self::SUB_GROUP_IDENTIFIER, 'name' => 'Dimensions', 'description' => null],
+            ],
+        ]);
+
+        $this->createReconciler()->apply($document, $this->createStore(), false);
+
+        $this->assertSame(sprintf('holdGroups:%d', self::STORE_ID), $this->steps[0] ?? null);
+        $this->assertContains(sprintf('subGroup:%s:Dimensions', self::SUB_GROUP_IDENTIFIER), $this->steps);
+    }
+
+    /**
+     * A dry run holds nothing: it writes nothing to protect, and it opens no transaction for a lock
+     * to live in.
+     */
+    public function testADryRunHoldsNoGroups(): void
+    {
+        $this->createReconciler()->apply($this->createDocument(), $this->createStore(), true);
+
+        $this->assertSame([], $this->steps);
+    }
+
+    /**
+     * The probe that refuses a disable is read under a lock in a real run and then written under
+     * that answer. A plain read answers from a view that can predate an assignment a competing
+     * writer has already committed, and the disable would then drop the very row the refusal exists
+     * to protect.
+     */
+    public function testTheProbeRefusingADisableIsHeldInARealRunAndNotInADryRun(): void
+    {
+        $document = $this->createDocument([
+            'keys' => [$this->createKeyEntry(enabled: false)],
+            'keyGroupRelations' => [],
+        ]);
+
+        $this->createReconciler(
+            enabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true)],
+            groupNamesByKeyId: [self::GROUP_NAME]
+        )->apply($document, $this->createStore(), false);
+
+        $this->assertSame([true], $this->disableProbesHeld);
+
+        $this->disableProbesHeld = [];
+
+        $this->createReconciler(
+            enabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true)],
+            groupNamesByKeyId: [self::GROUP_NAME]
+        )->apply($document, $this->createStore(), true);
+
+        $this->assertSame([false], $this->disableProbesHeld);
+    }
+
+    /**
+     * The same shape one level up. A group whose name the file reuses under another identifier is a
+     * genuine refusal - applying the file would have to write two rows under one name. A group that
+     * merely shares a name with an entry the file's own identifier owner has already answered for
+     * is not: it is the target-only row it is, and refusing it rolls the import back over nothing.
+     */
+    public function testAGroupSharingANameWithAnAlreadyAnsweredEntryIsLeftInPlace(): void
+    {
+        $reconciler = $this->createReconciler(
+            groups: [
+                $this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME),
+                $this->createGroup('01OTHERGROUP', self::GROUP_NAME, id: 42),
+            ]
+        );
+
+        $report = $reconciler->apply($this->createDocument(), $this->createStore(), false);
+
+        $this->assertFalse(
+            $report->hasConflicts(),
+            implode(' ', $report->getNamed(ApplyOutcome::CONFLICT))
+        );
+        $this->assertSame([sprintf('group "%s"', self::GROUP_NAME)], $report->getNamed(ApplyOutcome::TARGET_ONLY));
+    }
+
+    /**
      * @param array<string, mixed> $overrides
      */
     private function createDocument(array $overrides = []): ArtifactDocument
@@ -602,6 +851,7 @@ final class ReconcilerTest extends Unit
      * @param KeyConfig[] $enabledKeys
      * @param KeyConfig[] $disabledKeys
      * @param ScopedKeyAssignment[] $keyAssignments
+     * @param ScopedCollectionRelation[] $collectionRelations
      * @param string[] $groupNamesByKeyId
      */
     private function createReconciler(
@@ -611,6 +861,7 @@ final class ReconcilerTest extends Unit
         array $enabledKeys = [],
         array $disabledKeys = [],
         array $keyAssignments = [],
+        array $collectionRelations = [],
         array $groupNamesByKeyId = [],
         ?Connection $connection = null,
         bool $storeNameIsTaken = false,
@@ -625,7 +876,7 @@ final class ReconcilerTest extends Unit
                 string $name,
                 ?string $description
             ): StoreConfig {
-                $this->writes[] = sprintf('store:%s:%s:%s', $identifier, $name, $description ?? '');
+                $this->recordWrite(sprintf('store:%s:%s:%s', $identifier, $name, $description ?? ''));
                 $saved = $config ?? $this->createStore();
 
                 return $saved;
@@ -633,21 +884,27 @@ final class ReconcilerTest extends Unit
         );
 
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
-        $subGroupRepository->method('getChunkAfterId')->willReturn($subGroups);
+        $subGroupRepository->method('getChunkAfterId')->willReturnCallback(
+            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+                => self::inIdentifierPhase($subGroups, $withIdentifier)
+        );
         $subGroupRepository->method('isNameTaken')->willReturn($subGroupNameIsTaken);
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?SubGroupConfig $config, int $storeId, string $identifier, string $name): SubGroupConfig {
-                $this->writes[] = sprintf('subGroup:%s:%s', $identifier, $name);
+                $this->recordWrite(sprintf('subGroup:%s:%s', $identifier, $name));
 
                 return $config ?? $this->createSubGroup($identifier, $name);
             }
         );
 
         $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
-        $collectionRepository->method('getChunkAfterId')->willReturn($collections);
+        $collectionRepository->method('getChunkAfterId')->willReturnCallback(
+            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+                => self::inIdentifierPhase($collections, $withIdentifier)
+        );
         $collectionRepository->method('saveFromArtifact')->willReturnCallback(
             function (?CollectionConfig $config, int $storeId, string $identifier, string $name): CollectionConfig {
-                $this->writes[] = sprintf('collection:%s:%s', $identifier, $name);
+                $this->recordWrite(sprintf('collection:%s:%s', $identifier, $name));
                 $saved = $config ?? new CollectionConfig();
                 $saved->setId(31);
 
@@ -656,10 +913,19 @@ final class ReconcilerTest extends Unit
         );
 
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
-        $groupRepository->method('getChunkAfterId')->willReturn($groups);
+        $groupRepository->method('holdGroupsOfStore')->willReturnCallback(
+            function (int $storeId): void {
+                // not a write, so it is recorded in the step log only
+                $this->steps[] = sprintf('holdGroups:%d', $storeId);
+            }
+        );
+        $groupRepository->method('getChunkAfterId')->willReturnCallback(
+            static fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+                => self::inIdentifierPhase($groups, $withIdentifier)
+        );
         $groupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?GroupConfig $config, int $storeId, string $identifier, string $name): GroupConfig {
-                $this->writes[] = sprintf('group:%s:%s', $identifier, $name);
+                $this->recordWrite(sprintf('group:%s:%s', $identifier, $name));
                 $saved = $config ?? new GroupConfig();
                 $saved->setId(self::GROUP_ID);
 
@@ -669,11 +935,17 @@ final class ReconcilerTest extends Unit
 
         $keyRepository = $this->createMock(KeyRepositoryInterface::class);
         $keyRepository->method('getChunkAfterId')->willReturnCallback(
-            static fn (int $storeId, bool $disabledOnly): array => $disabledOnly ? $disabledKeys : $enabledKeys
+            static fn (
+                int $storeId,
+                bool $disabledOnly,
+                int $afterId,
+                int $limit,
+                ?bool $withIdentifier
+            ): array => self::inIdentifierPhase($disabledOnly ? $disabledKeys : $enabledKeys, $withIdentifier)
         );
         $keyRepository->method('saveFromArtifact')->willReturnCallback(
             function (?KeyConfig $config, int $storeId, ArtifactKeyEntry $entry): KeyConfig {
-                $this->writes[] = sprintf('key:%s:%s', $entry->getIdentifier(), $entry->getName());
+                $this->recordWrite(sprintf('key:%s:%s', $entry->getIdentifier(), $entry->getName()));
                 $saved = $config ?? new KeyConfig();
                 $saved->setId(self::KEY_ID);
 
@@ -682,14 +954,22 @@ final class ReconcilerTest extends Unit
         );
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $keyGroupRelationRepository->method('getChunkByStore')->willReturn($keyAssignments);
-        $keyGroupRelationRepository->method('getGroupNamesByKeyId')->willReturn($groupNamesByKeyId);
+        $keyGroupRelationRepository->method('getChunkAfter')->willReturn($keyAssignments);
+        $keyGroupRelationRepository->method('getGroupNamesByKeyId')->willReturnCallback(
+            function (int $keyId, bool $hold) use ($groupNamesByKeyId): array {
+                $this->disableProbesHeld[] = $hold;
+
+                return $groupNamesByKeyId;
+            }
+        );
         $keyGroupRelationRepository->method('createOrUpdateFromArtifact')->willReturnCallback(
             function (ArtifactAssignmentEntry $entry, int $keyId, int $groupId): KeyGroupRelation {
-                $this->writes[] = sprintf(
-                    'assignment:%s:%s',
-                    $entry->getGroupIdentifier(),
-                    $entry->getKeyIdentifier()
+                $this->recordWrite(
+                    sprintf(
+                        'assignment:%s:%s',
+                        $entry->getGroupIdentifier(),
+                        $entry->getKeyIdentifier()
+                    )
                 );
                 $relation = (new ArtifactEntryMapper())->mapToAssignment($entry, $keyId, $groupId);
                 $this->savedAssignments[] = $relation;
@@ -699,7 +979,19 @@ final class ReconcilerTest extends Unit
         );
 
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);
-        $collectionRelationRepository->method('getChunkByStore')->willReturn([]);
+        $collectionRelationRepository->method('getChunkAfter')->willReturn($collectionRelations);
+        $collectionRelationRepository->method('createOrUpdate')->willReturnCallback(
+            function (int $colId, int $groupId, int $sorter): CollectionGroupRelation {
+                $this->recordWrite(sprintf('collectionRelation:%d:%d:%d', $colId, $groupId, $sorter));
+
+                $relation = new CollectionGroupRelation();
+                $relation->setColId($colId);
+                $relation->setGroupId($groupId);
+                $relation->setSorter($sorter);
+
+                return $relation;
+            }
+        );
 
         $parser = new ArtifactParser();
         $matcher = new ArtifactTargetMatcher();
@@ -731,6 +1023,30 @@ final class ReconcilerTest extends Unit
         );
     }
 
+    /**
+     * The rows of one identifier phase, the way the listing's own condition narrows them. An apply
+     * walks the rows that carry an identifier before the rows that do not, so that the row owning
+     * an entry's identifier claims it before an identifierless namesake can; a stub answering with
+     * every row in both phases would reach each row twice and is not what the repository does.
+     *
+     * @param list<SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig> $rows
+     *
+     * @return list<SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig>
+     */
+    private static function inIdentifierPhase(array $rows, ?bool $withIdentifier): array
+    {
+        if ($withIdentifier === null) {
+            return $rows;
+        }
+
+        return array_values(
+            array_filter(
+                $rows,
+                static fn (object $row): bool => ($row->getIdentifier() !== null) === $withIdentifier
+            )
+        );
+    }
+
     private function createStore(): StoreConfig
     {
         $store = new StoreConfig();
@@ -753,6 +1069,36 @@ final class ReconcilerTest extends Unit
         return $config;
     }
 
+    private function createCollection(
+        ?string $identifier,
+        string $name,
+        int $id = self::COLLECTION_ID,
+    ): CollectionConfig {
+        $config = new CollectionConfig();
+        $config->setId($id);
+        $config->setStoreId(self::STORE_ID);
+        $config->setName($name);
+
+        if ($identifier !== null) {
+            $config->setIdentifier($identifier);
+        }
+
+        return $config;
+    }
+
+    private function createCollectionRelation(
+        string $collectionIdentifier,
+        string $groupIdentifier,
+        int $sorter = 1,
+    ): ScopedCollectionRelation {
+        $relation = new CollectionGroupRelation();
+        $relation->setColId(self::COLLECTION_ID);
+        $relation->setGroupId(self::GROUP_ID);
+        $relation->setSorter($sorter);
+
+        return new ScopedCollectionRelation($relation, $collectionIdentifier, $groupIdentifier);
+    }
+
     private function createGroup(?string $identifier, string $name, int $id = self::GROUP_ID): GroupConfig
     {
         $config = new GroupConfig();
@@ -767,12 +1113,20 @@ final class ReconcilerTest extends Unit
         return $config;
     }
 
-    private function createKey(string $identifier, string $name, bool $enabled): KeyConfig
-    {
+    private function createKey(
+        ?string $identifier,
+        string $name,
+        bool $enabled,
+        int $id = self::KEY_ID,
+    ): KeyConfig {
         $config = new KeyConfig();
-        $config->setId(self::KEY_ID);
+        $config->setId($id);
         $config->setStoreId(self::STORE_ID);
-        $config->setIdentifier($identifier);
+
+        if ($identifier !== null) {
+            $config->setIdentifier($identifier);
+        }
+
         $config->setName($name);
         $config->setTitle('Weight');
         $config->setType('input');
@@ -797,9 +1151,17 @@ final class ReconcilerTest extends Unit
         return new ScopedKeyAssignment($relation, $groupIdentifier, $keyIdentifier);
     }
 
+    private function recordWrite(string $write): void
+    {
+        $this->writes[] = $write;
+        $this->steps[] = $write;
+    }
+
     protected function _after(): void
     {
         $this->writes = [];
         $this->savedAssignments = [];
+        $this->steps = [];
+        $this->disableProbesHeld = [];
     }
 }

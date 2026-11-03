@@ -138,18 +138,18 @@ final class ArtifactBuilderTest extends Unit
     private function createBuilder(): ArtifactBuilder
     {
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
-        $subGroupRepository->method('getChunkByStore')->willReturn([$this->createSubGroup()]);
+        $subGroupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createSubGroup()]);
 
         $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
-        $collectionRepository->method('getChunkByStore')->willReturn([$this->createCollection()]);
+        $collectionRepository->method('getChunkAfterIdentifier')->willReturn([$this->createCollection()]);
 
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
-        $groupRepository->method('getChunkByStore')->willReturn([$this->createGroup()]);
+        $groupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createGroup()]);
 
         // the enabled walk and the disabled walk, each already sorted by identifier
         $keyRepository = $this->createMock(KeyRepositoryInterface::class);
         $keyRepository
-            ->method('getChunkByStore')
+            ->method('getChunkAfterIdentifier')
             ->willReturnCallback(
                 fn (int $storeId, bool $disabledOnly): array => $disabledOnly
                     ? [$this->createKey('01JB', false), $this->createKey('01JD', false)]
@@ -158,11 +158,11 @@ final class ArtifactBuilderTest extends Unit
 
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);
         $collectionRelationRepository
-            ->method('getChunkByStore')
+            ->method('getChunkAfter')
             ->willReturn([$this->createCollectionRelation()]);
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $keyGroupRelationRepository->method('getChunkByStore')->willReturn([$this->createKeyAssignment()]);
+        $keyGroupRelationRepository->method('getChunkAfter')->willReturn([$this->createKeyAssignment()]);
 
         return new ArtifactBuilder(
             new ArtifactEntryMapper(),

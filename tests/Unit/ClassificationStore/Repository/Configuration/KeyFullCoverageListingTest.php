@@ -45,8 +45,8 @@ final class KeyFullCoverageListingTest extends Unit
     {
         $repository = $this->createRepository([]);
 
-        $repository->getChunkByStore(self::STORE_ID, false, 200, 0);
-        $repository->getChunkByStore(self::STORE_ID, true, 200, 0);
+        $repository->getChunkAfterIdentifier(self::STORE_ID, false, null, 0, 200);
+        $repository->getChunkAfterIdentifier(self::STORE_ID, true, null, 0, 200);
 
         $this->assertCount(2, $this->executedQueries, 'Full coverage of a store needs both walks.');
         $this->assertTrue(
@@ -67,7 +67,7 @@ final class KeyFullCoverageListingTest extends Unit
     {
         $repository = $this->createRepository([$this->createRow()]);
 
-        $keys = $repository->getChunkByStore(self::STORE_ID, true, 200, 0);
+        $keys = $repository->getChunkAfterIdentifier(self::STORE_ID, true, null, 0, 200);
 
         $this->assertCount(1, $keys);
         $this->assertFalse($keys[0]->getEnabled());

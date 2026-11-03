@@ -34,6 +34,18 @@ use function sprintf;
  */
 final readonly class CollRelationRepository implements CollRelationRepositoryInterface
 {
+    /**
+     * The cursor an export pages these relations by: the identifier pair the artifact sorts them
+     * by, with the id pair - the relation's whole primary key - behind it, so that the comparison
+     * is total even for a row whose endpoints carry no identifier yet.
+     *
+     * A cursor rather than an offset, because an export is a read per page and a relation deleted
+     * between two of them shifts every later one towards the start, past an offset that has already
+     * counted it.
+     */
+    private const string CURSOR_CONDITION = " AND (COALESCE(`c`.`identifier`, ''),"
+        . " COALESCE(`g`.`identifier`, ''), `r`.`colId`, `r`.`groupId`) > (?, ?, ?, ?)";
+
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private Connection $connection,
@@ -58,7 +70,7 @@ final readonly class CollRelationRepository implements CollRelationRepositoryInt
     /**
      * {@inheritdoc}
      */
-    public function getChunkByStore(int $storeId, int $limit, int $offset): array
+    public function getChunkAfter(int $storeId, ?ScopedCollectionRelation $after, int $limit): array
     {
         $query = sprintf(
             'SELECT `r`.`colId`, `r`.`groupId`, `r`.`sorter`,'
@@ -66,21 +78,36 @@ final readonly class CollRelationRepository implements CollRelationRepositoryInt
             . ' FROM `%s` `r`'
             . ' INNER JOIN `%s` `c` ON `c`.`id` = `r`.`colId`'
             . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
-            . ' WHERE `c`.`storeId` = ?'
+            . ' WHERE `c`.`storeId` = ?%s'
             . ' ORDER BY `c`.`identifier`, `g`.`identifier`, `r`.`colId`, `r`.`groupId`'
-            . ' LIMIT ? OFFSET ?',
+            . ' LIMIT ?',
             CollectionGroupRelationDao::TABLE_NAME_RELATIONS,
             CollectionConfigDao::TABLE_NAME_COLLECTIONS,
-            GroupConfigDao::TABLE_NAME_GROUPS
+            GroupConfigDao::TABLE_NAME_GROUPS,
+            $after === null ? '' : self::CURSOR_CONDITION
         );
+
+        $parameters = [$storeId];
+        $types = [ParameterType::INTEGER];
+
+        if ($after !== null) {
+            $cursor = $after->getRelation();
+            $parameters[] = $after->getCollectionIdentifier();
+            $parameters[] = $after->getGroupIdentifier();
+            $parameters[] = (int) $cursor->getColId();
+            $parameters[] = (int) $cursor->getGroupId();
+            $types[] = ParameterType::STRING;
+            $types[] = ParameterType::STRING;
+            $types[] = ParameterType::INTEGER;
+            $types[] = ParameterType::INTEGER;
+        }
+
+        $parameters[] = $limit;
+        $types[] = ParameterType::INTEGER;
 
         try {
             // the paging bounds are bound as integers, which is what the server needs them to be
-            $rows = $this->connection->fetchAllAssociative(
-                $query,
-                [$storeId, $limit, $offset],
-                [ParameterType::INTEGER, ParameterType::INTEGER, ParameterType::INTEGER]
-            );
+            $rows = $this->connection->fetchAllAssociative($query, $parameters, $types);
         } catch (DBALException $e) {
             throw new DatabaseException('Failed to read the collection relations: ' . $e->getMessage(), $e);
         }

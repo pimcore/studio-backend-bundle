@@ -91,22 +91,22 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
     /**
      * {@inheritdoc}
      */
-    public function walkTargetByOffset(ApplyContext $context, Closure $walk): Generator
+    public function walkTargetByRowCursor(ApplyContext $context, Closure $walk): Generator
     {
         if ($context->getStoreId() === null) {
             return;
         }
 
-        $offset = 0;
+        $after = null;
 
         do {
-            $targets = $walk(self::CHUNK_SIZE, $offset);
+            $targets = $walk($after, self::CHUNK_SIZE);
 
             foreach ($targets as $target) {
+                $after = $target;
+
                 yield $target;
             }
-
-            $offset += self::CHUNK_SIZE;
         } while (count($targets) === self::CHUNK_SIZE);
     }
 
@@ -124,6 +124,13 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
 
     /**
      * {@inheritdoc}
+     *
+     * Every field is compared in the form the write path stores it in, not in the form the file
+     * carries it: a definition the entry leaves out or supplies as null is written as `[]` - the
+     * key repository encodes `$entry->getDefinition() ?? []` - so comparing the parsed null against
+     * the stored `[]` would report the key updated on every apply, and deploying one file twice
+     * would never become a no-op. The title is normalized for the same reason: it is stored as `''`
+     * when the entry leaves it out.
      */
     public function describesSameKey(KeyConfig $target, ArtifactKeyEntry $entry): bool
     {
@@ -134,7 +141,7 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
             && ($target->getDescription() ?? '') === ($entry->getDescription() ?? '')
             && $target->getType() === $entry->getType()
             && $target->getEnabled() === $entry->isEnabled()
-            && (is_array($storedDefinition) ? $storedDefinition : null) === $entry->getDefinition();
+            && (is_array($storedDefinition) ? $storedDefinition : []) === ($entry->getDefinition() ?? []);
     }
 
     /**

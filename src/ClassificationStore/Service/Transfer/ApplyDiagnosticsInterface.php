@@ -47,13 +47,24 @@ interface ApplyDiagnosticsInterface
      * a row whose name the file reuses under another identifier, because applying the file would
      * then have to write two rows under one name.
      *
+     * That refusal holds under two conditions. The level's name has to be unique per store - key
+     * names are not, by decision, so a key is always left in place as target only. And the entry
+     * that shares the name has to be one no row has answered for yet: an entry its own identifier
+     * owner has already claimed is not a name this file is asking for twice, which leaves the row
+     * that merely shares the name as the target-only row it is.
+     *
+     * `$claimed` maps the entry keys this section has already matched to the row id that matched
+     * them.
+     *
      * @param array<string, string> $entriesByName
+     * @param array<string, int> $claimed
      */
     public function recordUnmatchedTarget(
         ApplyContext $context,
         ArtifactSection $section,
         array $entriesByName,
         SubGroupConfig|CollectionConfig|GroupConfig|KeyConfig $target,
+        array $claimed = [],
     ): void;
 
     /**

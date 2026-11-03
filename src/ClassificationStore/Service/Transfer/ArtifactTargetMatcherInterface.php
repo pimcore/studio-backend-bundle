@@ -31,11 +31,27 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 interface ArtifactTargetMatcherInterface
 {
     /**
+     * The order an apply walks the target in: the rows that carry an identifier, then the rows that
+     * do not.
+     *
+     * Identifier ownership has to be resolved across the whole level before a name may adopt
+     * anything, because a name is not an identity - an identifierless key called `weight` and the
+     * key that owns the file's `weight` entry can both exist. Walking the owners first lets the
+     * owner claim its entry; the namesake then finds it taken and is left in place as target only,
+     * instead of being adopted onto the wrong row while the owner is skipped.
+     *
+     * The phases are also the order in which nothing an apply writes moves a row backwards: stamping
+     * an identifier onto an adopted row moves it into the phase that has already run.
+     */
+    public const array IDENTIFIER_PHASES = [true, false];
+
+    /**
      * The entry of the section that describes the row, by its key in the section, or null where the
      * section describes no such row.
      *
      * The identifier first; the name only for a row that carries no identifier of its own, which is
-     * the row an identifier is adopted onto.
+     * the row an identifier is adopted onto. A name hit is only ever the right row because the
+     * caller has walked the identifier owners first ({@see self::IDENTIFIER_PHASES}).
      *
      * @param array<string, array<string, mixed>> $entries
      * @param array<string, string> $entriesByName
@@ -67,13 +83,15 @@ interface ArtifactTargetMatcherInterface
     public function walkTargetByIdCursor(ApplyContext $context, Closure $walk): Generator;
 
     /**
-     * The store's rows of one relation level, a chunk at a time, by offset. `$walk` reads one chunk
-     * and is called with that offset and the chunk size.
+     * The store's rows of one relation level, a chunk at a time, taken after the last row handed
+     * back. `$walk` reads one chunk and is called with that row - null for the first chunk - and
+     * the chunk size.
      *
-     * By offset rather than by cursor: the relations have no row id, and nothing an apply writes
-     * touches the columns their ordering is built from.
+     * A relation has no single row id to cursor on, so the cursor is the whole row: the identifier
+     * pair its ordering is built from, with its primary key behind it. An offset would resume past
+     * a row that a deletion elsewhere shifted towards the start.
      */
-    public function walkTargetByOffset(ApplyContext $context, Closure $walk): Generator;
+    public function walkTargetByRowCursor(ApplyContext $context, Closure $walk): Generator;
 
     /**
      * Whether the row's name and description are the ones the entry carries, which is everything a

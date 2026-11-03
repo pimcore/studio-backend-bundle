@@ -25,8 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
+use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use function count;
 use function json_encode;
 use function sprintf;
@@ -64,8 +67,8 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
         yield from $this->streamSection(
             ArtifactSection::SUB_GROUPS,
             $this->walk(
-                fn (int $limit, int $offset): array => $this->subGroupRepository
-                    ->getChunkByStore($storeId, $limit, $offset),
+                fn (?SubGroupConfig $after, int $limit): array => $this->subGroupRepository
+                    ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
                 $this->entryMapper->mapSubGroup(...)
             )
         );
@@ -73,8 +76,8 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
         yield from $this->streamSection(
             ArtifactSection::COLLECTIONS,
             $this->walk(
-                fn (int $limit, int $offset): array => $this->collectionRepository
-                    ->getChunkByStore($storeId, $limit, $offset),
+                fn (?CollectionConfig $after, int $limit): array => $this->collectionRepository
+                    ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
                 $this->entryMapper->mapCollection(...)
             )
         );
@@ -82,8 +85,8 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
         yield from $this->streamSection(
             ArtifactSection::GROUPS,
             $this->walk(
-                fn (int $limit, int $offset): array => $this->groupRepository
-                    ->getChunkByStore($storeId, $limit, $offset),
+                fn (?GroupConfig $after, int $limit): array => $this->groupRepository
+                    ->getChunkAfterIdentifier($storeId, $after?->getIdentifier(), (int) $after?->getId(), $limit),
                 $this->entryMapper->mapGroup(...)
             )
         );
@@ -93,8 +96,8 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
         yield from $this->streamSection(
             ArtifactSection::COLLECTION_GROUP_RELATIONS,
             $this->walk(
-                fn (int $limit, int $offset): array => $this->collectionRelationRepository
-                    ->getChunkByStore($storeId, $limit, $offset),
+                fn (?ScopedCollectionRelation $after, int $limit): array => $this->collectionRelationRepository
+                    ->getChunkAfter($storeId, $after, $limit),
                 $this->entryMapper->mapCollectionRelation(...)
             )
         );
@@ -102,8 +105,8 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
         yield from $this->streamSection(
             ArtifactSection::KEY_GROUP_RELATIONS,
             $this->walk(
-                fn (int $limit, int $offset): array => $this->keyGroupRelationRepository
-                    ->getChunkByStore($storeId, $limit, $offset),
+                fn (?ScopedKeyAssignment $after, int $limit): array => $this->keyGroupRelationRepository
+                    ->getChunkAfter($storeId, $after, $limit),
                 $this->entryMapper->mapKeyAssignment(...)
             )
         );
@@ -121,12 +124,12 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
     private function walkEveryKey(int $storeId): Generator
     {
         $enabled = $this->walkChunks(
-            fn (int $limit, int $offset): array => $this->keyRepository
-                ->getChunkByStore($storeId, false, $limit, $offset)
+            fn (?KeyConfig $after, int $limit): array => $this->keyRepository
+                ->getChunkAfterIdentifier($storeId, false, $after?->getIdentifier(), (int) $after?->getId(), $limit)
         );
         $disabled = $this->walkChunks(
-            fn (int $limit, int $offset): array => $this->keyRepository
-                ->getChunkByStore($storeId, true, $limit, $offset)
+            fn (?KeyConfig $after, int $limit): array => $this->keyRepository
+                ->getChunkAfterIdentifier($storeId, true, $after?->getIdentifier(), (int) $after?->getId(), $limit)
         );
 
         foreach ($this->mergeByIdentifier($enabled, $disabled) as $key) {
@@ -159,7 +162,7 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
     }
 
     /**
-     * @param Closure(int, int): array<int, mixed> $chunk
+     * @param Closure(mixed, int): array<int, mixed> $chunk
      * @param Closure(mixed): array<string, mixed> $map
      *
      * @return Generator<array<string, mixed>>
@@ -172,22 +175,31 @@ final readonly class ArtifactBuilder implements ArtifactBuilderInterface
     }
 
     /**
-     * @param Closure(int, int): array<int, mixed> $chunk
+     * One section's rows, a chunk at a time, taken after the last row handed back rather than at an
+     * offset into the ordering.
+     *
+     * An export is not one read: it is a read per page per section, and a configuration write may
+     * commit between any two of them. Deleting a row the walk has already passed shifts every later
+     * row one place towards the start, and an offset resumes past the one that moved - which leaves
+     * it out of a download that reports success. Naming the last row seen instead of counting the
+     * rows seen is what keeps the walk on the row that did not move.
+     *
+     * @param Closure(mixed, int): array<int, mixed> $chunk
      *
      * @return Generator<mixed>
      */
     private function walkChunks(Closure $chunk): Generator
     {
-        $offset = 0;
+        $after = null;
 
         do {
-            $items = $chunk(self::CHUNK_SIZE, $offset);
+            $items = $chunk($after, self::CHUNK_SIZE);
 
             foreach ($items as $item) {
+                $after = $item;
+
                 yield $item;
             }
-
-            $offset += self::CHUNK_SIZE;
         } while (count($items) === self::CHUNK_SIZE);
     }
 

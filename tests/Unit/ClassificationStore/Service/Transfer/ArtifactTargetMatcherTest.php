@@ -137,24 +137,25 @@ final class ArtifactTargetMatcherTest extends Unit
     }
 
     /**
-     * The relations have no row id, so they are walked by offset - advanced by the chunk size, and
-     * stopped by a chunk that is not full.
+     * A relation has no single row id, so the cursor each next chunk is taken after is the whole
+     * last row handed back - never a count of the rows already seen, which a deletion elsewhere
+     * would make resume past a row that moved. A chunk that is not full stops the walk.
      */
-    public function testTheRelationWalkAdvancesByOffsetAndStopsOnAShortChunk(): void
+    public function testTheRelationWalkIsTakenAfterTheLastRowAndStopsOnAShortChunk(): void
     {
-        $offsets = [];
-        $walk = function (int $limit, int $offset) use (&$offsets): array {
-            $offsets[] = $offset;
+        $cursors = [];
+        $walk = function (?ScopedKeyAssignment $after, int $limit) use (&$cursors): array {
+            $cursors[] = $after?->getKeyIdentifier();
 
-            return $offset === 0 ? $this->createAssignments($limit) : [];
+            return $after === null ? $this->createAssignments($limit) : [];
         };
 
         $walked = iterator_to_array(
-            (new ArtifactTargetMatcher())->walkTargetByOffset($this->createContext(1), $walk)
+            (new ArtifactTargetMatcher())->walkTargetByRowCursor($this->createContext(1), $walk)
         );
 
         $this->assertCount(self::CHUNK_SIZE, $walked);
-        $this->assertSame([0, self::CHUNK_SIZE], $offsets);
+        $this->assertSame([null, '01KEY' . (self::CHUNK_SIZE - 1)], $cursors);
     }
 
     /**

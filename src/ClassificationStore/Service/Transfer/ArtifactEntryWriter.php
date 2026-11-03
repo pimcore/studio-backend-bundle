@@ -87,22 +87,40 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
         $matched = [];
 
-        foreach ($this->matcher->walkTargetByIdCursor($context, $walk) as $target) {
-            $entryKey = $this->matcher->matchEntryKey(
-                $entries,
-                $entriesByName,
-                $target->getIdentifier(),
-                $target->getName()
-            );
+        // the rows that own an identifier before the rows a name may adopt, which is what
+        // ArtifactTargetMatcherInterface::IDENTIFIER_PHASES is for
+        foreach (ArtifactTargetMatcherInterface::IDENTIFIER_PHASES as $withIdentifier) {
+            $phase = static fn (int $afterId, int $limit): array => $walk($withIdentifier, $afterId, $limit);
 
-            if ($entryKey === null) {
-                $this->diagnostics->recordUnmatchedTarget($context, $section, $entriesByName, $target);
+            foreach ($this->matcher->walkTargetByIdCursor($context, $phase) as $target) {
+                $entryKey = $this->matcher->matchEntryKey(
+                    $entries,
+                    $entriesByName,
+                    $target->getIdentifier(),
+                    $target->getName()
+                );
+                $claimedBy = $entryKey === null ? null : ($matched[$entryKey] ?? null);
 
-                continue;
+                if ($claimedBy !== null && $claimedBy === (int) $target->getId()) {
+                    // the same row reached twice, in a walk its own write moved it into
+                    continue;
+                }
+
+                if ($entryKey === null || $claimedBy !== null) {
+                    $this->diagnostics->recordUnmatchedTarget(
+                        $context,
+                        $section,
+                        $entriesByName,
+                        $target,
+                        $matched
+                    );
+
+                    continue;
+                }
+
+                $matched[$entryKey] = (int) $target->getId();
+                $this->writeNamedEntity($context, $section, $target, $entries[$entryKey], $save);
             }
-
-            $matched[$entryKey] = true;
-            $this->writeNamedEntity($context, $section, $target, $entries[$entryKey], $save);
         }
 
         foreach ($entries as $entryKey => $entry) {
@@ -354,10 +372,21 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
      * ({@see \Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao::update()}), so a file
      * that disables a key the target still assigns would untag groups it says nothing about.
      * Refused, naming those groups.
+     *
+     * A real run reads the assignments under a lock rather than from its own snapshot, and then
+     * writes under that answer: an assignment committed after the apply's transaction began would
+     * otherwise be invisible to the probe and deleted by the disable a moment later, which is the
+     * one loss the refusal exists to prevent. The locking read is exclusive against the assignment
+     * writers because the apply holds the store's group rows first
+     * ({@see GroupRepositoryInterface::holdGroupsOfStore()}). A dry run writes nothing and asks
+     * without the lock.
      */
     private function refuseDisablingAnAssignedKey(ApplyContext $context, KeyConfig $target, string $name): bool
     {
-        $groups = $this->keyGroupRelationRepository->getGroupNamesByKeyId((int) $target->getId());
+        $groups = $this->keyGroupRelationRepository->getGroupNamesByKeyId(
+            (int) $target->getId(),
+            !$context->isDryRun()
+        );
 
         if ($groups === []) {
             return false;

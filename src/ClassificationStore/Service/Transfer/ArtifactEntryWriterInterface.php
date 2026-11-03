@@ -37,8 +37,10 @@ interface ArtifactEntryWriterInterface
      * collections and groups: the store's rows of the level are walked, each matched against the
      * section, and every entry the walk did not reach is created.
      *
-     * `$walk` reads one chunk of rows, by cursor; `$save` writes one entry onto the row it was
-     * matched to, or onto a new row, and hands back its id.
+     * `$walk` reads one chunk of rows, by cursor, and is called with the identifier phase
+     * ({@see ArtifactTargetMatcherInterface::IDENTIFIER_PHASES}), the cursor and the chunk size;
+     * `$save` writes one entry onto the row it was matched to, or onto a new row, and hands back
+     * its id.
      *
      * @throws DatabaseException
      * @throws ElementSavingFailedException

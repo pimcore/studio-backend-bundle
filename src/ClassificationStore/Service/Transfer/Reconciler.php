@@ -77,6 +77,7 @@ final readonly class Reconciler implements ReconcilerInterface
 
         try {
             $this->applyStore($context, $document, $store);
+            $this->holdTheGroupsOfTheStore($context);
             $this->applySubGroups($context, $document);
             $this->applyCollections($context, $document);
             $this->applyGroups($context, $document);
@@ -99,6 +100,33 @@ final readonly class Reconciler implements ReconcilerInterface
         }
 
         return $report;
+    }
+
+    /**
+     * Takes the group rows of the store before anything this apply writes, because groups before
+     * sub groups before relations is the order every writer of this family takes these three tables
+     * in ({@see GroupRepositoryInterface::holdGroupsOfStore()} names them). The sections are applied
+     * sub groups first - a sub group has to exist before an assignment may tag anything with it -
+     * so reaching the group rows only at the group section would hold a sub group while waiting for
+     * a group that a concurrent sub group deletion already holds, which is a deadlock neither side
+     * retries.
+     *
+     * It is also what makes the probe a disabled key is refused on exclusive
+     * ({@see ArtifactEntryWriterInterface::writeKey()}): the assignments that probe reads hang off
+     * these group rows, so an assignment writer either committed before this lock - and is seen by
+     * that probe's locking read - or waits until this apply has finished.
+     *
+     * A dry run writes nothing, holds nothing, and opens no transaction for a lock to live in.
+     */
+    private function holdTheGroupsOfTheStore(ApplyContext $context): void
+    {
+        $storeId = $context->getStoreId();
+
+        if ($context->isDryRun() || $storeId === null) {
+            return;
+        }
+
+        $this->groupRepository->holdGroupsOfStore($storeId);
     }
 
     private function applyStore(ApplyContext $context, ArtifactDocument $document, ?StoreConfig $store): void
@@ -183,8 +211,8 @@ final readonly class Reconciler implements ReconcilerInterface
             $context,
             ArtifactSection::SUB_GROUPS,
             $document,
-            fn (int $afterId, int $limit): array => $this->subGroupRepository
-                ->getChunkAfterId($storeId, $afterId, $limit),
+            fn (bool $withIdentifier, int $afterId, int $limit): array => $this->subGroupRepository
+                ->getChunkAfterId($storeId, $afterId, $limit, $withIdentifier),
             fn (?object $target, string $identifier, string $name, ?string $description): int => (int) $this
                 ->subGroupRepository
                 ->saveFromArtifact(
@@ -206,8 +234,8 @@ final readonly class Reconciler implements ReconcilerInterface
             $context,
             ArtifactSection::COLLECTIONS,
             $document,
-            fn (int $afterId, int $limit): array => $this->collectionRepository
-                ->getChunkAfterId($storeId, $afterId, $limit),
+            fn (bool $withIdentifier, int $afterId, int $limit): array => $this->collectionRepository
+                ->getChunkAfterId($storeId, $afterId, $limit, $withIdentifier),
             fn (?object $target, string $identifier, string $name, ?string $description): int => (int) $this
                 ->collectionRepository
                 ->saveFromArtifact(
@@ -229,8 +257,8 @@ final readonly class Reconciler implements ReconcilerInterface
             $context,
             ArtifactSection::GROUPS,
             $document,
-            fn (int $afterId, int $limit): array => $this->groupRepository
-                ->getChunkAfterId($storeId, $afterId, $limit),
+            fn (bool $withIdentifier, int $afterId, int $limit): array => $this->groupRepository
+                ->getChunkAfterId($storeId, $afterId, $limit, $withIdentifier),
             fn (?object $target, string $identifier, string $name, ?string $description): int => (int) $this
                 ->groupRepository
                 ->saveFromArtifact(
@@ -251,37 +279,44 @@ final readonly class Reconciler implements ReconcilerInterface
         $entriesByName = $this->matcher->indexByName($entries, ArtifactField::NAME->value);
         $matched = [];
 
-        // the disabled rows first: a key the file enables moves into the walk that follows, where
-        // the entry it has already answered for is skipped
-        foreach ([true, false] as $disabledOnly) {
-            $walk = fn (int $afterId, int $limit): array => $this->keyRepository
-                ->getChunkAfterId($storeId, $disabledOnly, $afterId, $limit);
+        // the identifier owners before the rows a name may adopt, which is what
+        // ArtifactTargetMatcherInterface::IDENTIFIER_PHASES is for; and inside each phase the
+        // disabled rows first, because a key the file enables moves into the walk that follows,
+        // where the entry it has already answered for is skipped
+        foreach (ArtifactTargetMatcherInterface::IDENTIFIER_PHASES as $withIdentifier) {
+            foreach ([true, false] as $disabledOnly) {
+                $walk = fn (int $afterId, int $limit): array => $this->keyRepository
+                    ->getChunkAfterId($storeId, $disabledOnly, $afterId, $limit, $withIdentifier);
 
-            foreach ($this->matcher->walkTargetByIdCursor($context, $walk) as $target) {
-                $entryKey = $this->matcher->matchEntryKey(
-                    $entries,
-                    $entriesByName,
-                    $target->getIdentifier(),
-                    $target->getName()
-                );
-
-                if ($entryKey === null) {
-                    $this->diagnostics->recordUnmatchedTarget(
-                        $context,
-                        ArtifactSection::KEYS,
+                foreach ($this->matcher->walkTargetByIdCursor($context, $walk) as $target) {
+                    $entryKey = $this->matcher->matchEntryKey(
+                        $entries,
                         $entriesByName,
-                        $target
+                        $target->getIdentifier(),
+                        $target->getName()
                     );
+                    $claimedBy = $entryKey === null ? null : ($matched[$entryKey] ?? null);
 
-                    continue;
+                    if ($claimedBy !== null && $claimedBy === (int) $target->getId()) {
+                        // the same row reached twice, in a walk its own write moved it into
+                        continue;
+                    }
+
+                    if ($entryKey === null || $claimedBy !== null) {
+                        $this->diagnostics->recordUnmatchedTarget(
+                            $context,
+                            ArtifactSection::KEYS,
+                            $entriesByName,
+                            $target,
+                            $matched
+                        );
+
+                        continue;
+                    }
+
+                    $matched[$entryKey] = (int) $target->getId();
+                    $this->writer->writeKey($context, $target, $entries[$entryKey]);
                 }
-
-                if (isset($matched[$entryKey])) {
-                    continue;
-                }
-
-                $matched[$entryKey] = true;
-                $this->writer->writeKey($context, $target, $entries[$entryKey]);
             }
         }
 
@@ -294,6 +329,29 @@ final readonly class Reconciler implements ReconcilerInterface
         }
     }
 
+    /**
+     * The identifier one endpoint of a target relation is named by: the one this run has resolved
+     * for the endpoint's row, and only failing that the one the row itself carries.
+     *
+     * Adoption is why the row alone is not enough. Stamping the file's identifier onto a row that
+     * carried none is a write, and a dry run decides it without performing it - so the row still
+     * reads NULL while the run has already settled what its identifier is. Keying the relation off
+     * the row would then report an assignment the store already carries as target only, and the
+     * file's own entry for it as a creation, which is neither the update nor the match it is.
+     */
+    private function endpointIdentifier(
+        ApplyContext $context,
+        ArtifactSection $section,
+        ?int $id,
+        string $carried,
+    ): string {
+        if ($id === null) {
+            return $carried;
+        }
+
+        return $context->identifierOf($section, $id) ?? $carried;
+    }
+
     private function applyCollectionRelations(ApplyContext $context, ArtifactDocument $document): void
     {
         $section = ArtifactSection::COLLECTION_GROUP_RELATIONS;
@@ -301,13 +359,24 @@ final readonly class Reconciler implements ReconcilerInterface
         $entries = $document->getEntries($section);
         $matched = [];
 
-        $walk = fn (int $limit, int $offset): array => $this->collectionRelationRepository
-            ->getChunkByStore($storeId, $limit, $offset);
+        $walk = fn (?ScopedCollectionRelation $after, int $limit): array => $this->collectionRelationRepository
+            ->getChunkAfter($storeId, $after, $limit);
 
-        foreach ($this->matcher->walkTargetByOffset($context, $walk) as $scoped) {
-            $entryKey = $scoped->getCollectionIdentifier()
+        foreach ($this->matcher->walkTargetByRowCursor($context, $walk) as $scoped) {
+            $relation = $scoped->getRelation();
+            $entryKey = $this->endpointIdentifier(
+                $context,
+                ArtifactSection::COLLECTIONS,
+                $relation->getColId(),
+                $scoped->getCollectionIdentifier()
+            )
                 . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
-                . $scoped->getGroupIdentifier();
+                . $this->endpointIdentifier(
+                    $context,
+                    ArtifactSection::GROUPS,
+                    $relation->getGroupId(),
+                    $scoped->getGroupIdentifier()
+                );
             $label = $this->diagnostics->relationLabel($section, $entryKey);
 
             if (!isset($entries[$entryKey])) {
@@ -318,7 +387,6 @@ final readonly class Reconciler implements ReconcilerInterface
 
             $matched[$entryKey] = true;
             $sorter = $this->artifactParser->readSorter($entries[$entryKey], $section);
-            $relation = $scoped->getRelation();
 
             if ($relation->getSorter() === $sorter) {
                 $context->record(ApplyOutcome::MATCHED_UNCHANGED, $label);
@@ -353,13 +421,24 @@ final readonly class Reconciler implements ReconcilerInterface
         $entries = $document->getEntries($section);
         $matched = [];
 
-        $walk = fn (int $limit, int $offset): array => $this->keyGroupRelationRepository
-            ->getChunkByStore($storeId, $limit, $offset);
+        $walk = fn (?ScopedKeyAssignment $after, int $limit): array => $this->keyGroupRelationRepository
+            ->getChunkAfter($storeId, $after, $limit);
 
-        foreach ($this->matcher->walkTargetByOffset($context, $walk) as $scoped) {
-            $entryKey = $scoped->getGroupIdentifier()
+        foreach ($this->matcher->walkTargetByRowCursor($context, $walk) as $scoped) {
+            $relation = $scoped->getRelation();
+            $entryKey = $this->endpointIdentifier(
+                $context,
+                ArtifactSection::GROUPS,
+                $relation->getGroupId(),
+                $scoped->getGroupIdentifier()
+            )
                 . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
-                . $scoped->getKeyIdentifier();
+                . $this->endpointIdentifier(
+                    $context,
+                    ArtifactSection::KEYS,
+                    $relation->getKeyId(),
+                    $scoped->getKeyIdentifier()
+                );
 
             if (!isset($entries[$entryKey])) {
                 $context->record(
@@ -371,7 +450,7 @@ final readonly class Reconciler implements ReconcilerInterface
             }
 
             $matched[$entryKey] = true;
-            $this->writer->writeKeyAssignment($context, $scoped->getRelation(), $entries[$entryKey], $entryKey);
+            $this->writer->writeKeyAssignment($context, $relation, $entries[$entryKey], $entryKey);
         }
 
         foreach ($entries as $entryKey => $entry) {

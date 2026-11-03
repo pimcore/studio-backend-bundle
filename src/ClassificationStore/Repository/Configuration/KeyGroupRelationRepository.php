@@ -52,6 +52,18 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
     private const bool NEW_RELATION_MANDATORY = false;
 
+    /**
+     * The cursor a transfer pages these assignments by: the identifier pair the artifact sorts them
+     * by, with the id pair - the relation's whole primary key - behind it, so that the comparison is
+     * total even for a row whose endpoints carry no identifier yet.
+     *
+     * A cursor rather than an offset, because a transfer is a read per page and an assignment
+     * deleted between two of them shifts every later one towards the start, past an offset that has
+     * already counted it - which leaves it out of an export that reports success.
+     */
+    private const string CURSOR_CONDITION = " AND (COALESCE(`g`.`identifier`, ''),"
+        . " COALESCE(`k`.`identifier`, ''), `r`.`groupId`, `r`.`keyId`) > (?, ?, ?, ?)";
+
     public function __construct(
         private ListingFilterInterface $listingFilter,
         private Connection $connection,
@@ -77,7 +89,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * {@inheritdoc}
      */
-    public function getChunkByStore(int $storeId, int $limit, int $offset): array
+    public function getChunkAfter(int $storeId, ?ScopedKeyAssignment $after, int $limit): array
     {
         $query = sprintf(
             'SELECT `r`.`keyId`, `r`.`groupId`, `r`.`sorter`, `r`.`mandatory`, `r`.`metadata`,'
@@ -86,23 +98,38 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
             . ' FROM `%s` `r`'
             . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
             . ' INNER JOIN `%s` `k` ON `k`.`id` = `r`.`keyId`'
-            . ' WHERE `g`.`storeId` = ?'
+            . ' WHERE `g`.`storeId` = ?%s'
             . ' ORDER BY `g`.`identifier`, `k`.`identifier`, `r`.`groupId`, `r`.`keyId`'
-            . ' LIMIT ? OFFSET ?',
+            . ' LIMIT ?',
             KeyGroupRelationDao::TABLE_NAME_RELATIONS,
             GroupConfigDao::TABLE_NAME_GROUPS,
-            KeyConfigDao::TABLE_NAME_KEYS
+            KeyConfigDao::TABLE_NAME_KEYS,
+            $after === null ? '' : self::CURSOR_CONDITION
         );
+
+        $parameters = [$storeId];
+        $types = [ParameterType::INTEGER];
+
+        if ($after !== null) {
+            $cursor = $after->getRelation();
+            $parameters[] = $after->getGroupIdentifier();
+            $parameters[] = $after->getKeyIdentifier();
+            $parameters[] = (int) $cursor->getGroupId();
+            $parameters[] = (int) $cursor->getKeyId();
+            $types[] = ParameterType::STRING;
+            $types[] = ParameterType::STRING;
+            $types[] = ParameterType::INTEGER;
+            $types[] = ParameterType::INTEGER;
+        }
+
+        $parameters[] = $limit;
+        $types[] = ParameterType::INTEGER;
 
         $assignments = [];
 
         try {
             // the paging bounds are bound as integers, which is what the server needs them to be
-            $rows = $this->connection->fetchAllAssociative(
-                $query,
-                [$storeId, $limit, $offset],
-                [ParameterType::INTEGER, ParameterType::INTEGER, ParameterType::INTEGER]
-            );
+            $rows = $this->connection->fetchAllAssociative($query, $parameters, $types);
 
             foreach ($rows as $row) {
                 $assignments[] = new ScopedKeyAssignment(
@@ -121,16 +148,17 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     /**
      * {@inheritdoc}
      */
-    public function getGroupNamesByKeyId(int $keyId): array
+    public function getGroupNamesByKeyId(int $keyId, bool $hold = false): array
     {
         try {
             return $this->connection->fetchFirstColumn(
                 sprintf(
                     'SELECT DISTINCT `g`.`name` FROM `%s` `r`'
                     . ' INNER JOIN `%s` `g` ON `g`.`id` = `r`.`groupId`'
-                    . ' WHERE `r`.`keyId` = ? ORDER BY `g`.`name`',
+                    . ' WHERE `r`.`keyId` = ? ORDER BY `g`.`name`%s',
                     KeyGroupRelationDao::TABLE_NAME_RELATIONS,
-                    GroupConfigDao::TABLE_NAME_GROUPS
+                    GroupConfigDao::TABLE_NAME_GROUPS,
+                    $hold ? ' FOR UPDATE' : ''
                 ),
                 [$keyId]
             );

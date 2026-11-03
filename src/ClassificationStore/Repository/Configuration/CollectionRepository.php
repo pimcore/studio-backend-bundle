@@ -82,11 +82,15 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function getChunkByStore(int $storeId, int $limit, int $offset): array
-    {
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array {
         $listing = new Listing();
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
-        $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
+        $this->applyIdentifierCursorChunk($listing, $limit, $afterIdentifier, $afterId);
 
         return $listing->load();
     }
@@ -94,11 +98,16 @@ final readonly class CollectionRepository implements CollectionRepositoryInterfa
     /**
      * {@inheritdoc}
      */
-    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array
-    {
+    public function getChunkAfterId(
+        int $storeId,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array {
         $listing = new Listing();
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdentifierPhase($listing, $withIdentifier);
         $this->applyIdCursorChunk($listing, $limit);
 
         return $listing->load();

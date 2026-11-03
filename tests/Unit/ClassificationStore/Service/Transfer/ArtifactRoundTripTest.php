@@ -217,26 +217,26 @@ final class ArtifactRoundTripTest extends Unit
         }
 
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
-        $subGroupRepository->method('getChunkByStore')->willReturn([$this->createSubGroup()]);
+        $subGroupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createSubGroup()]);
 
         $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
-        $collectionRepository->method('getChunkByStore')->willReturn([$this->createCollection()]);
+        $collectionRepository->method('getChunkAfterIdentifier')->willReturn([$this->createCollection()]);
 
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
-        $groupRepository->method('getChunkByStore')->willReturn([$this->createGroup()]);
+        $groupRepository->method('getChunkAfterIdentifier')->willReturn([$this->createGroup()]);
 
         $keyRepository = $this->createMock(KeyRepositoryInterface::class);
-        $keyRepository->method('getChunkByStore')->willReturnCallback(
+        $keyRepository->method('getChunkAfterIdentifier')->willReturnCallback(
             static fn (int $storeId, bool $disabledOnly): array => $disabledOnly ? $disabled : $enabled
         );
 
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);
         $collectionRelationRepository
-            ->method('getChunkByStore')
+            ->method('getChunkAfter')
             ->willReturn([$this->createCollectionRelation()]);
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $keyGroupRelationRepository->method('getChunkByStore')->willReturn([$this->createAssignment()]);
+        $keyGroupRelationRepository->method('getChunkAfter')->willReturn([$this->createAssignment()]);
 
         $builder = new ArtifactBuilder(
             new ArtifactEntryMapper(),
@@ -273,7 +273,10 @@ final class ArtifactRoundTripTest extends Unit
         $subGroupRepository = $this->createMock(SubGroupRepositoryInterface::class);
         $subGroupRepository
             ->method('getChunkAfterId')
-            ->willReturn($targetIsTheSource ? [$this->createSubGroup()] : []);
+            ->willReturnCallback(
+                fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+                    => $targetIsTheSource && $withIdentifier !== false ? [$this->createSubGroup()] : []
+            );
         $subGroupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?SubGroupConfig $config, int $storeId, string $identifier, string $name): SubGroupConfig {
                 $this->appliedEntities[] = 'subGroup:' . $identifier . ':' . $name;
@@ -285,7 +288,10 @@ final class ArtifactRoundTripTest extends Unit
         $collectionRepository = $this->createMock(CollectionRepositoryInterface::class);
         $collectionRepository
             ->method('getChunkAfterId')
-            ->willReturn($targetIsTheSource ? [$this->createCollection()] : []);
+            ->willReturnCallback(
+                fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+                    => $targetIsTheSource && $withIdentifier !== false ? [$this->createCollection()] : []
+            );
         $collectionRepository->method('saveFromArtifact')->willReturnCallback(
             function (?CollectionConfig $config, int $storeId, string $identifier, string $name): CollectionConfig {
                 $this->appliedEntities[] = 'collection:' . $identifier . ':' . $name;
@@ -297,7 +303,10 @@ final class ArtifactRoundTripTest extends Unit
         $groupRepository = $this->createMock(GroupRepositoryInterface::class);
         $groupRepository
             ->method('getChunkAfterId')
-            ->willReturn($targetIsTheSource ? [$this->createGroup()] : []);
+            ->willReturnCallback(
+                fn (int $storeId, int $afterId, int $limit, ?bool $withIdentifier): array
+                    => $targetIsTheSource && $withIdentifier !== false ? [$this->createGroup()] : []
+            );
         $groupRepository->method('saveFromArtifact')->willReturnCallback(
             function (?GroupConfig $config, int $storeId, string $identifier, string $name): GroupConfig {
                 $this->appliedEntities[] = 'group:' . $identifier . ':' . $name;
@@ -308,10 +317,18 @@ final class ArtifactRoundTripTest extends Unit
 
         $keyRepository = $this->createMock(KeyRepositoryInterface::class);
         $keyRepository->method('getChunkAfterId')->willReturnCallback(
-            static function (int $storeId, bool $disabledOnly) use ($targetKeys): array {
+            static function (
+                int $storeId,
+                bool $disabledOnly,
+                int $afterId,
+                int $limit,
+                ?bool $withIdentifier
+            ) use ($targetKeys): array {
                 $matching = [];
                 foreach ($targetKeys as $key) {
-                    if ($key->getEnabled() !== $disabledOnly) {
+                    // the stub narrows by the identifier phase the way the listing's condition does
+                    if ($key->getEnabled() !== $disabledOnly
+                        && ($withIdentifier === null || ($key->getIdentifier() !== null) === $withIdentifier)) {
                         $matching[] = $key;
                     }
                 }
@@ -329,7 +346,7 @@ final class ArtifactRoundTripTest extends Unit
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
         $keyGroupRelationRepository
-            ->method('getChunkByStore')
+            ->method('getChunkAfter')
             ->willReturn($targetIsTheSource ? [$this->createAssignment()] : []);
         $keyGroupRelationRepository->method('getGroupNamesByKeyId')->willReturn([]);
         $keyGroupRelationRepository->method('createOrUpdateFromArtifact')->willReturnCallback(
@@ -343,7 +360,7 @@ final class ArtifactRoundTripTest extends Unit
 
         $collectionRelationRepository = $this->createMock(CollRelationRepositoryInterface::class);
         $collectionRelationRepository
-            ->method('getChunkByStore')
+            ->method('getChunkAfter')
             ->willReturn($targetIsTheSource ? [$this->createCollectionRelation()] : []);
         $collectionRelationRepository->method('createOrUpdate')->willReturnCallback(
             function (int $colId, int $groupId, int $sorter): CollectionGroupRelation {

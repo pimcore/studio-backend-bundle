@@ -33,14 +33,19 @@ interface CollRelationRepositoryInterface
     public function getListing(FilterParameter $parameters, int $colId): Listing;
 
     /**
-     * One page of the store's collection-group relations, ordered by the identifier pair, so that a
-     * configuration transfer never holds a whole store at once.
+     * One page of the store's collection to group relations, ordered by the identifier pair and taken after the last
+     * row handed back, so that a configuration transfer never holds a whole store at once.
+     *
+     * A cursor rather than an offset: a transfer is a read per page, and a relation deleted between
+     * two of them shifts every later one towards the start - which an offset then resumes past,
+     * leaving the shifted row out of an export that reports success. Null for `$after` is the first
+     * page.
      *
      * @return ScopedCollectionRelation[]
      *
      * @throws DatabaseException
      */
-    public function getChunkByStore(int $storeId, int $limit, int $offset): array;
+    public function getChunkAfter(int $storeId, ?ScopedCollectionRelation $after, int $limit): array;
 
     /**
      * @throws ElementSavingFailedException

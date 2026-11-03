@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
@@ -25,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing;
 use function sprintf;
 
@@ -47,6 +50,7 @@ final readonly class GroupRepository implements GroupRepositoryInterface
         private GroupConfigResolverInterface $groupConfigResolver,
         private ListingFilterInterface $listingFilter,
         private SearchHelperServiceInterface $searchHelperService,
+        private Connection $connection,
     ) {
     }
 
@@ -81,11 +85,15 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getChunkByStore(int $storeId, int $limit, int $offset): array
-    {
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array {
         $listing = new Listing();
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
-        $this->applyIdentifierOrderedChunk($listing, $limit, $offset);
+        $this->applyIdentifierCursorChunk($listing, $limit, $afterIdentifier, $afterId);
 
         return $listing->load();
     }
@@ -93,14 +101,38 @@ final readonly class GroupRepository implements GroupRepositoryInterface
     /**
      * {@inheritdoc}
      */
-    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array
-    {
+    public function getChunkAfterId(
+        int $storeId,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array {
         $listing = new Listing();
         $listing->addConditionParam(self::STORE_SCOPE_CONDITION, [self::STORE_SCOPE_PARAMETER => $storeId]);
         $listing->addConditionParam('`id` > :afterId', ['afterId' => $afterId]);
+        $this->applyIdentifierPhase($listing, $withIdentifier);
         $this->applyIdCursorChunk($listing, $limit);
 
         return $listing->load();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function holdGroupsOfStore(int $storeId): void
+    {
+        try {
+            // ascending id, so that two holders of differently scoped sets still agree on an order
+            $this->connection->fetchFirstColumn(
+                sprintf(
+                    'SELECT `id` FROM `%s` WHERE `storeId` = ? ORDER BY `id` FOR UPDATE',
+                    GroupConfigDao::TABLE_NAME_GROUPS
+                ),
+                [$storeId]
+            );
+        } catch (DBALException $e) {
+            throw new DatabaseException('Failed to hold the groups of the store: ' . $e->getMessage(), $e);
+        }
     }
 
     /**

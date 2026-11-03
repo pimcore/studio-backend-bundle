@@ -48,21 +48,42 @@ interface SubGroupRepositoryInterface
     public function getByIdentifiers(int $storeId, array $identifiers): array;
 
     /**
-     * One page of the store's sub groups, ordered by identifier, so that a configuration transfer
-     * never holds a whole store at once.
+     * One page of the store's sub groups, ordered by identifier and taken after the identifier and
+     * row id of the last row handed back, so that a configuration transfer never holds a whole
+     * store at once.
+     *
+     * A cursor rather than an offset: an export is a read per page per section, and a row deleted
+     * between two of them shifts every later row one place towards the start - which an offset then
+     * resumes past, leaving the shifted row out of a download that reports success. Null for
+     * `$afterIdentifier` is the first page.
      *
      * @return SubGroupConfig[]
      */
-    public function getChunkByStore(int $storeId, int $limit, int $offset): array;
+    public function getChunkAfterIdentifier(
+        int $storeId,
+        ?string $afterIdentifier,
+        int $afterId,
+        int $limit,
+    ): array;
 
     /**
      * One page of the store's sub groups, taken after the given row id, which is the paging an apply
      * walks the target in - it writes while it walks, and an offset into an identifier ordering
      * would skip the rows an adopted identifier moved past.
      *
+     * `$withIdentifier` is the identifier phase the page covers: true for the rows that carry an
+     * identifier, false for the rows that do not, null for every row in one walk. An apply takes
+     * the two phases in that order, so that the row owning an entry's identifier claims it before
+     * an identifierless namesake can be adopted onto the wrong row.
+     *
      * @return SubGroupConfig[]
      */
-    public function getChunkAfterId(int $storeId, int $afterId, int $limit): array;
+    public function getChunkAfterId(
+        int $storeId,
+        int $afterId,
+        int $limit,
+        ?bool $withIdentifier = null,
+    ): array;
 
     /**
      * Whether another sub group of the store already carries the name, which is the rule
