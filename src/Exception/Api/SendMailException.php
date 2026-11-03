@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 use function sprintf;
 
 /**
@@ -21,11 +22,15 @@ use function sprintf;
  */
 final class SendMailException extends AbstractApiException
 {
-    public function __construct(string $originalMessage)
-    {
+    public function __construct(
+        string $originalMessage,
+        string $mailType = 'mail',
+        ?Throwable $previous = null
+    ) {
         parent::__construct(
             HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
-            sprintf('Failed to send reset password mail: %s', $originalMessage),
+            sprintf('Failed to send %s: %s', $mailType, $originalMessage),
+            $previous,
         );
     }
 }

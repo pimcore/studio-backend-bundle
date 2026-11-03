@@ -88,7 +88,7 @@ final readonly class MailService implements MailServiceInterface
                 $mail->text(sprintf(self::RESET_MAIL_TEXT, $loginUrl));
                 $mail->send();
             } catch (Exception $exception) {
-                throw new SendMailException($exception->getMessage());
+                throw new SendMailException($exception->getMessage(), 'reset password mail', $exception);
             }
         }
     }
@@ -121,7 +121,7 @@ final readonly class MailService implements MailServiceInterface
                 $mail->text(sprintf(self::INVITATION_MAIL_TEXT, $invitationUrl));
                 $mail->send();
             } catch (Exception $exception) {
-                throw new SendMailException($exception->getMessage());
+                throw new SendMailException($exception->getMessage(), 'invitation mail', $exception);
             }
         }
     }

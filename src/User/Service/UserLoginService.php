@@ -41,7 +41,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 {
     private const array TRUSTED_URL_ALLOWED_SCHEMES = ['http', 'https'];
 
-    private const string TOKEN_QUERY_PARAMETER = '?token=';
+    private const string TOKEN_QUERY_PARAMETER = 'token';
 
     public function __construct(
         private AuthenticationResolverInterface $authenticationResolver,
@@ -73,7 +73,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         }
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
-        $loginUrl = $resetPassword->getResetPasswordUrl() . self::TOKEN_QUERY_PARAMETER . $token;
+        $loginUrl = $this->withToken($resetPassword->getResetPasswordUrl(), $token);
 
         try {
             $this->mailService->sendResetPasswordMail($user, $token, $loginUrl);
@@ -105,7 +105,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
         if ($parameter->getTokenLoginUrl() !== '') {
-            return $parameter->getTokenLoginUrl() . self::TOKEN_QUERY_PARAMETER . $token;
+            return $this->withToken($parameter->getTokenLoginUrl(), $token);
         }
 
         return $this->urlGenerator->generate(
@@ -158,10 +158,32 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
-        $this->mailService->sendInvitationMail(
-            $user,
-            $parameter->getInvitationUrl() . self::TOKEN_QUERY_PARAMETER . $token
-        );
+        $this->mailService->sendInvitationMail($user, $this->withToken($parameter->getInvitationUrl(), $token));
+    }
+
+    /**
+     * A trusted URL may already carry a query, a fragment or even a stale token, and appending
+     * "?token=" to those produces a link that carries no token parameter at all - after a fragment
+     * it is not even sent to the server. The parameter is set on the query, before any fragment.
+     */
+    private function withToken(string $url, string $token): string
+    {
+        $fragment = '';
+        $fragmentPosition = strpos($url, '#');
+
+        if ($fragmentPosition !== false) {
+            $fragment = substr($url, $fragmentPosition);
+            $url = substr($url, 0, $fragmentPosition);
+        }
+
+        $queryPosition = strpos($url, '?');
+        $path = $queryPosition === false ? $url : substr($url, 0, $queryPosition);
+        $query = $queryPosition === false ? '' : substr($url, $queryPosition + 1);
+
+        parse_str($query, $parameters);
+        $parameters[self::TOKEN_QUERY_PARAMETER] = $token;
+
+        return $path . '?' . http_build_query($parameters) . $fragment;
     }
 
     private function validateTrustedUrl(string $url, string $subject): void

@@ -262,31 +262,43 @@ final class UserLoginServiceTest extends Unit
 
     public function testSendInvitationAssignsAPasswordWhenTheUserHasNone(): void
     {
+        $calls = [];
         $target = $this->createTargetUser(password: null);
         $service = $this->createService(
             mainDomain: 'mysite.com',
             sites: [],
             targetUser: $target,
+            calls: $calls,
         );
 
         $service->sendInvitation(7, new Invitation('https://mysite.com/pimcore-studio/reset-password/'));
 
         self::assertNotEmpty($target->getPassword(), 'A user without a password must be given one.');
         self::assertSame(32, strlen((string) $target->getPassword()));
+
+        // the placeholder has to reach the database before the token is generated: the token is
+        // only accepted for a user that has a password
+        self::assertSame(
+            ['updateUser:' . $target->getPassword(), 'generateToken'],
+            $calls
+        );
     }
 
     public function testSendInvitationKeepsAnExistingPassword(): void
     {
+        $calls = [];
         $target = $this->createTargetUser(password: 'hashed-password');
         $service = $this->createService(
             mainDomain: 'mysite.com',
             sites: [],
             targetUser: $target,
+            calls: $calls,
         );
 
         $service->sendInvitation(7, new Invitation('https://mysite.com/pimcore-studio/reset-password/'));
 
         self::assertSame('hashed-password', $target->getPassword());
+        self::assertSame(['generateToken'], $calls, 'A user that has a password must not be saved.');
     }
 
     public function testSendInvitationRefusesAnAdminTargetForANonAdmin(): void
@@ -378,6 +390,60 @@ final class UserLoginServiceTest extends Unit
         );
     }
 
+    public function testSendInvitationAppendsTheTokenToAUrlThatAlreadyHasAQuery(): void
+    {
+        $sentUrls = [];
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+            targetUser: $this->createTargetUser(password: 'hashed-password'),
+            sentUrls: $sentUrls,
+        );
+
+        $service->sendInvitation(7, new Invitation('https://mysite.com/pimcore-studio/reset-password/?lang=en'));
+
+        self::assertSame(
+            ['https://mysite.com/pimcore-studio/reset-password/?lang=en&token=test-token-123'],
+            $sentUrls
+        );
+    }
+
+    public function testSendInvitationPutsTheTokenBeforeAFragment(): void
+    {
+        $sentUrls = [];
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+            targetUser: $this->createTargetUser(password: 'hashed-password'),
+            sentUrls: $sentUrls,
+        );
+
+        $service->sendInvitation(7, new Invitation('https://mysite.com/pimcore-studio/reset-password/?lang=en#form'));
+
+        self::assertSame(
+            ['https://mysite.com/pimcore-studio/reset-password/?lang=en&token=test-token-123#form'],
+            $sentUrls
+        );
+    }
+
+    public function testSendInvitationReplacesAStaleTokenParameter(): void
+    {
+        $sentUrls = [];
+        $service = $this->createService(
+            mainDomain: 'mysite.com',
+            sites: [],
+            targetUser: $this->createTargetUser(password: 'hashed-password'),
+            sentUrls: $sentUrls,
+        );
+
+        $service->sendInvitation(7, new Invitation('https://mysite.com/pimcore-studio/reset-password/?token=stale'));
+
+        self::assertSame(
+            ['https://mysite.com/pimcore-studio/reset-password/?token=test-token-123'],
+            $sentUrls
+        );
+    }
+
     public function testSendInvitationPropagatesMailFailures(): void
     {
         $service = $this->createService(
@@ -423,6 +489,7 @@ final class UserLoginServiceTest extends Unit
         bool $currentUserIsAdmin = true,
         array &$sentUrls = [],
         bool $mailFails = false,
+        array &$calls = [],
     ): UserLoginService {
         $user = null;
         if ($userExists) {
@@ -440,7 +507,11 @@ final class UserLoginServiceTest extends Unit
 
         return new UserLoginService(
             $this->makeEmpty(AuthenticationResolverInterface::class, [
-                'generateTokenByUser' => 'test-token-123',
+                'generateTokenByUser' => static function () use (&$calls): string {
+                    $calls[] = 'generateToken';
+
+                    return 'test-token-123';
+                },
             ]),
             $this->makeEmpty(MailServiceInterface::class, [
                 'sendInvitationMail' => static function (
@@ -458,6 +529,9 @@ final class UserLoginServiceTest extends Unit
             $this->makeEmpty(UrlGeneratorInterface::class),
             $this->makeEmpty(UserRepositoryInterface::class, [
                 'getUserById' => $targetUser,
+                'updateUser' => static function (UserInterface $saved) use (&$calls): void {
+                    $calls[] = 'updateUser:' . $saved->getPassword();
+                },
             ]),
             $this->makeEmpty(UserResolverInterface::class, [
                 'getByName' => $user,
