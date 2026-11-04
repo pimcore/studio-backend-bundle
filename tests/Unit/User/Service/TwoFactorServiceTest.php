@@ -123,6 +123,7 @@ final class TwoFactorServiceTest extends Unit
         $service->confirmSetup($user, $this->code($secret));
 
         $this->assertTrue($user->getTwoFactorAuthentication('enabled'));
+        $this->assertTrue($user->getTwoFactorAuthentication('required'));
         $this->assertSame($secret, $user->getTwoFactorAuthentication('secret'));
         $this->assertSame('google', $user->getTwoFactorAuthentication('type'));
     }
