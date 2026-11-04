@@ -110,13 +110,26 @@ final class LanguageServiceTest extends Unit
         $service->getTranslationAllowedLanguages($user, 'messages');
     }
 
-    public function testAdminTranslationLanguagesAreNotLimitedToValidLanguages(): void
+    public function testStudioTranslationLanguagesAreTheAdminUiLanguages(): void
     {
         $service = $this->createTranslationLanguageService(['de']);
         $user = $this->makeEmpty(UserInterface::class);
 
-        $this->assertSame(['en', 'cs', 'zh_Hans'], $service->getTranslationAllowedLanguages($user, 'admin'));
         $this->assertSame(['en', 'cs', 'zh_Hans'], $service->getTranslationAllowedLanguages($user, 'studio'));
+    }
+
+    /**
+     * The admin domain is a frontend domain (see TranslatorService::getAvailableDomains()),
+     * so Studio shows the website languages and the backend has to use the same ones.
+     */
+    public function testAdminDomainTranslationLanguagesAreTheWebsiteLanguages(): void
+    {
+        $service = $this->createTranslationLanguageService(['de', 'en', 'fr_BE']);
+        $user = $this->makeEmpty(UserInterface::class, [
+            'getAllowedLanguagesForViewingWebsiteTranslations' => ['fr_BE', 'cs', 'de'],
+        ]);
+
+        $this->assertSame(['fr_BE', 'de'], $service->getTranslationAllowedLanguages($user, 'admin'));
     }
 
     /**
