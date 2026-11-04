@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\OptionsProviderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DynamicSelectOptionEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
@@ -28,8 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
-use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Helper\OptionsProviderResolver;
@@ -49,6 +50,7 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
         private SelectOptionHydratorInterface $selectOptionHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private DotNotationParserInterface $dotNotationParser,
+        private DataAdapterServiceInterface $dataAdapterService,
     ) {
     }
 
@@ -106,8 +108,8 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
     }
 
     /**
-     * A lookup only reads the object's own values. Reverse relation fields store on other objects
-     * and are therefore never applied here.
+     * A lookup only reads the object's own values. Fields whose adapter stores on other objects
+     * (RemoteStorageDataInterface) are therefore never applied here.
      *
      * @throws NotFoundException
      */
@@ -127,10 +129,16 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
         return array_filter(
             $selectOptionsParameter->getChangedData(),
-            static fn (string|int $key): bool =>
-                !$class->getFieldDefinition((string)$key) instanceof ReverseObjectRelation,
+            fn (string|int $key): bool => !$this->isStoredRemotely($class->getFieldDefinition((string)$key)),
             ARRAY_FILTER_USE_KEY
         );
+    }
+
+    private function isStoredRemotely(?Data $fieldDefinition): bool
+    {
+        return $fieldDefinition !== null
+            && $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType())
+                instanceof RemoteStorageDataInterface;
     }
 
     private function getMode(Select|Multiselect $fieldDefinition): int

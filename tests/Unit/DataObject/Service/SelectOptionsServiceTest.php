@@ -17,9 +17,13 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\OptionsProviderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -28,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserI
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
@@ -235,6 +240,23 @@ final class SelectOptionsServiceTest extends Unit
             ]),
             $this->makeEmpty(DotNotationParserInterface::class, [
                 'parse' => new FieldDefinitionWrapper($fieldDefinition, 'object', self::FIELD_NAME),
+            ]),
+            $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => fn (string $type): ?SetterDataInterface => $type === 'reverseObjectRelation'
+                    ? new class() implements SetterDataInterface, RemoteStorageDataInterface {
+                        public function getDataForSetter(
+                            Concrete $element,
+                            Data $fieldDefinition,
+                            string $key,
+                            array $data,
+                            UserInterface $user,
+                            ?FieldContextData $contextData = null,
+                            bool $isPatch = false
+                        ): mixed {
+                            return null;
+                        }
+                    }
+                    : null,
             ]),
         );
     }

@@ -19,6 +19,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -52,7 +53,7 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ReverseObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class ReverseObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface, RemoteStorageDataInterface
 {
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
