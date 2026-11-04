@@ -19,6 +19,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
 use function array_key_exists;
+use function array_search;
+use function array_slice;
+use function array_values;
 use function count;
 use function sprintf;
 
@@ -89,30 +92,33 @@ abstract class AbstractResolver implements ResolverInterface
      */
     protected function checkForSubBlockContainer(Data $fd, array $dotNotationParts, Definition $definition): Data
     {
-        // Remove the first two parts of the dot notation since we have to check recursively vor sub containers
-        unset($dotNotationParts[0]);
-        unset($dotNotationParts[1]);
-        $dotNotationParts = array_values($dotNotationParts);
-
-        if (!count($dotNotationParts) >= 2) {
+        if (!$fd instanceof Block) {
             return $fd;
         }
 
-        if ($fd instanceof Block) {
-            $resolver = $this->getResolvers()['block'];
-            $resolver->setFieldDefinitions(
-                $definition->getFieldDefinitions()
-            );
+        // Skip the container field and the brick/collection key, then start at the block itself:
+        // the block can sit directly in the container or inside its localized fields
+        // (e.g. content.UspArea.localizedfields.buttons.buttonColor)
+        $blockIndex = array_search($fd->getName(), array_slice($dotNotationParts, 2), true);
+        if ($blockIndex === false) {
+            return $fd;
+        }
+        $dotNotationParts = array_values(array_slice($dotNotationParts, $blockIndex + 2));
 
-            if (!$resolver->canResolve($dotNotationParts)) {
-                return $fd;
-            }
-
-            $fd = $resolver->resolve($dotNotationParts)->getFieldDefinition();
+        if (count($dotNotationParts) < 2) {
+            return $fd;
         }
 
-        return $fd;
+        // The block is looked up by name; inside localized fields it is not one of the
+        // container's top-level field definitions, so hand the resolved block over directly
+        $resolver = $this->getResolvers()['block'];
+        $resolver->setFieldDefinitions([$fd->getName() => $fd]);
 
+        if (!$resolver->canResolve($dotNotationParts)) {
+            return $fd;
+        }
+
+        return $resolver->resolve($dotNotationParts)->getFieldDefinition();
     }
 
     protected function wrapFieldDefinition(
