@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -26,6 +27,7 @@ interface SelectOptionsServiceInterface
 {
     /**
      * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidArgumentException
      * @throws UserNotFoundException
