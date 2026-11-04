@@ -2124,7 +2124,7 @@ recycle_bin_restore_items_description: |
   The <strong>{items}</strong> array must contain IDs of existing recycle bin items. <br> 
   If multiple items are being restored, the operation is executed asynchronously. <br>
   Elements whose parent no longer exists are restored into the <strong>/__restored</strong> folder of their
-  element type, which requires the create permission on that folder.
+  element type, which requires the publish permission on that folder.
 recycle_bin_restore_items_created_response: Successfully created <strong>jobRun</strong> to restore recycle bin items
 recycle_bin_restore_items_summary: Restore items from the recycle bin
 recycle_bin_restore_items_success_response: |

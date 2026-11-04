@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RelocatedItemHydratorInterface;
@@ -44,6 +45,7 @@ final readonly class RestoreItemService implements RestoreItemServiceInterface
         private RestoreContextInterface $restoreContext,
         private SecurityServiceInterface $securityService,
         private SynchronousProcessingServiceInterface $synchronousProcessing,
+        private VersionResolverInterface $versionResolver,
     ) {
     }
 
@@ -53,6 +55,7 @@ final readonly class RestoreItemService implements RestoreItemServiceInterface
     public function restoreItem(int $id, ?UserInterface $user = null): array
     {
         $syncProcessingEnabled = $this->synchronousProcessing->isEnabled();
+        $versioningEnabled = $this->versionResolver->isEnabled();
         $item = $this->itemResolver->getById($id);
         if (!$item instanceof Item) {
             throw new NotFoundException('recycle bin item', $id);
@@ -71,6 +74,8 @@ final readonly class RestoreItemService implements RestoreItemServiceInterface
             $this->restoreContext->clear();
             $syncProcessingEnabled ? $this->synchronousProcessing->enable() :
             $this->synchronousProcessing->disable();
+            // core's restore turns versioning off around its placeholder save without restoring it on failure
+            $versioningEnabled ? $this->versionResolver->enable() : $this->versionResolver->disable();
         }
 
         return array_map(

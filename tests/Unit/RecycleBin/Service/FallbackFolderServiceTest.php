@@ -120,7 +120,7 @@ final class FallbackFolderServiceTest extends Unit
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->expects($this->once())
             ->method('hasElementPermission')
-            ->with($folder, $user, 'create');
+            ->with($folder, $user, 'publish');
 
         $element->expects($this->once())->method('setParent')->with($folder);
         $element->expects($this->never())->method('setKey');
@@ -178,7 +178,7 @@ final class FallbackFolderServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testFailsWithTheMissingParentKeyWithoutCreatePermissionOnTheFallbackFolder(): void
+    public function testFailsWithTheMissingParentKeyWithoutPublishPermissionOnTheFallbackFolder(): void
     {
         $folder = $this->createMock(AssetFolder::class);
         $element = $this->createMock(Asset::class);

@@ -18,6 +18,7 @@ use Exception;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RelocatedItemHydratorInterface;
@@ -184,6 +185,51 @@ final class RestoreItemServiceTest extends Unit
 
     /**
      * @throws Exception
+     * @dataProvider versioningStateProvider
+     */
+    #[DataProvider('versioningStateProvider')]
+    public function testRestoreItemLeavesTheVersioningStateAsItWasWhenTheRestoreFails(bool $versioningEnabled): void
+    {
+        $enabled = $versioningEnabled;
+        $versionResolver = $this->makeEmpty(VersionResolverInterface::class, [
+            'isEnabled' => static function () use (&$enabled): bool {
+                return $enabled;
+            },
+            'enable' => static function () use (&$enabled): void {
+                $enabled = true;
+            },
+            'disable' => static function () use (&$enabled): void {
+                $enabled = false;
+            },
+        ]);
+
+        $service = $this->createService(
+            itemResolver: $this->createItemResolver(static function () use (&$enabled): void {
+                $enabled = false;
+
+                throw new Exception('Missing publish permission');
+            }),
+            versionResolver: $versionResolver,
+        );
+
+        try {
+            $service->restoreItem(42, $this->makeEmpty(UserInterface::class));
+            $this->fail('EnvironmentException expected');
+        } catch (EnvironmentException) {
+            $this->assertSame($versioningEnabled, $enabled);
+        }
+    }
+
+    public static function versioningStateProvider(): array
+    {
+        return [
+            'versioning enabled' => [true],
+            'versioning disabled' => [false],
+        ];
+    }
+
+    /**
+     * @throws Exception
      */
     private function createItemResolver(?callable $restore = null): ItemResolverInterface
     {
@@ -203,6 +249,7 @@ final class RestoreItemServiceTest extends Unit
         ?RelocatedItemHydratorInterface $relocatedItemHydrator = null,
         ?RestoreContextInterface $restoreContext = null,
         ?SecurityServiceInterface $securityService = null,
+        ?VersionResolverInterface $versionResolver = null,
     ): RestoreItemService {
         return new RestoreItemService(
             $itemResolver ?? $this->makeEmpty(ItemResolverInterface::class),
@@ -212,6 +259,7 @@ final class RestoreItemServiceTest extends Unit
                 'getCurrentUser' => $this->makeEmpty(UserInterface::class),
             ]),
             $this->makeEmpty(SynchronousProcessingServiceInterface::class),
+            $versionResolver ?? $this->makeEmpty(VersionResolverInterface::class),
         );
     }
 }

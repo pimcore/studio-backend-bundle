@@ -27,7 +27,7 @@ interface RestoreItemServiceInterface
 {
     /**
      * Restores elements whose parent is missing into the fallback folder, the given user (default: the current
-     * user) needs the create permission on it.
+     * user) needs the publish permission on it, as core's restore requires on the parent.
      *
      * @return RelocatedItem[] the elements restored into the fallback folder
      *

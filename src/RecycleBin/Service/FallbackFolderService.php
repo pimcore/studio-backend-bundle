@@ -63,10 +63,10 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         $folder = $this->getFallbackFolder($elementType);
 
         try {
-            $this->securityService->hasElementPermission($folder, $user, ElementPermissions::CREATE_PERMISSION);
+            $this->securityService->hasElementPermission($folder, $user, ElementPermissions::PUBLISH_PERMISSION);
         } catch (ForbiddenException $exception) {
             throw new EnvironmentException(
-                sprintf('Missing create permission on the fallback folder %s', self::FOLDER_PATH),
+                sprintf('Missing publish permission on the fallback folder %s', self::FOLDER_PATH),
                 HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT->value,
                 $exception
             );
