@@ -59,7 +59,7 @@ final readonly class FieldCollectionRepository implements FieldCollectionReposit
         } catch (Exception $e) {
             $exception = $e;
         }
-        if (!$definition || $exception) {
+        if (!$definition) {
             throw new NotFoundException(type: 'Field Collection', id: $key, previous: $exception);
         }
 

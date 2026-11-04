@@ -41,7 +41,7 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function getMetadataAdapter(string $type): ?MetadataAdapterInterface
+    public function getMetadataAdapter(string $type): ?MetaDataAdapterInterface
     {
         $studioAdapters = $this->getStudioAdaptersMapping();
         foreach ($studioAdapters as $adapter => $fieldTypes) {
