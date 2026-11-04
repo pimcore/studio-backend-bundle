@@ -78,6 +78,7 @@ final class RenderletServiceTest extends Unit
         $this->assertSame('42', $this->renderedQuery['id']);
         $this->assertSame('small', $this->renderedQuery['teaserType']);
         $this->assertArrayNotHasKey('controller', $this->renderedQuery);
+        $this->assertArrayNotHasKey('template', $this->renderedQuery);
     }
 
     /**

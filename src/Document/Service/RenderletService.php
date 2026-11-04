@@ -172,9 +172,14 @@ final readonly class RenderletService implements RenderletServiceInterface
         return $attributes;
     }
 
+    /**
+     * The template is not passed as query parameter, the same way as the renderlet editable does on the frontend.
+     * Core marks the query parameters as deprecated when they are read from the attributes,
+     * and core reads the template attribute to render the template.
+     */
     private function cleanupRequestParameters(array $requestParameters): array
     {
-        foreach (['controller', 'action', 'module', 'bundle'] as $key) {
+        foreach (['controller', 'action', 'module', 'bundle', 'template'] as $key) {
             if (isset($requestParameters[$key])) {
                 unset($requestParameters[$key]);
             }
