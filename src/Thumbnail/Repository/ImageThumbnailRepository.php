@@ -64,7 +64,7 @@ final readonly class ImageThumbnailRepository implements ImageThumbnailRepositor
             $exception = $e;
         }
 
-        if (!$config || $exception) {
+        if (!$config) {
             throw new NotFoundException(type: 'image thumbnail configuration', id: $name, previous: $exception);
         }
 

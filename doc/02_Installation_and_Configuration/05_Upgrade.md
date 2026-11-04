@@ -155,6 +155,16 @@ The following steps are necessary during updating to newer versions.
 > answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
 
+## Upgrade to 2026.3.4
+- [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
+  backend still used the admin UI languages for it. Columns of website languages that are no admin UI language
+  (e.g. `fr_BE`) stayed empty and sorting by them failed. `POST /translations/list`, `POST /translations/export` and
+  the CSV import now use the website translation languages the user is allowed to view for the `admin` domain, and the
+  list only returns the values of these languages. Only the `studio` domain uses the admin UI languages.
+
+> **Note:** this replaces the `admin` domain part of the 2025.4.15 entry below. As for the other website domains, a
+> user without any valid website translation language receives `403` for list, export and import of the `admin` domain.
+
 ## Upgrade to 2026.3.3
 - [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of
   fields with `optimizedAdminLoading` without instantiating the related elements. Requires `pimcore/pimcore` 2026.3.3

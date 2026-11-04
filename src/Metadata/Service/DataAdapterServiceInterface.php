@@ -29,7 +29,7 @@ interface DataAdapterServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getMetadataAdapter(string $type): ?MetadataAdapterInterface;
+    public function getMetadataAdapter(string $type): ?MetaDataAdapterInterface;
 
     /**
      * @throws InvalidArgumentException
