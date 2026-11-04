@@ -12,7 +12,7 @@ Only `required` decides whether the login asks for a code, as in the classic adm
 profile sets `required` as well, so it protects the login from then on. Switching `required` off in the user management
 lets the user in with the password alone again; the stored setup stays and is asked for again once `required` is on.
 
-Two settings on each user decide it, both editable in the user management:
+`required` is the two-factor switch in the user management, `enabled` comes from the user's own setup:
 
 | `required` | `enabled` | Login |
 |---|---|---|
@@ -81,7 +81,11 @@ strategy, the setup endpoint stays closed and users who must set up two-factor a
 |---|---|---|
 | `POST /user/two-factor/setup` | the current user | New secret, pending until confirmed. During a renewal the current secret keeps working until then. |
 | `POST /user/two-factor/confirm` | the current user | `{"code"}` from the new secret enables it and sets `required`; a wrong code answers `422`, no pending setup `409`. |
-| `DELETE /user/two-factor` | the current user | Disables two-factor authentication; refused (`403`) while it is required. |
+| `DELETE /user/two-factor` | the current user | Disables two-factor authentication; refused (`403`) while it is required, so it only removes a setup that is no longer required. |
 | `DELETE /user/{id}/two-factor` | user management permission | Resets a user's two-factor authentication. Admins may reset any user, other users only themselves, also while it is required for them. `required` stays as it is, so a required user sets it up again at the next login. |
+
+Anyone with the user management permission can switch `required` on and off for users who are not admins, themselves
+included; only admins can change it for admin users. This is the same as in the classic admin. Switching it off
+removes the code from that user's login without telling the user.
 
 The secret is only ever returned by the setup endpoint.

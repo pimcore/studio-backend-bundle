@@ -155,6 +155,7 @@ final class TwoFactorServiceTest extends Unit
         }
 
         $this->assertFalse($user->getTwoFactorAuthentication('enabled'));
+        $this->assertFalse($user->getTwoFactorAuthentication('required'));
         $this->assertSame('', $user->getTwoFactorAuthentication('secret'));
     }
 
@@ -209,6 +210,7 @@ final class TwoFactorServiceTest extends Unit
 
         $service->confirmSetup($user, $this->code($newSecret));
         $this->assertSame($newSecret, $user->getTwoFactorAuthentication('secret'));
+        $this->assertTrue($user->getTwoFactorAuthentication('required'));
     }
 
     public function testDisableWhileRequiredIsRefusedAndChangesNothing(): void
@@ -223,6 +225,19 @@ final class TwoFactorServiceTest extends Unit
 
         $this->assertTrue($user->getTwoFactorAuthentication('enabled'));
         $this->assertSame('OLDSECRETOLDSECRET', $user->getTwoFactorAuthentication('secret'));
+    }
+
+    /**
+     * A confirmed setup is required, so the user cannot remove it again on their own.
+     */
+    public function testDisableIsRefusedAfterAConfirmedSetup(): void
+    {
+        $user = $this->user();
+        $service = $this->service($this->repository($user, saves: 1));
+        $service->confirmSetup($user, $this->code($service->createSetup($user)->getSecret()));
+
+        $this->expectException(ForbiddenException::class);
+        $service->disable($user);
     }
 
     public function testDisableClearsTheSecret(): void
