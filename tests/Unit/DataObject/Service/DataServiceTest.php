@@ -17,7 +17,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteElementWriteInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataService;
@@ -80,7 +80,7 @@ final class DataServiceTest extends Unit
     public function testUpdateEditableDataSkipsRemoteWritingAdapterWhenRemoteChangesAreNotApplied(): void
     {
         $calls = 0;
-        $adapter = new class($calls) implements SetterDataInterface, RemoteElementWriteInterface {
+        $adapter = new class($calls) implements SetterDataInterface, RemoteStorageDataInterface {
             public function __construct(private int &$calls)
             {
             }

@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteElementWriteInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
@@ -180,7 +180,7 @@ final readonly class DataService implements DataServiceInterface
                     continue;
                 }
 
-                if (!$applyRemoteChanges && $adapter instanceof RemoteElementWriteInterface) {
+                if (!$applyRemoteChanges && $adapter instanceof RemoteStorageDataInterface) {
                     continue;
                 }
 

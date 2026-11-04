@@ -18,7 +18,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Enums\SelectionProcessingMode;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteElementWriteInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
@@ -261,7 +261,7 @@ final readonly class PatchService implements PatchServiceInterface
                 continue;
             }
 
-            if (!$applyRemoteChanges && $adapter instanceof RemoteElementWriteInterface) {
+            if (!$applyRemoteChanges && $adapter instanceof RemoteStorageDataInterface) {
                 continue;
             }
 

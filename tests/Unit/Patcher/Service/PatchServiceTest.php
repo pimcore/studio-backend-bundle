@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Patcher\Service;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteElementWriteInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService;
@@ -97,7 +97,7 @@ final class PatchServiceTest extends Unit
     public function testPatchAppliesRemoteChangesOnlyForExplicitSaves(?string $task, bool $expectedApplied): void
     {
         $applied = 0;
-        $adapter = new class($applied) implements SetterDataInterface, RemoteElementWriteInterface {
+        $adapter = new class($applied) implements SetterDataInterface, RemoteStorageDataInterface {
             public function __construct(private int &$calls)
             {
             }

@@ -19,7 +19,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteElementWriteInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -69,14 +68,6 @@ final class ReverseObjectRelationAdapterTest extends Unit
     private const OWNER_CLASS = 'Owner';
 
     private const USER_ID = 7;
-
-    public function testAdapterIsMarkedAsWritingOtherElements(): void
-    {
-        $this->assertTrue(
-            is_subclass_of(ReverseObjectRelationAdapter::class, RemoteElementWriteInterface::class),
-            'a draft skips the reverse relation only through this marker'
-        );
-    }
 
     /**
      * @throws Exception
@@ -650,7 +641,8 @@ final class ReverseObjectRelationAdapterTest extends Unit
     public function testAdapterIsMarkedAsRemoteStorage(): void
     {
         $this->assertTrue(
-            is_subclass_of(ReverseObjectRelationAdapter::class, RemoteStorageDataInterface::class)
+            is_subclass_of(ReverseObjectRelationAdapter::class, RemoteStorageDataInterface::class),
+            'select options lookup and draft saves skip the reverse relation only through this marker'
         );
     }
 
