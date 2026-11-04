@@ -25,8 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Folder as AssetFolder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function pathinfo;
 use function sprintf;
 
 /**
@@ -79,7 +82,7 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         }
 
         // core's recycle bin appends _restore to a taken key, the number only covers a further clash
-        $element->setKey($key . self::RESTORE_SUFFIX);
+        $element->setKey($this->getRestoreKey($element, $key));
         $element->setKey($this->getUniqueKey($elementType, $element));
     }
 
@@ -110,6 +113,18 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         }
 
         return $folder;
+    }
+
+    private function getRestoreKey(ElementInterface $element, string $key): string
+    {
+        if (!$element instanceof Asset || $element instanceof AssetFolder) {
+            return $key . self::RESTORE_SUFFIX;
+        }
+
+        $pathInfo = pathinfo($key);
+        $extension = empty($pathInfo['extension']) ? '' : '.' . $pathInfo['extension'];
+
+        return $pathInfo['filename'] . self::RESTORE_SUFFIX . $extension;
     }
 
     /**

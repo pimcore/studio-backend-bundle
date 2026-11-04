@@ -134,22 +134,26 @@ final class FallbackFolderServiceTest extends Unit
      * @dataProvider takenKeyProvider
      */
     #[DataProvider('takenKeyProvider')]
-    public function testAppendsTheRestoreSuffixWhenTheKeyIsTakenInTheFallbackFolder(
+    public function testAddsTheRestoreSuffixWhenTheKeyIsTakenInTheFallbackFolder(
+        string $elementClass,
+        string $folderClass,
+        string $resolver,
+        string $key,
         array $uniqueKeys,
         array $expectedKeys
     ): void {
-        $folder = $this->createMock(AssetFolder::class);
-        $element = $this->createMock(Asset::class);
-        $element->method('getKey')->willReturn('image.jpg');
+        $folder = $this->createMock($folderClass);
+        $element = $this->createMock($elementClass);
+        $element->method('getKey')->willReturn($key);
         $element->expects($this->exactly(2))->method('setKey')->willReturnCallback(
-            function (string $key) use (&$expectedKeys, $element): Asset {
+            function (string $key) use (&$expectedKeys, $element): ElementInterface {
                 $this->assertSame(array_shift($expectedKeys), $key);
 
                 return $element;
             }
         );
 
-        $this->createService(...$this->createResolvers('assetServiceResolver', $element, $folder, $uniqueKeys))
+        $this->createService(...$this->createResolvers($resolver, $element, $folder, $uniqueKeys))
             ->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class));
 
         $this->assertSame([], $expectedKeys);
@@ -157,12 +161,33 @@ final class FallbackFolderServiceTest extends Unit
 
     public static function takenKeyProvider(): array
     {
+        $asset = [Asset::class, AssetFolder::class, 'assetServiceResolver'];
+
         return [
-            'key taken' => [['image_1.jpg', 'image.jpg_restore'], ['image.jpg_restore', 'image.jpg_restore']],
-            'restore suffix taken too' => [
-                ['image_1.jpg', 'image.jpg_restore_1'],
-                ['image.jpg_restore', 'image.jpg_restore_1'],
-            ],
+            'asset' => [...$asset, 'image.jpg', ['image_1.jpg', 'image_restore.jpg'], [
+                'image_restore.jpg',
+                'image_restore.jpg',
+            ]],
+            'asset with the restore suffix taken too' => [...$asset, 'image.jpg', [
+                'image_1.jpg',
+                'image_restore_1.jpg',
+            ], ['image_restore.jpg', 'image_restore_1.jpg']],
+            'asset without extension' => [...$asset, 'README', ['README_1', 'README_restore'], [
+                'README_restore',
+                'README_restore',
+            ]],
+            'asset folder' => [AssetFolder::class, AssetFolder::class, 'assetServiceResolver', 'photos.2024', [
+                'photos.2024_1',
+                'photos.2024_restore',
+            ], ['photos.2024_restore', 'photos.2024_restore']],
+            'document' => [Document::class, DocumentFolder::class, 'documentServiceResolver', 'about.us', [
+                'about.us_1',
+                'about.us_restore',
+            ], ['about.us_restore', 'about.us_restore']],
+            'data object' => [Concrete::class, DataObjectFolder::class, 'dataObjectServiceResolver', 'car.a', [
+                'car.a_1',
+                'car.a_restore',
+            ], ['car.a_restore', 'car.a_restore']],
         ];
     }
 
