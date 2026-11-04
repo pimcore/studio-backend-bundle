@@ -86,7 +86,7 @@ final readonly class UpdateService implements UpdateServiceInterface
                 $element,
                 $data[self::EDITABLE_DATA_KEY],
                 $user,
-                $this->appliesRemoteChanges($task)
+                ElementSaveTasks::appliesRemoteChanges($task)
             );
             unset($data[self::EDITABLE_DATA_KEY]);
         }
@@ -125,18 +125,6 @@ final readonly class UpdateService implements UpdateServiceInterface
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         }
-    }
-
-    /**
-     * A draft (autoSave, version) must not change other, live elements such as the owners of a reverse relation.
-     */
-    private function appliesRemoteChanges(?string $task): bool
-    {
-        return !in_array(
-            $task,
-            [ElementSaveTasks::AUTOSAVE->value, ElementSaveTasks::VERSION->value],
-            true
-        );
     }
 
     /**

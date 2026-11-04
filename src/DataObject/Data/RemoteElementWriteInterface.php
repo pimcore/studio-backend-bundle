@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 /**
  * Marks a {@see SetterDataInterface} adapter whose getDataForSetter() persists other elements
  * (e.g. the owner objects of a reverse relation) instead of only preparing a value for the given element.
- * Such changes are live and not part of a draft, so they are skipped while a draft is stored.
+ * Such changes are live and not part of a draft, so they are skipped while an auto-save stores a draft.
  *
  * @internal
  */

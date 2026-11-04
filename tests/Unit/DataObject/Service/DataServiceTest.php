@@ -131,17 +131,8 @@ final class DataServiceTest extends Unit
      */
     private function updateWith(SetterDataInterface $adapter, bool $applyRemoteChanges): void
     {
-        $service = new DataService(
-            $this->makeEmpty(ClassDefinitionResolverInterface::class),
-            $this->makeEmpty(DataAdapterServiceInterface::class, ['tryDataAdapter' => $adapter]),
-            $this->makeEmpty(InheritanceServiceInterface::class),
-            $this->makeEmpty(WorkflowDetailsServiceInterface::class),
-        );
-        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('name', (new Input())->setName('name'));
-        $element = $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
-
-        $service->updateEditableData(
-            $element,
+        $this->createUpdateService($adapter)->updateEditableData(
+            $this->createUpdateElement(),
             ['name' => 'value'],
             $this->makeEmpty(UserInterface::class),
             $applyRemoteChanges
@@ -158,15 +149,34 @@ final class DataServiceTest extends Unit
                 throw $exception;
             },
         ]);
-        $service = new DataService(
+
+        $this->createUpdateService($adapter)->updateEditableData(
+            $this->createUpdateElement(),
+            ['name' => 'value'],
+            $this->makeEmpty(UserInterface::class)
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createUpdateService(SetterDataInterface $adapter): DataService
+    {
+        return new DataService(
             $this->makeEmpty(ClassDefinitionResolverInterface::class),
             $this->makeEmpty(DataAdapterServiceInterface::class, ['tryDataAdapter' => $adapter]),
             $this->makeEmpty(InheritanceServiceInterface::class),
             $this->makeEmpty(WorkflowDetailsServiceInterface::class),
         );
-        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('name', (new Input())->setName('name'));
-        $element = $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
+    }
 
-        $service->updateEditableData($element, ['name' => 'value'], $this->makeEmpty(UserInterface::class));
+    /**
+     * @throws Exception
+     */
+    private function createUpdateElement(): Concrete
+    {
+        $class = (new ClassDefinition())->setId('test')->addFieldDefinition('name', (new Input())->setName('name'));
+
+        return $this->makeEmpty(Concrete::class, ['getId' => 1, 'getClass' => $class]);
     }
 }

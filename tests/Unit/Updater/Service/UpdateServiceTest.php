@@ -227,11 +227,11 @@ final class UpdateServiceTest extends Unit
     }
 
     /**
-     * A draft (autoSave, version) must not write the owners of a reverse relation, only a real save does.
+     * An auto-save must not write the owners of a reverse relation; an explicit save (also Save draft) does.
      *
      * @dataProvider remoteChangeTasksProvider
      */
-    public function testUpdateAppliesRemoteChangesOnlyForRealSaves(?string $task, bool $expectedApplied): void
+    public function testUpdateAppliesRemoteChangesOnlyForExplicitSaves(?string $task, bool $expectedApplied): void
     {
         $applied = null;
         $objectDataService = $this->makeEmpty(DataObjectDataService::class, [
@@ -255,11 +255,12 @@ final class UpdateServiceTest extends Unit
         $this->assertSame($expectedApplied, $applied);
     }
 
-    protected function remoteChangeTasksProvider(): array
+    public static function remoteChangeTasksProvider(): array
     {
         return [
             'autoSave' => [ElementSaveTasks::AUTOSAVE->value, false],
-            'version' => [ElementSaveTasks::VERSION->value, false],
+            'unknown task' => ['draft', false],
+            'version' => [ElementSaveTasks::VERSION->value, true],
             'save' => [ElementSaveTasks::SAVE->value, true],
             'publish' => [ElementSaveTasks::PUBLISH->value, true],
             'unpublish' => [ElementSaveTasks::UNPUBLISH->value, true],
