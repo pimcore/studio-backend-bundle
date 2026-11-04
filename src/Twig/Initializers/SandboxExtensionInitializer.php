@@ -107,7 +107,8 @@ final class SandboxExtensionInitializer implements
      *   service implements {@see ExtensionInterface}, which is exactly why
      *   {@see registerAdditionalExtensions()} checks it at runtime instead of trusting it.
      */
-    public function __construct(
+    // the unused parameters are kept for backward compatibility; they are removed in 2027.1, see pimcore/platform-version#761
+    public function __construct( // @phpstan-ignore constructor.unusedParameter, constructor.unusedParameter, constructor.unusedParameter
         Environment $twig,
         private readonly array $allowedTags,
         private readonly array $allowedFilters,

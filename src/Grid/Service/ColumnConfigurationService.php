@@ -74,7 +74,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             );
         }
 
-        if ($classId === null && $folderId === null) {
+        if ($classId === null) {
             $columns = $this->getSystemDataObjectColumnConfiguration();
             $this->dispatchEventForAllColumns($columns);
 
