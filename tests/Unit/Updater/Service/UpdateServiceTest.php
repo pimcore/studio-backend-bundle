@@ -25,9 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
@@ -224,19 +226,65 @@ final class UpdateServiceTest extends Unit
         }
     }
 
-    private function createService(callable $onSave): UpdateService
+    /**
+     * A draft (autoSave, version) must not write the owners of a reverse relation, only a real save does.
+     *
+     * @dataProvider remoteChangeTasksProvider
+     */
+    public function testUpdateAppliesRemoteChangesOnlyForRealSaves(?string $task, bool $expectedApplied): void
     {
+        $applied = null;
+        $objectDataService = $this->makeEmpty(DataObjectDataService::class, [
+            'updateEditableData' => static function (
+                Concrete $element,
+                array $editableData,
+                UserInterface $user,
+                bool $applyRemoteChanges = true
+            ) use (&$applied): void {
+                $applied = $applyRemoteChanges;
+            },
+        ]);
+        $service = $this->createService(static fn () => null, $objectDataService, $this->makeEmpty(Concrete::class));
+
+        $data = ['editableData' => ['owners' => [['id' => 7]]]];
+        if ($task !== null) {
+            $data['task'] = $task;
+        }
+        $service->update(ElementTypes::TYPE_OBJECT, self::ELEMENT_ID, $data);
+
+        $this->assertSame($expectedApplied, $applied);
+    }
+
+    protected function remoteChangeTasksProvider(): array
+    {
+        return [
+            'autoSave' => [ElementSaveTasks::AUTOSAVE->value, false],
+            'version' => [ElementSaveTasks::VERSION->value, false],
+            'save' => [ElementSaveTasks::SAVE->value, true],
+            'publish' => [ElementSaveTasks::PUBLISH->value, true],
+            'unpublish' => [ElementSaveTasks::UNPUBLISH->value, true],
+            'no task' => [null, true],
+        ];
+    }
+
+    private function createService(
+        callable $onSave,
+        ?DataObjectDataService $objectDataService = null,
+        ?object $element = null
+    ): UpdateService {
+        $element ??= $this->element;
+
         return new UpdateService(
             adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
                 'loadAdapters' => [],
             ]),
-            objectDataService: $this->makeEmpty(DataObjectDataService::class),
+            objectDataService: $objectDataService ?? $this->makeEmpty(DataObjectDataService::class),
             documentDataService: $this->makeEmpty(DocumentDataService::class),
             securityService: $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $this->makeEmpty(UserInterface::class),
             ]),
             serviceResolver: $this->makeEmpty(ServiceResolverInterface::class, [
-                'getElementById' => $this->element,
+                'getElementById' => $element,
             ]),
             indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
             elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
