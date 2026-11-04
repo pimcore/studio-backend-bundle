@@ -53,7 +53,10 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ReverseObjectRelationAdapter implements SetterDataInterface, RemoteElementWriteInterface, DataNormalizerInterface
+final readonly class ReverseObjectRelationAdapter implements
+    SetterDataInterface,
+    RemoteElementWriteInterface,
+    DataNormalizerInterface
 {
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
