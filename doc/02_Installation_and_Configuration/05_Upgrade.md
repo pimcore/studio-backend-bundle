@@ -94,6 +94,14 @@ The following steps are necessary during updating to newer versions.
   empty collection, and has to address that scope through its own route.
 - [Listing] Fixed: a `date` filter on a date column stored as a Unix timestamp now selects the window it names, instead
   of matching nothing or everything. A client that sent such a filter gets different rows than before.
+- [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
+  (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
+  and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
+  failed `user/current-user-information` request. The bundle opens the route itself with a `PUBLIC_ACCESS` rule for
+  `<url_prefix>/session`, put in front of the application's `security.access_control` rules when the container is
+  compiled: `config/packages/security.yaml` needs no change, and this works with a custom `url_prefix` as well. The rule
+  has no `ips`, `host` or `channel` restriction, so an IP or https restriction of the application does not apply to this
+  one route. `user/current-user-information` keeps answering 401 without a session.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.

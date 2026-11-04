@@ -1115,6 +1115,11 @@ admin_settings_update_description: |
   Allows updating branding and asset configuration options.
 admin_settings_update_success_response: Admin system settings updated successfully
 admin_settings_update_summary: Update admin appearance settings
+session_get_status_description: |
+    Tells whether the request carries an authenticated Studio session. Always answers with HTTP 200, so
+    the Studio UI can find out whether to show the login page without triggering a 401.
+session_get_status_success_response: Session status.
+session_get_status_summary: Get the status of the current Studio session
 settings_country_collection_description: |
   Get all available countries in the system. <br>
   Returns a list of countries with their codes and names
