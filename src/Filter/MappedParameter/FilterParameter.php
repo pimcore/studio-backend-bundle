@@ -173,7 +173,7 @@ final class FilterParameter implements
     {
         $columns  = array_filter(
             $this->columnFilters,
-            static fn ($columnFilter) => $columnFilter['type'] === $type
+            static fn ($columnFilter) => $columnFilter['type'] === $type && ($columnFilter['operator'] ?? null) === null
         );
 
         if (count($columns) > 1) {

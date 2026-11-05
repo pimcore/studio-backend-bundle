@@ -109,6 +109,12 @@ final class EmptyFilterTest extends Unit
             'file name of an asset is its key' => [
                 'filename', ColumnType::SYSTEM_STRING->value, FilterOperator::EMPTY, 'key = EMPTY',
             ],
+            'metadata called filename keeps its name' => [
+                'filename', ColumnType::METADATA_INPUT->value, FilterOperator::NOT_EMPTY, 'filename != EMPTY',
+            ],
+            'metadata called classname keeps its name' => [
+                'classname', ColumnType::METADATA_INPUT->value, FilterOperator::EMPTY, 'classname = EMPTY',
+            ],
             'core class name key is mapped to the index field' => [
                 'classname', ColumnType::SYSTEM_STRING->value, FilterOperator::NOT_EMPTY, 'className != EMPTY',
             ],

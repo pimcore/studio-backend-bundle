@@ -38,9 +38,9 @@ final class EmptyFilter implements FilterInterface
     private const string FIELD_NAME_PATTERN = '/^[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)*$/D';
 
     /**
-     * Grid columns that are not an index field of their own. The file name of an asset is the key of the element.
+     * System columns that are not an index field of their own. The file name of an asset is the key of the element.
      */
-    private const array FIELD_ALIASES = [
+    private const array SYSTEM_FIELD_ALIASES = [
         'filename' => 'key',
     ];
 
@@ -78,8 +78,7 @@ final class EmptyFilter implements FilterInterface
      */
     private function buildPql(ColumnFilter $column): string
     {
-        $field = $this->mapColumnKeyToIndexField($column->getKey());
-        $field = self::FIELD_ALIASES[$field] ?? $field;
+        $field = $this->mapToIndexField($column);
 
         if (!preg_match(self::FIELD_NAME_PATTERN, $field)) {
             throw new InvalidArgumentException(sprintf('Invalid field name "%s" for an empty filter', $field));
@@ -92,6 +91,23 @@ final class EmptyFilter implements FilterInterface
             FilterOperator::NOT_EMPTY => sprintf('%s != %s', $field, $value),
             default => throw new InvalidArgumentException('Filter has no operator'),
         };
+    }
+
+    /**
+     * The grid names of the system columns differ from the index field in some cases. Fields of the same name that
+     * are not a system column (e.g. metadata) are searched under their own name.
+     */
+    private function mapToIndexField(ColumnFilter $column): string
+    {
+        $field = $column->getKey();
+
+        if ($column->getType() !== ColumnType::SYSTEM_STRING->value) {
+            return $field;
+        }
+
+        $field = $this->mapColumnKeyToIndexField($field);
+
+        return self::SYSTEM_FIELD_ALIASES[$field] ?? $field;
     }
 
     private function isTextType(string $type): bool

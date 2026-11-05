@@ -109,4 +109,26 @@ final class FilterParameterTest extends Unit
 
         iterator_to_array($parameter->getColumnFilterByType(self::STRING_TYPE));
     }
+
+    public function testSimpleColumnFilterIgnoresOperatorFilters(): void
+    {
+        $parameter = new FilterParameter(columnFilters: [
+            ['key' => 'id', 'type' => 'system.id', 'operator' => 'notEmpty', 'filterValue' => 42],
+        ]);
+
+        $this->assertNull($parameter->getSimpleColumnFilterByType('system.id'));
+    }
+
+    public function testSimpleColumnFilterStillReturnsTheValueFilterNextToAnOperatorFilter(): void
+    {
+        $parameter = new FilterParameter(columnFilters: [
+            ['key' => 'id', 'type' => 'system.id', 'operator' => 'empty'],
+            ['key' => 'id', 'type' => 'system.id', 'filterValue' => 42],
+        ]);
+
+        $filter = $parameter->getSimpleColumnFilterByType('system.id');
+
+        $this->assertNotNull($filter);
+        $this->assertSame(42, $filter->getFilterValue());
+    }
 }
