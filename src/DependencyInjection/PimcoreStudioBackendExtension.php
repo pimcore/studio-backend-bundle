@@ -190,7 +190,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$fromEmail', $config['studio_from_default_email']);
         $definition->setArgument('$template', $config['notifications']['email']['template']);
 
-        // Studio UI base path for the email deep links and the login token links; default it since studio-ui isn't a hard dependency.
+        // Studio UI base path for the email deep links and the login token links; default it
+        // since studio-ui isn't a hard dependency.
         if (!$container->hasParameter('pimcore_studio_ui.url_path')) {
             $container->setParameter('pimcore_studio_ui.url_path', '/pimcore-studio');
         }

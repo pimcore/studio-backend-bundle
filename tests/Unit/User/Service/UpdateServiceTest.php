@@ -202,6 +202,23 @@ final class UpdateServiceTest extends Unit
         $this->assertSame([1], $user->getRoles());
     }
 
+    public function testNonAdminCanAssignRoleWithOrphanedPermissionKey(): void
+    {
+        $user = $this->createUser([]);
+        $role = new Role();
+        $role->setId(1);
+        $role->setPermissions(['assets', 'removed_permission']);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+        ]);
+        $service = $this->createRoleService([$role], $currentUser);
+
+        $service->updateRoles([1], $user);
+
+        $this->assertSame([1], $user->getRoles());
+    }
+
     public function testKnownClassesAreStored(): void
     {
         $user = $this->createUser([]);
@@ -299,10 +316,20 @@ final class UpdateServiceTest extends Unit
     /**
      * @param Role[] $availableRoles
      */
-    private function createRoleService(array $availableRoles, UserInterface $currentUser): UpdateService
-    {
+    private function createRoleService(
+        array $availableRoles,
+        UserInterface $currentUser,
+        array $availablePermissionKeys = ['assets']
+    ): UpdateService {
+        $definitions = array_map(
+            static fn (string $key) => (new Definition())->setKey($key),
+            $availablePermissionKeys
+        );
+
         return new UpdateService(
-            $this->makeEmpty(PermissionRepositoryInterface::class),
+            $this->makeEmpty(PermissionRepositoryInterface::class, [
+                'getAvailablePermissions' => $definitions,
+            ]),
             $this->makeEmpty(RoleRepositoryInterface::class, [
                 'getRoles' => $availableRoles,
             ]),

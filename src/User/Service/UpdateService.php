@@ -32,6 +32,7 @@ use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
 use function array_diff;
+use function array_intersect;
 use function array_map;
 use function in_array;
 use function sprintf;
@@ -64,9 +65,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         array $permissionsToSet,
         UserInterface|UserRoleInterface $user
     ): UserInterface|UserRoleInterface {
-        $availablePermissions = array_map(static function ($permission) {
-            return $permission->getKey();
-        }, $this->permissionRepository->getAvailablePermissions());
+        $availablePermissions = $this->getAvailablePermissionKeys();
 
         // Permission definitions can disappear (e.g. when a bundle gets uninstalled) while the key stays
         // assigned to the user/role. Those orphaned keys are read from the database and sent back on the
@@ -103,6 +102,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         $availableRoles = $this->roleRepository->getRoles();
 
         $currentRoleIds = array_map('intval', $user->getRoles());
+        $availablePermissions = $this->getAvailablePermissionKeys();
 
         $grantedPermissions = [];
         foreach ($rolesToSet as $roleId) {
@@ -112,8 +112,12 @@ final readonly class UpdateService implements UpdateServiceInterface
             }
 
             // keeping a role the target already has is not a grant, only newly assigned roles are checked
+            // permission keys without a definition are orphaned and have no effect, so they are not checked
             if (!in_array($roleId, $currentRoleIds, true)) {
-                $grantedPermissions = [...$grantedPermissions, ...$role->getPermissions()];
+                $grantedPermissions = [
+                    ...$grantedPermissions,
+                    ...array_intersect($role->getPermissions(), $availablePermissions),
+                ];
             }
         }
 
@@ -122,6 +126,16 @@ final readonly class UpdateService implements UpdateServiceInterface
         $user->setRoles($rolesToSet);
 
         return $user;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getAvailablePermissionKeys(): array
+    {
+        return array_map(static function ($permission) {
+            return $permission->getKey();
+        }, $this->permissionRepository->getAvailablePermissions());
     }
 
     /**
