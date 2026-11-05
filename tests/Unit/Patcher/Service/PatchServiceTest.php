@@ -576,6 +576,97 @@ final class PatchServiceTest extends Unit
         $this->assertTrue($saved);
     }
 
+    /**
+     * A publish/unpublish task or `published` flag combined with any data or metadata write is not a
+     * publication-only request, so it still requires the workspace `save` permission.
+     *
+     * @dataProvider provideMixedPublicationPayloads
+     */
+    public function testPatchOfDataObjectWithPublicationAndDataWriteRequiresSavePermission(array $payload): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            }
+        );
+
+        try {
+            $service->patchElement($object, ElementTypes::TYPE_OBJECT, $payload, $this->user);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>}>
+     */
+    public function provideMixedPublicationPayloads(): array
+    {
+        return [
+            'publish task with key' => [['task' => 'publish', 'key' => 'renamed']],
+            'unpublish task with key' => [['task' => 'unpublish', 'key' => 'renamed']],
+            'publish task with editable data' => [['task' => 'publish', 'editableData' => ['title' => 'changed']]],
+            'published flag with parent' => [['published' => true, 'parentId' => 5]],
+            'published flag with lock' => [['published' => false, 'locked' => 'self']],
+            'publish task with properties' => [['task' => 'publish', 'properties' => []]],
+        ];
+    }
+
+    /**
+     * Publication-only requests (the `published` flag, as also sent by the folder "apply to all"
+     * flow) are gated by PublishAdapter and must not additionally require the `save` permission.
+     *
+     * @dataProvider providePublicationOnlyPayloads
+     */
+    public function testPatchOfDataObjectWithPublicationOnlyPayloadDoesNotRequireSavePermission(array $payload): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->patchElement($object, ElementTypes::TYPE_OBJECT, $payload, $this->user);
+
+        $this->assertSame([], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>}>
+     */
+    public function providePublicationOnlyPayloads(): array
+    {
+        return [
+            'published flag' => [['id' => 83, 'published' => true]],
+            'unpublished flag' => [['id' => 83, 'published' => false]],
+            'unpublish task' => [['id' => 83, 'task' => 'unpublish']],
+            'publish task with coauthor' => [['task' => 'publish', 'coauthorType' => 'agent', 'coauthor' => 'a']],
+        ];
+    }
+
     private function createService(callable $onSave): PatchService
     {
         return new PatchService(

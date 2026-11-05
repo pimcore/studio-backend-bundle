@@ -51,6 +51,8 @@ use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function array_diff_key;
+use function array_flip;
 use function array_is_list;
 use function array_key_exists;
 use function count;
@@ -64,6 +66,17 @@ use function sprintf;
 final readonly class PatchService implements PatchServiceInterface
 {
     use ValidateObjectDataTrait;
+
+    private const string PUBLISHED_KEY = 'published';
+
+    /** Payload keys that, on their own, make up a publication-only request. */
+    private const array PUBLICATION_ONLY_KEYS = [
+        'id',
+        ElementSaveServiceInterface::INDEX_TASK,
+        self::PUBLISHED_KEY,
+        ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE,
+        ElementSaveServiceInterface::INDEX_COAUTHOR,
+    ];
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
@@ -154,8 +167,8 @@ final readonly class PatchService implements PatchServiceInterface
         UserInterface $user,
     ): void {
         // Writing a data object or data object folder (key, parentId, locked, properties,
-        // editableData, or an untasked write) requires the workspace `save` permission. A pure
-        // publish/unpublish task on a data object is gated separately by PublishAdapter.
+        // editableData, or an untasked write) requires the workspace `save` permission. A
+        // publication-only request for a data object is gated separately by PublishAdapter.
         if ($element instanceof AbstractObject && $this->requiresSavePermission($element, $elementPatchData)) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         } elseif ($element instanceof Asset) {
@@ -207,9 +220,11 @@ final readonly class PatchService implements PatchServiceInterface
 
     /**
      * Persisting object/folder data (save, autoSave, version or an untasked write) requires the
-     * workspace `save` permission. Publishing/unpublishing a data object is gated separately by
-     * PublishAdapter; folders have no publish state, so for them no such gate exists and every
-     * write requires `save`.
+     * workspace `save` permission. Only a publication-only request for a data object (a
+     * publish/unpublish task and/or the `published` flag, optionally with coauthor info) is exempt:
+     * it is gated separately by PublishAdapter / ElementSaveService. Any accompanying data or
+     * metadata write needs `save`, and so does every write to a folder, which has no publish state
+     * and therefore no other gate.
      */
     private function requiresSavePermission(AbstractObject $element, array $elementPatchData): bool
     {
@@ -217,11 +232,21 @@ final readonly class PatchService implements PatchServiceInterface
             return true;
         }
 
-        return !in_array(
-            $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null,
+        $task = $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null;
+        $isPublicationTask = in_array(
+            $task,
             [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
             true
         );
+        if ($task !== null && !$isPublicationTask) {
+            return true;
+        }
+
+        if (!$isPublicationTask && !array_key_exists(self::PUBLISHED_KEY, $elementPatchData)) {
+            return true;
+        }
+
+        return array_diff_key($elementPatchData, array_flip(self::PUBLICATION_ONLY_KEYS)) !== [];
     }
 
     public function handlePatchDataField(
