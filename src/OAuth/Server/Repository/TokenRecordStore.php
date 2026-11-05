@@ -83,6 +83,14 @@ final readonly class TokenRecordStore implements TokenRecordStoreInterface
         return $record !== null && $record->isRevoked();
     }
 
+    public function revokeByUserId(int $userId): int
+    {
+        return (int) $this->entityManager->createQuery(
+            'UPDATE ' . OAuthTokenRecord::class . ' t SET t.revoked = true ' .
+            'WHERE t.userId = :userId AND t.revoked = false'
+        )->setParameter('userId', $userId)->execute();
+    }
+
     public function deleteExpired(int $now): int
     {
         return (int) $this->entityManager->createQuery(

@@ -47,6 +47,19 @@ final readonly class ServiceUserClientStore implements ServiceUserClientStoreInt
         return $record === null ? null : $this->dynamicClientStore->find($record->getClientId());
     }
 
+    public function deleteByServiceUserId(int $serviceUserId): void
+    {
+        $record = $this->entityManager->getRepository(OAuthClientRecord::class)->findOneBy(
+            ['serviceUserId' => $serviceUserId],
+        );
+        if ($record === null) {
+            return;
+        }
+
+        $this->entityManager->remove($record);
+        $this->entityManager->flush();
+    }
+
     public function replaceSecretHash(string $identifier, string $secretHash): void
     {
         $record = $this->entityManager->getRepository(OAuthClientRecord::class)->find($identifier);

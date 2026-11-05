@@ -32,6 +32,12 @@ interface ServiceUserClientStoreInterface
     public function findByServiceUserId(int $serviceUserId): ?DynamicClient;
 
     /**
+     * Deletes the client bound to the service user, so its secret stops validating at once.
+     * Does nothing when the service user has no client.
+     */
+    public function deleteByServiceUserId(int $serviceUserId): void;
+
+    /**
      * Replaces the client's secret hash in place, so the previous secret stops validating
      * with the next token request. Does nothing for an unknown client.
      */

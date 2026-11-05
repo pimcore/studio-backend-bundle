@@ -62,6 +62,15 @@ final class InMemoryOAuthClientStore implements DynamicClientStoreInterface, Ser
         return null;
     }
 
+    public function deleteByServiceUserId(int $serviceUserId): void
+    {
+        foreach ($this->clients as $identifier => $client) {
+            if ($client->serviceUserId === $serviceUserId) {
+                unset($this->clients[$identifier]);
+            }
+        }
+    }
+
     public function replaceSecretHash(string $identifier, string $secretHash): void
     {
         $client = $this->clients[$identifier] ?? null;

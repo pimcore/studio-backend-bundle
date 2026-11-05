@@ -73,6 +73,19 @@ final class InMemoryOAuthTokenRecordStore implements TokenRecordStoreInterface
         return $this->records[$identifier]['revoked'] ?? false;
     }
 
+    public function revokeByUserId(int $userId): int
+    {
+        $revoked = 0;
+        foreach ($this->records as $identifier => $record) {
+            if ($record['userId'] === $userId && !$record['revoked']) {
+                $this->records[$identifier]['revoked'] = true;
+                ++$revoked;
+            }
+        }
+
+        return $revoked;
+    }
+
     public function deleteExpired(int $now): int
     {
         return 0;
