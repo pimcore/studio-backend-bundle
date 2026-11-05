@@ -40,10 +40,11 @@ on the same public contracts, and any bundle can do the same.
   omitted value to `client_secret_basic`, and the server then issues a secret. Those two are the only accepted
   values: `client_secret_post` is refused at registration and not advertised, because the transport a client
   used is no longer distinguishable by the time the request reaches this server, so registering it would
-  record a preference nothing could honour. There is no Client Credentials
-  grant either way, so a client always acts for a logged-in user. Non-interactive machine access uses whatever
-  static credential the target application supports, for example the
-  [MCP token authenticator](../04_Development_Details/08_MCP_Server.md) (PAT).
+  record a preference nothing could honour. None of these clients can use the Client Credentials grant, so
+  each of them always acts for a logged-in user.
+- **Client Credentials grant for service users** (opt-in, `client_credentials.enabled`) - a confidential client
+  bound one to one to a service user gets a short-lived token for that service user, without a refresh token.
+  See [Service-user clients](#service-user-clients-client-credentials).
 
 ## Enabling
 
@@ -274,8 +275,8 @@ a compliant client can discover where to authenticate.
 
 ## Onboarding clients
 
-Use one or several of the following. All three authenticate a logged-in Pimcore user via the Authorization
-Code flow.
+Use one or several of the following. The first three authenticate a logged-in Pimcore user via the
+Authorization Code flow; a service-user client authenticates only itself and acts as its service user.
 
 ### Pre-registered clients
 
@@ -402,6 +403,37 @@ organisation throttle unrelated ones against this installation. Limiting them us
 per-user key, not a per-IP one. Registration is different: it is unauthenticated and it writes, so a ceiling
 there is worth its cost.
 
+### Service-user clients (Client Credentials)
+
+A service user is a machine identity: a Pimcore user of type `serviceuser`, with its own permissions, roles and
+workspaces, that never logs in interactively. It can have one confidential OAuth client bound to it. That client
+uses the Client Credentials grant and nothing else:
+
+```yaml
+pimcore_studio_backend:
+    oauth:
+        client_credentials:
+            enabled: true          # default false
+            access_token_ttl: 900  # seconds, default 15 minutes, minimum 60
+```
+
+```bash
+curl -u "$CLIENT_ID:$CLIENT_SECRET" https://pimcore.example.com/pimcore-oauth/token \
+    -d grant_type=client_credentials \
+    -d resource=https://pimcore.example.com/pimcore-mcp
+```
+
+- The token's `sub` is the service user's id, so the protected resource applies that service user's
+  permissions. Deactivating or deleting the service user stops its tokens at the next request.
+- `resource` is required, as for the Authorization Code flow. `scope` is optional: without it the token carries
+  the scopes the client was registered with; a scope outside the registration is refused with `invalid_scope`.
+- No refresh token is issued. Request a new token when the old one expires.
+- The client authenticates with `client_secret_basic`. The secret is shown once when the client is created or
+  its secret is rotated, and only its hash is stored; rotating it invalidates the previous secret at once.
+- While `client_credentials.enabled` is `false` (or `enabled` is `false`), the grant does not exist: the token
+  endpoint answers `unsupported_grant_type` and the metadata does not list it. Pre-registered, dynamically
+  registered and Client ID Metadata Document clients never get this grant, and registration refuses it.
+
 ## Protected resources (audiences)
 
 Declare the endpoints that act as token audiences. Each becomes discoverable via Protected Resource Metadata.
@@ -449,6 +481,8 @@ All keys live under `pimcore_studio_backend.oauth`.
 | `access_token_ttl` | `3600` | Access-token lifetime (seconds). |
 | `auth_code_ttl` | `600` | Authorization-code lifetime (seconds). Also how long a pending authorization stays valid, i.e. how long the user has on the consent screen before it reports `oauth.consent.expired.*`. |
 | `refresh_token_ttl` | `2592000` | Refresh-token lifetime (seconds). |
+| `client_credentials.enabled` | `false` | Enable the Client Credentials grant for clients bound to a service user and advertise it. Has no effect while `enabled` is `false`. |
+| `client_credentials.access_token_ttl` | `900` | Access-token lifetime (seconds, minimum `60`) for the Client Credentials grant. |
 | `consent_path` | `/pimcore-studio/oauth/consent` | Pimcore Studio UI route the authorize endpoint redirects to for login/consent. Hard-coupled to the UI base URL: if you change `pimcore_studio_ui.url_path`, change this to match or the redirect lands on a `404`. |
 | `allow_localhost_loopback_redirect` | `true` | Also accept `http://localhost:{port}` loopback redirect URIs. Set `false` for RFC 8252-strict (IP literals only). |
 | `cors_allowed_origins` | `[]` | Browser origins allowed to call the OAuth endpoints cross-origin. Empty = any origin (wildcard); credentials are never sent. |
