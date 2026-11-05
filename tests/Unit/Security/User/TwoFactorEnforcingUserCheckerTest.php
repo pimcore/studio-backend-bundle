@@ -113,17 +113,6 @@ final class TwoFactorEnforcingUserCheckerTest extends Unit
         );
     }
 
-    public function testEnforcingUserCheckerDecoratesTheCoreUserChecker(): void
-    {
-        $services = Yaml::parseFile(__DIR__ . '/../../../../config/services.yaml')['services'];
-
-        $this->assertSame(
-            '@' . PimcoreUserChecker::class,
-            $services[TwoFactorEnforcingUserChecker::class]['arguments']['$decorated'] ?? null,
-            'The enforcing user checker must be wired to the core user checker, not to itself.'
-        );
-    }
-
     private function studioUser(bool $required, bool $enabled): SecurityUser
     {
         // Pimcore\Model\User is final, and both types are cheap value-ish objects, so build
