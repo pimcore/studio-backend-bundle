@@ -17,6 +17,7 @@ use Closure;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 
 /**
@@ -45,6 +46,7 @@ interface ReconcilerInterface
      * @throws DatabaseException
      * @throws ElementSavingFailedException
      * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
     public function apply(
         ArtifactDocument $document,

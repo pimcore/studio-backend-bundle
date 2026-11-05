@@ -21,7 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepository;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
@@ -150,7 +152,9 @@ final class TransferReadsTest extends Unit
         $repository = new KeyGroupRelationRepository(
             $this->makeEmpty(ListingFilterInterface::class),
             $connection,
-            $this->makeEmpty(ArtifactEntryMapperInterface::class)
+            $this->makeEmpty(ArtifactEntryMapperInterface::class),
+            $this->makeEmpty(KeyRepositoryInterface::class),
+            new SearchIndexFlagResolver()
         );
 
         $relation = new KeyGroupRelation();
@@ -272,7 +276,9 @@ final class TransferReadsTest extends Unit
         $repository = new KeyGroupRelationRepository(
             $this->makeEmpty(ListingFilterInterface::class),
             $connection,
-            $this->makeEmpty(ArtifactEntryMapperInterface::class)
+            $this->makeEmpty(ArtifactEntryMapperInterface::class),
+            $this->makeEmpty(KeyRepositoryInterface::class),
+            new SearchIndexFlagResolver()
         );
 
         $repository->getGroupNamesByKeyId(51, $hold);

@@ -76,9 +76,12 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $subGroup = AbsentValue::ABSENT,
         #[Property(
-            description: 'Metadata carried by this assignment',
+            description: 'Metadata carried by this assignment. The member "indexed" is reserved: false excludes the'
+                . ' assignment from the search index, and anything else - true, a non boolean or no member at all -'
+                . ' leaves it indexed. A new assignment that states no "indexed" takes the one in the definition of'
+                . ' its key, where that definition carries it; an existing one is left with what it has stored.',
             type: 'object',
-            example: ['source' => 'erp'],
+            example: ['source' => 'erp', 'indexed' => false],
             nullable: true
         )]
         private mixed $metadata = AbsentValue::ABSENT,

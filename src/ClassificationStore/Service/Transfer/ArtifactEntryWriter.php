@@ -17,9 +17,11 @@ use Closure;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\CollRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
@@ -39,6 +41,7 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         private CollRelationRepositoryInterface $collectionRelationRepository,
         private KeyGroupRelationRepositoryInterface $keyGroupRelationRepository,
         private KeyRepositoryInterface $keyRepository,
+        private SearchIndexFlagResolverInterface $searchIndexFlagResolver,
     ) {
     }
 
@@ -302,8 +305,36 @@ final readonly class ArtifactEntryWriter implements ArtifactEntryWriterInterface
         $context->record($target === null ? ApplyOutcome::CREATED : ApplyOutcome::UPDATED, $label);
 
         if (!$context->isDryRun()) {
-            $this->keyGroupRelationRepository->createOrUpdateFromArtifact($assignment, $keyId, $groupId);
+            $this->keyGroupRelationRepository->createOrUpdateFromArtifact(
+                $target === null ? $this->seedSearchIndexFlag($assignment, $keyId) : $assignment,
+                $keyId,
+                $groupId
+            );
         }
+    }
+
+    /**
+     * The entry of an assignment this apply creates, with the search index flag of its key filled in
+     * where the entry leaves the assignment without one - including the explicit `metadata: null` the
+     * export always writes for an assignment whose column is NULL.
+     *
+     * An entry naming the flag keeps what it says and the key is not consulted, an assignment this
+     * apply updates is not seeded at all, and a dry run never gets here because it writes nothing.
+     *
+     * @throws NotFoundException
+     */
+    private function seedSearchIndexFlag(ArtifactAssignmentEntry $assignment, int $keyId): ArtifactAssignmentEntry
+    {
+        if ($this->searchIndexFlagResolver->carriesFlag($assignment->getMetadata())) {
+            return $assignment;
+        }
+
+        $seeded = $this->searchIndexFlagResolver->withKeyDefault(
+            $assignment->getMetadata(),
+            $this->keyRepository->getById($keyId)->getDefinition()
+        );
+
+        return $seeded === null ? $assignment : $assignment->withMetadata($seeded);
     }
 
     /**

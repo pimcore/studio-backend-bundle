@@ -47,6 +47,21 @@ final class KeyHydratorTest extends Unit
         );
     }
 
+    /**
+     * The definition is reported as it is stored, so the search index flag a created assignment of
+     * this key defaults from is readable without a property of its own on the response.
+     */
+    public function testADefinitionCarryingTheSearchIndexFlagIsReportedVerbatim(): void
+    {
+        $keyConfig = $this->createKeyConfig();
+        $keyConfig->setDefinition('{"fieldtype":"input","indexed":false}');
+
+        $this->assertSame(
+            ['fieldtype' => 'input', 'indexed' => false],
+            $this->hydrator->hydrateKeyDetail($keyConfig)->getDefinition()
+        );
+    }
+
     private function createKeyConfig(): KeyConfig
     {
         $keyConfig = new KeyConfig();

@@ -249,6 +249,29 @@ final class ApplyRefusalsTest extends Unit
         );
     }
 
+    /**
+     * The search index flag is not overridable per assignment: the per assignment expression of it
+     * is the `metadata` column, so a `definitionOverride` naming it is outside the closed list like
+     * anything else.
+     */
+    public function testAnOverrideNamingTheSearchIndexFlagIsRefused(): void
+    {
+        $context = $this->createContext();
+        $refusals = $this->createRefusals();
+
+        $refused = $refusals->refuseAssignment(
+            $context,
+            $this->createAssignment(definitionOverride: ['indexed' => false]),
+            'label'
+        );
+
+        $this->assertTrue($refused);
+        $this->assertSame(
+            ['label: "indexed" cannot be overridden per key assignment'],
+            $context->getReport()->getNamed(ApplyOutcome::CONFLICT)
+        );
+    }
+
     public function testASubGroupNeitherTheFileNorTheStoreCarriesIsRefused(): void
     {
         $context = $this->createContext();

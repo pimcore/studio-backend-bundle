@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
@@ -31,11 +32,13 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -44,6 +47,7 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\StoreConfig;
 use Pimcore\Model\DataObject\Classificationstore\SubGroupConfig;
 use function implode;
+use function json_encode;
 
 /**
  * Export and apply are the two halves of one format, and the only way they can disagree is if each
@@ -71,6 +75,10 @@ final class ArtifactRoundTripTest extends Unit
     private const string ENABLED_KEY_IDENTIFIER = '01KEYA';
 
     private const string DISABLED_KEY_IDENTIFIER = '01KEYB';
+
+    private const string INDEXED_MEMBER = 'indexed';
+
+    private const array FIXTURE_METADATA = ['source' => 'etim'];
 
     /**
      * @var array<string, ArtifactKeyEntry>
@@ -183,26 +191,58 @@ final class ArtifactRoundTripTest extends Unit
     }
 
     /**
+     * The export of a store whose assignment column is NULL writes `"metadata": null`, so a first
+     * apply of that file is the one case the key's search index flag has to fill in - and the export
+     * of the result has to carry the flag, which is what makes the second round trip a no-op rather
+     * than a store that keeps losing the default it was just given.
+     */
+    public function testAnAssignmentCreatedFromAFileTakesTheSearchIndexFlagOfItsKeyAndExportsIt(): void
+    {
+        $keys = $this->createFixtureKeys(notIndexed: true);
+
+        $report = $this->applyExportOf($keys, keysAreNotIndexed: true, assignmentMetadata: null);
+
+        $applied = $this->appliedAssignments[self::GROUP_IDENTIFIER . '->' . self::ENABLED_KEY_IDENTIFIER];
+        $this->assertSame([self::INDEXED_MEMBER => false], $applied->getMetadata());
+        $this->assertFalse($report->hasConflicts());
+
+        // and the export of what the apply produced carries the flag the assignment now holds
+        $exported = (new ArtifactParser())->parse($this->export($keys, $applied->getMetadata()));
+        $entryKey = self::GROUP_IDENTIFIER
+            . ArtifactParserInterface::ENTRY_KEY_SEPARATOR
+            . self::ENABLED_KEY_IDENTIFIER;
+
+        $this->assertSame(
+            [self::INDEXED_MEMBER => false],
+            $exported->getEntries(ArtifactSection::KEY_GROUP_RELATIONS)[$entryKey]['metadata']
+        );
+    }
+
+    /**
      * @param KeyConfig[] $sourceKeys
      * @param KeyConfig[] $targetKeys
+     * @param array<string, mixed>|null $assignmentMetadata
      */
     private function applyExportOf(
         array $sourceKeys,
         array $targetKeys = [],
         bool $targetIsTheSource = false,
+        bool $keysAreNotIndexed = false,
+        ?array $assignmentMetadata = self::FIXTURE_METADATA,
     ): ApplyReport {
-        $json = $this->export($sourceKeys);
+        $json = $this->export($sourceKeys, $assignmentMetadata);
         $document = (new ArtifactParser())->parse($json);
 
         return $this
-            ->createReconciler($targetKeys, $targetIsTheSource)
+            ->createReconciler($targetKeys, $targetIsTheSource, $keysAreNotIndexed)
             ->apply($document, $this->createStore(), false);
     }
 
     /**
      * @param KeyConfig[] $keys
+     * @param array<string, mixed>|null $assignmentMetadata
      */
-    private function export(array $keys): string
+    private function export(array $keys, ?array $assignmentMetadata = self::FIXTURE_METADATA): string
     {
         $enabled = [];
         $disabled = [];
@@ -237,7 +277,9 @@ final class ArtifactRoundTripTest extends Unit
             ->willReturn([$this->createCollectionRelation()]);
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
-        $keyGroupRelationRepository->method('getChunkAfter')->willReturn([$this->createAssignment()]);
+        $keyGroupRelationRepository
+            ->method('getChunkAfter')
+            ->willReturn([$this->createAssignment($assignmentMetadata)]);
 
         $builder = new ArtifactBuilder(
             new ArtifactEntryMapper(),
@@ -260,8 +302,11 @@ final class ArtifactRoundTripTest extends Unit
     /**
      * @param KeyConfig[] $targetKeys
      */
-    private function createReconciler(array $targetKeys, bool $targetIsTheSource): Reconciler
-    {
+    private function createReconciler(
+        array $targetKeys,
+        bool $targetIsTheSource,
+        bool $keysAreNotIndexed = false,
+    ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('saveFromArtifact')->willReturnCallback(
             function (?StoreConfig $config): StoreConfig {
@@ -344,6 +389,15 @@ final class ArtifactRoundTripTest extends Unit
                 return $config ?? $this->createKey($entry->getIdentifier(), $entry->getName(), true);
             }
         );
+        // the key a created assignment reads its search index flag default from, as the apply left it
+        $keyRepository->method('getById')->willReturnCallback(
+            fn (int $id): KeyConfig => $this->createKey(
+                $id === 52 ? self::DISABLED_KEY_IDENTIFIER : self::ENABLED_KEY_IDENTIFIER,
+                $id === 52 ? 'depth' : 'weight',
+                enabled: true,
+                notIndexed: $keysAreNotIndexed
+            )
+        );
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
         $keyGroupRelationRepository
@@ -391,7 +445,8 @@ final class ArtifactRoundTripTest extends Unit
                 ),
                 $collectionRelationRepository,
                 $keyGroupRelationRepository,
-                $keyRepository
+                $keyRepository,
+                new SearchIndexFlagResolver()
             ),
             $diagnostics,
             $collectionRepository,
@@ -408,11 +463,11 @@ final class ArtifactRoundTripTest extends Unit
     /**
      * @return KeyConfig[]
      */
-    private function createFixtureKeys(): array
+    private function createFixtureKeys(bool $notIndexed = false): array
     {
         return [
-            $this->createKey(self::ENABLED_KEY_IDENTIFIER, 'weight', enabled: true),
-            $this->createKey(self::DISABLED_KEY_IDENTIFIER, 'depth', enabled: false),
+            $this->createKey(self::ENABLED_KEY_IDENTIFIER, 'weight', enabled: true, notIndexed: $notIndexed),
+            $this->createKey(self::DISABLED_KEY_IDENTIFIER, 'depth', enabled: false, notIndexed: $notIndexed),
         ];
     }
 
@@ -460,20 +515,27 @@ final class ArtifactRoundTripTest extends Unit
         return $config;
     }
 
-    private function createKey(string $identifier, string $name, bool $enabled): KeyConfig
-    {
+    private function createKey(
+        string $identifier,
+        string $name,
+        bool $enabled,
+        bool $notIndexed = false,
+    ): KeyConfig {
+        $title = $name === 'depth' ? 'Depth' : 'Weight';
+        $definition = ['fieldtype' => 'input', 'title' => $title];
+
+        if ($notIndexed) {
+            $definition[self::INDEXED_MEMBER] = false;
+        }
+
         $config = new KeyConfig();
         $config->setId($identifier === self::ENABLED_KEY_IDENTIFIER ? 51 : 52);
         $config->setStoreId(self::STORE_ID);
         $config->setIdentifier($identifier);
         $config->setName($name);
-        $config->setTitle($name === 'depth' ? 'Depth' : 'Weight');
+        $config->setTitle($title);
         $config->setType('input');
-        $config->setDefinition(
-            $name === 'depth'
-                ? '{"fieldtype":"input","title":"Depth"}'
-                : '{"fieldtype":"input","title":"Weight"}'
-        );
+        $config->setDefinition((string) json_encode($definition));
         $config->setEnabled($enabled);
 
         return $config;
@@ -489,14 +551,17 @@ final class ArtifactRoundTripTest extends Unit
         return new ScopedCollectionRelation($relation, self::COLLECTION_IDENTIFIER, self::GROUP_IDENTIFIER);
     }
 
-    private function createAssignment(): ScopedKeyAssignment
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
+    private function createAssignment(?array $metadata = self::FIXTURE_METADATA): ScopedKeyAssignment
     {
         $relation = new KeyGroupRelation();
         $relation->setGroupId(41);
         $relation->setKeyId(51);
         $relation->setSorter(3);
         $relation->setMandatory(true);
-        $relation->setMetadata(['source' => 'etim']);
+        $relation->setMetadata($metadata);
         $relation->setDefinitionOverride(['defaultUnit' => 'kg']);
         $relation->setSubGroup(self::SUB_GROUP_IDENTIFIER);
 

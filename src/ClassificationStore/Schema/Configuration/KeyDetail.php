@@ -44,7 +44,13 @@ final class KeyDetail implements AdditionalAttributesInterface
         private readonly bool $enabled,
         #[Property(description: 'Description of the key', type: 'string', example: 'Key description', nullable: true)]
         private readonly ?string $description = null,
-        #[Property(description: 'Definition of the key', type: 'object', nullable: true)]
+        #[Property(
+            description: 'Definition of the key, reported as it is stored. The member "indexed" is reserved: it is'
+                . ' the default a newly created assignment of this key takes into its own metadata, where false'
+                . ' excludes the assignment from the search index and anything else leaves it indexed.',
+            type: 'object',
+            nullable: true
+        )]
         private readonly ?array $definition = [],
         #[Property(
             description: 'Creation date as Unix timestamp',

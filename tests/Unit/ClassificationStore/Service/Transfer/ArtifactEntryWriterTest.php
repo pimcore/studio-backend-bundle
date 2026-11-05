@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyContext;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
@@ -197,7 +198,8 @@ final class ArtifactEntryWriterTest extends Unit
             ),
             $this->makeEmpty(CollRelationRepositoryInterface::class),
             $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
-            $this->makeEmpty(KeyRepositoryInterface::class)
+            $this->makeEmpty(KeyRepositoryInterface::class),
+            new SearchIndexFlagResolver()
         );
     }
 }

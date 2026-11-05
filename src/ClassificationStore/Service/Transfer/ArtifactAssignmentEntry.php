@@ -103,4 +103,26 @@ final readonly class ArtifactAssignmentEntry
     {
         return $this->subGroupSupplied || $this->subGroup !== null;
     }
+
+    /**
+     * The same entry carrying the given metadata, which is how a created assignment is handed the
+     * search index flag of its key ({@see ArtifactEntryWriterInterface::writeKeyAssignment()}).
+     *
+     * @param array<string, mixed> $metadata
+     */
+    public function withMetadata(array $metadata): self
+    {
+        return new self(
+            groupIdentifier: $this->groupIdentifier,
+            keyIdentifier: $this->keyIdentifier,
+            sorter: $this->sorter,
+            mandatory: $this->mandatory,
+            metadata: $metadata,
+            definitionOverride: $this->definitionOverride,
+            subGroup: $this->subGroup,
+            metadataSupplied: true,
+            definitionOverrideSupplied: $this->definitionOverrideSupplied,
+            subGroupSupplied: $this->subGroupSupplied,
+        );
+    }
 }

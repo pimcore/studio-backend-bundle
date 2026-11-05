@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\Artifac
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
@@ -107,12 +108,15 @@ interface ArtifactEntryWriterInterface
     public function createCollectionRelation(ApplyContext $context, string $entryKey, array $entry): void;
 
     /**
-     * One key assignment against the relation row it was matched to, or against none.
+     * One key assignment against the relation row it was matched to, or against none. An assignment
+     * matched to none is a creation, and a creation takes the search index flag of its key where the
+     * entry leaves it without one; the key is read for that, and for that only.
      *
      * @param array<string, mixed> $entry
      *
      * @throws ElementSavingFailedException
      * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
     public function writeKeyAssignment(
         ApplyContext $context,

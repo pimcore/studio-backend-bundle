@@ -49,6 +49,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\StoreService
 

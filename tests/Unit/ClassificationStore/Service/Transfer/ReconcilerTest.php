@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\StoreRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyDiagnostics;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyRefusals;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactAssignmentEntry;
@@ -82,6 +83,12 @@ final class ReconcilerTest extends Unit
     private const string KEY_NAME = 'weight';
 
     private const string GROUP_WRITE = 'group:%s:%s';
+
+    private const string INDEXED_MEMBER = 'indexed';
+
+    private const string KEY_DEFINITION = '{"fieldtype":"input","title":"Weight"}';
+
+    private const string KEY_DEFINITION_NOT_INDEXED = '{"fieldtype":"input","title":"Weight","indexed":false}';
 
     /**
      * @var list<string>
@@ -617,6 +624,118 @@ final class ReconcilerTest extends Unit
         $this->assertFalse($this->savedAssignments[0]->isSubGroupInitialized());
     }
 
+    /**
+     * An assignment the file creates takes the search index flag of its key where its own entry
+     * carries none - including the explicit `metadata: null` the export always writes for a NULL
+     * column, which is the only state an exported and reimported store ever arrives in.
+     *
+     * @dataProvider seededAssignmentEntryProvider
+     *
+     * @param array<string, mixed> $overrides
+     * @param array<string, mixed> $expected
+     */
+    public function testACreatedAssignmentTakesTheSearchIndexFlagOfItsKey(array $overrides, array $expected): void
+    {
+        $document = $this->createDocument([
+            'keys' => [$this->createKeyEntryCarryingTheFlag()],
+            'keyGroupRelations' => [$this->createAssignmentEntry($overrides)],
+        ]);
+
+        $this
+            ->createReconciler(storedKeyDefinition: self::KEY_DEFINITION_NOT_INDEXED)
+            ->apply($document, $this->createStore(), false);
+
+        $this->assertCount(1, $this->savedAssignments);
+        $this->assertSame($expected, $this->savedAssignments[0]->getMetadata());
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: array<string, mixed>}>
+     */
+    public static function seededAssignmentEntryProvider(): array
+    {
+        return [
+            'an entry the export wrote with a null metadata' => [
+                ['metadata' => null],
+                [self::INDEXED_MEMBER => false],
+            ],
+            'an entry naming other members only' => [
+                ['metadata' => ['source' => 'etim']],
+                ['source' => 'etim', self::INDEXED_MEMBER => false],
+            ],
+        ];
+    }
+
+    /**
+     * An entry that names the flag keeps what it says, whichever way its key leans.
+     */
+    public function testACreatedAssignmentNamingTheFlagKeepsIt(): void
+    {
+        $document = $this->createDocument([
+            'keys' => [$this->createKeyEntryCarryingTheFlag()],
+            'keyGroupRelations' => [
+                $this->createAssignmentEntry(['metadata' => [self::INDEXED_MEMBER => true]]),
+            ],
+        ]);
+
+        $this
+            ->createReconciler(storedKeyDefinition: self::KEY_DEFINITION_NOT_INDEXED)
+            ->apply($document, $this->createStore(), false);
+
+        $this->assertCount(1, $this->savedAssignments);
+        $this->assertSame([self::INDEXED_MEMBER => true], $this->savedAssignments[0]->getMetadata());
+    }
+
+    /**
+     * An assignment the file updates is not seeded: the key is not consulted for it, so an entry
+     * that leaves `metadata` out still writes nothing into that column.
+     */
+    public function testAnUpdatedAssignmentIsNotSeeded(): void
+    {
+        $document = $this->createDocument([
+            'keyGroupRelations' => [
+                [
+                    'group' => self::GROUP_IDENTIFIER,
+                    'key' => self::KEY_IDENTIFIER,
+                    'sorter' => 2,
+                    'mandatory' => false,
+                ],
+            ],
+        ]);
+
+        $this
+            ->createReconciler(
+                groups: [$this->createGroup(self::GROUP_IDENTIFIER, self::GROUP_NAME)],
+                enabledKeys: [$this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true)],
+                keyAssignments: [$this->createAssignment(self::GROUP_IDENTIFIER, self::KEY_IDENTIFIER)],
+                storedKeyDefinition: self::KEY_DEFINITION_NOT_INDEXED
+            )
+            ->apply($document, $this->createStore(), false);
+
+        $this->assertCount(1, $this->savedAssignments);
+        $this->assertFalse($this->savedAssignments[0]->isMetadataInitialized());
+    }
+
+    /**
+     * A dry run writes nothing, so it seeds nothing either, and the outcome it reports is the one it
+     * reported before the flag existed.
+     */
+    public function testADryRunSeedsNothingAndReportsTheSameOutcome(): void
+    {
+        $document = $this->createDocument([
+            'keys' => [$this->createKeyEntryCarryingTheFlag()],
+            'keyGroupRelations' => [$this->createAssignmentEntry(['metadata' => null])],
+        ]);
+
+        $report = $this
+            ->createReconciler(storedKeyDefinition: self::KEY_DEFINITION_NOT_INDEXED)
+            ->apply($document, $this->createStore(), true);
+
+        $this->assertSame([], $this->writes);
+        $this->assertSame([], $this->savedAssignments);
+        $this->assertSame(3, $report->getCount(ApplyOutcome::CREATED));
+    }
+
     public function testAPerAssignmentFieldSuppliedAsNullIsSetOnTheRelationThatIsSaved(): void
     {
         $document = $this->createDocument([
@@ -898,6 +1017,19 @@ final class ReconcilerTest extends Unit
     }
 
     /**
+     * The file's key entry stating the search index flag as the default its own assignments take.
+     *
+     * @return array<string, mixed>
+     */
+    private function createKeyEntryCarryingTheFlag(): array
+    {
+        $entry = $this->createKeyEntry(enabled: true);
+        $entry['definition'][self::INDEXED_MEMBER] = false;
+
+        return $entry;
+    }
+
+    /**
      * @param array<string, mixed> $overrides
      *
      * @return array<string, mixed>
@@ -935,6 +1067,7 @@ final class ReconcilerTest extends Unit
         ?Connection $connection = null,
         bool $storeNameIsTaken = false,
         bool $subGroupNameIsTaken = false,
+        string $storedKeyDefinition = self::KEY_DEFINITION,
     ): Reconciler {
         $storeRepository = $this->createMock(StoreRepositoryInterface::class);
         $storeRepository->method('isNameTaken')->willReturn($storeNameIsTaken);
@@ -1021,6 +1154,15 @@ final class ReconcilerTest extends Unit
                 return $saved;
             }
         );
+        // a created assignment reads the key its search index flag defaults from
+        $keyRepository->method('getById')->willReturnCallback(
+            function (int $id) use ($storedKeyDefinition): KeyConfig {
+                $config = $this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true, id: $id);
+                $config->setDefinition($storedKeyDefinition);
+
+                return $config;
+            }
+        );
 
         $keyGroupRelationRepository = $this->createMock(KeyGroupRelationRepositoryInterface::class);
         $keyGroupRelationRepository->method('getChunkAfter')->willReturn($keyAssignments);
@@ -1081,7 +1223,8 @@ final class ReconcilerTest extends Unit
                 ),
                 $collectionRelationRepository,
                 $keyGroupRelationRepository,
-                $keyRepository
+                $keyRepository,
+                new SearchIndexFlagResolver()
             ),
             $diagnostics,
             $collectionRepository,
@@ -1202,7 +1345,7 @@ final class ReconcilerTest extends Unit
         $config->setName($name);
         $config->setTitle('Weight');
         $config->setType('input');
-        $config->setDefinition('{"fieldtype":"input","title":"Weight"}');
+        $config->setDefinition(self::KEY_DEFINITION);
         $config->setEnabled($enabled);
 
         return $config;
