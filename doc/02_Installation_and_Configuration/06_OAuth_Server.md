@@ -41,10 +41,15 @@ on the same public contracts, and any bundle can do the same.
   values: `client_secret_post` is refused at registration and not advertised, because the transport a client
   used is no longer distinguishable by the time the request reaches this server, so registering it would
   record a preference nothing could honour. None of these clients can use the Client Credentials grant, so
-  each of them always acts for a logged-in user.
+  their tokens come from the authorization-code flow and act for a logged-in person.
 - **Client Credentials grant for service users** (opt-in, `client_credentials.enabled`) - a confidential client
   bound one to one to a service user gets a short-lived token for that service user, without a refresh token.
   See [Service-user clients](#service-user-clients-client-credentials).
+
+> **The guarantee that every token acts for a logged-in human is withdrawn.** It held while the server issued
+> only authorization-code tokens. With the service-user grant switched on, a token can act for a service user,
+> which is a machine identity and not a person. Check the `sub` claim, or the service user it names, before you
+> treat a token as a person's action.
 
 ## Enabling
 
@@ -428,8 +433,14 @@ curl -u "$CLIENT_ID:$CLIENT_SECRET" https://pimcore.example.com/pimcore-oauth/to
 - `resource` is required, as for the Authorization Code flow. `scope` is optional: without it the token carries
   the scopes the client was registered with; a scope outside the registration is refused with `invalid_scope`.
 - No refresh token is issued. Request a new token when the old one expires.
-- The client authenticates with `client_secret_basic`. The secret is shown once when the client is created or
-  its secret is rotated, and only its hash is stored; rotating it invalidates the previous secret at once.
+- Only a client bound to a service user has the grant. A bound client is one to one with its service user, and a
+  human user never gets a bound client. The grant is refused for every other client.
+- The client authenticates with `client_secret_basic`. The secret is shown once when the client is created, and
+  only its hash is stored. Rotate it through the Studio API (`POST /pimcore-studio/api/service-user/{id}/rotate-secret`);
+  rotating invalidates the previous secret at once. Tokens issued before the rotation stay valid until they expire,
+  at most `client_credentials.access_token_ttl` seconds. See [Service Users](./08_Service_Users.md).
+- The secret appears only in the response that creates or rotates the client. The responses that follow carry no
+  secret, and no pre-response event receives it.
 - While `client_credentials.enabled` is `false` (or `enabled` is `false`), the grant does not exist: the token
   endpoint answers `unsupported_grant_type` and the metadata does not list it. Pre-registered, dynamically
   registered and Client ID Metadata Document clients never get this grant, and registration refuses it.

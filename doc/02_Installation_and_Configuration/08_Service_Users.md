@@ -34,7 +34,8 @@ The endpoints require the `users` permission and are documented in the OpenAPI s
 Creating a service user also registers its confidential OAuth client (see
 [Service-user clients](./06_OAuth_Server.md#service-user-clients-client-credentials)). The response contains the
 client id and the client secret. **The secret is shown only in that response**; only its hash is stored. Rotate the
-secret to get a new one; the previous secret stops working at once.
+secret to get a new one; the previous secret stops working at once. Access tokens already issued with the old secret
+stay valid until they expire, at most `client_credentials.access_token_ttl` seconds.
 
 Creating a service user from a user copies the user's permissions, roles, class and document type restrictions,
 translation language restrictions and workspaces. The user is not changed and admin rights are never copied. Only
@@ -65,8 +66,8 @@ MCP server, grant its name Access in the server's sharing settings.
 
 ## Deactivation and deletion
 
-- Deactivating a service user refuses its client credentials, OAuth tokens and MCP access tokens from the next
-  request on.
+- Deactivating a service user stops new client-credentials tokens from being issued, and refuses its OAuth and MCP
+  access tokens from the next request on.
 - Deleting a service user deletes its OAuth client, revokes its OAuth tokens (by `jti`) and MCP access tokens,
   and removes its entries from the access lists of all MCP servers stored in a writeable location. This happens
   whichever way the service user is deleted, so a later user or service user with the same name inherits nothing.

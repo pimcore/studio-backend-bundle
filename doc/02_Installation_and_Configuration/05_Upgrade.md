@@ -7,6 +7,27 @@ The following steps are necessary during updating to newer versions.
   handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
   raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
   Pimcore user (`McpAccessTokenServiceInterface::issue()`), and people to OAuth `authorization_code`. See [MCP Server](../04_Development_Details/08_MCP_Server.md#patauthenticator-external-clients---deprecated).
+- [Service Users] Added: machine identities, a Pimcore user of type `serviceuser` (`Pimcore\Model\User\ServiceUser`),
+  managed through the new "Service User Management" endpoints and the console command
+  `studio-backend-bundle:service-user:mcp-token`. Everything is additive: no existing endpoint, schema or user type
+  changes. The service-user endpoints need a core release that provides `Pimcore\Model\User\ServiceUser`; the 2026.x
+  core checked for this entry did not yet have it. See [Service Users](./08_Service_Users.md).
+- [Service Users] Semantic notes, for code that works with users:
+  - A service user has no password. Its `getPassword()` is `null`, and setting one or setting it as an administrator
+    is refused on the core class. It is never an administrator, has no two-factor authentication and cannot log in to
+    Studio. Its `email` is an optional contact address for the team responsible. Logging in and password recovery do
+    not use it.
+  - Identity kinds never mix. `User::getByName()`, `User\Listing` and the user endpoints return humans only. A service
+    user is reached by its id, and its name is unique across humans and service users. Nothing converts one kind into
+    the other: creating a service user from a human copies permissions, roles and workspaces and leaves the human
+    unchanged.
+  - `User::getById()` returns a `ServiceUser` for a service-user id. Code that assumes an id always names a human must
+    check `instanceof ServiceUser` first.
+- [OAuth] Added: the Client Credentials grant for clients bound to a service user, behind
+  `pimcore_studio_backend.oauth.client_credentials.enabled` (default `false`). Its tokens last
+  `oauth.client_credentials.access_token_ttl` seconds (default 900, minimum 60) and carry no refresh token. Nothing
+  changes until the switch is turned on. The guarantee that every token acts for a logged-in human no longer holds
+  once it is on. See [OAuth Server](./06_OAuth_Server.md#service-user-clients-client-credentials).
 - [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
   (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
   and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
