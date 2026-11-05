@@ -74,7 +74,7 @@ enum ClassDefinitionType: string
     {
         return array_values(array_unique(array_map(
             static fn (self $type): string => $type->permission(),
-            self::importOrder()
+            static::importOrder()
         )));
     }
 }
