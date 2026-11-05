@@ -1,0 +1,43 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Controller\:
+    resource: '../src/ServiceUser/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\ServiceUserService
+
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\McpTokenServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\McpTokenService
+
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\AccessRevocationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Service\AccessRevocationService
+
+  #
+  # Hydrators
+  #
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Hydrator\ServiceUserHydrator
+
+  #
+  # Repositories
+  #
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ServiceUser\Repository\ServiceUserRepository
+
+  #
+  # Event subscribers and commands
+  #
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\EventSubscriber\ServiceUserDeletionSubscriber: ~
+
+  Pimcore\Bundle\StudioBackendBundle\ServiceUser\Command\McpTokenCommand: ~
