@@ -13,11 +13,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
@@ -25,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterf
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -100,6 +105,102 @@ final class UserUpdateServiceTest extends Unit
         $service->updateUserById($this->createUpdateParams(), 42);
     }
 
+    public function testPasswordResetWithoutOldPasswordRejectsUnchangedPassword(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $authenticationResolver = $this->createAuthenticationResolver(isSamePassword: true, expectedUser: $targetUser);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $authenticationResolver
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('New password cannot be the same as the old password');
+        $service->updatePasswordById(new UpdatePasswordParameter('new-password-1', 'new-password-1'), 42);
+    }
+
+    public function testPasswordResetWithoutOldPasswordAcceptsDifferentPassword(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createAuthenticationResolver(isSamePassword: false)
+        );
+
+        $service->updatePasswordById(new UpdatePasswordParameter('new-password-1', 'new-password-1'), 42);
+
+        $this->assertSame('hash-of-new-password', $targetUser->getPassword());
+    }
+
+    public function testPasswordChangeWithCorrectOldPasswordAcceptsDifferentPassword(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createAuthenticationResolver(isSamePassword: false),
+            $this->createValidator(violations: 0)
+        );
+
+        $service->updatePasswordById(
+            new UpdatePasswordParameter('new-password-1', 'new-password-1', 'old-password-1'),
+            42
+        );
+
+        $this->assertSame('hash-of-new-password', $targetUser->getPassword());
+    }
+
+    public function testPasswordChangeWithWrongOldPasswordIsRejected(): void
+    {
+        $targetUser = $this->createTargetUser(isAdmin: false);
+        $service = $this->createService(
+            $targetUser,
+            $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
+            $this->createAuthenticationResolver(isSamePassword: false),
+            $this->createValidator(violations: 1)
+        );
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Old password is incorrect');
+        $service->updatePasswordById(
+            new UpdatePasswordParameter('new-password-1', 'new-password-1', 'wrong-password'),
+            42
+        );
+    }
+
+    private function createValidator(int $violations): ValidatorInterface
+    {
+        $list = new ConstraintViolationList();
+        for ($i = 0; $i < $violations; $i++) {
+            $list->add(new ConstraintViolation('invalid', null, [], null, '', null));
+        }
+
+        return $this->makeEmpty(ValidatorInterface::class, [
+            'validate' => Expected::once($list),
+        ]);
+    }
+
+    private function createAuthenticationResolver(
+        bool $isSamePassword,
+        ?User $expectedUser = null
+    ): AuthenticationResolverInterface {
+        $verifyPassword = $expectedUser === null
+            ? $isSamePassword
+            : Expected::once(function (User $user, string $password) use ($expectedUser, $isSamePassword): bool {
+                $this->assertSame($expectedUser, $user);
+                $this->assertSame('new-password-1', $password);
+
+                return $isSamePassword;
+            });
+
+        return $this->makeEmpty(AuthenticationResolverInterface::class, [
+            'verifyPassword' => $verifyPassword,
+            'getPasswordHash' => 'hash-of-new-password',
+        ]);
+    }
+
     private function createTargetUser(bool $isAdmin): User
     {
         $user = new User();
@@ -140,8 +241,12 @@ final class UserUpdateServiceTest extends Unit
         );
     }
 
-    private function createService(User $targetUser, UserInterface $currentUser): UserUpdateService
-    {
+    private function createService(
+        User $targetUser,
+        UserInterface $currentUser,
+        ?AuthenticationResolverInterface $authenticationResolver = null,
+        ?ValidatorInterface $validator = null
+    ): UserUpdateService {
         $updateService = $this->makeEmpty(UpdateServiceInterface::class, [
             'updatePermissions' => $targetUser,
             'updateRoles' => $targetUser,
@@ -153,7 +258,7 @@ final class UserUpdateServiceTest extends Unit
         ]);
 
         return new UserUpdateService(
-            $this->makeEmpty(AuthenticationResolverInterface::class),
+            $authenticationResolver ?? $this->makeEmpty(AuthenticationResolverInterface::class),
             $this->makeEmpty(CacheResolverInterface::class),
             $this->makeEmpty(SecurityServiceInterface::class, [
                 'getCurrentUser' => $currentUser,
@@ -163,7 +268,7 @@ final class UserUpdateServiceTest extends Unit
             ]),
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
-            $this->makeEmpty(ValidatorInterface::class),
+            $validator ?? $this->makeEmpty(ValidatorInterface::class),
         );
     }
 }

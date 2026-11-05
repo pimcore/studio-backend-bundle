@@ -91,7 +91,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         } catch (Exception $e) {
             $exception = $e;
         }
-        if (!$cl || $exception) {
+        if (!$cl) {
             throw new NotFoundException(
                 self::NOT_WRITEABLE_EXCEPTION_MESSAGE,
                 $customLayoutId,

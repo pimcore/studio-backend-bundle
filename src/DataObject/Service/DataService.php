@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DetailValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
@@ -189,6 +190,8 @@ final readonly class DataService implements DataServiceInterface
 
         } catch (ValidationException $e) {
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
+        } catch (ForbiddenException $e) {
+            throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($element->getId(), $e->getMessage());
         }

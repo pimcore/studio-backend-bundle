@@ -31,6 +31,7 @@ enum StepConfig: string
     case ELEMENT_TYPE_TO_REWRITE_REFERENCES = 'element_type_to_rewrite_references';
     case EXPORT_FORMAT = 'export_format';
     case FOLDER_TO_EXPORT = 'folder_to_export';
+    case FOLDERS_TO_CLONE = 'folders_to_clone';
     case GRID_EXPORT_DATA = 'grid_export_data';
     case GRID_EXPORT_DATA_INFO = 'grid_export_data_info';
     case CONFIG_CONFIGURATION = 'config';

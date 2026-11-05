@@ -16,6 +16,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Grid;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Permission\PermissionTypes;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Source\SystemFieldsOnlySource;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
@@ -46,6 +51,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
+use function count;
 
 /**
  * @internal
@@ -73,9 +79,10 @@ final class GridSearchTest extends Unit
             'getDataObjectById' => Expected::never(),
         ]);
 
+        $search = new DataObjectSearch();
         $gridSearch = $this->createGridSearch(
             dataObjectSearchService: $dataObjectSearchService,
-            query: $this->makeEmpty(DataObjectQueryInterface::class),
+            query: $this->makeEmpty(DataObjectQueryInterface::class, ['getSearch' => $search]),
             folder: $folder,
         );
 
@@ -86,6 +93,8 @@ final class GridSearchTest extends Unit
         );
 
         $this->assertSame(self::FOLDER_PATH, $filter->getPath());
+        // The grid reads the column values from the database, so the search fetches only the system fields.
+        $this->assertSame(1, $this->countSystemFieldsOnlySources($search));
     }
 
     public function testAssetGridSearchesWithViewPermission(): void
@@ -104,15 +113,18 @@ final class GridSearchTest extends Unit
             'getAssetById' => Expected::never(),
         ]);
 
+        $search = new AssetSearch();
         $this->createGridSearch(
             assetSearchService: $assetSearchService,
-            query: $this->makeEmpty(AssetQueryInterface::class),
+            query: $this->makeEmpty(AssetQueryInterface::class, ['getSearch' => $search]),
             folder: $folder,
         )->searchElementsForUser(
             ElementTypes::TYPE_ASSET,
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
             $user
         );
+
+        $this->assertSame(0, $this->countSystemFieldsOnlySources($search));
     }
 
     public function testDocumentGridSearchesWithViewPermission(): void
@@ -131,15 +143,18 @@ final class GridSearchTest extends Unit
             'getDocumentById' => Expected::never(),
         ]);
 
+        $search = new DocumentSearch();
         $this->createGridSearch(
             documentSearchService: $documentSearchService,
-            query: $this->makeEmpty(DocumentQueryInterface::class),
+            query: $this->makeEmpty(DocumentQueryInterface::class, ['getSearch' => $search]),
             folder: $folder,
         )->searchElementsForUser(
             ElementTypes::TYPE_DOCUMENT,
             new GridParameter(self::FOLDER_ID, [], new FilterParameter()),
             $user
         );
+
+        $this->assertSame(0, $this->countSystemFieldsOnlySources($search));
     }
 
     /**
@@ -314,6 +329,14 @@ final class GridSearchTest extends Unit
                 }
             ),
         ]);
+    }
+
+    private function countSystemFieldsOnlySources(SearchInterface $search): int
+    {
+        return count(array_filter(
+            $search->getModifiers(),
+            static fn (object $modifier): bool => $modifier instanceof SystemFieldsOnlySource
+        ));
     }
 
     private function captureNotFound(callable $search): NotFoundException

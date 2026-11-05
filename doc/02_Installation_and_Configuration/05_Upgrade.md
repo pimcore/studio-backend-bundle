@@ -12,6 +12,14 @@ The following steps are necessary during updating to newer versions.
   error of a data object in a language the user may not view is reduced to the generic message
   `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then
   `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
+- [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
+  (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
+  and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
+  failed `user/current-user-information` request. The bundle opens the route itself with a `PUBLIC_ACCESS` rule for
+  `<url_prefix>/session`, put in front of the application's `security.access_control` rules when the container is
+  compiled: `config/packages/security.yaml` needs no change, and this works with a custom `url_prefix` as well. The rule
+  has no `ips`, `host` or `channel` restriction, so an IP or https restriction of the application does not apply to this
+  one route. `user/current-user-information` keeps answering 401 without a session.
 - [Assets] Added: the maximum size of a text asset that Studio loads for preview and editing (2 MB, HTTP 413 above)
   is configurable with `pimcore_studio_backend.asset_text_settings.max_file_size`. The default is unchanged. The
   `TextEncoder` got the optional constructor argument `$maxFileSize`.
@@ -51,13 +59,12 @@ The following steps are necessary during updating to newer versions.
 - [Security] Added: two-factor authentication for the Studio login (authenticator app codes). See
   [Two-Factor Authentication](./07_Two_Factor_Authentication.md).
   - New configuration: `pimcore_studio_backend.two_factor_authentication.issuer` (default `Pimcore`) and
-    `server_name` (default: the router's request context host, i.e. `framework.router.default_uri`, or `localhost`
-    without it).
+    `server_name` (default: the main domain `pimcore.general.domain` if set, otherwise no host).
   - New rate limiter `studio_two_factor_code` (5 wrong codes per user in 5 minutes).
   - New endpoints: `POST /login/2fa`, `POST /user/two-factor/setup`, `POST /user/two-factor/confirm`,
     `DELETE /user/two-factor`, `DELETE /user/{id}/two-factor`. No change to `access_control` is needed.
 
-> **Note:** `POST /login` changes for users with two-factor authentication required or enabled: it answers `200` with
+> **Note:** `POST /login` changes for users with two-factor authentication required: it answers `200` with
 > `{"twoFactorRequired": true, "twoFactorStep": "verify"|"setup", "digits": 6}` instead of an empty body, and the user is not logged
 > in until the code is sent to `POST /login/2fa`. Clients that treat any `200` from `POST /login` as logged in break
 > for these users only; users without two-factor authentication get the same empty `200` as before. Users who have
@@ -65,6 +72,16 @@ The following steps are necessary during updating to newer versions.
 > the login. The login token (`POST /login/token`) still skips the code. While a code is pending, other endpoints
 > answer `401` with the same `twoFactorRequired`, `twoFactorStep` and `digits`, e.g. for a client returning from an OpenID
 > Connect (SSO) login.
+
+## Upgrade to 2026.3.4
+- [Translations] Fixed: the `admin` translation domain is maintained in Studio with the website languages, but the
+  backend still used the admin UI languages for it. Columns of website languages that are no admin UI language
+  (e.g. `fr_BE`) stayed empty and sorting by them failed. `POST /translations/list`, `POST /translations/export` and
+  the CSV import now use the website translation languages the user is allowed to view for the `admin` domain, and the
+  list only returns the values of these languages. Only the `studio` domain uses the admin UI languages.
+
+> **Note:** this replaces the `admin` domain part of the 2025.4.15 entry below. As for the other website domains, a
+> user without any valid website translation language receives `403` for list, export and import of the `admin` domain.
 
 ## Upgrade to 2026.3.3
 - [Data Objects] Changed: the data object detail loads `manyToManyObjectRelation` and `manyToManyRelation` values of

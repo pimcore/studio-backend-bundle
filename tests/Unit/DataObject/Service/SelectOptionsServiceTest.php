@@ -17,15 +17,23 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\OptionsProviderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\Concrete;
@@ -103,11 +111,86 @@ final class SelectOptionsServiceTest extends Unit
         $this->assertCount(1, $options);
     }
 
+    public function testReverseRelationKeysOfChangedDataAreNotApplied(): void
+    {
+        $object = $this->createObject();
+        $user = $this->makeEmpty(UserInterface::class);
+
+        $dataService = $this->makeEmpty(DataServiceInterface::class, [
+            'updateEditableData' => Expected::once(
+                function (Concrete $element, array $editableData): void {
+                    $this->assertSame(['sku' => 'ABC-123'], $editableData);
+                }
+            ),
+        ]);
+
+        $service = $this->createService($object, $dataService, $user);
+
+        $service->getSelectOptions(
+            new SelectOptionsParameter(
+                objectId: 42,
+                fieldName: self::FIELD_NAME,
+                context: [],
+                changedData: ['sku' => 'ABC-123', 'owners' => [['id' => 7, 'type' => 'object']]],
+            )
+        );
+    }
+
+    public function testDataServiceIsNotCalledWhenOnlyReverseRelationKeysAreChanged(): void
+    {
+        $object = $this->createObject();
+        $user = $this->makeEmpty(UserInterface::class);
+
+        $dataService = $this->makeEmpty(DataServiceInterface::class, [
+            'updateEditableData' => Expected::never(),
+        ]);
+
+        $service = $this->createService($object, $dataService, $user);
+
+        $options = $service->getSelectOptions(
+            new SelectOptionsParameter(
+                objectId: 42,
+                fieldName: self::FIELD_NAME,
+                context: [],
+                changedData: ['owners' => []],
+            )
+        );
+
+        $this->assertCount(1, $options);
+    }
+
+    public function testObjectWithoutViewPermissionIsRefused(): void
+    {
+        $object = $this->createObject();
+        $user = $this->makeEmpty(UserInterface::class);
+
+        $dataService = $this->makeEmpty(DataServiceInterface::class, [
+            'updateEditableData' => Expected::never(),
+        ]);
+
+        $service = $this->createService($object, $dataService, $user, denyView: true);
+
+        $this->expectException(ForbiddenException::class);
+
+        $service->getSelectOptions(
+            new SelectOptionsParameter(
+                objectId: 42,
+                fieldName: self::FIELD_NAME,
+                context: [],
+                changedData: ['sku' => 'ABC-123'],
+            )
+        );
+    }
+
     private function createObject(): Concrete
     {
         $classDefinition = new ClassDefinition();
         $classDefinition->setId('EV');
         $classDefinition->setName('Event');
+
+        $reverseField = new ReverseObjectRelation();
+        $reverseField->setName('owners');
+        $classDefinition->setFieldDefinitions(['owners' => $reverseField]);
 
         return $this->makeEmpty(Concrete::class, [
             'getId' => 42,
@@ -120,6 +203,7 @@ final class SelectOptionsServiceTest extends Unit
         Concrete $object,
         DataServiceInterface $dataService,
         UserInterface $user,
+        bool $denyView = false,
     ): SelectOptionsService {
         $fieldDefinition = new Select();
         $fieldDefinition->setName(self::FIELD_NAME);
@@ -132,7 +216,21 @@ final class SelectOptionsServiceTest extends Unit
         return new SelectOptionsService(
             $this->makeEmpty(ConcreteObjectResolverInterface::class, ['getById' => $object]),
             $dataService,
-            $this->makeEmpty(SecurityServiceInterface::class, ['getCurrentUser' => $user]),
+            $this->makeEmpty(SecurityServiceInterface::class, [
+                'getCurrentUser' => $user,
+                'hasElementPermission' => function (
+                    $element,
+                    $permissionUser,
+                    string $permission
+                ) use ($object, $user, $denyView): void {
+                    $this->assertSame($object, $element);
+                    $this->assertSame($user, $permissionUser);
+                    $this->assertSame(ElementPermissions::VIEW_PERMISSION, $permission);
+                    if ($denyView) {
+                        throw new ForbiddenException();
+                    }
+                },
+            ]),
             $this->makeEmpty(OptionsProviderResolverInterface::class, ['resolveProvider' => $provider]),
             $this->makeEmpty(SelectOptionHydratorInterface::class, [
                 'hydrate' => static fn (array $data): SelectOption => new SelectOption($data['key'], $data['value']),
@@ -142,6 +240,23 @@ final class SelectOptionsServiceTest extends Unit
             ]),
             $this->makeEmpty(DotNotationParserInterface::class, [
                 'parse' => new FieldDefinitionWrapper($fieldDefinition, 'object', self::FIELD_NAME),
+            ]),
+            $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => fn (string $type): ?SetterDataInterface => $type === 'reverseObjectRelation'
+                    ? new class() implements SetterDataInterface, RemoteStorageDataInterface {
+                        public function getDataForSetter(
+                            Concrete $element,
+                            Data $fieldDefinition,
+                            string $key,
+                            array $data,
+                            UserInterface $user,
+                            ?FieldContextData $contextData = null,
+                            bool $isPatch = false
+                        ): mixed {
+                            return null;
+                        }
+                    }
+                    : null,
             ]),
         );
     }

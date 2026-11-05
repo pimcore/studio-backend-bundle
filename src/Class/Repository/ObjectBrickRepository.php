@@ -71,7 +71,7 @@ final readonly class ObjectBrickRepository implements ObjectBrickRepositoryInter
         } catch (Exception $e) {
             $exception = $e;
         }
-        if (!$definition || $exception) {
+        if (!$definition) {
             throw new NotFoundException(type: 'Object Brick', id: $key, previous: $exception);
         }
 

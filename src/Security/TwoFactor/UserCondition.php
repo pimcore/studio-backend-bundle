@@ -37,7 +37,7 @@ final readonly class UserCondition implements TwoFactorConditionInterface
 
         $pimcoreUser = $user->getUser();
 
-        return $pimcoreUser->getTwoFactorAuthentication('required')
-            || $pimcoreUser->getTwoFactorAuthentication('enabled');
+        // Only `required` decides, as in the classic admin; a setup alone does not ask for a code.
+        return (bool) $pimcoreUser->getTwoFactorAuthentication('required');
     }
 }

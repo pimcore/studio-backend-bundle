@@ -1115,6 +1115,11 @@ admin_settings_update_description: |
   Allows updating branding and asset configuration options.
 admin_settings_update_success_response: Admin system settings updated successfully
 admin_settings_update_summary: Update admin appearance settings
+session_get_status_description: |
+    Tells whether the request carries an authenticated Studio session. Always answers with HTTP 200, so
+    the Studio UI can find out whether to show the login page without triggering a 401.
+session_get_status_success_response: Session status.
+session_get_status_summary: Get the status of the current Studio session
 settings_country_collection_description: |
   Get all available countries in the system. <br>
   Returns a list of countries with their codes and names
@@ -1383,13 +1388,15 @@ user_token_link_get_success_response: Token login link for the user
 user_token_link_get_summary: Generate login link and token for a user by ID
 user_two_factor_confirm_description: |
   Confirms the pending secret from the setup with a first code from the authenticator app.
-  Only then is two-factor authentication enabled with this secret; a previous secret is replaced.
+  Only then is two-factor authentication enabled with this secret and required for the user; a previous secret is
+  replaced.
   A wrong code answers 422 and the setup stays pending; without a pending setup the answer is 409.
 user_two_factor_confirm_success_response: Two-factor authentication is enabled with the new secret.
 user_two_factor_confirm_summary: Confirm two-factor authentication setup
 user_two_factor_disable_description: |
   Disables two-factor authentication for the current user and removes the secret.
-  Refused with 403 while two-factor authentication is required for the user.
+  Refused with 403 while two-factor authentication is required for the user, so it only removes a setup that is no
+  longer required.
 user_two_factor_disable_success_response: Two-factor authentication is disabled.
 user_two_factor_disable_summary: Disable two-factor authentication
 user_two_factor_reset_by_id_description: |
