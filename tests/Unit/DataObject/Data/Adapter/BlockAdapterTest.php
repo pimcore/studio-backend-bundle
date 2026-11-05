@@ -16,6 +16,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataObject\Data\Adapter;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BlockAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -89,6 +91,74 @@ final class BlockAdapterTest extends Unit
         $this->assertSame('text', $blockElement->getName());
         $this->assertSame('input', $blockElement->getType());
         $this->assertSame('hello world', $blockElement->getData());
+    }
+
+    /**
+     * Regression test: a block inside localized fields must hand its child adapters the stored items
+     * of the language being saved, not the ones of the current/default locale.
+     *
+     * @throws Exception
+     */
+    public function testGetDataForSetterResolvesExistingBlockItemsInTheContextLanguage(): void
+    {
+        $captured = [];
+        $elementAdapter = $this->makeEmpty(SetterDataInterface::class, [
+            'getDataForSetter' => static function (
+                Concrete $element,
+                mixed $fieldDefinition,
+                string $key,
+                array $data,
+                UserInterface $user,
+                ?FieldContextData $contextData = null
+            ) use (&$captured): mixed {
+                $captured[] = $contextData;
+
+                return $data[$key] ?? null;
+            },
+        ]);
+
+        $adapter = new BlockAdapter(
+            $this->makeEmpty(DataAdapterServiceInterface::class, [
+                'tryDataAdapter' => $elementAdapter,
+            ]),
+            $this->makeEmpty(DataServiceInterface::class)
+        );
+
+        $textDefinition = new Input();
+        $textDefinition->setName('text');
+
+        $blockDefinition = $this->makeEmpty(Block::class, [
+            'getName' => 'myBlock',
+            'getFieldDefinitions' => ['text' => $textDefinition],
+        ]);
+
+        $storedItems = [
+            'en' => [['text' => new BlockElement('text', 'input', 'english')]],
+            'de' => [['text' => new BlockElement('text', 'input', 'deutsch')]],
+        ];
+        $element = $this->makeEmpty(Concrete::class, [
+            'getClassId' => 'test-class',
+            'get' => static fn (string $fieldName, ?string $language = null): array =>
+                $storedItems[$language ?? 'en'],
+        ]);
+
+        $adapter->getDataForSetter(
+            $element,
+            $blockDefinition,
+            'myBlock',
+            ['myBlock' => [['text' => 'neu']]],
+            $this->makeEmpty(UserInterface::class),
+            new FieldContextData(language: 'de')
+        );
+
+        $this->assertCount(1, $captured);
+        $this->assertInstanceOf(FieldContextData::class, $captured[0]);
+        $this->assertSame('de', $captured[0]->getLanguage());
+
+        $blockData = $captured[0]->getContextObject();
+        $this->assertInstanceOf(BlockData::class, $blockData);
+        $this->assertSame($storedItems['de'][0], $blockData->getBlockData());
+        $this->assertSame('deutsch', $captured[0]->getFieldValueFromContextObject('text'));
     }
 
     /**

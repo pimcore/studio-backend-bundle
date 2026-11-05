@@ -24,5 +24,10 @@ interface AssetQueryInterface extends QueryInterface
 
     public function filterUnreferenced(): self;
 
+    /**
+     * Sorts folders before all other assets, add further sorts (e.g. orderByPath) afterwards.
+     */
+    public function orderFoldersFirst(): self;
+
     public function getSearch(): AssetSearchInterface;
 }

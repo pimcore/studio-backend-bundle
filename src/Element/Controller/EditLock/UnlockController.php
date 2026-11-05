@@ -62,6 +62,8 @@ final class UnlockController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function unlockElement(int $id, string $elementType): Response

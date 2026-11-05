@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\AdapterServic
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Service\CustomReportConfigServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
 use Pimcore\Model\User;
@@ -72,11 +73,14 @@ final class CsvCollectionHandlerTest extends Unit
             'generateCsvData' => $csvData,
         ]);
 
-        $handler = $this->createHandler($jobRun, $adapterService, $configService);
+        $exportDataStorageService = $this->createMock(ExportDataStorageServiceInterface::class);
+        $exportDataStorageService->expects($this->once())->method('store')->with(self::JOB_RUN_ID, 0, $csvData);
+
+        $handler = $this->createHandler($jobRun, $adapterService, $configService, $exportDataStorageService);
 
         $handler(new CsvCollectionMessage(self::JOB_RUN_ID, 0));
 
-        $this->assertSame($csvData, $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value]);
+        $this->assertArrayNotHasKey(StepConfig::GRID_EXPORT_DATA->value, $jobRun->getContext() ?? []);
     }
 
     private function createJobRun(): JobRun
@@ -110,9 +114,11 @@ final class CsvCollectionHandlerTest extends Unit
     private function createHandler(
         JobRun $jobRun,
         AdapterServiceInterface $adapterService,
-        CustomReportConfigServiceInterface $configService
+        CustomReportConfigServiceInterface $configService,
+        ExportDataStorageServiceInterface $exportDataStorageService
     ): CsvCollectionHandler {
         $handler = new CsvCollectionHandler(
+            $exportDataStorageService,
             $this->makeEmpty(PublishServiceInterface::class),
             $this->makeEmpty(UserTopicServiceInterface::class, ['getUserTopic' => 'user-topic']),
             $configService,

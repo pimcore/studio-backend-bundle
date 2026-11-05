@@ -106,7 +106,7 @@ final readonly class LocalizedFieldsAdapter implements
                     $name,
                     [$name => $fieldData],
                     $user,
-                    new FieldContextData(language: $language),
+                    new FieldContextData($contextData?->getContextObject(), $language),
                     $isPatch
                 );
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {

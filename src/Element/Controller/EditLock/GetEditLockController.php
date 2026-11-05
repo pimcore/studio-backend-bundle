@@ -65,6 +65,8 @@ final class GetEditLockController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getEditLock(int $id, string $elementType): JsonResponse
