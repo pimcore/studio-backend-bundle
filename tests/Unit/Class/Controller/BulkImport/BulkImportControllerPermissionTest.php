@@ -27,8 +27,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use function sprintf;
 
 /**
- * Regression test for GHSA-j8xj-6h6r-chmv.
- *
  * The bulk class-import routes create and overwrite class definitions, field collections,
  * object bricks and custom layouts, the same operation the single-item
  * DefinitionConfiguration Create/Update/Delete/Import controllers perform. Those require the
@@ -73,7 +71,7 @@ final class BulkImportControllerPermissionTest extends Unit
             UserPermissions::CLASS_DEFINITION->value,
             $isGranted->attribute,
             sprintf(
-                '%s::%s() must require the "%s" permission (GHSA-j8xj-6h6r-chmv), not "%s".',
+                '%s::%s() must require the "%s" permission, not "%s".',
                 $controllerClass,
                 $actionMethod->getName(),
                 UserPermissions::CLASS_DEFINITION->value,
