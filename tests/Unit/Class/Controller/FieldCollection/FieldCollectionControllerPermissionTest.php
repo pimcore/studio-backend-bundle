@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Class\Controller\FieldCo
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Class\Controller\FieldCollection\GetController;
+use Pimcore\Bundle\StudioBackendBundle\Class\Controller\FieldCollection\LayoutController;
 use Pimcore\Bundle\StudioBackendBundle\Class\Controller\FieldCollection\LayoutDefinitionController;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use ReflectionClass;
@@ -26,25 +27,27 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use function sprintf;
 
 /**
- * Regression test for GHSA-7xjx-hc6h-48v4.
+ * The field collection definition routes must require the FIELD_COLLECTIONS ('fieldcollections')
+ * permission, like the other routes of this controller family (TreeController, CreateController, etc.).
  *
- * GetController and LayoutDefinitionController must require the FIELD_COLLECTIONS
- * ('fieldcollections') permission, matching their siblings in this controller family
- * (TreeController, CreateController, etc.). Both routes were guarded when introduced but
- * lost their #[IsGranted] attribute without a replacement when the FIELD_COLLECTIONS
- * constant was introduced, leaving them reachable by any authenticated user.
+ * The object layout route is used by the data object editor, so it requires the DATA_OBJECTS ('objects')
+ * permission and the service enforces view permission on the requested object.
  *
  * @internal
  */
 final class FieldCollectionControllerPermissionTest extends Unit
 {
     /**
-     * @return iterable<string, array{class-string}>
+     * @return iterable<string, array{class-string, string}>
      */
     public static function controllerProvider(): iterable
     {
-        yield GetController::class => [GetController::class];
-        yield LayoutDefinitionController::class => [LayoutDefinitionController::class];
+        yield GetController::class => [GetController::class, UserPermissions::FIELD_COLLECTIONS->value];
+        yield LayoutDefinitionController::class => [
+            LayoutDefinitionController::class,
+            UserPermissions::FIELD_COLLECTIONS->value,
+        ];
+        yield LayoutController::class => [LayoutController::class, UserPermissions::DATA_OBJECTS->value];
     }
 
     /**
@@ -54,7 +57,7 @@ final class FieldCollectionControllerPermissionTest extends Unit
      *
      * @throws ReflectionException
      */
-    public function testInvokeRequiresFieldCollectionsPermission(string $controllerClass): void
+    public function testInvokeRequiresPermission(string $controllerClass, string $expectedPermission): void
     {
         $reflection = new ReflectionClass($controllerClass);
         $actionMethod = $this->resolveActionMethod($reflection);
@@ -68,13 +71,13 @@ final class FieldCollectionControllerPermissionTest extends Unit
         $isGranted = $attributes[0]->newInstance();
 
         $this->assertSame(
-            UserPermissions::FIELD_COLLECTIONS->value,
+            $expectedPermission,
             $isGranted->attribute,
             sprintf(
-                '%s::%s() must require the "%s" permission (GHSA-7xjx-hc6h-48v4), not "%s".',
+                '%s::%s() must require the "%s" permission, not "%s".',
                 $controllerClass,
                 $actionMethod->getName(),
-                UserPermissions::FIELD_COLLECTIONS->value,
+                $expectedPermission,
                 (string) $isGranted->attribute
             )
         );

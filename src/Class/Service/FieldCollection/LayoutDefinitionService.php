@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\ConfigLayoutDefinitionEvent;
@@ -25,12 +24,14 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefi
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function sprintf;
 
@@ -40,7 +41,7 @@ use function sprintf;
 final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
     public function __construct(
-        private readonly DataObjectResolverInterface $dataObjectResolver,
+        private readonly DataObjectServiceInterface $dataObjectService,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
@@ -56,9 +57,9 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function getLayoutDefinitionsForObject(int $dataObjectId): array
+    public function getLayoutDefinitionsForObject(int $dataObjectId, UserInterface $user): array
     {
-        $dataObject = $this->dataObjectResolver->getById($dataObjectId);
+        $dataObject = $this->dataObjectService->getDataObjectElement($user, $dataObjectId);
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(

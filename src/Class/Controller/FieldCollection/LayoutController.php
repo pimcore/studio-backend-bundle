@@ -18,6 +18,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -26,10 +27,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
@@ -40,18 +44,20 @@ final class LayoutController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly LayoutDefinitionServiceInterface $layoutDefinitionService,
+        private readonly SecurityServiceInterface $securityService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws InvalidElementTypeException|Exception|NotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|Exception|NotFoundException
      */
     #[Route(
         '/class/field-collection/{objectId}/object/layout',
         name: 'pimcore_studio_api_class_field_collection_object_layout',
         methods: ['GET']
     )]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/class/field-collection/{objectId}/object/layout',
         operationId: 'class_field_collection_object_layout',
@@ -65,12 +71,16 @@ final class LayoutController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(LayoutDefinition::class))
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function getFieldCollectionLayoutForObject(int $objectId): JsonResponse
     {
-        $items = $this->layoutDefinitionService->getLayoutDefinitionsForObject($objectId);
+        $items = $this->layoutDefinitionService->getLayoutDefinitionsForObject(
+            $objectId,
+            $this->securityService->getCurrentUser()
+        );
 
         return $this->getPaginatedCollection(
             $this->serializer,
