@@ -42,6 +42,8 @@ final readonly class RenderletService implements RenderletServiceInterface
     /**
      * Request parameters which are not passed to the renderlet controller as attributes.
      * The attributes are also used as fragment rendering options, so the options of the inline renderer are excluded.
+     * "pimcore_request_source" is not set in edit mode: core would then mark every query parameter as deprecated
+     * when it is read from the attributes, also the "template" which core reads itself.
      */
     private const array IGNORED_ATTRIBUTE_KEYS = [
         'controller' => true,
@@ -52,6 +54,7 @@ final readonly class RenderletService implements RenderletServiceInterface
         'strategy' => true,
         'alt' => true,
         'ignore_errors' => true,
+        'pimcore_request_source' => true,
     ];
 
     public function __construct(
@@ -138,7 +141,6 @@ final readonly class RenderletService implements RenderletServiceInterface
         $attributes['id'] = $parameter->getElementId();
         $attributes['type'] = $parameter->getElementType();
         $attributes['subtype'] = $requestParameters['subtype'] ?? null;
-        $attributes['pimcore_request_source'] = 'renderlet';
 
         foreach ($requestParameters as $key => $value) {
             if (
@@ -172,14 +174,9 @@ final readonly class RenderletService implements RenderletServiceInterface
         return $attributes;
     }
 
-    /**
-     * The template is not passed as query parameter, the same way as the renderlet editable does on the frontend.
-     * Core marks the query parameters as deprecated when they are read from the attributes,
-     * and core reads the template attribute to render the template.
-     */
     private function cleanupRequestParameters(array $requestParameters): array
     {
-        foreach (['controller', 'action', 'module', 'bundle', 'template'] as $key) {
+        foreach (['controller', 'action', 'module', 'bundle'] as $key) {
             if (isset($requestParameters[$key])) {
                 unset($requestParameters[$key]);
             }

@@ -52,6 +52,7 @@ final class RenderletServiceTest extends Unit
             'height' => '200',
             'teaserType' => 'small',
             '_controller' => 'App\Controller\OtherController::otherAction',
+            'pimcore_request_source' => 'renderlet',
         ];
 
         $this->getRenderletService()->render(
@@ -69,16 +70,17 @@ final class RenderletServiceTest extends Unit
         $this->assertSame('object', $this->renderedAttributes['type']);
         $this->assertSame('News', $this->renderedAttributes['subtype']);
         $this->assertSame('news/teaser.html.twig', $this->renderedAttributes['template']);
-        $this->assertSame('renderlet', $this->renderedAttributes['pimcore_request_source']);
         $this->assertSame('200', $this->renderedAttributes['height']);
         $this->assertSame('small', $this->renderedAttributes['teaserType']);
         $this->assertArrayNotHasKey('controller', $this->renderedAttributes);
         $this->assertArrayNotHasKey('_controller', $this->renderedAttributes);
+        // core would mark the query parameters as deprecated attributes, also the template which core reads itself
+        $this->assertArrayNotHasKey('pimcore_request_source', $this->renderedAttributes);
 
         $this->assertSame('42', $this->renderedQuery['id']);
         $this->assertSame('small', $this->renderedQuery['teaserType']);
+        $this->assertSame('news/teaser.html.twig', $this->renderedQuery['template']);
         $this->assertArrayNotHasKey('controller', $this->renderedQuery);
-        $this->assertArrayNotHasKey('template', $this->renderedQuery);
     }
 
     /**
