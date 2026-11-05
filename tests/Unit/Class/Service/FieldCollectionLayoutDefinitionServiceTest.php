@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Repository\FieldCollectionRepositor
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
@@ -56,11 +57,11 @@ final class FieldCollectionLayoutDefinitionServiceTest extends Unit
         $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
         $classDefinitionResolver->expects($this->never())->method('getById');
 
-        $service = $this->createService($dataObjectService, $classDefinitionResolver);
+        $service = $this->createService($user, $dataObjectService, $classDefinitionResolver);
 
         $this->expectException(ForbiddenException::class);
 
-        $service->getLayoutDefinitionsForObject(self::OBJECT_ID, $user);
+        $service->getLayoutDefinitionsForObject(self::OBJECT_ID);
     }
 
     /**
@@ -88,17 +89,22 @@ final class FieldCollectionLayoutDefinitionServiceTest extends Unit
             ->with(self::CLASS_ID)
             ->willReturn($classDefinition);
 
-        $service = $this->createService($dataObjectService, $classDefinitionResolver);
+        $service = $this->createService($user, $dataObjectService, $classDefinitionResolver);
 
-        $this->assertSame([], $service->getLayoutDefinitionsForObject(self::OBJECT_ID, $user));
+        $this->assertSame([], $service->getLayoutDefinitionsForObject(self::OBJECT_ID));
     }
 
     private function createService(
+        UserInterface $user,
         DataObjectServiceInterface $dataObjectService,
         ClassDefinitionResolverInterface $classDefinitionResolver
     ): LayoutDefinitionService {
+        $securityService = $this->createMock(SecurityServiceInterface::class);
+        $securityService->method('getCurrentUser')->willReturn($user);
+
         return new LayoutDefinitionService(
             $dataObjectService,
+            $securityService,
             $this->createMock(DataObjectServiceResolverInterface::class),
             $classDefinitionResolver,
             $this->createMock(DefinitionResolverInterface::class),

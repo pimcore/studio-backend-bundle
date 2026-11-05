@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -44,7 +43,6 @@ final class LayoutController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly LayoutDefinitionServiceInterface $layoutDefinitionService,
-        private readonly SecurityServiceInterface $securityService,
     ) {
         parent::__construct($serializer);
     }
@@ -77,10 +75,7 @@ final class LayoutController extends AbstractApiController
     ])]
     public function getFieldCollectionLayoutForObject(int $objectId): JsonResponse
     {
-        $items = $this->layoutDefinitionService->getLayoutDefinitionsForObject(
-            $objectId,
-            $this->securityService->getCurrentUser()
-        );
+        $items = $this->layoutDefinitionService->getLayoutDefinitionsForObject($objectId);
 
         return $this->getPaginatedCollection(
             $this->serializer,

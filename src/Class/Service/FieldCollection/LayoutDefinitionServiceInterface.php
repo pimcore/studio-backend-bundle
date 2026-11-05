@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefini
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -31,7 +30,7 @@ interface LayoutDefinitionServiceInterface
      *
      * @return LayoutDefinition[]
      */
-    public function getLayoutDefinitionsForObject(int $dataObjectId, UserInterface $user): array;
+    public function getLayoutDefinitionsForObject(int $dataObjectId): array;
 
     /**
      * @throws NotFoundException

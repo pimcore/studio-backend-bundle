@@ -27,11 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefini
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function sprintf;
 
@@ -42,6 +42,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
     public function __construct(
         private readonly DataObjectServiceInterface $dataObjectService,
+        private readonly SecurityServiceInterface $securityService,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
@@ -57,9 +58,12 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function getLayoutDefinitionsForObject(int $dataObjectId, UserInterface $user): array
+    public function getLayoutDefinitionsForObject(int $dataObjectId): array
     {
-        $dataObject = $this->dataObjectService->getDataObjectElement($user, $dataObjectId);
+        $dataObject = $this->dataObjectService->getDataObjectElement(
+            $this->securityService->getCurrentUser(),
+            $dataObjectId
+        );
 
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
