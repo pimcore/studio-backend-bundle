@@ -31,6 +31,9 @@ use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use function in_array;
+use function rtrim;
+use function sprintf;
+use function urlencode;
 
 /**
  * @internal
@@ -50,6 +53,7 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private SettingsProviderInterface $settingsProvider,
         private SiteRepositoryInterface $siteRepository,
         private UserPermissionServiceInterface $userPermissionService,
+        private string $studioPath = '/pimcore-studio',
     ) {
     }
 
@@ -105,10 +109,33 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         /** @var User $user */
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
-        return $this->urlGenerator->generate(
+        return sprintf(
+            '%s%s/login/?token=%s',
+            $this->getOrigin(),
+            rtrim($this->studioPath, '/'),
+            urlencode($token)
+        );
+    }
+
+    /**
+     * Scheme, host and port the Studio is served from, taken from the router context
+     * (the same origin the absolute API URLs are generated for).
+     */
+    private function getOrigin(): string
+    {
+        $apiUrl = $this->urlGenerator->generate(
             TokenLoginController::ROUTE_NAME,
-            ['token' => $token],
+            [],
             UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $parts = parse_url($apiUrl);
+
+        return sprintf(
+            '%s://%s%s',
+            $parts['scheme'] ?? 'https',
+            $parts['host'] ?? '',
+            isset($parts['port']) ? ':' . $parts['port'] : ''
         );
     }
 

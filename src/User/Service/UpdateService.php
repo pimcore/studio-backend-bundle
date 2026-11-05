@@ -87,7 +87,8 @@ final readonly class UpdateService implements UpdateServiceInterface
             }
         }
 
-        $this->denyEscalationBeyondCallersOwnPermissions($permissions);
+        // keeping a permission the target already holds is not a grant, only additions are checked
+        $this->denyEscalationBeyondCallersOwnPermissions(array_diff($permissions, $user->getPermissions()));
 
         $user->setPermissions($permissions);
 
@@ -101,6 +102,8 @@ final readonly class UpdateService implements UpdateServiceInterface
     {
         $availableRoles = $this->roleRepository->getRoles();
 
+        $currentRoleIds = array_map('intval', $user->getRoles());
+
         $grantedPermissions = [];
         foreach ($rolesToSet as $roleId) {
             $role = $this->findRoleById($availableRoles, $roleId);
@@ -108,7 +111,10 @@ final readonly class UpdateService implements UpdateServiceInterface
                 throw new NotFoundException('Role', $roleId);
             }
 
-            $grantedPermissions = [...$grantedPermissions, ...$role->getPermissions()];
+            // keeping a role the target already has is not a grant, only newly assigned roles are checked
+            if (!in_array($roleId, $currentRoleIds, true)) {
+                $grantedPermissions = [...$grantedPermissions, ...$role->getPermissions()];
+            }
         }
 
         $this->denyEscalationBeyondCallersOwnPermissions($grantedPermissions);

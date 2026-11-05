@@ -170,6 +170,38 @@ final class UpdateServiceTest extends Unit
         $this->assertSame([1], $user->getRoles());
     }
 
+    public function testNonAdminCanKeepPermissionsTheTargetAlreadyHolds(): void
+    {
+        $user = $this->createUser(['assets', 'documents']);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+        ]);
+        $service = $this->createServiceWithCurrentUser($currentUser, 'assets', 'documents');
+
+        $service->updatePermissions(['assets', 'documents'], $user);
+
+        $this->assertSame(['assets', 'documents'], $user->getPermissions());
+    }
+
+    public function testNonAdminCanKeepRolesTheTargetAlreadyHas(): void
+    {
+        $user = $this->createUser([]);
+        $user->setRoles([1]);
+        $role = new Role();
+        $role->setId(1);
+        $role->setPermissions(['assets']);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => false,
+        ]);
+        $service = $this->createRoleService([$role], $currentUser);
+
+        $service->updateRoles([1], $user);
+
+        $this->assertSame([1], $user->getRoles());
+    }
+
     public function testKnownClassesAreStored(): void
     {
         $user = $this->createUser([]);
