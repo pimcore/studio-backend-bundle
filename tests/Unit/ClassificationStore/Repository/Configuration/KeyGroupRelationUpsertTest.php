@@ -82,8 +82,6 @@ final class KeyGroupRelationUpsertTest extends Unit
 
     private const string KEY_DEFINITION_NOT_INDEXED = '{"fieldtype":"input","indexed":false}';
 
-    private const string KEY_DEFINITION_INDEXED = '{"fieldtype":"input","indexed":true}';
-
     private const string SEEDED_METADATA_JSON = '{"indexed":false}';
 
     /**
@@ -91,6 +89,11 @@ final class KeyGroupRelationUpsertTest extends Unit
      * all.
      */
     private int $keyLookups = 0;
+
+    public function _before(): void
+    {
+        $this->keyLookups = 0;
+    }
 
     /**
      * All three properties reach the addressed `(groupId, keyId)` row in one write - the row is
@@ -312,11 +315,6 @@ final class KeyGroupRelationUpsertTest extends Unit
         $this->assertSame(0, $row[self::COLUMN_MANDATORY]);
         $this->assertSame(0, $relation->getSorter());
         $this->assertFalse($relation->isMandatory());
-    }
-
-    public function _before(): void
-    {
-        $this->keyLookups = 0;
     }
 
     /**
