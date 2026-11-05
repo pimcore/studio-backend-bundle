@@ -39,6 +39,7 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
             $client->scopes,
             $client->confidential,
             $client->secretHash,
+            $client->serviceUserId,
         );
         $record->setMetadataHash($client->metadataHash);
 
@@ -82,6 +83,7 @@ final readonly class DynamicClientStore implements DynamicClientStoreInterface
             $record->getSecretHash(),
             $record->getMetadataHash(),
             $record->getCreatedAt(),
+            $record->getServiceUserId(),
         );
     }
 }

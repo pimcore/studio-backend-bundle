@@ -32,6 +32,8 @@ final readonly class DynamicClient
      *                                   (see ClientRegistrar::register()).
      * @param int|null     $createdAt    unix timestamp the record was stored, null when
      *                                   the client has not been persisted yet
+     * @param int|null     $serviceUserId the service user a confidential client_credentials
+     *                                    client is bound to, null for every other client
      */
     public function __construct(
         public string $identifier,
@@ -43,6 +45,7 @@ final readonly class DynamicClient
         public ?string $secretHash,
         public ?string $metadataHash = null,
         public ?int $createdAt = null,
+        public ?int $serviceUserId = null,
     ) {
     }
 }

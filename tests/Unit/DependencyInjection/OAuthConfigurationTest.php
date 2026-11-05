@@ -299,6 +299,34 @@ final class OAuthConfigurationTest extends Unit
         $this->assertTrue($config['dynamic_client_registration']['enabled']);
     }
 
+    public function testClientCredentialsIsOffWithAFifteenMinuteTokenByDefault(): void
+    {
+        $config = $this->process([]);
+
+        $this->assertFalse($config['client_credentials']['enabled']);
+        $this->assertSame(900, $config['client_credentials']['access_token_ttl']);
+    }
+
+    public function testClientCredentialsCanBeSwitchedOnWithItsOwnTtl(): void
+    {
+        $config = $this->process([
+            'enabled' => true,
+            'issuer' => self::ISSUER,
+            'keys' => self::KEYS,
+            'client_credentials' => ['enabled' => true, 'access_token_ttl' => 300],
+        ]);
+
+        $this->assertTrue($config['client_credentials']['enabled']);
+        $this->assertSame(300, $config['client_credentials']['access_token_ttl']);
+    }
+
+    public function testAClientCredentialsTtlBelowAMinuteIsRejected(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['client_credentials' => ['access_token_ttl' => 0]]);
+    }
+
     /**
      * Compiles a real container, so the placeholder handling is exactly the build's: the
      * merge pass substitutes placeholders and ValidateEnvPlaceholdersPass later validates
