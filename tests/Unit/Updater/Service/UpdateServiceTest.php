@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -229,9 +230,7 @@ final class UpdateServiceTest extends Unit
     }
 
     /**
-     * GHSA-wp52-4qcp-x4jx: a data object folder has no `save` permission check at all, allowing any
-     * user with the `objects` permission to rename/move/lock/set properties on folders outside their
-     * workspace write permissions.
+     * Writing a data object folder requires the workspace `save` permission.
      */
     public function testUpdateOfDataObjectFolderRequiresSavePermission(): void
     {
@@ -260,6 +259,66 @@ final class UpdateServiceTest extends Unit
 
         $this->assertSame(['save'], $checkedPermissions);
         $this->assertFalse($saved);
+    }
+
+    /**
+     * Folders have no publish state, so a publish/unpublish task must not skip the `save` check.
+     */
+    public function testUpdateOfDataObjectFolderWithPublishTaskStillRequiresSavePermission(): void
+    {
+        foreach (['publish', 'unpublish'] as $task) {
+            $folder = $this->makeEmpty(Folder::class);
+            $saved = false;
+            $checkedPermissions = [];
+
+            $service = $this->createServiceForElement(
+                $folder,
+                static function () use (&$saved): void {
+                    $saved = true;
+                },
+                static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                    $checkedPermissions[] = $permission;
+
+                    throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+                }
+            );
+
+            try {
+                $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => $task]);
+                $this->fail('Expected ForbiddenException was not thrown');
+            } catch (ForbiddenException) {
+                // expected - assertions happen after the try/catch
+            }
+
+            $this->assertSame(['save'], $checkedPermissions, $task);
+            $this->assertFalse($saved, $task);
+        }
+    }
+
+    /**
+     * A pure publish/unpublish task on a data object is gated by ElementSaveService itself, so it must
+     * not additionally require the workspace `save` permission.
+     */
+    public function testUpdateOfDataObjectWithPublishTaskDoesNotRequireSavePermission(): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, ['task' => 'publish']);
+
+        $this->assertSame([], $checkedPermissions);
+        $this->assertTrue($saved);
     }
 
     /**

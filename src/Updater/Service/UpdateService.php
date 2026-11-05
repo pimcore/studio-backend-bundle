@@ -74,7 +74,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
 
-        if ($element instanceof AbstractObject && $this->requiresSavePermission($task)) {
+        if ($element instanceof AbstractObject && $this->requiresSavePermission($element, $task)) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         }
 
@@ -125,10 +125,16 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     /**
      * Persisting object data (save, autoSave, version or an untasked write) requires the workspace
-     * `save` permission. Publishing/unpublishing is gated separately by ElementSaveService.
+     * `save` permission. Publishing/unpublishing a data object is gated separately by
+     * ElementSaveService; folders have no publish state, so for them no such gate exists and
+     * every write requires `save`.
      */
-    private function requiresSavePermission(?string $task): bool
+    private function requiresSavePermission(AbstractObject $element, ?string $task): bool
     {
+        if (!$element instanceof Concrete) {
+            return true;
+        }
+
         return !in_array(
             $task,
             [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],

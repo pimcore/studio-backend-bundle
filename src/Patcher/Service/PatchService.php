@@ -155,8 +155,8 @@ final readonly class PatchService implements PatchServiceInterface
     ): void {
         // Writing a data object or data object folder (key, parentId, locked, properties,
         // editableData, or an untasked write) requires the workspace `save` permission. A pure
-        // publish/unpublish task is gated separately by PublishAdapter.
-        if ($element instanceof AbstractObject && $this->requiresSavePermission($elementPatchData)) {
+        // publish/unpublish task on a data object is gated separately by PublishAdapter.
+        if ($element instanceof AbstractObject && $this->requiresSavePermission($element, $elementPatchData)) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         } elseif ($element instanceof Asset) {
             // Assets have no workspace `save` permission; `publish` is their edit/write permission.
@@ -207,10 +207,16 @@ final readonly class PatchService implements PatchServiceInterface
 
     /**
      * Persisting object/folder data (save, autoSave, version or an untasked write) requires the
-     * workspace `save` permission. Publishing/unpublishing is gated separately by PublishAdapter.
+     * workspace `save` permission. Publishing/unpublishing a data object is gated separately by
+     * PublishAdapter; folders have no publish state, so for them no such gate exists and every
+     * write requires `save`.
      */
-    private function requiresSavePermission(array $elementPatchData): bool
+    private function requiresSavePermission(AbstractObject $element, array $elementPatchData): bool
     {
+        if (!$element instanceof Concrete) {
+            return true;
+        }
+
         return !in_array(
             $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null,
             [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],

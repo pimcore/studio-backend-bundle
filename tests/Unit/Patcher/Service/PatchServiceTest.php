@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\VersionCoauthor;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -458,10 +459,8 @@ final class PatchServiceTest extends Unit
     }
 
     /**
-     * GHSA-wp52-4qcp-x4jx: a data object folder patch without `editableData` (e.g. a bare
-     * `{"key": "renamed"}`) skipped the `save` permission check entirely, allowing any user with
-     * the `objects` permission to rename/move/lock/set properties on folders and objects outside
-     * their workspace write permissions.
+     * Patching a data object folder (also without `editableData`) requires the workspace `save`
+     * permission.
      */
     public function testPatchOfDataObjectFolderRequiresSavePermission(): void
     {
@@ -518,17 +517,51 @@ final class PatchServiceTest extends Unit
     }
 
     /**
-     * A pure publish/unpublish task is gated by PublishAdapter itself, so it must not additionally
-     * require the workspace `save` permission.
+     * Folders have no publish state, so a publish/unpublish task must not skip the `save` check.
+     */
+    public function testPatchOfDataObjectFolderWithPublishTaskStillRequiresSavePermission(): void
+    {
+        foreach (['publish', 'unpublish'] as $task) {
+            $folder = $this->makeEmpty(Folder::class);
+            $saved = false;
+            $checkedPermissions = [];
+
+            $service = $this->createServiceForElement(
+                $folder,
+                static function () use (&$saved): void {
+                    $saved = true;
+                },
+                static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                    $checkedPermissions[] = $permission;
+
+                    throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+                }
+            );
+
+            try {
+                $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['task' => $task], $this->user);
+                $this->fail('Expected ForbiddenException was not thrown');
+            } catch (ForbiddenException) {
+                // expected - assertions happen after the try/catch
+            }
+
+            $this->assertSame(['save'], $checkedPermissions, $task);
+            $this->assertFalse($saved, $task);
+        }
+    }
+
+    /**
+     * A pure publish/unpublish task on a data object is gated by PublishAdapter itself, so it must
+     * not additionally require the workspace `save` permission.
      */
     public function testPatchWithPublishTaskDoesNotRequireSavePermission(): void
     {
-        $folder = $this->makeEmpty(Folder::class);
+        $object = $this->makeEmpty(Concrete::class);
         $saved = false;
         $checkedPermissions = [];
 
         $service = $this->createServiceForElement(
-            $folder,
+            $object,
             static function () use (&$saved): void {
                 $saved = true;
             },
@@ -537,7 +570,7 @@ final class PatchServiceTest extends Unit
             }
         );
 
-        $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['task' => 'publish'], $this->user);
+        $service->patchElement($object, ElementTypes::TYPE_OBJECT, ['task' => 'publish'], $this->user);
 
         $this->assertSame([], $checkedPermissions);
         $this->assertTrue($saved);
