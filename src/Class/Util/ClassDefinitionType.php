@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Util;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use function array_map;
+use function array_unique;
+use function array_values;
 
 /**
  * @internal
@@ -59,5 +62,19 @@ enum ClassDefinitionType: string
             self::CustomLayout => UserPermissions::CLASS_DEFINITION->value,
             self::ObjectBrick => UserPermissions::OBJECT_BRICKS->value,
         };
+    }
+
+    /**
+     * Permissions of all importable types, any of which entitles a user to use the bulk import.
+     * What a user may actually import is decided per item via permission().
+     *
+     * @return string[]
+     */
+    public static function importPermissions(): array
+    {
+        return array_values(array_unique(array_map(
+            static fn (self $type): string => $type->permission(),
+            self::importOrder()
+        )));
     }
 }

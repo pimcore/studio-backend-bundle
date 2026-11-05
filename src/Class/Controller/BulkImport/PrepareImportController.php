@@ -18,6 +18,7 @@ use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\BulkImport\BulkImportPrepareResponse;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException as ApiInvalidArgumentException;
@@ -25,13 +26,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDa
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -58,7 +58,6 @@ final class PrepareImportController extends AbstractApiController
         methods: ['POST'],
         priority: 10,
     )]
-    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_bulk_import_prepare',
@@ -87,6 +86,11 @@ final class PrepareImportController extends AbstractApiController
     ])]
     public function prepareImport(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck(ClassDefinitionType::importPermissions())
+        );
+
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
             throw new ApiInvalidArgumentException(

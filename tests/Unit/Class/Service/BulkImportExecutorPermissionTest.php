@@ -28,6 +28,7 @@ use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefini
 use Pimcore\Model\UserInterface;
 use function json_decode;
 use function sprintf;
+use function str_contains;
 
 /**
  * The bulk import executor is the last line of defence for the import job: every item
@@ -76,6 +77,49 @@ final class BulkImportExecutorPermissionTest extends Unit
                 $this->assertStringContainsString(
                     sprintf('Access denied for importing %s "Item"', $type->value),
                     $exception->getMessage()
+                );
+            }
+        }
+    }
+
+    /**
+     * A user holding the permission of one importable type must not be able to import the others.
+     */
+    public function testUserMayOnlyImportTypesOfItsOwnPermission(): void
+    {
+        foreach (ClassDefinitionType::importPermissions() as $heldPermission) {
+            foreach (ClassDefinitionType::importOrder() as $type) {
+                $user = $this->createMock(UserInterface::class);
+                $user->method('isAllowed')->willReturnCallback(
+                    static fn (string $permission): bool => $permission === $heldPermission
+                );
+
+                $executor = $this->createExecutor(
+                    $this->createMock(ClassDefinitionRepositoryInterface::class),
+                    $this->createMock(FieldCollectionRepositoryInterface::class),
+                    $this->createMock(ObjectBrickRepositoryInterface::class),
+                    $this->createMock(CustomLayoutRepositoryInterface::class)
+                );
+
+                $denied = false;
+
+                try {
+                    $executor->importSingleItem(
+                        $type,
+                        'Item',
+                        ['key' => 'Item', 'name' => 'Item', 'className' => 'Item'],
+                        $user
+                    );
+                } catch (EnvironmentException $exception) {
+                    $denied = str_contains($exception->getMessage(), 'Access denied');
+                } catch (Exception) {
+                    // Past the permission check, failing later for unrelated reasons is fine here.
+                }
+
+                $this->assertSame(
+                    $type->permission() !== $heldPermission,
+                    $denied,
+                    sprintf('Import of "%s" with only the "%s" permission.', $type->value, $heldPermission)
                 );
             }
         }

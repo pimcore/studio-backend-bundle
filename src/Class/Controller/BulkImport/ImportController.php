@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\BulkImport;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\BulkImportParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\BulkImport\BulkImportJobServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Util\ClassDefinitionType;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
@@ -23,12 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -50,7 +50,6 @@ final class ImportController extends AbstractApiController
         name: 'pimcore_studio_api_class_bulk_import',
         methods: ['POST'],
     )]
-    #[IsGranted(UserPermissions::CLASS_DEFINITION->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_bulk_import',
@@ -78,6 +77,11 @@ final class ImportController extends AbstractApiController
         string $fileId,
         #[MapRequestPayload] BulkImportParameters $parameters,
     ): JsonResponse {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck(ClassDefinitionType::importPermissions())
+        );
+
         return $this->jsonResponse(
             ['jobRunId' => $this->bulkImportJobService->importItems($fileId, $parameters)],
             HttpResponseCodes::CREATED->value,
