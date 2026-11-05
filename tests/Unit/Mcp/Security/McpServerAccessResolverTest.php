@@ -19,7 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccess;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerAccessEntry;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Dto\McpServerDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerAccessResolver;
+use Pimcore\Bundle\StudioBackendBundle\Mcp\Security\McpServerCapability;
 use Pimcore\Model\User\Role;
+use Pimcore\Model\User\ServiceUser;
 use Pimcore\Model\UserInterface;
 
 final class McpServerAccessResolverTest extends Unit
@@ -146,6 +148,24 @@ final class McpServerAccessResolverTest extends Unit
         $resolver = $this->resolver([4 => 'viewers', 5 => 'guests']);
 
         $this->assertSame(['view' => false, 'access' => false, 'edit' => false], $resolver->resolve($server, $this->user(roles: [4, 5])));
+    }
+
+    public function testAServiceUserIsGrantedAccessByNameAndThroughItsRoles(): void
+    {
+        $serviceUser = new ServiceUser();
+        $serviceUser->setId(7);
+        $serviceUser->setName('svc-erp-sync');
+        $serviceUser->setRoles([5]);
+
+        $byName = $this->server(new McpServerAccess(sharedUsers: [$this->entry('svc-erp-sync', canAccess: true)]));
+        $byRole = $this->server(new McpServerAccess(sharedRoles: [$this->entry('integrations', canAccess: true)]));
+        $other = $this->server(new McpServerAccess(sharedUsers: [$this->entry('svc-other', canAccess: true)]));
+
+        $resolver = $this->resolver([5 => 'integrations']);
+        $this->assertTrue($resolver->isAllowed($byName, McpServerCapability::Access, $serviceUser));
+        $this->assertTrue($resolver->isAllowed($byRole, McpServerCapability::Access, $serviceUser));
+        $this->assertFalse($resolver->isAllowed($other, McpServerCapability::Access, $serviceUser));
+        $this->assertFalse($resolver->isAllowed($byName, McpServerCapability::Edit, $serviceUser));
     }
 
     private function entry(
