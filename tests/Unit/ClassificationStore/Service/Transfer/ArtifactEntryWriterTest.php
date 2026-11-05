@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Appl
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ApplyReport;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactEntryWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
@@ -186,20 +187,32 @@ final class ArtifactEntryWriterTest extends Unit
 
     private function createWriter(): ArtifactEntryWriter
     {
-        return new ArtifactEntryWriter(
-            new ArtifactParser(),
-            new ArtifactTargetMatcher(),
-            new ApplyDiagnostics(),
-            new ApplyRefusals(
-                $this->makeEmpty(CollectionRepositoryInterface::class),
-                $this->makeEmpty(GroupRepositoryInterface::class),
-                $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
-                $this->makeEmpty(SubGroupRepositoryInterface::class)
-            ),
-            $this->makeEmpty(CollRelationRepositoryInterface::class),
+        $parser = new ArtifactParser();
+        $matcher = new ArtifactTargetMatcher();
+        $diagnostics = new ApplyDiagnostics();
+        $refusals = new ApplyRefusals(
+            $this->makeEmpty(CollectionRepositoryInterface::class),
+            $this->makeEmpty(GroupRepositoryInterface::class),
             $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
-            $this->makeEmpty(KeyRepositoryInterface::class),
-            new SearchIndexFlagResolver()
+            $this->makeEmpty(SubGroupRepositoryInterface::class)
+        );
+
+        return new ArtifactEntryWriter(
+            $parser,
+            $matcher,
+            $diagnostics,
+            $refusals,
+            new ArtifactRelationWriter(
+                $parser,
+                $matcher,
+                $diagnostics,
+                $refusals,
+                $this->makeEmpty(CollRelationRepositoryInterface::class),
+                $this->makeEmpty(KeyGroupRelationRepositoryInterface::class),
+                $this->makeEmpty(KeyRepositoryInterface::class),
+                new SearchIndexFlagResolver()
+            ),
+            $this->makeEmpty(KeyRepositoryInterface::class)
         );
     }
 }

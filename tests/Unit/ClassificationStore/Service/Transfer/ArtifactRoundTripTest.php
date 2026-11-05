@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParser;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactParserInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactRelationWriter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Reconciler;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedCollectionRelation;
@@ -429,6 +430,12 @@ final class ArtifactRoundTripTest extends Unit
         $parser = new ArtifactParser();
         $matcher = new ArtifactTargetMatcher();
         $diagnostics = new ApplyDiagnostics();
+        $refusals = new ApplyRefusals(
+            $collectionRepository,
+            $groupRepository,
+            $keyGroupRelationRepository,
+            $subGroupRepository
+        );
 
         return new Reconciler(
             $parser,
@@ -437,16 +444,18 @@ final class ArtifactRoundTripTest extends Unit
                 $parser,
                 $matcher,
                 $diagnostics,
-                new ApplyRefusals(
-                    $collectionRepository,
-                    $groupRepository,
+                $refusals,
+                new ArtifactRelationWriter(
+                    $parser,
+                    $matcher,
+                    $diagnostics,
+                    $refusals,
+                    $collectionRelationRepository,
                     $keyGroupRelationRepository,
-                    $subGroupRepository
+                    $keyRepository,
+                    new SearchIndexFlagResolver()
                 ),
-                $collectionRelationRepository,
-                $keyGroupRelationRepository,
-                $keyRepository,
-                new SearchIndexFlagResolver()
+                $keyRepository
             ),
             $diagnostics,
             $collectionRepository,
