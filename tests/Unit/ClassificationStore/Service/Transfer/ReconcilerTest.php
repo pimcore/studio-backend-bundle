@@ -116,6 +116,14 @@ final class ReconcilerTest extends Unit
     private array $disableProbesHeld = [];
 
     /**
+     * The `definition` column of each key this apply wrote, keyed by row id, so that a read of the key
+     * answers with what the apply left there rather than with a fixture of its own.
+     *
+     * @var array<int, string>
+     */
+    private array $writtenKeyDefinitions = [];
+
+    /**
      * The identifier is what matches, so a renamed row is updated rather than duplicated.
      */
     public function testAnIdentifierHitUpdatesTheRowItNames(): void
@@ -629,6 +637,9 @@ final class ReconcilerTest extends Unit
      * carries none - including the explicit `metadata: null` the export always writes for a NULL
      * column, which is the only state an exported and reimported store ever arrives in.
      *
+     * The key is the one this apply just wrote rather than a fixture beside it: the keys section runs
+     * first, and reading a key as it stood before that write would seed the wrong default.
+     *
      * @dataProvider seededAssignmentEntryProvider
      *
      * @param array<string, mixed> $overrides
@@ -642,7 +653,7 @@ final class ReconcilerTest extends Unit
         ]);
 
         $this
-            ->createReconciler(storedKeyDefinition: self::KEY_DEFINITION_NOT_INDEXED)
+            ->createReconciler(storedKeyDefinition: self::KEY_DEFINITION)
             ->apply($document, $this->createStore(), false);
 
         $this->assertCount(1, $this->savedAssignments);
@@ -1150,15 +1161,17 @@ final class ReconcilerTest extends Unit
                 $this->recordWrite(sprintf('key:%s:%s', $entry->getIdentifier(), $entry->getName()));
                 $saved = $config ?? new KeyConfig();
                 $saved->setId(self::KEY_ID);
+                // the column the write leaves behind, encoded the way the repository encodes it
+                $this->writtenKeyDefinitions[self::KEY_ID] = (string) json_encode($entry->getDefinition() ?? []);
 
                 return $saved;
             }
         );
-        // a created assignment reads the key its search index flag defaults from
+        // a created assignment reads the key its search index flag defaults from, as this apply left it
         $keyRepository->method('getById')->willReturnCallback(
             function (int $id) use ($storedKeyDefinition): KeyConfig {
                 $config = $this->createKey(self::KEY_IDENTIFIER, self::KEY_NAME, enabled: true, id: $id);
-                $config->setDefinition($storedKeyDefinition);
+                $config->setDefinition($this->writtenKeyDefinitions[$id] ?? $storedKeyDefinition);
 
                 return $config;
             }
