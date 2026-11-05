@@ -65,10 +65,18 @@ final class BulkImportExecutorPermissionTest extends Unit
             );
 
             try {
-                $executor->importSingleItem($type, 'Item', ['key' => 'Item', 'name' => 'Item'], $user);
+                $executor->importSingleItem(
+                    $type,
+                    'Item',
+                    ['key' => 'Item', 'name' => 'Item', 'className' => 'Item'],
+                    $user
+                );
                 $this->fail(sprintf('Importing "%s" without its permission must be rejected.', $type->value));
-            } catch (EnvironmentException) {
-                $this->addToAssertionCount(1);
+            } catch (EnvironmentException $exception) {
+                $this->assertStringContainsString(
+                    sprintf('Access denied for importing %s "Item"', $type->value),
+                    $exception->getMessage()
+                );
             }
         }
     }
