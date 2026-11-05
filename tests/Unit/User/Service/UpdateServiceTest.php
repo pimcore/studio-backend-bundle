@@ -170,7 +170,7 @@ final class UpdateServiceTest extends Unit
         $this->assertSame([1], $user->getRoles());
     }
 
-    public function testNonAdminCanKeepPermissionsTheTargetAlreadyHolds(): void
+    public function testNonAdminCannotLeaveTargetWithPermissionTheyDoNotHold(): void
     {
         $user = $this->createUser(['assets', 'documents']);
         $currentUser = $this->makeEmpty(UserInterface::class, [
@@ -179,12 +179,25 @@ final class UpdateServiceTest extends Unit
         ]);
         $service = $this->createServiceWithCurrentUser($currentUser, 'assets', 'documents');
 
+        $this->expectException(ForbiddenException::class);
         $service->updatePermissions(['assets', 'documents'], $user);
-
-        $this->assertSame(['assets', 'documents'], $user->getPermissions());
     }
 
-    public function testNonAdminCanKeepRolesTheTargetAlreadyHas(): void
+    public function testNonAdminCanReduceTargetToPermissionsTheyHold(): void
+    {
+        $user = $this->createUser(['assets', 'documents']);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+        ]);
+        $service = $this->createServiceWithCurrentUser($currentUser, 'assets', 'documents');
+
+        $service->updatePermissions(['assets'], $user);
+
+        $this->assertSame(['assets'], $user->getPermissions());
+    }
+
+    public function testNonAdminCannotLeaveTargetWithRoleGrantingPermissionTheyDoNotHold(): void
     {
         $user = $this->createUser([]);
         $user->setRoles([1]);
@@ -197,9 +210,8 @@ final class UpdateServiceTest extends Unit
         ]);
         $service = $this->createRoleService([$role], $currentUser);
 
+        $this->expectException(ForbiddenException::class);
         $service->updateRoles([1], $user);
-
-        $this->assertSame([1], $user->getRoles());
     }
 
     public function testNonAdminCanAssignRoleWithOrphanedPermissionKey(): void

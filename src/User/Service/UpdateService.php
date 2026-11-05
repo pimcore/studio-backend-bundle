@@ -86,8 +86,7 @@ final readonly class UpdateService implements UpdateServiceInterface
             }
         }
 
-        // keeping a permission the target already holds is not a grant, only additions are checked
-        $this->denyEscalationBeyondCallersOwnPermissions(array_diff($permissions, $user->getPermissions()));
+        $this->denyEscalationBeyondCallersOwnPermissions($permissions);
 
         $user->setPermissions($permissions);
 
@@ -101,7 +100,6 @@ final readonly class UpdateService implements UpdateServiceInterface
     {
         $availableRoles = $this->roleRepository->getRoles();
 
-        $currentRoleIds = array_map('intval', $user->getRoles());
         $availablePermissions = $this->getAvailablePermissionKeys();
 
         $grantedPermissions = [];
@@ -111,14 +109,11 @@ final readonly class UpdateService implements UpdateServiceInterface
                 throw new NotFoundException('Role', $roleId);
             }
 
-            // keeping a role the target already has is not a grant, only newly assigned roles are checked
             // permission keys without a definition are orphaned and have no effect, so they are not checked
-            if (!in_array($roleId, $currentRoleIds, true)) {
-                $grantedPermissions = [
-                    ...$grantedPermissions,
-                    ...array_intersect($role->getPermissions(), $availablePermissions),
-                ];
-            }
+            $grantedPermissions = [
+                ...$grantedPermissions,
+                ...array_intersect($role->getPermissions(), $availablePermissions),
+            ];
         }
 
         $this->denyEscalationBeyondCallersOwnPermissions($grantedPermissions);
@@ -153,8 +148,9 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * A caller must already hold a permission themselves before they can grant it to anyone
-     * (including their own account), directly or through a role. Superusers are exempt.
+     * A caller must already hold every permission they set on a user or role themselves (directly or
+     * through a role), also when the target already carries it - so an update can never leave a target
+     * more privileged than the caller. Superusers are exempt.
      *
      * @param string[] $permissions
      *

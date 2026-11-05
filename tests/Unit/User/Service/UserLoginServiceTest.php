@@ -35,6 +35,7 @@ use ReflectionNamedType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RequestContext;
 
 /**
  * @internal
@@ -291,7 +292,7 @@ final class UserLoginServiceTest extends Unit
 
         $url = $service->getLoginTokenUrl(42);
 
-        $this->assertSame('https://mysite.com:8443/pimcore-studio/login/?token=test-token-123', $url);
+        $this->assertSame('https://mysite.com:8443/cms/pimcore-studio/login/?token=test-token-123', $url);
     }
 
     public function testGetLoginTokenUrlAllowsAdminCallerRegardlessOfTargetPermissions(): void
@@ -304,7 +305,7 @@ final class UserLoginServiceTest extends Unit
 
         $url = $service->getLoginTokenUrl(42);
 
-        $this->assertSame('https://mysite.com:8443/pimcore-studio/login/?token=test-token-123', $url);
+        $this->assertSame('https://mysite.com:8443/cms/pimcore-studio/login/?token=test-token-123', $url);
     }
 
     private function createTargetUser(bool $isAdmin, string $password = 'hashed-password'): User
@@ -328,7 +329,8 @@ final class UserLoginServiceTest extends Unit
             $this->makeEmpty(MailServiceInterface::class),
             $this->makeEmpty(LoggerInterface::class),
             $this->makeEmpty(UrlGeneratorInterface::class, [
-                'generate' => 'https://mysite.com:8443/pimcore-studio/api/login/token',
+                'generate' => 'https://mysite.com:8443/cms/pimcore-studio/api/login/token',
+                'getContext' => new RequestContext('/cms'),
             ]),
             $this->makeEmpty(UserRepositoryInterface::class, [
                 'getUserById' => $targetUser,

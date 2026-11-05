@@ -110,8 +110,9 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         $token = $this->authenticationResolver->generateTokenByUser($user);
 
         return sprintf(
-            '%s%s/login/?token=%s',
+            '%s%s%s/login/?token=%s',
             $this->getOrigin(),
+            $this->urlGenerator->getContext()->getBaseUrl(),
             rtrim($this->studioPath, '/'),
             urlencode($token)
         );
@@ -119,7 +120,8 @@ final readonly class UserLoginService implements UserLoginServiceInterface
 
     /**
      * Scheme, host and port the Studio is served from, taken from the router context
-     * (the same origin the absolute API URLs are generated for).
+     * (the same origin the absolute API URLs are generated for). The application base URL
+     * (e.g. /cms) is added separately by the caller.
      */
     private function getOrigin(): string
     {
