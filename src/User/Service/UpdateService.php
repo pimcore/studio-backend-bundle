@@ -32,7 +32,6 @@ use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
 use function array_diff;
-use function array_intersect;
 use function array_map;
 use function in_array;
 use function sprintf;
@@ -94,29 +93,28 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * A non-admin may only assign roles they hold themselves (and therefore also every permission
+     * of such a role). Superusers are exempt.
+     *
      * @throws ForbiddenException|NotFoundException
      */
     public function updateRoles(array $rolesToSet, UserInterface $user): UserInterface
     {
         $availableRoles = $this->roleRepository->getRoles();
+        $currentUser = $this->securityService->getCurrentUser();
+        $callersRoleIds = array_map('intval', $currentUser->getRoles());
 
-        $availablePermissions = $this->getAvailablePermissionKeys();
-
-        $grantedPermissions = [];
         foreach ($rolesToSet as $roleId) {
-            $role = $this->findRoleById($availableRoles, $roleId);
-            if (!$role instanceof Role) {
+            if (!$this->findRoleById($availableRoles, $roleId) instanceof Role) {
                 throw new NotFoundException('Role', $roleId);
             }
 
-            // permission keys without a definition are orphaned and have no effect, so they are not checked
-            $grantedPermissions = [
-                ...$grantedPermissions,
-                ...array_intersect($role->getPermissions(), $availablePermissions),
-            ];
+            if (!$currentUser->isAdmin() && !in_array($roleId, $callersRoleIds, true)) {
+                throw new ForbiddenException(
+                    sprintf('Cannot assign role %d that you do not hold yourself', $roleId)
+                );
+            }
         }
-
-        $this->denyEscalationBeyondCallersOwnPermissions($grantedPermissions);
 
         $user->setRoles($rolesToSet);
 
@@ -156,7 +154,7 @@ final readonly class UpdateService implements UpdateServiceInterface
      *
      * @throws ForbiddenException
      */
-    private function denyEscalationBeyondCallersOwnPermissions(array $permissions): void
+    public function denyEscalationBeyondCallersOwnPermissions(array $permissions): void
     {
         $currentUser = $this->securityService->getCurrentUser();
         if ($currentUser->isAdmin()) {

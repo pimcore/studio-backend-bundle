@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserLoginService;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Model\Site;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -268,49 +267,64 @@ final class UserLoginServiceTest extends Unit
         $this->assertSame('id', $method->getParameters()[0]->getName());
     }
 
-    public function testGetLoginTokenUrlRejectsTargetWithPermissionCallerDoesNotHold(): void
+    public function testGetLoginTokenUrlRejectsOtherUserForNonAdmin(): void
     {
-        $targetUser = $this->createTargetUser(false);
+        $targetUser = $this->createTargetUser(false, id: 42);
         $currentUser = $this->makeEmpty(UserInterface::class, [
             'isAdmin' => false,
-            'isAllowed' => false,
+            'getId' => 7,
         ]);
-        $service = $this->createLoginTokenService($targetUser, $currentUser, ['assets']);
+        $service = $this->createLoginTokenService($targetUser, $currentUser);
 
         $this->expectException(ForbiddenException::class);
         $service->getLoginTokenUrl(42);
     }
 
-    public function testGetLoginTokenUrlAllowsTargetWithPermissionsCallerAlsoHolds(): void
+    public function testGetLoginTokenUrlRejectsAdminTargetForNonAdmin(): void
     {
-        $targetUser = $this->createTargetUser(false);
+        $targetUser = $this->createTargetUser(true, id: 42);
         $currentUser = $this->makeEmpty(UserInterface::class, [
             'isAdmin' => false,
-            'isAllowed' => static fn (string $permission): bool => $permission === 'assets',
+            'getId' => 7,
         ]);
-        $service = $this->createLoginTokenService($targetUser, $currentUser, ['assets']);
+        $service = $this->createLoginTokenService($targetUser, $currentUser);
+
+        $this->expectException(ForbiddenException::class);
+        $service->getLoginTokenUrl(42);
+    }
+
+    public function testGetLoginTokenUrlAllowsOwnAccountForNonAdmin(): void
+    {
+        $targetUser = $this->createTargetUser(false, id: 42);
+        $currentUser = $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'getId' => 42,
+        ]);
+        $service = $this->createLoginTokenService($targetUser, $currentUser);
 
         $url = $service->getLoginTokenUrl(42);
 
         $this->assertSame('https://mysite.com:8443/cms/pimcore-studio/login/?token=test-token-123', $url);
     }
 
-    public function testGetLoginTokenUrlAllowsAdminCallerRegardlessOfTargetPermissions(): void
+    public function testGetLoginTokenUrlAllowsAdminCallerForOtherUser(): void
     {
-        $targetUser = $this->createTargetUser(false);
+        $targetUser = $this->createTargetUser(false, id: 42);
         $currentUser = $this->makeEmpty(UserInterface::class, [
             'isAdmin' => true,
+            'getId' => 7,
         ]);
-        $service = $this->createLoginTokenService($targetUser, $currentUser, ['assets', 'documents', 'seo']);
+        $service = $this->createLoginTokenService($targetUser, $currentUser);
 
         $url = $service->getLoginTokenUrl(42);
 
         $this->assertSame('https://mysite.com:8443/cms/pimcore-studio/login/?token=test-token-123', $url);
     }
 
-    private function createTargetUser(bool $isAdmin, string $password = 'hashed-password'): User
+    private function createTargetUser(bool $isAdmin, string $password = 'hashed-password', int $id = 0): User
     {
         $user = new User();
+        $user->setId($id);
         $user->setAdmin($isAdmin);
         $user->setPassword($password);
 
@@ -320,7 +334,6 @@ final class UserLoginServiceTest extends Unit
     private function createLoginTokenService(
         UserInterface $targetUser,
         UserInterface $currentUser,
-        array $targetPermissions,
     ): UserLoginService {
         return new UserLoginService(
             $this->makeEmpty(AuthenticationResolverInterface::class, [
@@ -341,9 +354,6 @@ final class UserLoginServiceTest extends Unit
             ]),
             $this->makeEmpty(SettingsProviderInterface::class),
             $this->makeEmpty(SiteRepositoryInterface::class),
-            $this->makeEmpty(UserPermissionServiceInterface::class, [
-                'getAllowedUserPermissions' => $targetPermissions,
-            ]),
         );
     }
 
@@ -379,7 +389,6 @@ final class UserLoginServiceTest extends Unit
             $this->makeEmpty(SiteRepositoryInterface::class, [
                 'listSites' => $sites,
             ]),
-            $this->makeEmpty(UserPermissionServiceInterface::class),
         );
     }
 }

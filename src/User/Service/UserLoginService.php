@@ -52,7 +52,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
         private SecurityServiceInterface $securityService,
         private SettingsProviderInterface $settingsProvider,
         private SiteRepositoryInterface $siteRepository,
-        private UserPermissionServiceInterface $userPermissionService,
         private string $studioPath = '/pimcore-studio',
     ) {
     }
@@ -97,7 +96,13 @@ final readonly class UserLoginService implements UserLoginServiceInterface
             );
         }
 
-        $this->denyImpersonationBeyondCallersOwnPermissions($user, $currentUser);
+        // only superusers may log in as somebody else; everyone else only gets a link for their own account
+        if (!$currentUser->isAdmin() && $user->getId() !== $currentUser->getId()) {
+            throw new ForbiddenException(
+                'Cannot generate login token URL for this user',
+                HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
+            );
+        }
 
         if ($user->getPassword() === null || $user->getPassword() === '') {
             throw new ForbiddenException(
@@ -139,31 +144,6 @@ final readonly class UserLoginService implements UserLoginServiceInterface
             $parts['host'] ?? '',
             isset($parts['port']) ? ':' . $parts['port'] : ''
         );
-    }
-
-    /**
-     * A caller may only mint a login token for a user whose effective permissions they already
-     * hold themselves - otherwise they could impersonate a more privileged account. Superusers
-     * are exempt.
-     *
-     * @throws ForbiddenException
-     */
-    private function denyImpersonationBeyondCallersOwnPermissions(
-        UserInterface $targetUser,
-        UserInterface $currentUser
-    ): void {
-        if ($currentUser->isAdmin()) {
-            return;
-        }
-
-        foreach ($this->userPermissionService->getAllowedUserPermissions($targetUser) as $permission) {
-            if (!$currentUser->isAllowed($permission)) {
-                throw new ForbiddenException(
-                    'Cannot generate login token URL for this user',
-                    HttpResponseErrorKeys::LOGIN_TOKEN_NON_ADMIN->value
-                );
-            }
-        }
     }
 
     private function validateResetPasswordUrl(string $url): void
