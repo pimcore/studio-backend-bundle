@@ -36,6 +36,7 @@ use function max;
 use function preg_match;
 use function str_starts_with;
 use function substr;
+use function trigger_deprecation;
 
 /**
  * Authenticates MCP requests via Personal Access Tokens (config-based).
@@ -63,6 +64,13 @@ class PatAuthenticator extends AbstractAuthenticator
      * constant from SECONDS_PER_MINUTE despite the equal value - they mean different things.
      */
     private const int FALLBACK_RETRY_AFTER_SECONDS = 60;
+
+    /**
+     * Mirrors the deprecation set on the `mcp.authentication.tokens` configuration node.
+     */
+    private const string DEPRECATION_MESSAGE = 'Static MCP personal access tokens are deprecated and will be removed '
+        . 'in 2027.1. Use OAuth (authorization_code for people, client_credentials for service users) '
+        . 'or MCP access tokens.';
 
     /**
      * @param array<string, list<string>> $tokenMap username => [token, ...]
@@ -108,6 +116,8 @@ class PatAuthenticator extends AbstractAuthenticator
         if ($token === '') {
             throw new AuthenticationException('Bearer token is empty.');
         }
+
+        trigger_deprecation('pimcore/studio-backend-bundle', '2026.4', self::DEPRECATION_MESSAGE);
 
         // The username comes from an in-memory token map, so it is known without any
         // database work. Building the badge here - rather than after the lookup - is what

@@ -178,6 +178,70 @@ final class PatAuthenticatorTest extends Unit
         $this->assertSame('60', $response->headers->get('Retry-After'));
     }
 
+    public function testAuthenticatingAPatTriggersTheDeprecation(): void
+    {
+        $auth = $this->makeAuthenticator([self::VALID_USERNAME => [self::VALID_TOKEN]]);
+
+        $deprecations = $this->collectDeprecations(
+            fn () => $auth->authenticate($this->requestWith('Bearer ' . self::VALID_TOKEN))
+        );
+
+        $this->assertCount(1, $deprecations);
+        $this->assertStringContainsString('Static MCP personal access tokens are deprecated', $deprecations[0]);
+        $this->assertStringContainsString('2027.1', $deprecations[0]);
+    }
+
+    public function testEveryAuthenticatedPatRequestTriggersTheDeprecation(): void
+    {
+        $auth = $this->makeAuthenticator([self::VALID_USERNAME => [self::VALID_TOKEN]]);
+
+        $deprecations = $this->collectDeprecations(function () use ($auth): void {
+            $auth->authenticate($this->requestWith('Bearer ' . self::VALID_TOKEN));
+            $auth->authenticate($this->requestWith('Bearer ' . self::VALID_TOKEN));
+        });
+
+        $this->assertCount(2, $deprecations);
+    }
+
+    public function testOAuthAndMcpAccessTokenRequestsDoNotTriggerTheDeprecation(): void
+    {
+        $auth = $this->makeAuthenticator([self::VALID_USERNAME => [self::VALID_TOKEN]]);
+
+        // Those bearers are declined by supports(), so authenticate() never runs for them and
+        // the PAT deprecation must not be raised on their behalf.
+        $deprecations = $this->collectDeprecations(function () use ($auth): void {
+            $this->assertFalse((bool) $auth->supports($this->requestWith('Bearer pmcp_abc')));
+            $this->assertFalse((bool) $auth->supports($this->requestWith('Bearer aaa.bbb.ccc')));
+        });
+
+        $this->assertSame([], $deprecations);
+    }
+
+    /**
+     * @return list<string> messages of every E_USER_DEPRECATED raised while $callback runs
+     */
+    private function collectDeprecations(callable $callback): array
+    {
+        $messages = [];
+        set_error_handler(
+            static function (int $type, string $message) use (&$messages): bool {
+                if ($type === E_USER_DEPRECATED) {
+                    $messages[] = $message;
+                }
+
+                return true;
+            }
+        );
+
+        try {
+            $callback();
+        } finally {
+            restore_error_handler();
+        }
+
+        return $messages;
+    }
+
     /**
      * @param array<string, list<string>> $tokenMap
      */

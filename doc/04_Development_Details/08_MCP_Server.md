@@ -162,7 +162,21 @@ server, or for another application, is refused at the others. Scopes are adverti
 See [OAuth 2.1 Authorization Server](../02_Installation_and_Configuration/06_OAuth_Server.md) for enabling and
 configuring the server.
 
-### `PatAuthenticator` (external clients)
+### `PatAuthenticator` (external clients) - deprecated
+
+> **Deprecated since 2026.4, removed in 2027.1.** Static Personal Access Tokens in
+> `pimcore_studio_backend.mcp.authentication.tokens` keep working on 2026.x. Each authenticated request
+> through this authenticator raises a deprecation, and the configuration node carries the same deprecation
+> (visible in `bin/console debug:config pimcore_studio_backend`). Migrate before 2027.1:
+>
+> - **Integrations and pipelines**: issue an MCP access token for a dedicated Pimcore user with
+>   `McpAccessTokenServiceInterface::issue()`, which has a bounded TTL, and refresh or re-issue it from the
+>   integration. Use a dedicated user, not a person's account.
+> - **People using an MCP client**: connect through OAuth (`authorization_code`, see the
+>   [OAuth Server](../02_Installation_and_Configuration/06_OAuth_Server.md)) so the client receives tokens for the
+>   signed-in user instead of a shared secret.
+>
+> No new feature accepts static PATs.
 
 External MCP clients authenticate with static Personal Access Tokens configured in YAML. It deliberately
 declines two shapes it does not own: any `Bearer pmcp_…` token (handled by `McpAccessTokenAuthenticator`) and
@@ -270,6 +284,7 @@ pimcore_studio_backend:
     mcp:
         authentication:
             tokens:
+                # DEPRECATED since 2026.4, removed in 2027.1: static PATs. Migrate to MCP access tokens or OAuth.
                 # Map: Pimcore username => list of bearer tokens (external PATs)
                 <username>:
                     - '<token-string-or-env-ref>'

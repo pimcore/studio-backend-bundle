@@ -840,6 +840,13 @@ class Configuration implements ConfigurationInterface
                                     'Map of Pimcore username to bearer token list. '
                                     . 'Tokens can reference env vars: \'%%env(MY_TOKEN)%%\'.'
                                 )
+                                ->setDeprecated(
+                                    'pimcore/studio-backend-bundle',
+                                    '2026.4',
+                                    'Static MCP personal access tokens are deprecated and will be removed in 2027.1. '
+                                    . 'Use OAuth (authorization_code for people, client_credentials for service users) '
+                                    . 'or MCP access tokens.'
+                                )
                                 ->useAttributeAsKey('username')
                                 ->arrayPrototype()
                                     ->scalarPrototype()->end()

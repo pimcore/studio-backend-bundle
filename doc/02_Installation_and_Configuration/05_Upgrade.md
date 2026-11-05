@@ -3,6 +3,10 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Authentication] Deprecated: static MCP personal access tokens (`pimcore_studio_backend.mcp.authentication.tokens`,
+  handled by `PatAuthenticator`). They keep working on 2026.x; configuring them and each request they authenticate
+  raise a deprecation. They are removed in 2027.1. Migrate integrations to MCP access tokens issued for a dedicated
+  Pimcore user (`McpAccessTokenServiceInterface::issue()`), and people to OAuth `authorization_code`. See [MCP Server](../04_Development_Details/08_MCP_Server.md#patauthenticator-external-clients---deprecated).
 - [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
   (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
   and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
