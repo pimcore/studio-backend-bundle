@@ -69,7 +69,7 @@ final class CustomReportRepository implements CustomReportRepositoryInterface
             $exception = $e;
         }
 
-        if (!$report || $exception) {
+        if (!$report) {
             throw new NotFoundException(
                 'Report',
                 $name,

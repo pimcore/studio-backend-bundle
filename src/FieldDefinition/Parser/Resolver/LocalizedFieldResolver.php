@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldSer
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use function array_key_exists;
 use function count;
+use function sprintf;
 
 /**
  * @internal
@@ -57,8 +58,23 @@ final class LocalizedFieldResolver extends AbstractResolver
             throw new ParseException('Class Definition has to be of type Localizedfields');
         }
 
+        $fd = $this->localizedFieldService->getFieldDefinition($localizedFields, $key);
+
+        // Blocks inside localized fields, e.g. localizedfields.block.field
+        if ($fd instanceof Data\Block && count($dotNotationParts) >= 3) {
+            $blockItem = $fd->getFieldDefinition($dotNotationParts[2]);
+
+            if ($blockItem === null) {
+                throw new ParseException(
+                    sprintf('Block field definition "%s" does not exist', $dotNotationParts[2])
+                );
+            }
+
+            $fd = $blockItem;
+        }
+
         return $this->wrapFieldDefinition(
-            fieldDefinition: $this->localizedFieldService->getFieldDefinition($localizedFields, $key),
+            fieldDefinition: $fd,
             containerType:  'localizedfield',
             fieldname: $key,
         );

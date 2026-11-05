@@ -150,8 +150,10 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         }
 
         if ($updateParameter->getOldPassword() !== null) {
-            $this->validateOldPassword($updateParameter, $user);
+            $this->validateOldPassword($updateParameter);
         }
+
+        $this->validatePasswordDiffers($updateParameter, $user);
 
         $passwordHash = $this->authenticationResolver->getPasswordHash(
             $user->getName(),
@@ -174,13 +176,19 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    private function validateOldPassword(UpdatePasswordParameter $parameter, UserInterface $user): void
+    private function validateOldPassword(UpdatePasswordParameter $parameter): void
     {
         $errors = $this->validator->validate($parameter->getOldPassword(), [new UserPassword()]);
         if (count($errors) > 0) {
             throw new InvalidArgumentException('Old password is incorrect');
         }
+    }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validatePasswordDiffers(UpdatePasswordParameter $parameter, UserInterface $user): void
+    {
         /** @var User $user */
         if ($this->authenticationResolver->verifyPassword($user, $parameter->getPassword())) {
             throw new InvalidArgumentException('New password cannot be the same as the old password');
