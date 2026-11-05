@@ -20,6 +20,7 @@ use Pimcore\Security\User\User as SecurityUser;
 use Pimcore\Security\User\UserChecker as PimcoreUserChecker;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @internal
@@ -99,6 +100,28 @@ final class TwoFactorEnforcingUserCheckerTest extends Unit
         (new TwoFactorEnforcingUserChecker($decorated))->checkPostAuth($user);
 
         $this->assertTrue(true, 'checkPostAuth must not throw for a non-Pimcore user object');
+    }
+
+    public function testStudioFirewallUsesTheEnforcingUserChecker(): void
+    {
+        $config = Yaml::parseFile(__DIR__ . '/../../../../config/pimcore/firewall.yaml');
+
+        $this->assertSame(
+            TwoFactorEnforcingUserChecker::class,
+            $config['pimcore_studio_backend']['security_firewall']['user_checker'] ?? null,
+            'The Studio firewall must use the enforcing user checker.'
+        );
+    }
+
+    public function testEnforcingUserCheckerDecoratesTheCoreUserChecker(): void
+    {
+        $services = Yaml::parseFile(__DIR__ . '/../../../../config/services.yaml')['services'];
+
+        $this->assertSame(
+            '@' . PimcoreUserChecker::class,
+            $services[TwoFactorEnforcingUserChecker::class]['arguments']['$decorated'] ?? null,
+            'The enforcing user checker must be wired to the core user checker, not to itself.'
+        );
     }
 
     private function studioUser(bool $required, bool $enabled): SecurityUser

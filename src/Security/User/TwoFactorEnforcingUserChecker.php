@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\User;
 
 use Pimcore\Security\User\User as PimcoreSecurityUser;
-use Pimcore\Security\User\UserChecker as PimcoreUserChecker;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAccountStatusException;
 use Symfony\Component\Security\Core\User\UserCheckerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -29,7 +28,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 final readonly class TwoFactorEnforcingUserChecker implements UserCheckerInterface
 {
-    public function __construct(private PimcoreUserChecker $decorated)
+    public function __construct(private UserCheckerInterface $decorated)
     {
     }
 

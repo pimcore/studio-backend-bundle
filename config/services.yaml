@@ -20,7 +20,9 @@ services:
 
     # Decorates the core user checker to deny Studio API authentication for accounts that
     # require two-factor authentication, which this firewall does not yet challenge for.
-    Pimcore\Bundle\StudioBackendBundle\Security\User\TwoFactorEnforcingUserChecker: ~
+    Pimcore\Bundle\StudioBackendBundle\Security\User\TwoFactorEnforcingUserChecker:
+        arguments:
+            $decorated: '@Pimcore\Security\User\UserChecker'
 
 
 
