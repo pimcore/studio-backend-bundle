@@ -91,7 +91,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
     {
         $keyIds = array_values(array_unique($keyIds));
 
-        if (count($keyIds) === 0) {
+        if (empty($keyIds)) {
             return [];
         }
 
