@@ -22,6 +22,7 @@ studio_ee_job_step_ownership_management_reassign_owner: Eigenaar van configurati
 studio_ee_job_step_ownership_management_delete: Configuraties verwijderen
 studio_ee_recycle_bin_delete_failed: "Item met ID %id% kon niet uit de prullenbak worden verwijderd: %message%"
 studio_ee_recycle_bin_restore_failed: "Item uit de prullenbak met ID %id% kon niet worden hersteld: %message%"
+studio_ee_recycle_bin_restore_relocated: Element van het type %type% met ID %id% is hersteld in %path% omdat het bovenliggende element niet meer bestaat
 studio_ee_csv_data_collection_failed: "Gegevens voor CSV-export konden niet worden opgehaald voor %id%: %message%"
 studio_ee_element_patch_failed: "Element van type %type% met ID %id% kon niet worden bijgewerkt: %message%"
 studio_ee_element_rewrite_references_failed: "Verwijzingen van element van type %type% met ID %id% konden niet worden herschreven: %message%"

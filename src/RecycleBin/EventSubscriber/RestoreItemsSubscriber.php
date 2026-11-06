@@ -15,10 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -29,6 +33,8 @@ final readonly class RestoreItemsSubscriber implements EventSubscriberInterface
     public function __construct(
         private PublishServiceInterface $publishService,
         private UserTopicServiceInterface $userTopicService,
+        private JobRunRepositoryInterface $jobRunRepository,
+        private TranslatorServiceInterface $translatorService,
     ) {
 
     }
@@ -52,9 +58,31 @@ final readonly class RestoreItemsSubscriber implements EventSubscriberInterface
                     $event->getJobRunId(),
                     $event->getJobName(),
                     $event->getJobRunOwnerId(),
-                    $event->getNewState()
+                    $event->getNewState(),
+                    $this->getRelocatedItemMessages($event->getJobRunId())
                 )
             );
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getRelocatedItemMessages(int $jobRunId): array
+    {
+        $context = $this->jobRunRepository->getJobRunById($jobRunId)->getContext();
+        $messages = [];
+        foreach ($context[JobRunContext::RELOCATED_ITEMS->value] ?? [] as $relocatedItem) {
+            $messages[] = $this->translatorService->translate(
+                Config::RECYCLE_BIN_RESTORE_RELOCATED->value,
+                [
+                    '%id%' => $relocatedItem['id'],
+                    '%type%' => $relocatedItem['elementType'],
+                    '%path%' => $relocatedItem['path'],
+                ]
+            );
+        }
+
+        return $messages;
     }
 }

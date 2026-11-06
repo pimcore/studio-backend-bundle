@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Model\RestoreResult;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
@@ -27,9 +30,9 @@ interface RecycleBinServiceInterface
     public function listRecycleBin(CollectionFilterParameter $parameters): Collection;
 
     /**
-     * @throws EnvironmentException|NotFoundException
+     * @throws EnvironmentException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
-    public function restore(ItemsParameter $parameter): ?int;
+    public function restore(ItemsParameter $parameter): RestoreResult;
 
     /**
      * @throws EnvironmentException|NotFoundException
@@ -39,7 +42,7 @@ interface RecycleBinServiceInterface
     public function flushRecycleBin(): void;
 
     /**
-     * @throws EnvironmentException|NotFoundException
+     * @throws EnvironmentException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     public function restoreItem(int $id): void;
 

@@ -14,6 +14,7 @@ studio_ee_csv_creation_failed: 'CSV-Export fehlgeschlagen: %message%'
 studio_ee_xlsx_creation_failed: 'XLSX-Export fehlgeschlagen: %message%'
 studio_ee_recycle_bin_delete_failed: 'Element mit ID %id% konnte nicht aus dem Papierkorb gelöscht werden: %message%'
 studio_ee_recycle_bin_restore_failed: 'Element aus dem Papierkorb mit ID %id% konnte nicht wiederhergestellt werden: %message%'
+studio_ee_recycle_bin_restore_relocated: Element vom Typ %type% mit ID %id% wurde nach %path% wiederhergestellt, da sein übergeordnetes Element nicht mehr existiert
 studio_ee_csv_data_collection_failed: 'Daten für den CSV-Export konnten für %id% nicht extrahiert werden: %message%'
 studio_ee_element_patch_failed: 'Element vom Typ %type% mit ID %id% konnte nicht aktualisiert werden: %message%'
 studio_ee_element_rewrite_references_failed: 'Referenzen von Element vom Typ %type% mit ID %id% konnten nicht umgeschrieben werden: %message%'
