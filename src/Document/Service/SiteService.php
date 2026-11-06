@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function in_array;
@@ -94,7 +95,9 @@ final readonly class SiteService implements SiteServiceInterface
      */
     public function updateSite(int $documentId, UpdateSiteParameters $parameters): void
     {
-        $this->documentService->getDocumentElement($this->securityService->getCurrentUser(), $documentId);
+        $user = $this->securityService->getCurrentUser();
+        $document = $this->documentService->getDocumentElement($user, $documentId);
+        $this->securityService->hasElementPermission($document, $user, ElementPermissions::SETTINGS_PERMISSION);
 
         $site = $this->siteResolver->getByRootId($documentId);
 
@@ -121,7 +124,9 @@ final readonly class SiteService implements SiteServiceInterface
      */
     public function deleteSite(int $documentId): void
     {
-        $this->documentService->getDocumentElement($this->securityService->getCurrentUser(), $documentId);
+        $user = $this->securityService->getCurrentUser();
+        $document = $this->documentService->getDocumentElement($user, $documentId);
+        $this->securityService->hasElementPermission($document, $user, ElementPermissions::SETTINGS_PERMISSION);
         $site = $this->siteResolver->getByRootId($documentId);
 
         if ($site === null) {

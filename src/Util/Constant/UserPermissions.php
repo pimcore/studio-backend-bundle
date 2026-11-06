@@ -44,6 +44,7 @@ enum UserPermissions: string
     case REDIRECTS = 'redirects';
     case ROBOTS_TXT = 'robots.txt';
     case SHARE_CONFIGURATIONS = 'share_configurations';
+    case SITES = 'sites';
     case TAGS_CONFIGURATION = 'tags_configuration';
     case TAGS_ASSIGNMENT = 'tags_assignment';
     case TAGS_SEARCH = 'tags_search';
