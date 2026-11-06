@@ -51,6 +51,8 @@ pimcore_studio_backend:
             - "numericRange"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ObjectBricksAdapter:
             - "objectbricks"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\PasswordAdapter:
+            - "password"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter:
             - "reverseObjectRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
@@ -67,7 +69,6 @@ pimcore_studio_backend:
             - "firstname"
             - "input"
             - "lastname"
-            - "password"
             - "textarea"
             - "time"
             - "wysiwyg"
