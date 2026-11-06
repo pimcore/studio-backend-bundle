@@ -24,8 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,6 +48,7 @@ final class LayoutDefinitionController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_class_field_collection_get_layout_by_key', methods: ['GET'])]
+    #[IsGranted(UserPermissions::FIELD_COLLECTIONS->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'class_field_collection_get_layout_by_key',
