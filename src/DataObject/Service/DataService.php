@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
@@ -165,8 +166,12 @@ final readonly class DataService implements DataServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void
-    {
+    public function updateEditableData(
+        Concrete $element,
+        array $editableData,
+        UserInterface $user,
+        bool $applyRemoteChanges = true
+    ): void {
         try {
             $class = $element->getClass();
             foreach ($editableData as $key => $value) {
@@ -177,6 +182,10 @@ final readonly class DataService implements DataServiceInterface
 
                 $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldtype());
                 if ($adapter === null) {
+                    continue;
+                }
+
+                if (!$applyRemoteChanges && $adapter instanceof RemoteStorageDataInterface) {
                     continue;
                 }
 

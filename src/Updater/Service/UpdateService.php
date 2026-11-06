@@ -87,7 +87,12 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
-            $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
+            $this->objectDataService->updateEditableData(
+                $element,
+                $data[self::EDITABLE_DATA_KEY],
+                $user,
+                ElementSaveTasks::appliesRemoteChanges($task)
+            );
             unset($data[self::EDITABLE_DATA_KEY]);
         }
 
