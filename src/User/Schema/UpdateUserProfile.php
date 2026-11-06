@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
 use Symfony\Component\Validator\Constraints\Length;
 
 /**
@@ -69,11 +69,11 @@ final readonly class UpdateUserProfile
             description: 'Path of the main navigation entry opened as welcome screen. '
                 . 'Omitted or null keeps the stored path, an empty string clears it',
             type: 'string',
-            maxLength: UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH,
+            maxLength: UserWelcomeScreen::MAX_PATH_LENGTH,
             example: 'Reporting/Dashboards/Dashboards',
             nullable: true
         )]
-        #[Length(max: UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH)]
+        #[Length(max: UserWelcomeScreen::MAX_PATH_LENGTH)]
         private ?string $welcomeScreenPath = null,
     ) {
     }

@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
@@ -57,7 +57,7 @@ final readonly class UpdateUserParameter
         private array $documentWorkspaces,
         private array $perspectives = [],
         private string $theme = 'default',
-        #[Length(max: UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH)]
+        #[Length(max: UserWelcomeScreen::MAX_PATH_LENGTH)]
         private ?string $welcomeScreenPath = null,
     ) {
     }

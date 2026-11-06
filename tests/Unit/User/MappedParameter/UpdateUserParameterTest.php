@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\MappedParameter;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Entity\User\UserSettings;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use function str_repeat;
@@ -44,7 +44,7 @@ final class UpdateUserParameterTest extends Unit
 
     public function testWelcomeScreenPathAtTheLengthLimitIsAccepted(): void
     {
-        $path = str_repeat('a', UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH);
+        $path = str_repeat('a', UserWelcomeScreen::MAX_PATH_LENGTH);
         $parameter = $this->createParameter($path);
 
         $this->assertCount(0, $this->validator->validate($parameter));
@@ -59,7 +59,7 @@ final class UpdateUserParameterTest extends Unit
     public function testOverlongWelcomeScreenPathIsRejected(): void
     {
         $violations = $this->validator->validate(
-            $this->createParameter(str_repeat('a', UserSettings::WELCOME_SCREEN_PATH_MAX_LENGTH + 1))
+            $this->createParameter(str_repeat('a', UserWelcomeScreen::MAX_PATH_LENGTH + 1))
         );
 
         $this->assertCount(1, $violations);

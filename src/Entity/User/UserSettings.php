@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Entity\User;
 
 use Doctrine\ORM\Mapping as ORM;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserWelcomeScreen;
 
 /**
  * Studio-only settings of a user; a missing row means "nothing set".
@@ -26,13 +27,11 @@ class UserSettings
 {
     public const string TABLE_NAME = 'bundle_studio_user_settings';
 
-    public const int WELCOME_SCREEN_PATH_MAX_LENGTH = 255;
-
     #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
     private int $user;
 
-    #[ORM\Column(type: 'string', nullable: true, length: self::WELCOME_SCREEN_PATH_MAX_LENGTH)]
+    #[ORM\Column(type: 'string', nullable: true, length: UserWelcomeScreen::MAX_PATH_LENGTH)]
     private ?string $welcomeScreenPath = null;
 
     public function getUser(): int
