@@ -18,6 +18,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -27,9 +28,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
@@ -45,13 +48,14 @@ final class LayoutController extends AbstractApiController
     }
 
     /**
-     * @throws Exception|InvalidElementTypeException|NotFoundException
+     * @throws Exception|ForbiddenException|InvalidElementTypeException|NotFoundException
      */
     #[Route(
         '/class/object-brick/{objectId}/object/layout',
         name: 'pimcore_studio_api_class_object_brick_object_layout',
         methods: ['GET']
     )]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/class/object-brick/{objectId}/object/layout',
         operationId: 'class_object_brick_object_layout',
@@ -65,6 +69,7 @@ final class LayoutController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(LayoutDefinition::class))
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]

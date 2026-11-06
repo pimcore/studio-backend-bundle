@@ -22,7 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\PermissionsToCheck;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -66,6 +68,14 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getObjectBrickCollection(): JsonResponse
     {
+        $this->denyAccessUnlessGranted(
+            'HasOneOf',
+            new PermissionsToCheck([
+                UserPermissions::CLASS_DEFINITION->value,
+                UserPermissions::OBJECT_BRICKS->value,
+            ])
+        );
+
         $collection = $this->objectBrickService->listObjectBricks();
 
         return $this->getPaginatedCollection(
