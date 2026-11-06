@@ -37,7 +37,7 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
     public function publish(
         Document $versionDocument,
         UserInterface $user,
-        Version $version
+        ?Version $existingVersion = null
     ): void {
         $currentDocument = $this->documentResolver->getById($versionDocument->getId());
         if (!$currentDocument) {
@@ -49,9 +49,8 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
             $versionDocument->setKey($currentDocument->getKey());
             $versionDocument->setPath($currentDocument->getPath());
             $versionDocument->setUserModification($user->getId());
-            // the published state is written into the version itself, so the history shows which version went live;
-            // an auto-save version is rewritten by the editor of its user at any time, it is published as a new version
-            $versionDocument->save($version->isAutoSave() ? [] : ['existingVersion' => $version]);
+            // the published state is written into the existing version, so the history shows which version went live
+            $versionDocument->save($existingVersion !== null ? ['existingVersion' => $existingVersion] : []);
         } catch (Exception $e) {
             throw new ElementPublishingFailedException(
                 $versionDocument->getId(),

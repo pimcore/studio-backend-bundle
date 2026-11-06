@@ -23,12 +23,12 @@ use Pimcore\Model\Version;
 interface DocumentVersionPublisherInterface
 {
     /**
-     * Publishes the state restored from $version into $versionDocument and writes it into $version itself,
-     * an auto-save version is published as a new version
+     * Publishes the state restored from a version into $versionDocument, written into $existingVersion when given
+     * instead of a new version
      */
     public function publish(
         Document $versionDocument,
         UserInterface $user,
-        Version $version
+        ?Version $existingVersion = null
     ): void;
 }

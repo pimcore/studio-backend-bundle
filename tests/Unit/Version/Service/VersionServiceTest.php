@@ -39,17 +39,22 @@ final class VersionServiceTest extends Unit
 
     private const int ELEMENT_ID = 5;
 
+    private const int ELEMENT_VERSION_COUNT = 10;
+
+    private const int ELEMENT_MODIFICATION_DATE = 1700000000;
+
     /**
-     * The version is published in place: the publisher gets the version to write into, and the published
-     * version is the version itself, not whatever version happens to be the newest one afterwards.
+     * A prepared version (newer than the element) is published in place: the publisher gets the version to write
+     * into, and the published version is the version itself, not whatever version happens to be the newest one
+     * afterwards.
      */
-    public function testPublishVersionPublishesTheVersionItself(): void
+    public function testPublishVersionPublishesAPreparedVersionItself(): void
     {
         $user = $this->createMock(UserInterface::class);
-        $version = $this->createVersion();
+        $version = $this->createVersion(versionCount: self::ELEMENT_VERSION_COUNT + 1, date: self::ELEMENT_MODIFICATION_DATE + 60);
         $versionElement = $this->createMock(Concrete::class);
         $versionElement->method('getId')->willReturn(self::ELEMENT_ID);
-        $currentElement = $this->createMock(Concrete::class);
+        $currentElement = $this->createCurrentElement();
 
         $repository = $this->createMock(VersionRepositoryInterface::class);
         $repository->expects($this->once())->method('getVersionById')->with(self::VERSION_ID)->willReturn($version);
@@ -102,7 +107,7 @@ final class VersionServiceTest extends Unit
         $serviceResolver->method('getElementById')->willReturn($this->createMock(Concrete::class));
 
         $publisher = $this->createMock(DataObjectVersionPublisherInterface::class);
-        $publisher->expects($this->once())->method('publish')->with($versionElement, $user, $version);
+        $publisher->expects($this->once())->method('publish')->with($versionElement, $user, null);
 
         $service = $this->createService(
             $repository,
@@ -112,6 +117,99 @@ final class VersionServiceTest extends Unit
         );
 
         $this->assertSame(self::VERSION_ID + 1, $service->publishVersion(self::VERSION_ID, $user));
+    }
+
+    /**
+     * Publishing an older version is a rollback: it is published as a new version, so the history keeps the older
+     * version as it was, and the published version is the newest one
+     */
+    public function testPublishVersionOfAnOlderVersionReturnsTheNewVersion(): void
+    {
+        $user = $this->createMock(UserInterface::class);
+        $version = $this->createVersion(versionCount: self::ELEMENT_VERSION_COUNT - 2, date: self::ELEMENT_MODIFICATION_DATE - 60);
+        $versionElement = $this->createMock(Concrete::class);
+        $versionElement->method('getId')->willReturn(self::ELEMENT_ID);
+        $newVersion = $this->createVersion(self::VERSION_ID + 1);
+
+        $repository = $this->createMock(VersionRepositoryInterface::class);
+        $repository->method('getVersionById')->willReturn($version);
+        $repository->method('getElementFromVersion')->willReturn($versionElement);
+        $repository->expects($this->once())
+            ->method('getLastVersion')
+            ->with(self::ELEMENT_ID, 'object', $user)
+            ->willReturn($newVersion);
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->willReturn($this->createCurrentElement());
+
+        $publisher = $this->createMock(DataObjectVersionPublisherInterface::class);
+        $publisher->expects($this->once())->method('publish')->with($versionElement, $user, null);
+
+        $service = $this->createService(
+            $repository,
+            $serviceResolver,
+            $this->createMock(SecurityServiceInterface::class),
+            $publisher
+        );
+
+        $this->assertSame(self::VERSION_ID + 1, $service->publishVersion(self::VERSION_ID, $user));
+    }
+
+    public function versionSelectionProvider(): array
+    {
+        return [
+            'newer version count only' => [self::ELEMENT_VERSION_COUNT + 1, self::ELEMENT_MODIFICATION_DATE, false, true],
+            'newer date only' => [self::ELEMENT_VERSION_COUNT, self::ELEMENT_MODIFICATION_DATE + 60, false, true],
+            'same version count and date as the element' => [self::ELEMENT_VERSION_COUNT, self::ELEMENT_MODIFICATION_DATE, false, false],
+            'auto-save version newer than the element' => [self::ELEMENT_VERSION_COUNT + 1, self::ELEMENT_MODIFICATION_DATE + 60, true, false],
+        ];
+    }
+
+    /**
+     * A version is published in place when it is newer than the element in its version count or its date (the
+     * draft rule of the core's getLatestVersion()), but never an auto-save version; any other version is published
+     * as a new version and the newest version is returned
+     *
+     * @dataProvider versionSelectionProvider
+     */
+    public function testPublishVersionSelectsTheVersionToWriteInto(
+        int $versionCount,
+        int $date,
+        bool $autoSave,
+        bool $publishedInPlace
+    ): void {
+        $user = $this->createMock(UserInterface::class);
+        $version = $this->createVersion(versionCount: $versionCount, date: $date);
+        $version->setAutoSave($autoSave);
+        $versionElement = $this->createMock(Concrete::class);
+        $versionElement->method('getId')->willReturn(self::ELEMENT_ID);
+
+        $repository = $this->createMock(VersionRepositoryInterface::class);
+        $repository->method('getVersionById')->willReturn($version);
+        $repository->method('getElementFromVersion')->willReturn($versionElement);
+        $repository->expects($publishedInPlace ? $this->never() : $this->once())
+            ->method('getLastVersion')
+            ->willReturn($this->createVersion(self::VERSION_ID + 1));
+
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->willReturn($this->createCurrentElement());
+
+        $publisher = $this->createMock(DataObjectVersionPublisherInterface::class);
+        $publisher->expects($this->once())
+            ->method('publish')
+            ->with($versionElement, $user, $publishedInPlace ? $version : null);
+
+        $service = $this->createService(
+            $repository,
+            $serviceResolver,
+            $this->createMock(SecurityServiceInterface::class),
+            $publisher
+        );
+
+        $this->assertSame(
+            $publishedInPlace ? self::VERSION_ID : self::VERSION_ID + 1,
+            $service->publishVersion(self::VERSION_ID, $user)
+        );
     }
 
     public function testPublishVersionRejectsElementsWithoutPublisher(): void
@@ -167,13 +265,24 @@ final class VersionServiceTest extends Unit
         return $version;
     }
 
-    private function createVersion(int $id = self::VERSION_ID): Version
+    private function createVersion(int $id = self::VERSION_ID, int $versionCount = 0, int $date = 0): Version
     {
         // Version's constructor pulls its services from the container
         /** @var Version $version */
         $version = (new ReflectionClass(Version::class))->newInstanceWithoutConstructor();
         $version->setId($id);
+        $version->setVersionCount($versionCount);
+        $version->setDate($date);
 
         return $version;
+    }
+
+    private function createCurrentElement(): Concrete
+    {
+        $currentElement = $this->createMock(Concrete::class);
+        $currentElement->method('getVersionCount')->willReturn(self::ELEMENT_VERSION_COUNT);
+        $currentElement->method('getModificationDate')->willReturn(self::ELEMENT_MODIFICATION_DATE);
+
+        return $currentElement;
     }
 }
