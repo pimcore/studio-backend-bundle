@@ -15,14 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
+use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
@@ -42,7 +45,7 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
     /**
      * Same placeholder as the core Password field type uses for its other read paths.
      */
-    public const string MASK = '******';
+    private const string MASK = '******';
 
     /**
      * The placeholder the Studio UI renders for password fields; echoing it back also means "unchanged".
@@ -88,7 +91,11 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
         string $key,
         ?FieldContextData $contextData = null
     ): string {
-        return $this->mask($this->getValidFieldValue($object, $key, $contextData)) ?? '';
+        // same lookup as the generic export, so the export callers' field and context conventions apply
+        $exportObject = $contextData?->getContextObject() ?: $object;
+        $value = $fieldDefinition->getForCsvExport($exportObject, $contextData?->getLegacyParameters() ?? []);
+
+        return $this->mask($value) ?? '';
     }
 
     private function mask(mixed $value): ?string
@@ -102,11 +109,37 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
         if ($contextObject instanceof FieldCollectionData) {
             // the context item is rebuilt without values, the stored one has the same type and index
             $value = $this->getStoredCollectionItem($element, $contextObject)?->get($key, $contextData?->getLanguage());
+        } elseif ($contextObject instanceof BlockData) {
+            $value = $this->getStoredBlockValue($contextObject, $key, $contextData?->getLanguage());
         } else {
             $value = $this->getValidFieldValue($element, $key, $contextData);
         }
 
         return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    private function getStoredBlockValue(BlockData $blockData, string $key, ?string $language): mixed
+    {
+        foreach ($blockData->getBlockData() as $blockElement) {
+            if (!$blockElement instanceof BlockElement) {
+                continue;
+            }
+
+            if ($blockElement->getName() === $key) {
+                return $blockElement->getData();
+            }
+
+            // a localized field inside the block keeps its values per language
+            $elementData = $blockElement->getData();
+            if ($language !== null && $elementData instanceof Localizedfield) {
+                $localized = $elementData->getItems()[$language][$key] ?? null;
+                if ($localized !== null) {
+                    return $localized;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function getStoredCollectionItem(Concrete $element, FieldCollectionData $rebuilt): ?FieldCollectionData

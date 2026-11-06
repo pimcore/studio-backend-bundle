@@ -22,6 +22,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
+use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData as BrickData;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -79,10 +80,39 @@ final class PasswordAdapterTest extends Unit
 
     public function testExportDoesNotContainTheStoredValue(): void
     {
-        $object = $this->buildObject(self::STORED);
+        $object = new class extends Concrete {
+            public function getSecret(): string
+            {
+                return PasswordAdapterTest::STORED;
+            }
+        };
+        $empty = new class extends Concrete {
+            public function getSecret(): ?string
+            {
+                return null;
+            }
+        };
 
         $this->assertSame('******', $this->adapter->getExportData($object, $this->field, 'secret'));
-        $this->assertSame('', $this->adapter->getExportData($this->buildObject(null), $this->field, 'secret'));
+        $this->assertSame('', $this->adapter->getExportData($empty, $this->field, 'secret'));
+    }
+
+    public function testExportMasksTheValueOfAnObjectBrickContext(): void
+    {
+        $owner = $this->buildObject(null);
+        $brick = new class($owner) extends BrickData {
+            public function getSecret(): string
+            {
+                return PasswordAdapterTest::STORED;
+            }
+        };
+
+        $result = $this->adapter->getExportData($owner, $this->field, 'secret', new FieldContextData(
+            contextObject: $brick,
+            legacyParameters: ['context' => ['containerType' => 'objectbrick', 'containerKey' => 'b', 'fieldname' => 'f']]
+        ));
+
+        $this->assertSame('******', $result);
     }
 
     public function testEchoedMaskKeepsTheStoredValue(): void
@@ -170,6 +200,29 @@ final class PasswordAdapterTest extends Unit
             ['secret' => '******'],
             $this->user,
             new FieldContextData($blockData)
+        );
+
+        $this->assertSame(self::STORED, $result);
+    }
+
+    public function testEchoedMaskOfLocalizedFieldInsideBlockKeepsTheValueOfThatLanguage(): void
+    {
+        $localized = (new Localizedfield())->setItems([
+            'de' => ['secret' => self::STORED],
+            'en' => ['secret' => self::OTHER],
+        ]);
+        $blockData = new BlockData(
+            ['localizedfields' => new BlockElement('localizedfields', 'localizedfields', $localized)],
+            ['containerType' => 'block', 'classId' => 'x', 'fieldname' => 'blocks']
+        );
+
+        $result = $this->adapter->getDataForSetter(
+            $this->buildObject(null),
+            $this->field,
+            'secret',
+            ['secret' => '******'],
+            $this->user,
+            new FieldContextData($blockData, 'de')
         );
 
         $this->assertSame(self::STORED, $result);
