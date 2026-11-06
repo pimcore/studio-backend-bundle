@@ -1,0 +1,31 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\IndexSync\Controller\:
+    resource: '../src/IndexSync/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\IndexSync\Service\JobServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\IndexSync\Service\JobService
+
+  #
+  # Execution engine handlers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\IndexSync\ExecutionEngine\Handler\SyncIndexHandler: ~
+
+  #
+  # Event subscribers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\IndexSync\EventSubscriber\IndexSyncSubscriber: ~
