@@ -18,16 +18,18 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ObjectBrickRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\UserInterface;
+use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -47,17 +49,13 @@ final class ObjectBrickLayoutDefinitionServiceTest extends Unit
      */
     public function testUserWithoutViewPermissionOnObjectIsRejected(): void
     {
-        $user = $this->createMock(UserInterface::class);
-
-        $dataObjectService = $this->createMock(DataObjectServiceInterface::class);
-        $dataObjectService->method('getDataObjectElement')
-            ->with($user, self::OBJECT_ID)
-            ->willThrowException(new ForbiddenException('You dont have view permission'));
+        $user = new User();
+        $dataObject = $this->createDataObject($user, view: false, list: true);
 
         $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
         $classDefinitionResolver->expects($this->never())->method('getById');
 
-        $service = $this->createService($user, $dataObjectService, $classDefinitionResolver);
+        $service = $this->createService($user, $dataObject, $classDefinitionResolver);
 
         $this->expectException(ForbiddenException::class);
 
@@ -67,18 +65,28 @@ final class ObjectBrickLayoutDefinitionServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testObjectTheUserMayNotListIsReportedAsNotFound(): void
+    {
+        $user = new User();
+        $dataObject = $this->createDataObject($user, view: false, list: false);
+
+        $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
+        $classDefinitionResolver->expects($this->never())->method('getById');
+
+        $service = $this->createService($user, $dataObject, $classDefinitionResolver);
+
+        $this->expectException(NotFoundException::class);
+
+        $service->getLayoutDefinitionsForObject(self::OBJECT_ID);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function testUserWithViewPermissionOnObjectGetsLayoutDefinitions(): void
     {
-        $user = $this->createMock(UserInterface::class);
-
-        $dataObject = $this->createMock(Concrete::class);
-        $dataObject->method('getClassId')->willReturn(self::CLASS_ID);
-
-        $dataObjectService = $this->createMock(DataObjectServiceInterface::class);
-        $dataObjectService->expects($this->once())
-            ->method('getDataObjectElement')
-            ->with($user, self::OBJECT_ID)
-            ->willReturn($dataObject);
+        $user = new User();
+        $dataObject = $this->createDataObject($user, view: true, list: true);
 
         // A class without object brick fields: the permission check passes and nothing has to be resolved.
         $classDefinitionResolver = $this->createMock(ClassDefinitionResolverInterface::class);
@@ -87,21 +95,40 @@ final class ObjectBrickLayoutDefinitionServiceTest extends Unit
             ->with(self::CLASS_ID)
             ->willReturn(new ClassDefinition());
 
-        $service = $this->createService($user, $dataObjectService, $classDefinitionResolver);
+        $service = $this->createService($user, $dataObject, $classDefinitionResolver);
 
         $this->assertSame([], $service->getLayoutDefinitionsForObject(self::OBJECT_ID));
     }
 
+    private function createDataObject(User $user, bool $view, bool $list): Concrete
+    {
+        $dataObject = $this->createMock(Concrete::class);
+        $dataObject->method('getClassId')->willReturn(self::CLASS_ID);
+        $dataObject->method('isAllowed')->willReturnCallback(
+            static fn (string $type, ?User $checkedUser = null): bool => $checkedUser === $user
+                && match ($type) {
+                    ElementPermissions::VIEW_PERMISSION => $view,
+                    ElementPermissions::LIST_PERMISSION => $list,
+                    default => false,
+                }
+        );
+
+        return $dataObject;
+    }
+
     private function createService(
-        UserInterface $user,
-        DataObjectServiceInterface $dataObjectService,
+        User $user,
+        Concrete $dataObject,
         ClassDefinitionResolverInterface $classDefinitionResolver
     ): LayoutDefinitionService {
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->method('getCurrentUser')->willReturn($user);
 
+        $serviceResolver = $this->createMock(ServiceResolverInterface::class);
+        $serviceResolver->method('getElementById')->with('object', self::OBJECT_ID)->willReturn($dataObject);
+
         return new LayoutDefinitionService(
-            $dataObjectService,
+            $serviceResolver,
             $securityService,
             $this->createMock(DataObjectServiceResolverInterface::class),
             $classDefinitionResolver,
