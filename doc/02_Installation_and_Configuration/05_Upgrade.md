@@ -3,6 +3,15 @@
 The following steps are necessary during updating to newer versions.
 
 ## Upgrade to 2026.4.0
+- [Elements] Changed: the `422` response of a failed element validation (`PUT /pimcore-studio/api/assets/{id}`,
+  `.../data-objects/{id}`, `.../documents/{id}` and the synchronous `POST .../assets/add/{parentId}` and
+  `POST .../assets/{id}/replace`) now carries `validationErrors` next to `message` and `errorKey`, one entry per failed
+  field with `field`, `fieldTitle`, `path`, `message`, `messageKey` and `parameters`. `message` and `errorKey` are
+  unchanged. A client that translates the errors needs `pimcore/pimcore` `^2026.4` (`StructuredValidationException`).
+  The synchronous asset upload and replace answer `422` instead of `500` when the validation of the asset fails. An
+  error of a data object in a language the user may not view is reduced to the generic message
+  `The value is not valid.`, its `messageKey` and empty `parameters`; the top-level `message` is then
+  `Validation failed`. `message` is untrusted text and must be escaped before it is rendered.
 - [Authorization] Added: `GET /pimcore-studio/api/session` tells whether the request carries a Studio session
   (`{"authenticated": true|false}`, plus the two-factor step of a login that waits for its code). It always answers 200
   and reveals only the state of the caller's own session. With the matching Studio UI the login page no longer shows a
