@@ -49,6 +49,11 @@ final class Installer extends SettingsStoreAwareInstaller
         UserPermissions::MCP_SERVERS->value,
     ];
 
+    // Registered but never removed: the classic admin checks the same key, so an uninstall must not drop it.
+    private const array MAINTENANCE_MODE_PERMISSIONS = [
+        UserPermissions::MAINTENANCE_MODE->value,
+    ];
+
     public function __construct(
         private readonly Connection $db,
         BundleInterface $bundle,
@@ -617,10 +622,20 @@ final class Installer extends SettingsStoreAwareInstaller
     /**
      * @throws Exception
      */
-    private function addUserPermission(Schema $schema): void
+    public function addUserPermission(Schema $schema): void
     {
         if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
-            foreach ([...self::PERSPECTIVE_PERMISSIONS, ...self::MCP_PERMISSIONS] as $permission) {
+            $permissions = [
+                ...self::PERSPECTIVE_PERMISSIONS,
+                ...self::MCP_PERMISSIONS,
+                ...self::MAINTENANCE_MODE_PERMISSIONS,
+            ];
+            foreach ($permissions as $permission) {
+                // The key is the primary key; a kept or foreign row must not break (re)installing.
+                if ($this->hasUserPermission($permission)) {
+                    continue;
+                }
+
                 $queryBuilder = $this->db->createQueryBuilder();
                 $queryBuilder
                     ->insert(UserPermissions::DEFINITIONS_TABLE->value)
@@ -636,6 +651,19 @@ final class Installer extends SettingsStoreAwareInstaller
                 $queryBuilder->executeStatement();
             }
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function hasUserPermission(string $permission): bool
+    {
+        $key = $this->db->quoteIdentifier('key');
+
+        return $this->db->fetchOne(
+            'SELECT ' . $key . ' FROM ' . UserPermissions::DEFINITIONS_TABLE->value . ' WHERE ' . $key . ' = :key',
+            ['key' => $permission]
+        ) !== false;
     }
 
     /**
