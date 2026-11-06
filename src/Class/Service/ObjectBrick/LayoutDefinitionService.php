@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\ConfigLayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ConfigLayoutDefinitionHydratorInterface;
@@ -27,6 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConfigLayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementViewPermissionTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
@@ -39,8 +43,12 @@ use function sprintf;
  */
 final readonly class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
+    use ElementProviderTrait;
+    use ElementViewPermissionTrait;
+
     public function __construct(
-        private DataObjectResolverInterface $dataObjectResolver,
+        private ServiceResolverInterface $serviceResolver,
+        private SecurityServiceInterface $securityService,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private DefinitionResolverInterface $definitionResolver,
@@ -56,7 +64,13 @@ final readonly class LayoutDefinitionService implements LayoutDefinitionServiceI
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array
     {
-        $dataObject = $this->dataObjectResolver->getById($dataObjectId);
+        $this->assertElementViewPermission(
+            ElementTypes::TYPE_OBJECT,
+            $dataObjectId,
+            $this->securityService->getCurrentUser()
+        );
+        $dataObject = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObjectId);
+
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
                 sprintf('DataObject id (%s) is not a concrete object', $dataObjectId)
