@@ -122,6 +122,7 @@ final class RestoreItemsHandler extends AbstractHandler
             ];
         }
 
-        $this->updateJobRunContextValues($jobRun, [$contextKey => $storedItems]);
+        // written with the progress of the same item, which follows right after
+        $this->updateJobRunContextValues($jobRun, [$contextKey => $storedItems], false);
     }
 }

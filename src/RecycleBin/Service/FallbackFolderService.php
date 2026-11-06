@@ -71,14 +71,11 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         $folder ??= $this->createFallbackFolder($elementType);
 
         $element->setParent($folder);
-        $key = $element->getKey();
-        if ($this->getUniqueKey($elementType, $element) === $key) {
-            return;
+        $key = (string) $element->getKey();
+        $freeKey = $this->getFreeKey($element, $coreType, $key);
+        if ($freeKey !== $key) {
+            $element->setKey($freeKey);
         }
-
-        // core's recycle bin appends _restore to a taken key, the number only covers a further clash
-        $element->setKey($this->getRestoreKey($element, $key));
-        $element->setKey($this->getUniqueKey($elementType, $element));
     }
 
     /**
@@ -142,35 +139,43 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         return $folder;
     }
 
-    private function getRestoreKey(ElementInterface $element, string $key): string
+    /**
+     * Core's recycle bin appends _restore to a taken key, a number only covers a further clash. Core's unique key
+     * helper is not used: for an asset file without extension it fails on a taken name.
+     */
+    private function getFreeKey(ElementInterface $element, string $coreType, string $key): string
     {
+        if (!$this->isKeyTaken($element, $coreType, $key)) {
+            return $key;
+        }
+
+        $number = 0;
+        do {
+            $freeKey = $this->getRestoreKey($element, $key, $number === 0 ? '' : '_' . $number);
+            $number++;
+        } while ($this->isKeyTaken($element, $coreType, $freeKey));
+
+        return $freeKey;
+    }
+
+    private function isKeyTaken(ElementInterface $element, string $coreType, string $key): bool
+    {
+        $existing = $this->serviceResolver->getElementByPath($coreType, self::FOLDER_PATH . '/' . $key);
+
+        // the data object restore saves a placeholder with the same ID first
+        return $existing !== null && $existing->getId() !== $element->getId();
+    }
+
+    private function getRestoreKey(ElementInterface $element, string $key, string $number): string
+    {
+        $suffix = self::RESTORE_SUFFIX . $number;
         if (!$element instanceof Asset || $element instanceof AssetFolder) {
-            return $key . self::RESTORE_SUFFIX;
+            return $key . $suffix;
         }
 
         $pathInfo = pathinfo($key);
-        $extension = empty($pathInfo['extension']) ? '' : '.' . $pathInfo['extension'];
+        $extension = ($pathInfo['extension'] ?? '') === '' ? '' : '.' . $pathInfo['extension'];
 
-        return $pathInfo['filename'] . self::RESTORE_SUFFIX . $extension;
-    }
-
-    /**
-     * @throws EnvironmentException
-     */
-    private function getUniqueKey(string $elementType, ElementInterface $element): string
-    {
-        try {
-            return match ($elementType) {
-                ElementTypes::TYPE_ASSET => $this->assetServiceResolver->getUniqueKey($element),
-                ElementTypes::TYPE_DOCUMENT => $this->documentServiceResolver->getUniqueKey($element),
-                default => $this->dataObjectServiceResolver->getUniqueKey($element),
-            };
-        } catch (Exception $exception) {
-            throw new EnvironmentException(
-                $exception->getMessage(),
-                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE->value,
-                $exception
-            );
-        }
+        return $pathInfo['filename'] . $suffix . $extension;
     }
 }

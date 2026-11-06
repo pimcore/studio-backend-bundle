@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RestoreItemServiceInte
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use ReflectionProperty;
+use function array_column;
 
 /**
  * @internal
@@ -92,13 +93,56 @@ final class RestoreItemsHandlerTest extends Unit
     }
 
     /**
+     * @throws Exception
+     */
+    public function testWritesTheRelocatedItemsWithTheProgressOfTheirItem(): void
+    {
+        $restoredIds = [];
+        $restoreItemService = $this->createMock(RestoreItemServiceInterface::class);
+        $restoreItemService->method('restoreItem')->willReturnCallback(
+            function (int $id) use (&$restoredIds): array {
+                $restoredIds[] = $id;
+
+                return [new RelocatedItem($id + 80, 'asset', '/__restored/image-' . $id . '.jpg')];
+            }
+        );
+
+        $jobRun = $this->createJobRun([]);
+        $writes = [];
+        $jobRunRepository = $this->createMock(JobRunRepositoryInterface::class);
+        $jobRunRepository->method('update')->willReturnCallback(
+            function (JobRun $jobRun) use (&$writes, &$restoredIds): JobRun {
+                $writes[] = [
+                    'restored' => $restoredIds,
+                    'relocated' => array_column($jobRun->getContext()['relocatedItems'] ?? [], 'id'),
+                ];
+
+                return $jobRun;
+            }
+        );
+
+        $this->createHandler($restoreItemService, new User(), $jobRun, [3, 4], $jobRunRepository)(
+            new RestoreItemsMessage(1, 0)
+        );
+
+        $this->assertSame(
+            [
+                ['restored' => [3], 'relocated' => [83]],
+                ['restored' => [3, 4], 'relocated' => [83, 84]],
+            ],
+            $writes
+        );
+    }
+
+    /**
      * @param int[] $itemIds
      */
     private function createHandler(
         RestoreItemServiceInterface $restoreItemService,
         User $owner,
         JobRun $jobRun,
-        array $itemIds
+        array $itemIds,
+        ?JobRunRepositoryInterface $jobRunRepository = null
     ): RestoreItemsHandler {
         $userResolver = $this->createMock(UserResolverInterface::class);
         $userResolver->method('getById')->willReturn($owner);
@@ -117,7 +161,7 @@ final class RestoreItemsHandlerTest extends Unit
             $this->createMock(UserTopicServiceInterface::class),
             $userResolver,
         );
-        $handler->setJobRunRepository($this->createMock(JobRunRepositoryInterface::class));
+        $handler->setJobRunRepository($jobRunRepository ?? $this->createMock(JobRunRepositoryInterface::class));
         $handler->setJobRunExtractor($extractor);
 
         return $handler;

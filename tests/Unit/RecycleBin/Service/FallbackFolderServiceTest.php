@@ -33,6 +33,8 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder as DocumentFolder;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function strlen;
+use function substr;
 
 /**
  * @internal
@@ -116,7 +118,7 @@ final class FallbackFolderServiceTest extends Unit
         $element = $this->createMock($elementClass);
         $element->method('getKey')->willReturn('my-key');
 
-        $resolvers = $this->createResolvers($resolver, $element, ['my-key']);
+        $resolvers = $this->createResolvers($resolver);
 
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->expects($this->once())
@@ -150,7 +152,7 @@ final class FallbackFolderServiceTest extends Unit
         $element = $this->createMock($elementClass);
         $element->method('getKey')->willReturn('my-key');
 
-        $resolvers = $this->createResolvers($resolver, $element, ['my-key'], $folder);
+        $resolvers = $this->createResolvers($resolver, $folder);
 
         $securityService = $this->createMock(SecurityServiceInterface::class);
         $securityService->expects($this->once())
@@ -167,68 +169,106 @@ final class FallbackFolderServiceTest extends Unit
     }
 
     /**
+     * @param array<string, int> $takenKeys key => ID of the element that holds it in the fallback folder
+     *
      * @throws Exception
      * @dataProvider takenKeyProvider
      */
     #[DataProvider('takenKeyProvider')]
-    public function testAddsTheRestoreSuffixWhenTheKeyIsTakenInTheFallbackFolder(
+    public function testFindsAFreeKeyInTheFallbackFolder(
         string $elementClass,
         string $folderClass,
-        string $resolver,
         string $coreType,
         string $key,
-        array $uniqueKeys,
-        array $expectedKeys
+        array $takenKeys,
+        string $expectedKey
     ): void {
-        $folder = $this->createMock($folderClass);
         $element = $this->createMock($elementClass);
+        $element->method('getId')->willReturn(7);
         $element->method('getKey')->willReturn($key);
-        $element->expects($this->exactly(2))->method('setKey')->willReturnCallback(
-            function (string $key) use (&$expectedKeys, $element): ElementInterface {
-                $this->assertSame(array_shift($expectedKeys), $key);
-
-                return $element;
-            }
-        );
+        $element->expects($this->once())->method('setKey')->with($expectedKey);
 
         $this->createService(
-            ...$this->createResolvers($resolver, $element, $uniqueKeys),
-            serviceResolver: $this->createServiceResolver($coreType, $folder)
+            serviceResolver: $this->createServiceResolver($coreType, $this->createMock($folderClass), null, $takenKeys)
         )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class));
-
-        $this->assertSame([], $expectedKeys);
     }
 
     public static function takenKeyProvider(): array
     {
-        $asset = [Asset::class, AssetFolder::class, 'assetServiceResolver', 'asset'];
+        $asset = [Asset::class, AssetFolder::class, 'asset'];
+        $dataObject = [Concrete::class, DataObjectFolder::class, 'object'];
 
         return [
-            'asset' => [...$asset, 'image.jpg', ['image_1.jpg', 'image_restore.jpg'], [
-                'image_restore.jpg',
-                'image_restore.jpg',
-            ]],
-            'asset with the restore suffix taken too' => [...$asset, 'image.jpg', [
-                'image_1.jpg',
+            'asset' => [...$asset, 'image.jpg', ['image.jpg' => 1], 'image_restore.jpg'],
+            'asset with the restore name taken too' => [
+                ...$asset,
+                'image.jpg',
+                ['image.jpg' => 1, 'image_restore.jpg' => 2],
                 'image_restore_1.jpg',
-            ], ['image_restore.jpg', 'image_restore_1.jpg']],
-            'asset without extension' => [...$asset, 'README', ['README_1', 'README_restore'], [
-                'README_restore',
-                'README_restore',
-            ]],
-            'asset folder' => [AssetFolder::class, AssetFolder::class, 'assetServiceResolver', 'asset', 'photos.2024', [
-                'photos.2024_1',
+            ],
+            'asset with a numbered restore name taken too' => [
+                ...$asset,
+                'image.jpg',
+                ['image.jpg' => 1, 'image_restore.jpg' => 2, 'image_restore_1.jpg' => 3],
+                'image_restore_2.jpg',
+            ],
+            'asset without extension' => [...$asset, 'README', ['README' => 1], 'README_restore'],
+            'asset without extension and the restore name taken too' => [
+                ...$asset,
+                'README',
+                ['README' => 1, 'README_restore' => 2],
+                'README_restore_1',
+            ],
+            'asset with the extension 0' => [...$asset, 'export.0', ['export.0' => 1], 'export_restore.0'],
+            'asset folder' => [
+                AssetFolder::class,
+                AssetFolder::class,
+                'asset',
+                'photos.2024',
+                ['photos.2024' => 1],
                 'photos.2024_restore',
-            ], ['photos.2024_restore', 'photos.2024_restore']],
-            'document' => [Document::class, DocumentFolder::class, 'documentServiceResolver', 'document', 'about.us', [
-                'about.us_1',
+            ],
+            'document' => [
+                Document::class,
+                DocumentFolder::class,
+                'document',
+                'about.us',
+                ['about.us' => 1],
                 'about.us_restore',
-            ], ['about.us_restore', 'about.us_restore']],
-            'data object' => [Concrete::class, DataObjectFolder::class, 'dataObjectServiceResolver', 'object', 'car.a', [
-                'car.a_1',
+            ],
+            'data object with the restore name taken too' => [
+                ...$dataObject,
+                'car.a',
+                ['car.a' => 1, 'car.a_restore' => 2],
+                'car.a_restore_1',
+            ],
+            'data object whose placeholder holds the restore name' => [
+                ...$dataObject,
+                'car.a',
+                ['car.a' => 1, 'car.a_restore' => 7],
                 'car.a_restore',
-            ], ['car.a_restore', 'car.a_restore']],
+            ],
         ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testKeepsAKeyThatTheElementsOwnPlaceholderHolds(): void
+    {
+        $element = $this->createMock(Concrete::class);
+        $element->method('getId')->willReturn(7);
+        $element->method('getKey')->willReturn('car-a');
+        $element->expects($this->never())->method('setKey');
+
+        $this->createService(
+            serviceResolver: $this->createServiceResolver(
+                'object',
+                $this->createMock(DataObjectFolder::class),
+                null,
+                ['car-a' => 7]
+            )
+        )->moveToFallbackFolder($element, $this->makeEmpty(UserInterface::class));
     }
 
     public static function elementTypeProvider(): array
@@ -254,7 +294,7 @@ final class FallbackFolderServiceTest extends Unit
         $securityService->method('hasElementPermission')->willThrowException(new ForbiddenException());
 
         $service = $this->createService(
-            ...$this->createResolvers('assetServiceResolver', $element, ['my-key']),
+            ...$this->createResolvers('assetServiceResolver'),
             securityService: $securityService,
             serviceResolver: $this->createServiceResolver('asset', $folder)
         );
@@ -347,16 +387,10 @@ final class FallbackFolderServiceTest extends Unit
     }
 
     /**
-     * @param string[] $uniqueKeys what the type's resolver answers on consecutive getUniqueKey() calls
-     *
      * @return array<string, object>
      */
-    private function createResolvers(
-        string $resolver,
-        ElementInterface $element,
-        array $uniqueKeys,
-        ?ElementInterface $createdFolder = null
-    ): array {
+    private function createResolvers(string $resolver, ?ElementInterface $createdFolder = null): array
+    {
         $resolvers = [
             'assetServiceResolver' => $this->createMock(AssetServiceResolverInterface::class),
             'documentServiceResolver' => $this->createMock(DocumentServiceResolverInterface::class),
@@ -375,10 +409,6 @@ final class FallbackFolderServiceTest extends Unit
             if ($createdFolder !== null) {
                 $creation->with('/__restored')->willReturn($createdFolder);
             }
-            $mock->expects($this->atMost(2))
-                ->method('getUniqueKey')
-                ->with($element)
-                ->willReturnOnConsecutiveCalls(...$uniqueKeys);
         }
 
         return $resolvers;
@@ -387,17 +417,36 @@ final class FallbackFolderServiceTest extends Unit
     /**
      * @param ElementInterface|null $folder the existing fallback folder
      * @param ElementInterface|null $root the root element, looked up only while the folder does not exist
+     * @param array<string, int> $takenKeys key => ID of the element that holds it in the fallback folder
      */
     private function createServiceResolver(
         string $coreType,
         ?ElementInterface $folder,
-        ?ElementInterface $root = null
+        ?ElementInterface $root = null,
+        array $takenKeys = []
     ): ServiceResolverInterface {
         $serviceResolver = $this->createMock(ServiceResolverInterface::class);
-        $serviceResolver->expects($this->once())
+        $serviceResolver->expects($this->atLeastOnce())
             ->method('getElementByPath')
-            ->with($coreType, '/__restored')
-            ->willReturn($folder);
+            ->willReturnCallback(
+                function (string $type, string $path) use ($coreType, $folder, $takenKeys): ?ElementInterface {
+                    $this->assertSame($coreType, $type);
+                    if ($path === '/__restored') {
+                        return $folder;
+                    }
+
+                    $this->assertStringStartsWith('/__restored/', $path);
+                    $key = substr($path, strlen('/__restored/'));
+                    if (!isset($takenKeys[$key])) {
+                        return null;
+                    }
+
+                    $existing = $this->createMock(ElementInterface::class);
+                    $existing->method('getId')->willReturn($takenKeys[$key]);
+
+                    return $existing;
+                }
+            );
         $serviceResolver->expects($folder === null ? $this->once() : $this->never())
             ->method('getElementById')
             ->with($coreType, 1)
