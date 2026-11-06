@@ -44,6 +44,8 @@ final class FilterParameter implements
     ClassNameParametersInterface,
     ClassIdParametersInterface
 {
+    private const string INVALID_COLUMN_FILTER = 'Invalid column filter';
+
     private ?string $path = null;
 
     private ?string $className = null;
@@ -125,7 +127,7 @@ final class FilterParameter implements
 
         foreach ($columns as $column) {
             if (!isset($column['key'], $column['type']) || !array_key_exists('filterValue', $column)) {
-                throw new InvalidArgumentException('Invalid column filter');
+                throw new InvalidArgumentException(self::INVALID_COLUMN_FILTER);
             }
 
             yield new ColumnFilter(
@@ -148,12 +150,13 @@ final class FilterParameter implements
         );
 
         foreach ($columns as $column) {
-            if (!is_string($column['key'] ?? null) || !is_string($column['type'] ?? null)) {
-                throw new InvalidArgumentException('Invalid column filter');
-            }
-
-            if (!is_string($column['operator']) || !is_string($column['locale'] ?? '')) {
-                throw new InvalidArgumentException('Invalid column filter');
+            if (
+                !is_string($column['key'] ?? null) ||
+                !is_string($column['type'] ?? null) ||
+                !is_string($column['operator']) ||
+                !is_string($column['locale'] ?? '')
+            ) {
+                throw new InvalidArgumentException(self::INVALID_COLUMN_FILTER);
             }
 
             $operator = FilterOperator::tryFrom($column['operator']);
