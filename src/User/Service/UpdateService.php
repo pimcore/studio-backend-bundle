@@ -15,14 +15,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDataObjectWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserDocumentWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User\Role;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
@@ -31,6 +34,7 @@ use Pimcore\Model\UserInterface;
 use function array_diff;
 use function array_map;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -43,6 +47,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ServiceResolverInterface $elementServiceResolver,
         private UserPerspectiveServiceInterface $userPerspectiveService,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -51,7 +56,7 @@ final readonly class UpdateService implements UpdateServiceInterface
      *
      * @param T $user
      *
-     * @throws NotFoundException
+     * @throws ForbiddenException|NotFoundException
      *
      * @return T
      */
@@ -59,9 +64,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         array $permissionsToSet,
         UserInterface|UserRoleInterface $user
     ): UserInterface|UserRoleInterface {
-        $availablePermissions = array_map(static function ($permission) {
-            return $permission->getKey();
-        }, $this->permissionRepository->getAvailablePermissions());
+        $availablePermissions = $this->getAvailablePermissionKeys();
 
         // Permission definitions can disappear (e.g. when a bundle gets uninstalled) while the key stays
         // assigned to the user/role. Those orphaned keys are read from the database and sent back on the
@@ -82,29 +85,89 @@ final readonly class UpdateService implements UpdateServiceInterface
             }
         }
 
+        $this->denyEscalationBeyondCallersOwnPermissions($permissions);
+
         $user->setPermissions($permissions);
 
         return $user;
     }
 
     /**
-     * @throws NotFoundException
+     * A non-admin may only assign roles they hold themselves (and therefore also every permission
+     * of such a role). Superusers are exempt.
+     *
+     * @throws ForbiddenException|NotFoundException
      */
     public function updateRoles(array $rolesToSet, UserInterface $user): UserInterface
     {
-        $roles = array_map(static function ($role) {
-            return $role->getId();
-        }, $this->roleRepository->getRoles());
+        $availableRoles = $this->roleRepository->getRoles();
+        $currentUser = $this->securityService->getCurrentUser();
+        $callersRoleIds = array_map('intval', $currentUser->getRoles());
 
-        foreach ($rolesToSet as $role) {
-            if (!in_array($role, $roles, true)) {
-                throw new NotFoundException('Role', $role);
+        foreach ($rolesToSet as $roleId) {
+            if (!$this->findRoleById($availableRoles, $roleId) instanceof Role) {
+                throw new NotFoundException('Role', $roleId);
+            }
+
+            if (!$currentUser->isAdmin() && !in_array($roleId, $callersRoleIds, true)) {
+                throw new ForbiddenException(
+                    sprintf('Cannot assign role %d that you do not hold yourself', $roleId)
+                );
             }
         }
 
         $user->setRoles($rolesToSet);
 
         return $user;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getAvailablePermissionKeys(): array
+    {
+        return array_map(static function ($permission) {
+            return $permission->getKey();
+        }, $this->permissionRepository->getAvailablePermissions());
+    }
+
+    /**
+     * @param Role[] $roles
+     */
+    private function findRoleById(array $roles, int $roleId): ?Role
+    {
+        foreach ($roles as $role) {
+            if ($role->getId() === $roleId) {
+                return $role;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A caller must already hold every permission they set on a user or role themselves (directly or
+     * through a role), also when the target already carries it - so an update can never leave a target
+     * more privileged than the caller. Superusers are exempt.
+     *
+     * @param string[] $permissions
+     *
+     * @throws ForbiddenException
+     */
+    public function denyEscalationBeyondCallersOwnPermissions(array $permissions): void
+    {
+        $currentUser = $this->securityService->getCurrentUser();
+        if ($currentUser->isAdmin()) {
+            return;
+        }
+
+        foreach ($permissions as $permission) {
+            if (!$currentUser->isAllowed($permission)) {
+                throw new ForbiddenException(
+                    sprintf('Cannot grant permission "%s" that you do not hold yourself', $permission)
+                );
+            }
+        }
     }
 
     /**

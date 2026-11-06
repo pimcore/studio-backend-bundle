@@ -16,16 +16,24 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use function in_array;
 
 /**
  * @internal
@@ -100,6 +108,105 @@ final class UserUpdateServiceTest extends Unit
         $service->updateUserById($this->createUpdateParams(), 42);
     }
 
+    public function testNonAdminCannotUpdatePasswordOfUserWithPermissionsTheyDoNotHold(): void
+    {
+        $service = $this->createPasswordService(
+            $this->createTargetUser(isAdmin: false),
+            $this->createNonAdmin(['users']),
+            ['assets']
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+    }
+
+    public function testNonAdminCanUpdatePasswordOfUserWithEqualOrFewerPermissions(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $service = $this->createPasswordService($target, $this->createNonAdmin(['users', 'assets']), ['assets']);
+
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+
+        $this->assertSame('hashed-password', $target->getPassword());
+    }
+
+    public function testAdminCanUpdatePasswordOfUserWithAnyPermissions(): void
+    {
+        $target = $this->createTargetUser(isAdmin: false);
+        $admin = $this->makeEmpty(UserInterface::class, ['isAdmin' => true]);
+        $service = $this->createPasswordService($target, $admin, ['assets', 'documents', 'seo']);
+
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+
+        $this->assertSame('hashed-password', $target->getPassword());
+    }
+
+    public function testNonAdminCannotUpdatePasswordOfAdminUser(): void
+    {
+        $service = $this->createPasswordService(
+            $this->createTargetUser(isAdmin: true),
+            $this->createNonAdmin(['users', 'assets']),
+            []
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $this->expectExceptionMessage('Only admin can update admin user');
+        $service->updatePasswordById($this->createPasswordParams(), 42);
+    }
+
+    /**
+     * @param string[] $heldPermissions
+     */
+    private function createNonAdmin(array $heldPermissions): UserInterface
+    {
+        return $this->makeEmpty(UserInterface::class, [
+            'isAdmin' => false,
+            'isAllowed' => static fn (string $permission): bool => in_array($permission, $heldPermissions, true),
+        ]);
+    }
+
+    private function createPasswordParams(): UpdatePasswordParameter
+    {
+        return new UpdatePasswordParameter('very-long-password-1', 'very-long-password-1', null);
+    }
+
+    /**
+     * @param string[] $targetPermissions
+     */
+    private function createPasswordService(
+        User $targetUser,
+        UserInterface $currentUser,
+        array $targetPermissions
+    ): UserUpdateService {
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'getCurrentUser' => $currentUser,
+        ]);
+
+        return new UserUpdateService(
+            $this->makeEmpty(AuthenticationResolverInterface::class, [
+                'getPasswordHash' => 'hashed-password',
+            ]),
+            $this->makeEmpty(CacheResolverInterface::class),
+            $securityService,
+            $this->makeEmpty(UserRepositoryInterface::class, [
+                'getUserById' => $targetUser,
+            ]),
+            new UpdateService(
+                $this->makeEmpty(PermissionRepositoryInterface::class),
+                $this->makeEmpty(RoleRepositoryInterface::class),
+                $this->makeEmpty(ClassDefinitionRepositoryInterface::class),
+                $this->makeEmpty(ServiceResolverInterface::class),
+                $this->makeEmpty(UserPerspectiveServiceInterface::class),
+                $securityService,
+            ),
+            $this->makeEmpty(UserPerspectiveServiceInterface::class),
+            $this->makeEmpty(ValidatorInterface::class),
+            $this->makeEmpty(UserPermissionServiceInterface::class, [
+                'getAllowedUserPermissions' => $targetPermissions,
+            ]),
+        );
+    }
+
     private function createTargetUser(bool $isAdmin): User
     {
         $user = new User();
@@ -164,6 +271,7 @@ final class UserUpdateServiceTest extends Unit
             $updateService,
             $this->makeEmpty(UserPerspectiveServiceInterface::class),
             $this->makeEmpty(ValidatorInterface::class),
+            $this->makeEmpty(UserPermissionServiceInterface::class),
         );
     }
 }

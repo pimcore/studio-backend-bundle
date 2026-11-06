@@ -47,6 +47,7 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         private UpdateServiceInterface $updateService,
         private UserPerspectiveServiceInterface $userPerspectiveService,
         private ValidatorInterface $validator,
+        private UserPermissionServiceInterface $userPermissionService,
     ) {
     }
 
@@ -140,6 +141,11 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
         if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
         }
+
+        // resetting a password allows logging in as that user: never for a user more privileged than the caller
+        $this->updateService->denyEscalationBeyondCallersOwnPermissions(
+            $this->userPermissionService->getAllowedUserPermissions($user)
+        );
 
         if ($updateParameter->getPassword() !== $updateParameter->getPasswordConfirmation()) {
             throw new InvalidArgumentException('Passwords do not match');
