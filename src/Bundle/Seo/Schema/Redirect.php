@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id', 'type', 'source', 'sourceSite', 'passThroughParameters', 'target', 'targetSite',
         'statusCode', 'priority', 'regex', 'active', 'expiry', 'creationDate', 'modificationDate',
-        'userOwner', 'userModification',
+        'userOwner', 'userModification', 'targetType',
     ],
     type: 'object'
 )]
@@ -85,7 +85,15 @@ final class Redirect implements AdditionalAttributesInterface
             example: 1,
             nullable: true
         )]
-        public readonly ?int $userModification
+        public readonly ?int $userModification,
+        // last and defaulted, so that callers written before target types keep working
+        #[Property(
+            description: "Type of the element the target points to - 'document', 'asset' or 'object'",
+            type: 'string',
+            example: 'document',
+            nullable: true
+        )]
+        public readonly ?string $targetType = null
     ) {
 
     }
@@ -118,6 +126,11 @@ final class Redirect implements AdditionalAttributesInterface
     public function getTarget(): ?string
     {
         return $this->target;
+    }
+
+    public function getTargetType(): ?string
+    {
+        return $this->targetType;
     }
 
     public function getTargetSite(): ?int
