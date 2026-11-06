@@ -58,9 +58,12 @@ final class KeyGroupRelationDetail implements AdditionalAttributesInterface
         )]
         private readonly ?array $definitionOverride = null,
         #[Property(
-            description: 'Metadata carried by this assignment',
+            description: 'Metadata carried by this assignment. The member "indexed" is reserved: false means the'
+                . ' assignment is excluded from the search index, and anything else - true, a non boolean, no member'
+                . ' at all or no metadata at all - means it is indexed. The flag is not yet honoured by the search'
+                . ' index.',
             type: 'object',
-            example: ['source' => 'erp'],
+            example: ['source' => 'erp', 'indexed' => false],
             nullable: true
         )]
         private readonly ?array $metadata = null,

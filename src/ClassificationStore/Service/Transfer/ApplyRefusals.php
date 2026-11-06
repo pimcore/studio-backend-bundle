@@ -17,6 +17,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\GroupRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\SubGroupRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchIndexFlagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -36,6 +37,9 @@ final readonly class ApplyRefusals implements ApplyRefusalsInterface
      * What a `definitionOverride` may carry, mirroring the closed list the model enforces
      * ({@see KeyGroupRelation::setDefinitionOverride()}). It is restated here because a reconcile
      * has to name every property it refuses rather than stop at the first one the model throws on.
+     *
+     * The reserved `indexed` member is deliberately not one of them: the per assignment expression
+     * of that flag is the `metadata` column ({@see SearchIndexFlagResolverInterface}).
      */
     private const array OVERRIDABLE_PROPERTIES = ['options', 'defaultUnit', 'validUnits'];
 

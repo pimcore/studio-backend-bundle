@@ -155,6 +155,29 @@ final class KeyRepositoryTest extends Unit
     }
 
     /**
+     * The definition blob is stored as it arrived, which is what carries the search index flag a
+     * created assignment of this key defaults from: there is no property of its own for it on the
+     * update schema, and nothing in the write path reads the blob apart.
+     *
+     * @throws Exception
+     */
+    public function testADefinitionCarryingTheSearchIndexFlagIsStoredVerbatim(): void
+    {
+        $config = $this->createStoredKeyConfig();
+        $repository = $this->createRepository($config);
+
+        $this->write(static fn (): KeyConfig => $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(
+                name: self::KEY_NAME,
+                definition: ['fieldtype' => 'input', 'indexed' => false]
+            )
+        ));
+
+        $this->assertSame('{"fieldtype":"input","indexed":false}', $config->getDefinition());
+    }
+
+    /**
      * A directly constructed DTO carries no presence flags, so without the inference in
      * KeyUpdate both writes below are skipped and the stored values survive unchanged.
      *

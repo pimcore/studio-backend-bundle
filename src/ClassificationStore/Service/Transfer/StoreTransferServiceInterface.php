@@ -79,6 +79,7 @@ interface StoreTransferServiceInterface
      * @throws DatabaseException
      * @throws ElementSavingFailedException
      * @throws InvalidArgumentException
+     * @throws NotFoundException
      */
     public function applyArtifact(string $json, bool $dryRun, ?Closure $onDecision = null): ApplyReport;
 }

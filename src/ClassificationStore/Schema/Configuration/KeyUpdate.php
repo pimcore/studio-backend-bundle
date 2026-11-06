@@ -47,10 +47,15 @@ final readonly class KeyUpdate
         )]
         private ?string $type = null,
         #[Property(
-            description: 'Values for object brick definition metadata',
+            description: 'Values for object brick definition metadata. The member "indexed" is reserved: it is the'
+                . ' default a newly created assignment of this key takes into its own metadata, where false excludes'
+                . ' the assignment from the search index and anything else leaves it indexed. The whole object'
+                . ' replaces the stored one, so a client that rebuilds it from a form has to send the member back to'
+                . ' keep it. It is unrelated to the "index" member below, which is about the object query tables.',
             type: 'object',
             example: [
                 'name' => 'weight',
+                'indexed' => false,
                 'datatype' => 'data',
                 'fieldtype' => 'quantityValue',
                 'title' => 'Weight',
