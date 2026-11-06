@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
@@ -40,6 +41,8 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
+use function array_diff_key;
+use function array_flip;
 use function in_array;
 use function sprintf;
 
@@ -50,6 +53,17 @@ final readonly class UpdateService implements UpdateServiceInterface
 {
     use ElementProviderTrait;
     use ValidateObjectDataTrait;
+
+    private const string PUBLISHED_KEY = 'published';
+
+    /** Payload keys that, next to a publish/unpublish task, still make up a publication-only request. */
+    private const array PUBLICATION_ONLY_KEYS = [
+        ElementSaveServiceInterface::INDEX_TASK,
+        self::PUBLISHED_KEY,
+        self::USE_DRAFT_DATA_KEY,
+        ElementSaveServiceInterface::INDEX_COAUTHOR_TYPE,
+        ElementSaveServiceInterface::INDEX_COAUTHOR,
+    ];
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
@@ -73,7 +87,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
 
-        if ($element instanceof Concrete && $this->requiresSavePermission($task)) {
+        if ($element instanceof AbstractObject && $this->requiresSavePermission($element, $data, $task)) {
             $this->securityService->hasElementPermission($element, $user, ElementPermissions::SAVE_PERMISSION);
         }
 
@@ -129,15 +143,23 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     /**
      * Persisting object data (save, autoSave, version or an untasked write) requires the workspace
-     * `save` permission. Publishing/unpublishing is gated separately by ElementSaveService.
+     * `save` permission. Only a publication-only request for a data object (a publish/unpublish task,
+     * optionally with the `published` flag, `useDraftData` and coauthor info) is exempt: it is gated
+     * separately by ElementSaveService / PublishAdapter. Any accompanying data or metadata write
+     * (editableData, key, parentId, index, locked, properties, ...) needs `save`, and so does every
+     * write to a folder, which has no publish state and therefore no other gate.
      */
-    private function requiresSavePermission(?string $task): bool
+    private function requiresSavePermission(AbstractObject $element, array $data, ?string $task): bool
     {
-        return !in_array(
-            $task,
-            [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value],
-            true
-        );
+        if (!$element instanceof Concrete) {
+            return true;
+        }
+
+        if (!in_array($task, [ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value], true)) {
+            return true;
+        }
+
+        return array_diff_key($data, array_flip(self::PUBLICATION_ONLY_KEYS)) !== [];
     }
 
     private function getLatestElement(

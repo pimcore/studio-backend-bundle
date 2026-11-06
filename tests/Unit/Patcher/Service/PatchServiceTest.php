@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService;
@@ -38,12 +39,15 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version\CoauthorContext;
 use RuntimeException;
 use function array_column;
 use function array_map;
+use function sprintf;
 use function str_repeat;
 
 /**
@@ -535,6 +539,215 @@ final class PatchServiceTest extends Unit
         return array_map(static fn (array $item) => [$item['id'], $item['type']], $items);
     }
 
+    /**
+     * Patching a data object folder (also without `editableData`) requires the workspace `save`
+     * permission.
+     */
+    public function testPatchOfDataObjectFolderRequiresSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            }
+        );
+
+        try {
+            $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['key' => 'renamed'], $this->user);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * Legitimate patches of a folder/object must still succeed once the user actually holds `save`.
+     */
+    public function testPatchOfDataObjectFolderSucceedsWithSavePermission(): void
+    {
+        $folder = $this->makeEmpty(Folder::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $folder,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['key' => 'renamed'], $this->user);
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
+    /**
+     * Folders have no publish state, so a publish/unpublish task must not skip the `save` check.
+     */
+    public function testPatchOfDataObjectFolderWithPublishTaskStillRequiresSavePermission(): void
+    {
+        foreach (['publish', 'unpublish'] as $task) {
+            $folder = $this->makeEmpty(Folder::class);
+            $saved = false;
+            $checkedPermissions = [];
+
+            $service = $this->createServiceForElement(
+                $folder,
+                static function () use (&$saved): void {
+                    $saved = true;
+                },
+                static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                    $checkedPermissions[] = $permission;
+
+                    throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+                }
+            );
+
+            try {
+                $service->patchElement($folder, ElementTypes::TYPE_OBJECT, ['task' => $task], $this->user);
+                $this->fail('Expected ForbiddenException was not thrown');
+            } catch (ForbiddenException) {
+                // expected - assertions happen after the try/catch
+            }
+
+            $this->assertSame(['save'], $checkedPermissions, $task);
+            $this->assertFalse($saved, $task);
+        }
+    }
+
+    /**
+     * A pure publish/unpublish task on a data object is gated by PublishAdapter itself, so it must
+     * not additionally require the workspace `save` permission.
+     */
+    public function testPatchWithPublishTaskDoesNotRequireSavePermission(): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->patchElement($object, ElementTypes::TYPE_OBJECT, ['task' => 'publish'], $this->user);
+
+        $this->assertSame([], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
+    /**
+     * A publish/unpublish task or `published` flag combined with any data or metadata write is not a
+     * publication-only request, so it still requires the workspace `save` permission.
+     *
+     * @dataProvider provideMixedPublicationPayloads
+     */
+    public function testPatchOfDataObjectWithPublicationAndDataWriteRequiresSavePermission(array $payload): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            }
+        );
+
+        try {
+            $service->patchElement($object, ElementTypes::TYPE_OBJECT, $payload, $this->user);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertFalse($saved);
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>}>
+     */
+    public function provideMixedPublicationPayloads(): array
+    {
+        return [
+            'publish task with key' => [['task' => 'publish', 'key' => 'renamed']],
+            'unpublish task with key' => [['task' => 'unpublish', 'key' => 'renamed']],
+            'publish task with editable data' => [['task' => 'publish', 'editableData' => ['title' => 'changed']]],
+            'published flag with parent' => [['published' => true, 'parentId' => 5]],
+            'published flag with lock' => [['published' => false, 'locked' => 'self']],
+            'publish task with properties' => [['task' => 'publish', 'properties' => []]],
+        ];
+    }
+
+    /**
+     * Publication-only requests (the `published` flag, as also sent by the folder "apply to all"
+     * flow) are gated by PublishAdapter and must not additionally require the `save` permission.
+     *
+     * @dataProvider providePublicationOnlyPayloads
+     */
+    public function testPatchOfDataObjectWithPublicationOnlyPayloadDoesNotRequireSavePermission(array $payload): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->patchElement($object, ElementTypes::TYPE_OBJECT, $payload, $this->user);
+
+        $this->assertSame([], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>}>
+     */
+    public function providePublicationOnlyPayloads(): array
+    {
+        return [
+            'published flag' => [['id' => 83, 'published' => true]],
+            'unpublished flag' => [['id' => 83, 'published' => false]],
+            'unpublish task' => [['id' => 83, 'task' => 'unpublish']],
+            'publish task with coauthor' => [['task' => 'publish', 'coauthorType' => 'agent', 'coauthor' => 'a']],
+        ];
+    }
+
     private function createService(callable $onSave, ?DataAdapterServiceInterface $dataAdapterService = null): PatchService
     {
         return new PatchService(
@@ -549,6 +762,29 @@ final class PatchServiceTest extends Unit
                 'save' => $onSave,
             ]),
             securityService: $this->makeEmpty(SecurityServiceInterface::class),
+            coauthorService: new CoauthorService($this->coauthorContext),
+        );
+    }
+
+    private function createServiceForElement(
+        ElementInterface $element,
+        callable $onSave,
+        callable $hasElementPermission
+    ): PatchService {
+        return new PatchService(
+            adapterLoader: $this->makeEmpty(AdapterLoaderInterface::class, [
+                'loadAdapters' => [],
+            ]),
+            dataAdapterService: $this->makeEmpty(DataAdapterServiceInterface::class),
+            elementService: $this->makeEmpty(ElementServiceInterface::class),
+            jobExecutionAgent: $this->makeEmpty(JobExecutionAgentInterface::class),
+            indexService: $this->makeEmpty(ElementIndexServiceInterface::class),
+            elementSaveService: $this->makeEmpty(ElementSaveServiceInterface::class, [
+                'save' => $onSave,
+            ]),
+            securityService: $this->makeEmpty(SecurityServiceInterface::class, [
+                'hasElementPermission' => $hasElementPermission,
+            ]),
             coauthorService: new CoauthorService($this->coauthorContext),
         );
     }
