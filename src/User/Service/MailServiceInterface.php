@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -21,4 +23,9 @@ use Pimcore\Model\UserInterface;
 interface MailServiceInterface
 {
     public function sendResetPasswordMail(UserInterface $user, string $token, ?string $loginUrl = null): void;
+
+    /**
+     * @throws DomainConfigurationException|SendMailException
+     */
+    public function sendInvitationMail(UserInterface $user, string $invitationUrl): void;
 }

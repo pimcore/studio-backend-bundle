@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\InvitationEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\LostPasswordEvent;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -32,6 +33,10 @@ use function sprintf;
 final readonly class MailService implements MailServiceInterface
 {
     private const string RESET_MAIL_TEXT = 'Login to pimcore and change your password using the following link. ' .
+        "This temporary login link will expire in 24 hours: \r\n\r\n%s";
+
+    private const string INVITATION_MAIL_TEXT = 'You have been invited to Pimcore. ' .
+        'Set your password using the following link. ' .
         "This temporary login link will expire in 24 hours: \r\n\r\n%s";
 
     private string $domain;
@@ -83,7 +88,40 @@ final readonly class MailService implements MailServiceInterface
                 $mail->text(sprintf(self::RESET_MAIL_TEXT, $loginUrl));
                 $mail->send();
             } catch (Exception $exception) {
-                throw new SendMailException($exception->getMessage());
+                throw new SendMailException($exception->getMessage(), 'reset password mail', $exception);
+            }
+        }
+    }
+
+    /**
+     * @throws DomainConfigurationException|SendMailException
+     */
+    public function sendInvitationMail(UserInterface $user, string $invitationUrl): void
+    {
+        if (!$this->domain) {
+            throw new DomainConfigurationException();
+        }
+
+        $context = $this->router->getContext();
+        $context->setHost($this->domain);
+
+        /** @var User $user */
+        $event = new InvitationEvent($user, $invitationUrl);
+        $this->eventDispatcher->dispatch($event, InvitationEvent::EVENT_NAME);
+
+        // only send mail if it wasn't prevented in the event
+        if ($event->getSendMail()) {
+            try {
+                $mail = $this->toolResolver->getMail(
+                    [$user->getEmail()],
+                    'Pimcore login invitation for ' . $this->toolResolver->getHostname()
+                );
+                $mail->setIgnoreDebugMode(true);
+                $mail->addFrom($this->fromEmail);
+                $mail->text(sprintf(self::INVITATION_MAIL_TEXT, $invitationUrl));
+                $mail->send();
+            } catch (Exception $exception) {
+                throw new SendMailException($exception->getMessage(), 'invitation mail', $exception);
             }
         }
     }
