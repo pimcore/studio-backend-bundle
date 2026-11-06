@@ -39,8 +39,6 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
 {
     use ElementProviderTrait;
 
-    private const string RESTORE_SUFFIX = '_restore';
-
     public function __construct(
         private AssetServiceResolverInterface $assetServiceResolver,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
@@ -140,20 +138,16 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
     }
 
     /**
-     * Core's recycle bin appends _restore to a taken key, a number only covers a further clash. Core's unique key
-     * helper is not used: for an asset file without extension it fails on a taken name.
+     * Core's unique key helper is not used: for an asset file without extension it fails on a taken name.
      */
     private function getFreeKey(ElementInterface $element, string $coreType, string $key): string
     {
-        if (!$this->isKeyTaken($element, $coreType, $key)) {
-            return $key;
-        }
-
+        $freeKey = $key;
         $number = 0;
-        do {
-            $freeKey = $this->getRestoreKey($element, $key, $number === 0 ? '' : '_' . $number);
+        while ($this->isKeyTaken($element, $coreType, $freeKey)) {
             $number++;
-        } while ($this->isKeyTaken($element, $coreType, $freeKey));
+            $freeKey = $this->getNumberedKey($element, $key, $number);
+        }
 
         return $freeKey;
     }
@@ -166,9 +160,9 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
         return $existing !== null && $existing->getId() !== $element->getId();
     }
 
-    private function getRestoreKey(ElementInterface $element, string $key, string $number): string
+    private function getNumberedKey(ElementInterface $element, string $key, int $number): string
     {
-        $suffix = self::RESTORE_SUFFIX . $number;
+        $suffix = '_' . $number;
         if (!$element instanceof Asset || $element instanceof AssetFolder) {
             return $key . $suffix;
         }

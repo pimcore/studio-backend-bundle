@@ -33,9 +33,9 @@ interface FallbackFolderServiceInterface
     public function hasMissingParent(ElementInterface $element): bool;
 
     /**
-     * Sets the fallback folder of the element type as parent; a taken key gets the _restore suffix like core's restore,
-     * placed before the extension of an asset file. The user needs the publish permission on the folder, or on the
-     * root of the element type while the folder does not exist yet; it is created only after that check.
+     * Sets the fallback folder of the element type as parent; a taken key gets a number (_1, _2, ...), placed before
+     * the extension of an asset file. The user needs the publish permission on the folder, or on the root of the
+     * element type while the folder does not exist yet; it is created only after that check.
      *
      * @throws EnvironmentException|InvalidElementTypeException
      */

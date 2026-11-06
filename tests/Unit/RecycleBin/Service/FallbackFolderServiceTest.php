@@ -199,34 +199,28 @@ final class FallbackFolderServiceTest extends Unit
         $dataObject = [Concrete::class, DataObjectFolder::class, 'object'];
 
         return [
-            'asset' => [...$asset, 'image.jpg', ['image.jpg' => 1], 'image_restore.jpg'],
-            'asset with the restore name taken too' => [
+            'asset' => [...$asset, 'image.jpg', ['image.jpg' => 1], 'image_1.jpg'],
+            'asset with the first number taken too' => [
                 ...$asset,
                 'image.jpg',
-                ['image.jpg' => 1, 'image_restore.jpg' => 2],
-                'image_restore_1.jpg',
+                ['image.jpg' => 1, 'image_1.jpg' => 2],
+                'image_2.jpg',
             ],
-            'asset with a numbered restore name taken too' => [
-                ...$asset,
-                'image.jpg',
-                ['image.jpg' => 1, 'image_restore.jpg' => 2, 'image_restore_1.jpg' => 3],
-                'image_restore_2.jpg',
-            ],
-            'asset without extension' => [...$asset, 'README', ['README' => 1], 'README_restore'],
-            'asset without extension and the restore name taken too' => [
+            'asset without extension' => [...$asset, 'README', ['README' => 1], 'README_1'],
+            'asset without extension and the first number taken too' => [
                 ...$asset,
                 'README',
-                ['README' => 1, 'README_restore' => 2],
-                'README_restore_1',
+                ['README' => 1, 'README_1' => 2],
+                'README_2',
             ],
-            'asset with the extension 0' => [...$asset, 'export.0', ['export.0' => 1], 'export_restore.0'],
+            'asset with the extension 0' => [...$asset, 'export.0', ['export.0' => 1], 'export_1.0'],
             'asset folder' => [
                 AssetFolder::class,
                 AssetFolder::class,
                 'asset',
                 'photos.2024',
                 ['photos.2024' => 1],
-                'photos.2024_restore',
+                'photos.2024_1',
             ],
             'document' => [
                 Document::class,
@@ -234,19 +228,19 @@ final class FallbackFolderServiceTest extends Unit
                 'document',
                 'about.us',
                 ['about.us' => 1],
-                'about.us_restore',
+                'about.us_1',
             ],
-            'data object with the restore name taken too' => [
+            'data object with the first number taken too' => [
                 ...$dataObject,
                 'car.a',
-                ['car.a' => 1, 'car.a_restore' => 2],
-                'car.a_restore_1',
+                ['car.a' => 1, 'car.a_1' => 2],
+                'car.a_2',
             ],
-            'data object whose placeholder holds the restore name' => [
+            'data object whose placeholder holds the first number' => [
                 ...$dataObject,
                 'car.a',
-                ['car.a' => 1, 'car.a_restore' => 7],
-                'car.a_restore',
+                ['car.a' => 1, 'car.a_1' => 7],
+                'car.a_1',
             ],
         ];
     }
