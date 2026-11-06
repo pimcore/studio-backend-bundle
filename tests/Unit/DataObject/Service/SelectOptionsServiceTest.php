@@ -245,6 +245,78 @@ final class SelectOptionsServiceTest extends Unit
     }
 
     /**
+     * Regression test for platform-version#577: the context of the request is passed to the options
+     * provider as the nested "context" key, so it cannot replace the owner context of the resolver
+     * or the object, fieldname and class the service adds.
+     */
+    public function testRequestContextDoesNotOverrideTheResolverContext(): void
+    {
+        $object = $this->createObject();
+        $keyDefinition = $this->createFieldDefinition('fittingType');
+        $ownerContext = [
+            'ownerType' => 'classificationstore',
+            'ownerName' => 'attributes',
+            'keyId' => 6,
+            'groupId' => 2,
+            'keyDefinition' => $keyDefinition,
+        ];
+        $requestContext = [
+            'ownerType' => 'object',
+            'ownerName' => 'spoofed',
+            'keyId' => 99,
+            'groupId' => 99,
+            'keyDefinition' => 'spoofed',
+            'object' => 'spoofed',
+            'fieldname' => 'spoofed',
+            'class' => 'spoofed',
+        ];
+
+        $provider = $this->makeEmpty(SelectOptionsProviderInterface::class, [
+            'getOptions' => Expected::once(
+                function (array $context) use ($object, $keyDefinition, $requestContext): array {
+                    $this->assertSame('classificationstore', $context['ownerType']);
+                    $this->assertSame('attributes', $context['ownerName']);
+                    $this->assertSame(6, $context['keyId']);
+                    $this->assertSame(2, $context['groupId']);
+                    $this->assertSame($keyDefinition, $context['keyDefinition']);
+                    $this->assertSame($object, $context['object']);
+                    $this->assertSame('fittingType', $context['fieldname']);
+                    $this->assertInstanceOf(ClassDefinition::class, $context['class']);
+                    $this->assertSame($requestContext, $context['context']);
+
+                    return [['key' => 'Elbow', 'value' => 'elbow']];
+                }
+            ),
+        ]);
+
+        $service = $this->createService(
+            $object,
+            $this->makeEmpty(DataServiceInterface::class),
+            $this->makeEmpty(UserInterface::class),
+            $this->makeEmpty(DotNotationParserInterface::class, [
+                'parse' => new FieldDefinitionWrapper(
+                    $keyDefinition,
+                    'classificationstore',
+                    'attributes',
+                    optionsProviderContext: $ownerContext
+                ),
+            ]),
+            $provider,
+        );
+
+        $options = $service->getSelectOptions(
+            new SelectOptionsParameter(
+                objectId: 42,
+                fieldName: 'attributes.2.6',
+                context: $requestContext,
+            )
+        );
+
+        $this->assertCount(1, $options);
+        $this->assertSame('Elbow', $options[0]->getKey());
+    }
+
+    /**
      * Regression test for platform-version#577: an unresolvable field name is reported as such
      * instead of a misleading "class not found".
      */

@@ -16,6 +16,16 @@ More complex examples using the News object:
 - `content.NewsCars.localizedfields.title` Get Localized Field from Field Collection
 - `content.NewsLinks.links.link` Get Field from a Block in a Field Collection
 
+Keys of a classification store are addressed by id, because their name is not unique across groups:
+- `technicalAttributes.3.6` Get the key with id `6` of group `3` in the classification store field
+  `technicalAttributes`.
+- `technicalAttributes.3.en.6` The same key, with the language it is edited in. The language
+  comparison view sends this form; the key definition does not depend on the language, so the part
+  is ignored.
+
+The group has to belong to the store configured on the classification store field, otherwise the
+path is rejected.
+
 
 ## Custom Data Types
 When you have custom Container Data Type and would like to support the Dot Notation you can implement your own Resolver.
