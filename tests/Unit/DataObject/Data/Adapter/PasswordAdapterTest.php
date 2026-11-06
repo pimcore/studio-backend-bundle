@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Password;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
+use Pimcore\Model\DataObject\Data\EncryptedField;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Localizedfield;
@@ -299,6 +300,35 @@ final class PasswordAdapterTest extends Unit
         $this->assertNull($result);
     }
 
+    public function testEchoedMaskOfEncryptedPasswordKeepsTheStoredValue(): void
+    {
+        $wrapped = new EncryptedField($this->field, self::STORED);
+
+        $topLevel = $this->adapter->getDataForSetter(
+            $this->buildObjectWithValue($wrapped),
+            $this->field,
+            'secret',
+            ['secret' => '******'],
+            $this->user
+        );
+        $blockData = new BlockData(
+            ['secret' => new BlockElement('secret', 'encryptedField', $wrapped)],
+            ['containerType' => 'block', 'classId' => 'x', 'fieldname' => 'blocks']
+        );
+        $inBlock = $this->adapter->getDataForSetter(
+            $this->buildObject(null),
+            $this->field,
+            'secret',
+            ['secret' => '******'],
+            $this->user,
+            new FieldContextData($blockData)
+        );
+
+        $this->assertSame(self::STORED, $topLevel);
+        $this->assertSame(self::STORED, $inBlock);
+        $this->assertSame('******', $this->adapter->normalize($wrapped, $this->field));
+    }
+
     public function testEchoedMaskInsideLocalizedFieldKeepsTheValueOfThatLanguage(): void
     {
         $object = new class extends Concrete {
@@ -355,6 +385,20 @@ final class PasswordAdapterTest extends Unit
 
             $this->assertNull($result);
         }
+    }
+
+    private function buildObjectWithValue(mixed $stored): Concrete
+    {
+        return new class($stored) extends Concrete {
+            public function __construct(private readonly mixed $stored)
+            {
+            }
+
+            public function get(string $fieldName, ?string $language = null): mixed
+            {
+                return $this->stored;
+            }
+        };
     }
 
     private function buildObject(?string $stored): Concrete

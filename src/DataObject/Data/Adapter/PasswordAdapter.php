@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
@@ -23,13 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
+use Pimcore\Model\DataObject\Data\EncryptedField;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use Throwable;
 use function array_key_exists;
 use function is_string;
 use function sprintf;
@@ -101,8 +102,18 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
         return $this->mask($value) ?? '';
     }
 
+    /**
+     * A password field delegated to by an encrypted field is handed over wrapped.
+     */
+    private function unwrap(mixed $value): mixed
+    {
+        return $value instanceof EncryptedField ? $value->getPlain() : $value;
+    }
+
     private function mask(mixed $value): ?string
     {
+        $value = $this->unwrap($value);
+
         return is_string($value) && $value !== '' ? self::MASK : null;
     }
 
@@ -127,9 +138,11 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
                 $contextObject !== null => $contextData?->getFieldValueFromContextObject($key),
                 default => $element->get($key, $language),
             };
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             throw $this->unresolvable($key, $exception);
         }
+
+        $value = $this->unwrap($value);
 
         return is_string($value) && $value !== '' ? $value : null;
     }
@@ -143,7 +156,7 @@ final readonly class PasswordAdapter implements SetterDataInterface, DataNormali
         return $localizedField->getItems()[$language][$key] ?? null;
     }
 
-    private function unresolvable(string $key, Throwable $previous): ValidationException
+    private function unresolvable(string $key, Exception $previous): ValidationException
     {
         return new ValidationException(
             sprintf(
