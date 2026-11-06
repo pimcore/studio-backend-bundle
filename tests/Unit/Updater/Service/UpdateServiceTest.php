@@ -323,6 +323,95 @@ final class UpdateServiceTest extends Unit
     }
 
     /**
+     * A publish/unpublish task combined with any data or metadata write is not a publication-only
+     * request: it persists those writes, so it still requires the workspace `save` permission.
+     *
+     * @dataProvider mixedPublicationPayloadProvider
+     */
+    public function testUpdateOfDataObjectWithPublishTaskAndDataRequiresSavePermission(array $data): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+
+                throw new ForbiddenException(sprintf('You dont have %s permission', $permission));
+            }
+        );
+
+        try {
+            $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, $data);
+            $this->fail('Expected ForbiddenException was not thrown');
+        } catch (ForbiddenException) {
+            // expected - assertions happen after the try/catch
+        }
+
+        $this->assertSame(['save'], $checkedPermissions);
+        $this->assertFalse($saved);
+    }
+
+    public static function mixedPublicationPayloadProvider(): array
+    {
+        return [
+            'publish with editableData' => [['task' => 'publish', 'editableData' => ['title' => 'changed']]],
+            'unpublish with editableData' => [['task' => 'unpublish', 'editableData' => ['title' => 'changed']]],
+            'publish with key' => [['task' => 'publish', 'key' => 'renamed']],
+            'unpublish with key' => [['task' => 'unpublish', 'key' => 'renamed']],
+            'publish with parentId' => [['task' => 'publish', 'parentId' => 5]],
+            'unpublish with locked' => [['task' => 'unpublish', 'locked' => 'self']],
+            'publish with properties' => [['task' => 'publish', 'properties' => []]],
+            'publish with index' => [['task' => 'publish', 'index' => 3]],
+        ];
+    }
+
+    /**
+     * A publication-only request (task, optionally with the `published` flag, `useDraftData` and
+     * coauthor info) stays exempt from `save`; PublishAdapter / ElementSaveService gate it.
+     *
+     * @dataProvider publicationOnlyPayloadProvider
+     */
+    public function testUpdateOfDataObjectWithPublicationOnlyPayloadDoesNotRequireSavePermission(array $data): void
+    {
+        $object = $this->makeEmpty(Concrete::class);
+        $saved = false;
+        $checkedPermissions = [];
+
+        $service = $this->createServiceForElement(
+            $object,
+            static function () use (&$saved): void {
+                $saved = true;
+            },
+            static function (ElementInterface $element, UserInterface $user, string $permission) use (&$checkedPermissions): void {
+                $checkedPermissions[] = $permission;
+            }
+        );
+
+        $service->update(ElementTypes::TYPE_DATA_OBJECT, self::ELEMENT_ID, $data);
+
+        $this->assertSame([], $checkedPermissions);
+        $this->assertTrue($saved);
+    }
+
+    public static function publicationOnlyPayloadProvider(): array
+    {
+        return [
+            'publish task' => [['task' => 'publish']],
+            'unpublish task' => [['task' => 'unpublish']],
+            'publish task with published flag' => [['task' => 'publish', 'published' => true]],
+            'unpublish task with published flag' => [['task' => 'unpublish', 'published' => false]],
+            'publish task with coauthor' => [['task' => 'publish', 'coauthorType' => 'agent', 'coauthor' => 'a']],
+            'publish task with draft data' => [['task' => 'publish', 'useDraftData' => false]],
+        ];
+    }
+
+    /**
      * Legitimate writes to a folder must still succeed once the user actually holds `save`.
      */
     public function testUpdateOfDataObjectFolderSucceedsWithSavePermission(): void
