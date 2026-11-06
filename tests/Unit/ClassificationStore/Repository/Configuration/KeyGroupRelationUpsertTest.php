@@ -491,6 +491,23 @@ final class KeyGroupRelationUpsertTest extends Unit
     }
 
     /**
+     * And a supplied object replaces the stored one whole rather than merging into it, so an update
+     * naming other members only drops a stored flag. This is what "an existing assignment keeps what
+     * it has stored" is bounded by, and the schema says so: it holds while `metadata` is omitted.
+     */
+    public function testAnUpdateSupplyingOtherMembersReplacesAStoredFlagRatherThanMergingIntoIt(): void
+    {
+        $this->stubDatabase([[self::COLUMN_METADATA => self::SEEDED_METADATA_JSON] + $this->createRow()]);
+
+        $relation = $this->createRepository(null)->createOrUpdate(
+            $this->createPairOnlyPayload([self::COLUMN_METADATA => self::STORED_METADATA])
+        );
+
+        $this->assertSame(self::STORED_METADATA_JSON, $this->getWrittenRow()[self::COLUMN_METADATA]);
+        $this->assertSame(self::STORED_METADATA, $relation->getMetadata());
+    }
+
+    /**
      * @return array<string, array{0: string}>
      */
     public static function perAssignmentColumnProvider(): array

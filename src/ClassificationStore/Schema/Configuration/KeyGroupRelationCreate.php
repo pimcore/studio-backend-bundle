@@ -22,8 +22,9 @@ use function sprintf;
 
 /**
  * Every property but the pair is optional: one absent from the payload leaves the stored value
- * untouched. The three per assignment ones are optional in both directions, so one carrying an
- * explicit null clears it; `sorter` and `mandatory` cannot be cleared and refuse an explicit null.
+ * untouched, and a supplied one replaces it rather than merging into it. The three per assignment
+ * ones are optional in both directions, so one carrying an explicit null clears it; `sorter` and
+ * `mandatory` cannot be cleared and refuse an explicit null.
  *
  * All five defaults therefore stand for "the payload did not carry it" rather than for a value,
  * which is why they are typed `mixed` - the two states have to stay distinguishable, and the
@@ -62,14 +63,17 @@ final readonly class KeyGroupRelationCreate
         )]
         private mixed $mandatory = AbsentValue::ABSENT,
         #[Property(
-            description: 'Partial field definition overriding the one of the key for this assignment',
+            description: 'Partial field definition overriding the one of the key for this assignment. Omitting it'
+                . ' leaves a stored one alone, a supplied object replaces it whole rather than merging into it, and'
+                . ' an explicit null clears it.',
             type: 'object',
             example: ['defaultUnit' => 'kg'],
             nullable: true
         )]
         private mixed $definitionOverride = AbsentValue::ABSENT,
         #[Property(
-            description: 'Sub group of the store this assignment belongs to',
+            description: 'Sub group of the store this assignment belongs to. Omitting it leaves a stored one alone, a'
+                . ' supplied value replaces it, and an explicit null clears it.',
             type: 'string',
             example: 'dimensions',
             nullable: true
@@ -78,8 +82,13 @@ final readonly class KeyGroupRelationCreate
         #[Property(
             description: 'Metadata carried by this assignment. The member "indexed" is reserved: false excludes the'
                 . ' assignment from the search index, and anything else - true, a non boolean or no member at all -'
-                . ' leaves it indexed. A new assignment that states no "indexed" takes the one in the definition of'
-                . ' its key, where that definition carries it; an existing one is left with what it has stored.',
+                . ' leaves it indexed. A new assignment that carries no "indexed" - because this object is omitted,'
+                . ' explicitly null, or names other members only - takes the one in the definition of its key, where'
+                . ' that definition carries it. An already stored assignment is never seeded from its key, and keeps'
+                . ' what it has stored only while this object is omitted: a supplied object replaces the stored one'
+                . ' whole rather than merging into it, so one rebuilt from a form without "indexed" drops a stored'
+                . ' "indexed", and an explicit null clears the metadata altogether. A client that means to keep the'
+                . ' flag has to send it back.',
             type: 'object',
             example: ['source' => 'erp', 'indexed' => false],
             nullable: true
