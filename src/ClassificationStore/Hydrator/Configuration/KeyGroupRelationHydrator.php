@@ -29,6 +29,7 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
         ?string $keyName = null,
         ?string $keyDescription = null,
         ?string $groupName = null,
+        ?bool $keyLocalized = null,
     ): KeyGroupRelationDetail {
 
         return new KeyGroupRelationDetail(
@@ -42,6 +43,7 @@ final readonly class KeyGroupRelationHydrator implements KeyGroupRelationHydrato
             $relation->getSubGroup(),
             $relation->getDefinitionOverride(),
             $relation->getMetadata(),
+            $keyLocalized,
         );
     }
 }

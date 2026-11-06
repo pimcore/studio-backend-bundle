@@ -17,6 +17,7 @@ use Codeception\Test\Unit;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationCreate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyGroupRelationDetail;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionParameter;
@@ -36,6 +37,8 @@ final class KeyGroupRelationSchemaTest extends Unit
     private const string COLUMN_SUB_GROUP = 'subGroup';
 
     private const string COLUMN_METADATA = 'metadata';
+
+    private const string COLUMN_LOCALIZED = 'localized';
 
     private const array DEFINITION_OVERRIDE = ['defaultUnit' => 'kg'];
 
@@ -66,9 +69,48 @@ final class KeyGroupRelationSchemaTest extends Unit
             [
                 'keyId', 'groupId', 'sorter', 'mandatory', 'keyName', 'keyDescription', 'groupName',
                 self::COLUMN_SUB_GROUP, self::COLUMN_DEFINITION_OVERRIDE, self::COLUMN_METADATA,
+                self::COLUMN_LOCALIZED,
             ],
             $this->getConstructorParameterNames(KeyGroupRelationDetail::class)
         );
+    }
+
+    /**
+     * The key's own `localized` flag joins both key-relation schemas: the per-group configuration
+     * detail and the store-wide listing the object editor's add-keys modal and the grid column
+     * picker read. Unlike the sub group it belongs to the key rather than to the assignment, so the
+     * store-wide listing can carry it meaningfully.
+     *
+     * @dataProvider localizedProvider
+     */
+    public function testBothKeyRelationSchemasCarryTheKeysLocalizationFlag(?bool $localized): void
+    {
+        $detail = new KeyGroupRelationDetail(self::KEY_ID, self::GROUP_ID, 0, false, localized: $localized);
+        $listed = new KeyGroupRelation(
+            self::KEY_ID,
+            self::GROUP_ID,
+            'weight',
+            'Measurements',
+            null,
+            null,
+            $localized
+        );
+
+        $this->assertSame($localized, $detail->getLocalized());
+        $this->assertSame($localized, $listed->getLocalized());
+        $this->assertNull($this->createDetail()->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key flagged localized' => [true],
+            'a key flagged not localized' => [false],
+            'a key stating nothing' => [null],
+        ];
     }
 
     /**

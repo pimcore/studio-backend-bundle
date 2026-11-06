@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Scop
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ScopedKeyAssignment;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repository\ListingDatabaseStubTrait;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function str_contains;
@@ -303,6 +304,7 @@ final class TransferReadsTest extends Unit
 
         return new KeyRepository(
             $this->makeEmpty(KeyConfigResolverInterface::class),
+            new InMemoryKeyLocalizationResolver(),
             $this->makeEmpty(ListingFilterInterface::class),
             $this->makeEmpty(SearchHelperServiceInterface::class),
             $this->makeEmpty(Connection::class)

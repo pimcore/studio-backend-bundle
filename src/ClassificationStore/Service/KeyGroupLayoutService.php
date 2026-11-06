@@ -41,6 +41,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         private KeyConfigResolverInterface $keyConfigResolver,
         private LabelResolverInterface $labelResolver,
         private LabelLanguageResolverInterface $labelLanguageResolver,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -107,6 +108,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             definition: $definition,
             title: $this->getKeyTitle($key->getKeyId(), $this->labelLanguageResolver->getLabelLanguage()),
             subGroup: $key->getSubGroup(),
+            localized: $this->getKeyLocalized($key->getKeyId()),
         );
     }
 
@@ -130,5 +132,19 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
         }
 
         return $this->labelResolver->getStoredTitle($keyConfig, $language);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getKeyLocalized(int $keyId): ?bool
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->keyLocalizationResolver->getLocalized($keyConfig);
     }
 }

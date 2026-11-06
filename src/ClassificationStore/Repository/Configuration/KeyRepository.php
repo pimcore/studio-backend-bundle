@@ -18,6 +18,7 @@ use Doctrine\DBAL\Exception as DBALException;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Trait\IdentifierOrderedChunkTrait;
@@ -65,6 +66,7 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
     public function __construct(
         private KeyConfigResolverInterface $keyConfigResolver,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
         private ListingFilterInterface $listingFilter,
         private SearchHelperServiceInterface $searchHelperService,
         private Connection $connection,
@@ -151,6 +153,9 @@ final readonly class KeyRepository implements KeyRepositoryInterface
         $config->setDescription($entry->getDescription());
         $config->setType($entry->getType());
         $config->setEnabled($entry->isEnabled());
+        // unconditionally, null included: a file written before the flag existed carries none and
+        // restores every key to inheriting, which is the state such a file describes
+        $this->keyLocalizationResolver->setLocalized($config, $entry->getLocalized());
 
         try {
             $config->setDefinition(json_encode($entry->getDefinition() ?? [], JSON_THROW_ON_ERROR));
@@ -208,6 +213,10 @@ final readonly class KeyRepository implements KeyRepositoryInterface
 
         if ($parameters->isDescriptionSupplied()) {
             $config->setDescription($parameters->getDescription() ?? '');
+        }
+
+        if ($parameters->isLocalizedSupplied()) {
+            $this->keyLocalizationResolver->setLocalized($config, $parameters->getLocalized());
         }
 
         $type = $parameters->getType();

@@ -173,6 +173,8 @@ final class ArtifactParserTest extends Unit
             'a key title that is not a string' => ['keys', ['title' => 17]],
             'a key type that is missing' => ['keys', ['type' => null]],
             'a key definition that is not an object' => ['keys', ['definition' => 'input']],
+            'a key localized flag that is a string' => ['keys', ['localized' => 'true']],
+            'a key localized flag that is a number' => ['keys', ['localized' => 1]],
             'a mandatory flag that is a string' => ['keyGroupRelations', ['mandatory' => 'true']],
             'a sorter that is a string' => ['keyGroupRelations', ['sorter' => '1']],
             'a sub group that is not a string' => ['keyGroupRelations', ['subGroup' => 17]],
@@ -220,6 +222,55 @@ final class ArtifactParserTest extends Unit
 
         $this->assertFalse($key->isEnabled());
         $this->assertNull($key->getDefinition());
+    }
+
+    /**
+     * `localized` is read back as the tri-state it is: an entry that leaves it out and one that
+     * supplies it as null both read as no flag, which is what a file written before the flag existed
+     * carries - and an explicit false stays false rather than being read as that same no flag.
+     *
+     * @dataProvider localizedEntryProvider
+     *
+     * @param array<string, mixed> $overrides
+     */
+    public function testTheLocalizedFlagOfAKeyEntryIsReadAsATriState(array $overrides, ?bool $expected): void
+    {
+        $key = (new ArtifactParser())->readKeyEntry([
+            'identifier' => self::KEY_IDENTIFIER,
+            'name' => 'weight',
+            'type' => 'input',
+            ...$overrides,
+        ]);
+
+        $this->assertSame($expected, $key->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: array<string, mixed>, 1: ?bool}>
+     */
+    public static function localizedEntryProvider(): array
+    {
+        return [
+            'an absent member reads as no flag' => [[], null],
+            'an explicit null reads as no flag' => [['localized' => null], null],
+            'an explicit true reads as true' => [['localized' => true], true],
+            'an explicit false reads as false' => [['localized' => false], false],
+        ];
+    }
+
+    /**
+     * The reader guards the field on its own, the way it guards `enabled`.
+     */
+    public function testANonBooleanLocalizedFlagIsRefusedByTheKeyReader(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ArtifactParser())->readKeyEntry([
+            'identifier' => self::KEY_IDENTIFIER,
+            'name' => 'weight',
+            'type' => 'input',
+            'localized' => 'true',
+        ]);
     }
 
     /**

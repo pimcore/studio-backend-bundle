@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configurat
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Repository\ListingDatabaseStubTrait;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use function str_contains;
 
 /**
@@ -98,6 +99,7 @@ final class KeyFullCoverageListingTest extends Unit
 
         return new KeyRepository(
             $this->makeEmpty(KeyConfigResolverInterface::class),
+            new InMemoryKeyLocalizationResolver(),
             $this->makeEmpty(ListingFilterInterface::class),
             $this->makeEmpty(SearchHelperServiceInterface::class),
             $this->makeEmpty(Connection::class)

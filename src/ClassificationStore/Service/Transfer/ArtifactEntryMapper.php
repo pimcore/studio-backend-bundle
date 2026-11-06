@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactField;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
@@ -28,6 +29,11 @@ use function json_decode;
  */
 final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
 {
+    public function __construct(
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
+    ) {
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -83,7 +89,7 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
     {
         $definition = json_decode($config->getDefinition(), true);
 
-        return [
+        $entry = [
             ArtifactField::IDENTIFIER->value => $config->getIdentifier(),
             ArtifactField::NAME->value => $config->getName(),
             ArtifactField::TITLE->value => $config->getTitle(),
@@ -92,6 +98,16 @@ final readonly class ArtifactEntryMapper implements ArtifactEntryMapperInterface
             ArtifactField::DEFINITION->value => is_array($definition) ? $definition : null,
             ArtifactField::ENABLED->value => $config->getEnabled(),
         ];
+
+        $localized = $this->keyLocalizationResolver->getLocalized($config);
+
+        // left out rather than written as null: a key that states nothing is described by an entry
+        // that says nothing, which is the entry a file written before the flag existed carries
+        if ($localized !== null) {
+            $entry[ArtifactField::LOCALIZED->value] = $localized;
+        }
+
+        return $entry;
     }
 
     /**

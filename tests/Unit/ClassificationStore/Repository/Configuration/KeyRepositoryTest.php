@@ -21,8 +21,10 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\Ke
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Configuration\KeyRepository;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyUpdate;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactKeyEntry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use ReflectionProperty;
 use Symfony\Component\DependencyInjection\Container;
@@ -41,7 +43,11 @@ final class KeyRepositoryTest extends Unit
 
     private const string STORED_DESCRIPTION = 'The weight of the product';
 
+    private const string IDENTIFIER = '01K9T0ZQ0VX8W4S1R7J3A2B5C6';
+
     private ?KernelInterface $kernelBeforeStub = null;
+
+    private InMemoryKeyLocalizationResolver $keyLocalizationResolver;
 
     /**
      * An empty container makes `save()` give up at `Pimcore\Db::get()`, with an exception the
@@ -51,6 +57,7 @@ final class KeyRepositoryTest extends Unit
      */
     public function _before(): void
     {
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
         $this->kernelBeforeStub = Pimcore::getKernel();
         Pimcore::setKernel($this->makeEmpty(KernelInterface::class, ['getContainer' => new Container()]));
     }
@@ -197,6 +204,99 @@ final class KeyRepositoryTest extends Unit
         $this->assertSame('The mass of the product', $config->getDescription());
     }
 
+    /**
+     * `localized` follows the same absent-versus-supplied rule as the title, with one difference:
+     * null is a value of its own here, so a supplied null writes NULL rather than clearing to a
+     * neutral string. Only an omitted member leaves the stored flag alone.
+     *
+     * @dataProvider localizedProvider
+     *
+     * @throws Exception
+     */
+    public function testTheStoredLocalizationFollowsWhetherTheFieldWasSupplied(
+        ?bool $stored,
+        ?bool $localized,
+        bool $supplied,
+        ?bool $expected
+    ): void {
+        $config = $this->createStoredKeyConfig();
+        $this->keyLocalizationResolver->setLocalized($config, $stored);
+        $repository = $this->createRepository($config);
+
+        $this->write(static fn (): KeyConfig => $repository->update(
+            self::KEY_ID,
+            new KeyUpdate(name: self::KEY_NAME, localized: $localized, localizedSupplied: $supplied)
+        ));
+
+        $this->assertSame($expected, $this->keyLocalizationResolver->getLocalized($config));
+    }
+
+    /**
+     * Every row's stored value differs from the value the request carries, so each one goes red if
+     * the write it describes stops happening - a row whose two values agree would pass either way.
+     *
+     * @return array<string, array{0: ?bool, 1: ?bool, 2: bool, 3: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'absent leaves the stored flag alone' => [true, null, false, true],
+            'present and null stores no flag' => [true, null, true, null],
+            'present and true stores true' => [false, true, true, true],
+            'present and false stores false' => [true, false, true, false],
+            'true without a flag still counts as supplied' => [false, true, false, true],
+            'false without a flag still counts as supplied' => [true, false, false, false],
+        ];
+    }
+
+    /**
+     * Apply restores what the entry carries without asking whether it carries anything: an entry
+     * with no `localized` member writes NULL, so a file exported before the flag existed leaves
+     * every key stating nothing rather than keeping whatever the target happened to hold.
+     *
+     * @dataProvider artifactLocalizedProvider
+     *
+     * @throws Exception
+     */
+    public function testApplyWritesTheLocalizationOfTheEntryUnconditionally(?bool $stored, ?bool $localized): void
+    {
+        $config = $this->createStoredKeyConfig();
+        $this->keyLocalizationResolver->setLocalized($config, $stored);
+        $repository = $this->createRepository($config);
+
+        $this->write(static fn (): KeyConfig => $repository->saveFromArtifact(
+            $config,
+            1,
+            new ArtifactKeyEntry(
+                self::IDENTIFIER,
+                self::KEY_NAME,
+                self::STORED_TITLE,
+                self::STORED_DESCRIPTION,
+                'input',
+                ['fieldtype' => 'input'],
+                true,
+                $localized
+            )
+        ));
+
+        $this->assertSame($localized, $this->keyLocalizationResolver->getLocalized($config));
+    }
+
+    /**
+     * The stored value is the opposite of the entry's on every row, so none of them can pass with
+     * the write removed.
+     *
+     * @return array<string, array{0: ?bool, 1: ?bool}>
+     */
+    public static function artifactLocalizedProvider(): array
+    {
+        return [
+            'an entry stating nothing writes no flag' => [true, null],
+            'an entry flagged true writes true' => [false, true],
+            'an entry flagged false writes false' => [true, false],
+        ];
+    }
+
     private function createStoredKeyConfig(): KeyConfig
     {
         $config = new KeyConfig();
@@ -232,6 +332,7 @@ final class KeyRepositoryTest extends Unit
             $this->makeEmpty(KeyConfigResolverInterface::class, [
                 'getById' => $config,
             ]),
+            $this->keyLocalizationResolver,
             $this->makeEmpty(ListingFilterInterface::class),
             $this->makeEmpty(SearchHelperServiceInterface::class),
             $this->makeEmpty(Connection::class),

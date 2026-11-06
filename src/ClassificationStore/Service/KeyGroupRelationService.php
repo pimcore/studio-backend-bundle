@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\KeyConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\KeyGroupRelationEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
@@ -22,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -38,6 +40,8 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         private KeyGroupRelationHydratorInterface $keyGroupRelationHydrator,
         private GroupConfigResolverInterface $groupConfigResolver,
         private EventDispatcherInterface $eventDispatcher,
+        private KeyConfigResolverInterface $keyConfigResolver,
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
     ) {
     }
 
@@ -63,7 +67,11 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         foreach ($keyGroupRelations as $keyGroupRelation) {
             $groupConfig = $this->groupConfigResolver->getById($keyGroupRelation->getGroupId());
 
-            $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate($keyGroupRelation, $groupConfig);
+            $hydratedKeyGroupRelation = $this->keyGroupRelationHydrator->hydrate(
+                $keyGroupRelation,
+                $groupConfig,
+                $this->resolveKeyLocalized($keyGroupRelation->getKeyId())
+            );
 
             $this->eventDispatcher->dispatch(
                 new KeyGroupRelationEvent($hydratedKeyGroupRelation),
@@ -114,5 +122,21 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         }
 
         return $definition;
+    }
+
+    /**
+     * The key's own flag, read off the key configuration: core's relation listing selects the key's
+     * columns but keeps only those it has a property for, and it has none for this one. A key the
+     * configuration no longer carries reports nothing rather than failing the whole listing.
+     */
+    private function resolveKeyLocalized(int $keyId): ?bool
+    {
+        $keyConfig = $this->keyConfigResolver->getById($keyId);
+
+        if (!$keyConfig instanceof KeyConfig) {
+            return null;
+        }
+
+        return $this->keyLocalizationResolver->getLocalized($keyConfig);
     }
 }

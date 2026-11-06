@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Hydr
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\Configuration\KeyHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 
 /**
@@ -24,9 +25,12 @@ final class KeyHydratorTest extends Unit
 {
     private KeyHydrator $hydrator;
 
+    private InMemoryKeyLocalizationResolver $keyLocalizationResolver;
+
     public function _before(): void
     {
-        $this->hydrator = new KeyHydrator();
+        $this->keyLocalizationResolver = new InMemoryKeyLocalizationResolver();
+        $this->hydrator = new KeyHydrator($this->keyLocalizationResolver);
     }
 
     public function testStoredTitleIsPassedThroughVerbatim(): void
@@ -60,6 +64,38 @@ final class KeyHydratorTest extends Unit
             ['fieldtype' => 'input', 'indexed' => false],
             $this->hydrator->hydrateKeyDetail($keyConfig)->getDefinition()
         );
+    }
+
+    /**
+     * The flag is reported exactly as the key stores it and resolved against nothing: the key
+     * states true, states false, or states nothing at all, and the third is null rather than either
+     * of the first two. The class field's own flag decides only for that third case, and only in
+     * the client - nothing here looks at it.
+     *
+     * @dataProvider localizedProvider
+     */
+    public function testTheLocalizationFlagIsReportedAsTheKeyStoresIt(?bool $stored): void
+    {
+        $keyConfig = $this->createKeyConfig();
+
+        // the third case is left unwritten, which is the key that states nothing
+        if ($stored !== null) {
+            $this->keyLocalizationResolver->setLocalized($keyConfig, $stored);
+        }
+
+        $this->assertSame($stored, $this->hydrator->hydrateKeyDetail($keyConfig)->getLocalized());
+    }
+
+    /**
+     * @return array<string, array{0: ?bool}>
+     */
+    public static function localizedProvider(): array
+    {
+        return [
+            'a key flagged localized reports true' => [true],
+            'a key flagged not localized reports false' => [false],
+            'a key stating nothing reports null' => [null],
+        ];
     }
 
     private function createKeyConfig(): KeyConfig

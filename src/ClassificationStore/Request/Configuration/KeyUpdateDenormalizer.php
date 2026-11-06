@@ -20,6 +20,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use function array_key_exists;
 use function is_array;
+use function is_bool;
 use function is_string;
 use function sprintf;
 
@@ -70,8 +71,10 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
             description: $this->stringOrNull($data, 'description'),
             type: $this->stringOrNull($data, 'type'),
             definition: $this->arrayOrNull($data, 'definition'),
+            localized: $this->boolOrNull($data, 'localized'),
             titleSupplied: array_key_exists('title', $data),
             descriptionSupplied: array_key_exists('description', $data),
+            localizedSupplied: array_key_exists('localized', $data),
             // Forwarded so the schema's refusal still fires: this denormalizer replaces the
             // mapping that used to hand a supplied `identifier` to the constructor.
             identifier: array_key_exists('identifier', $data) ? $data['identifier'] : AbsentValue::ABSENT,
@@ -89,6 +92,22 @@ final readonly class KeyUpdateDenormalizer implements DenormalizerInterface, Nor
 
         if ($value !== null && !is_string($value)) {
             throw new InvalidArgumentException(sprintf('`%s` must be a string or null.', $field));
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<array-key, mixed> $data
+     *
+     * @throws InvalidArgumentException
+     */
+    private function boolOrNull(array $data, string $field): ?bool
+    {
+        $value = $data[$field] ?? null;
+
+        if ($value !== null && !is_bool($value)) {
+            throw new InvalidArgumentException(sprintf('`%s` must be a boolean or null.', $field));
         }
 
         return $value;

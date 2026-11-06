@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\Arti
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfer\ArtifactTargetMatcher;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ApplyOutcome;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Util\Constant\ArtifactSection;
+use Pimcore\Bundle\StudioBackendBundle\Tests\Unit\ClassificationStore\Service\InMemoryKeyLocalizationResolver;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use function sprintf;
 
@@ -188,7 +189,7 @@ final class ArtifactEntryWriterTest extends Unit
     private function createWriter(): ArtifactEntryWriter
     {
         $parser = new ArtifactParser();
-        $matcher = new ArtifactTargetMatcher();
+        $matcher = new ArtifactTargetMatcher(new InMemoryKeyLocalizationResolver());
         $diagnostics = new ApplyDiagnostics();
         $refusals = new ApplyRefusals(
             $this->makeEmpty(CollectionRepositoryInterface::class),

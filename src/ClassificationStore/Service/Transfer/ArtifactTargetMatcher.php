@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\Transfe
 
 use Closure;
 use Generator;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyLocalizationResolverInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use function count;
@@ -29,6 +30,11 @@ use function mb_strtolower;
 final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInterface
 {
     private const int CHUNK_SIZE = 200;
+
+    public function __construct(
+        private KeyLocalizationResolverInterface $keyLocalizationResolver,
+    ) {
+    }
 
     /**
      * {@inheritdoc}
@@ -131,6 +137,10 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
      * the stored `[]` would report the key updated on every apply, and deploying one file twice
      * would never become a no-op. The title is normalized for the same reason: it is stored as `''`
      * when the entry leaves it out.
+     *
+     * `localized` is the one column compared without normalizing: an entry that leaves it out writes
+     * NULL, so the parsed null and the stored NULL are already the same value, and collapsing it into
+     * a boolean would report a key flagged false as unchanged against one that states nothing.
      */
     public function describesSameKey(KeyConfig $target, ArtifactKeyEntry $entry): bool
     {
@@ -141,6 +151,7 @@ final readonly class ArtifactTargetMatcher implements ArtifactTargetMatcherInter
             && ($target->getDescription() ?? '') === ($entry->getDescription() ?? '')
             && $target->getType() === $entry->getType()
             && $target->getEnabled() === $entry->isEnabled()
+            && $this->keyLocalizationResolver->getLocalized($target) === $entry->getLocalized()
             && (is_array($storedDefinition) ? $storedDefinition : []) === ($entry->getDefinition() ?? []);
     }
 

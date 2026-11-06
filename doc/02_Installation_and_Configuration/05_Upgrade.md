@@ -68,6 +68,9 @@ The following steps are necessary during updating to newer versions.
   group's `name` for the same reason, so a group added in the session reports the same shape as a pre-loaded one.
   `CollectionLayout` is unchanged and still carries only `groups`.
 - [Classification Store] Added: sub groups, the per-store vocabulary a key's assignment to a group can be tagged with.
+- [Classification Store] Added: a key now reports its own `localized` flag wherever a key is described and accepts it on
+  update, where no value means the class field decides. The flag is stored and published but not yet honoured by the
+  object data endpoints.
 - [Classification Store] Added: a key's assignment to a group can now be written and read with its own per-assignment
   options — the definition override, the sub group and free-form metadata — through the configuration API, and the
   generated identifier of a store, collection, group and key is published alongside them. The definition override is

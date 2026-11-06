@@ -18,6 +18,8 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Configuration\KeyCreate;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use ReflectionClass;
+use ReflectionParameter;
+use function array_map;
 
 /**
  * @internal
@@ -39,5 +41,20 @@ final class KeyCreateTest extends Unit
         $this->expectException(InvalidArgumentException::class);
 
         new KeyCreate('', 1, 'Weight');
+    }
+
+    /**
+     * The create endpoint accepts no localization flag, so a new key states nothing and inherits
+     * the `localized` flag of the class definition field it is rendered in until the update
+     * endpoint is asked for a decision.
+     */
+    public function testNoLocalizationFlagIsAccepted(): void
+    {
+        $parameters = array_map(
+            static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+            (new ReflectionClass(KeyCreate::class))->getConstructor()->getParameters()
+        );
+
+        $this->assertSame(['name', 'storeId', 'title', 'identifier'], $parameters);
     }
 }

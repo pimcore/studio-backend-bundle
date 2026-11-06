@@ -47,6 +47,17 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
         private readonly ?string $keyDescription,
         #[Property(description: 'Key Description', type: 'string', example: 'value', nullable: true)]
         private readonly ?string $groupDescription,
+        #[Property(
+            description: 'Whether the key holds a value per language, as the key stores it: true, false, or null'
+                . ' where the key states nothing and the `localized` flag of the class definition field the key'
+                . ' is rendered in decides. It is not resolved against that field here. The flag is not yet'
+                . ' honoured by the object data endpoints, which still read and write a classification store'
+                . ' field under the language set of the class definition field alone.',
+            type: 'boolean',
+            example: true,
+            nullable: true
+        )]
+        private readonly ?bool $localized = null,
     ) {
     }
 
@@ -78,5 +89,10 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
     public function getGroupDescription(): ?string
     {
         return $this->groupDescription;
+    }
+
+    public function getLocalized(): ?bool
+    {
+        return $this->localized;
     }
 }
