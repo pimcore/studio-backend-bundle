@@ -33,6 +33,7 @@ enum ColumnType: string
     case SYSTEM_QUANTITY_VALUE = 'system.quantity_value';
     case SYSTEM_INPUT_QUANTITY_VALUE = 'system.input_quantity_value';
     case SYSTEM_RGBA = 'system.rgba';
+    case SYSTEM_FIELD_NAME = 'system.fieldName';
     case METADATA_SELECT = 'metadata.select';
     case METADATA_INPUT = 'metadata.input';
     case METADATA_DATE = 'metadata.date';
