@@ -63,17 +63,12 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
     public function moveToFallbackFolder(ElementInterface $element, UserInterface $user): void
     {
         $elementType = $this->getElementType($element);
-        $folder = $this->getFallbackFolder($elementType);
+        $coreType = $this->getElementType($element, true);
+        $folder = $this->serviceResolver->getElementByPath($coreType, self::FOLDER_PATH);
 
-        try {
-            $this->securityService->hasElementPermission($folder, $user, ElementPermissions::PUBLISH_PERMISSION);
-        } catch (ForbiddenException $exception) {
-            throw new EnvironmentException(
-                sprintf('Missing publish permission on the fallback folder %s', self::FOLDER_PATH),
-                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT->value,
-                $exception
-            );
-        }
+        // a folder that does not exist yet takes the root's permissions, so a denied restore creates nothing
+        $this->checkPublishPermission($folder ?? $this->getRoot($coreType), $user);
+        $folder ??= $this->createFallbackFolder($elementType);
 
         $element->setParent($folder);
         $key = $element->getKey();
@@ -89,7 +84,39 @@ final readonly class FallbackFolderService implements FallbackFolderServiceInter
     /**
      * @throws EnvironmentException
      */
-    private function getFallbackFolder(string $elementType): ElementInterface
+    private function checkPublishPermission(ElementInterface $element, UserInterface $user): void
+    {
+        try {
+            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        } catch (ForbiddenException $exception) {
+            throw new EnvironmentException(
+                sprintf('Missing publish permission for the fallback folder %s', self::FOLDER_PATH),
+                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT->value,
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    private function getRoot(string $coreType): ElementInterface
+    {
+        $root = $this->serviceResolver->getElementById($coreType, 1);
+        if ($root === null) {
+            throw new EnvironmentException(
+                sprintf('Root of type %s not found', $coreType),
+                HttpResponseErrorKeys::RECYCLE_BIN_RESTORE_MISSING_PARENT->value
+            );
+        }
+
+        return $root;
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    private function createFallbackFolder(string $elementType): ElementInterface
     {
         try {
             $folder = match ($elementType) {
