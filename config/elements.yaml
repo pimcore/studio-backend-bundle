@@ -20,6 +20,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDataService
+    arguments:
+      $assetClassResolver: '@pimcore.class.resolver.asset'
+      $documentClassResolver: '@pimcore.class.resolver.document'
+      $modelFactory: '@pimcore.model.factory'
+      $workflowConfigs: '%pimcore.workflow%'
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteService
@@ -41,6 +46,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\CoauthorService
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextService
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementIndexService
@@ -92,3 +100,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\EditLockHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Repository\RelatedElementRepository

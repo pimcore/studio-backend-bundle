@@ -15,12 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAc
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportDataStorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UserTopicServiceInterface;
@@ -35,6 +37,7 @@ final class CsvCreationHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly ExportDataStorageServiceInterface $exportDataStorageService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly UserTopicServiceInterface $userTopicService,
@@ -69,13 +72,29 @@ final class CsvCreationHandler extends AbstractHandler
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
         $delimiter = $settings[StepConfig::SETTINGS_DELIMITER->value] ?? null;
 
-        if (!isset($jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value])) {
+        $csvData = null;
+
+        try {
+            $csvData = $this->exportDataStorageService->load($jobRun->getId());
+        } catch (EnvironmentException $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
-                ['message' => 'Csv export data not found in job run context']
+                ['message' => $e->getMessage()]
             ));
         }
-        $csvData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
+
+        // A job run that was already collecting when the rows moved out of the job run still carries the rows of its
+        // first batches in the context, they come before the stored ones
+        $contextData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value] ?? null;
+        if ($contextData !== null) {
+            $csvData = array_merge($contextData, $csvData ?? []);
+        }
+        if ($csvData === null) {
+            $this->abort($this->getAbortData(
+                Config::CSV_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'Csv export data not found']
+            ));
+        }
 
         try {
             $this->csvExportService->createExportFile(

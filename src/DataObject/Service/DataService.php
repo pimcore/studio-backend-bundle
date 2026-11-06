@@ -17,8 +17,10 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\LightweightDetailDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RemoteStorageDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDetail;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
@@ -26,6 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DetailValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
@@ -36,6 +40,7 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EqualComparisonInterface;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModel;
 use function array_key_exists;
@@ -156,8 +161,12 @@ final readonly class DataService implements DataServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void
-    {
+    public function updateEditableData(
+        Concrete $element,
+        array $editableData,
+        UserInterface $user,
+        bool $applyRemoteChanges = true
+    ): void {
         try {
             $class = $element->getClass();
             foreach ($editableData as $key => $value) {
@@ -171,6 +180,10 @@ final readonly class DataService implements DataServiceInterface
                     continue;
                 }
 
+                if (!$applyRemoteChanges && $adapter instanceof RemoteStorageDataInterface) {
+                    continue;
+                }
+
                 $value = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData, $user);
                 if (!$this->validateEncryptedField($fieldDefinition, $value)) {
                     continue;
@@ -179,6 +192,10 @@ final readonly class DataService implements DataServiceInterface
                 $element->setValue($key, $value);
             }
 
+        } catch (ValidationException $e) {
+            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
+        } catch (ForbiddenException $e) {
+            throw $e;
         } catch (Exception $e) {
             throw new ElementSavingFailedException($element->getId(), $e->getMessage());
         }
@@ -273,14 +290,25 @@ final readonly class DataService implements DataServiceInterface
     {
         $data = [];
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            $data[$key] = $this->getDetailValue(
-                $dataObject,
-                $this->getValidFieldValue($dataObject, $key),
-                $fieldDefinition
-            );
+            $data[$key] = $this->getLightweightDetailValue($dataObject, $fieldDefinition, $key)
+                ?? $this->getDetailValue(
+                    $dataObject,
+                    $this->getValidFieldValue($dataObject, $key),
+                    $fieldDefinition
+                );
         }
 
         return $data;
+    }
+
+    private function getLightweightDetailValue(Concrete $dataObject, Data $fieldDefinition, string $key): mixed
+    {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if (!$adapter instanceof LightweightDetailDataInterface) {
+            return null;
+        }
+
+        return $adapter->getLightweightDetailData($dataObject, $fieldDefinition, $key);
     }
 
     private function getObjectClassData(ClassDefinition $class): ClassData

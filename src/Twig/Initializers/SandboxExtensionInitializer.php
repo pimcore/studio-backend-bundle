@@ -24,7 +24,11 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
         private readonly Environment $twig,
         private readonly array $allowedTags,
         private readonly array $allowedFilters,
-        private readonly array $allowedFunctions
+        private readonly array $allowedFunctions,
+        private readonly array $blockedClasses = [],
+        private readonly array $allowedClasses = [],
+        private readonly array $blockedFunctions = [],
+        private readonly array $hardBlockedMethods = [],
     ) {
     }
 
@@ -33,7 +37,11 @@ final class SandboxExtensionInitializer implements SandboxExtensionInitializerIn
         $securityPolicy = new SecurityPolicy(
             $this->allowedTags,
             $this->allowedFilters,
-            $this->allowedFunctions
+            $this->allowedFunctions,
+            $this->blockedClasses,
+            $this->allowedClasses,
+            $this->blockedFunctions,
+            $this->hardBlockedMethods,
         );
         $sandbox = $this->twig->getExtension(SandboxExtension::class);
         $sandbox->setSecurityPolicy($securityPolicy);

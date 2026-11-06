@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CsvSettings;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 interface CsvServiceInterface
 {
     /**
-     * @throws ForbiddenException|EnvironmentException
+     * @throws ForbiddenException|EnvironmentException|InvalidArgumentException
      */
     public function export(string $domain, CollectionFilterParameter $parameter): Response;
 

@@ -84,7 +84,8 @@ final readonly class LocalizedFieldsAdapter implements
             return null;
         }
 
-        $languageData = $this->getAllowedLanguages($element, $user, $data[$key]);
+        // localized fields without any value are sent as null (see resolveLocalizedData()), nothing to set then
+        $languageData = $this->getAllowedLanguages($element, $user, $data[$key] ?? []);
         $localizedField = $this->getLocalizedField($contextData, $element);
 
         foreach ($languageData as $name => $localizedData) {
@@ -105,7 +106,7 @@ final readonly class LocalizedFieldsAdapter implements
                     $name,
                     [$name => $fieldData],
                     $user,
-                    new FieldContextData(language: $language),
+                    new FieldContextData($contextData?->getContextObject(), $language),
                     $isPatch
                 );
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {

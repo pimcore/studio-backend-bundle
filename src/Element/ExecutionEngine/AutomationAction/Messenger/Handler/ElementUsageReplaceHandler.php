@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementUsageReplaceMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementContextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementUsageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -52,6 +53,7 @@ final class ElementUsageReplaceHandler extends AbstractHandler
         private readonly UserResolverInterface $userResolver,
         private readonly PublishServiceInterface $publishService,
         private readonly UserTopicServiceInterface $userTopicService,
+        private readonly ElementContextServiceInterface $elementContextService,
     ) {
         parent::__construct();
     }
@@ -81,11 +83,15 @@ final class ElementUsageReplaceHandler extends AbstractHandler
             );
 
             try {
-                $this->elementUsageService->replaceElementUsage(
-                    $this->sourceElement,
-                    $this->targetElement,
-                    $element,
-                    $user
+                // The worker boots with the CLI element context, which hides unpublished elements: the
+                // relation getters would drop them and the element would be saved without them.
+                $this->elementContextService->runInStudioContext(
+                    fn () => $this->elementUsageService->replaceElementUsage(
+                        $this->sourceElement,
+                        $this->targetElement,
+                        $element,
+                        $user
+                    )
                 );
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(

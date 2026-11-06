@@ -30,6 +30,11 @@ final class Version20260720120000 extends AbstractMigration
         return 'Create the notification subscription table';
     }
 
+    public function isTransactional(): bool
+    {
+        return false;
+    }
+
     public function up(Schema $schema): void
     {
         if ($schema->hasTable(NotificationSubscription::TABLE_NAME)) {

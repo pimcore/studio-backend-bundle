@@ -69,6 +69,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\PhpCodeTransformerService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContextInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedColumnSourceFieldContext
+
   #
   # Repository
   #
@@ -295,6 +298,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\FieldCollectionDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\BlockDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ClassificationStoreDefinition:
