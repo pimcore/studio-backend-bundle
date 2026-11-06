@@ -156,4 +156,14 @@ final class FilterParameterTest extends Unit
             'locale is a list' => [['key' => 'sku', 'type' => self::STRING_TYPE, 'operator' => 'empty', 'locale' => ['en']]],
         ];
     }
+
+    public function testValueFilterLookupsSkipAnOperatorFilterWithoutType(): void
+    {
+        $parameter = new FilterParameter(columnFilters: [
+            ['key' => 'sku', 'operator' => 'empty'],
+        ]);
+
+        $this->assertSame([], iterator_to_array($parameter->getColumnFilterByType(self::STRING_TYPE), false));
+        $this->assertNull($parameter->getSimpleColumnFilterByType(self::STRING_TYPE));
+    }
 }

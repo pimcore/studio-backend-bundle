@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\EmptyFilter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterOperator;
@@ -106,18 +109,52 @@ final class EmptyFilterTest extends Unit
                 'attributes.Engine.power', ColumnType::SYSTEM_QUANTITY_VALUE->value, FilterOperator::EMPTY,
                 'attributes.Engine.power = NULL',
             ],
-            'file name of an asset is its key' => [
-                'filename', ColumnType::SYSTEM_STRING->value, FilterOperator::EMPTY, 'key = EMPTY',
-            ],
             'metadata called filename keeps its name' => [
                 'filename', ColumnType::METADATA_INPUT->value, FilterOperator::NOT_EMPTY, 'filename != EMPTY',
             ],
             'metadata called classname keeps its name' => [
                 'classname', ColumnType::METADATA_INPUT->value, FilterOperator::EMPTY, 'classname = EMPTY',
             ],
-            'core class name key is mapped to the index field' => [
-                'classname', ColumnType::SYSTEM_STRING->value, FilterOperator::NOT_EMPTY, 'className != EMPTY',
+        ];
+    }
+
+    /**
+     * @dataProvider systemColumnAliasProvider
+     */
+    public function testSystemColumnAliasDependsOnTheQuery(string $queryInterface, string $key, string $expectedPql): void
+    {
+        $parameters = $this->getParameters(
+            new ColumnFilter($key, ColumnType::SYSTEM_STRING->value, null, null, FilterOperator::EMPTY)
+        );
+
+        $query = $this->makeEmpty($queryInterface, [
+            'filterByPql' => Expected::once(
+                function (string $pql) use ($expectedPql, $queryInterface) {
+                    $this->assertSame($expectedPql, $pql);
+
+                    return $this->makeEmpty($queryInterface);
+                }
+            ),
+        ]);
+
+        (new EmptyFilter())->apply($parameters, $query);
+    }
+
+    public function systemColumnAliasProvider(): array
+    {
+        return [
+            'file name of an asset is its key' => [AssetQueryInterface::class, 'filename', 'key = EMPTY'],
+            'file name of a document is its key' => [DocumentQueryInterface::class, 'filename', 'key = EMPTY'],
+            'a data object field called filename keeps its name' => [
+                DataObjectQueryInterface::class, 'filename', 'filename = EMPTY',
             ],
+            'class name column of data objects is mapped to the index field' => [
+                DataObjectQueryInterface::class, 'classname', 'className = EMPTY',
+            ],
+            'an asset field called classname keeps its name' => [
+                AssetQueryInterface::class, 'classname', 'classname = EMPTY',
+            ],
+            'any other query keeps both names' => [QueryInterface::class, 'filename', 'filename = EMPTY'],
         ];
     }
 

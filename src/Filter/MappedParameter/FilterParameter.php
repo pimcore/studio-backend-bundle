@@ -122,7 +122,7 @@ final class FilterParameter implements
     {
         $columns = array_filter(
             $this->columnFilters,
-            static fn ($columnFilter) => $columnFilter['type'] === $type && ($columnFilter['operator'] ?? null) === null
+            static fn ($columnFilter) => ($columnFilter['operator'] ?? null) === null && $columnFilter['type'] === $type
         );
 
         foreach ($columns as $column) {
@@ -181,7 +181,7 @@ final class FilterParameter implements
     {
         $columns  = array_filter(
             $this->columnFilters,
-            static fn ($columnFilter) => $columnFilter['type'] === $type && ($columnFilter['operator'] ?? null) === null
+            static fn ($columnFilter) => ($columnFilter['operator'] ?? null) === null && $columnFilter['type'] === $type
         );
 
         if (count($columns) > 1) {

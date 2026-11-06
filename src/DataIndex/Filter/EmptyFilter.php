@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterOperator;
@@ -38,9 +41,10 @@ final class EmptyFilter implements FilterInterface
     private const string FIELD_NAME_PATTERN = '/^[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)*$/D';
 
     /**
-     * System columns that are not an index field of their own. The file name of an asset is the key of the element.
+     * System columns of assets and documents that are not an index field of their own. Their file name is the key of
+     * the element.
      */
-    private const array SYSTEM_FIELD_ALIASES = [
+    private const array ELEMENT_FIELD_ALIASES = [
         'filename' => 'key',
     ];
 
@@ -67,7 +71,7 @@ final class EmptyFilter implements FilterInterface
         }
 
         foreach ($parameters->getOperatorColumnFilters() as $column) {
-            $query = $query->filterByPql($this->buildPql($column));
+            $query = $query->filterByPql($this->buildPql($column, $query));
         }
 
         return $query;
@@ -76,9 +80,9 @@ final class EmptyFilter implements FilterInterface
     /**
      * @throws InvalidArgumentException
      */
-    private function buildPql(ColumnFilter $column): string
+    private function buildPql(ColumnFilter $column, QueryInterface $query): string
     {
-        $field = $this->mapToIndexField($column);
+        $field = $this->mapToIndexField($column, $query);
 
         if (!preg_match(self::FIELD_NAME_PATTERN, $field)) {
             throw new InvalidArgumentException(sprintf('Invalid field name "%s" for an empty filter', $field));
@@ -94,10 +98,11 @@ final class EmptyFilter implements FilterInterface
     }
 
     /**
-     * The grid names of the system columns differ from the index field in some cases. Fields of the same name that
-     * are not a system column (e.g. metadata) are searched under their own name.
+     * The grid names of the system columns differ from the index field in some cases, which depends on the kind of
+     * element. Fields of the same name that are not a system column (e.g. metadata or a field of a data object class)
+     * are searched under their own name.
      */
-    private function mapToIndexField(ColumnFilter $column): string
+    private function mapToIndexField(ColumnFilter $column, QueryInterface $query): string
     {
         $field = $column->getKey();
 
@@ -105,9 +110,15 @@ final class EmptyFilter implements FilterInterface
             return $field;
         }
 
-        $field = $this->mapColumnKeyToIndexField($field);
+        if ($query instanceof DataObjectQueryInterface) {
+            return $this->mapColumnKeyToIndexField($field);
+        }
 
-        return self::SYSTEM_FIELD_ALIASES[$field] ?? $field;
+        if ($query instanceof AssetQueryInterface || $query instanceof DocumentQueryInterface) {
+            return self::ELEMENT_FIELD_ALIASES[$field] ?? $field;
+        }
+
+        return $field;
     }
 
     private function isTextType(string $type): bool
